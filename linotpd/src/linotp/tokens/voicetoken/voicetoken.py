@@ -120,3 +120,99 @@ class VoiceTokenClass(HmacTokenClass):
 
         return validity
 # --------------------------------------------------------------------------- --
+
+    @classmethod
+    def getClassInfo(cls, key=None, ret='all'):
+        """
+        getClassInfo - returns a subtree of the token definition
+
+        :param key: subsection identifier
+        :type key: string
+
+        :param ret: default return value, if nothing is found
+        :type ret: user defined
+
+        :return: subsection if key exists or user defined
+        :rtype: s.o.
+
+        """
+        LOG.debug("[getClassInfo] begin. Get class render info for section: "
+                  "key %r, ret %r " % (key, ret))
+
+        _ = context['translate']
+
+        res = {
+            'type': 'voice',
+            'title': 'Voice Token',
+            'description': 'An voice token.',
+            'init': {
+                'page': {
+                    'html': 'voicetoken.mako',
+                    'scope': 'enroll',
+                },
+                'title': {
+                    'html': 'voicetoken.mako',
+                    'scope': 'enroll.title',
+                },
+            },
+            'config': {
+                'title': {
+                    'html': 'voicetoken.mako',
+                    'scope': 'config.title',
+                },
+                'page': {
+                    'html': 'voicetoken.mako',
+                    'scope': 'config',
+                },
+            },
+            'selfservice': {
+                'enroll':
+                    {'page': {
+                        'html': 'voicetoken.mako',
+                        'scope': 'selfservice.enroll', },
+                        'title': {
+                            'html': 'voicetoken.mako',
+                            'scope': 'selfservice.title.enroll', },
+                    },
+            }
+            ,
+            'policy': {
+                'selfservice': {
+                    'edit_voice':
+                        {'type': 'int',
+                         'value': [0, 1],
+                         'desc': _('define if the user should be allowed'
+                                   ' to define the phone number')
+                         }
+                },
+                'authentication': {
+                    'voice_language': {
+                        'type': 'str',
+                        'desc': _('Define the language which should be used'
+                                  'to render the voice message.')
+                    },
+                    'voice_message': {
+                        'type': 'str',
+                        'desc': _('Define the message which will be send'
+                                  'to the voice service for the phone'
+                                  'call.')
+                    },
+                    'voice_dynamic_mobile_number': {
+                        'type': 'bool',
+                        'desc': _('If set, a new mobile number will be '
+                                  'retrieved from the user info instead '
+                                  'of the token')
+                    },
+                }
+            }
+        }
+        # do we need to define the lost token policies here...
+        # [comment copied from sms token]
+        if key is not None and key in res:
+            ret = res.get(key)
+        else:
+            if ret == 'all':
+                ret = res
+        LOG.debug("[getClassInfo] end. Returned the configuration section:"
+                  " ret %r " % ret)
+        return ret
