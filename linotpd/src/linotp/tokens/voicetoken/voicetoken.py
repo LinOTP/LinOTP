@@ -550,6 +550,37 @@ class VoiceTokenClass(HmacTokenClass):
 
         return otp_value
 
+    def checkOtp(self, otp_value, counter, window, options=None):
+        """
+        checkOtp - validate the token otp against a given otpvalue
+
+        :param otp_value: the to be verified otpvalue
+        :type otp_value:  string
+
+        :param counter: the counter state, that should be verified
+        :type counter: int
+
+        :param window: the counter +window, which should be checked
+        :type window: int
+
+        :param options: the dict, which could contain token specific info
+        :type options: dict
+
+        :return: the counter state or -1
+        :rtype: int
+        """
+
+        success = -1
+        if otp_value == self.get_otp(counter):
+            success = 1
+
+        if success >= 0:
+            msg = "otp verification was successful!"
+        else:
+            msg = "otp verification failed!"
+        log.debug(msg)
+        return success
+
     # in the voice token we use the generic TokenInfo
     # to store the phone number
     def set_phone(self, phone):
