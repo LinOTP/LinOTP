@@ -98,3 +98,25 @@ class VoiceTokenClass(HmacTokenClass):
     def getClassPrefix(cls):
         # OATH standard compliant prefix: XXYY XX= vendor, YY - token type
         return "LSVO"
+
+    def get_challenge_validity(self):
+        """
+        This method returns the token specific challenge validity
+
+        :return: int - validity in seconds (120 sec on ValueError)
+        """
+
+        try:
+            validity = int(getFromConfig('DefaultChallengeValidityTime', 120))
+            lookup_for = 'VOICEProviderTimeout'
+            validity = int(getFromConfig(lookup_for, validity))
+
+            # instance specific timeout
+            validity = int(self.getFromTokenInfo('challenge_validity_time',
+                                                 validity))
+
+        except ValueError:
+            validity = 120
+
+        return validity
+# --------------------------------------------------------------------------- --
