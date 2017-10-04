@@ -49,7 +49,7 @@ from linotp.tokens import tokenclass_registry
 
 import logging
 
-LOG = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 # --------------------------------------------------------------------------- --
@@ -70,7 +70,7 @@ def get_auth_voice_text(user="", realm=""):
 
     if len(pol) > 0:
         voice_text = getPolicyActionValue(pol, "voicetext", is_string=True)
-        LOG.debug("[get_auth_voicetext] got the voice text = %s" % voice_text)
+        log.debug("[get_auth_voicetext] got the voice text = %s" % voice_text)
         ret = True
 
     return ret, voice_text
@@ -181,7 +181,7 @@ class VoiceTokenClass(HmacTokenClass):
         :return: subsection if key exists or user defined
         :rtype: s.o.
         """
-        LOG.debug("[getClassInfo] begin. Get class render info for section: "
+        log.debug("[getClassInfo] begin. Get class render info for section: "
                   "key %r, ret %r " % (key, ret))
 
         _ = context['translate']
@@ -258,7 +258,7 @@ class VoiceTokenClass(HmacTokenClass):
         else:
             if ret == 'all':
                 ret = res
-        LOG.debug("[getClassInfo] end. Returned the configuration section:"
+        log.debug("[getClassInfo] end. Returned the configuration section:"
                   " ret %r " % ret)
         return ret
 
