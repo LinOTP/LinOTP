@@ -52,6 +52,52 @@ import logging
 LOG = logging.getLogger(__name__)
 
 
+# --------------------------------------------------------------------------- --
+def get_auth_voice_text(user="", realm=""):
+    """
+    This function checks the policy scope=authentication, action=voicetext
+    This is a string policy
+    The function returns the tuple (bool, string),
+        bool: If a policy is defined
+        string: the string to use
+    """
+    # the default string is the OTP value
+    ret = False
+    voice_text = "<otp>"
+
+    pol = get_client_policy(context['Client'], scope="authentication",
+                            realm=realm, user=user, action="voicetext")
+
+    if len(pol) > 0:
+        voice_text = getPolicyActionValue(pol, "voicetext", is_string=True)
+        LOG.debug("[get_auth_voicetext] got the voice text = %s" % voice_text)
+        ret = True
+
+    return ret, voice_text
+
+
+def is_voice_editable(user=""):
+    """
+    this function checks the policy scope=selfservice, action=edit_voice
+    This is a int policy, while the '0' is a deny
+    """
+    # the default string is the OTP value
+    ret = True
+    realm = user.realm
+    login = user.login
+
+    policies = getPolicy({'scope': 'selfservice',
+                          'realm': realm,
+                          "action": "edit_voice",
+                          "user": login})
+    if policies:
+        edit_voice = getPolicyActionValue(policies, "edit_voice")
+        if edit_voice == 0:
+            ret = False
+
+    return ret
+
+
 @tokenclass_registry.class_entry('voice')
 @tokenclass_registry.class_entry(
     'linotp.tokens.voicetoken.VoicetokenClass')
