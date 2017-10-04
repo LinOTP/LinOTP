@@ -384,4 +384,50 @@ class VoiceTokenClass(HmacTokenClass):
 
         return request_is_valid
 
+# --------------------------------------------------------------------------- --
+
+    def initChallenge(self, transaction_id, challenges=None, options=None):
+        """
+        initialize the challenge -
+        in the linotp server a challenge object has been allocated and
+        this method is called to confirm the need of a new challenge
+        or if for the challenge request, there is an already outstanding
+        challenge to which then could be referred (s. ticket #2986)
+
+        :param transaction_id: the id of the new challenge
+        :param challenges: the challenges list.
+        :param options: the request parameters
+
+        :return: tuple of
+                success - bool
+                trans_id - the best transaction id for this request context
+                message - which is shown to the user
+                attributes - further info (dict) shown to the user
+        """
+
+        success = True
+        trans_id = transaction_id
+        message = 'challenge init ok'
+        attributes = {}
+
+        now = datetime.datetime.now()
+        blocking_time = int(getFromConfig('VoiceBlockingTimeout', 60))
+
+        # reuse challenge
+        for challenge in challenges:
+            if not challenge.is_open():
+                continue
+            start = challenge.get('timestamp')
+            expiry = start + datetime.timedelta(seconds=blocking_time)
+            # # check if there is already a challenge underway
+            if now <= expiry:
+                trans_id = challenge.getTransactionId()
+                message = 'voice call with otp already submitted'
+                success = False
+                attributes = {'info': 'challenge already submitted',
+                              'state': trans_id}
+                break
+
+        return success, trans_id, message, attributes
+
 # eof #
