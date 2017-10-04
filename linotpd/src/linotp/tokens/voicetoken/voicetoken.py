@@ -493,6 +493,52 @@ class VoiceTokenClass(HmacTokenClass):
         random_bytes = hsm_obj.random(len=length)
         return int(binascii.hexlify(random_bytes), 16)
 
+# --------------------------------------------------------------------------- --
+
+    def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
+        """
+        verify the response of a previous challenge
+
+        :param user:     requesting user
+        :param passw:    to be checked pass (pin+otp)
+        :param options:  an additional argument, which could be token
+                         specific
+        :param challenges: list of challenges, where each challenge is
+                           described as dict
+        :return: tuple containing a) otp counter and b) the list of matching
+                 challenges: (a,b)
+
+        do the standard check for the response of the challenge +
+        change the tokeninfo data of the last challenge
+        """
+        otp_count = -1
+        matching = []
+
+        tok = super(VoiceTokenClass, self)
+
+        # in var passw might be only the otp, otherwise otp_val will be
+        # overwritten later.
+        otp_val = passw
+
+        # # fallback: do we have pin+otp ??
+        (active_pin_policy, pin, otp) = split_pin_otp(self, passw, user=user,
+                                                      options=options)
+
+        if active_pin_policy >= 0:
+            res = check_pin(self, pin, user=user, options=options)
+            if res is True:
+                otp_val = otp
+
+        for challenge in challenges:
+            counter_from_challenge = challenge.get('data').get('counter')
+            otp_count = self.check_otp(otp_value=otp_val,
+                                       counter=int(counter_from_challenge))
+            if otp_count > 0:
+                matching.append(challenge)
+                break
+
+        return otp_count, matching
+
     def submit_challenge_to_provider(self, otp_value, message):
         """
         submit the voice message - former method name was checkPin
