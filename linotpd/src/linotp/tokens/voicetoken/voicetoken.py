@@ -216,3 +216,54 @@ class VoiceTokenClass(HmacTokenClass):
         LOG.debug("[getClassInfo] end. Returned the configuration section:"
                   " ret %r " % ret)
         return ret
+
+# --------------------------------------------------------------------------- --
+
+    def update(self, param, reset_fail_count=True):
+        """
+        Process initialization parameters
+
+        :param param: dict of initialization parameters (request context?
+        where comes it from?
+                      if entries we add missing entries for calling the
+                      parent class method
+        :param reset_fail_count : boolean if the fail count should be reset
+
+        :return: nothing
+        """
+
+        _ = context['translate']
+
+        # if no hash algorithm in param; add sha256. Otherwise the
+        # parent classes update method will set sha1 which is not intended
+        self.hashlibStr = param.get('hashlib', 'sha256')
+        param['hashlib'] = self.hashlibStr
+
+
+        # specific - phone
+        try:
+            phone = param['phone']
+        except KeyError:
+            raise ParameterError("Missing parameter: 'phone'")
+
+        # in scope self service - check if edit_voice is allowed
+        # if not allowed to edit, check if the phone is the same
+        # as from the user data
+        if param.get('::scope::', {}).get('selfservice', False):
+            user = param['::scope::']['user']
+            if not is_voice_editable(user):
+                u_info = getUserDetail(user)
+                u_phone = u_info.get('mobile', u_info.get('phone', None))
+                if u_phone != phone:
+                    raise Exception(_('User is not allowed to '
+                                      'set phone number'))
+
+        self.set_phone(phone)
+
+        # in case of the voice token, only the server must know the otpkey
+        # thus if none is provided, we let create one (in the TokenClass)
+        if 'genkey' not in param and 'otpkey' not in param:
+            param['genkey'] = 1
+
+        # call update from parent
+        HmacTokenClass.update(self, param, reset_fail_count)
