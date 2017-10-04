@@ -313,3 +313,75 @@ class VoiceTokenClass(HmacTokenClass):
 
         # call update from parent
         HmacTokenClass.update(self, param, reset_fail_count)
+
+# --------------------------------------------------------------------------- --
+
+    def is_challenge_response(self, passw, user, options=None,
+                              challenges=None):
+        """
+        check, if the request contains the result of a challenge
+
+        :param passw: password, which might be pin or pin+otp
+        :param user: the requesting user
+        :param options: dictionary of additional request parameters
+        :param challenges: Not used in this method #TODO
+        :return: returns true or false
+        """
+
+        if "state" in options or "transactionid" in options:
+            return True
+
+        # it as well might be a challenge response,
+        # if the passw is longer than the pin
+        (policy_type, pin, otp_val) = split_pin_otp(self, passw, user=user,
+                                           options=options)
+        if policy_type >= 0:
+            otp_counter = check_otp(self, otp_val, options=options)
+            if otp_counter >= 1:
+                pin_match = check_pin(self, pin, user=user, options=options)
+                if not pin_match:
+                    return False
+            if otp_counter >= 0:
+                return True
+
+        return False
+
+    def is_challenge_request(self, passw, user, options=None):
+        """
+        check, if the request would start a challenge
+
+        - default: if the passw contains only the pin, this request would
+        trigger a challenge
+
+        - in this place as well the policy for a token is checked
+
+        :param passw: password, which might be pin or pin+otp
+        :param options: dictionary of additional request parameters
+
+        :return: returns true or false
+        """
+
+        # Todo: distinguish passw contains a (pin + otp) or b (transactionid
+        # + otp)
+        # case a occurs if a user is unable to send a transaction id (radius)
+        # a) pin + otp
+
+        # b) otp but a transactionID is given via request
+
+        request_is_valid = False
+
+        realms = self.token.getRealmNames()
+
+        if trigger_phone_call_on_empty_pin(realms):
+            if 'check_s' in options.get('scope', {}) and 'challenge' in options:
+                request_is_valid = True
+                return request_is_valid
+
+        # if its a challenge, the passw contains only the pin
+        pin_match = check_pin(self, passw, user=user, options=options)
+        if pin_match is True:
+            request_is_valid = True
+
+        return request_is_valid
+
+# eof #
