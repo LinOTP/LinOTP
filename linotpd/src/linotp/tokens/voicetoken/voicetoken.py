@@ -430,4 +430,67 @@ class VoiceTokenClass(HmacTokenClass):
 
         return success, trans_id, message, attributes
 
+    def createChallenge(self, transaction_id, options=None):
+        """
+        create a challenge, which is submitted to the user
+
+        Create a random counter and return it to the challenge dict,
+        as well to the submit method which create an otp for the phone
+        call based on this counter.
+
+        :param transaction_id: the id of this challenge
+        :param options: the request context parameters / data
+        :return: tuple of (bool, message and data)
+                 bool, if submit was successful
+                 message is submitted to the user
+                 data is preserved in the challenge
+                 attributes - additional attributes, which are added in to the
+                              challenge dict (in the method which calls this
+                              method)
+        """
+
+        # use a random number as counter which will be stored in the
+        # challenge context to verify the otp.
+        random_int = self._get_rand_int(length=8)
+
+        # send calculated otp to user via voice provider
+        otp_value = self.get_otp(counter=random_int)
+        # get message from policy
+        # TODO get message from policy, german and english
+        message = 'Hello, your O<pause>T<pause>P<pause> is <otp>'
+
+        success, info = self._submit_to_provider(otp_value, message)
+
+        options['state'] = transaction_id
+
+        if success is True:
+            message = 'voice call triggered'
+        else:
+            attributes = {'state': ''}
+            message = 'triggering voice call failed'
+            if info:
+                message = info
+
+        # prepare parameter to return
+        data = {'counter': str(random_int)}
+        # add state to attributes which will be set to a challenges dict
+        # after this method. Radius will send the transactionID in the
+        # state parameter, so this is for radius compatibility
+        attributes = {'state': transaction_id}
+
+        return success, message, data, attributes
+
+    # Todo: move into a more reasonable place (hsm_object?)
+    @staticmethod
+    def _get_rand_int(length=8):
+        """
+        Create random integer based on hsm objects random method.
+
+        :param length: length in bytes
+        :return: random number with length of len bytes
+        """
+        hsm_obj = context.get('hsm', {}).get('obj')
+        random_bytes = hsm_obj.random(len=length)
+        return int(binascii.hexlify(random_bytes), 16)
+
 # eof #
