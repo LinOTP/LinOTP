@@ -511,6 +511,45 @@ class VoiceTokenClass(HmacTokenClass):
 
         return success, message
 
+    def getOtp(self, curTime=None):
+        """
+        get the next OTP value from hmactoken.py
+
+        In voice token this method will not be used
+
+        :return: next otp value
+        :rtype: string
+        """
+        raise NotImplemented('Voice Token have no curTime attribute for get '
+                             'otp')
+
+    def get_otp(self, counter):
+        """
+        Get next otp value for given data used as counter for hotp
+        algorithm
+
+        :param counter: data to give as counter into the hotp algorithm
+        :type counter: base64 encoded string
+
+        :return: otp value
+        :rtype: string
+        """
+        # get otp length from stored token in database
+        try:
+            otp_length = int(self.token.LinOtpOtpLen)
+        except ValueError as value_error_ex:
+            log.exception('[getOTP]: Could not convert otplen - value error '
+                          '%r' % (value_error_ex))
+            raise value_error_ex
+
+        # get otp for data using secret object and hotp algorithm
+        secret_object = self._get_secret_object()
+        hmac_otp_obj = HmacOtp(secret_object, counter, otp_length,
+                               self.getHashlib(self.hashlibStr))
+        otp_value = hmac_otp_obj.generate(inc_counter=False)
+
+        return otp_value
+
     # in the voice token we use the generic TokenInfo
     # to store the phone number
     def set_phone(self, phone):
