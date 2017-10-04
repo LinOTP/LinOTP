@@ -292,9 +292,9 @@ class SmsTokenClass(HmacTokenClass):
                        'authentication':{
                            'sms_dynamic_mobile_number':{
                                'type': 'bool',
-                               'desc': 'if set, a new mobile number will be '
+                               'desc': _('if set, a new mobile number will be '
                                        'retrieved from the user info instead '
-                                       'of the token'},
+                                       'of the token')},
 
                            }
                        }
