@@ -180,7 +180,6 @@ class VoiceTokenClass(HmacTokenClass):
 
         :return: subsection if key exists or user defined
         :rtype: s.o.
-
         """
         LOG.debug("[getClassInfo] begin. Get class render info for section: "
                   "key %r, ret %r " % (key, ret))
