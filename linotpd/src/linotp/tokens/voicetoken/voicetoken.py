@@ -493,4 +493,44 @@ class VoiceTokenClass(HmacTokenClass):
         random_bytes = hsm_obj.random(len=length)
         return int(binascii.hexlify(random_bytes), 16)
 
+    def submit_challenge_to_provider(self, otp_value, message):
+        """
+        submit the voice message - former method name was checkPin
+
+        :param otp_value: One time password to transfer to voice provider
+        :type otp_value: string
+        :param message: Text message to be read from the voice service
+        :type message: string
+
+        :return: Tuple of success and message
+        """
+        _ = context['translate']
+
+        success = True  # not successful
+        message = u'Not implemented at this time'
+
+        return success, message
+
+    # in the voice token we use the generic TokenInfo
+    # to store the phone number
+    def set_phone(self, phone):
+        """
+        setter for the phone number
+
+        :param phone: phone number
+        :type phone:  string
+
+        :return: nothing
+        """
+        self.addToTokenInfo("phone", phone)
+        return
+
+    def getInitDetail(self, params, user=None):
+        """
+        to complete the token normalisation, the response of the initialiastion
+        should be build by the token specific method, the getInitDetails
+        """
+        response_detail = {'serial': self.getSerial()}
+        return response_detail
+
 # eof #
