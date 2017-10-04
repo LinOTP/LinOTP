@@ -218,6 +218,10 @@ def getPolicyDefinitions(scope=""):
                 'type': 'bool',
                 'desc': ('should the token be disabled if maximum '
                          'authentication count was reached')},
+            "voice_provider": {
+                'type': 'str',
+                'desc': 'The voice provider that should be used to '
+                        'send voice notifications'},
             "push_provider": {
                 'type': 'str',
                 'desc': 'The push provider that should be used to '

@@ -2511,9 +2511,9 @@ function load_push_providers(){
                     }
                     else{
                         selectedEmailProvider = null;
-                        $("#button_email_provider_edit").button("disable");
-                        $("#button_email_provider_delete").button("disable");
-                        $("#button_email_provider_set_default").button("disable");
+                        $("#button_push_provider_edit").button("disable");
+                        $("#button_push_provider_delete").button("disable");
+                        $("#button_push_provider_set_default").button("disable");
                     }
                 },
                 selected: function(event, ui) {
@@ -2527,14 +2527,81 @@ function load_push_providers(){
             });
         }
         else {
-            $('#email_providers_list').html("");
+            $('#push_providers_list').html("");
         };
         hide_waiting();
     });
 }
 
+/* voice provider */
+function load_voice_providers(){
+    show_waiting();
 
+    var params = { 'type': 'voice', 'session': getsession()};
+    $.post('/system/getProvider', params,
+     function(data, textStatus, XMLHttpRequest){
+        voiceProviders = data.result.value;
 
+        // Set selected provider globally
+        selectedPushProvider = null;
+
+        var providers = $('<ol id="voice_providers_select" class="select_list ui-selectable"></ol>');
+        var count = 0;
+
+        $.each(voiceProviders, function(key, provider){
+            var element = '<li class="ui-widget-content"><span class="name">' + escape(key) + '</span>';
+            if(provider.Default === true){
+                element += ' <span class="default">(Default)</span>';
+            }
+            element += '</li>';
+            providers.append(element);
+            count++;
+        });
+
+        $("#button_voice_provider_edit").button("disable");
+        $("#button_voice_provider_delete").button("disable");
+        $("#button_voice_provider_set_default").button("disable");
+
+        if (count > 0) {
+            $('#voice_providers_list').html(providers);
+
+            $('#voice_providers_select').selectable({
+                stop: function(event, ui){
+                    if($("#voice_providers_select .ui-selected").length > 0){
+                        selectedVoiceProvider = escape($("#voice_providers_select .ui-selected .name").html());
+                        $("#button_voice_provider_edit").button("enable");
+                        $("#button_voice_provider_delete").button("enable");
+                        if(voiceProviders[selectedVoiceProvider].Default !== true){
+                            $("#button_voice_provider_set_default").button("enable");
+                        }
+                        else{
+                            $("#button_voice_provider_set_default").button("disable");
+                        }
+                    }
+                    else{
+                        selectedVoiceProvider = null;
+                        $("#button_voice_provider_edit").button("disable");
+                        $("#button_voice_provider_delete").button("disable");
+                        $("#button_voice_provider_set_default").button("disable");
+                    }
+                },
+                selected: function(event, ui) {
+                    // Prevent the selection of multiple items
+                    $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected").each(
+                        function(key,value){
+                            $(value).find('*').removeClass("ui-selected");
+                        }
+                    );
+                }
+            });
+        }
+        else {
+            $('#voice_providers_list').html("");
+        };
+        hide_waiting();
+    });
+}
+/* voice provider end*/
 
 function load_system_config(){
     show_waiting();
@@ -5067,6 +5134,126 @@ $(document).ready(function(){
         }
     });
 
+    /*********************************************************************
+     * voice provider config
+     */
+
+    var $dialog_voice_provider_config = $('#dialog_voice_providers').dialog({
+        autoOpen: false,
+        title: 'Voice Provider Config',
+        dialogClass: "dialog-voice-provider",
+        width: 600,
+        maxHeight: 600,
+        minHeight: 300,
+        modal: true,
+        buttons: {
+            'New': { click:  function(){
+                    voice_provider_form_dialog("");
+                    },
+                id: "button_voice_provider_new",
+                text: "New"
+            },
+            'Edit': { click: function(){
+                    if(selectedVoiceProvider){
+                        voice_provider_form_dialog(selectedVoiceProvider);
+                    }
+                },
+                id:"button_voice_provider_edit",
+                text: "Edit"
+            },
+            'Delete': { click: function(){
+                    if(selectedVoiceProvider){
+                        $('#dialog_voice_provider_delete').dialog("open");
+                    }
+                },
+                id: "button_voice_provider_delete",
+                text:"Delete"
+            },
+            'Close': { click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_voice_providers_close",
+                text:"Close"
+            }
+        },
+        open: function(event, ui) {
+            $('.ui-dialog :button', this).blur();
+
+            $(this).dialog_icons();
+            translate_dialog_voice_providers();
+        }
+    });
+
+    $dialog_voice_provider_edit = $('#dialog_voice_provider_edit').dialog({
+        autoOpen: false,
+        title: 'Voice Provider',
+        width: 600,
+        modal: true,
+        buttons: {
+            'Cancel': {
+                click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_voice_provider_cancel",
+                text: "Cancel"
+                },
+            'Save': {
+                click: function(){
+                    if ($("#form_voiceprovider").valid()) {
+                        save_voice_provider_config();
+                    }
+                },
+                id: "button_voice_provider_save",
+                text: "Save"
+            }
+        },
+        open: function(event, ui) {
+            $(this).dialog_icons();
+            translate_dialog_voice_provider_edit();
+        },
+        close: function(event, ui) {
+            load_voice_providers();
+        }
+    });
+
+    $dialog_voice_provider_delete = $('#dialog_voice_provider_delete').dialog({
+            autoOpen: false,
+            title: 'Deleting Voice provider',
+            width: 600,
+            modal: true,
+            buttons: {
+                'Delete': {
+                    click: function(){
+                        delete_voice_provider(selectedVoiceProvider);
+                        $(this).dialog('close');
+                    },
+                    id: "button_voice_provider_delete_delete",
+                    text: "Delete"
+                },
+                "Cancel": {
+                    click: function(){
+                        $(this).dialog('close');
+                    },
+                    id: "button_voice_provider_delete_cancel",
+                    text: "Cancel"
+                }
+            },
+            open: function() {
+                $(this).dialog_icons();
+                translate_dialog_voice_provider_delete();
+            },
+            close: function(event, ui) {
+                load_voice_providers();
+            }
+        });
+
+    $('#button_voice_provider_set_default').click(function(){
+        if(selectedVoiceProvider){
+            set_default_provider('voice', selectedVoiceProvider);
+        }
+    });
+
+    /* end of voice provider config */
     
     /*********************************************************************
      * System config
@@ -5125,6 +5312,10 @@ $(document).ready(function(){
         $dialog_push_provider_config.dialog('open');
     });
 
+    $('#menu_voice_provider_config').click(function(){
+        load_voice_providers();
+        $dialog_voice_provider_config.dialog('open');
+    });
 
     $('#menu_token_config').click(function(){
         try {
@@ -5989,7 +6180,7 @@ function delete_email_provider(provider){
 
 /************************************************************************
 *
-*  Email provider edit
+*  Push provider edit
 */
 
 function push_provider_form_dialog(name){
@@ -6070,6 +6261,118 @@ function delete_push_provider(provider){
    $.post('/system/delProvider', params,
      function(data, textStatus, XMLHttpRequest){
        load_push_providers();
+       if (data.result.status == true && data.result.value == true) {
+           var message = sprintf(i18n.gettext('Provider %s deleted'),
+                                 escape(provider));
+
+           alert_info_text({'text': message,
+                            'is_escaped': true});
+
+       } else if (data.result.value == false) {
+           var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
+           alert_box({'title': i18n.gettext('Failed to delete provider'),
+                      'text': reason_text,
+                      'type': ERROR,
+                      'is_escaped': true});
+
+           var message = sprintf(i18n.gettext('Failed to delete provider %s'),
+                                 escape(provider));
+           alert_info_text({'text': message,
+                            'type': ERROR,
+                            'is_escaped': true});
+       } else {
+           alert_box({'title': i18n.gettext('Error deleting provider'),
+                      'text': escape(data.result.error.message),
+                      'type': ERROR,
+                      'is_escaped': true});
+       }
+       hide_waiting();
+   });
+}
+
+/************************************************************************
+*
+*  Voice provider edit
+*/
+
+function voice_provider_form_dialog(name){
+   if(name){
+       $("#voice_provider_name").val(name);
+       $("#voice_provider_class").val(voiceProviders[name].Class);
+       $("#voice_provider_config").val(voiceProviders[name].Config);
+       $("#voice_provider_timeout").val(voiceProviders[name].Timeout);
+   }
+   else{
+       $("#voice_provider_name").val($("#voice_provider_name").attr("placeholder"));
+       // to be replaced by getProviderDef
+       $("#voice_provider_class").val($("#voice_provider_class").attr("placeholder"));
+       $("#voice_provider_config").val($("#voice_provider_config").attr("placeholder"));
+       $("#voice_provider_timeout").val($("#voice_provider_timeout").attr("placeholder"));
+   }
+
+   $("#dialog_voice_provider_edit").dialog("open");
+
+   $("#form_voiceprovider").validate({
+       rules: {
+           voice_provider_config: {
+               valid_json: true
+           },
+           voice_provider_name: {
+               required: true,
+               minlength: 4,
+               number: false,
+               providername: true
+           }
+       }
+   });
+}
+
+function save_voice_provider_config(){
+   // Load Values from still opened form
+   var provider = $('#voice_provider_name').val();
+   var params = {
+       'name': provider,
+       'class': $('#voice_provider_class').val(),
+       'config': $('#voice_provider_config').val(),
+       'timeout': $('#voice_provider_timeout').val(),
+       'type': 'voice',
+       'session': getsession()
+   };
+   show_waiting();
+
+   $.post('/system/setProvider', params,
+   function(data, textStatus, XMLHttpRequest){
+       if (data.result.status == true && data.result.value == true) {
+           $dialog_voice_provider_edit.dialog('close');
+       } else if (data.result.value == false) {
+           alert_box({'title': i18n.gettext('Failed to save provider'),
+                      'text': escape(data.detail.message),
+                      'type': ERROR,
+                      'is_escaped': true});
+
+           var message = sprintf(i18n.gettext('Failed to save provider %s'),
+                                 escape(provider));
+           alert_info_text({'text': message,
+                            'type': ERROR,
+                            'is_escaped': true});
+       } else {
+           alert_box({'title': i18n.gettext('Error saving provider'),
+                      'text': escape(data.result.error.message),
+                      'type': ERROR,
+                      'is_escaped': true});
+       }
+       hide_waiting();
+   });
+}
+
+function delete_voice_provider(provider){
+   show_waiting();
+   var params =  {'name': provider,
+                  'type': 'voice',
+                  'session': getsession()};
+   $.post('/system/delProvider', params,
+     function(data, textStatus, XMLHttpRequest){
+       load_voice_providers();
        if (data.result.status == true && data.result.value == true) {
            var message = sprintf(i18n.gettext('Provider %s deleted'),
                                  escape(provider));
