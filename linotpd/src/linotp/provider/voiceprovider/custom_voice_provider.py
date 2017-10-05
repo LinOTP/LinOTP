@@ -44,8 +44,8 @@ log = logging.getLogger(__name__)
 
 @provider_registry.class_entry('CustomVoiceProvider')
 @provider_registry.class_entry('linotp.provider.CustomVoiceProvider')
-@provider_registry.class_entry('linotp.lib.voiceprovider.'
-                               'CustomVoiceProvider')
+@provider_registry.class_entry('linotp.provider.voiceprovider.'
+                               'custom_voice_provider.CustomVoiceProvider')
 class CustomVoiceProvider(ProviderBase, TwillioMixin):
     """
     Send a Voice notification through the Custom Voice Provider to the 
@@ -349,9 +349,14 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
 
     def test_connection(self):
         """
-        to be implemented
+        to test the connection, we just call the same endpoint without
+        arguments (empty document), which will raise an error 400
         """
+        status, response = self._make_http_post_request_(json={})
 
-        return True
+        if response == 'Bad Request':
+            return True, response
+
+        return False, response
 
 # eof
