@@ -48,6 +48,28 @@ BUILDDIR:=$(PWD)/build
 # in this repository
 LINOTPD_PROJS := linotpd adminclient/LinOTPAdminClientCLI
 
+# These variables let you set the amount of stuff LinOTP is logging.
+#
+# LINOTP_LOGLEVEL controls the amount of logging in general while
+# LINOTP_CONSOLE_LOGLEVEL controls logging to the console (as opposed
+# to logstash -- logstash always gets whatever LINOTP_LOGLEVEL lets
+# through, so LINOTP_CONSOLE_LOGLEVEL can be used to have less stuff
+# show up on the console than in logstash).
+# SQLALCHEMY_LOGLEVEL controls the amount of logging done by SQLAlchemy
+# (who would have guessed); DEBUG will log SQL queries and results,
+# INFO will log just queries (no results) and WARN will log neither.
+# APACHE_LOGLEVEL limits the amount of stuff Apache writes to its error
+# output; normally anything that is written to the LinOTP console goes
+# through here, too, so there isn't a lot of sense in setting this
+# differently to LINOTP_CONSOLE_LOGLEVEL unless you're doing nonstandard
+# trickery and/or use a different (and unsupported by us) web server
+# than Apache to run LinOTP.
+
+export LINOTP_LOGLEVEL=INFO
+export LINOTP_CONSOLE_LOGLEVEL=DEBUG
+export SQLALCHEMY_LOGLEVEL=ERROR
+export APACHE_LOGLEVEL=DEBUG
+
 ###################
 # Recursive targets
 #
@@ -307,7 +329,10 @@ docker-run-linotp-sqlite: docker-build-linotp
 			 -e LINOTP_DB_HOST= \
 			 -e LINOTP_DB_PORT= \
 			 -e HEALTHCHECK_PORT=80 \
-			 -e APACHE_LOGLEVEL=DEBUG \
+			 -e LINOTP_LOGLEVEL=$(LINOTP_LOGLEVEL) \
+			 -e LINOTP_CONSOLE_LOGLEVEL=$(LINOTP_CONSOLE_LOGLEVEL) \
+			 -e SQLALCHEMY_LOGLEVEL=$(SQLALCHEMY_LOGLEVEL) \
+			 -e APACHE_LOGLEVEL=$(APACHE_LOGLEVEL) \
 			linotp
 
 # Dockerfy tool
