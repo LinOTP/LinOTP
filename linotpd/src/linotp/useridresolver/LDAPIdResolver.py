@@ -793,8 +793,17 @@ class IdResolver (UserIdResolver):
                 res = resultList[0][1]
                 if res is not None:
                     for key in res:
+
                         if key.lower() == self.uidType.lower():
-                            userid = res.get(key)[0]
+
+                            # ---------------------------------------------- --
+
+                            # we have to convert the data back to unicode
+                            # from the utf-8 result of ldap layer
+
+                            userid = res.get(key)[0].decode(ENCODING)
+
+                            # ---------------------------------------------- --
 
         if res is None or not userid:
             log.info("[getUserId] : empty result for  %r - uidtype: %r",
@@ -868,6 +877,7 @@ class IdResolver (UserIdResolver):
                                                 timeout=self.response_timeout)
                     else:
                         e_u = escape_filter_chars(binascii.unhexlify(UserId))
+
                         filterstr = "(ObjectGUID=%s)" % (e_u)
                         l_id = l_obj.search_ext(self.base,
                                                 ldap.SCOPE_SUBTREE,
@@ -875,13 +885,26 @@ class IdResolver (UserIdResolver):
                                                 sizelimit=self.sizelimit,
                                                 timeout=self.response_timeout)
                 else:
-                    # Ticket #754
-                    filterstr = "(%s=%s)" % (self.uidType, UserId)
-                    l_id = l_obj.search_ext(self.base,
-                                            ldap.SCOPE_SUBTREE,
-                                            filterstr=filterstr,
-                                            sizelimit=self.sizelimit,
-                                            timeout=self.response_timeout)
+                    # ------------------------------------------------------ --
+
+                    # any other uid type ends up here
+
+                    # we have to build up the search filter which must end up
+                    # in an uft-8 encoding
+
+                    filterstr = ("(%s=%s)" % (
+                                        self.uidType,
+                                        UserId.decode(ENCODING))
+                                ).encode(ENCODING)
+
+                    l_id = l_obj.search_ext(
+                                        self.base,
+                                        ldap.SCOPE_SUBTREE,
+                                        filterstr=filterstr,
+                                        sizelimit=self.sizelimit,
+                                        timeout=self.response_timeout)
+
+                    # ------------------------------------------------------ --
 
                 r = l_obj.result(l_id, all=1)[1]
 
