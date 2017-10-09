@@ -30,6 +30,9 @@ admin controller - interfaces to administrate LinOTP
 import os
 import logging
 
+import json
+
+from datetime import datetime
 from pylons import request
 from pylons import response
 from pylons import config
@@ -285,6 +288,22 @@ class AdminController(BaseController):
         finally:
             Session.close()
 
+    @staticmethod
+    def parse_tokeninfo(tok):
+        """
+        Parse TokenInfo to JSON
+        and format validity periode date fields to isoformat
+
+        """
+        info = json.loads(tok['LinOtp.TokenInfo'])
+
+        for field in ['validity_period_end', 'validity_period_start']:
+            if field in info:
+                date = datetime.strptime(info[field], '%d/%m/%y %H:%M')
+                info[field] = date.isoformat()
+
+        tok['LinOtp.TokenInfo'] = info
+
     def show(self):
         """
         method:
@@ -312,6 +331,9 @@ class AdminController(BaseController):
             * pagesize- optional: limit the number of returned tokens
             * user_fields - optional: additional user fields from the userid resolver of the owner (user)
             * outform - optional: if set to "csv", than the token list will be given in CSV
+            * tokeninfo_format - optional: if set to "json", this will be supplied in embedded JSON
+                                 otherwise, string format is returned with dates in format
+                                 DD/MM/YYYY TODO
 
         returns:
             a json result with:
@@ -334,6 +356,7 @@ class AdminController(BaseController):
             realm = param.get("viewrealm", param.get("realm", ''))
             ufields = param.get("user_fields")
             output_format = param.get("outform")
+            is_tokeninfo_json = param.get("tokeninfo_format") == "json"
 
             user_fields = []
             if ufields:
@@ -373,7 +396,10 @@ class AdminController(BaseController):
             # now row by row
             lines = []
             for tok in toks:
-                # CKO:
+
+                if is_tokeninfo_json:
+                    self.parse_tokeninfo(tok)
+
                 lines.append(tok)
 
             result["data"] = lines
