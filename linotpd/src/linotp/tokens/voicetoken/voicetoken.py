@@ -59,15 +59,11 @@ log = logging.getLogger(__name__)
 
 def get_voice_message(user="", realm=""):
     """
-    This function checks the policy scope=authentication, action=voice_message
+    This function returns the voice message as defined in the policy
+    authentication/voice_message. If no such policy is defined, the
+    function returns the fallback message "{otp}"
 
-    the fallback message is the "{otp}"
-
-    The function returns the tuple (bool, string),
-        bool: If a policy is defined
-        string: the string to use
-        
-    :return: tuple (bool, string)
+    :return: string
     """
 
     voice_text = "{otp}"
@@ -90,16 +86,13 @@ def get_voice_message(user="", realm=""):
 # --------------------------------------------------------------------------- --
 
 def get_voice_language(user="", realm=""):
+
     """
-    This function checks the policy scope=authentication, action=voice_language
+    This function returns the voice language as defined in the policy
+    authentication/voice_language. If no such policy is defined, the
+    function returns the fallback message "en"
 
-    the fallback langauge is "en"
-
-    The function returns the tuple (bool, string),
-        bool: If a policy is defined
-        string: the language to use
-        
-    :return: tuple (bool, string)
+    :return: string
     """
 
     voice_language = "en"
@@ -122,17 +115,15 @@ def get_voice_language(user="", realm=""):
 
 # --------------------------------------------------------------------------- --
 
+
 @tokenclass_registry.class_entry('voice')
-@tokenclass_registry.class_entry(
-    'linotp.tokens.voicetoken.VoicetokenClass')
+@tokenclass_registry.class_entry('linotp.tokens.voicetoken.VoicetokenClass')
 class VoiceTokenClass(HmacTokenClass):
     """
     Voice token class implementation
 
     challenge is triggered and otp comes via phone call to the user
     """
-
-# --------------------------------------------------------------------------- --
 
     def __init__(self, token_obj):
         """
@@ -190,7 +181,7 @@ class VoiceTokenClass(HmacTokenClass):
         res = {
             'type': 'voice',
             'title': 'Voice Token',
-            'description': 'An voice token.',
+            'description': 'A voice token.',
             'init': {
                 'page': {
                     'html': 'voicetoken.mako',
@@ -261,14 +252,10 @@ class VoiceTokenClass(HmacTokenClass):
         token initialization with user parameters
 
         :param param: dict of initialization parameters
-                      if entries we add missing entries for calling the
-                      parent class method
         :param reset_fail_count : boolean if the fail count should be reset
 
         :return: nothing
         """
-
-        _ = context['translate']
 
         # ------------------------------------------------------------------ --
 
@@ -289,7 +276,7 @@ class VoiceTokenClass(HmacTokenClass):
 
         # ------------------------------------------------------------------ --
 
-        # call update from parent
+        # call update method of parent class
 
         HmacTokenClass.update(self, param, reset_fail_count)
 
@@ -298,7 +285,7 @@ class VoiceTokenClass(HmacTokenClass):
     def is_challenge_response(self, passw, user, options=None,
                               challenges=None):
         """
-        check, if the request contains the result of a challenge
+        check if the request contains the result of a challenge
 
         :param passw: password, which might be pin or pin+otp
         :param user: the requesting user
@@ -310,8 +297,9 @@ class VoiceTokenClass(HmacTokenClass):
         if "state" in options or "transactionid" in options:
             return True
 
-        # it as well might be a challenge response,
-        # if the passw is longer than the pin
+        # LEGACY: some client applications can not process transaction ids.
+        # to support them, we provide a workaround heuristic with pin+otp
+
         (policy_type, pin, otp_val) = split_pin_otp(self, passw, user=user,
                                            options=options)
         if policy_type >= 0:
@@ -327,7 +315,7 @@ class VoiceTokenClass(HmacTokenClass):
 
     def is_challenge_request(self, passw, user, options=None):
         """
-        check, if the request would start a challenge
+        check if the request would start a challenge
 
         - default: if the passw contains only the pin, this request would
                    trigger a challenge
@@ -346,11 +334,7 @@ class VoiceTokenClass(HmacTokenClass):
 
     def initChallenge(self, transaction_id, challenges=None, options=None):
         """
-        initialize the challenge -
-        in the linotp server a challenge object has been allocated and
-        this method is called to confirm the need of a new challenge
-        or if for the challenge request, there is an already outstanding
-        challenge to which then could be referred (s. ticket #2986)
+        initialize the challenge
 
         :param transaction_id: the id of the new challenge
         :param challenges: the challenges list.
@@ -396,16 +380,16 @@ class VoiceTokenClass(HmacTokenClass):
 
     def createChallenge(self, transaction_id, options=None):
         """
-        create a challenge, which is submitted to the user
+        create a challenge which is submitted to the user
 
         Create a random counter and return it to the challenge dict,
-        as well to the submit method which create an otp for the phone
+        as well to the submit method which creates an otp for the phone
         call based on this counter.
 
         :param transaction_id: the id of this challenge
         :param options: the request context parameters / data
         :return: tuple of (bool, message and data)
-                 bool, if submit was successful
+                 bool, whether submit was successful
                  message is submitted to the user
                  data is preserved in the challenge
                  attributes - additional attributes, which are added in to the
@@ -475,8 +459,6 @@ class VoiceTokenClass(HmacTokenClass):
         otp_count = -1
         matching = []
 
-        tok = super(VoiceTokenClass, self)
-
         # in var passw might be only the otp, otherwise otp_val will be
         # overwritten later.
         otp_val = passw
@@ -535,8 +517,6 @@ class VoiceTokenClass(HmacTokenClass):
         :return: Tuple of success and result message
         """
 
-        _ = context['translate']
-
         owner = get_token_owner(self)
 
         message = get_voice_message(owner, owner.realm)
@@ -556,20 +536,15 @@ class VoiceTokenClass(HmacTokenClass):
         return success, result
 
     def getOtp(self, curTime=None):
-        """
-        get the next OTP value from hmactoken.py
 
-        In voice token this method will not be used
-
-        :return: next otp value
-        :rtype: string
         """
-        raise NotImplemented('Voice Token have no curTime attribute for get '
-                             'otp')
+        :raises NotImplementedError
+        """
+        raise NotImplemented('method getOtp is not implemented for VoiceToken')
 
     def get_otp(self, counter):
         """
-        Get next otp value for given data used as counter for hotp
+        Get next otp value with the given data used as counter for hotp
         algorithm
 
         :param counter: data to give as counter into the hotp algorithm
@@ -639,11 +614,8 @@ class VoiceTokenClass(HmacTokenClass):
 
         :param phone: phone number
         :type phone:  string
-
-        :return: nothing
         """
         self.addToTokenInfo("phone", phone)
-        return
 
     # todo as @property
     def get_phone(self):
@@ -656,12 +628,12 @@ class VoiceTokenClass(HmacTokenClass):
 
         return self.getFromTokenInfo("phone")
 
-
     def getInitDetail(self, params, user=None):
+
         """
-        to complete the token normalisation, the response of the initialiastion
-        should be build by the token specific method, the getInitDetails
+        Returns additional details upon initialisation of the token
         """
+
         response_detail = {'serial': self.getSerial()}
         return response_detail
 
