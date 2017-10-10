@@ -250,20 +250,21 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
         # the json call document
 
         call = {
-              'calleeNumber': calleeNumber,
-              'messageTemplate': messageTemplate,
-              'otp': otp,
-              'locale': locale}
+            'calleeNumber': calleeNumber,
+            'messageTemplate': messageTemplate,
+            'otp': otp,
+            'locale': locale,
+            'callerNumber': self.callerNumber}
 
-        call_params = {}
-        call_params.update(call)
-        call_params.update(self.service_config)
+        # add the voice delivery service (twilio) specific data
 
-        call['callerNumber'] = self.callerNumber
+        call.update(self.service_config)
 
-        json_call = {'call': call_params}
+        # ----------------------------------------------------------------- --
 
-        return self._make_http_post_request_(json=json_call)
+        # run the request against the vcs
+
+        return self._make_http_post_request_(json={'call': call})
 
     def _make_http_post_request_(self, json=None):
         """

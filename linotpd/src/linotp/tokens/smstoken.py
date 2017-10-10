@@ -292,9 +292,9 @@ class SmsTokenClass(HmacTokenClass):
                        'authentication':{
                            'sms_dynamic_mobile_number':{
                                'type': 'bool',
-                               'desc': 'if set, a new mobile number will be '
+                               'desc': _('if set, a new mobile number will be '
                                        'retrieved from the user info instead '
-                                       'of the token'},
+                                       'of the token')},
 
                            }
                        }
@@ -392,12 +392,13 @@ class SmsTokenClass(HmacTokenClass):
         :param passw: password, which might be pin or pin+otp
         :param options: dictionary of additional request parameters
 
-        :retrun: returns true or false
+        :return: returns true or false
         '''
 
         request_is_valid = False
         # do we need to call the
         # (res, pin, otpval) = split_pin_otp(self, passw, user, options=options)
+        # if policy to send sms on emtpy pin is set, return true
         realms = self.token.getRealmNames()
         if trigger_sms(realms):
             if 'check_s' in options.get('scope', {}) and 'challenge' in options:
