@@ -174,7 +174,15 @@ class SecretObj(object):
 
         if self.iv == ':1:':
 
-            return libcrypt_password(password, self.val)
+            crypted_password = libcrypt_password(password, self.val)
+
+            # position independend string comparison
+
+            result = True
+            for tup1, tup2 in zip(crypted_password, self.val):
+                result = result and (tup1 == tup2)
+
+            return result
 
         # the legacy comparison: compare the ecrypted password
 
