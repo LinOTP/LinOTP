@@ -299,17 +299,16 @@ class VoiceTokenClass(HmacTokenClass):
 
         # LEGACY: some client applications can not process transaction ids.
         # to support them, we provide a workaround heuristic with pin+otp
+        # during the verification that
 
-        (policy_type, pin, otp_val) = split_pin_otp(self, passw, user=user,
-                                           options=options)
-        if policy_type >= 0:
-            otp_counter = check_otp(self, otp_val, options=options)
-            if otp_counter >= 1:
-                pin_match = check_pin(self, pin, user=user, options=options)
-                if not pin_match:
-                    return False
-            if otp_counter >= 0:
-                return True
+        (policy_type, pin, otp_val) = split_pin_otp(
+                                            self,
+                                            passw,
+                                            user=user,
+                                            options=options)
+
+        if policy_type >= 0 and len(otp_val) == self.getOtpLen():
+                return check_pin(self, pin, user=user, options=options)
 
         return False
 
@@ -457,10 +456,19 @@ class VoiceTokenClass(HmacTokenClass):
         change the tokeninfo data of the last challenge
         """
 
+        if len(passw) != self.getOtpLen():
+            _pin_pass, otp_val = self.splitPinPass(passw)
+        else:
+            otp_val = passw
+
         for challenge in challenges:
 
             otp_input_data = int(challenge.get('data').get('counter'))
-            if self._calc_otp(otp_input_data) == passw:
+
+            challenge_otp = self._calc_otp(otp_input_data)
+
+            if challenge_otp == otp_val:
+
                 return 1, [challenge]
 
         return -1, []
