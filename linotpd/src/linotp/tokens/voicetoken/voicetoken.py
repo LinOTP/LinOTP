@@ -402,7 +402,7 @@ class VoiceTokenClass(HmacTokenClass):
         random_int = self._get_rand_int(length=8)
 
         # send calculated otp to user via voice provider
-        otp_value = self.get_otp(counter=random_int)
+        otp_value = self._calc_otp(random_int)
 
         success, info = self._submit_to_provider(otp_value)
 
@@ -456,31 +456,14 @@ class VoiceTokenClass(HmacTokenClass):
         do the standard check for the response of the challenge +
         change the tokeninfo data of the last challenge
         """
-        otp_count = -1
-        matching = []
-
-        # in var passw might be only the otp, otherwise otp_val will be
-        # overwritten later.
-        otp_val = passw
-
-        # # fallback: do we have pin+otp ??
-        (active_pin_policy, pin, otp) = split_pin_otp(self, passw, user=user,
-                                                      options=options)
-
-        if active_pin_policy >= 0:
-            res = check_pin(self, pin, user=user, options=options)
-            if res is True:
-                otp_val = otp
 
         for challenge in challenges:
-            counter_from_challenge = challenge.get('data').get('counter')
-            otp_count = self.check_otp(otp_value=otp_val,
-                                       counter=int(counter_from_challenge))
-            if otp_count > 0:
-                matching.append(challenge)
-                break
 
-        return otp_count, matching
+            otp_input_data = int(challenge.get('data').get('counter'))
+            if self._calc_otp(otp_input_data) == passw:
+                return 1, [challenge]
+
+        return -1, []
 
     def get_mobile_number(self, user=None):
         '''
@@ -542,13 +525,12 @@ class VoiceTokenClass(HmacTokenClass):
         """
         raise NotImplemented('method getOtp is not implemented for VoiceToken')
 
-    def get_otp(self, counter):
+    def _calc_otp(self, input_data):
         """
-        Get next otp value with the given data used as counter for hotp
-        algorithm
+        Calculates an otp by using an hmac algorithm with seed and
+        input_data
 
-        :param counter: data to give as counter into the hotp algorithm
-        :type counter: base64 encoded string
+        :param input_data: data used in hmac
 
         :return: otp value
         """
@@ -563,7 +545,7 @@ class VoiceTokenClass(HmacTokenClass):
 
         # get otp for data using secret object and hotp algorithm
         secret_object = self._get_secret_object()
-        hmac_otp_obj = HmacOtp(secret_object, counter, otp_length,
+        hmac_otp_obj = HmacOtp(secret_object, input_data, otp_length,
                                self.getHashlib(self.hashlibStr))
         otp_value = hmac_otp_obj.generate(inc_counter=False)
 
@@ -594,7 +576,7 @@ class VoiceTokenClass(HmacTokenClass):
         # as we don not rely on the token counter, we have to iterate through
         # all challenges and extract the random counter for verification.
 
-        if otp_value == self.get_otp(counter):
+        if otp_value == self._calc_otp(counter):
             success = 1
 
         if success >= 0:
