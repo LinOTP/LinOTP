@@ -760,7 +760,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                 # maybe we got a tan instead of a signature
 
                 correct_passwd_as_bytes = decode_base64_urlsafe(correct_passwd)
-                tan_length = 8  # TODO fetch from policy
+                tan_length = self.getOtpLen()
                 correct_tan = extract_tan(correct_passwd_as_bytes, tan_length)
 
                 # TODO PYLONS-HACK pylons silently converts integers in
