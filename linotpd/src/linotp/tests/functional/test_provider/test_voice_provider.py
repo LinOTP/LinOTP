@@ -23,6 +23,11 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+"""
+    functional test for the CustomVoiceProvider:
+    - check the CustomVoiceProvider functions
+
+"""
 
 import json
 import os
@@ -35,17 +40,9 @@ from linotp.tests import TestController
 from linotp.provider.voiceprovider.custom_voice_provider import (
                                             CustomVoiceProvider)
 
-
-"""
-    functional test for the CustomVoiceProvider:
-    - check the CustomVoiceProvider functions
-
-"""
-
 VALID_REQUEST = 'You received an authentication request.'
 
 log = logging.getLogger(__name__)
-
 
 def mocked_http_request(HttpObject, *argparams, **kwparams):
 
@@ -62,7 +59,9 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
 
     if r.status == 200:
         r.ok = True
-        r.content = "%r %r %r" % (r.text, request_url, request_body)
+        r.content = json.dumps({'text': r.text,
+                                'url': request_url,
+                                'body': request_body})
         return r
 
     r.ok = False
@@ -100,13 +99,13 @@ class TestVoiceProviderController(TestController):
         #
         configDict = {
             "access_certificate": os.path.join(self.fixture_path, 'cert.pem'),
-            'callerNumber': '+4989231234567',
             }
 
-        configDict['twilio'] = {
+        configDict['twilioConfig'] = {
             'accountSid': 'ACf9095f540f0b090edbd239b99230a8ee',
             'authToken': '8f36aab7ca485b432500ce49c15280c5',
             'voice': 'alice',
+            'callerNumber': '+4989231234567',
             }
 
         configDict['Timeout'] = '30'
@@ -219,12 +218,12 @@ class TestVoiceProviderController(TestController):
 
         configDict = {
             "access_certificate": os.path.join(self.fixture_path, 'cert.pem'),
-            'callerNumber': '+4989231234567',
             }
 
-        configDict['twilio'] = {
+        configDict['twilioConfig'] = {
             'accountSid': 'ACf9095f540f0b090edbd239b99230a8ee',
             'authToken': '8f36aab7ca485b432500ce49c15280c5',
+            'callerNumber': '+4989231234567',
             'voice': 'alice',
             }
 
@@ -252,19 +251,27 @@ class TestVoiceProviderController(TestController):
         self.assertEquals(status, True)
         self.assertTrue(VALID_REQUEST in response)
 
+        request_json = json.loads(response)
+
         target_url = 'https://vcs.keyidentity.com/v1/twilio/call'
-        self.assertTrue(target_url in response)
+        self.assertTrue(target_url in request_json.get('url'))
 
-        request_content = {'call': {
-                        'authToken': '8f36aab7ca485b432500ce49c15280c5',
-                        'otp': '432423',
-                        'calleeNumber': '+49 6151 860 860',
-                        'messageTemplate': 'Your otp is {otp}',
-                        'accountSid': 'ACf9095f540f0b090edbd239b99230a8ee',
-                        'locale': 'en',
-                        'voice': 'alice'}}
+        # compare the request dictionary, with the expected structure
 
-        for _key, value in request_content['call'].items():
-            self.assertTrue(value in response)
+        cmp_content = {
+            'call':{
+                'messageTemplate': 'Your otp is {otp}',
+                'otp': '432423',
+                'locale': 'en',
+                'calleeNumber': '+49 6151 860 860',
+                'twilioConfig': {
+                    'authToken': '8f36aab7ca485b432500ce49c15280c5',
+                    'accountSid': 'ACf9095f540f0b090edbd239b99230a8ee',
+                    'voice': 'alice',
+                    'callerNumber': '+4989231234567'}}}
+
+        self.assertTrue(cmp(request_json.get('body'), cmp_content) == 0)
 
         return
+
+# eof #

@@ -101,17 +101,16 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
             "timeout":
                 the http timeout value
 
-            "twillio": {
+            "twillioConfig": {
                 "accountSid":
                     the account identifier
                 "authToken":
                     the authentication token
                 "voice":
                     reader's voice - default is 'alice'
+                "callerNumber":
+                    the number of the originator
                 }
-
-            "callerNumber":
-                the number of the originator
         }
         """
         # ------------------------------------------------------------------ --
@@ -160,19 +159,13 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
 
         # ------------------------------------------------------------------ --
 
-        if 'callerNumber' not in configDict:
-            raise KeyError('missing the required caller number')
-
-        self.callerNumber = configDict['callerNumber']
-
-        # ------------------------------------------------------------------ --
-
         # load the voice message delivery service configuration
 
-        delivery_service = configDict.get("twilio")
+        delivery_service = configDict.get("twilioConfig")
 
         if not delivery_service:
-            raise KeyError("Missing delivery service configuration: twillio")
+            raise KeyError("Missing delivery service configuration: "
+                           "twillioConfig")
 
         # prepare the twilio voice provider
         # . . . other voice services will follow here
@@ -183,27 +176,6 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
 
         return
 
-    @classmethod
-    def _verify_local_(cls, locale):
-        """
-        verify that the locale definition is one of the iso definition
-
-        :param locale: locale definition
-        :return: boolean
-        """
-
-        try:
-
-            # TODO: implement locale verification to check the locale against
-            #       iso set of locale definitions
-
-            pass
-
-        except Exception:
-            raise Exception('invalid locale definition')
-
-        return True
-
     def submitVoiceMessage(self, calleeNumber, messageTemplate, otp, locale):
         """
         Sends out the voice notification message.
@@ -211,7 +183,6 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
         {
           'call':
             {
-            . . .
               'calleeNumber': '+4917012345678',
               'messageTemplate': 'Hi! Your otp is {otp}'
               'otp': '98018932'
@@ -240,9 +211,7 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
             raise Exception("Missing otp value!")
 
         if not locale:
-            raise Exception("Missing locale definition!")
-
-        self._verify_local_(locale)
+            locale = "en"
 
         # ----------------------------------------------------------------- --
 
@@ -253,8 +222,7 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
             'calleeNumber': calleeNumber,
             'messageTemplate': messageTemplate,
             'otp': otp,
-            'locale': locale,
-            'callerNumber': self.callerNumber}
+            'locale': locale}
 
         # add the voice delivery service (twilio) specific data
 

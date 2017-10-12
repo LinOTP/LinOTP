@@ -651,15 +651,14 @@ if isinstance(lang, list):
                               placeholder=
 '{
 "server_url": "url of the voice service (required)",
-"callerNumber": "number of the originator (required)",
-"twilio": {
-    "authToken": "authentication token",
-    "accountSid": "account identifier",
-    "voice": "reader's voice - default is alice (optinal)"
-},
 "access_certificate": "client authentication certificate (optional)",
 "server_certificate": "server verification certificate (optional)",
-"proxy": "proxy url (optional)"
+"proxy": "proxy url (optional)",
+"twilioConfig": {
+    "authToken": "authentication token",
+    "accountSid": "account identifier",
+    "voice": "reader voice - default is alice",
+    "callerNumber": "number of the originator"}
 }
 '
 ></textarea></td>

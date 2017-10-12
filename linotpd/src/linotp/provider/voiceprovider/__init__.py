@@ -35,10 +35,14 @@ class TwillioMixin():
         load the twilio voice service configuration
         """
 
-        if "twilio" not in configDict:
+        if "twilioConfig" not in configDict:
             return {}
 
-        twilio_config = configDict["twilio"]
+        twilio_config = configDict["twilioConfig"]
+
+        twilio_config_keys = ['accountSid','authToken',
+                              'voice', 'callerNumber']
+
         if "accountSid" not in twilio_config:
             raise KeyError('missing the required account identifier')
 
@@ -48,4 +52,11 @@ class TwillioMixin():
         if "voice" not in twilio_config:
             twilio_config['voice'] = 'alice'
 
-        return twilio_config
+        if 'callerNumber' not in twilio_config:
+            raise KeyError('missing the required caller number')
+
+        if set(twilio_config.keys()) != set(twilio_config_keys):
+            raise KeyError('unsupported key provided [%r]: %r!' %
+                           (twilio_config_keys, twilio_config.keys()))
+
+        return {'twilioConfig': twilio_config}
