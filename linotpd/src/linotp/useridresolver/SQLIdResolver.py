@@ -803,7 +803,7 @@ class IdResolver(UserIdResolver):
                                                                 rows.rowcount)
             for row in rows:
                 colName = self.sqlUserInfo.get("userid")
-                userId = row[colName]
+                userId = str(row[colName])
                 log.info("[getUserId] getting userid %s for user %s" %
                                                         (userId, loginName))
         except Exception as e:
