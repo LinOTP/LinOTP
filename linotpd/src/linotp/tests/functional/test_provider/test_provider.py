@@ -39,6 +39,7 @@ import json
 import os
 
 import linotp.provider.smsprovider.FileSMSProvider
+import linotp.provider.voiceprovider.custom_voice_provider
 
 from linotp.tests import TestController
 
@@ -61,6 +62,9 @@ def mocked_submitMessage(FileSMS_Object, *argparams, **kwparams):
     SMS_MESSAGE_CONFIG = FileSMS_Object.config
 
     return True
+
+def mocked_connectiontest(CustomVoiceProvider_Object, *argparams, **kwparams):
+    return True, 'Bad Request'
 
 
 class TestProviderController(TestController):
@@ -458,6 +462,8 @@ class TestProviderController(TestController):
 
         return
 
+    @patch.object(linotp.provider.voiceprovider.custom_voice_provider.CustomVoiceProvider,
+                  'test_connection', mocked_connectiontest)
     def test_voice_provider(self):
         """
         check if custom voice provider could be saved, retrieved and deleted
@@ -505,6 +511,11 @@ class TestProviderController(TestController):
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get(provider_name, {})
         self.assertTrue(provider.get('Default', False), response)
+
+        params = {'type': 'voice',
+                  'name': provider_name}
+        response = self.make_system_request('testProvider', params=params)
+        self.assertTrue('"value": true' in response, response)
 
         # ----------------------------------------------------------------- --
 

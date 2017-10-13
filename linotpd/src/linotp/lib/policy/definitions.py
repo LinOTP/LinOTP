@@ -53,6 +53,7 @@ SYSTEM_ACTIONS = {
     'setProvider': 'write',
     'setDefaultProvider': 'write',
     'delProvider': 'write',
+    'testProvider': 'read',
     'getProvider': 'read', }
 
 
