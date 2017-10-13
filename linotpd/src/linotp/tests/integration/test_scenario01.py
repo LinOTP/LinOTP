@@ -30,9 +30,10 @@ import time
 import re
 import binascii
 import logging
+import os
 
 from linotp_selenium_helper import TestCase, Policy
-from linotp_selenium_helper.token_import import TokenImport
+from linotp_selenium_helper.token_import import TokenImportAladdin
 from linotp_selenium_helper.validate import Validate
 from linotp_selenium_helper.remote_token import RemoteToken
 from linotp_selenium_helper.spass_token import SpassToken
@@ -68,7 +69,9 @@ class TestScenario01(TestCase):
         LOGGER.info("### %s ###" % testname)
 
     def test_scenario01(self):
-        """Tests Scenario 01 (https://wally/projects/linotp/wiki/TestingTest_Szenario_01)"""
+        """
+        Scenario01 (https://wally/projects/linotp/wiki/TestingTest_Szenario_01)
+        """
 
         driver = self.driver
 
@@ -162,7 +165,19 @@ class TestScenario01(TestCase):
 </Token>
 </Tokens>"""
 
-        TokenImport(driver, self.base_url, "safenet", file_content, None)
+        token_import_aladdin = TokenImportAladdin(self.manage_ui)
+        error_raised = token_import_aladdin.do_import(file_content)
+        # There shouldn't raise an error
+        self.assertFalse(error_raised,
+                         "Error during Aladdin token import!")
+
+        token_import_aladdin = TokenImportAladdin(self.manage_ui)
+        error_raised = token_import_aladdin.do_import(
+            file_path=os.path.join(self.manage_ui.test_data_dir,
+                                   'wrong_token.xml'))
+        # There shouldn't raise an error
+        self.assertTrue(error_raised,
+                        "Successful import of wrong Aladdin token file!")
 
         serial_token_bach = "oath137332"
         test1_realm = realm_name1.lower()

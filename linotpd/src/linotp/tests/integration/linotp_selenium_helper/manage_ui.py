@@ -26,6 +26,8 @@
 
 import logging
 import helper
+import re
+import os
 
 from operator import methodcaller
 
@@ -78,10 +80,12 @@ class ManageUi(object):
     "Access to the alert box dialog element"
 
     # CSS selectors
-    CSS_TOOLS = 'link=Tools'
-    CSS_IMPORT_TOKEN = 'link=Import Token File'
 
-    # Menu entries
+    # Menu entry "Import Token File"
+    MENU_LINOTP_IMPORT_TOKEN_CSS = '#menu > li:nth-of-type(3)'
+    "CSS of the LinOTP Import Token menu"
+
+    # Menu entry "LinOTP Config"
     MENU_LINOTP_CONFIG_CSS = '#menu > li'
     "CSS of the LinOTP Config menu"
 
@@ -93,6 +97,9 @@ class ManageUi(object):
         :param testcase: The test case that is controlling the UI
         """
         self.testcase = testcase
+        self.test_data_dir = os.path.normpath(os.path.join(
+            os.path.split(__file__)[0], '..', 'testdata'
+        ))
 
         self.welcome_screen = ManageDialog(
             self, 'welcome_screen', 'welcome_screen_close')
