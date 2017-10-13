@@ -244,10 +244,12 @@ def getPolicyDefinitions(scope=""):
                         'Use <otp> and <serial> as parameters.'},
             'otppin': {
                 'type': 'set',
-                'value': [0, 1, 2, "token_pin", "password", "only_otp"],
+                'value': [0, 1, 2, 3,
+                          "token_pin", "password", "only_otp", "ignore_pin"],
                 'desc': 'either use the Token PIN (0=token_pin), '
-                        'use the Userstore Password (1=password) or '
-                        'use no fixed password component (2=only_otp).'},
+                        'use the Userstore Password (1=password),'
+                        'use no fixed password component (2=only_otp) or'
+                        'ignore the pin/password (3=ignore_pin).'},
             'autosms': {
                 'type': 'bool',
                 'desc': 'if set, a new SMS OTP will be sent after '
