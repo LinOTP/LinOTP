@@ -198,21 +198,26 @@ class ManageDialog(ManageElement):
     "CSS of the menu where the entry can be found"
 
     menu_item_id = None
-    "ID of the associated menu entry, if applicable (e.g. useridresolver, realms dialog)"
+    "ID of the menu entry, if applicable (e.g. useridresolver, realms dialog)"
 
-    def __init__(self, manage_ui, dialog_body_id, close_button_id=None, menu_item_id=None, menu_css=None):
+    def __init__(self, manage_ui, dialog_body_id=None,
+                 close_button_id=None, menu_item_id=None, menu_css=None):
         """
         Initialise the dialog box
 
-        @param body_id The ID of the dialog body element
-        @param menu_item_id The ID of the menu item to open the dialog, if applicable
-        @param menu_css CSS selector for toplevel menu. Defaults to MENU_LINOTP_CONFIG_CSS (LinOTP Config menu)
+        :param manage_ui: ref for basic LinOTP UI handling
+        :param dialog_body_id: The ID of the dialog body element
+        :param close_button_id: html element id of the dialog close button
+        :param menu_item_id: The ID of the menu item to open the dialog
+        :param menu_css: Default is CSS selector for the LinOTP config menu
         """
         self.manage = manage_ui
-        self.body_id = dialog_body_id
 
-        # Configure class. These are only set if not None, so alternatively, derived classes can
-        # set these in their class definition
+        # Configure class. These are only set if not None, so alternatively,
+        # derived classes can set these in their class definition
+
+        if dialog_body_id:
+            self.body_id = dialog_body_id
         if menu_item_id:
             self.menu_item_id = menu_item_id
         if menu_css:
