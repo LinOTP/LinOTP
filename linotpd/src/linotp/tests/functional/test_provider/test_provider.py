@@ -474,12 +474,12 @@ class TestProviderController(TestController):
 
         configDict = {
             "access_certificate": os.path.join(self.fixture_path, 'cert.pem'),
-            'callerNumber': '+4989231234567',
             }
 
-        configDict['twilio'] = {
+        configDict['twilioConfig'] = {
             'accountSid': 'ACf9095f540f0b090edbd239b99230a8ee',
             'authToken': '8f36aab7ca485b432500ce49c15280c5',
+            'callerNumber': '+4989231234567',
             'voice': 'alice',
             }
 

@@ -207,6 +207,10 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
         if not messageTemplate:
             raise Exception("No message to submit!")
 
+        if '{otp}' not in messageTemplate:
+            log.warning("Missing '{otp}' in messageTemplate: %r",
+                        messageTemplate)
+
         if not otp:
             raise Exception("Missing otp value!")
 
