@@ -1180,23 +1180,48 @@ function view_setpin_after_assigning(tokens) {
 
 }
 
-/******************************************************************************
- *  token info
+/**
+ * load token info in html presentation
+ * @return {string|boolean} the html string containing the token info
+ *                          or false if # of selected tokens not feasible
  */
+
 function token_info(){
-    var tokentab = 0;
     var tokens = get_selected_tokens();
-    var count = tokens.length;
-    if (count != 1) {
+
+    if (tokens.length !== 1) {
         alert_info_text({'text': "text_only_one_token_ti",
                          'is_escaped': true});
         return false;
     }
-    else {
-        var serial = tokens[0];
-        var resp = clientUrlFetchSync("/manage/tokeninfo",{"serial" : serial});
-        return resp;
-    }
+
+    var params = {
+        "serial": tokens[0]
+    };
+
+    return clientUrlFetchSync("/manage/tokeninfo", params);
+}
+
+/**
+ * load token object from linotp
+ * @param  {string} serial    the serial of the token to match
+ * @return {Promise.<Object>} returns a promise that resolves the token object requested from LinOTP
+ */
+function getTokenDetails(serial){
+    return $.ajax({
+        url: '/admin/show',
+        type: 'post',
+        data: {
+            "serial": serial,
+            "tokeninfo_format": "json"
+        }
+    }).then(function(response, status, promise) {
+        var result = response.result.value;
+        if(result && result.data && result.data.length === 1) {
+            return $.Deferred().resolve(result.data[0]).promise();
+        }
+        return $.Deferred().reject("Request failed").promise();
+    });
 }
 
 
@@ -5862,11 +5887,41 @@ function openExpirationDialog() {
                 $(".multiple-tokens.warning .tokencount", this).text(tokens.length);
             }
             else if(tokens.length === 1) {
-                var tokeninfo = $.parseHTML(token_info());
-                $("#setexpiration_count_requests").val($("#tokeninfo_count_auth_max", tokeninfo).text());
-                $("#setexpiration_count_success").val($("#tokeninfo_count_auth_success_max", tokeninfo).text());
-                var start = $("#tokeninfo_validity_period_start", tokeninfo).text();
-                new Date(start+"+0")
+                show_waiting();
+                getTokenDetails(tokens[0]).then(function(token) {
+                    var countRequests = token["LinOtp.TokenInfo"]["count_auth_max"];
+                    var countSuccess = token["LinOtp.TokenInfo"]["count_auth_success_max"];
+
+                    $("#setexpiration_count_requests").val(countRequests);
+                    $("#setexpiration_count_success").val(countSuccess);
+
+                    var periodStartISO = token["LinOtp.TokenInfo"]["validity_period_start"];
+                    var periodEndISO = token["LinOtp.TokenInfo"]["validity_period_end"];
+
+                    // append timezone to and wrap backend datetime string twice to convert
+                    // it to a valid and localized js date time object
+                    var timezone = "+0000";
+                    if(periodStartISO) {
+                        var periodStart = new Date(new Date(periodStartISO + timezone));
+                        $('#setexpiration_period_start').datetimepicker({value: periodStart});
+                    }
+                    if(periodEndISO) {
+                        var periodEnd = new Date(new Date(periodEndISO + timezone));
+                        $('#setexpiration_period_end').datetimepicker({value: periodEnd});
+                    }
+
+                    hide_waiting();
+                }, function() {
+                    var message = i18n.gettext("An error occurred during token processing.");
+                    alert_box({
+                        'title': i18n.gettext('Error loading token info'),
+                        'text': message,
+                        'type': ERROR,
+                        'is_escaped': true
+                    });
+
+                    hide_waiting();
+                });
             }
 
             $(".multiple-tokens.warning").toggleClass("hidden", !showWarning);
