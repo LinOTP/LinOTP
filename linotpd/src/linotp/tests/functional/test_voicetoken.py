@@ -59,13 +59,13 @@ class TestVoiceToken(TestController):
         """
 
         configDict = {
-            'callerNumber': '+4989231234567',
         }
 
-        configDict['twilio'] = {
+        configDict['twilioConfig'] = {
             'accountSid': 'ACf9095f540f0b090edbd239b99230a8ee',
             'authToken': '8f36aab7ca485b432500ce49c15280c5',
             'voice': 'alice',
+            'callerNumber': '+4989231234567',
         }
 
         configDict['server_url'] = 'https://mydummy'
