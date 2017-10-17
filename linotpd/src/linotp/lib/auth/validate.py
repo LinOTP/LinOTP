@@ -508,8 +508,20 @@ class ValidationHandler(object):
         if options:
             token_type = options.get('token_type', None)
 
+        # ------------------------------------------------------------------ --
+
+        # if there is a serial provided in the parameters, it overwrites the
+        # token selection by user
+
+        query_user = user
+        if options and 'serial' in  options and options['serial']:
+            serial = options['serial']
+            query_user = None
+
+        # ------------------------------------------------------------------ --
+
         tokenList = getTokens4UserOrSerial(
-                               user,
+                               query_user,
                                serial,
                                token_type=token_type,
                                read_for_update=True
