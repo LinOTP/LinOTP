@@ -405,7 +405,7 @@ def legacy_getPolicy(param, only_active=False):
         Policies = lPolicies
 
     # Now we need to clean up policies, that are inactive
-    if not only_active:
+    if only_active:
         pol2delete = []
         for polname, policy in Policies.items():
             pol_active = policy.get("active", "True")
