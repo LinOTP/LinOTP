@@ -151,9 +151,9 @@ class TestManageController(TestController):
         response = self.app.get(url(controller='manage', action='policies'),
                                 params={})
         log.info("policies response: %r" % response)
-        self.assertTrue('<a id=policy_export>'in response, response)
-        self.assertTrue('<button id=policy_import>'in response, response)
-        self.assertTrue('<button id="button_policy_delete">'in response,
+        self.assertTrue('id="policy_export"'in response, response)
+        self.assertTrue('id="policy_import"'in response, response)
+        self.assertTrue('id="button_policy_delete"'in response,
                         response)
 
     def test_audit(self):

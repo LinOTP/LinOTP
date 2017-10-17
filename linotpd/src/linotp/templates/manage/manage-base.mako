@@ -202,23 +202,40 @@ if isinstance(lang, list):
         </fieldset>
     </div>
     <div id="realms">
-    ${_("Realms")}: <select id="realm"> </select>
+        ${_("Realms")}:
+        <select id="realm"> </select>
     </div>
-    <button class='action-button' id='button_enroll'>${_("Enroll")}</button>
-    <button class='action-button' id='button_assign'>${_("Assign")}</button>
-    <button class='action-button' id='button_unassign'>${_("Unassign")}</button>
-    <button class='action-button' id='button_enable'>${_("Enable")}</button>
-    <button class='action-button' id='button_disable'>${_("Disable")}</button>
-    <button class='action-button' id='button_setpin'>${_("Set PIN")}</button>
-    <button class='action-button' id='button_resetcounter'>${_("Reset Failcounter")}</button>
-    <button class='action-button' id='button_delete'>${_("Delete")}</button>
+    <button class='action-button ui-button' id='button_enroll' data-ui-icon="ui-icon-plusthick">
+        ${_("Enroll")}
+    </button>
+    <button class='action-button ui-button' id='button_assign' data-ui-icon="ui-icon-arrowthick-2-e-w">
+        ${_("Assign")}
+    </button>
+    <button class='action-button ui-button' id='button_unassign' data-ui-icon="ui-icon-arrowthick-1-w">
+        ${_("Unassign")}
+    </button>
+    <button class='action-button ui-button' id='button_enable' data-ui-icon="ui-icon-radio-on">
+        ${_("Enable")}
+    </button>
+    <button class='action-button ui-button' id='button_disable' data-ui-icon="ui-icon-radio-off">
+        ${_("Disable")}
+    </button>
+    <button class='action-button ui-button' id='button_setpin' data-ui-icon="ui-icon-pin-s">
+        ${_("Set PIN")}
+    </button>
+    <button class='action-button ui-button' id='button_resetcounter' data-ui-icon="ui-icon-arrowthickstop-1-w">
+        ${_("Reset Failcounter")}
+    </button>
+    <button class='action-button ui-button' id='button_delete' data-ui-icon="ui-icon-trash">
+        ${_("Delete")}
+    </button>
 </div> <!-- sidebar -->
 
 <div id="main">
     <div id="info_box">
         <div id='info_bar'>
           <span id="info_text"></span>
-          <button class="button_info_text">OK</button>
+          <button class="ui-button button_info_text">OK</button>
        </div>
     </div>
     <a href="#" class="close_all">${_("Close all")}</a>
