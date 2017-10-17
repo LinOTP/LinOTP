@@ -1,6 +1,11 @@
-linotp (2.10~0dev1-1) jessie; urgency=low
+linotp (2.10~0dev2-1) jessie; urgency=low
 
   Enhancements:
+  *  65656ee2, 395dab25, 7d2124ba, 13fce4cc, 341de16c, 4c852ef9, 8925905a,
+     548d6b9d, 3ceab2cb, 6372fb90, 606b8a7d, 765c125b, ee0b53e6, 9ec1458c,
+     69b476c6, b6a611be, 8ae8bd4d, 16fafefd, 9bb47552, b04986a0, bfdbfc0a,
+     8da9de22:  Add Voice Token
+  * 1df19db Server: Push token second generation
   * 64342d9 Server: Adjust default TransactionId length to 17
   * 15ab7ab, 8b4d6a8 Server: Implement explicit-deny for pushtoken
   * 7a37b52 Server: Add UI in manage and selfservice for "static password"
@@ -37,7 +42,8 @@ linotp (2.10~0dev1-1) jessie; urgency=low
                     added)
   * 4f25bcb Server: Autoassign a token if a request arrives with only username
                     (without password)
-  * 1df19db Server: Add push version 2.0
+  * 27969f0 Server: Document the otppin poilcy 3=ignore_pin in the policy ui
+  * a47a932 Package: Remove unused smpplib dependency
 
   Bug Fixes:
   * 4d2dad Server: Fix evaluation of forward policy to match most specific
@@ -66,8 +72,12 @@ linotp (2.10~0dev1-1) jessie; urgency=low
                    the YubiKey import. 
   * e34a96 Server: Fix wrong audit log entries where "failcounter exceeded"
                    was incorrectly being replaced with "no token found"
+  * 9ee93d Server: Fix QRToken to use the tan length defined at enrollment
+  * dd93fe Server: Fix password and lost token password comparison
+  * 1a2982 Server: Fix to show deactivated policies in Manage UI again.
+  * d65c41 Server: Fix for better user/owner comparison
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 29 Sep 2017 13:55:11 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 17 Oct 2017 13:25:10 +0200
 
 linotp (2.9.3.3-1) jessie; urgency=low
 
