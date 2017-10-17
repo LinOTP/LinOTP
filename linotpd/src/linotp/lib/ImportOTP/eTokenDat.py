@@ -72,6 +72,7 @@ def parse_dat_data(data, d_string=None):
 
     :return: It returns a dictionary of serial : { /admin/init parameters }
     '''
+
     from linotp.lib.ImportOTP  import ImportException
 
     #the result set
