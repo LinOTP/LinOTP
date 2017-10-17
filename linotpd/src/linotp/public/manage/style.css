@@ -759,3 +759,11 @@ span.managed-tag {
 #resolvers_select .managed-tag {
 	float: right;
 }
+
+.hidden {
+	display: none;
+}
+
+div#dialog_setexpiration p, div#dialog_setexpiration div {
+    margin: 10px 0;
+}
