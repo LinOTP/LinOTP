@@ -183,24 +183,145 @@ def getPolicyActionValue(policies, action, max=True,
     return ret
 
 
+def _tokenise_action(action_value, separators=None, escapes=None):
+    """
+    iterate through the action value and yield
+    token if '=' or ',' is reached.
+    The tokenization takes care if we are in the string escape
+    mode, which is started by the " or the ' sign
+
+    :param action_value: the value of the action
+    :param separators: the token separators as list, defaults to '=' and ','
+    :param escapes: the text escapes to support value with separators like
+                    voice_message="Hello sir, your otp is"
+                    defaults to single and double quotes
+    :yield: token, which is either string or separator
+    """
+
+    # separators are used to split the tokens
+
+    if not separators:
+        separators = ['=', ',']
+
+    # escape of literals for text in "
+
+    if not escapes:
+        escapes = ['"', "'"]
+
+
+    start = 0
+    escape_mode = []
+
+    i = -1
+
+    for character in action_value:
+        i += 1
+
+        # if we recieve a ' or " sign
+        # we either start or terminate the string escape mode
+
+        if character in escapes:
+            if not escape_mode:
+                escape_mode.append(character)
+            else:
+                if character == escape_mode[-1]:
+                    escape_mode.pop()
+            continue
+
+        if escape_mode:
+            continue
+
+        if character in separators:
+
+            yield action_value[start:i]
+            yield character
+
+            start = i + 1
+
+    last_part = action_value[start:]
+    if last_part:
+        yield last_part
+
+
+def _parse_action(action_value):
+    """
+    _parse_action: yield tuples of key value pairs
+
+    the tokenizer delivers a stream of tokens which could be either
+    empty, ',' or '=' or a string. The parser_action iterates through the
+    tokens, searching for key value pairs, which are either separated by "="
+    or are unary keys, which are of value True
+
+    '"' or "'" sourounded strings are striped
+
+    :param action_value: the value of the action
+    :yield: tuple of key and value
+    """
+
+    key = None
+    value = None
+
+    for entry in _tokenise_action(action_value):
+
+        entry = entry.strip()
+
+        if not entry:
+            continue
+
+        # if we have an escaped string, we remove the sourounding " or '
+
+        if entry[0] in ["'", '"']:
+            if entry[-1:] not in ["'", '"']:
+                raise Exception('non terminated string value entry %r' % entry)
+            entry = entry[1:-1]
+
+        # in case of an ',' the key=value is completed
+
+        if entry == ',':
+
+            if key:
+                yield (key, value or True)
+                key = None
+                value = None
+
+        # we automaticaly switch from key to value by assigning entry
+
+        elif entry == '=':
+            continue
+
+        elif key is None:
+            key = entry
+
+        elif value is None:
+            value = entry
+
+            yield (key, value or True)
+            key = None
+            value = None
+
+    if key:
+        yield (key, value or True)
+
+    return
+
 def parse_action_value(action_value):
     """
-    parsing the policy action value by an regular expression
+    build up a dictionary from the tuples returned from the parse action
+    :param action_value:
+    :return: dict of all key and values
     """
     params = {}
-    key_vals = action_value.split(',')
-    for ke_val in key_vals:
-        res = ke_val.split('=', 1)
 
-        # if we have a boolean value, there is only one arg
-        if len(res) == 1:
-            key = res[0].strip()
-            if key:
-                params[key] = True
-        else:
-            key = res[0].strip()
-            val = res[1].strip()
-            params[key] = val
+    for key, value in _parse_action(action_value):
+
+        if key.startswith('!') and value in [True, False]:
+            key = key[1:]
+            value = not value
+
+        if key in params:
+            raise Exception("duplicate key defintion %r" % key)
+
+        params[key] = value
 
     return params
 
@@ -322,8 +443,8 @@ def parse_policies(lConfig):
                                                      'admin',
                                                      'enrollment',
                                                      'authorization',
-                                                     'authentication',
-                                                     ]:
+                                                     'authentication', ]:
+
             if 'user' in policy and policy['user'] == '':
                 policy['user'] = '*'
             if 'client' in policy and policy['client'] == '':
