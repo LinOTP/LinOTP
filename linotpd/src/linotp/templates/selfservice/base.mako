@@ -105,7 +105,7 @@ if isinstance(lang, list):
 <div id="main">
 
 <div class="logout">
-    <p>${_("Logged in as")}:${c.user}@${c.realm} | <a href=# onclick='SelfLogout("/selfservice/logout");return false;'>${_("Logout")}</a> </p>
+    <p>${_("Logged in as")}: ${c.user}@${c.realm} | <a href=# onclick='SelfLogout("/selfservice/logout");return false;'>${_("Logout")}</a> </p>
 </div>
 
 <div id="do_waiting">
