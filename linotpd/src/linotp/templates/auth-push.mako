@@ -27,19 +27,19 @@
 </%doc>
 
 <%block name="title">
-        <title>LinOTP QR Token Auth Testing</title>
+        <title>LinOTP Push Token Auth testing</title>
 </%block>
 
 <%inherit file="auth-base.mako"/>
 
 <div id="sidebar">
-    <p>${_("Here you may try to authenticate using your KeyIdentity QR Token.")}</p>
-    <p>${_('Enter your username, the OTP PIN and the OTP value.')}</p>
+    <p>${_("Here you may try to authenticate using your KeyIdentity Push Token.")}</p>
+    <p>${_('Enter your username, the OTP PIN and the data you want to display to verify the authentication.')}</p>
 </div> <!-- sidebar -->
 
 <div id="main">
-<h1>${_('KeyIdentity QR Token Login')}</h1>
-<div id='auth' class="qrtoken">
+<h1>${_('KeyIdentity Push Token Login')}</h1>
+<div id='auth' class="pushtoken">
     <table>
         <tr>
             <td>
@@ -74,44 +74,10 @@
             <td>
                 <table>
                     <tr>
-                        <td><h2>${_('Scan the challenge and get your OTP:')}</h2></td>
-                        <td><div id='display'> </div></td>
-                    </tr>
-                </table>
-        </tr>
-        <tr>
-            <td>
-                <table>
-                    <tr>
                         <td><h2>${_('Check the status of your challenge:')}</h2></td>
                         <td><button id="check_status">${_('check status')}</button></td>
                     </tr>
                 </table>
-        </tr>
-        <tr>
-            <td>
-                <form class="cmxform"  id="form_challenge_submit" method="post" action="">
-                    <frameset name=login>
-                        <table>
-                            <tr>
-                                <td><h2>${_('Submit response:')}</h2></td>
-                            </tr>
-                            <tr>
-                                <td>${_('Transaction-ID')}</td>
-                                <td><input type='text' id='transactionid' name="transactionid" maxlength="200"  class="required"></td>
-                            </tr>
-                            <tr>
-                                <td>${_('OTP value')}</td>
-                                <td><input type="text" autocomplete="off" name="otp" id="otp" maxlength=200 class=required></td>
-                            </tr>
-                            <tr>
-                                <td> </td>
-                                <td><input type="submit" value="${_('submit')}"></td>
-                            </tr>
-                        </table>
-                    </frameset>
-                </form>
-            </td>
         </tr>
     </table>
 </div>

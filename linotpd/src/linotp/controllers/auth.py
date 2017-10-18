@@ -84,15 +84,38 @@ class AuthController(BaseController):
         log.debug("[index3] index, authenticating user")
         return render("/auth3.mako")
 
+    def challenge_response(self):
+        '''
+        This is the method for testing challenge-response
+        authentication
+
+        Call it directly in your browser like this
+            http(s)://server/auth/challenge-response
+        '''
+        log.debug("[challenge-response] index, authenticating user")
+        return render("/auth-challenge-response.mako")
+
     def qrtoken(self):
         '''
         This is the method for testing authentication
+        using your KeyIdentity QR Token
 
         Call it directly in your browser like this
             http(s)://server/auth/qrtoken
         '''
         log.debug("[qrtoken] authenticating user")
         return render("/auth-qrtoken.mako")
+
+    def pushtoken(self):
+        '''
+        This is the method for testing authentication
+        using your KeyIdentity Push Token
+
+        Call it directly in your browser like this
+            http(s)://server/auth/pushtoken
+        '''
+        log.debug("[pushtoken] authenticating user")
+        return render("/auth-push.mako")
 
     def ocra(self):
         '''

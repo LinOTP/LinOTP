@@ -27,23 +27,23 @@
 </%doc>
 
 <%block name="title">
-        <title>LinOTP QR Token Auth Testing</title>
+        <title>LinOTP Challenge Response testing</title>
 </%block>
 
 <%inherit file="auth-base.mako"/>
 
 <div id="sidebar">
-    <p>${_("Here you may try to authenticate using your KeyIdentity QR Token.")}</p>
-    <p>${_('Enter your username, the OTP PIN and the OTP value.')}</p>
+    <p>${_("Here you may try to authenticate using a token in challenge response mode.")}</p>
+    <p>${_('Enter your username and OTP PIN to trigger a challenge and submit the OTP value after you recieved it.')}</p>
 </div> <!-- sidebar -->
 
 <div id="main">
-<h1>${_('KeyIdentity QR Token Login')}</h1>
-<div id='auth' class="qrtoken">
+<h1>${_('Challenge Response Login')}</h1>
+<div id='auth' class="challenge-response">
     <table>
         <tr>
             <td>
-                <form class="cmxform"  id="form_challenge_trigger" method="post" action="">
+                <form class="cmxform" id="form_challenge_trigger" method="post" action="">
                     <frameset name=login>
                         <table>
                             <tr>
@@ -58,35 +58,13 @@
                                 <td><input type='password' id='pin' name="pin" maxlength="200"  class="required"></td>
                             </tr>
                             <tr>
-                                <td>${_('message / data')}</td>
-                                <td><textarea cols="40" rows="6" maxlength="500" id='challenge' name="data" class="required"> </textarea></td>
-                            </tr>
-                            <tr>
                                 <td> </td>
-                                <td><input type="submit" value="${_('get challenge')}"></td>
+                                <td><input type="submit" value="${_('trigger')}"></td>
                             </tr>
                         </table>
                     </frameset>
                 </form>
             </td>
-        </tr>
-        <tr>
-            <td>
-                <table>
-                    <tr>
-                        <td><h2>${_('Scan the challenge and get your OTP:')}</h2></td>
-                        <td><div id='display'> </div></td>
-                    </tr>
-                </table>
-        </tr>
-        <tr>
-            <td>
-                <table>
-                    <tr>
-                        <td><h2>${_('Check the status of your challenge:')}</h2></td>
-                        <td><button id="check_status">${_('check status')}</button></td>
-                    </tr>
-                </table>
         </tr>
         <tr>
             <td>

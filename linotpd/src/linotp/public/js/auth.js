@@ -97,13 +97,14 @@ function getOcra2Challenge() {
     }
 }
 
-function getQRTokenChallenge() {
+function triggerChallenge() {
     var user = $('#user').val();
     var pin = $('#pin').val();
     var data = $('#challenge').val();
 
-    var targetselector = '#display';
-    var transactionidselector = '#transactionid';
+    var $target = $('#display');
+    var $transidInput = $('#transactionid');
+    var $otpInput = $('#otp');
 
     var params = {};
     params['user'] = user;
@@ -115,19 +116,40 @@ function getQRTokenChallenge() {
 
     try {
         var data = clientUrlFetchSync(url, params);
-        if ( typeof (data) == "object") {
-            var err = data.result.error.message;
-            alert(err);
-        } else {
-            var img = $(data).find('#challenge_qrcode');
-            $(targetselector).html(img);
 
-            var lseqrurl = $(data).find('#challenge_qrcode').attr("alt");
-            $(targetselector).append("<p>" + decodeURIComponent(lseqrurl) + "</p>");
+        try {
+            var json = (typeof(data) == "object") ? data : JSON.parse(data);
 
-            var transactionid = $(data).find('#challenge_data .transactionid').text();
-            $(transactionidselector).val(transactionid);
-        }
+            var message;
+
+            if(json.result && !json.result.detail) {
+                message = "Failed to trigger challenge";
+                if(json.result.error && json.result.error.message) {
+                    message += "\n" + json.result.error.message;
+                }
+            }
+            else {
+                message = "response format unexpected";
+            }
+
+            alert(message);
+            return;
+
+        } catch(e) {}
+
+        var htmlResponse = $(data);
+
+        var img = htmlResponse.find('#challenge_qrcode');
+        $target.html(img);
+
+        var lseqrurl = htmlResponse.find('#challenge_qrcode').attr("alt");
+        $target.append("<p>" + decodeURIComponent(lseqrurl) + "</p>");
+
+        var transactionid = htmlResponse.find('#challenge_data .transactionid').text();
+        $transidInput.val(transactionid);
+
+        $otpInput.val("").focus();
+
     } catch (e) {
         alert(e);
     }
@@ -169,7 +191,7 @@ function check_status() {
     }
 }
 
-function submitQRTokenResponse() {
+function submitChallengeResponse() {
     var user = $('#user').val();
     var otp = $('#otp').val();
     var transactionid = $('#transactionid').val();
@@ -234,7 +256,7 @@ function login_user(column) {
 
 $(document).ready(function() {
 
-    $("button").button();
+    $("button, input[type=submit]").button();
 
     /*
     * Auth login callbacks
@@ -264,14 +286,14 @@ $(document).ready(function() {
     });
 
     // auth/qrtoken
-    $("#form_challenge_qrtoken").submit(function(submit_event) {
-        submit_event.preventDefault();
-        getQRTokenChallenge();
+    $("#form_challenge_trigger").submit(function(e) {
+        e.preventDefault();
+        triggerChallenge();
     });
 
-    $("#form_login_qrtoken").submit(function(submit_event) {
-        submit_event.preventDefault();
-        submitQRTokenResponse();
+    $("#form_challenge_submit").submit(function(e) {
+        e.preventDefault();
+        submitChallengeResponse();
     });
 
     $("#check_status").click(function(click_event) {

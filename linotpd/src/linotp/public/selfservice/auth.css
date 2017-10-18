@@ -1,16 +1,20 @@
-#auth.qrtoken table {
+#auth table {
     width: 100%;
 }
 
-#auth.qrtoken > table > tbody > tr:not(:last-child) > td {
+#auth > table > tbody > tr:not(:last-child) > td {
     border-bottom: 1px solid grey;
 }
 
-#auth.qrtoken > table table td:first-child {
+#auth > table > tbody > tr > td {
+    padding: 15px 0;
+}
+
+#auth table table td:first-child {
     width: 300px;
 }
 
-#auth.qrtoken > table table {
+#auth table table {
     table-layout: fixed;
 }
 
@@ -18,6 +22,6 @@
     max-width: 400px;
 }
 
-#auth.qrtoken #display {
+#auth #display {
     word-break: break-all;
 }
