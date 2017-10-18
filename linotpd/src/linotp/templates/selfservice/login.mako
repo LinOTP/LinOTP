@@ -188,8 +188,8 @@ if isinstance(lang, list):
   <script type="text/javascript" src="/js/jquery-1.12.4.min.js"></script>
   <script type="text/javascript" src="/js/jquery-ui.min.js"></script>
   <script type="text/javascript" src="/js/jquery.form.js"></script>
-  <script type="text/javascript" src="/js/linotp_utils.js"></script>
   <script type="text/javascript" src="/js/jed.js"></script>
+  <script type="text/javascript" src="/js/linotp_utils.js"></script>
   <script type="text/javascript" src="/js/selfservice/login.js"></script>
 </body>
 
