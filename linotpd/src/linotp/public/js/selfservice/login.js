@@ -265,6 +265,8 @@ function getTokenAction(type) {
             return i18n.gettext("Send OTP by SMS");
         case "yubico":
             return i18n.gettext("Use Yubikey");
+        case "voice":
+            return i18n.gettext("Send OTP by voice call");
     }
     return "";
 }
