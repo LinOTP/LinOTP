@@ -268,5 +268,5 @@ function getTokenAction(type) {
         case "voice":
             return i18n.gettext("Send OTP by voice call");
     }
-    return "";
+    return i18n.gettext("Enter OTP");
 }
