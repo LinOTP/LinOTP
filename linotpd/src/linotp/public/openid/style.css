@@ -23,14 +23,11 @@
  *    Support: www.keyidentity.com
  *
  */
-/*** STYLES ***/
-a.activeToken {
-	color: black;
-	background-color:white;
-}
-a.disabledToken {
-	color: black;
-	text-decoration:line-through;
+
+button.token.disabled {
+  color: #999;
+  text-decoration:line-through;
+  opacity: 1;
 }
 
 h1 {

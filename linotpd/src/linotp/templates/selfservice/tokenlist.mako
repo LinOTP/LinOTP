@@ -29,9 +29,18 @@
 % if c.tokenArray:
 % for tok in c.tokenArray:
     <li>
-        <a class="${'activeToken' if tok['LinOtp.Isactive'] else 'disabledToken'}">
-            ${tok['LinOtp.TokenSerialnumber']}
-        </a>
+        <button
+                data-serial="${tok['LinOtp.TokenSerialnumber']}"
+                data-tokentype="${tok['LinOtp.TokenType']}"
+                class="token ${'active' if tok['LinOtp.Isactive'] else 'disabled'}">
+            <span class="serial">
+                ${tok['LinOtp.TokenSerialnumber']}
+            </span>
+            <br>
+            <span class="description">
+                ${tok['LinOtp.TokenDesc']}
+            </span>
+        </button>
     </li>
 % endfor
 % else:
