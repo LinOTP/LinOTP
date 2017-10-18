@@ -152,7 +152,7 @@ def _checkAdminPolicyPost(method, param=None, user=None):
     if user is None:
         user = _getUserFromParam()
 
-    if method in ['init', 'assign', 'setPin', 'loadtokens']:
+    if method in ['init', 'assign', 'setPin']:
         # check if we are supposed to genereate a random OTP PIN
         randomPINLength = _getRandomOTPPINLength(user)
 
@@ -190,6 +190,26 @@ def _checkAdminPolicyPost(method, param=None, user=None):
                                         " not init any more tokens. Check the "
                                         "policies scope=enrollment, "
                                         "action=tokencount.") % user.realm)
+
+    # ---------------------------------------------------------------------- --
+
+    # with loadtokens, we have to check if the tokens limit exceeded
+
+    elif method == 'loadtokens':
+
+        tokenrealm = param.get('tokenrealm', user.realm)
+
+        if not _checkTokenNum(realm=tokenrealm, post_check=True):
+            admin = context['AuthUser']
+
+            log.warning("the maximum tokens for the realm "
+                        "%s is exceeded.", tokenrealm)
+
+            raise PolicyException(_("The maximum number of allowed tokens "
+                                    "in realm %s is exceeded. Check policy "
+                                    "tokencount!") % tokenrealm)
+
+    # ---------------------------------------------------------------------- --
 
     elif method == 'getserial':
         # check if the serial/token, that was returned is in

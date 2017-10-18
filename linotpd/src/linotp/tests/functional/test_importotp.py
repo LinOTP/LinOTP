@@ -362,6 +362,57 @@ class TestImportOTP(TestController):
 
         return
 
+    def test_upload_token_into_targetrealm(self):
+        '''
+        Test the upload of the tokens into a target realm
+        '''
+
+        self.create_common_resolvers()
+        self.create_common_realms()
+
+        target_realm = 'mymixrealm'
+
+        # ------------------------------------------------------------------ --
+
+        # define policy
+
+        params = {'scope': 'admin',
+                  'action': '*',
+                  'realm': '%s' % target_realm,
+                  'user': '*',
+                  'name': 'all_actions'}
+
+        self.create_policy(params)
+
+        # ------------------------------------------------------------------ --
+
+        params = {
+            'type': 'yubikeycsv',
+            'targetrealm': target_realm}
+
+        response = self.upload_tokens("yubi_chall_tokens.csv", params=params)
+
+        self.assertTrue('<imported>3</imported>' in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # get defined tokens and lookup the token realms
+
+        response = self.make_admin_request('show', params={})
+
+        jresp = json.loads(response.body)
+        tokens = jresp.get('result', {}).get('value', {}).get('data', [])
+
+        self.assertTrue(len(tokens) == 3, jresp)
+
+        for token in tokens:
+            token_realms = token.get('LinOtp.RealmNames', [])
+            self.assertTrue(target_realm in token_realms, token)
+
+        self.delete_policy('all_actions')
+
+        return
+
     def test_yubikey_challenge(self):
         '''
         Test yubikey in challenge response mode with policy
@@ -372,7 +423,7 @@ class TestImportOTP(TestController):
 
         params = {
             'type': 'yubikeycsv',
-            'targetrealm': 'mymixedrealm'}
+            'targetrealm': 'mymixrealm'}
 
         response = self.upload_tokens("yubi_chall_tokens.csv", params=params)
 
