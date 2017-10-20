@@ -1,4 +1,4 @@
-linotp (2.10~0dev2-1) jessie; urgency=low
+linotp (2.10~0dev3-1) jessie; urgency=low
 
   Enhancements:
   *  65656ee2, 395dab25, 7d2124ba, 13fce4cc, 341de16c, 4c852ef9, 8925905a,
@@ -9,7 +9,7 @@ linotp (2.10~0dev2-1) jessie; urgency=low
   * 64342d9 Server: Adjust default TransactionId length to 17
   * 15ab7ab, 8b4d6a8 Server: Implement explicit-deny for pushtoken
   * 7a37b52 Server: Add UI in manage and selfservice for "static password"
-    token
+                    token
   * 8c32fc2 Server: Add token type specific enrollment limits
   * e4f1ebc Server: Support loading provider via configuartion in linotp.ini
   * dc79830, ed8b5af Server: Enable new policy engine by default
@@ -19,13 +19,17 @@ linotp (2.10~0dev2-1) jessie; urgency=low
   * 13a3011 UserIdresolver: Moved useridresolvers into linotp package
   * 445b569, 62e74d0 Sever: Removed getParam() method
   * 48167b8, 5b99a3d, 84551a0, 54d25be, 037e250 Server: Refactor config
-    handling (todo finsih)
+                    handling (todo finsih)
   * dae4d8c Server: Refactoring: Use typing for encrypted values in config
     (todo finsih)
   * 09d3e5a Server: Removed IE compatibility mode from templates
+  * a5b50d3 Web UI: Add Auth Demo pages for challenge-response and push token
+                    * /auth/challenge-response
+                    * /auth/pushtoken
+  * 109925f Web UI: Add expiration dialog for tokens
   * f9a3179 Web UI: Refactor dialog button icon generation
   * 0a0c3d2 Web UI: Performance improvement by removing mouseover effects on
-    Manage-UI
+                    Manage-UI
   * fe7ac11 Web UI: Extract custom form validators into seperate files
   * a18d46c Server: Take the already stored mobile number of a token owner
                     (available from UserIdResolver) if it exists, otherwise
@@ -52,12 +56,10 @@ linotp (2.10~0dev2-1) jessie; urgency=low
   * 32a003 Server: Adjust location of token makos for translation
   * 8595b4 Server: Fix typo in getUserFromRequest in case of basic auth
   * 8910dd Server: Fix missing 'serial' for audit and policy check in
-    selfservice.enroll
+                   selfservice.enroll
   * bf1abb Server: Fix for loading active token modules
   * 43cd56 Server: Refactoring - cleanup for the "day password" token file
-    and algorithm
-  * 805526 Web UI: Fix UI crash check if backend response is array in ldap
-    testconnection
+                   and algorithm
                      - d5f607cd On LDAP test connection always close dialog
   * 75b52f Server: Fix encoding error that prevented Token View from being
                    displayed in the web interface.
@@ -76,8 +78,13 @@ linotp (2.10~0dev2-1) jessie; urgency=low
   * dd93fe Server: Fix password and lost token password comparison
   * 1a2982 Server: Fix to show deactivated policies in Manage UI again.
   * d65c41 Server: Fix for better user/owner comparison
+  * 0e0400 Server: Fix to show inactive policies
+  * 419385 Web UI: Fix Buttons not converted to themed buttons in tabs (remove?)
+  * 805526 Web UI: Fix UI crash check if backend response is array in ldap
+                   testconnection
+  * 57365e Selfservice: Fix QR token enrollment and activation
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 17 Oct 2017 13:25:10 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 20 Oct 2017 16:10:09 +0200
 
 linotp (2.9.3.3-1) jessie; urgency=low
 
