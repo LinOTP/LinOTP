@@ -134,6 +134,7 @@ class TestPushToken(TestController):
                   'time': ''}
 
         self.create_policy(params=params)
+        self.uri = self.appconf.get('mobile_app_protocol_id', 'lseqr')
 
 # -------------------------------------------------------------------------- --
 
@@ -243,7 +244,7 @@ class TestPushToken(TestController):
 
         pairing_url = response_dict.get('detail', {}).get('pairing_url')
         self.assertIsNotNone(pairing_url)
-        self.assertTrue(pairing_url.startswith('lseqr://pair/'))
+        self.assertTrue(pairing_url.startswith(self.uri + '://pair/'))
 
         return pairing_url
 
@@ -382,7 +383,7 @@ class TestPushToken(TestController):
 
         # extract metadata and the public key
 
-        data_encoded = pairing_url[len('lseqr://pair/'):]
+        data_encoded = pairing_url[len(self.uri + '://pair/'):]
         data = decode_base64_urlsafe(data_encoded)
         version, token_type, flags = struct.unpack('<bbI', data[0:6])
         partition = struct.unpack('<I', data[6:10])[0]
@@ -471,7 +472,7 @@ class TestPushToken(TestController):
             respond to the challenge
         """
 
-        challenge_data_encoded = challenge_url[len('lseqr://chal/'):]
+        challenge_data_encoded = challenge_url[len(self.uri + '://chal/'):]
         challenge_data = decode_base64_urlsafe(challenge_data_encoded)
 
         # ------------------------------------------------------------------ --

@@ -34,6 +34,7 @@ from linotp.lib.crypto import get_public_key
 from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.error import ParameterError
 from linotp.lib.error import ProgrammingError
+from pylons import config
 from pysodium import crypto_sign_detached
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from Cryptodome.Cipher import AES
@@ -278,16 +279,14 @@ def generate_pairing_url(token_type,
     # * tstart (u64le)
     # * tstep (u32le)
 
-    # TODO: replace lseqr literal with global config value
-    # or global constant
-
     if not (flags & FLAG_PAIR_PK):
 
         secret_key = get_secret_key(partition)
         server_sig = crypto_sign_detached(data, secret_key)
         data += server_sig
 
-    return 'lseqr://pair/' + encode_base64_urlsafe(data)
+    protocol_id = config.get('mobile_app_protocol_id', 'lseqr')
+    return protocol_id + '://pair/' + encode_base64_urlsafe(data)
 
 # -------------------------------------------------------------------------- --
 

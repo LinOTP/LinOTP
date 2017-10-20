@@ -30,7 +30,7 @@ import json
 from contextlib import nested
 from linotp.lib.context import request_context_safety
 from linotp.lib.context import request_context
-from linotp.tokens.qrtoken.qrtoken import QrTokenClass
+from linotp.tokens.pushtoken.pushtoken import PushTokenClass
 from mock import patch
 from pylons import config
 
@@ -42,6 +42,9 @@ class FakeHSM(object):
 
     def hmac_digest(self, key, data, algo):
         return 'foo'
+
+    def decryptPassword(self, crypted):
+        return 2*'MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI' + '=='
 
 fake_hsm_wrapper = {'obj': FakeHSM()}
 
@@ -72,43 +75,22 @@ class FakeTokenModel(object):
 # ---------------------------------------------------------------------------- -
 
 
-class QRTokenClassUnitTestCase(unittest.TestCase):
-
-    def test_unpair(self):
-
-        """ QRToken unittest: checking if unpairing works """
-
-        fake = FakeTokenModel()
-
-        token = QrTokenClass(fake)
-
-        token.addToTokenInfo('user_token_id', 'bar')
-        token.addToTokenInfo('user_public_key', 'foo')
-        token.change_state('baz')
-
-        token.unpair()
-
-        self.assertNotIn('user_token_id', fake.info_dict)
-        self.assertNotIn('user_public_key', fake.info_dict)
-        self.assertEqual('pairing_url_sent', token.current_state)
+class PushTokenClassUnitTestCase(unittest.TestCase):
 
     # ------------------------------------------------------------------------ -
 
-    @patch('linotp.tokens.pushtoken.pushtoken.get_secret_key')
-    def test_url_protocol_id(self, mocked_get_secret_key):
+    def test_url_protocol_id(self):
 
-        """
-        QRToken unittest: Test url protocol id customization
-        """
+        """ PUSHTOKEN: Test url protocol id customization """
 
-        mocked_get_secret_key.return_value = 'X' * 64
         user_public_key = 'MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI='
 
         fake = FakeTokenModel()
 
-        token = QrTokenClass(fake)
-        token.addToTokenInfo('user_token_id', 1234)
-        token.addToTokenInfo('user_public_key', user_public_key)
+        token = PushTokenClass(fake)
+        token.addToTokenInfo('partition', 0)
+        token.addToTokenInfo('user_token_id', 123)
+        token.addToTokenInfo('user_dsa_public_key', user_public_key)
 
         with nested(patch.dict(config), request_context_safety()):
 
@@ -126,17 +108,18 @@ class QRTokenClassUnitTestCase(unittest.TestCase):
             url, _ = token.create_challenge_url(transaction_id='1234567890',
                                                 content_type=0,
                                                 message=message,
-                                                callback_url='foo',
-                                                callback_sms_number='+491234')
+                                                callback_url='foo')
 
             self.assertTrue(url.startswith('lseqr://'))
 
         # -------------------------------------------------------------------- -
 
         fake = FakeTokenModel()
-        token = QrTokenClass(fake)
-        token.addToTokenInfo('user_token_id', 1234)
-        token.addToTokenInfo('user_public_key', user_public_key)
+
+        token = PushTokenClass(fake)
+        token.addToTokenInfo('partition', 0)
+        token.addToTokenInfo('user_token_id', 123)
+        token.addToTokenInfo('user_dsa_public_key', user_public_key)
 
         with nested(patch.dict(config, {'mobile_app_protocol_id': 'yolo'}),
                     request_context_safety()):
@@ -149,7 +132,6 @@ class QRTokenClassUnitTestCase(unittest.TestCase):
             url, _ = token.create_challenge_url(transaction_id='1234567890',
                                                 content_type=0,
                                                 message=message,
-                                                callback_url='foo',
-                                                callback_sms_number='+491234')
+                                                callback_url='foo')
 
             self.assertTrue(url.startswith('yolo://'))
