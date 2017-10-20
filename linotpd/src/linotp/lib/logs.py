@@ -85,19 +85,10 @@ class ColorFormatter(logging.Formatter):
 def init_logging_config():
 
     """
-    Loads the persistent logging configuration from the database,
-    sets the appropriate mappers (to enrich results with request
-    ids, remote addresses, etc) and adds the handler defined in
-    the global configuration.
+    Loads the persistent logging configuration from the database
 
     Should be called ONCE at the start of the server
     """
-
-    root_logger = logging.getLogger()
-
-    for handler in root_logger.handlers:
-        filter_ = RequestContextFilter()
-        handler.addFilter(filter_)
 
     config_entries = Session.query(LoggingConfig).all()
 
