@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<KeyContainer Version="1.0"
+              Id="KC20130122"
+              xmlns="urn:ietf:params:xml:ns:keyprov:pskc"
+              xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+              xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">
+     <EncryptionKey>
+         <ds:KeyName>Pre-shared-key</ds:KeyName>
+     </EncryptionKey>
+     <MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1">
+         <MACKey>
+             <xenc:EncryptionMethod
+             Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+             <xenc:CipherData>
+                 <xenc:CipherValue>OdudVkgsZywiwE1HqPGOJtHmBl+6HzJkylgDrZU9gcflyCddzO+cxEwzYIlOiwrE</xenc:CipherValue>
+             </xenc:CipherData>
+         </MACKey>
+     </MACMethod>
+  <KeyPackage>
+    <DeviceInfo>
+      <Manufacturer>NagraID Security</Manufacturer>
+      <SerialNo>306EUO4-00960</SerialNo>
+      <Model>306E</Model>
+      <IssueNo>880479B6A2CA2080</IssueNo>
+    </DeviceInfo>
+    <Key Id="880479B6A2CA2080"
+         Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:ocra">
+    <AlgorithmParameters>
+        <Suite>OCRA-1:HOTP-SHA1-6:C-QN08-PSHA1</Suite>
+        <ResponseFormat Length="6" Encoding="DECIMAL"/>
+    </AlgorithmParameters>
+      <Data>
+        <Secret>
+          <EncryptedValue>
+            <xenc:EncryptionMethod
+                  Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+            <xenc:CipherData>
+              <xenc:CipherValue>VHdEP8TXnMmE3yiAnB5Fx+SQ85UXCNAxH7IyOixJpUZHMk9GTdFYWNsxZp8jVpfp</xenc:CipherValue>
+            </xenc:CipherData>
+          </EncryptedValue>
+          <ValueMAC>uQ1Bef+XVXHQoW4ZzyQ/cv/9zYA=</ValueMAC>
+        </Secret>
+        <Counter>
+          <PlainValue>0</PlainValue>
+        </Counter>
+      </Data>
+    </Key>
+  </KeyPackage>
+  <KeyPackage>
+    <DeviceInfo>
+      <Manufacturer>NagraID Security</Manufacturer>
+      <SerialNo>306EUO4-00954</SerialNo>
+      <Model>306E</Model>
+      <IssueNo>880489CFA2CA2080</IssueNo>
+    </DeviceInfo>
+    <Key Id="880489CFA2CA2080"
+         Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:ocra">
+    <AlgorithmParameters>
+       <Suite>OCRA-1:HOTP-SHA1-6:C-QN08-PSHA1</Suite>
+        <ResponseFormat Length="6" Encoding="DECIMAL"/>
+    </AlgorithmParameters>
+      <Data>
+        <Secret>
+          <EncryptedValue>
+            <xenc:EncryptionMethod
+                  Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+            <xenc:CipherData>
+              <xenc:CipherValue>YTvA1cSntb4cPJHPFkJwuSZkAsLPo+o1EJPA22DeijZRaKhJAwArQKbwDwSmNrR1</xenc:CipherValue>
+            </xenc:CipherData>
+          </EncryptedValue>
+          <ValueMAC>N8QGRQ7yKd8suyUgaEVme7f0HrA=</ValueMAC>
+        </Secret>
+        <Counter>
+          <PlainValue>0</PlainValue>
+        </Counter>
+      </Data>
+    </Key>
+  </KeyPackage>
+  <KeyPackage>
+    <DeviceInfo>
+      <Manufacturer>NagraID Security</Manufacturer>
+      <SerialNo>306EUO4-00958</SerialNo>
+      <Model>306E</Model>
+      <IssueNo>880497B3A2CA2080</IssueNo>
+    </DeviceInfo>
+    <Key Id="880497B3A2CA2080"
+         Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:ocra">
+    <AlgorithmParameters>
+        <Suite>OCRA-1:HOTP-SHA1-6:C-QN08-PSHA1</Suite>
+        <ResponseFormat Length="6" Encoding="DECIMAL"/>
+    </AlgorithmParameters>
+      <Data>
+        <Secret>
+          <EncryptedValue>
+            <xenc:EncryptionMethod
+                  Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+            <xenc:CipherData>
+              <xenc:CipherValue>BdxW7Pb46LafGV8k2zDQ48ujoyYX7M+JumfS3Wx5dP1E9y5By/97QTMiGkzJrcWj</xenc:CipherValue>
+            </xenc:CipherData>
+          </EncryptedValue>
+          <ValueMAC>WGhmLhbGn4Dksa7lHKfKOqbsJhU=</ValueMAC>
+        </Secret>
+        <Counter>
+          <PlainValue>0</PlainValue>
+        </Counter>
+      </Data>
+    </Key>
+  </KeyPackage>
+</KeyContainer>
+

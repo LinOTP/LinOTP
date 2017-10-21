@@ -1,0 +1,14 @@
+# ===== SafeWord Authenticator Records $Version: 100$ =====
+dn: sccAuthenticatorId=RAINER01
+objectclass: sccCompatibleToken
+sccAuthenticatorId: RAINER01
+sccTokenType: eToken-PASS-ES
+sccTokenData: sccKey=E26BF3661C254BBAB7370296A6DE60D7AC8E0141;sccMode=E;sccPwLen=6;sccVer=6.20;
+sccSignature:MC0CFGxPAjrb0zg7MwFzrPibnC70klMnAhUAwZzVdGBaKGjA0djXrGuv6ejTtII=
+
+dn: sccAuthenticatorId=RAINER02
+objectclass: sccCompatibleToken
+sccAuthenticatorId: RAINER02
+sccTokenType: eToken-PASS-TS
+sccTokenData: sccKey=535CC2CB9DEA0B55B0A2D585EAB648EBCE73AC8B;sccMode=T;sccPwLen=6;sccVer=6.20;sccTick=30;sccPrTime=2013/03/12 00:00:00
+sccSignature: MC4CFQDju23MCRqmkWC7Z9sVDB0y0TeEOwIVAOIibmqMFxhPiY7mLlkt5qmRT/xn        
