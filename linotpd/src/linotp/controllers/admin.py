@@ -2273,7 +2273,10 @@ class AdminController(BaseController):
             log.debug("[loadtokens] %r" % request.POST)
             tokenFile = request.POST['file']
             fileType = request.POST['type']
-            targetRealm = request.POST.get('realm', None)
+            targetRealm = request.POST.get(
+                            'realm', request.POST.get(
+                                'targetrealm', '')).lower()
+
 
             # for encrypted token import data, this is the decryption key
             transportkey = request.POST.get('transportkey', None)
@@ -2368,52 +2371,91 @@ class AdminController(BaseController):
                                           "possible. Please check the log file"
                                           " for more details.")
 
-            # determin the target realm
-            tokenrealm = None
-            # default for available realms if no admin policy is defined
+            tokenrealm = ''
+
+            # -------------------------------------------------------------- --
+            # first check if we are allowed to import the tokens at all
+            # if not, this will raise a PolicyException
+
+            rights = checkPolicyPre('admin', 'import', {})
+
+            # if an empty list of realms is returned, there is no admin policy
+            # defined at all. So we grant access to all realms
+
+            access_realms = rights.get('realms')
+            if access_realms == []:
+                access_realms = ['*']
+
+            # -------------------------------------------------------------- --
+
+            # determin the admin realms
+
             available_realms = getRealms()
 
-            # this needs to return the valid realms of the admin.
-            # it also checks the token number
-            res = checkPolicyPre('admin', 'import', {})
-            if res['realms']:
-                # by defualt, wee put the token in the FIRST realm of the admin
-                # so tokenrealm will either be ONE realm or NONE
-                tokenrealm = res.get('realms')[0]
-                available_realms = res.get('realms')
+            if '*' in access_realms:
 
-            # if parameter realm is provided, we have to check if this target
-            # realm exists and is in the set of the allowed realms
-            if targetRealm and targetRealm.lower() in available_realms:
-                    tokenrealm = targetRealm
-            log.info("[loadtokens] setting tokenrealm %s" % tokenrealm)
+                admin_realms = available_realms
+
+            else:
+
+                # remove non existing realms from the admin realms
+
+                admin_realms = list(set(available_realms) & set(access_realms))
+
+                # this is a ugly unlogical case for legacy compliance
+
+                if admin_realms:
+                    tokenrealm = admin_realms[0]
+
+            # -------------------------------------------------------------- --
+
+            # determin the target tokenrealm
+
+            if targetRealm:
+
+                if targetRealm not in admin_realms:
+                    raise Exception('target realm could not be assigned')
+
+                tokenrealm = targetRealm
+
+                # double check, if this is an allowed targetrealm
+
+                checkPolicyPre('admin', 'loadtokens',
+                               {'tokenrealm': tokenrealm})
+
+            log.info("[loadtokens] setting tokenrealm %r", tokenrealm)
+
+            # -------------------------------------------------------------- --
+
+            # Now import the Tokens from the dictionary
 
             log.debug("[loadtokens] read %i tokens. starting import now"
                       % len(TOKENS))
 
-            # Now import the Tokens from the dictionary
             ret = ""
             th = TokenHandler()
             for serial in TOKENS:
                 log.debug("[loadtokens] importing token %s" % TOKENS[serial])
 
-                log.info("[loadtokens] initialize token. serial: %s, realm: %s" % (serial, tokenrealm))
+                log.info("[loadtokens] initialize token. "
+                         "serial: %r, realm: %r", serial, tokenrealm)
 
-                # # for the eToken dat we assume, that it brings all its
-                # # init parameters in correct format
+                # for the eToken dat we assume, that it brings all its
+                # init parameters in correct format
+
                 if typeString == "dat":
                     init_param = TOKENS[serial]
 
                 else:
                     init_param = {
-                            'serial': serial,
-                            'type': TOKENS[serial]['type'],
-                            'description': TOKENS[serial].get("description", "imported"),
-                            'otpkey': TOKENS[serial]['hmac_key'],
-                            'otplen': TOKENS[serial].get('otplen'),
-                            'timeStep': TOKENS[serial].get('timeStep'),
-                            'hashlib': TOKENS[serial].get('hashlib')
-                            }
+                        'serial': serial,
+                        'type': TOKENS[serial]['type'],
+                        'description': TOKENS[serial].get(
+                            "description", "imported"),
+                        'otpkey': TOKENS[serial]['hmac_key'],
+                        'otplen': TOKENS[serial].get('otplen'),
+                        'timeStep': TOKENS[serial].get('timeStep'),
+                        'hashlib': TOKENS[serial].get('hashlib')}
 
                 # add additional parameter for vasco tokens
                 if TOKENS[serial]['type'] == "vasco":
@@ -2429,16 +2471,19 @@ class AdminController(BaseController):
                 if hashlib and hashlib != "auto":
                     init_param['hashlib'] = hashlib
 
-                if tokenrealm:
-                    checkPolicyPre('admin', 'loadtokens',
-                                   {'tokenrealm': tokenrealm})
-
-                (ret, tokenObj) = th.initToken(init_param, User('', '', ''),
+                (ret, _tokenObj) = th.initToken(
+                                            init_param,
+                                            User('', '', ''),
                                             tokenrealm=tokenrealm)
 
-                checkPolicyPost('admin', 'loadtokens',
+                # check policy to set token pin random
+                checkPolicyPost('admin', 'init',
                                {'serial': serial})
 
+            # check the max tokens per realm
+
+            checkPolicyPost('admin', 'loadtokens',
+                           {'tokenrealm': tokenrealm})
 
             log.info ("[loadtokens] %i tokens imported." % len(TOKENS))
             res = { 'value' : True, 'imported' : len(TOKENS) }
@@ -2452,15 +2497,15 @@ class AdminController(BaseController):
             Session.commit()
             return sendResultMethod(response, res)
 
-        except PolicyException as pe:
-            log.exception("[loadtokens] Failed checking policy: %r" % pe)
+        except PolicyException as pex:
+            log.exception("[loadtokens] Failed checking policy: %r", pex)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, "%r" % pex, 1)
 
-        except Exception as e:
-            log.exception("[loadtokens] failed! %r" % e)
+        except Exception as exx:
+            log.exception("[loadtokens] failed! %r", exx)
             Session.rollback()
-            return sendErrorMethod(response, unicode(e))
+            return sendErrorMethod(response, "%r" % exx)
 
         finally:
             Session.close()
