@@ -1,9 +1,11 @@
 #!/bin/bash
+
 set -e
 
 . /usr/share/debconf/confmodule
 
 NEW_VERSION='@@@DEB_VERSION@@@'
+
 APACHE_CONFIG=/etc/linotp2/apache-servername.conf
 LINOTP_INI=/etc/linotp2/linotp.ini
 WHO_INI=/etc/linotp2/who.ini
@@ -19,6 +21,24 @@ RAND_DEVICE=/dev/urandom
 FAKE_PASSWORD=This_is_not_the_real_password_we_just_do_not_want_to_be_asked_again_in_case_of_updating_the_package
 LSB_RELEASE=`which lsb_release || true`
 
+msg="LinOTP2: "
+
+echo_prio() {
+    t=$(date +"%Y/%m/%d - %T")
+    echo >&2 "$t $1 [linotp postinst] $2"
+}
+echo_info() {
+    echo_prio INFO "$1"
+}
+echo_warn() {
+    echo_prio WARNING "$1"
+}
+echo_error() {
+    echo_prio ERROR "$1"
+}
+echo_log() {
+    echo >&2 "${msg}$1"
+}
 
 DOING_NEW_INSTALLATION=false
 DOING_RE_INSTALLATION=false
@@ -50,19 +70,15 @@ elif [ "$1" = "configure" ]; then
 	fi
 fi
 
-print_timestamp() {
-    date +"%Y/%m/%d - %T"
-}
-
 # Always print to stderr, otherwise debconf can get confused
-echo `print_timestamp` "INFO [linotp postinst] Installing new package?: ${DOING_NEW_INSTALLATION}" >&2
-echo `print_timestamp` "INFO [linotp postinst] Re-installing package?: ${DOING_RE_INSTALLATION}" >&2
-echo `print_timestamp` "INFO [linotp postinst] Reconfiguring package?: ${DOING_RECONFIGURE}" >&2
-echo `print_timestamp` "INFO [linotp postinst] Currently installed version: ${INSTALLED_VERSION}" >&2
-echo `print_timestamp` "INFO [linotp postinst] New version: ${NEW_VERSION}" >&2
-echo `print_timestamp` "INFO [linotp postinst] Version equal: ${VERSION_EQUAL}" >&2
-echo `print_timestamp` "INFO [linotp postinst] Version upgrade: ${VERSION_UPGRADE}" >&2
-echo `print_timestamp` "INFO [linotp postinst] Version downgrade: ${VERSION_DOWNGRADE}" >&2
+echo_info "Installing new package?: ${DOING_NEW_INSTALLATION}"
+echo_info "Re-installing package?: ${DOING_RE_INSTALLATION}"
+echo_info "Reconfiguring package?: ${DOING_RECONFIGURE}"
+echo_info "Currently installed version: ${INSTALLED_VERSION}"
+echo_info "New version: ${NEW_VERSION}"
+echo_info "Version equal: ${VERSION_EQUAL}"
+echo_info "Version upgrade: ${VERSION_UPGRADE}"
+echo_info "Version downgrade: ${VERSION_DOWNGRADE}"
 
 ####################################################################
 #
@@ -77,7 +93,7 @@ function check_user() {
 			--gecos "LinOTP Server" \
 			--shell /bin/false \
 			linotp  >/dev/null
-		echo "LinOTP2: done setting up user..." 
+		echo_log "done setting up user..."
 	fi
 }
 
@@ -85,7 +101,7 @@ function check_user() {
 function check_ucs() {
 	if [ -x "$LSB_RELEASE" ]; then
 		RELEASE=`$LSB_RELEASE -i -s`
-		echo "Installing on $RELEASE"
+		echo_log "Installing on $RELEASE"
 		if [ "$RELEASE" = "Univention" ]; then
 			return 0
 		fi
@@ -120,9 +136,9 @@ function configure_sql() {
 	# should not regenerate this!
 	#echo "LinOTP2: SQL password: $DBPASSWORD1"
 	if [ "$DBPASSWORD1" = "" ] || [ "$DBPASSWORD1" = "1234" ]; then
-		echo "LinOTP2: SQL Password empty or known password: We do not change the SQL configuration in linotp.ini"
+		echo_log "SQL Password empty or known password: We do not change the SQL configuration in linotp.ini"
 	elif [ "$UCS_INSTALL" = "true" ]; then
-		echo "LinOTP2: UCS install, we do not change linotp.ini"
+		echo_log "UCS install, we do not change linotp.ini"
 	else
 		sed -e "s/^sqlalchemy.url.*/${SQLALCHEMY}"/ $LINOTP_INI > $LINOTP_INI.new
 		mv $LINOTP_INI.new $LINOTP_INI
@@ -134,7 +150,7 @@ function configure_sql() {
 			sed -e "s/^#\?linotpAudit.sql.url \?=.*/${SQLAUDIT}"/ $LINOTP_INI > $LINOTP_INI.new
 			mv $LINOTP_INI.new $LINOTP_INI
 		fi
-		echo "LinOTP2: SQL configuration in linotp.ini CHANGED!"
+		echo_log "SQL configuration in linotp.ini CHANGED!"
 	fi
 }
 
@@ -147,7 +163,7 @@ function fix_access_right() {
 }
 
 function create_tables() {
-	echo "LinOTP2: Try to create tables, now" 
+	echo_log "Try to create tables, now"
 	update-python-modules -p
 	paster setup-app $LINOTP_INI || true
 	fix_access_right
@@ -156,25 +172,25 @@ function create_tables() {
 
 function create_grant_string1() {
 	# create the grant string for all hosts
-	echo "grant all privileges on ${DBNAME}.* to '${DBUSER}'@'%' identified by 'XXXXXXXXX';"
+	echo_log "grant all privileges on ${DBNAME}.* to '${DBUSER}'@'%' identified by 'XXXXXXXXX';"
 	SQL_STATEMENT="grant all privileges on ${DBNAME}.* to '${DBUSER}'@'%' identified by '${DBPASSWORD1}';"
 }
 
 function create_grant_string2() {
 	# create the grant string for localhost
 	TEMP_HOST="localhost"
-	echo "grant all privileges on ${DBNAME}.* to '${DBUSER}'@'${TEMP_HOST}' identified by 'xxxxxxxxxxxx';"
+	echo_log "grant all privileges on ${DBNAME}.* to '${DBUSER}'@'${TEMP_HOST}' identified by 'xxxxxxxxxxxx';"
 	SQL_STATEMENT="grant all privileges on ${DBNAME}.* to '${DBUSER}'@'${TEMP_HOST}' identified by '${DBPASSWORD1}';"
 }
 
 function create_enc_key() {
 	check_user
-	echo "LinOTP2: Generating encryption key in $ENCKEYFILE. This may take a while..."
+	echo_log "Generating encryption key in $ENCKEYFILE. This may take a while..."
 	# we need the user linotp
 	dd if=$RAND_DEVICE of=$ENCKEYFILE bs=1 count=96
 	chown linotp $ENCKEYFILE
 	chmod 400 $ENCKEYFILE
-	echo "LinOTP2: done creating enckey"
+	echo_log "done creating enckey"
 }
 
 evaluate_answers() {
@@ -183,7 +199,7 @@ evaluate_answers() {
 
 	db_get linotp/apache/activate
 	APACHE=$RET
-	echo "LinOTP2: I got this key: $APACHE"
+	echo_log "I got this key: $APACHE"
 
 	if [ "$APACHE" = "true" ]; then
 		db_get linotp/apache/admin_password
@@ -203,13 +219,13 @@ evaluate_answers() {
 
 		db_get linotp/tokendb/dbtype_apache2
 		TOKENDB=$RET
-		echo "LinOTP2: I got these keys: apache: $APACHE_SSL_CREATE, tokendb: $TOKENDB"
+		echo_log "I got these keys: apache: $APACHE_SSL_CREATE, tokendb: $TOKENDB"
 	else
 		db_get linotp/tokendb/dbtype
 		TOKENDB=$RET
 	fi
 
-	echo "LinOTP2: This is my database: $TOKENDB"
+	echo_log "This is my database: $TOKENDB"
 
 	if [ "$TOKENDB" = "SQLite" ]; then
 		#db_input high linotp/choose_token_file || true
@@ -267,7 +283,7 @@ configure)
 	# initialize the linotp.ini
 	if [ -f $LINOTP_INI ]; then
 		# The linotp.ini already exist. Obviously we are doing an update!
-		echo "LinOTP2: linotp.ini already exists"
+		echo_log "linotp.ini already exists"
 		UPDATE=1
 	else
 		cp /etc/linotp2/linotp.ini.example $LINOTP_INI
@@ -279,7 +295,7 @@ configure)
 		mkdir -p $LOGDIR
 		check_user
 		chown -R linotp $LOGDIR
-		echo "LinOTP2: added logdir"
+		echo_log "added logdir"
 	fi
 
 	if [ -d $CACHEDIR ]; then
@@ -290,14 +306,14 @@ configure)
 		mkdir -p $CACHEDIR
 		check_user
 		chown -R linotp $CACHEDIR
-		echo "LinOTP2: added cachedir"
+		echo_log "added cachedir"
 	fi
 
 	if [ ! -d $TEMPLATEDIR ]; then
 		mkdir -p $TEMPLATEDIR
 		check_user
 		chown -R linotp $TEMPLATEDIR
-		echo "LinOTP2: added templatedir"
+		echo_log "added templatedir"
 	fi
 
 
@@ -306,7 +322,7 @@ configure)
 	#  univention corporate server
 	#
 	if check_ucs; then
-		echo "LinOTP2: Doing UCS installation"
+		echo_log "Doing UCS installation"
 		APACHE="false"
 		TOKENDB="MySQL"
 		# We can get a certificate from UCS!
@@ -326,7 +342,7 @@ configure)
 		#  normal installation
 		#
 		evaluate_answers
-		echo "LinOTP2: done asking questions...."
+		echo_log "done asking questions...."
 	fi
 
 	##################################################################
@@ -355,20 +371,20 @@ configure)
 			dpkg --compare-versions ${APACHE2_VERSION} ge 2.4 && APV_RC=$? || APV_RC=$?
 			if [ ${APV_RC} == 0 ]
 			then
-				echo `print_timestamp` "INFO [linotp postinst] Using Apache 2.4 config" >&2
+				echo_log "Using Apache 2.4 config"
 				if [ ! -f /etc/apache2/sites-available/linotp2.conf ]
 				then
 					cp /etc/linotp2/apache2.4-example/linotp2.conf /etc/apache2/sites-available/
 				else
-					echo `print_timestamp` "INFO [linotp postinst] Apache linotp2.conf already present. Doing nothing." >&2
+					echo_log "Apache linotp2.conf already present. Doing nothing."
 				fi
 			else
-				echo `print_timestamp` "INFO [linotp postinst] Using Apache 2.2 config" >&2
+				echo_log "Using Apache 2.2 config"
 				if [ ! -f /etc/apache2/sites-available/linotp2 ]
 				then
 					cp /etc/linotp2/apache2.2-example/linotp2 /etc/apache2/sites-available/
 				else
-					echo `print_timestamp` "INFO [linotp postinst] Apache linotp2 already present. Doing nothing." >&2
+					echo_log "Apache linotp2 already present. Doing nothing."
 				fi
 			fi
 
@@ -377,7 +393,7 @@ configure)
 			a2enmod wsgi
 			a2enmod ssl
 			a2enmod headers
-			echo "LinOTP2: done activating apache"
+			echo_log "done activating apache"
 		fi
 		if [ "$APACHE_SSL_CREATE" = "true" ]; then
 			# in appliance install these directories do not exist, yet
@@ -387,9 +403,9 @@ configure)
 		fi
 		touch $APACHE_CONFIG
 		invoke-rc.d apache2 reload
-		echo "LinOTP2: done setting up apache with ssl"
+		echo_log "done setting up apache with ssl"
 	else
-		a2dissite linotp2 || echo `print_timestamp` "WARNING [linotp postinst] Could not disable Apache linotp2 host (possibly it doesn't exist)" >&2
+		a2dissite linotp2 || echo_warn "Could not disable Apache linotp2 host (possibly it doesn't exist)"
 	fi
 
 	########################################################################
@@ -420,7 +436,7 @@ configure)
 			# test, if the package is installed.
 			# will return 1 if it is, 0 if not
 			INSTALLED=`dpkg -l linotp 2>&1 | grep ^ii | wc -l`
-			echo "LinOTP2: The result of dpkg -l linotp: $INSTALLED"
+			echo_log "The result of dpkg -l linotp: $INSTALLED"
 
 			#
 			# TODO: At the moment we will create the database on the first run, which might fail!!!
@@ -428,7 +444,7 @@ configure)
 			#	preseed file
 			if [ "$APPLIANCE_INSTALL" = "true" ] && [ ! -f /etc/lseappliance/mysql_root ]; then
 				# The package is not installed, so we will create the database after next reboot
-				echo "LinOTP2: Will setup the database after next reboot"
+				echo_info "Will setup the database after next reboot"
 				echo $GRANT_STRING1 > /etc/linotp2/linotpcreatedb.sql
 				echo $GRANT_STRING2 >> /etc/linotp2/linotpcreatedb.sql
 				cp /etc/rc.local /etc/rc.local.linotp-dpkg
@@ -448,7 +464,7 @@ configure)
 				elif [ ${DEB_VER_LT_9} != 0 ]; then
 					# We are on debian 9 or higher. Since we don't know whether we will have a systemd
 					# service file or not (or whether debian 9 will ship MySQL at all) we log a warning.
-					echo `print_timestamp` "ERROR [linotp postinst] TODO: Check MySQL and systemd on debian 9 appliance install!" >&2
+					echo_err "TODO: Check MySQL and systemd on debian 9 appliance install!"
 				fi
 
 				echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" --execute=\"create database $DBNAME;\" || true" >> /etc/rc.local
@@ -462,11 +478,11 @@ configure)
 				echo "mv /etc/rc.local.linotp-dpkg /etc/rc.local" >> /etc/rc.local
 				#echo "echo '#!/bin/sh -e' > /etc/rc.local" >> /etc/rc.local
 				#echo "echo 'exit 0'>> /etc/rc.local" >> /etc/rc.local
-				echo "LinOTP2: written this rc.local:"
+				echo_log "written this rc.local:"
 				cat /etc/rc.local
 			else
 				# We can try to create the database now!
-				echo "LinOTP2: Try to set up database, now"
+				echo_log "Try to set up database, now"
 				mysql --host=$DBHOST --user=root --password="${ROOTPW}" --execute="create database if not exists $DBNAME;" || true
 				temp_sql=`mktemp`
 				# set password
@@ -485,7 +501,7 @@ configure)
 		# On an Appliance or a UCS we create the tables in case of an upgrade!
 		if [ "$APPLIANCE_INSTALL" = "true" ] || [ "$UCS_INSTALL" = "true" ] ; then
 			if check_upgrade; then
-				echo "LinOTP2: Doing an upgrade, creating tables"
+				echo_log "Doing an upgrade, creating tables"
 				create_tables
 			fi
 		fi
@@ -524,7 +540,7 @@ configure)
 	PUBKEY=/etc/linotp2/public.pem
 
 	if [ ! -f $PRIVKEY ];  then
-		echo "LinOTP2: createing private key pair"
+		echo_log "createing private key pair"
 		# create keypair:
 		openssl genrsa -out $PRIVKEY 2048
 		# extract the public key:
@@ -538,11 +554,11 @@ configure)
 	# We can only do this at the end, otherwise the creation of the database might fail...
 	#
 	if [ "$APPLIANCE_INSTALL" = "true" ] || check_ucs ; then
-		echo "LinOTP2: Appliance install, activating mysql audit"
+		echo_log "Appliance install, activating mysql audit"
 		sed -e s/"^#linotpAudit.type = linotp.lib.audit.SQLAudit"/"linotpAudit.type = linotp.lib.audit.SQLAudit"/ $LINOTP_INI > $LINOTP_INI.new
 		mv $LINOTP_INI.new $LINOTP_INI
 	else
-		echo "LinOTP2: SQLAudit has not been activated."
+		echo_log "SQLAudit has not been activated."
 	fi
 
 	rm -f /etc/linotp2/we_are_doing_an_upgrade
