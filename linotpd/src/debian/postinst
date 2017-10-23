@@ -73,10 +73,33 @@ echo_info "Installed version: ${INSTALLED_VERSION:-(none)}"
 echo_info "New version: $NEW_VERSION"
 echo_info "Installation action: $INSTALL_ACTION"
 
-####################################################################
+#####################
+# Utility functions #
+#####################
+
+# create_dir MESSAGE NAME [clear]
 #
-#  only functions
-#
+# Checks if a directory exists. If it doesn't, creates it and gives it
+# to the $LINOTP_USER user. If the directory already exists and the
+# word "clear" is passed as the third parameter, empty the directory
+# of all files and subdirectories. The first parameter is an
+# explanatory string used in log messages.
+
+create_dir() {
+    dirmsg="$1"
+    dirname="$2"
+    if [ ! -d "$dirname" ]; then
+	mkdir -p "$dirname"
+	chown -R "$LINOTP_USER" "$dirname"
+	echo_log "Created $dirmsg directory: $dirname"
+    else
+	echo_log "Using existing $dirmsg directory: $dirname"
+	if [ "$3" == "clear" ]; then
+	    echo_log "Clearing $dirname"
+	    rm -rf "$dirname"/*
+	fi
+    fi
+}
 
 # check_user USERNAME GECOS
 #
@@ -285,32 +308,9 @@ configure)
 
 	check_user "$LINOTP_USER" "LinOTP Server"
 
-	# Create logdir
-	if [ ! -d $LOGDIR ]; then
-		mkdir -p $LOGDIR
-		check_user
-		chown -R linotp $LOGDIR
-		echo_log "added logdir"
-	fi
-
-	if [ -d $CACHEDIR ]; then
-		rm -fr $CACHEDIR/*
-	fi
-
-	if [ ! -d $CACHEDIR ]; then
-		mkdir -p $CACHEDIR
-		check_user
-		chown -R linotp $CACHEDIR
-		echo_log "added cachedir"
-	fi
-
-	if [ ! -d $TEMPLATEDIR ]; then
-		mkdir -p $TEMPLATEDIR
-		check_user
-		chown -R linotp $TEMPLATEDIR
-		echo_log "added templatedir"
-	fi
-
+	create_dir "log" "$LOGDIR"
+	create_dir "cache" "$CACHEDIR" clear
+	create_dir "template" "$TEMPLATEDIR"
 
 	###########################################################################
 	#
