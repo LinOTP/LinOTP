@@ -309,27 +309,17 @@ evaluate_answers() {
     esac
 }
 
-##################################################################
-#
-# start here
-#
+# Here's where the actual execution of the postinst file starts.
 
 case "$1" in
-configure)
-	##
-	##  postinst called with configure
-	##
-	##
+    configure)
 
-	# initialize the linotp.ini
-	if [ -f $LINOTP_INI ]; then
-		# The linotp.ini already exist. Obviously we are doing an update!
-		echo_log "linotp.ini already exists"
-		UPDATE=1
-	else
-		cp /etc/linotp2/linotp.ini.example $LINOTP_INI
+	# Initialize linotp.ini
+	if ! [ -f "$LINOTP_INI" ]; then
+	    cp /etc/linotp2/linotp.ini.example "$LINOTP_INI"
 	fi
 
+	# Make sure the LinOTP user exists
 	check_user "$LINOTP_USER" "LinOTP Server"
 
 	create_dir "log" "$LOGDIR"
@@ -338,25 +328,21 @@ configure)
 
 	SVA3_INSTALL=0
 
-	###########################################################################
-	#
-	#  univention corporate server
-	#
 	if check_ucs; then
-		echo_log "Doing UCS installation"
-		APACHE="false"
-		TOKENDB="MySQL"
-		# We can get a certificate from UCS!
-		APACHE_SSL_CREATE="false"
-		# local database
-		DBHOST="localhost"
-		DBNAME="LinOTP2"
-		DBUSER="linotp2"
-		DBPASSWORD1=`pwgen 16 1`
-		CREATEDB="false"
-		ROOTPW=""
-		CREATE_TABLES="false"
-		UCS_INSTALL="true"
+	    echo_log "Doing UCS installation"
+	    APACHE="false"
+	    TOKENDB="MySQL"
+	    # We can get a certificate from UCS!
+	    APACHE_SSL_CREATE="false"
+	    # local database
+	    DBHOST="localhost"
+	    DBNAME="LinOTP2"
+	    DBUSER="linotp2"
+	    DBPASSWORD1=`pwgen 16 1`
+	    CREATEDB="false"
+	    ROOTPW=""
+	    CREATE_TABLES="false"
+	    UCS_INSTALL="true"
 	elif check_sva3; then
 	    echo_log "Doing installation for SVA3"
 	    SVA3_INSTALL=1
@@ -364,66 +350,58 @@ configure)
 	    # so we can pick them up here as if they had been entered interactively
 	    evaluate_answers
 	else
-		###########################################################################
-		#
-		#  normal installation
-		#
-		evaluate_answers
-		echo_log "done asking questions...."
+	    echo_log "Doing standard installation"
+	    evaluate_answers
+	    echo_log "done asking questions...."
 	fi
-
-	##################################################################
-	#
-	# We are done with asking questions
-	#
 
 	if [ "$INSTALL_MODE" = "install" -a ! -f "$ENCKEYFILE" ]; then
-		create_enc_key "$ENCKEYFILE"
+	    create_enc_key "$ENCKEYFILE"
 	fi
-
-	#
-	# APACHE setup
-	#
 
 	if [ "$SVA3_INSTALL" = "1" ]; then
 	    echo_log "Skipping Apache configuration because we're on an SVA3."
-	if [ "$APACHE" = "true" ]; then
-		if ! check_apache_disabled; then
-			# Copy linotp2 VirtualHost from /etc/linotp2 to /etc/apache2 . Depending on
-			# the Apache version a different file is used.
-			APACHE2_VERSION=$(dpkg -s apache2 | grep "^Version:" | cut -d' ' -f2)
-			if dpkg --compare-versions ${APACHE2_VERSION} ge 2.4; then
-			    config=/etc/linotp2/apache2.4-example/linotp2.conf
-			else
-			    config=/etc/linotp2/apache2.2-example/linotp2.conf
-			fi
-			echo_log "Setting up for Apache $APACHE2_VERSION"
-			if [ ! -f /etc/apache2/sites-available/linotp2.conf ]; then
-			    echo_log "Using configuration file: $config"
-			    cp "$config" /etc/apache2/sites-available/linotp2.conf
-			else
-			    echo_log "Apache already configured, leaving intact."
-			fi
+	elif [ "$APACHE" = "true" ]; then
+	    if ! check_apache_disabled; then
+		# Copy virtual host definition for LinOTP to /etc/apache2,
+		# depending on the Apache version.
+		APACHE2_VERSION=$(dpkg -s apache2 | grep "^Version:" | cut -d' ' -f2)
+		if dpkg --compare-versions ${APACHE2_VERSION} ge 2.4; then
+		    config=/etc/linotp2/apache2.4-example/linotp2.conf
+		else
+		    config=/etc/linotp2/apache2.2-example/linotp2.conf
+		fi
+		echo_log "Setting up for Apache $APACHE2_VERSION"
+		if [ ! -f /etc/apache2/sites-available/linotp2.conf ]; then
+		    echo_log "Using configuration file: $config"
+		    cp "$config" /etc/apache2/sites-available/linotp2.conf
+		else
+		    echo_log "Apache already configured, leaving intact."
+		fi
 
-			a2ensite linotp2
-			a2enmod auth_digest
-			a2enmod wsgi
-			a2enmod ssl
-			a2enmod headers
-			echo_log "Basic Apache configuration done"
-		fi
-		if [ "$APACHE_SSL_CREATE" = "true" ]; then
-			# in appliance install these directories do not exist, yet
-			[ -d /etc/ssl/private ] || mkdir -p /etc/ssl/private
-			[ -d /etc/ssl/certs ] || mkdir -p /etc/ssl/certs
-			openssl req -new -x509 -newkey rsa:2048 -subj /CN=`hostname`.`dnsdomainname` -days 768 -out /etc/ssl/certs/linotpserver.pem  -keyout /etc/ssl/private/linotpserver.key -nodes
-			echo_log "Self-signed certificate created"
-		fi
-		touch $APACHE_CONFIG
-		invoke-rc.d apache2 reload
-		echo_log "done setting up apache with ssl"
+		a2ensite linotp2
+		for mod in auth_digest wsgi ssl headers; do
+		    a2enmod -q $mod
+		done
+		echo_log "Basic Apache configuration done"
+	    fi
+	    if [ "$APACHE_SSL_CREATE" = "true" ]; then
+		echo_log "Making self-signed certificate"
+		# in appliance install these directories do not exist, yet
+		[ -d /etc/ssl/private ] || mkdir -p /etc/ssl/private
+		[ -d /etc/ssl/certs ] || mkdir -p /etc/ssl/certs
+		openssl req -new -x509 -newkey rsa:2048 \
+			-subj /CN=`hostname`.`dnsdomainname` -days 768 \
+			-out /etc/ssl/certs/linotpserver.pem \
+			-keyout /etc/ssl/private/linotpserver.key \
+			-nodes
+		echo_log "Self-signed certificate created"
+	    fi
+	    touch $APACHE_CONFIG
+	    invoke-rc.d apache2 reload
+	    echo_log "done setting up apache with ssl"
 	else
-		a2dissite linotp2 || echo_warn "Could not disable Apache linotp2 host (possibly it doesn't exist)"
+	    a2dissite linotp2 || echo_warn "Could not disable Apache linotp2 host"
 	fi
 
 	########################################################################
