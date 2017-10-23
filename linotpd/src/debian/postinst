@@ -142,6 +142,17 @@ check_upgrade() {
     return 1
 }
 
+# check_sva3
+#
+# Returns 1 if we're on the SVA3, 0 if not.
+
+check_sva3() {
+    if grep -q SVA3 /etc/issue; then
+	return 0
+    fi
+    return 1
+}
+
 # check_apache_disabled
 #
 # If the file /etc/linotp2/apache_site_disabled exists, return 0 (and
@@ -320,6 +331,8 @@ configure)
 	create_dir "cache" "$CACHEDIR" clear
 	create_dir "template" "$TEMPLATEDIR"
 
+	SVA3_INSTALL=0
+
 	###########################################################################
 	#
 	#  univention corporate server
@@ -339,6 +352,12 @@ configure)
 		ROOTPW=""
 		CREATE_TABLES="false"
 		UCS_INSTALL="true"
+	elif check_sva3; then
+	    echo_log "Doing installation for SVA3"
+	    SVA3_INSTALL=1
+	    # The debconf answers can simply be preseeded elsewhere in the SVA3
+	    # so we can pick them up here as if they had been entered interactively
+	    evaluate_answers
 	else
 		###########################################################################
 		#
@@ -361,7 +380,9 @@ configure)
 	# APACHE setup
 	#
 
-	if [ "$APACHE" = "true" ]; then
+	if [ "$SVA3_INSTALL" = "1" ]; then
+	    echo_log "Skipping Apache configuration because we're on an SVA3."
+	elif [ "$APACHE" = "true" ]; then
 		# running in apache, we need the user linotp
 		if [ -d $LOGDIR ]; then
 			chown -R linotp $LOGDIR
@@ -441,7 +462,10 @@ configure)
 			# TODO: At the moment we will create the database on the first run, which might fail!!!
 			#       We only create the database on reboot, if the appliance=true was set in the
 			#	preseed file
-			if [ "$APPLIANCE_INSTALL" = "true" ] && [ ! -f /etc/lseappliance/mysql_root ]; then
+			if [ "$SVA3_INSTALL" = "1" ]; then
+			    # The database is generated in the appmgr-mod-linotp postinst.
+			    true
+			elif [ "$APPLIANCE_INSTALL" = "true" ] && [ ! -f /etc/lseappliance/mysql_root ]; then
 				# The package is not installed, so we will create the database after next reboot
 				echo_info "Will setup the database after next reboot"
 				echo $GRANT_STRING1 > /etc/linotp2/linotpcreatedb.sql
@@ -493,7 +517,10 @@ configure)
 				fi
 			fi #APPLIANCE_INSTALL
 		fi #CREATE_DB
-		if [ "$CREATE_TABLES" = "true" ] && [ "$APPLIANCE_INSTALL" != "true" ]; then
+
+		if [ "$SVA3_INSTALL" = "1" ]; then
+		    true
+		elif [ "$CREATE_TABLES" = "true" ] && [ "$APPLIANCE_INSTALL" != "true" ]; then
 			# we create the database tables if not an appliance
 			create_tables
 		fi
