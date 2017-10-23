@@ -21,6 +21,8 @@ RAND_DEVICE=/dev/urandom
 FAKE_PASSWORD=This_is_not_the_real_password_we_just_do_not_want_to_be_asked_again_in_case_of_updating_the_package
 LSB_RELEASE=`which lsb_release || true`
 
+LINOTP_USER=linotp
+
 msg="LinOTP2: "
 
 echo_prio() {
@@ -76,16 +78,18 @@ echo_info "Installation action: $INSTALL_ACTION"
 #  only functions
 #
 
-function check_user() {
-	if ! getent passwd linotp > /dev/null; then
-		adduser \
-			--system \
-			--disabled-login \
-			--gecos "LinOTP Server" \
-			--shell /bin/false \
-			linotp  >/dev/null
-		echo_log "done setting up user..."
-	fi
+# check_user USERNAME GECOS
+#
+# Check whether a given user exists, and create the user as a system
+# user if necessary.
+
+check_user() {
+    user="$1"
+    if ! getent passwd "$user" >/dev/null; then
+	adduser --system --disabled-login --gecos "$2" \
+		--shell /bin/false "$user" >/dev/null
+	echo_log "Created user '$user'"
+    fi
 }
 
 # this function checks, if we are on a univention corparate server
@@ -175,7 +179,6 @@ function create_grant_string2() {
 }
 
 function create_enc_key() {
-	check_user
 	echo_log "Generating encryption key in $ENCKEYFILE. This may take a while..."
 	# we need the user linotp
 	dd if=$RAND_DEVICE of=$ENCKEYFILE bs=1 count=96
@@ -280,6 +283,7 @@ configure)
 		cp /etc/linotp2/linotp.ini.example $LINOTP_INI
 	fi
 
+	check_user "$LINOTP_USER" "LinOTP Server"
 
 	# Create logdir
 	if [ ! -d $LOGDIR ]; then
@@ -351,7 +355,6 @@ configure)
 
 	if [ "$APACHE" = "true" ]; then
 		# running in apache, we need the user linotp
-		check_user
 		if [ -d $LOGDIR ]; then
 			chown -R linotp $LOGDIR
 		fi
