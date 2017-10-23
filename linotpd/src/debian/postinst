@@ -131,12 +131,15 @@ check_ucs() {
     return 1
 }
 
-# check if we are doing an upgrade
-function check_upgrade() {
-	if [ -f /etc/linotp2/we_are_doing_an_upgrade ]; then
-		return 0
-	fi
-	return 1
+# check_upgrade
+#
+# Returns 0 if we're doing an upgrade, 1 if not.
+
+check_upgrade() {
+    if [ -f /etc/linotp2/we_are_doing_an_upgrade ]; then
+	return 0
+    fi
+    return 1
 }
 
 # check_apache_disabled
@@ -173,42 +176,46 @@ configure_sql() {
     fi
 }
 
-function fix_access_right() {
-	chown -R linotp $LOGDIR
-	chown linotp $ENCKEYFILE
-	if [ -f $DBFILE_FS ]; then
-		chown linotp $DBFILE_FS
-	fi
+# create_tables
+#
+# Use paster to try to create the SQL database tables.
+
+create_tables() {
+    echo_log "Trying to create tables"
+    paster setup-app $LINOTP_INI || true
 }
 
-function create_tables() {
-	echo_log "Try to create tables, now"
-	update-python-modules -p
-	paster setup-app $LINOTP_INI || true
-	fix_access_right
+# create_grant_strings
+#
+# Assemble SQL commands that will set up database permissions for
+# LinOTP. This should work for MySQL, anyway. It does something that
+# one should never do, namely interpolate arbitrary strings into
+# SQL command templates (see https://xkcd.com/327/), but we may get
+# away with this because the strings are from debconf and system
+# administrators will hopefully be reluctant to exploit themselves.
+
+create_grant_strings() {
+    # Create the grant string for all hosts
+    GRANT_STRING1="GRANT ALL PRIVILEGES ON ${DBNAME}.* TO '${DBUSER}'@'%' IDENTIFIED BY '${DBPASSWORD1}';"
+    # Create the grant string for localhost
+    GRANT_STRING2="GRANT ALL PRIVILEGES ON ${DBNAME}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD1}';"
 }
 
+# create_enc_key FILENAME
+#
+# Creates a random 768-bit symmetric encryption key and places it in
+# FILENAME, which is then made over to LINOTP_USER and read-protected
+# from everybody else.  Uses RAND_DEVICE for randomness, which is
+# usually /dev/urandom.
 
-function create_grant_string1() {
-	# create the grant string for all hosts
-	echo_log "grant all privileges on ${DBNAME}.* to '${DBUSER}'@'%' identified by 'XXXXXXXXX';"
-	SQL_STATEMENT="grant all privileges on ${DBNAME}.* to '${DBUSER}'@'%' identified by '${DBPASSWORD1}';"
-}
-
-function create_grant_string2() {
-	# create the grant string for localhost
-	TEMP_HOST="localhost"
-	echo_log "grant all privileges on ${DBNAME}.* to '${DBUSER}'@'${TEMP_HOST}' identified by 'xxxxxxxxxxxx';"
-	SQL_STATEMENT="grant all privileges on ${DBNAME}.* to '${DBUSER}'@'${TEMP_HOST}' identified by '${DBPASSWORD1}';"
-}
-
-function create_enc_key() {
-	echo_log "Generating encryption key in $ENCKEYFILE. This may take a while..."
-	# we need the user linotp
-	dd if=$RAND_DEVICE of=$ENCKEYFILE bs=1 count=96
-	chown linotp $ENCKEYFILE
-	chmod 400 $ENCKEYFILE
-	echo_log "done creating enckey"
+create_enc_key() {
+    fn="$1"
+    echo_log "Generating encryption key: $fn"
+    echo_log "This may take a while ..."
+    dd if="$RAND_DEVICE" of="$fn" bs=1 count=96
+    chown "$LINOTP_USER" "$fn"
+    chmod 400 "$fn"
+    echo_log "Encryption key generated"
 }
 
 evaluate_answers() {
@@ -347,7 +354,7 @@ configure)
 	#
 
 	if [ "$INSTALL_MODE" = "install" -a ! -f "$ENCKEYFILE" ]; then
-		create_enc_key
+		create_enc_key "$ENCKEYFILE"
 	fi
 
 	#
@@ -424,10 +431,7 @@ configure)
 			# create the database with the rootpw
 			# mysql --host=localhost --user=root --password='test123!' --execute="create database LinOTP2;"
 			# grant access for the LinOTP user
-			create_grant_string1
-			GRANT_STRING1=${SQL_STATEMENT}
-			create_grant_string2
-			GRANT_STRING2=${SQL_STATEMENT}
+			create_grant_strings
 			# test, if the package is installed.
 			# will return 1 if it is, 0 if not
 			INSTALLED=`dpkg -l linotp 2>&1 | grep ^ii | wc -l`
