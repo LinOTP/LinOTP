@@ -115,16 +115,20 @@ check_user() {
     fi
 }
 
-# this function checks, if we are on a univention corparate server
-function check_ucs() {
-	if [ -x "$LSB_RELEASE" ]; then
-		RELEASE=`$LSB_RELEASE -i -s`
-		echo_log "Installing on $RELEASE"
-		if [ "$RELEASE" = "Univention" ]; then
-			return 0
-		fi
+# check_ucs
+#
+# Returns 0 if we're on Univention Corporate Server, 1 if not.
+# This may no longer be required.
+
+check_ucs() {
+    if [ -x "$LSB_RELEASE" ]; then
+	RELEASE=$($LSB_RELEASE -i -s)
+	echo_log "Installing on $RELEASE"
+	if [ "$RELEASE" = "Univention" ]; then
+	    return 0
 	fi
-	return 1
+    fi
+    return 1
 }
 
 # check if we are doing an upgrade
@@ -135,41 +139,38 @@ function check_upgrade() {
 	return 1
 }
 
-# check if the apache site was disabled
+# check_apache_disabled
 #
-# the file is created in prerm
-#
-# Note: For older version os LinOTP prerm would not create this
-# file an apache would be enabled again.
-function check_apache_disabled() {
-	if [ -f /etc/linotp2/apache_site_disabled ]; then
-		rm /etc/linotp2/apache_site_disabled
-		return 0
-	fi
-	return 1
+# If the file /etc/linotp2/apache_site_disabled exists, return 0 (and
+# remove the file), else return 1. (This is weird; the file is created
+# by the prerm script but over there it doesn't look like it makes a
+# great deal of sense.)
+
+check_apache_disabled() {
+    if [ -f /etc/linotp2/apache_site_disabled ]; then
+	rm -f /etc/linotp2/apache_site_disabled
+	return 0
+    fi
+    return 1
 }
 
-function configure_sql() {
-	# If the tokendb/password does not exist / is empty, we are on an appliance
-	# should not regenerate this!
-	#echo "LinOTP2: SQL password: $DBPASSWORD1"
-	if [ "$DBPASSWORD1" = "" ] || [ "$DBPASSWORD1" = "1234" ]; then
-		echo_log "SQL Password empty or known password: We do not change the SQL configuration in linotp.ini"
-	elif [ "$UCS_INSTALL" = "true" ]; then
-		echo_log "UCS install, we do not change linotp.ini"
-	else
-		sed -e "s/^sqlalchemy.url.*/${SQLALCHEMY}"/ $LINOTP_INI > $LINOTP_INI.new
-		mv $LINOTP_INI.new $LINOTP_INI
-		if [ "$APPLIANCE_INSTALL" = "true" ] ; then
-			# Audit is active per default on the LSE SVA. On other systems it
-			# needs to be manually enabled.
-			# TODO Ask if Audit should be enabled during installation of any
-			# Debian based system?
-			sed -e "s/^#\?linotpAudit.sql.url \?=.*/${SQLAUDIT}"/ $LINOTP_INI > $LINOTP_INI.new
-			mv $LINOTP_INI.new $LINOTP_INI
-		fi
-		echo_log "SQL configuration in linotp.ini CHANGED!"
+# configure_sql
+#
+# This incorporates previously-determined SQL configuration
+# information into the LINOTP_INI file.
+
+configure_sql() {
+    if [ "$DBPASSWORD1" = "" -o "$DBPASSWD1" = "1234" ]; then
+	echo_log "SQL user password empty or known - not changing linotp.ini"
+    elif [ "$UCS_INSTALL" = "true" ]; then
+	echo_log "UCS install - not changing linotp.ini"
+    else
+	sed -i -e "s/^sqlalchemy.url.*/${SQLALCHEMY}/" $LINOTP_INI
+	if [ "$APPLIANCE_INSTALL" = "true" ]; then
+	    sed -i -e "s/^#\?linotpAudit.sql.url \?=.*/${SQLAUDIT}/" $LINOTP_INI
 	fi
+	echo_log "SQL configuration in $LINOTP_INI changed."
+    fi
 }
 
 function fix_access_right() {
