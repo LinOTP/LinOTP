@@ -1213,7 +1213,8 @@ function getTokenDetails(serial){
         type: 'post',
         data: {
             "serial": serial,
-            "tokeninfo_format": "json"
+            "tokeninfo_format": "json",
+            "session": getsession()
         }
     }).then(function(response, status, promise) {
         var result = response.result.value;
