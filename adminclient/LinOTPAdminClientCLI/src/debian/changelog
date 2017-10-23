@@ -1,4 +1,10 @@
-linotp-adminclient-cli (2.10~0dev1-1) jessie; urgency=low
+linotp-adminclient-cli (2.10~0dev1-1+0stretch1) stretch; urgency=low
+
+  * Adapted for Debian Stretch.
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 05 Sep 2017 15:27:22 +0200
+
+linotp-adminclient-cli (2.10~0dev0-1) jessie; urgency=low
 
   * Set new version 2.10~0dev0-1
 
