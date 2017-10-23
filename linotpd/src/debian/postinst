@@ -229,79 +229,84 @@ create_enc_key() {
     echo_log "Encryption key generated"
 }
 
+# evaluate_answers
+#
+# Obtains configuration information from debconf and uses that to
+# figure out additional configuration settings.
+
 evaluate_answers() {
-	db_get linotp/appliance || true
-	APPLIANCE_INSTALL=$RET
+    db_get linotp/appliance || true
+    APPLIANCE_INSTALL=$RET
 
-	db_get linotp/apache/activate
-	APACHE=$RET
-	echo_log "I got this key: $APACHE"
+    db_get linotp/apache/activate
+    APACHE=$RET
+    echo_log "I got this key: $APACHE"
 
-	if [ "$APACHE" = "true" ]; then
-		db_get linotp/apache/admin_password
-		if [ "$RET" != "$FAKE_PASSWORD" ]; then
-			# Only update the password if it is not the fake password
-			PWDIGEST=`echo -n "admin:$REALM:$RET" | md5sum | cut -f1 -d ' '`
-			echo "admin:$REALM:$PWDIGEST" > $DIGESTFILE
-		fi
-		# delete password from database
-		#db_reset linotp/apache/admin_password
-		db_set linotp/apache/admin_password $FAKE_PASSWORD
-
-		db_get linotp/apache/ssl_create
-		APACHE_SSL_CREATE=$RET
-		#db_reset linotp/apache/ssl_create
-		db_set linotp/apache/ssl_create false
-
-		db_get linotp/tokendb/dbtype_apache2
-		TOKENDB=$RET
-		echo_log "I got these keys: apache: $APACHE_SSL_CREATE, tokendb: $TOKENDB"
-	else
-		db_get linotp/tokendb/dbtype
-		TOKENDB=$RET
+    if [ "$APACHE" == "true" ]; then
+	db_get linotp/apache/admin_password
+	if [ "$RET" != "$FAKE_PASSWORD" ]; then
+	    # Only update the password if it is not the fake password
+	    PWDIGEST=$(echo -n "admin:$REALM:$RET" | md5sum | cut -f1 -d ' ')
+	    echo "admin:$REALM:$PWDIGEST" >"$DIGESTFILE"
 	fi
+	# delete password from database
+	db_set linotp/apache/admin_password "$FAKE_PASSWORD"
 
-	echo_log "This is my database: $TOKENDB"
+	db_get linotp/apache/ssl_create
+	APACHE_SSL_CREATE=$RET
+	db_set linotp/apache/ssl_create false
 
-	if [ "$TOKENDB" = "SQLite" ]; then
-		#db_input high linotp/choose_token_file || true
-		#db_go
-		#db_get linotp/choose_token_file
-		#DBFILE=$RET
-		DBFILE='\/%(here)s\/token.db'
-		DBFILE_FS=/etc/linotp2/token.db
-		db_get linotp/sqlite/ask_createdb || true
-		CREATEDB_SQLITE=$RET
-	elif [ "$TOKENDB" = "MySQL" ]; then
-		db_get linotp/tokendb/dbhost
-		DBHOST=$RET
-		db_get linotp/tokendb/dbname
-		DBNAME=$RET
-		db_get linotp/tokendb/dbuser
-		DBUSER=$RET
-		db_get linotp/tokendb/randompw || true
-		RANDOMPW=$RET
-		if [ "$RANDOMPW" = "true" ]; then
-			DBPASSWORD1=`pwgen 16 1`
-			db_set linotp/tokendb/randompw false
-		else
-			db_get linotp/tokendb/password
-			DBPASSWORD1=$RET
-		fi
-		db_get linotp/mysql/ask_createdb || true
-		CREATEDB=$RET
-		# As we also delete the rootpassword from the debian db, we can
-		# not create the database in successive runs.
-		db_set linotp/mysql/ask_createdb false
-		if [ "$CREATEDB" = "true" ]; then
-			db_get linotp/mysql/ask_rootpw
-			ROOTPW=$RET
-			db_set linotp/mysql/ask_rootpw false
-		fi
-		db_get linotp/mysql/ask_createtables || true
-		CREATE_TABLES=$RET
-		db_set linotp/mysql/ask_createtables false
-	fi
+	db_get linotp/tokendb/dbtype_apache2
+	TOKENDB=$RET
+	echo_log "I got these keys: apache: $APACHE_SSL_CREATE, tokendb: $TOKENDB"
+    else
+	db_get linotp/tokendb/dbtype
+	TOKENDB=$RET
+    fi
+
+    echo_log "This is my database: $TOKENDB"
+
+    case "$TOKENDB" in
+	SQLite)
+	    DBFILE='\/%(here)s/token.db'
+	    DBFILE_FS=/etc/linotp2/token.db
+	    db_get linotp/sqlite/ask_createdb || true
+	    CREATEDB_SQLITE=$RET
+	    ;;
+	MySQL)
+	    db_get linotp/tokendb/dbhost
+	    DBHOST=$RET
+	    db_get linotp/tokendb/dbname
+	    DBNAME=$RET
+	    db_get linotp/tokendb/dbuser
+	    DBUSER=$RET
+	    db_get linotp/tokendb/randompw || true
+	    RANDOMPW=$RET
+	    if [ "$RANDOMPW" = "true" ]; then
+		DBPASSWORD1="$(pwgen 16 1)"
+		db_set linotp/tokendb/randompw false
+	    else
+		db_get linotp/tokendb/password
+		DBPASSWORD1="$RET"
+	    fi
+	    db_get linotp/mysql/ask_createdb || true
+	    CREATEDB=$RET
+	    # As we also delete the root password from the debconf DB,
+	    # we cannot create the database in subsequent runs.
+	    db_set linotp/mysql/ask_createdb false
+	    if [ "$CREATEDB" = "true" ]; then
+		db_get linotp/mysql/ask_rootpw
+		ROOTPW=$RET
+		db_set linotp/mysql/ask_rootpw false
+	    fi
+	    db_get linotp/mysql/ask_createtables || true
+	    CREATE_TABLES=$RET
+	    db_set linotp/mysql/ask_createtables false
+	    ;;
+	*)
+	    echo_log "'$TOKENDB' is not supported for the token database"
+	    ;;
+    esac
 }
 
 ##################################################################
