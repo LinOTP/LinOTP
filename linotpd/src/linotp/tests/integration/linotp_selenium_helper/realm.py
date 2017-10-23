@@ -99,10 +99,9 @@ class EditRealmDialog(ManageDialog):
         resolver_elements = [
             r.element for r in resolvers if r.name in linked_resolvers]
 
-        ActionChains(self.driver).key_down(Keys.CONTROL).perform()
         for element in resolver_elements:
-            element.click()
-        ActionChains(self.driver).key_up(Keys.CONTROL).perform()
+            ActionChains(self.driver).key_down(Keys.CONTROL).click(
+                element).key_up(Keys.CONTROL).perform()
 
     def save(self):
         self.find_by_id(self.edit_save_button_id).click()

@@ -110,5 +110,5 @@ class TestCreateUserIdResolvers(TestCase):
     def test_11_multiple_resolvers(self):
         testdata = (data.musicians_ldap_resolver, data.physics_ldap_resolver,
                     data.sql_resolver, data.sepasswd_resolver)
-        return self.create_resolvers_and_realm(testdata)
 
+        return self.create_resolvers_and_realm(testdata)

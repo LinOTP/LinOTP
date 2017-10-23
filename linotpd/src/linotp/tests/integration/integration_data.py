@@ -88,7 +88,7 @@ physics_ldap_resolver = {
     'binddn': u'cn="Clark Maxwell",ou=corp,dc=hotad,dc=example,dc=net',
     'password': "Test123!",
     'preset_ldap': False,
-    'expected_users': 12,
+    'expected_users': 26,
 }
 
 sql_resolver = {
@@ -109,7 +109,8 @@ sql_resolver = {
 #
 # hans:x:42:0:Hans Müller,Room 22,+49(0)1234-22,+49(0)5678-22,hans@example.com:x:x
 # susi:x:1336:0:Susanne Bauer,Room 23,+49(0)1234-24,+49(0)5678-23,susanne@example.com:x:x
-# rollo:x:21:0:Rollobert Fischer,Room 24,+49(0)1234-24,+49(0)5678-24,rollo@example.com:x:x
+# rollo:x:21:0:Rollobert Fischer,Room
+# 24,+49(0)1234-24,+49(0)5678-24,rollo@example.com:x:x
 sepasswd_resolver = {
     'name': 'SE_myPasswd',
     'type': 'passwdresolver',
