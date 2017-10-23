@@ -1,17 +1,26 @@
 #!/usr/bin/make -f
 
-
 #export DH_VERBOSE = 1
 
-DEB_PYTHON_SYSTEM := pysupport
+export PYBUILD_NAME=linotp
+export PYBUILD_DISABLE=test
 
-include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/class/python-distutils.mk
+export DEB_VERSION = $(shell sed -ne '1{s/^.* (//;s/).*$$//;p}' debian/changelog)
 
-binary-install/linotp::
-	mv debian/linotp/usr/etc debian/linotp/etc
+%:
+	dh $@ --with python2 --buildsystem=pybuild
 
-clean::
-	dh_clean
-	debconf-updatepo
+# Make sure that the stuff setuptools puts into /usr/etc actually ends up in /etc;
+# otherwise the postinst gets confused.
+# Also, replace “@@@DEB_VERSION@@@” by the Debian package version number (as per
+# the changelog, see above) in all {pre,post}{inst,rm} files.
 
+override_dh_installdeb:
+	dh_installdeb
+	for pkg in $$(dh_listpackages -i); do \
+		if [ -d debian/$$pkg/usr/etc ]; then \
+			mv debian/$$pkg/usr/etc/* debian/$$pkg/etc ; \
+			rmdir debian/$$pkg/usr/etc ; \
+		fi ; \
+		sed -ie 's/@@@DEB_VERSION@@@/$(DEB_VERSION)/' debian/$$pkg/DEBIAN/*; \
+	done
