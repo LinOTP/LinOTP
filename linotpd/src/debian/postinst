@@ -387,33 +387,22 @@ configure)
 
 	if [ "$SVA3_INSTALL" = "1" ]; then
 	    echo_log "Skipping Apache configuration because we're on an SVA3."
-	elif [ "$APACHE" = "true" ]; then
-		# running in apache, we need the user linotp
-		if [ -d $LOGDIR ]; then
-			chown -R linotp $LOGDIR
-		fi
+	if [ "$APACHE" = "true" ]; then
 		if ! check_apache_disabled; then
 			# Copy linotp2 VirtualHost from /etc/linotp2 to /etc/apache2 . Depending on
 			# the Apache version a different file is used.
-			APACHE2_VERSION=`dpkg -s apache2 | grep Version | cut -f2 -d' '`
-			dpkg --compare-versions ${APACHE2_VERSION} ge 2.4 && APV_RC=$? || APV_RC=$?
-			if [ ${APV_RC} == 0 ]
-			then
-				echo_log "Using Apache 2.4 config"
-				if [ ! -f /etc/apache2/sites-available/linotp2.conf ]
-				then
-					cp /etc/linotp2/apache2.4-example/linotp2.conf /etc/apache2/sites-available/
-				else
-					echo_log "Apache linotp2.conf already present. Doing nothing."
-				fi
+			APACHE2_VERSION=$(dpkg -s apache2 | grep "^Version:" | cut -d' ' -f2)
+			if dpkg --compare-versions ${APACHE2_VERSION} ge 2.4; then
+			    config=/etc/linotp2/apache2.4-example/linotp2.conf
 			else
-				echo_log "Using Apache 2.2 config"
-				if [ ! -f /etc/apache2/sites-available/linotp2 ]
-				then
-					cp /etc/linotp2/apache2.2-example/linotp2 /etc/apache2/sites-available/
-				else
-					echo_log "Apache linotp2 already present. Doing nothing."
-				fi
+			    config=/etc/linotp2/apache2.2-example/linotp2.conf
+			fi
+			echo_log "Setting up for Apache $APACHE2_VERSION"
+			if [ ! -f /etc/apache2/sites-available/linotp2.conf ]; then
+			    echo_log "Using configuration file: $config"
+			    cp "$config" /etc/apache2/sites-available/linotp2.conf
+			else
+			    echo_log "Apache already configured, leaving intact."
 			fi
 
 			a2ensite linotp2
@@ -421,13 +410,14 @@ configure)
 			a2enmod wsgi
 			a2enmod ssl
 			a2enmod headers
-			echo_log "done activating apache"
+			echo_log "Basic Apache configuration done"
 		fi
 		if [ "$APACHE_SSL_CREATE" = "true" ]; then
 			# in appliance install these directories do not exist, yet
-			mkdir -p /etc/ssl/private
-			mkdir -p /etc/ssl/certs
+			[ -d /etc/ssl/private ] || mkdir -p /etc/ssl/private
+			[ -d /etc/ssl/certs ] || mkdir -p /etc/ssl/certs
 			openssl req -new -x509 -newkey rsa:2048 -subj /CN=`hostname`.`dnsdomainname` -days 768 -out /etc/ssl/certs/linotpserver.pem  -keyout /etc/ssl/private/linotpserver.key -nodes
+			echo_log "Self-signed certificate created"
 		fi
 		touch $APACHE_CONFIG
 		invoke-rc.d apache2 reload
