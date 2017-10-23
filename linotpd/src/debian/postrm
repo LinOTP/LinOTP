@@ -20,11 +20,9 @@ if [ "$1" = "purge" -a -e /usr/share/debconf/confmodule ]; then
     fi
     echo "Deleting log directory."
     rm -fr /var/log/linotp
-    rm -fr /etc/linotp2/token.db
-    rm -fr /etc/linotp2/encKey
-    rm -fr /etc/linotp2/admins
-	rm -fr /etc/linotp2/data
-	mv -f /etc/linotp2/linotp.ini /etc/linotp2/linotp.ini.old
+
+    # Where I come from, “purge” means purge.
+    rm -rf /etc/linotp2/*
 fi
 
 #DEBHELPER#
