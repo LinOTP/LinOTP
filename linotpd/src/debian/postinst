@@ -40,45 +40,36 @@ echo_log() {
     echo >&2 "${msg}$1"
 }
 
-DOING_NEW_INSTALLATION=false
-DOING_RE_INSTALLATION=false
-DOING_RECONFIGURE=false
+# Try to figure out what we are supposed to do
+
+INSTALL_ACTION=install
 if [ -n "$2" ]; then
-	INSTALLED_VERSION=${2}
-	dpkg --compare-versions "${NEW_VERSION}" eq "${INSTALLED_VERSION}" && VERSION_EQUAL=true
-	dpkg --compare-versions "${NEW_VERSION}" gt "${INSTALLED_VERSION}" && VERSION_UPGRADE=true
-	dpkg --compare-versions "${NEW_VERSION}" lt "${INSTALLED_VERSION}" && VERSION_DOWNGRADE=true
-fi
-# Currently debconf's postinst script does not use the 'reconfigure' parameter
-# but instead sets DEBCONF_RECONFIGURE to 1. The recommended method for dealing
-# with this and being future proof is supporting both. See debconf-devel
-# manpage for details.
-if [ "$1" = "reconfigure" ] || [ "${DEBCONF_RECONFIGURE}" = 1 ]; then
-	DOING_RECONFIGURE=true
-elif [ "$1" = "configure" ]; then
-	if [ -n "${INSTALLED_VERSION}" ]; then
-		DOING_RE_INSTALLATION=true
-		# RE_INSTALLATION is set in 3 cases:
-		#   * Package upgrade
-		#   * Package downgrade
-		#   * 'apt-get remove' followed by 'apt-get install' at some point, even
-		#     with a different version (up or downgrade). Incidentally if the
-		#     package is removed with 'purge' then installing it again is like
-		#     a NEW_INSTALLATION.
-	else
-		DOING_NEW_INSTALLATION=true
-	fi
+    INSTALLED_VERSION="$2"
+    if dpkg --compare-versions "${NEW_VERSION}" eq "${INSTALLED_VERSION}"; then
+	INSTALL_ACTION=reinstall
+    elif dpkg --compare-versions "${NEW_VERSION}" gt "${INSTALLED_VERSION}"; then
+	INSTALL_ACTION=upgrade
+    else
+	INSTALL_ACTION=downgrade
+    fi
 fi
 
-# Always print to stderr, otherwise debconf can get confused
-echo_info "Installing new package?: ${DOING_NEW_INSTALLATION}"
-echo_info "Re-installing package?: ${DOING_RE_INSTALLATION}"
-echo_info "Reconfiguring package?: ${DOING_RECONFIGURE}"
-echo_info "Currently installed version: ${INSTALLED_VERSION}"
-echo_info "New version: ${NEW_VERSION}"
-echo_info "Version equal: ${VERSION_EQUAL}"
-echo_info "Version upgrade: ${VERSION_UPGRADE}"
-echo_info "Version downgrade: ${VERSION_DOWNGRADE}"
+# Currently debconf's postinst script does not use the 'reconfigure' parameter
+# but instead sets DEBCONF_RECONFIGURE to 1. The recommended method for dealing
+# with this and being future-proof is to support both. See debconf-devel manpage
+# for details.
+
+INSTALL_MODE="install"
+if [ "$1" = "reconfigure" -o "$DEBCONF_RECONFIGURE" = "1" ]; then
+    INSTALL_MODE="reconfigure"
+elif [ "$1" = "configure" -a -n "$INSTALLED_VERSION" ]; then
+    INSTALL_MODE="reinstall"
+fi
+
+echo_info "Installation mode: $INSTALL_MODE"
+echo_info "Installed version: ${INSTALLED_VERSION:-(none)}"
+echo_info "New version: $NEW_VERSION"
+echo_info "Installation action: $INSTALL_ACTION"
 
 ####################################################################
 #
@@ -350,7 +341,7 @@ configure)
 	# We are done with asking questions
 	#
 
-	if [ "${DOING_NEW_INSTALLATION}" = "true" ] &&  [ ! -f ${ENCKEYFILE} ]; then
+	if [ "$INSTALL_MODE" = "install" -a ! -f "$ENCKEYFILE" ]; then
 		create_enc_key
 	fi
 
