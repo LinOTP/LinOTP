@@ -408,129 +408,129 @@ case "$1" in
 	#
 	# Check and create token databases
 	#
-	# ...if we are within the appliance, we can not create the database, since
+	# ...if we are within the appliance, we cannot create the database, since
 	# the mysql is not running.
 	# so we need to do the mysql creating in firstboot!
 
-	if [ "$TOKENDB" = "MySQL" ]; then
-		#	echo "Confiugring mysql"
+	case "$TOKENDB" in
+	    MySQL)
+		echo_log "Setting up MySQL ..."
 		SQLALCHEMY="sqlalchemy.url = mysql:\/\/$DBUSER:$DBPASSWORD1@$DBHOST\/$DBNAME"
 		SQLAUDIT="linotpAudit.sql.url = mysql:\/\/$DBUSER:$DBPASSWORD1@$DBHOST\/$DBNAME"
 		configure_sql
+		# The SVA3 configuration process will overwrite this.
 		if [ "$CREATEDB" = "true" ]; then
-			if [ "$ROOTPW" = "" ] && [ -f /etc/lseappliance/mysql_root ]; then
-				ROOTPW=`cat /etc/lseappliance/mysql_root`
+		    if [ "$ROOTPW" = "" -a -f /etc/lseappliance/mysql_root ]; then
+			ROOTPW=`cat /etc/lseappliance/mysql_root`
+		    fi
+
+		    create_grant_strings
+		    INSTALLED=`dpkg -l linotp 2>&1 | grep ^ii | wc -l`
+		    echo_log "The result of dpkg -l linotp: $INSTALLED"
+
+		    if [ "$SVA3_INSTALL" = "1" ]; then
+			# The database is generated in the appmgr-mod-linotp postinst.
+			true
+		    # ATM, we will create the database on the first run, which might fail.
+		    # On an old appliance, we only create the database on reboot.
+		    elif [ "$APPLIANCE_INSTALL" = "true" -a ! -f /etc/lseappliance/mysql_root ]; then
+			# The package is not installed, so we will create the database
+			# after next reboot
+			echo_info "Will setup the database after next reboot"
+			echo "$GRANT_STRING1" > /etc/linotp2/linotpcreatedb.sql
+			echo "$GRANT_STRING2" >> /etc/linotp2/linotpcreatedb.sql
+			cp /etc/rc.local /etc/rc.local.linotp-dpkg
+			echo "#!/bin/sh -e" > /etc/rc.local
+
+			# In Debian Jessie, a MySQL systemd service file does not exist.
+			# Therefore, we cannot ensure that the rc.local script is
+			# executed after MySQL is successfully started. That's why we
+			# poll for MySQL.
+			DEBIAN_VERSION=`cat /etc/debian_version`
+			dpkg --compare-versions ${DEBIAN_VERSION} ge 8.0
+			DEB_VER_GE_8=$?
+			dpkg --compare-versions ${DEBIAN_VERSION} lt 9.0
+			DEB_VER_LT_9=$?
+			if [ ${DEB_VER_GE_8} == 0 -a ${DEB_VER_LT_9} == 0 ]; then
+			    echo "while ! mysqladmin ping --host=$DBHOST --user=root --password=${ROOTPW}; do" >> /etc/rc.local
+			    echo "echo \"MySQL is not running, yet. Waiting...\"" >> /etc/rc.local
+			    echo "sleep 1" >> /etc/rc.local
+			    echo "done" >> /etc/rc.local
+			elif [ ${DEB_VER_LT_9} != 0 ]; then
+			    # This should really be covered by the SVA3 case above.
+			    echo_err "TODO: Check MySQL and systemd on debian 9 appliance install!"
 			fi
 
-			# create the database with the rootpw
-			# mysql --host=localhost --user=root --password='test123!' --execute="create database LinOTP2;"
-			# grant access for the LinOTP user
-			create_grant_strings
-			# test, if the package is installed.
-			# will return 1 if it is, 0 if not
-			INSTALLED=`dpkg -l linotp 2>&1 | grep ^ii | wc -l`
-			echo_log "The result of dpkg -l linotp: $INSTALLED"
-
-			#
-			# TODO: At the moment we will create the database on the first run, which might fail!!!
-			#       We only create the database on reboot, if the appliance=true was set in the
-			#	preseed file
-			if [ "$SVA3_INSTALL" = "1" ]; then
-			    # The database is generated in the appmgr-mod-linotp postinst.
-			    true
-			elif [ "$APPLIANCE_INSTALL" = "true" ] && [ ! -f /etc/lseappliance/mysql_root ]; then
-				# The package is not installed, so we will create the database after next reboot
-				echo_info "Will setup the database after next reboot"
-				echo $GRANT_STRING1 > /etc/linotp2/linotpcreatedb.sql
-				echo $GRANT_STRING2 >> /etc/linotp2/linotpcreatedb.sql
-				cp /etc/rc.local /etc/rc.local.linotp-dpkg
-				echo "#!/bin/sh -e" > /etc/rc.local
-
-				# In debian jessie, a MySQL systemd service file does not exist. Therefore, we
-				# cannot ensure that the rc.local script is executed after MySQL is successfully
-				# started. That's why we poll for MySQL.
-				DEBIAN_VERSION=`cat /etc/debian_version`
-				dpkg --compare-versions ${DEBIAN_VERSION} ge 8.0 && DEB_VER_GE_8=$? || DEB_VER_GE_8=$?
-				dpkg --compare-versions ${DEBIAN_VERSION} lt 9.0 && DEB_VER_LT_9=$? || DEB_VER_LT_9=$?
-				if [ ${DEB_VER_GE_8} == 0 ] && [ ${DEB_VER_LT_9} == 0 ]; then
-					echo "while ! mysqladmin ping --host=$DBHOST --user=root --password=${ROOTPW}; do" >> /etc/rc.local
-					echo "echo \"MySQL is not running, yet. Waiting...\"" >> /etc/rc.local
-					echo "sleep 1" >> /etc/rc.local
-					echo "done" >> /etc/rc.local
-				elif [ ${DEB_VER_LT_9} != 0 ]; then
-					# We are on debian 9 or higher. Since we don't know whether we will have a systemd
-					# service file or not (or whether debian 9 will ship MySQL at all) we log a warning.
-					echo_err "TODO: Check MySQL and systemd on debian 9 appliance install!"
-				fi
-
-				echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" --execute=\"create database $DBNAME;\" || true" >> /etc/rc.local
-				echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" < /etc/linotp2/linotpcreatedb.sql || true" >> /etc/rc.local
-				echo "rm /etc/linotp2/linotpcreatedb.sql" >> /etc/rc.local
-				# create tables
-				echo "paster setup-app $LINOTP_INI" >> /etc/rc.local
-				echo "chown -R linotp $LOGDIR/*" >> /etc/rc.local
-				echo "chown linotp $ENCKEYFILE" >> /etc/rc.local
-				# Finally we would clean the rc.local
-				echo "mv /etc/rc.local.linotp-dpkg /etc/rc.local" >> /etc/rc.local
-				#echo "echo '#!/bin/sh -e' > /etc/rc.local" >> /etc/rc.local
-				#echo "echo 'exit 0'>> /etc/rc.local" >> /etc/rc.local
-				echo_log "written this rc.local:"
-				cat /etc/rc.local
-			else
-				# We can try to create the database now!
-				echo_log "Try to set up database, now"
-				mysql --host=$DBHOST --user=root --password="${ROOTPW}" --execute="create database if not exists $DBNAME;" || true
-				temp_sql=`mktemp`
-				# set password
-				if [ "$DBPASSWORD1" != "" ] && [ "$DBPASSWORD1" != "1234" ]; then
-					echo $GRANT_STRING1 > $temp_sql
-					echo $GRANT_STRING2 >> $temp_sql
-					mysql --host=$DBHOST --user=root --password="${ROOTPW}" < $temp_sql || true
-					rm $temp_sql
-				fi
-			fi #APPLIANCE_INSTALL
+			echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" --execute=\"create database $DBNAME;\" || true" >> /etc/rc.local
+			echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" < /etc/linotp2/linotpcreatedb.sql || true" >> /etc/rc.local
+			echo "rm /etc/linotp2/linotpcreatedb.sql" >> /etc/rc.local
+			# create tables
+			echo "paster setup-app $LINOTP_INI" >> /etc/rc.local
+			echo "chown -R \"$LINOTP_USER\" $LOGDIR/*" >> /etc/rc.local
+			echo "chown \"$LINOTP_USER\" $ENCKEYFILE" >> /etc/rc.local
+			# Finally we would clean the rc.local
+			echo "mv /etc/rc.local.linotp-dpkg /etc/rc.local" >> /etc/rc.local
+			#echo "echo '#!/bin/sh -e' > /etc/rc.local" >> /etc/rc.local
+			#echo "echo 'exit 0'>> /etc/rc.local" >> /etc/rc.local
+			echo_log "written this rc.local:"
+			cat /etc/rc.local
+		    else
+			# We can try to create the database now!
+			echo_log "Try to set up database, now"
+			mysql --host=$DBHOST --user=root --password="${ROOTPW}" --execute="create database if not exists $DBNAME;" || true
+			temp_sql=`mktemp`
+			# set password
+			if [ "$DBPASSWORD1" != "" -a "$DBPASSWORD1" != "1234" ]; then
+			    echo $GRANT_STRING1 > $temp_sql
+			    echo $GRANT_STRING2 >> $temp_sql
+			    mysql --host=$DBHOST --user=root --password="${ROOTPW}" < $temp_sql || true
+			    rm $temp_sql
+			fi
+		    fi #APPLIANCE_INSTALL
 		fi #CREATE_DB
 
 		if [ "$SVA3_INSTALL" = "1" ]; then
+		    # LinOTP will create its tables when it actually runs.
 		    true
-		elif [ "$CREATE_TABLES" = "true" ] && [ "$APPLIANCE_INSTALL" != "true" ]; then
-			# we create the database tables if not an appliance
-			create_tables
+		elif [ "$CREATE_TABLES" = "true" -a "$APPLIANCE_INSTALL" != "true" ]; then
+		    # we create the database tables if not an appliance
+		    create_tables
 		fi
 		# On an Appliance or a UCS we create the tables in case of an upgrade!
-		if [ "$APPLIANCE_INSTALL" = "true" ] || [ "$UCS_INSTALL" = "true" ] ; then
-			if check_upgrade; then
-				echo_log "Doing an upgrade, creating tables"
-				create_tables
-			fi
+		if [ "$APPLIANCE_INSTALL" = "true" -o "$UCS_INSTALL" = "true" ] ; then
+		    if check_upgrade; then
+			echo_log "Doing an upgrade, creating tables"
+			create_tables
+		    fi
 		fi
-	elif [ "$TOKENDB" = "SQLite" ]; then
-		#echo "Configuring sqlite"
+		;;
+	    SQLite)
+		echo_log "Setting up SQLite ..."
 		SQLALCHEMY="sqlalchemy.url = sqlite:\/\/$DBFILE"
 		SQLAUDIT="linotpAudit.sql.url = sqlite:\/\/$DBFILE"
 		configure_sql
 		if [ "$CREATEDB_SQLITE" = "true" ]; then
-			if [ -f $DBFILE_FS ]; then
-				mv $DBFILE_FS $DBFILE_FS.old
-			fi
-			create_tables
+		    if [ -f $DBFILE_FS ]; then
+			mv $DBFILE_FS $DBFILE_FS.old
+		    fi
+		    create_tables
 		fi
-		mkdir /var/run/linotp
-		chown linotp /var/run/linotp/
-		chown linotp /etc/linotp2
-		chown linotp /etc/linotp2/token.db
-	fi #TOKENDB
+		create_dir "SQLite" /var/run/linotp
+		chown "$LINOTP_USER" /etc/linotp2
+		chown "$LINOTP_USER" /etc/linotp2/token.db
+	esac #TOKENDB
 
-	chown -R linotp  $LOGDIR
+	# TODO: probably not needed
+	chown -R "$LINOTP_USER" "$LOGDIR"
 
 	# adapt who.ini
-	sed -e s/^secret\ =\ .*/secret\ =\ `pwgen 16 1`/ $WHO_INI > $WHO_INI.new
-	mv $WHO_INI.new $WHO_INI
-	chown linotp $WHO_INI
-	chmod 600 $WHO_INI
+	sed -ie "s/^secret\ =\ .*/secret\ =\ $(pwgen 16 1)/" "$WHO_INI"
+	chown "$LINOTP_USER" "$WHO_INI"
+	chmod 600 "$WHO_INI"
 
 	# remove the template cache, as the templates might have changed
-	rm -fr /etc/linotp2/data/*
+	# TODO: probably not needed
+	rm -rf "$CACHEDIR"/*
 
 	#
 	# create sql Audit trail as default
@@ -538,35 +538,35 @@ case "$1" in
 	PRIVKEY=/etc/linotp2/private.pem
 	PUBKEY=/etc/linotp2/public.pem
 
-	if [ ! -f $PRIVKEY ];  then
-		echo_log "createing private key pair"
-		# create keypair:
-		openssl genrsa -out $PRIVKEY 2048
-		# extract the public key:
-		openssl rsa -in $PRIVKEY -pubout -out $PUBKEY
-		chmod 600 $PRIVKEY
+	if [ ! -f "$PRIVKEY" ];  then
+	    echo_log "Creating private/public key pair"
+	    # create keypair:
+	    openssl genrsa -out "$PRIVKEY" 2048
+	    # extract the public key:
+	    openssl rsa -in "$PRIVKEY" -pubout -out "$PUBKEY"
+	    chmod 600 "$PRIVKEY"
 	fi
-	chown linotp $PRIVKEY
+	chown "$LINOTP_USER" "$PRIVKEY"
 
 	#
 	# Finally, if we are in the appliance or UCS, we activate the Mysql Audit.
-	# We can only do this at the end, otherwise the creation of the database might fail...
+	# We can only do this at the end, otherwise the creation of the database might
+	# fail...
 	#
-	if [ "$APPLIANCE_INSTALL" = "true" ] || check_ucs ; then
-		echo_log "Appliance install, activating mysql audit"
-		sed -e s/"^#linotpAudit.type = linotp.lib.audit.SQLAudit"/"linotpAudit.type = linotp.lib.audit.SQLAudit"/ $LINOTP_INI > $LINOTP_INI.new
-		mv $LINOTP_INI.new $LINOTP_INI
+	if [ "$APPLIANCE_INSTALL" = "true" -o "$UCS_INSTALL" = "true" ]; then
+	    echo_log "Appliance install, activating mysql audit"
+	    sed -ie s/"^#linotpAudit.type = linotp.lib.audit.SQLAudit"/"linotpAudit.type = linotp.lib.audit.SQLAudit"/ $LINOTP_INI
 	else
-		echo_log "SQLAudit has not been activated."
+	    echo_log "SQLAudit has not been activated."
 	fi
 
 	rm -f /etc/linotp2/we_are_doing_an_upgrade
 	;;
 
-abort-upgrade|abort-remove|abort-deconfigure)
+    abort-upgrade|abort-remove|abort-deconfigure)
 	;;
 
-*)
+    *)
 	echo "postinst called with unknown argument \`$1'" >&2
 	exit 1
 	;;
