@@ -115,22 +115,6 @@ check_user() {
     fi
 }
 
-# check_ucs
-#
-# Returns 0 if we're on Univention Corporate Server, 1 if not.
-# This may no longer be required.
-
-check_ucs() {
-    if [ -x "$LSB_RELEASE" ]; then
-	RELEASE=$($LSB_RELEASE -i -s)
-	echo_log "Installing on $RELEASE"
-	if [ "$RELEASE" = "Univention" ]; then
-	    return 0
-	fi
-    fi
-    return 1
-}
-
 # check_upgrade
 #
 # Returns 0 if we're doing an upgrade, 1 if not.
@@ -176,8 +160,6 @@ check_apache_disabled() {
 configure_sql() {
     if [ "$DBPASSWORD1" = "" -o "$DBPASSWD1" = "1234" ]; then
 	echo_log "SQL user password empty or known - not changing linotp.ini"
-    elif [ "$UCS_INSTALL" = "true" ]; then
-	echo_log "UCS install - not changing linotp.ini"
     else
 	sed -i -e "s/^sqlalchemy.url.*/${SQLALCHEMY}/" $LINOTP_INI
 	if [ "$APPLIANCE_INSTALL" = "true" ]; then
@@ -328,22 +310,7 @@ case "$1" in
 
 	SVA3_INSTALL=0
 
-	if check_ucs; then
-	    echo_log "Doing UCS installation"
-	    APACHE="false"
-	    TOKENDB="MySQL"
-	    # We can get a certificate from UCS!
-	    APACHE_SSL_CREATE="false"
-	    # local database
-	    DBHOST="localhost"
-	    DBNAME="LinOTP2"
-	    DBUSER="linotp2"
-	    DBPASSWORD1=`pwgen 16 1`
-	    CREATEDB="false"
-	    ROOTPW=""
-	    CREATE_TABLES="false"
-	    UCS_INSTALL="true"
-	elif check_sva3; then
+	if check_sva3; then
 	    echo_log "Doing installation for SVA3"
 	    SVA3_INSTALL=1
 	    # The debconf answers can simply be preseeded elsewhere in the SVA3
@@ -496,8 +463,8 @@ case "$1" in
 		    # we create the database tables if not an appliance
 		    create_tables
 		fi
-		# On an Appliance or a UCS we create the tables in case of an upgrade!
-		if [ "$APPLIANCE_INSTALL" = "true" -o "$UCS_INSTALL" = "true" ] ; then
+		# On an Appliance we create the tables in case of an upgrade!
+		if [ "$APPLIANCE_INSTALL" = "true" ] ; then
 		    if check_upgrade; then
 			echo_log "Doing an upgrade, creating tables"
 			create_tables
@@ -549,11 +516,11 @@ case "$1" in
 	chown "$LINOTP_USER" "$PRIVKEY"
 
 	#
-	# Finally, if we are in the appliance or UCS, we activate the Mysql Audit.
+	# Finally, if we are in the appliance, we activate the Mysql Audit.
 	# We can only do this at the end, otherwise the creation of the database might
 	# fail...
 	#
-	if [ "$APPLIANCE_INSTALL" = "true" -o "$UCS_INSTALL" = "true" ]; then
+	if [ "$APPLIANCE_INSTALL" = "true" ]; then
 	    echo_log "Appliance install, activating mysql audit"
 	    sed -ie s/"^#linotpAudit.type = linotp.lib.audit.SQLAudit"/"linotpAudit.type = linotp.lib.audit.SQLAudit"/ $LINOTP_INI
 	else
