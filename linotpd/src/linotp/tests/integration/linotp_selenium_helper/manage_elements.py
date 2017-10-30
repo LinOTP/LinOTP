@@ -277,7 +277,7 @@ class ManageDialog(ManageElement):
         """
         Click a button in the dialog
 
-        @param button_id ID of the element to click. Defaults to any button 
+        :param button_id: ID of the element to click. Defaults to any button
         """
         button_css = self.buttonset_css + ' button'
         if button_id:

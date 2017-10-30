@@ -31,3 +31,4 @@ simplejson
 requests
 LinOTP
 LinOTPAdminClientCLI
+packaging

@@ -106,8 +106,11 @@ class SmtpMessageServer(object):
 
         self.timeout = message_timeout
 
-        self.set_config = SetConfig(testcase.http_protocol, testcase.http_host, testcase.http_port,
-                                    testcase.http_username, testcase.http_password)
+        self.set_config = SetConfig(testcase.http_protocol,
+                                    testcase.http_host,
+                                    testcase.http_port,
+                                    testcase.http_username,
+                                    testcase.http_password)
 
         # We advertise the local SMTP server hostname
         # using the IP address that connects to LinOTP
@@ -157,7 +160,9 @@ class SmtpMessageServer(object):
         LinOTP
         """
 
-        with closing(socket.create_connection((self.testcase.http_host, int(self.testcase.http_port)), 10)) as s:
+        with closing(socket.create_connection((self.testcase.http_host,
+                                               int(self.testcase.http_port)),
+                                              10)) as s:
             addr = s.getsockname()[0]
 
         return addr

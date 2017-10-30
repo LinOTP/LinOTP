@@ -25,6 +25,7 @@ ENV LINOTP_HOST=linotp \
 	SELENIUM_PORT=4444
 
 COPY . /opt/linotp/tests/
+COPY ./testdata/se_mypasswd /etc/se_mypasswd
 
 WORKDIR /opt/linotp/tests
 

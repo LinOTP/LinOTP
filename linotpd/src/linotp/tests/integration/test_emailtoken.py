@@ -83,7 +83,7 @@ class TestEmailTokenEnroll(TestEmailToken):
         Enroll e-mail token.
 
         After enrolling it verifies that the token info contains the
-        correct e-mail. 
+        correct e-mail.
         """
         expected_email_address = self.email_recipient
         email_token = self.enroll_email_token()
@@ -105,7 +105,10 @@ class TestEmailTokenAuth(TestEmailToken):
 
     @unittest.skipIf(is_radius_disabled(), True)
     def test_radius_auth(self):
-        def radius_auth(username, realm_name, pin, radius_secret, radius_server, state=None):
+
+        def radius_auth(username, realm_name,
+                        pin, radius_secret,
+                        radius_server, state=None):
             call_array = "python ../../../tools/linotp-auth-radius -f ../../../test.ini".split()
             call_array.extend(['-u', username + "@" + realm_name,
                                '-p', pin,
@@ -131,7 +134,9 @@ class TestEmailTokenAuth(TestEmailToken):
         with EmailProviderServer(self, 20) as smtpsvc:
             # Authenticate with RADIUS
             rad1 = radius_auth(
-                self.username, self.realm_name, self.email_token_pin, radius_secret, radius_server)
+                self.username, self.realm_name,
+                self.email_token_pin,
+                radius_secret, radius_server)
             m = re.search(r"State:\['(\d+)'\]", rad1)
             self.assertTrue(m is not None,
                             "'State' not found in linotp-auth-radius output. %r" % rad1)
@@ -141,7 +146,9 @@ class TestEmailTokenAuth(TestEmailToken):
             otp = smtpsvc.get_otp()
 
         rad2 = radius_auth(
-            self.username, self.realm_name, otp, radius_secret, radius_server, state)
+            self.username, self.realm_name,
+            otp, radius_secret,
+            radius_server, state)
         self.assertTrue("Access granted to user " + self.username in rad2,
                         "Access not granted to user. %r" % rad2)
 
@@ -150,7 +157,8 @@ class TestEmailTokenAuth(TestEmailToken):
         with EmailProviderServer(self, 20) as smtpsvc:
 
             # Authenticate over Web API
-            validate = Validate(self.http_protocol, self.http_host, self.http_port, self.http_username,
+            validate = Validate(self.http_protocol, self.http_host,
+                                self.http_port, self.http_username,
                                 self.http_password)
             access_granted, validate_resp = validate.validate(user=self.username + "@" + self.realm_name,
                                                               password=self.email_token_pin)

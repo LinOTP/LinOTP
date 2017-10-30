@@ -42,8 +42,8 @@ class TestYubikey(TestCase):
 
     def setUp(self):
         """
-        Create a AD UserIdResolver and add it to a realm. Verify that the user we
-        want to test with exists.
+        Create a AD UserIdResolver and add it to a realm. Verify that the user
+        we want to test with exists.
         """
         TestCase.setUp(self)
 
@@ -55,8 +55,9 @@ class TestYubikey(TestCase):
 
         user_view = self.manage_ui.user_view
         user_view.select_realm(self.realm_name)
-        self.assertTrue(user_view.user_exists(self.user_name), "User '" + self.user_name +
-                                                               "' should exist.")
+        self.assertTrue(user_view.user_exists(self.user_name),
+                        "User '" + self.user_name +
+                        "' should exist.")
         self.user_view = user_view
 
     def test_yubico_mode(self):

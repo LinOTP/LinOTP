@@ -25,7 +25,9 @@
 #
 import unittest
 import logging
+import re
 from contextlib import contextmanager
+from packaging import version
 
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
@@ -250,21 +252,37 @@ class TestCase(unittest.TestCase):
             self._linotp_version = self.validate.version()
         return self._linotp_version
 
-    def need_linotp_version(self, version):
+    def need_linotp_version(self, version_minimum):
         """
         Raise a unittest skip exception if the server version is too old
 
-        @param version: Minimum version. Example: '2.9.1'
-        @raises unittest.SkipTest if the version is too old
+        :param version: Minimum version. Example: '2.9.1'
+        :raises unittest.SkipTest: if the version is too old
         """
-        if self.linotp_version.split('.') < version.split('.'):
+
+        current_AUT_version = self.linotp_version.split('.')
+        # Avoid comparisons like below:
+        # [u'2', u'10', u'dev2+g2b1b96a'] < ['2', '9', '2'] = True
+        filtered_version = []
+        for version_part in current_AUT_version:
+            # Only in case of a 'pure' number, we want to use for comparison
+            if(re.search(r'^\d+$', version_part) is not None):
+                filtered_version.append(version_part)
+
+        filtered_version_string = '.'.join(filtered_version)
+
+        if(version.parse(filtered_version_string) <
+                version.parse(version_minimum)):
             raise SkipTest(
-                'LinOTP version %s <  %s' % (self.linotp_version, version))
+                'LinOTP version %s (%s) <  %s' % (filtered_version_string,
+                                                  self.linotp_version,
+                                                  version_minimum))
 
     def reset_resolvers_and_realms(self, resolver=None, realm=None):
         """
-        Clear resolvers and realms. Then optionally create a userIdResolver with
-        given data and add it to a realm of given name.
+        Clear resolvers and realms. Then optionally create a
+        userIdResolver with given data and add it to a realm
+        of given name.
         """
         self.realm_manager.clear_realms()
         self.useridresolver_manager.clear_resolvers()
