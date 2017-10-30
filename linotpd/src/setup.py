@@ -123,6 +123,7 @@ setup(
         (
             'etc/linotp2/',
             [
+                # 'alembic.ini',
                 'config/linotp.ini.example',
                 'config/linotp.ini.paster',
                 'config/linotpapp.wsgi',
