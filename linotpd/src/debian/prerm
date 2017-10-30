@@ -17,9 +17,11 @@ if [ ! -f /etc/apache2/sites-enabled/linotp2 ] &&
 fi
 
 if [ "$RET" = "true" ]; then
-	a2dissite linotp2 || echo `print_timestamp` "WARNING [linotp prerm] Could not disable Apache linotp2 host (possibly it doesn't exist)" >&2
+    if ! a2dissite linotp2; then
+	echo `print_timestamp` "WARNING [linotp prerm] Could not disable Apache linotp2 host (possibly it doesn't exist)" >&2
+    elif systemctl is-active -q apache2; then
 	invoke-rc.d apache2 reload
+    fi
 fi
 
 #DEBHELPER#
-

@@ -56,10 +56,10 @@ builddeb:
 	# build the source package in the parent directory
 	# then rename it to project_version.orig.tar.gz
 	mkdir -p ../build
-	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../ 
+	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
 	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 	# build the package
-	dpkg-buildpackage -i -I -rfakeroot
+	dpkg-buildpackage -i -I -rfakeroot $(DPKG_BUILDPACKAGE_ARGS)
 	mv ../linotp-adminclient-cli*.deb ../build/
 	rm -f ../build/LinOTPAdminClientCLI*.tar.gz
 

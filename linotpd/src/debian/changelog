@@ -1,3 +1,9 @@
+linotp (2.10~0dev3-1+0stretch1) stretch; urgency=low
+
+  * Adapted for Debian Stretch
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 23 Oct 2017 15:00:36 +0200
+
 linotp (2.10~0dev3-1) jessie; urgency=low
 
   Enhancements:
@@ -38,7 +44,7 @@ linotp (2.10~0dev3-1) jessie; urgency=low
   * 27a518f Web UI: Removed IE compatibility mode from templates
   * 9c28919, 7ae1849 Selfservice: Center UI layout for login and polling
   * c116490, 7c61edc, 4dd8956, c2eb554, ac9589b, 3d4429, 65c04c
-    05ec119, 086467  Selfservice: Add multifactor authentication 
+    05ec119, 086467  Selfservice: Add multifactor authentication
                      support for login
   * e44f3be Selfservice: Remove obsolete HTML redirection index page
   * 78f4d39 Selfservice: Add transaction ID on push or QR token on selfservice login
@@ -70,8 +76,8 @@ linotp (2.10~0dev3-1) jessie; urgency=low
                    a user submitted the OTP for a transaction ID more than
                    once within a very short timeframe.
   * 1a3db9 Server: Fix for missing LDAP uft-8 conversion
-  * 77ab04 Server: Fix default hash algorithm. This  was causing issues in 
-                   the YubiKey import. 
+  * 77ab04 Server: Fix default hash algorithm. This  was causing issues in
+                   the YubiKey import.
   * e34a96 Server: Fix wrong audit log entries where "failcounter exceeded"
                    was incorrectly being replaced with "no token found"
   * 9ee93d Server: Fix QRToken to use the tan length defined at enrollment

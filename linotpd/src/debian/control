@@ -11,7 +11,7 @@ Build-Depends: cdbs,
                python-pastescript,
                python-pylons (>=0.9.7),
                python-setuptools,
-               python-support (>=0.6)
+               dh-python
 Standards-Version: 3.9.8
 Homepage: https://www.linotp.org/
 X-Python-Version: >= 2.7
@@ -20,7 +20,7 @@ Package: linotp
 Architecture: all
 Depends: apache2,
          libapache2-mod-wsgi | httpd-wsgi,
-	 openssl,
+         openssl,
          python-pycryptodomex,
          python-pysodium,
          python-requests,

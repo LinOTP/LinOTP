@@ -131,7 +131,7 @@ ppa-preprocess: source
 .PHONY: builddeb
 builddeb:
 	$(MAKE) prepare-deb-source DEB_BUILDDIR=$(DEB_BUILDDIR) TAR_SUFFIX=orig.tar.gz
-	cd $(DEB_BUILDDIR); dpkg-buildpackage -i -I -rfakeroot
+	cd $(DEB_BUILDDIR); dpkg-buildpackage -i -I -rfakeroot $(DPKG_BUILDPACKAGE_ARGS)
 
 .PHONY: clean
 clean:

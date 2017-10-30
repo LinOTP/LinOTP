@@ -1,6 +1,27 @@
 #!/bin/bash -e
 . /usr/share/debconf/confmodule
 
+#if [ -f /usr/share/dbconfig-common/dpkg/config.mysql ]; then
+#    . /usr/share/dbconfig-common/dpkg/config.mysql
+#    dbc_go linotp "$@"
+#fi
+
+msg="LinOTP2: "
+
+echo_prio() {
+    t=$(date +"%Y/%m/%d - %T")
+    echo >&2 "$t $1 [linotp config] $2"
+}
+echo_info() {
+    echo_prio INFO "$1"
+}
+echo_warn() {
+    echo_prio WARNING "$1"
+}
+echo_log() {
+    echo >&2 "${msg}$1"
+}
+
 # Just like other maintainer scripts, config scripts must be idempotent. The
 # config script is passed 2 parameters. The first is either "configure" or
 # "reconfigure". The latter occurs only if a package is being reconfigured by
@@ -104,7 +125,7 @@ function check_mysql_tables() {
 	#mysql --host=localhost --user=linotp2 --password=linotppw --database=linotp2 --execute='show tables;'
 	#echo "Starting to check DB" >> /var/log/messages
 	# Test database connction
-	if [ -z "`mysql --host=$DBHOST --user=$DBUSER --password=$DBPASSWORD --database=$DBNAME --execute='quit' 2>&1`" ]; then  
+	if [ -z "`mysql --host=$DBHOST --user=$DBUSER --password=$DBPASSWORD --database=$DBNAME --execute='quit' 2>&1`" ]; then
 		DB_OK=1
 		TABLES=`mysql --host=$DBHOST --user=$DBUSER --password=$DBPASSWORD --database=$DBNAME --execute='show tables;'`
 		if [ -n "`echo $TABLES | grep "Config Token"`" ]; then
@@ -119,25 +140,29 @@ function check_mysql_tables() {
 	#echo "DB: $DB_OK, TABLES: $TABLES_OK" >> /var/log/messages
 }
 
-NEW_VERSION=2.10~0dev3-1
+NEW_VERSION='@@@DEB_VERSION@@@'
 
-DOING_NEW_INSTALLATION=false
-DOING_RE_INSTALLATION=false
-DOING_RECONFIGURE=false
+INSTALL_ACTION=install
 if [ -n "$2" ]; then
-	INSTALLED_VERSION=${2}
-	dpkg --compare-versions "${NEW_VERSION}" eq "${INSTALLED_VERSION}" && VERSION_EQUAL=true
-	dpkg --compare-versions "${NEW_VERSION}" gt "${INSTALLED_VERSION}" && VERSION_UPGRADE=true
-	dpkg --compare-versions "${NEW_VERSION}" lt "${INSTALLED_VERSION}" && VERSION_DOWNGRADE=true
+    INSTALLED_VERSION="$2"
+    if dpkg --compare-versions "${NEW_VERSION}" eq "${INSTALLED_VERSION}"; then
+	INSTALL_ACTION=reinstall
+    elif dpkg --compare-versions "${NEW_VERSION}" gt "${INSTALLED_VERSION}"; then
+	INSTALL_ACTION=upgrade
+    else
+	INSTALL_ACTION=downgrade
+    fi
 fi
+
+
 if [ "$1" = "reconfigure" ]; then
-	DOING_RECONFIGURE=true
+    INSTALL_MODE=reconfigure
 elif [ "$1" = "configure" ]; then
-	if [ -n "${INSTALLED_VERSION}" ]; then
-		DOING_RE_INSTALLATION=true
-	else
-		DOING_NEW_INSTALLATION=true
-	fi
+    if [ -n "${INSTALLED_VERSION}" ]; then
+	INSTALL_MODE=reinstall
+    else
+	INSTALL_MODE=install
+    fi
 fi
 
 print_timestamp() {
@@ -145,14 +170,10 @@ print_timestamp() {
 }
 
 # Always print to stderr, otherwise debconf can get confused
-echo `print_timestamp` "INFO [linotp config] Installing new package?: ${DOING_NEW_INSTALLATION}" >&2
-echo `print_timestamp` "INFO [linotp config] Re-installing package?: ${DOING_RE_INSTALLATION}" >&2
-echo `print_timestamp` "INFO [linotp config] Reconfiguring package?: ${DOING_RECONFIGURE}" >&2
-echo `print_timestamp` "INFO [linotp config] Currently installed version: ${INSTALLED_VERSION}" >&2
-echo `print_timestamp` "INFO [linotp config] New version: ${NEW_VERSION}" >&2
-echo `print_timestamp` "INFO [linotp config] Version equal: ${VERSION_EQUAL}" >&2
-echo `print_timestamp` "INFO [linotp config] Version upgrade: ${VERSION_UPGRADE}" >&2
-echo `print_timestamp` "INFO [linotp config] Version downgrade: ${VERSION_DOWNGRADE}" >&2
+echo_info "Installation mode: $INSTALL_MODE"
+echo_info "Installed version: ${INSTALLED_VERSION:-(none)}"
+echo_info "New version: $NEW_VERSION"
+echo_info "Installation action: $INSTALL_ACTION"
 
 # In case of univention corparate server we do not use debconf!
 if [ !  $(check_ucs) ]; then
@@ -232,7 +253,7 @@ if [ !  $(check_ucs) ]; then
 # Check all effects for mysql: Does the DB exist? Do the table exist?
 #
 	if [ "$TOKENDB" = "MySQL" ]; then
-		if [ "${DOING_RE_INSTALLATION}" = true ] && [ "${VERSION_UPGRADE}" = true ]
+		if [ "$INSTALL_MODE" = "reinstall" ] && [ "$INSTALL_ACTION" = "upgrade" ]
 		then
 			# In version 2.6 of LinOTP ask_createdb was RESET in the
 			# postinst. This meant the question appeared again,
