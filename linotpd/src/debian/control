@@ -63,8 +63,6 @@ Replaces: linotp-ee (<< 2.7-1~),
 Breaks: linotp-ee (<< 2.7-1~),
         linotp-smsprovider (<< 2.10),
         linotp-useridresolver (<< 2.10)
-Provides: linotp-useridresolver,
-          linotp-smsprovider
 Description: Server Core of the LinOTP 2 authentication solution
  LinOTP is an open solution for strong two-factor authentication with One Time
  Passwords.
