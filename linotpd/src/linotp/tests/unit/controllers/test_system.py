@@ -39,7 +39,7 @@ class TestSetResolver(unittest.TestCase):
         self.system = SystemController()
 
     def tearDown(self):
-        Session.remove
+        Session.remove()
 
     @patch('linotp.controllers.system.getResolverList', return_value=[])
     @patch('linotp.controllers.system.request')
