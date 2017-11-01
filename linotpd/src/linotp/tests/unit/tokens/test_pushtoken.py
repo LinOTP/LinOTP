@@ -26,13 +26,15 @@
 
 import unittest
 import json
-
 from contextlib import nested
+
+from pylons import config
+
+from mock import patch
+
 from linotp.lib.context import request_context_safety
 from linotp.lib.context import request_context
 from linotp.tokens.pushtoken.pushtoken import PushTokenClass
-from mock import patch
-from pylons import config
 
 
 class FakeHSM(object):
@@ -46,10 +48,10 @@ class FakeHSM(object):
     def decryptPassword(self, crypted):
         return 2*'MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI' + '=='
 
+
 fake_hsm_wrapper = {'obj': FakeHSM()}
 
-
-# ---------------------------------------------------------------------------- -
+# -------------------------------------------------------------------------- --
 
 
 class FakeTokenModel(object):
@@ -72,18 +74,21 @@ class FakeTokenModel(object):
     def get_encrypted_seed(self):
         return 'foo', 'bar'
 
-# ---------------------------------------------------------------------------- -
+# -------------------------------------------------------------------------- --
 
 
 class PushTokenClassUnitTestCase(unittest.TestCase):
 
-    # ------------------------------------------------------------------------ -
+    # ---------------------------------------------------------------------- --
 
-    def test_url_protocol_id(self):
+    @patch('linotp.tokens.pushtoken.pushtoken.get_secret_key')
+    def test_url_protocol_id(self,
+                             mocked_get_secret_key):
 
         """ PUSHTOKEN: Test url protocol id customization """
 
         user_public_key = 'MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI='
+        mocked_get_secret_key.return_value = user_public_key
 
         fake = FakeTokenModel()
 
@@ -112,7 +117,7 @@ class PushTokenClassUnitTestCase(unittest.TestCase):
 
             self.assertTrue(url.startswith('lseqr://'))
 
-        # -------------------------------------------------------------------- -
+        # ------------------------------------------------------------------ --
 
         fake = FakeTokenModel()
 
@@ -135,3 +140,5 @@ class PushTokenClassUnitTestCase(unittest.TestCase):
                                                 callback_url='foo')
 
             self.assertTrue(url.startswith('yolo://'))
+
+# eof #
