@@ -28,8 +28,6 @@ Tests a very small subset of linotp.lib.reply
 import os
 
 from mako.template import Template
-from mako.exceptions import RichTraceback
-from pylons.i18n.translation import _ as translate
 
 from mako.runtime import Context
 from StringIO import StringIO
@@ -37,8 +35,11 @@ from StringIO import StringIO
 import unittest
 
 
-from mock import MagicMock
-from mock import PropertyMock
+def mocked_translate(input_data=None):
+    """
+    mocked translator - returns input data :)
+    """
+    return input_data
 
 
 class TestActivationMako(unittest.TestCase):
@@ -47,25 +48,27 @@ class TestActivationMako(unittest.TestCase):
         scope = 'selfservice.activate'
         user = 'me'
         realm = 'home'
-        _ = translate
+        _ = mocked_translate
 
     def setUp(self):
         os.path.abspath(__file__)
         self.dirname = os.path.dirname(__file__)
         self.lib_token_dir = os.path.abspath(
             os.path.dirname(
-                self.dirname + '/../../../../../lib/tokens/'))
+                self.dirname + '/../../../../../linotp/tokens/'))
 
         unittest.TestCase.setUp(self)
 
     def test_qrtoken_activate(self):
 
-        qrtemplate = Template(filename=self.lib_token_dir + '/qrtoken.mako')
+        qrtemplate = Template(
+            filename=self.lib_token_dir + '/qrtoken/qrtoken.mako')
+
         buf = StringIO()
         ctx = Context(buf,
                       c=self.MyContext(),
-                      _=translate)
-        res = qrtemplate.render_context(ctx)
+                      _=mocked_translate)
+        _res = qrtemplate.render_context(ctx)
         content = buf.getvalue()
         self.assertTrue("params['user'] = 'me@home';" in content)
 
@@ -73,12 +76,14 @@ class TestActivationMako(unittest.TestCase):
 
     def test_pushtoken_activate(self):
 
-        qrtemplate = Template(filename=self.lib_token_dir + '/pushtoken.mako')
+        qrtemplate = Template(
+            filename=self.lib_token_dir + '/pushtoken/pushtoken.mako')
+
         buf = StringIO()
         ctx = Context(buf,
                       c=self.MyContext(),
-                      _=translate)
-        res = qrtemplate.render_context(ctx)
+                      _=mocked_translate)
+        _res = qrtemplate.render_context(ctx)
         content = buf.getvalue()
         self.assertTrue("params['user'] = 'me@home';" in content)
 
