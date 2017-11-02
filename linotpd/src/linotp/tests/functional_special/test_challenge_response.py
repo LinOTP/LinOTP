@@ -1263,43 +1263,6 @@ class TestChallengeResponseController(TestSpecialController):
         self.delete_token(serial)
         return
 
-    def test_54_totp_auth(self):
-        '''
-        Challenge Response Test: totp token challenge with otppin=1 + otppin=2
-        '''
-
-        typ = 'totp'
-        counter = 0
-        otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
-
-        serial = self.createToken(pin="shortpin", typ=typ,
-                                  otpkey=otpkey, user='passthru_user1')
-
-        # now switch policy on for challenge_response
-        response = self.setPinPolicy(name="ch_resp", realm='myDefRealm',
-                                     action='challenge_response=hmac totp,')
-        self.assertTrue('"status": true,' in response, response)
-
-        counter = self.do_auth("shortpin", counter, typ=typ)
-
-        # with otppin==1 the pin should be the same as the password
-        response = self.setPinPolicy(realm='myDefRealm', action='otppin=1, ')
-        self.assertTrue('"status": true,' in response, response)
-
-        counter = self.do_auth("geheim1", counter + 1, typ=typ)
-
-        # with otppin==2 the pin should be the same as the password
-        response = self.setPinPolicy(realm='myDefRealm', action='otppin=2, ')
-        self.assertTrue('"status": true,' in response, response)
-
-        counter = self.do_auth("", counter + 1, typ=typ)
-
-        self.delete_token(serial)
-        self.delete_policy(name="ch_resp")
-        self.delete_policy(name="otpPin")
-
-        return
-
     def test_60_hmac_two_tokens(self):
         '''
         Challenge Response Test: two hmac token in different realms
