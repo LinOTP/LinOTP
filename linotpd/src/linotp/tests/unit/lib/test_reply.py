@@ -26,11 +26,15 @@
 Tests a very small subset of linotp.lib.reply
 """
 
+import json
 import unittest
 from mock import (
     MagicMock,
     PropertyMock,
     )
+from linotp.lib.reply import sendResultIterator
+from linotp.lib.error import ProgrammingError
+from linotp.lib.context import request_context
 
 
 class TestReplyTestCase(unittest.TestCase):
@@ -114,3 +118,32 @@ class TestReplyTestCase(unittest.TestCase):
         self.pylons_request.query_string = 'httperror=555'
         httperror = _get_httperror_from_params(self.pylons_request)
         self.assertEquals(httperror, None)
+
+    def test_response_iterator_request_context(self):
+
+        """ test if request context gets reinstated in sendResultIterator """
+
+        def request_context_test_iterator():
+            # this will raise an error if it is called
+            # outside of request_context_safety
+            yield request_context.get('foo')
+
+        # we need to enclose bar into double qoutes,
+        # because the json is assembled manually
+        request_context_copy = {'foo': '"bar"'}
+
+        try:
+            res = sendResultIterator(request_context_test_iterator(),
+                                     request_context_copy=request_context_copy)
+        except ProgrammingError:
+            self.assertTrue(False, 'request_context was used outside'
+                                   'of request_context_safety')
+
+        result = ""
+        for chunk in res:
+            result += chunk
+
+        result_dict = json.loads(result)
+        value = result_dict.get('result', {}).get('value')
+
+        self.assertIn(u'bar', value)
