@@ -33,7 +33,6 @@ from datetime import datetime
 
 import json
 
-from datetime import datetime
 from pylons import request
 from pylons import response
 from pylons import config
@@ -1858,8 +1857,27 @@ class AdminController(BaseController):
                 Session.commit()
 
                 response.content_type = 'application/json'
-                return sendResultIterator(iterate_users(users_iters),
-                                          rp=rp, page=page)
+
+                # ---------------------------------------------------------- --
+
+                # the result iterator is called in the middle of the
+                # pylons middleware. Thus the request_context has been
+                # terminated already and we have no request context available
+                # within the respons iterations. Therefore we make copy the
+                # request context to establish a new request context from
+                # the given parameter within the response iterator
+
+                request_context_copy = {}
+
+                for key, value in request_context.items():
+                    request_context_copy[key] = value
+
+                return sendResultIterator(
+                        iterate_users(users_iters),
+                        rp=rp, page=page,
+                        request_context_copy=request_context_copy)
+
+                # ---------------------------------------------------------- --
 
         except PolicyException as pe:
             log.exception('[userlist] policy failed %r' % pe)
