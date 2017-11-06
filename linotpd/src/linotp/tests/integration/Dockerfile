@@ -6,7 +6,10 @@ RUN apt-get update && apt-get install \
   		make \
   		python-nose-testconfig \
   		python-requests \
+		python-pip \
   		linotp-adminclient-cli
+
+RUN pip install packaging
 
 # Install python-selenium from jessie backports
 RUN echo "deb http://${DEBIAN_MIRROR}/debian jessie-backports main" > /etc/apt/sources.list.d/999jessie-backports.list \
