@@ -43,17 +43,6 @@ from manage_ui import ManageUi
 from validate import Validate
 from unittest.case import SkipTest
 
-# Disable insecure request warnings:
-# "InsecureRequestWarning: Unverified HTTPS request is being made.
-# Adding certificate verification is strongly advised. "
-import urllib3
-import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-
-
 logger = logging.getLogger(__name__)
 
 
@@ -70,7 +59,8 @@ class TestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """Initializes the base_url and sets the driver - called from unit tests"""
+        """Initializes the base_url and sets the driver -
+        called from unit tests"""
         cls.loadClsConfig()
         cls.driver = cls.startDriver()
 
