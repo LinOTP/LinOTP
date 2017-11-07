@@ -8,6 +8,9 @@ RUN apt-get update && apt-get install \
   		python-requests \
   		linotp-adminclient-cli
 
+# This is really a hack, debian stretch and newer provide `python-packaging` instead
+RUN apt-get install -y python-pip && pip install packaging
+
 # Install python-selenium from jessie backports
 RUN echo "deb http://${DEBIAN_MIRROR}/debian jessie-backports main" > /etc/apt/sources.list.d/999jessie-backports.list \
 		&& apt-get update \
