@@ -371,7 +371,7 @@ def legacy_getAuthorization(scope, action):
     return {'active': active, 'auth': auth, 'admin': admin_user['login']}
 
 
-def legacy_getPolicy(param, only_active=False):
+def legacy_getPolicy(param, only_active=True):
     '''
     Function to retrieve the list of policies.
 

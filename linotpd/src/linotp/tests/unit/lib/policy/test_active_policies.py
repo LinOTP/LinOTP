@@ -27,6 +27,7 @@
 """ unit test for complex policy comparisons """
 
 import unittest
+from copy import deepcopy
 
 from mock import patch
 
@@ -44,7 +45,7 @@ class TestShowInactivePolicies(unittest.TestCase):
         """
         test that legacy policy show the inactive policy
         """
-        policies = {
+        initial_policies = {
             'losttoken_valid_all': {
                 'realm': '*',
                 'active': 'False',
@@ -63,20 +64,29 @@ class TestShowInactivePolicies(unittest.TestCase):
                 'scope': 'enrollment'}}
 
         param = {}
-        mocked_get_copy_of_policies.return_value = policies
 
         # ------------------------------------------------------------------ --
 
+        # by default select only active policies
+
+        mocked_get_copy_of_policies.return_value = deepcopy(initial_policies)
+
+        policies = legacy_getPolicy(param)
+        assert len(policies) == 1
+
         # select all policies - active and inactive ones
+
+        mocked_get_copy_of_policies.return_value = deepcopy(initial_policies)
 
         policies = legacy_getPolicy(param, only_active=False)
         assert len(policies) == 2
 
         # select only active policies
 
+        mocked_get_copy_of_policies.return_value = deepcopy(initial_policies)
+
         policies = legacy_getPolicy(param, only_active=True)
         assert len(policies) == 1
-
 
         return
 

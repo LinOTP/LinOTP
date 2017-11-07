@@ -53,15 +53,73 @@ class TestInactivePolicy(TestController):
 
     def test_inactive_policy(self):
         """
-        test that no inactive policy is evaluated
+        test that no inactive policy is evaluated for the old and new engine
+        """
+
+        # get the currently used policy engine and preserve this for restore
+
+        params = {'key': 'NewPolicyEvaluation'}
+        response = self.make_system_request('getConfig', params=params)
+        self.assertTrue(
+            '"getConfig NewPolicyEvaluation"' in response, response)
+
+        jresp = json.loads(response.body)
+
+        restore_new_policy_engine = jresp.get(
+            'result', {}).get(
+                'value', {}).get('getConfig NewPolicyEvaluation', False)
+
+        # ----------------------------------------------------------------- --
+
+        # run the usage of 'active policy only' verification for both machines
+
+        try:
+
+            for policy_engine_version in ['new', 'old']:
+
+                if policy_engine_version == 'new':
+                    params = {'NewPolicyEvaluation': 'True'}
+                    response = self.make_system_request('setConfig',
+                                                        params=params)
+                    self.assertTrue(
+                        '"setConfig NewPolicyEvaluation:True"' in response,
+                        response)
+
+                if policy_engine_version == 'old':
+                    params = {'key': 'NewPolicyEvaluation'}
+                    response = self.make_system_request('delConfig',
+                                                        params=params)
+                    self.assertTrue(
+                        '"delConfig NewPolicyEvaluation"' in response,
+                        response)
+
+                self.run_inactive_policy_verifcation()
+
+        # ----------------------------------------------------------------- --
+
+        finally:
+
+            # restore the inital policy engine behaviour
+
+            if not restore_new_policy_engine:
+                params = {'key': 'NewPolicyEvaluation'}
+                response = self.make_system_request('delConfig', params=params)
+
+            else:
+                params = {'NewPolicyEvaluation': 'True'}
+                response = self.make_system_request('setConfig', params=params)
+
+        return
+
+    def run_inactive_policy_verifcation(self):
+        """
+        verify that no inactive policy is evaluated
 
         the test is using the otppin=1 policy, which is checked to active
         in the first place. After the first check, the policy is disabled
         and the former authenication test will fail but the authentication
         without policy will work again.
         """
-
-        # all policies are deleted before
 
         user = 'passthru_user1'
         pw_pass = "geheim1"
