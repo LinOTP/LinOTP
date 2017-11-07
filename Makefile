@@ -311,7 +311,7 @@ SELENIUM_DB_IMAGE=mysql:latest
 docker-build-selenium: docker-build-linotp
 	cd $(SELENIUM_TESTS_DIR) \
 		&& $(DOCKER_BUILD) \
-			-t selenium_tester .
+			-t integration_selenium_tester .
 .PHONY: docker-run-selenium
 docker-run-selenium: docker-build-selenium
 	cd $(SELENIUM_TESTS_DIR) \
