@@ -292,7 +292,7 @@ $(BUILDDIR)/apt/Packages:
 
 .PHONY: docker-build-linotp
 docker-build-linotp: DOCKER_IMAGE=linotp
-docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
+docker-build-linotp: docker-build-linotp-builder $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	cp linotpd/src/Dockerfile \
 		linotpd/src/config/*.tmpl \
 		linotpd/src/tools/linotp-create-htdigest \
