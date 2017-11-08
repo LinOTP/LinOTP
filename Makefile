@@ -146,7 +146,7 @@ develop:
 # test - all tests
 
 ifndef NOSETESTS_ARGS
-NOSETESTS_ARGS?=-v
+	NOSETESTS_ARGS?=-v
 endif
 
 test: unittests integrationtests
@@ -312,6 +312,7 @@ docker-build-selenium: docker-build-linotp
 	cd $(SELENIUM_TESTS_DIR) \
 		&& $(DOCKER_BUILD) \
 			-t selenium_tester .
+
 .PHONY: docker-run-selenium
 docker-run-selenium: docker-build-selenium
 	cd $(SELENIUM_TESTS_DIR) \
@@ -368,9 +369,13 @@ RANCHER_STACK_NAME=linotp-$(RANCHER_STACK_TYPE)-$(RANCHER_STACK_ID)
 
 DOCKER_REGISTRY=$(subst https://,,$(DOCKER_REGISTRY_URL))
 
-$(BUILDDIR)/rancher/docker-compose.yml:
+RANCHER_DOCKER_COMPOSER_FILE=$(BUILDDIR)/rancher/docker-compose.yml
+
+$(RANCHER_DOCKER_COMPOSER_FILE):
 	$(MAKE) rancher-prepare
 
+
+.PHONY: rancher-prepare
 rancher-prepare:
 	# Overrides to compose file specific to this stack
 	mkdir -pv $(BUILDDIR)/rancher
@@ -378,36 +383,37 @@ rancher-prepare:
 	  echo 'services:' ;\
 	  echo '  linotp:' ;\
 	  echo '    image: $(DOCKER_REGISTRY)/linotp:$(LINOTP_IMAGE_TAG)' ;\
-	) > $(BUILDDIR)/rancher/docker-compose.yml
+	) > $(RANCHER_DOCKER_COMPOSER_FILE)
 
 RANCHER_COMPOSE=rancher-compose --project-name $(RANCHER_STACK_NAME)
 RANCHER_COMPOSE_FILES_LINOTP=-f linotpd/src/docker-compose.yml \
-								-f $(BUILDDIR)/rancher/docker-compose.yml
+								-f $(RANCHER_DOCKER_COMPOSER_FILE)
 
 # Uncomment to aid debugging
 # export RANCHER_CLIENT_DEBUG=true
 
 # Run a given command
+
+.PHONY: rancher-linotp-do
 rancher-linotp-do:
 	$(RANCHER_COMPOSE) $(RANCHER_COMPOSE_FILES_LINOTP) $(CMD)
-.PHONY: rancher-prepare rancher-linotp-do
 
 rancher-linotp-create: rancher-prepare
 	$(MAKE) rancher-linotp-do CMD=create
 
-rancher-linotp-rm: $(BUILDDIR)/rancher/docker-compose.yml
+rancher-linotp-rm: $(RANCHER_DOCKER_COMPOSER_FILE)
 	$(MAKE) rancher-linotp-do CMD=rm
 
-rancher-linotp-start: $(BUILDDIR)/rancher/docker-compose.yml
+rancher-linotp-start: $(RANCHER_DOCKER_COMPOSER_FILE)
 	$(MAKE) rancher-linotp-do CMD="start -d"
 
-rancher-linotp-stop: $(BUILDDIR)/rancher/docker-compose.yml
+rancher-linotp-stop: $(RANCHER_DOCKER_COMPOSER_FILE)
 	$(MAKE) rancher-linotp-do CMD=stop
 
-rancher-linotp-up: $(BUILDDIR)/rancher/docker-compose.yml
+rancher-linotp-up: $(RANCHER_DOCKER_COMPOSER_FILE)
 	$(MAKE) rancher-linotp-do CMD="up -d"
 
-rancher-linotp-down: $(BUILDDIR)/rancher/docker-compose.yml
+rancher-linotp-down: $(RANCHER_DOCKER_COMPOSER_FILE)
 	$(MAKE) rancher-linotp-do CMD=down
 
 .PHONY: rancher-linotp-create rancher-linotp-rm
