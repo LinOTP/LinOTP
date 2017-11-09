@@ -1,16 +1,11 @@
-linotp (2.10~0dev3-1+0stretch1) stretch; urgency=low
-
-  * Adapted for Debian Stretch
-
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 23 Oct 2017 15:00:36 +0200
-
-linotp (2.10~0dev3-1) jessie; urgency=low
+linotp (2.10~b0-1) jessie; urgency=low
 
   Enhancements:
-  *  65656ee2, 395dab25, 7d2124ba, 13fce4cc, 341de16c, 4c852ef9, 8925905a,
-     548d6b9d, 3ceab2cb, 6372fb90, 606b8a7d, 765c125b, ee0b53e6, 9ec1458c,
-     69b476c6, b6a611be, 8ae8bd4d, 16fafefd, 9bb47552, b04986a0, bfdbfc0a,
-     8da9de22:  Add Voice Token
+  * Adapted for Debian Stretch
+  * 65656ee2, 395dab25, 7d2124ba, 13fce4cc, 341de16c, 4c852ef9, 8925905a,
+    548d6b9d, 3ceab2cb, 6372fb90, 606b8a7d, 765c125b, ee0b53e6, 9ec1458c,
+    69b476c6, b6a611be, 8ae8bd4d, 16fafefd, 9bb47552, b04986a0, bfdbfc0a,
+    8da9de22:  Add Voice Token
   * 1df19db Server: Push token second generation
   * 64342d9 Server: Adjust default TransactionId length to 17
   * 15ab7ab, 8b4d6a8 Server: Implement explicit-deny for pushtoken
@@ -89,6 +84,10 @@ linotp (2.10~0dev3-1) jessie; urgency=low
   * 805526 Web UI: Fix UI crash check if backend response is array in ldap
                    testconnection
   * 57365e Selfservice: Fix QR token enrollment and activation
+  * 1d2c9e Server: Fix import of policies with empty realm
+  * 0ab7eb Server: Verify that only active policies are used
+  * a69ed6 Server: Fix for policy export to export inactive too
+  * 3c44c8 Server: Fix for target realm handling on token import
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 20 Oct 2017 16:10:09 +0200
 
