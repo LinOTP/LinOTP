@@ -88,7 +88,7 @@ def _getAuthorization(scope, action):
 
 
 def has_client_policy(client, scope=None, action=None, realm=None, user=None,
-                      find_resolver=True, userObj=None):
+                      find_resolver=True, userObj=None, active_only=True):
     """
     migration stub for the new policy engine
 
@@ -107,7 +107,8 @@ def has_client_policy(client, scope=None, action=None, realm=None, user=None,
                                          action=action,
                                          realm=realm, user=user,
                                          find_resolver=find_resolver,
-                                         userObj=userObj)
+                                         userObj=userObj,
+                                         active_only=active_only)
 
     if not use_new_one or compare:
         old_pols = legacy_get_client_policy(client, scope=scope,
@@ -443,7 +444,8 @@ def new_get_client_policy(client, scope=None, action=None, realm=None,
 
 
 def new_has_client_policy(client, scope=None, action=None, realm=None,
-                          user=None, find_resolver=True, userObj=None):
+                          user=None, find_resolver=True, userObj=None,
+                          active_only=True):
     '''
     This function returns the dictionary of policies for the given client.
 
@@ -476,6 +478,9 @@ def new_has_client_policy(client, scope=None, action=None, realm=None,
 
     if action:
         param['action'] = action
+
+    if active_only:
+        policy_eval.filter_for_active(state=True)
 
     if client:
         param['client'] = client

@@ -57,7 +57,7 @@ class TestPolicyPassthrough(TestController):
         policy1 = {
                   'name': 'passOnNoToken',
                   'realm': '*',
-                  'active': 'True',
+                  'active': 'False',
                   'client': "*",
                   'user': '*',
                   'time': "",
@@ -79,7 +79,20 @@ class TestPolicyPassthrough(TestController):
         self.create_policy(policy1)
         self.create_policy(policy2)
 
-        # test that passonNoToken works
+        # test that passonNoToken works - first with inactive policy
+
+        params = {'user': 'passthru_user1',
+                  'pass': 'password_not_required'}
+
+        response = self.make_validate_request('check', params,
+                                              client='127.0.0.1')
+
+        self.assertTrue('"value": false' in response, response)
+
+        # test that passonNoToken works - now with active policy
+
+        policy1['active'] = 'True'
+        self.create_policy(policy1)
 
         params = {'user': 'passthru_user1',
                   'pass': 'password_not_required'}
@@ -88,6 +101,7 @@ class TestPolicyPassthrough(TestController):
                                               client='127.0.0.1')
 
         self.assertTrue('"value": true' in response, response)
+
 
         # test that authentication with wrong password
         # from client 192.168.13.14 will fail
