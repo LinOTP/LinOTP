@@ -99,7 +99,7 @@ class TestSMS(TestCase):
         smtp_config['raise_exception'] = True
         sms.loadConfig(smtp_config)
 
-        with self.assertRaisesRegexp(Exception, "Connection refused"):
+        with self.assertRaisesRegexp(Exception, "Connection refused|Cannot assign requested address"):
             sms.submitMessage(phone, message)
 
     def test_02_http(self):
