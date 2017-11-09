@@ -70,7 +70,8 @@ export LINOTP_CONSOLE_LOGLEVEL=DEBUG
 export SQLALCHEMY_LOGLEVEL=ERROR
 export APACHE_LOGLEVEL=DEBUG
 
-###################
+
+#############################################################################################
 # Recursive targets
 #
 # These invoke make in the project subdirectories
@@ -81,6 +82,7 @@ export APACHE_LOGLEVEL=DEBUG
 # Each target will be expanded into the subdirectory targets
 #
 # e.g. build -> build.subdirmake -> build.smsprovider + build.useridresolver + build.linotpd
+#############################################################################################
 
 # Targets that should recurse into linotp project directories
 LINOTPD_TARGETS := install clean
@@ -134,7 +136,7 @@ develop:
 	$(call run-in-linotpd-projs,$(PYTHON) setup.py $@)
 
 
-#####################
+###############################################################################
 # Unit test targets
 #
 #
@@ -144,6 +146,7 @@ develop:
 # unittests - just the unit tests
 # integrationtests - selenium integration tests
 # test - all tests
+###############################################################################
 
 ifndef NOSETESTS_ARGS
 	NOSETESTS_ARGS?=-v
@@ -168,15 +171,17 @@ integrationtests:
 .PHONY: test unittests functionaltests integrationtests
 
 
-#####################
+
+###############################################################################
 # Packaging targets
 #
-
+#
 # These targets run the various commands needed
 # to create packages of linotp
-
+#
 # builddeb: Generate .debs
 # deb-install: Build .debs and install to DESTDIR
+###############################################################################
 
 DEBPKG_PROJS := linotpd adminclient/LinOTPAdminClientCLI
 BUILDARCH = $(shell dpkg-architecture -q DEB_BUILD_ARCH)
@@ -202,17 +207,22 @@ deb-install: builddeb
 	find $(DESTDIR)
 	cd $(DESTDIR) && dpkg-scanpackages -m . > Packages
 
-#####################
+
+
+######################################################################################################
 # Docker container targets
 #
 # These targets are for building and running docker containers
 # for integration and builds
-
+#
 # Container name | Dockerfile location | Purpose
 # ---------------------------------------------------------------------------------------------------
 # linotp-builder | Dockerfile.builder             | Container ready to build linotp packages
 # linotp         | linotpd/src                    | Runs linotp in apache
 # selenium-test  | linotpd/src/tests/integration  | Run LinOTP Selenium tests against selenium remote
+# linotp-unit    | linotpd/src/linotp/tests/unit  | Run LinOTP Unit tests
+######################################################################################################
+
 
 # Extra arguments can be passed to docker build
 DOCKER_BUILD_ARGS=
@@ -237,6 +247,8 @@ DOCKER_RUN_ARGS=
 DOCKER_BUILD = docker build $(DOCKER_BUILD_ARGS) $(DOCKER_PROXY_BUILD_ARGS)
 DOCKER_RUN = docker run $(DOCKER_RUN_ARGS)
 SELENIUM_TESTS_DIR=linotpd/src/linotp/tests/integration
+
+UNIT_TESTS_DIR=linotpd/src/linotp/tests/unit
 
 ## Toplevel targets
 # Toplevel target to build all containers
@@ -353,10 +365,39 @@ $(BUILDDIR)/dockerfy:
 	tar -C $(BUILDDIR) -xvf $(BUILDDIR)/dockerfy-tmp/dockerfy-linux-amd64*.gz
 	rm -r $(BUILDDIR)/dockerfy-tmp
 
-#####################
+
+.PHONY: docker-build-linotp-unit
+docker-build-linotp-unit: docker-build-linotp
+	cd $(UNIT_TESTS_DIR) \
+		&& $(DOCKER_BUILD) \
+			-t unit_tester .
+
+
+.PHONY: docker-run-linotp-unit
+docker-run-linotp-unit: docker-build-linotp-unit
+	cd $(UNIT_TESTS_DIR) \
+		&& $(DOCKER_RUN) \
+			--name=$(DOCKER_CONTAINER_NAME)-unit \
+			--volume=$(PWD):/linotpsrc \
+			--entrypoint="" \
+			--env NOSETESTS_ARGS="${NOSETESTS_ARGS}" \
+			-t unit_tester \
+			/usr/bin/make test
+
+# This make rule is called by the jenkins pipeline
+.PHONY: docker-run-linotp-unit-pipeline
+docker-run-linotp-unit-pipeline:
+	NOSETESTS_ARGS="-v --with-coverage --with-xunit" \
+	$(MAKE) docker-run-linotp-unit
+
+
+###############################################################################
 # Rancher targets
 #
 # These targets are for deploying built linotp images to rancher
+#
+###############################################################################
+
 
 # Override with ID e.g. branch name, tag or git commit
 LINOTP_IMAGE_TAG=$(shell git rev-parse --short HEAD)
