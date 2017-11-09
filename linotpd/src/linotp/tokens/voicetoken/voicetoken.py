@@ -202,16 +202,6 @@ class VoiceTokenClass(HmacTokenClass):
                     'scope': 'config',
                 },
             },
-            'selfservice': {
-                'enroll':
-                    {'page': {
-                        'html': 'voicetoken.mako',
-                        'scope': 'selfservice.enroll', },
-                        'title': {
-                            'html': 'voicetoken.mako',
-                            'scope': 'selfservice.title.enroll', },
-                    },
-            },
             'policy': {
                 'authentication': {
                     'voice_language': {
