@@ -242,7 +242,10 @@ class TestEngineActivation(unittest.TestCase):
 
         _return_value = has_client_policy(*largs, **kwargs)
 
-        mocked_new_has_client_policy.assert_called_once_with(*largs, **kwargs)
+        new_kwargs = {'active_only': True}
+        new_kwargs.update(kwargs)
+        mocked_new_has_client_policy.assert_called_once_with(*largs,
+                                                             **new_kwargs)
         mocked_legacy_get_client_policy.assert_not_called()
 
         mocked_new_has_client_policy.reset_mock()
@@ -289,7 +292,8 @@ class TestEngineActivation(unittest.TestCase):
 
         # check the call
 
-        mocked_new_has_client_policy.assert_called_once_with(*largs, **kwargs)
+        mocked_new_has_client_policy.assert_called_once_with(*largs,
+                                                             **new_kwargs)
         mocked_legacy_get_client_policy.assert_called_once_with(
                                                             *largs, **kwargs)
 
@@ -320,9 +324,10 @@ class TestEngineActivation(unittest.TestCase):
 
         # check the calling
 
-        mocked_new_has_client_policy.assert_called_once_with(*largs, **kwargs)
-        mocked_legacy_get_client_policy.assert_called_once_with(
-                                                            *largs, **kwargs)
+        mocked_new_has_client_policy.assert_called_once_with(*largs,
+                                                             **new_kwargs)
+        mocked_legacy_get_client_policy.assert_called_once_with(*largs,
+                                                                **kwargs)
 
         call = ('old: new %r <> %r', old_pols, new_pols)
         mocked_LOG_error.assert_any_call(*call)
