@@ -45,12 +45,9 @@ from unittest.case import SkipTest
 # Disable insecure request warnings:
 # "InsecureRequestWarning: Unverified HTTPS request is being made.
 # Adding certificate verification is strongly advised. "
-import urllib3
-import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from requests.packages import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 logger = logging.getLogger(__name__)

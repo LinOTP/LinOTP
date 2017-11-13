@@ -292,7 +292,7 @@ $(BUILDDIR)/apt/Packages:
 
 .PHONY: docker-build-linotp
 docker-build-linotp: DOCKER_IMAGE=linotp
-docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
+docker-build-linotp: docker-build-linotp-builder $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	cp linotpd/src/Dockerfile \
 		linotpd/src/config/*.tmpl \
 		linotpd/src/tools/linotp-create-htdigest \
@@ -311,7 +311,7 @@ SELENIUM_DB_IMAGE=mysql:latest
 docker-build-selenium: docker-build-linotp
 	cd $(SELENIUM_TESTS_DIR) \
 		&& $(DOCKER_BUILD) \
-			-t selenium_tester .
+			-t integration_selenium_tester .
 .PHONY: docker-run-selenium
 docker-run-selenium: docker-build-selenium
 	cd $(SELENIUM_TESTS_DIR) \
