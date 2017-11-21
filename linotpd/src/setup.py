@@ -76,7 +76,6 @@ setup(
         "docutils>=0.4",
         "simplejson>=2.0",
         "pycryptodomex>=3.4",
-        "repoze.who<=1.1",
         "pyrad>=1.1",
         "netaddr",
         "qrcode>=2.4",
