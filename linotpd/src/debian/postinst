@@ -432,7 +432,7 @@ case "$1" in
 			    echo_err "TODO: Check MySQL and systemd on debian 9 appliance install!"
 			fi
 
-			echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" --execute=\"create database $DBNAME;\" || true" >> /etc/rc.local
+			echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" --execute=\"create database $DBNAME default character set 'utf8' default collate 'utf8_general_ci';\" || true" >> /etc/rc.local
 			echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" < /etc/linotp2/linotpcreatedb.sql || true" >> /etc/rc.local
 			echo "rm /etc/linotp2/linotpcreatedb.sql" >> /etc/rc.local
 			# create tables
@@ -448,7 +448,7 @@ case "$1" in
 		    else
 			# We can try to create the database now!
 			echo_log "Try to set up database, now"
-			mysql --host=$DBHOST --user=root --password="${ROOTPW}" --execute="create database if not exists $DBNAME;" || true
+			mysql --host=$DBHOST --user=root --password="${ROOTPW}" --execute="create database if not exists $DBNAME default character set 'utf8' default collate 'utf8_general_ci';" || true
 			temp_sql=`mktemp`
 			# set password
 			if [ "$DBPASSWORD1" != "" -a "$DBPASSWORD1" != "1234" ]; then
