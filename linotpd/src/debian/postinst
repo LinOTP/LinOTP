@@ -333,7 +333,11 @@ case "$1" in
 		# Copy virtual host definition for LinOTP to /etc/apache2,
 		# depending on the Apache version.
 		APACHE2_VERSION=$(dpkg -s apache2 | grep "^Version:" | cut -d' ' -f2)
-		if dpkg --compare-versions ${APACHE2_VERSION} ge 2.4; then
+		if [ -z "$APACHE2_VERSION" ]; then
+		    echo_error "Apache requested but apache2 isn't installed, aborting"
+		    exit 1
+		fi
+		if dpkg --compare-versions "${APACHE2_VERSION}" ge 2.4; then
 		    config=/etc/linotp2/apache2.4-example/linotp2.conf
 		else
 		    config=/etc/linotp2/apache2.2-example/linotp2.conf
@@ -414,9 +418,9 @@ case "$1" in
 			# executed after MySQL is successfully started. That's why we
 			# poll for MySQL.
 			DEBIAN_VERSION=`cat /etc/debian_version`
-			dpkg --compare-versions ${DEBIAN_VERSION} ge 8.0
+			dpkg --compare-versions "${DEBIAN_VERSION}" ge 8.0
 			DEB_VER_GE_8=$?
-			dpkg --compare-versions ${DEBIAN_VERSION} lt 9.0
+			dpkg --compare-versions "${DEBIAN_VERSION}" lt 9.0
 			DEB_VER_LT_9=$?
 			if [ ${DEB_VER_GE_8} == 0 -a ${DEB_VER_LT_9} == 0 ]; then
 			    echo "while ! mysqladmin ping --host=$DBHOST --user=root --password=${ROOTPW}; do" >> /etc/rc.local
