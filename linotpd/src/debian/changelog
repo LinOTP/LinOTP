@@ -1,11 +1,11 @@
-linotp (2.10~b0-1) jessie; urgency=low
+linotp (2.10~b1-1) jessie; urgency=low
 
   Enhancements:
   * Adapted for Debian Stretch
   * 65656ee2, 395dab25, 7d2124ba, 13fce4cc, 341de16c, 4c852ef9, 8925905a,
     548d6b9d, 3ceab2cb, 6372fb90, 606b8a7d, 765c125b, ee0b53e6, 9ec1458c,
     69b476c6, b6a611be, 8ae8bd4d, 16fafefd, 9bb47552, b04986a0, bfdbfc0a,
-    8da9de22:  Add Voice Token
+    8da9de22: Add Voice Token
   * 1df19db Server: Push token second generation
   * 64342d9 Server: Adjust default TransactionId length to 17
   * 15ab7ab, 8b4d6a8 Server: Implement explicit-deny for pushtoken
@@ -49,6 +49,7 @@ linotp (2.10~b0-1) jessie; urgency=low
                     (without password)
   * 27969f0 Server: Document the otppin poilcy 3=ignore_pin in the policy ui
   * a47a932 Package: Remove unused smpplib dependency
+  * 61fc468 Web UI: Update favicon to follow company rename
 
   Bug Fixes:
   * 4d2dad Server: Fix evaluation of forward policy to match most specific
@@ -89,7 +90,7 @@ linotp (2.10~b0-1) jessie; urgency=low
   * a69ed6 Server: Fix for policy export to export inactive too
   * 3c44c8 Server: Fix for target realm handling on token import
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 20 Oct 2017 16:10:09 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 15 Nov 2017 13:27:37 +0100
 
 linotp (2.9.3.3-1) jessie; urgency=low
 
