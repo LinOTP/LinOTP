@@ -54,9 +54,12 @@ from linotp.lib.crypto import check
 
 from linotp.tests import TestController, url
 
+from nose.plugins.attrib import attr
+
 log = logging.getLogger(__name__)
 
 
+@attr('nightly')
 class OcraOtp(TestController):
 
     def __init__(self, ocrapin=None):
@@ -202,6 +205,7 @@ class OcraOtp(TestController):
         return otp
 
 
+@attr('nightly')
 class OcraTest(TestController):
     """
     ocra2 test class:
@@ -4300,5 +4304,8 @@ class OcraTest(TestController):
 
         self.removeTokens(serial=ocra.serial)
         return
+
+
+
 
 ##eof##########################################################################
