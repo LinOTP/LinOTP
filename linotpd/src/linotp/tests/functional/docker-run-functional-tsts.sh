@@ -64,16 +64,29 @@ fi
 python setup.py develop
 
 
-coverage="--with-coverage"
-coverage="${coverage} --cover-package=linotp"
+
+# When coverage report is enabled, set number of parallel executed
+# processes to 1.
+# Otherwise multiple processes try to r/w ".coverage" file and the test run
+# will break.
+if [[ "${COVERAGE_ENABLED}" == "yes" ]]; then
+
+    coverage="--with-coverage"
+    coverage="${coverage} --cover-package=linotp"
+    parallel_no_proc="1"
+
+else
+    coverage=" "
+    parallel_no_proc="$(nproc)"
+fi
 
 
 #Allow enable/disable of functional tests tagged as nightly
 echo "Exceuting Nightly Test ::: ${NIGHTLY}"
 
-if [[ ${NIGHTLY} == "no" ]]; then
+if [[ "${NIGHTLY}" == "no" ]]; then
 
-    exec_nightly_tests="-a '!nightly' "
+    exec_nightly_tests="-a nightly=False"
 
 else
     exec_nightly_tests=" "
@@ -143,7 +156,9 @@ run_nose() {
 #
 export -f run_nose
 export SHELL=/bin/bash
-parallel -j $(nproc) run_nose {} {#} ::: `ls -1 linotp/tests/functional/test_*.py linotp/tests/functional_special/test_*.py`
+export exec_nightly_tests
+export coverage
+parallel -j ${parallel_no_proc} run_nose {} {#} ::: `ls -1 linotp/tests/functional/test_*.py linotp/tests/functional_special/test_*.py`
 
 # Cleanup
 rm -f ${linotp_src_dir}/func_test_[0-9]*.ini
@@ -151,12 +166,4 @@ rm -f ${linotp_src_dir}/encKey \
       ${linotp_src_dir}/private.pem \
       ${linotp_src_dir}/public.pem \
       ${linotp_src_dir}/docker_func_cfg.ini
-
-
-
-
-
-
-
-
 

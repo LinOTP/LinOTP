@@ -269,6 +269,9 @@ docker-functional: docker-run-linotp-functional-test
 
 docker-pylint: docker-run-linotp-pylint
 
+
+
+
 ##
 .PHONY: docker-build-all docker-linotp docker-run-selenium docker-unit docker-pylint docker-functional
 
@@ -449,6 +452,58 @@ docker-run-linotp-unit-pipeline: docker-run-linotp-unit
 # Run Pylint Code Analysis
 .PHONY: docker-run-linotp-pylint
  docker-run-linotp-pylint: docker-build-linotp-test-image
+	$(DOCKER_RUN) \
+		--name=$(DOCKER_CONTAINER_NAME)-pylint \
+		--volume=$(PWD):/linotpsrc \
+		-w="/linotpsrc" \
+		--entrypoint="" \
+		--env "LANG=C.UTF-8" \
+		-t linotp_unit_tester \
+	 	pylint --output-format=parseable --reports=y --rcfile=.pylintrc \
+		--disable=E1101,maybe-no-member --ignore tests,functional,integration linotp > pylint.log; exit 0
+
+
+#
+# # Functional Tests
+#
+
+
+# NIGHTLY variable controls, if certain long-runnig tests are skipped
+#
+# NIGHTLY="no" or unset: long-running tests are skipped
+# NIGHTLY="yes" all tests are executed
+#
+# Example:
+# $ export NIGHTLY="yes"
+# $ make docker-run-linotp-functional-test
+
+.PHONY: docker-run-linotp-functional-test
+docker-run-linotp-functional-test: docker-build-linotp-test-image
+	cd $(FUNCTIONAL_TESTS_DIR) && \
+		export NIGHTLY=${NIGHTLY} && \
+		docker-compose --project-directory $(PWD) up \
+			--abort-on-container-exit \
+			--force-recreate
+	$(MAKE) docker-clean-functional-test
+
+.PHONY: docker-clean-functional-test
+docker-clean-functional-test:
+	rm -f linotpd/src/nosetests_*.xml \
+		  linotpd/src/func_test_*.ini \
+		  linotpd/src/private.pem \
+		  linotpd/src/public.pem \
+		  linotpd/src/docker_func_cfg.ini \
+		  linotpd/src/encKey
+
+
+#
+# # Pylint
+#
+
+
+# Run Pylint Code Analysis
+.PHONY: docker-run-linotp-pylint
+docker-run-linotp-pylint: docker-build-linotp-test-image
 	$(DOCKER_RUN) \
 		--name=$(DOCKER_CONTAINER_NAME)-pylint \
 		--volume=$(PWD):/linotpsrc \

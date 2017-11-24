@@ -50,7 +50,8 @@ RUN pip install --user --upgrade \
         nose \
         nose-cov \
         nose-testconfig \
-        pytz
+        pytz \
+        PySocks
 
 
 CMD [ "/usr/bin/make", "test" ]

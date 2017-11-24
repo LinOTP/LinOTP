@@ -14,6 +14,7 @@ services:
       LINOTP_APACHE_AUTH: "false"
       MYSQL_ROOT_PASSWORD: "Test123!"
       NIGHTLY: "${NIGHTLY:-no}"
+      COVERAGE_ENABLED: "${COVERAGE_ENABLED:-no}"
     volumes:
       - .:/linotpsrc
     depends_on:
