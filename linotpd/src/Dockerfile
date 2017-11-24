@@ -65,7 +65,8 @@ ARG LINOTP_MIRROR=www.linotp.org
 # encryption key file, set
 #   SECRET_FILE_LOCATION=/path/to/encKey
 
-ENV LINOTP_USER=linotp \
+ENV TZ="Europe/Berlin" \
+    LINOTP_USER=linotp \
 	LINOTP_DB_TYPE=sqlite \
 	LINOTP_DB_NAME=//tmp/linotp.db \
 	LINOTP_DB_HOST=dbhost \
