@@ -259,22 +259,6 @@ class TestImportOTP(TestController):
 
         return
 
-    def test_parse_OATH(self):
-        '''
-        Test an OATH csv import
-        '''
-        csv = self._read_data("oath_tokens.csv")
-
-        TOKENS = linotp.lib.ImportOTP.parseOATHcsv(csv)
-
-        self.assertTrue(len(TOKENS) == 4, TOKENS)
-
-        self.assertTrue(TOKENS["tok4"].get("timeStep") == 60, TOKENS)
-
-        self.assertTrue(TOKENS["tok3"].get("otplen") == 8, TOKENS)
-
-        return
-
     def test_import_OATH(self):
         '''
         test to import token data
@@ -285,6 +269,116 @@ class TestImportOTP(TestController):
         response = self.upload_tokens("oath_tokens.csv", params=params)
 
         self.assertTrue('<imported>4</imported>' in response, response)
+
+        return
+
+    def test_import_OATH_256(self):
+        '''
+        test to import token data sha256 seeds
+        '''
+
+        params = {'type':'oathcsv'}
+
+        response = self.upload_tokens("oath_tokens_sha256.csv", params=params)
+        self.assertTrue('<imported>8</imported>' in response, response)
+
+        # we use for testing the totp test vectors from
+        # https://tools.ietf.org/html/rfc6238
+
+        # 1. test token with explicit sha256
+        # htok_sha256_3, 313233343536373839303 ... 9303132, hotp, 8 ,,sha256,
+
+        params = {
+            'serial': 'htok_sha256_3',
+            'pass': '46119246'}
+
+        response = self.make_validate_request('check_s', params)
+        self.assertTrue('"value": true' in response, response)
+
+        # 2. test token with no explicit sha256 - determined by seed length
+        # htok_sha256_1, 31323334353637383....03132, hotp,       8   ,
+
+        params = {
+            'serial': 'htok_sha256_1',
+            'pass': '46119246'}
+
+        response = self.make_validate_request('check_s', params)
+        self.assertTrue('"value": true' in response, response)
+
+        # 3. positive test token - seed len for sha1 and sha1 otp
+        # htok_sha1_6, 313233343...3031323334353637383930, hotp, 8, , , ,
+
+        params = {
+            'serial': 'htok_sha1_6',
+            'pass': '94287082'}
+
+        response = self.make_validate_request('check_s', params)
+        self.assertTrue('"value": true' in response, response)
+
+        # 4. negative test token - seed len for sha1 but declared as sha256
+        # htok_sha256_7, 3132333435...1323334353637383930, hotp, 8 ,, Sha256,
+
+        params = {
+            'serial': 'htok_sha256_7',
+            'pass': '94287082'}
+
+        response = self.make_validate_request('check_s', params)
+        self.assertTrue('"value": false' in response, response)
+
+        return
+
+    def test_import_OATH_512(self):
+        '''
+        test to import token data with sha512 seeds
+        '''
+
+        params = {'type':'oathcsv'}
+
+        response = self.upload_tokens("oath_tokens_sha512.csv", params=params)
+        self.assertTrue('<imported>8</imported>' in response, response)
+
+        # we use for testing the totp test vectors from
+        # https://tools.ietf.org/html/rfc6238
+
+        # 1. test token with explicit sha512
+        # htok_sha512_3, 313233343536373839303 ... 9303132, hotp, 8 ,,sha512,
+
+        params = {
+            'serial': 'htok_sha512_3',
+            'pass': '90693936'}
+
+        response = self.make_validate_request('check_s', params)
+        self.assertTrue('"value": true' in response, response)
+
+        # 2. test token with no explicit sha512 - determined by seed length
+        # htok_sha512_1, 31323334353637383....03132, hotp,       8   ,
+
+        params = {
+            'serial': 'htok_sha512_1',
+            'pass': '90693936'}
+
+        response = self.make_validate_request('check_s', params)
+        self.assertTrue('"value": true' in response, response)
+
+        # 3. positive test token - seed len for sha1 and sha1 otp
+        # htok_sha1_6, 313233343...3031323334353637383930, hotp, 8, , , ,
+
+        params = {
+            'serial': 'htok_sha1_6',
+            'pass': '94287082'}
+
+        response = self.make_validate_request('check_s', params)
+        self.assertTrue('"value": true' in response, response)
+
+        # 4. negative test token - seed len for sha1 but declared as sha512
+        # htok_sha512_7, 3132333435...1323334353637383930, hotp, 8 ,, Sha512,
+
+        params = {
+            'serial': 'htok_sha512_7',
+            'pass': '94287082'}
+
+        response = self.make_validate_request('check_s', params)
+        self.assertTrue('"value": false' in response, response)
 
         return
 
