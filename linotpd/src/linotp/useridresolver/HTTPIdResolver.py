@@ -136,6 +136,8 @@ def urllib_request(url, parameter,
 @resolver_registry.class_entry('httpresolver')
 class IdResolver (UserIdResolver):
 
+    db_prefix = 'useridresolver.HTTPIdResolver.IdResolver'
+
     @classmethod
     def setup(cls, config=None, cache_dir=None):
         '''

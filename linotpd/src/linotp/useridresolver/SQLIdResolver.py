@@ -372,6 +372,7 @@ def testconnection(params):
 @resolver_registry.class_entry('sqlresolver')
 class IdResolver(UserIdResolver):
 
+    db_prefix = 'useridresolver.SQLIdResolver.IdResolver'
     critical_parameters = ['Driver', 'Server', 'Port',
                            'Database', 'User', 'Table']
 

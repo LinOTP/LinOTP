@@ -116,6 +116,7 @@ class IdResolver (UserIdResolver):
 
     nameDict = {}
     conf = ""
+    db_prefix = 'useridresolver.LDAPIdResolver.IdResolver'
 
     # The mapping of these search fields to the ldap attributes is
     # stored in self.userinfo

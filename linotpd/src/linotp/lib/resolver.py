@@ -802,14 +802,43 @@ def closeResolvers():
     return
 
 
-def getResolverClassName(resolver_type, resolver_name):
+def getResolverClassName(cls_identifier, resolver_name):
 
-    resolver_cls = get_resolver_class(resolver_type)
+    """
+    Constructs a database identifier for a specific
+    resolver by concatenating the database prefix
+    with the resolver_name
 
-    if resolver_cls is None:
+    :param cls_identifier: The identifier for the resolver
+        class (as defined in the registry)
+
+    :param resolver_name: The name of the resolver
+    """
+
+    db_prefix = get_resolver_db_prefix(cls_identifier)
+
+    if db_prefix is None:
         return ''
 
-    return 'useridresolver.%s.%s' % (resolver_type, resolver_name)
+    return '%s.%s' % (db_prefix, resolver_name)
+
+
+def get_resolver_db_prefix(cls_identifier):
+
+    """
+    Returns the database prefix used in the user column
+    for a given resolver class identifier
+
+    :param cls_identifier: The identifier for the resolver
+        class (as defined in the registry)
+    """
+
+    resolver_cls = get_resolver_class(cls_identifier)
+
+    if resolver_cls is None:
+        return None
+
+    return resolver_cls.db_prefix
 
 
 # internal functions
