@@ -39,7 +39,15 @@ class TestImportOTP(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        self.set_config_selftest()
+
+    def tearDown(self):
+        """
+        make the dishes
+        """
+        self.delete_all_policies()
+        self.delete_all_token()
+
+        return TestController.tearDown(self)
 
     def _get_file_name(self, data_file):
         """
@@ -61,7 +69,8 @@ class TestImportOTP(TestController):
 
             return data
 
-    def upload_tokens(self, file_name, data=None, params=None):
+    def upload_tokens(self, file_name, data=None, params=None,
+                      auth_user='admin'):
         """
         helper to upload a token file via admin/loadtokens file upload
         like it is done in the browser
@@ -80,7 +89,8 @@ class TestImportOTP(TestController):
         response = self.make_admin_request('loadtokens',
                                            params=params,
                                            method='POST',
-                                           upload_files=upload_files)
+                                           upload_files=upload_files,
+                                           auth_user=auth_user)
 
         return response
 
@@ -509,6 +519,73 @@ class TestImportOTP(TestController):
         for serial in serials:
 
             self.assertFalse(serial in response, response)
+
+        return
+
+    def test_import_OATH_with_admin_policy(self):
+        '''
+        test to import token with admin policies
+        '''
+        self.create_common_resolvers()
+        self.create_common_realms()
+
+        # 0. define access policy
+        # * only for root and
+        # * only in target realm: 'mydefrealm'
+
+        params = {'scope': 'admin',
+                  'action': 'import',
+                  'realm': 'mydefrealm',
+                  'user': 'admin',
+                  'name': 'all_admin'}
+
+        response = self.create_policy(params)
+        self.assertTrue('"setPolicy all_admin"' in response.body, response)
+
+        # ------------------------------------------------------------------ --
+
+        # 1. negative test: hugo is not allowed to load tokens
+
+        params = {
+            'type':'oathcsv'}
+
+        response = self.upload_tokens("oath_tokens.csv", params=params,
+                                      auth_user='hugo')
+
+        msg = "You do not have the administrative right to import tokens"
+        self.assertTrue(msg in response.body, response)
+
+        # ------------------------------------------------------------------ --
+
+        # 2. negative test: as target realm only 'mydefrealm' is allowed
+
+        params = {
+            'type':'oathcsv',
+            'targetrealm': 'myOtherRealm'}
+
+        response = self.upload_tokens("oath_tokens.csv", params=params,
+                                      auth_user='admin')
+
+        msg = "target realm could not be assigned"
+        self.assertTrue(msg in response.body, response)
+
+        # ------------------------------------------------------------------ --
+
+        # 3. positiv test: allowed target realm 'mydefrealm' for user 'admin'
+
+        params = {
+            'type':'oathcsv',
+            'targetrealm': 'mydefrealm'}
+
+        response = self.upload_tokens("oath_tokens.csv", params=params,
+                                      auth_user='admin')
+
+        self.assertTrue('<imported>4</imported>' in response, response)
+
+        self.delete_policy('all_admin')
+
+        self.delete_all_realms()
+        self.delete_all_resolvers()
 
         return
 

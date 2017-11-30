@@ -903,18 +903,28 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         ret['realms'] = policies['realms']
 
     elif method == 'loadtokens':
+
+        # loadtokens is called in the sope of token import to
+        # * to check that the user is allowed to upload the tokens into
+        #   the target realm - the list of allowed target realms is taken
+        #   from the realm defintion of th import policy
+        # * verify that the amount of tokens in the target realm does not
+        #   exceed the maxtoken policy and
+
         tokenrealm = param.get('tokenrealm')
         policies = getAdminPolicies("import")
 
-        if policies['active'] and tokenrealm not in policies['realms']:
+        if policies['active']:
+            if not (
+                '*' in policies['realms'] or tokenrealm in policies['realms']):
 
-            log.warning("the admin >%s< is not allowed to "
-                        "import token files to realm %s: %s",
-                        policies['admin'], tokenrealm, policies)
+                log.warning("the admin >%s< is not allowed to "
+                            "import token files to realm %s: %s",
+                            policies['admin'], tokenrealm, policies)
 
-            raise PolicyException(_("You do not have the administrative "
-                                    "right to import token files to realm %s"
-                                    ". Check the policies.") % tokenrealm)
+                raise PolicyException(_("You do not have the administrative "
+                                        "right to import token files to realm %s"
+                                        ". Check the policies.") % tokenrealm)
 
         if not _checkTokenNum(realm=tokenrealm):
 
@@ -1382,7 +1392,6 @@ def getAdminPolicies(action, scope='admin'):
         if action:
             pol_request['action'] = action
 
-        # policies = search_policy(pol_request)
         policies = getPolicy(pol_request)
         log.debug("Found the following policies: %r", policies)
 
