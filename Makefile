@@ -152,7 +152,7 @@ ifndef NOSETESTS_ARGS
     NOSETESTS_ARGS?=-v
 endif
 
-test: unittests integrationtests
+test: unittests integrationtests functionaltests
 
 unittests:
 	$(MAKE) -C linotpd/src/linotp/tests/unit $@
@@ -246,9 +246,12 @@ DOCKER_RUN_ARGS=
 
 DOCKER_BUILD = docker build $(DOCKER_BUILD_ARGS) $(DOCKER_PROXY_BUILD_ARGS)
 DOCKER_RUN = docker run $(DOCKER_RUN_ARGS)
-SELENIUM_TESTS_DIR=linotpd/src/linotp/tests/integration
 
-UNIT_TESTS_DIR=linotpd/src/linotp/tests/unit
+TESTS_DIR=linotpd/src/linotp/tests
+
+SELENIUM_TESTS_DIR=$(TESTS_DIR)/integration
+UNIT_TESTS_DIR=$(TESTS_DIR)/unit
+FUNCTIONAL_TESTS_DIR=$(TESTS_DIR)/functional
 
 ## Toplevel targets
 # Toplevel target to build all containers
@@ -257,11 +260,20 @@ docker-build-all: docker-build-debs  docker-build-linotp docker-build-selenium
 # Toplevel target to build linotp container
 docker-linotp: docker-build-debs  docker-build-linotp
 
-# Build and run Selenium tests
+# Build and run Selenium /integration tests
 docker-selenium: docker-build-linotp docker-build-selenium docker-run-selenium
 
+docker-unit: docker-build-linotp docker-build-linotp-test-image docker-run-linotp-unit
+
+docker-functional: docker-run-linotp-functional-test
+
+docker-pylint: docker-run-linotp-pylint
+
+
+
+
 ##
-.PHONY: docker-build-all docker-linotp docker-run-selenium
+.PHONY: docker-build-all docker-linotp docker-run-selenium docker-unit docker-pylint docker-functional
 
 # This is expanded during build to add image tags
 DOCKER_TAG_ARGS=$(foreach tag,$(DOCKER_TAGS),-t $(DOCKER_IMAGE):$(tag))
@@ -289,8 +301,8 @@ docker-build-debs: docker-build-linotp-builder
 	rm -f $(BUILDDIR)/apt/Packages
 	$(MAKE) $(BUILDDIR)/apt/Packages
 
+# Build the debian packages in a container, then extract them from the image
 $(BUILDDIR)/apt/Packages:
-	# Build the debs in a container, then extract them from the image
 	$(DOCKER_RUN) \
 		--workdir=/pkg/linotp \
 		--name=$(DOCKER_CONTAINER_NAME)-apt \
@@ -366,29 +378,86 @@ $(BUILDDIR)/dockerfy:
 	rm -r $(BUILDDIR)/dockerfy-tmp
 
 
-.PHONY: docker-build-linotp-unit
-docker-build-linotp-unit: docker-build-linotp
+#
+# # Unit tests
+#
+
+# Build Unittest Docker Container, based on linotp image
+.PHONY: docker-build-linotp-test-image
+docker-build-linotp-test-image: docker-build-linotp
 	cd $(UNIT_TESTS_DIR) \
 		&& $(DOCKER_BUILD) \
-			-t unit_tester .
+			-t linotp_unit_tester .
 
-
+# Run Unit tests. Use $NOSETESTS_ARGS for additional nosetest settings
 .PHONY: docker-run-linotp-unit
-docker-run-linotp-unit: docker-build-linotp-unit
+docker-run-linotp-unit: docker-build-linotp-test-image
 	cd $(UNIT_TESTS_DIR) \
 		&& $(DOCKER_RUN) \
 			--name=$(DOCKER_CONTAINER_NAME)-unit \
 			--volume=$(PWD):/linotpsrc \
 			--entrypoint="" \
-			--env NOSETESTS_ARGS="${NOSETESTS_ARGS}" \
-			-t unit_tester \
+			--env NOSETESTS_ARGS="$(NOSETESTS_ARGS)" \
+			-t linotp_unit_tester \
 			/usr/bin/make test
 
-# This make rule is called by the jenkins pipeline
+#jenkins pipeline uses this make rule
 .PHONY: docker-run-linotp-unit-pipeline
 docker-run-linotp-unit-pipeline:
 	NOSETESTS_ARGS="-v --with-coverage --with-xunit" \
 	$(MAKE) docker-run-linotp-unit
+
+
+#
+# # Pylint
+#
+
+
+# Run Pylint Code Analysis
+.PHONY: docker-run-linotp-pylint
+ docker-run-linotp-pylint: docker-build-linotp-test-image
+	$(DOCKER_RUN) \
+		--name=$(DOCKER_CONTAINER_NAME)-pylint \
+		--volume=$(PWD):/linotpsrc \
+		-w="/linotpsrc" \
+		--entrypoint="" \
+		--env "LANG=C.UTF-8" \
+		-t linotp_unit_tester \
+	 	pylint --output-format=parseable --reports=y --rcfile=.pylintrc \
+		--disable=E1101,maybe-no-member --ignore tests,functional,integration linotp > pylint.log; exit 0
+
+
+#
+# # Functional Tests
+#
+
+
+# NIGHTLY variable controls, if certain long-runnig tests are skipped
+#
+# NIGHTLY="no" or unset: long-running tests are skipped
+# NIGHTLY="yes" all tests are executed
+#
+# Example:
+# $ export NIGHTLY="yes"
+# $ make docker-run-linotp-functional-test
+
+.PHONY: docker-run-linotp-functional-test
+docker-run-linotp-functional-test: docker-build-linotp-test-image
+	cd $(FUNCTIONAL_TESTS_DIR) && \
+		export NIGHTLY=${NIGHTLY} && \
+		docker-compose --project-directory $(PWD) up \
+			--abort-on-container-exit \
+			--force-recreate
+	$(MAKE) docker-clean-functional-test
+
+.PHONY: docker-clean-functional-test
+docker-clean-functional-test:
+	rm -f linotpd/src/nosetests_*.xml \
+		  linotpd/src/func_test_*.ini \
+		  linotpd/src/private.pem \
+		  linotpd/src/public.pem \
+		  linotpd/src/docker_func_cfg.ini \
+		  linotpd/src/encKey
 
 
 ###############################################################################
