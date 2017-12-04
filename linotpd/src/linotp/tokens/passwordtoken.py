@@ -174,4 +174,7 @@ class PasswordTokenClass(HmacTokenClass):
 
         return -1
 
+    def check_otp_exist(self, otp, window=10, user=None, autoassign=False):
+        return self.checkOtp(otp, counter=None, window=None)
+
 # eof #
