@@ -100,13 +100,36 @@ class TestImportUser(TestController):
         response = self.create_realm('black', [
             'useridresolver.PasswdIdResolver.IdResolver.black1'])
 
-        params = {'type': 'hmac',
+        hmac_token = {
+            'key': '5132333435363738393031323334353637383930',
+            'type': 'hmac',
+            'serial': None,
+            'otplen': 6,
+            'otps': ['841650', '850446', '352919'],
+        }
+
+        params = {'type': hmac_token['type'],
+                  'otpkey': hmac_token['key'],
+                  'otplen': hmac_token['otplen'],
                   'serial': 'migration_token',
                   'user': 'passthru_user1@black',
-                  'genkey': '1'
+                  'pin': 'geheim1'
                   }
 
         response = self.make_admin_request('init', params)
+        self.assertTrue('"value": true' in response)
+
+        # ------------------------------------------------------------------ --
+
+        # verify that the token is usable by the user
+
+        params = {
+            'user' : 'passthru_user1@black',
+            'pass': 'geheim1' + hmac_token['otps'][0]
+            }
+
+        response = self.make_validate_request('check', params=params)
+        self.assertTrue('"value": true' in response)
 
         response = self.create_realm('black', [
             'useridresolver.PasswdIdResolver.IdResolver.black1',
@@ -132,6 +155,18 @@ class TestImportUser(TestController):
 
         self.assertTrue('black2' in token.get('LinOtp.IdResClass'))
         self.assertTrue(token['LinOtp.TokenSerialnumber'] == 'migration_token')
+
+        # ------------------------------------------------------------------ --
+
+        # verify that the token is usable by the user
+
+        params = {
+            'user' : 'passthru_user1@black',
+            'pass': 'geheim1' + hmac_token['otps'][1]
+            }
+
+        response = self.make_validate_request('check', params=params)
+        self.assertTrue('"value": true' in response)
 
         return
 
