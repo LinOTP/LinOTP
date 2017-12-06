@@ -3646,7 +3646,6 @@ function tokenbuttons(){
         if (false != tokeninfo) {
             var pHtml = $.parseHTML(tokeninfo);
             $dialog_token_info.html(pHtml);
-            set_tokeninfo_buttons();
             buttons = {
                 Close: {click: function(){
                     $(this).dialog('close');
@@ -3657,6 +3656,7 @@ function tokenbuttons(){
             };
             $dialog_token_info.dialog('option', 'buttons', buttons);
             $dialog_token_info.dialog('open');
+
             set_tokeninfo_buttons();
         }
         /* event.preventDefault(); */
