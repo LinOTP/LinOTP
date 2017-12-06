@@ -227,8 +227,7 @@ class ValidationHandler(object):
         reply = {}
 
         serials = []
-        challenges = Challenges.lookup_challenges(transid=transid,
-                                                  read_for_update=True)
+        challenges = Challenges.lookup_challenges(transid=transid)
 
         for challenge in challenges:
             serials.append(challenge.tokenserial)
@@ -753,11 +752,9 @@ class ValidationHandler(object):
                 # if there is no transaction id given we check all token
                 # related challenges
                 (_ex_challenges,
-                 challenges) = Challenges.get_challenges(
-                                                token,
-                                                options=check_options,
-                                                filter_open=True,
-                                                read_for_update=True)
+                 challenges) = Challenges.get_challenges(token,
+                                                         options=check_options,
+                                                         filter_open=True)
 
             try:
                 (ret, reply) = token.check_token(
