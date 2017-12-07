@@ -4995,7 +4995,7 @@ $(document).ready(function(){
     $dialog_push_provider_edit = $('#dialog_push_provider_edit').dialog({
         autoOpen: false,
         title: 'Push Provider',
-        width: 600,
+        width: 700,
         modal: true,
         buttons: {
             'Cancel': {

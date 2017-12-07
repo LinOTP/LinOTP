@@ -588,12 +588,12 @@ if isinstance(lang, list):
                               id="push_provider_config" cols='35' rows='6'
                               placeholder=
 '{
-"push_url": "https://push.keyidentity.com/send",
-"access_certificate": "/etc/linotp2/push-license.pem",
-"server_certificate": "/etc/linotp2/keyidentity-push-ca-bundle.crt"
+  "push_url": "https://<challenge-service>/v1/challenge",
+  "access_certificate": "/etc/linotp2/challenge-service-client.pem",
+  "server_certificate": "/etc/linotp2/challenge-service-ca.crt"
 }'
-
-></textarea></td>
+                    ></textarea>
+                </td>
             </tr>
             <tr>
                 <td><label for="push_provider_timeout">${_("Timeout (sec)")}</label>: </td>
