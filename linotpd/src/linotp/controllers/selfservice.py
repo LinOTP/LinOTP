@@ -115,6 +115,7 @@ class SelfserviceController(BaseController):
         "getotp",
         "history",
         "index",
+        "landing",
         "load_form",
         "reset",
         "resync",
@@ -551,6 +552,13 @@ class SelfserviceController(BaseController):
         This is the form to display the history table for the user
         '''
         return render('/selfservice/history.mako')
+
+    def landing(self):
+        '''
+        This is the landing page for selfservice
+        '''
+        c.tokenArray = getTokenForUser(self.authUser)
+        return render('/selfservice/landing.mako')
 
     def webprovisionoathtoken(self):
         '''

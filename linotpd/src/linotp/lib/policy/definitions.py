@@ -139,6 +139,9 @@ def getPolicyDefinitions(scope=""):
             'mfa_3_fields': {
                 'type': 'bool',
                 'desc': 'optional OTP for selfservice authentication'},
+            'hide_landing_page': {
+                'type': 'bool',
+                'desc': 'hide selfservice landing page as first tab'},
             },
         'system': {
             'read': {'type': 'bool'},

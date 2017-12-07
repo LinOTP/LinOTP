@@ -391,3 +391,19 @@ div#login-box a.cancel-otp {
 div#login-box .ui-button {
     background: whitesmoke;
 }
+
+.info-box {
+    padding: 1.5em;
+    background-color:#f6a350;
+    border: 2px solid #e29548;
+    color: white;
+    -webkit-box-shadow: inset 0px 0px 5px 0px rgba(255,255,255,0.5);
+    -moz-box-shadow: inset 0px 0px 5px 0px rgba(255,255,255,0.5);
+    /* box-shadow: inset 0px 0px 5px 0px rgba(255,255,255,0.5); */
+}
+
+.info-box .info-box-icon {
+    padding 0 .5em:;
+    padding-right: .5em;
+    font-weight:bold
+}
