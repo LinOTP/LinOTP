@@ -26,6 +26,7 @@
  *
 </%doc>
 <ul>
+% if c.tokenArray:
 % for tok in c.tokenArray:
     <li>
         <a class="${'activeToken' if tok['LinOtp.Isactive'] else 'disabledToken'}">
@@ -33,4 +34,7 @@
         </a>
     </li>
 % endfor
+% else:
+<div class="empty-token-list">You currently have no tokens enrolled</div>
+% endif
 </ul>

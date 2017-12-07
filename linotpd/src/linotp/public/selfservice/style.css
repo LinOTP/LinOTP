@@ -392,6 +392,12 @@ div#login-box .ui-button {
     background: whitesmoke;
 }
 
+div.empty-token-list {
+	color: #777;
+	text-align: center;
+	padding: 2em;
+}
+
 .info-box {
     padding: 1.5em;
     background-color:#f6a350;
