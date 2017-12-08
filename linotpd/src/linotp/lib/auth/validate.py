@@ -216,8 +216,7 @@ class ValidationHandler(object):
         reply = {}
 
         serials = []
-        challenges = Challenges.lookup_challenges(transid=transid,
-                                                  read_for_update=True)
+        challenges = Challenges.lookup_challenges(transid=transid)
 
         for challenge in challenges:
             serials.append(challenge.tokenserial)
