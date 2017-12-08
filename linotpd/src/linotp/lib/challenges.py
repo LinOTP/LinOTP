@@ -40,8 +40,7 @@ log = logging.getLogger(__name__)
 class Challenges(object):
 
     @staticmethod
-    def lookup_challenges(serial=None, transid=None, filter_open=False,
-                          read_for_update=False):
+    def lookup_challenges(serial=None, transid=None, filter_open=False):
         """
         database lookup to find all challenges belonging to a token and or
         if exist with a transaction state
@@ -50,10 +49,6 @@ class Challenges(object):
         :param transid:  transaction id, if None, all will be retrieved
         :param filter_open: check only for those challenges, which have not
                             been verified before
-        :param read_for_update: if True the Select challenges command will
-                                set a lock for getting the challenges. So
-                                a second request will wait until the first
-                                is complete.
         :return:         return a list of challenge dict
         """
         log.debug('lookup_challenges: serial %r: transactionid %r',
@@ -82,13 +77,9 @@ class Challenges(object):
 
         # SQLAlchemy requires the conditions in one arg as tupple
         condition = and_(*conditions)
-        challenges_query = Session.query(Challenge).\
-            filter(condition).order_by(desc(Challenge.id))
+        challenges = Session.query(Challenge).\
+            filter(condition).order_by(desc(Challenge.id)).all()
 
-        if read_for_update:
-            challenges_query = challenges_query.with_lockmode('update')
-
-        challenges = challenges_query.all()
         log.debug('lookup_challenges: founnd challenges: %r', challenges)
 
         return challenges
