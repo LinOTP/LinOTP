@@ -132,7 +132,7 @@ def parseOATHcsv(csv):
         if len(l) >= 2:
             key = l[1].strip()
 
-            if len(key) == 32:
+            if len(key) == 64:
                 hashlib = "sha256"
         else:
             log.error("[parseOATHcsv] the line %s did not contain a hmac key" % line)
