@@ -1,3 +1,11 @@
+linotp-useridresolver (2.9.3.1-1) jessie; urgency=low
+
+  Bug Fixes:
+  * 75b52f Server: Fix encoding error that prevented Token View from being
+                   displayed in the web interface.
+
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Tue, 12 Dec 2017 11:02:45 +0100
+
 linotp-useridresolver (2.9.3-1) jessie; urgency=low
 
   * Set new version 2.9.3-1

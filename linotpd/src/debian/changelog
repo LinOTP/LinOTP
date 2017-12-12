@@ -1,8 +1,6 @@
 linotp (2.9.3.4-1) jessie; urgency=low
 
   Bug Fixes:
-  * 75b52f Server: Fix encoding error that prevented Token View from being
-                   displayed in the web interface.
   * 7f8aa6 Server: Fix Hashlib heuristic on token import (support sha265 when
                    key length is 64 hex chars
 
