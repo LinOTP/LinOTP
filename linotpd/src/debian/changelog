@@ -1,4 +1,4 @@
-linotp (2.10~rc0-1) jessie; urgency=low
+linotp (2.10~rc1-1) jessie; urgency=low
   Debian packaging:
   * Adapted for Debian Stretch
   * Remove Debian dependency python-socksipy python-repoze.who
@@ -30,7 +30,8 @@ linotp (2.10~rc0-1) jessie; urgency=low
       UserIdResolver) if it exists, otherwise take the number stored in the 
       token info (a18d46c)
     * Autoassignment without password (4f25bcb)
-
+    * OATH csv import with sha256 + sha512
+    
   Web UI changes:
   * Add Auth Demo pages for challenge-response and push token
       * /auth/challenge-response
@@ -83,11 +84,15 @@ linotp (2.10~rc0-1) jessie; urgency=low
   * Server: Verify that only active policies are used (0ab7eb)
   * Server: Fix for policy export to export inactive too (a69ed6)
   * Server: Fix for target realm handling on token import (3c44c8)
+  * Server: Fix select only active policies for admin policies (0e42454c)
+  * Server: Fix getResolverClassName (b5bd7de6)
   * Web UI: Fix UI crash check if backend response is array in ldap
             testconnection (805526)
   * Selfservice: Fix QR token enrollment and activation (57365e)
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 22 Nov 2017 13:35:15 +0100
+
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 30 Nov 2017 16:59:08 +0100
 
 linotp (2.9.3.3-1) jessie; urgency=low
 
