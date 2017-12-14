@@ -713,7 +713,6 @@ $(document).ready(function() {
     );
 
     $("#tabs").tabs({
-        collapsible : true,
         spinner : 'Retrieving data...',
         beforeLoad: function( event, ui ) {
             // The purpose of the following is to prevent automatic reloads
