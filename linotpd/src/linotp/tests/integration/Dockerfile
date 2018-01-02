@@ -2,21 +2,6 @@ FROM linotp
 
 ARG DEBIAN_MIRROR=deb.debian.org
 
-RUN apt-get update && apt-get install \
-  		make \
-  		python-nose-testconfig \
-  		python-requests \
-		python-pip \
-  		linotp-adminclient-cli
-
-RUN pip install packaging
-
-# Install python-selenium from jessie backports
-RUN echo "deb http://${DEBIAN_MIRROR}/debian jessie-backports main" > /etc/apt/sources.list.d/999jessie-backports.list \
-		&& apt-get update \
-		&& apt-get install python-selenium \
-		&& rm /etc/apt/sources.list.d/999jessie-backports.list
-
 ENV LINOTP_HOST=linotp \
 	LINOTP_PORT=443 \
 	LINOTP_PROTOCOL=https \
@@ -27,9 +12,18 @@ ENV LINOTP_HOST=linotp \
 	SELENIUM_HOST=selenium \
 	SELENIUM_PORT=4444
 
-COPY . /opt/linotp/tests/
-COPY ./testdata/se_mypasswd /etc/se_mypasswd
+RUN apt-get update && apt-get install \
+  		make \
+  		python-nose-testconfig \
+  		python-requests \
+		python-pip \
+  		linotp-adminclient-cli
 
+RUN pip install packaging
+RUN pip install selenium
+
+# Integration tests dir gets mounted in the WORKDIR below.
+# See docker-compose.yml
 WORKDIR /opt/linotp/tests
 
 ENTRYPOINT [ \
