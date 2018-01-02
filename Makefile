@@ -149,7 +149,7 @@ develop:
 ###############################################################################
 
 ifndef NOSETESTS_ARGS
-    NOSETESTS_ARGS?=-v
+	NOSETESTS_ARGS?=-v
 endif
 
 test: unittests integrationtests functionaltests
@@ -269,9 +269,6 @@ docker-functional: docker-run-linotp-functional-test
 
 docker-pylint: docker-run-linotp-pylint
 
-
-
-
 ##
 .PHONY: docker-build-all docker-linotp docker-run-selenium docker-unit docker-pylint docker-functional
 
@@ -320,6 +317,7 @@ docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	cp linotpd/src/Dockerfile \
 		linotpd/src/config/*.tmpl \
 		linotpd/src/tools/linotp-create-htdigest \
+		linotpd/src/linotp/tests/integration/testdata/se_mypasswd \
 		$(BUILDDIR)
 
 	# We show the files sent to Docker context here to aid in debugging
@@ -337,12 +335,35 @@ docker-build-selenium: docker-build-linotp
 		&& $(DOCKER_BUILD) \
 			-t selenium_tester .
 
+# Pass TEST_CASE=test_manage.py for picking a specific test case (!No list! Only one test case)
+# Pass TEST_DEBUG=<some val> e.g. TEST_DEBUG=1 - So your pdb.set_trace() hooks will be recognize
+#                                                and execution stops in case of errors/exceptions.
+#
+#                 Remark: Omit TEST_DEBUG completely to disable stop on fails because of error or
+#                         pdb.set_trace() statements.
+#
+# e.g.
+#      make docker-run-selenium TEST_CASE=test_manage.py
+#      make docker-run-selenium TEST_CASE=test_manage.py TEST_DEBUG=1
 .PHONY: docker-run-selenium
 docker-run-selenium: docker-build-selenium
 	cd $(SELENIUM_TESTS_DIR) \
-		&& docker-compose run --rm selenium_tester
+		&& docker-compose run --rm -e TEST_CASE=${TEST_CASE} -e TEST_DEBUG=$(TEST_DEBUG) selenium_tester
 	cd $(SELENIUM_TESTS_DIR) \
 		&& docker-compose down
+
+# Remove all selenium test relevant containers/images
+.PHONY: docker-selenium-clean
+docker-selenium-clean:
+	docker stop $(docker ps -a -q --filter "name=integration_selenium_tester_run") 2>/dev/null || echo "OK"
+	docker stop $(docker ps -a -q --filter "name=integration_linotp") 2>/dev/null || echo "OK"
+	docker stop $(docker ps -a -q --filter "name=integration_db") 2>/dev/null || echo "OK"
+	docker rm -f $(docker ps -a -q --filter "name=integration_selenium_tester_run") 2>/dev/null || echo "OK"
+	docker rmi -f mysql 2>/dev/null || echo "OK"
+	docker rmi -f selenium_tester 2>/dev/null || echo "OK"
+	docker rmi -f integration_selenium_tester 2>/dev/null || echo "OK"
+	docker images
+	docker ps -a
 
 .PHONY: docker-run-linotp-sqlite
 docker-run-linotp-sqlite: docker-build-linotp

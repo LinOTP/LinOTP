@@ -36,6 +36,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.remote.file_detector import UselessFileDetector
 
 from helper import get_from_tconfig, load_tconfig_from_file
 from manage_ui import ManageUi
@@ -177,12 +178,16 @@ class TestCase(unittest.TestCase):
 
     def setUp(self):
         self.enableImplicitWait()
+        self.disableFileUploadForSendKeys()
         self.verification_errors = []
         self.accept_next_alert = True
 
     def tearDown(self):
         """Closes the driver and displays all errors"""
         self.assertEqual([], self.verification_errors)
+
+    def disableFileUploadForSendKeys(self):
+        self.driver.file_detector = UselessFileDetector()
 
     def disableImplicitWait(self):
         self.driver.implicitly_wait(0)
@@ -259,7 +264,6 @@ class TestCase(unittest.TestCase):
         :param version: Minimum version. Example: '2.9.1'
         :raises unittest.SkipTest: if the version is too old
         """
-
         current_AUT_version = self.linotp_version.split('.')
         # Avoid comparisons like below:
         # [u'2', u'10', u'dev2+g2b1b96a'] < ['2', '9', '2'] = True
