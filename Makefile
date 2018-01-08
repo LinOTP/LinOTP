@@ -416,7 +416,7 @@ docker-run-linotp-unit: docker-build-linotp-test-image
 	cd $(UNIT_TESTS_DIR) \
 		&& $(DOCKER_RUN) \
 			--name=$(DOCKER_CONTAINER_NAME)-unit \
-			--volume=$(PWD):/linotpsrc \
+			--volume=$(PWD):/linotpsrc:ro \
 			--entrypoint="" \
 			--env NOSETESTS_ARGS="$(NOSETESTS_ARGS)" \
 			-t linotp_unit_tester \
@@ -424,10 +424,10 @@ docker-run-linotp-unit: docker-build-linotp-test-image
 
 #jenkins pipeline uses this make rule
 .PHONY: docker-run-linotp-unit-pipeline
-docker-run-linotp-unit-pipeline:
-	NOSETESTS_ARGS="-v --with-coverage --with-xunit" \
-	$(MAKE) docker-run-linotp-unit
-
+NOSETESTS_ARGS=-v --with-xunit --xunit-file=/tmp/nosetests.xml
+docker-run-linotp-unit-pipeline: docker-run-linotp-unit
+	docker cp $(DOCKER_CONTAINER_NAME)-unit:/tmp/nosetests.xml $(PWD)
+	docker rm $(DOCKER_CONTAINER_NAME)-unit
 
 #
 # # Pylint
