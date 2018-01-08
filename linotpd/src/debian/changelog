@@ -1,4 +1,4 @@
-linotp (2.10~rc2-1) jessie; urgency=low
+linotp (2.10~rc3-1) jessie; urgency=low
   Debian packaging:
   * Adapted for Debian Stretch
   * Remove Debian dependency python-socksipy python-repoze.who
@@ -92,7 +92,7 @@ linotp (2.10~rc2-1) jessie; urgency=low
 
 
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 14 Dec 2017 11:44:41 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 08 Jan 2018 18:07:14 +0100
 
 linotp (2.9.3.3-1) jessie; urgency=low
 
