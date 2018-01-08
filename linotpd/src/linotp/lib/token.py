@@ -1494,11 +1494,11 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
     sconditions = ()
 
     if active in [True, False]:
-        sconditions += (and_(Token.LinOtpIsactive == active),)
+        sconditions += ((Token.LinOtpIsactive == active),)
 
     if token_type:
-        sconditions += (and_(func.lower(Token.LinOtpTokenType) ==
-                             token_type.lower()),)
+        sconditions += ((func.lower(Token.LinOtpTokenType) ==
+                         token_type.lower()),)
 
     if serial:
         log.debug("[getTokens4UserOrSerial] getting"
@@ -1508,9 +1508,9 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
 
         if '*' in serial:
             serial = serial.replace('*', '%')
-            sconditions += (and_(Token.LinOtpTokenSerialnumber.like(serial)),)
+            sconditions += ((Token.LinOtpTokenSerialnumber.like(serial)),)
         else:
-            sconditions += (and_(Token.LinOtpTokenSerialnumber == serial),)
+            sconditions += ((Token.LinOtpTokenSerialnumber == serial),)
 
         # finally run the query on token serial
         condition = and_(*sconditions)
@@ -1530,6 +1530,7 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
     if user is not None:
 
         if not user.is_empty and user.login:
+
             for user_definition in user.get_uid_resolver():
                 uid, resolverClass = user_definition
                 # in the database could be tokens of ResolverClass:
@@ -1540,15 +1541,17 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                 # Remark: when the token is loaded the response to the
                 # resolver class is adjusted
 
+                uconditions = (sconditions)
+
                 resolverClass = resolverClass.replace('useridresolveree.',
                                                       'useridresolver.')
                 resolverClass = resolverClass.replace('useridresolver.',
                                                       'useridresolver%.')
 
-                sconditions += (and_(model.Token.LinOtpUserid == uid),)
-                sconditions += (and_(model.Token.LinOtpIdResClass.like(resolverClass)),)
+                uconditions += ((model.Token.LinOtpUserid == uid),)
+                uconditions += ((model.Token.LinOtpIdResClass.like(resolverClass)),)
 
-                condition = and_(*sconditions)
+                condition = and_(*uconditions)
                 sqlQuery = Session.query(Token).filter(condition)
 
                 # ---------------------------------------------------------- --
