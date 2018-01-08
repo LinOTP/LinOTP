@@ -353,15 +353,27 @@ docker-run-selenium: docker-build-selenium
 		&& docker-compose down
 
 # Remove all selenium test relevant containers/images
+# We do not remove the LinOTP image:
+#  - Maybe built an up-2-date image some pipeline steps before test execution.
+
 .PHONY: docker-selenium-clean
 docker-selenium-clean:
-	docker stop $(docker ps -a -q --filter "name=integration_selenium_tester_run") 2>/dev/null || echo "OK"
-	docker stop $(docker ps -a -q --filter "name=integration_linotp") 2>/dev/null || echo "OK"
-	docker stop $(docker ps -a -q --filter "name=integration_db") 2>/dev/null || echo "OK"
-	docker rm -f $(docker ps -a -q --filter "name=integration_selenium_tester_run") 2>/dev/null || echo "OK"
-	docker rmi -f mysql 2>/dev/null || echo "OK"
-	docker rmi -f selenium_tester 2>/dev/null || echo "OK"
-	docker rmi -f integration_selenium_tester 2>/dev/null || echo "OK"
+# This container triggers the python test scripts
+	docker stop $$(docker ps -a -q --filter "name=integration_selenium_tester_run") 2>/dev/null || echo "Stop integration_selenium_tester_run_*"
+# This container receives the selenium webdriver instructions
+	docker stop $$(docker ps -a -q --filter "name=integration_selenium") 2>/dev/null || echo "Stop integration_selenium_*"
+	docker stop $$(docker ps -a -q --filter "name=integration_linotp") 2>/dev/null || echo "Stop integration_linotp_*"
+	docker stop $$(docker ps -a -q --filter "name=integration_db") 2>/dev/null || echo "Stop integration_db_*"
+
+	docker rm -f $$(docker ps -a -q --filter "name=integration_selenium_tester_run") 2>/dev/null || echo "Remove container integration_selenium_tester_run_*"
+	docker rm -f $$(docker ps -a -q --filter "name=integration_selenium") 2>/dev/null || echo "Remove container integration_selenium_*"
+	docker rm -f $$(docker ps -a -q --filter "name=integration_linotp") 2>/dev/null || echo "Remove container integration_linotp_*"
+	docker rm -f $$(docker ps -a -q --filter "name=integration_db") 2>/dev/null || echo "Remove container integration_db_*"
+
+	docker rmi -f integration_selenium_tester 2>/dev/null || echo "Remove image integration_selenium_tester"
+	docker rmi -f selenium_tester 2>/dev/null || echo "Remove image selenium_tester"
+	docker rmi -f selenium/standalone-chrome-debug 2>/dev/null || echo "Remove image selenium/standalone-chrome-debug"
+	docker rmi -f mysql 2>/dev/null || echo "Removed image mysql"
 	docker images
 	docker ps -a
 
