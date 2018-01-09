@@ -216,7 +216,7 @@ class TestCase(unittest.TestCase):
         self.disableImplicitWait()
         try:
             elements = WebDriverWait(self.driver, 0).until(
-                EC.presence_of_all_elements_located(
+                EC.visibility_of_all_elements_located(
                     (By.XPATH, 'id("%s")//%s' % (parent_id, element_type)))
             )
         except TimeoutException:
