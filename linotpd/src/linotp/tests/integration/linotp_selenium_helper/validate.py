@@ -58,7 +58,17 @@ class Validate:
                              auth=self.auth,
                              verify=False)
         except:
-            r = requests.get(url + str( params ),
+            # We need to concatenate parameter names (key)
+            # and values to a valid url parameter string.
+            # e.g.
+            #     user=bach@se_scenario01_realm1&pass=bachnewpin118881
+            strparams = ""
+            for key in params:
+                strparams += key + "=" + params[key] + "&"
+            # Remove last '&'
+            strparams = strparams[:-1]
+
+            r = requests.get(url + strparams,
                              auth=self.auth,
                              verify=False)
 
