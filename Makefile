@@ -292,7 +292,8 @@ docker-build-linotp-builder:
 		.
 
 # A unique name to reference containers for this build
-NAME_PREFIX := linotpbuilder-$(shell date +%H%M%S-%N)
+DOCKER_CONTAINER_TIMESTAMP := $(shell date +%H%M%S-%N)
+NAME_PREFIX := linotpbuilder-$(DOCKER_CONTAINER_TIMESTAMP)
 DOCKER_CONTAINER_NAME = $(NAME_PREFIX)
 
 .PHONY: docker-build-debs
@@ -316,7 +317,7 @@ $(BUILDDIR)/apt/Packages:
 
 .PHONY: docker-build-linotp
 docker-build-linotp: DOCKER_IMAGE=linotp
-docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
+docker-build-linotp: docker-build-linotp-builder $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	cp linotpd/src/Dockerfile \
 		linotpd/src/config/*.tmpl \
 		linotpd/src/tools/linotp-create-htdigest \
@@ -529,23 +530,23 @@ docker-run-linotp-pylint: docker-build-linotp-test-image
 # $ export NIGHTLY="yes"
 # $ make docker-run-linotp-functional-test
 
+LOCAL_NOSE_BASE_DIR=/tmp/nose
+FUNCTIONAL_DOCKER_CONTAINER_NAME=linotp-$(DOCKER_CONTAINER_TIMESTAMP)-functional
+FUNCTIONAL_MYSQL_CONTAINER_NAME=mysql-$(DOCKER_CONTAINER_TIMESTAMP)-functional
+
 .PHONY: docker-run-linotp-functional-test
 docker-run-linotp-functional-test: docker-build-linotp-test-image
 	cd $(FUNCTIONAL_TESTS_DIR) && \
 		export NIGHTLY=${NIGHTLY} && \
+		export LOCAL_NOSE_BASE_DIR=$(LOCAL_NOSE_BASE_DIR) && \
+		export FUNCTIONAL_DOCKER_CONTAINER_NAME=$(FUNCTIONAL_DOCKER_CONTAINER_NAME) && \
+		export FUNCTIONAL_MYSQL_CONTAINER_NAME=$(FUNCTIONAL_MYSQL_CONTAINER_NAME) && \
 		docker-compose --project-directory $(PWD) up \
 			--abort-on-container-exit \
 			--force-recreate
-	$(MAKE) docker-clean-functional-test
-
-.PHONY: docker-clean-functional-test
-docker-clean-functional-test:
-	rm -f linotpd/src/nosetests_*.xml \
-		  linotpd/src/func_test_*.ini \
-		  linotpd/src/private.pem \
-		  linotpd/src/public.pem \
-		  linotpd/src/docker_func_cfg.ini \
-		  linotpd/src/encKey
+	rm -rf $(BUILDDIR)/../nose
+	docker cp $(FUNCTIONAL_DOCKER_CONTAINER_NAME):$(LOCAL_NOSE_BASE_DIR) $(BUILDDIR)/../
+	docker rm $(FUNCTIONAL_DOCKER_CONTAINER_NAME) $(FUNCTIONAL_MYSQL_CONTAINER_NAME)
 
 
 ###############################################################################

@@ -43,8 +43,18 @@ source /tmp/venv/bin/activate
 
 python -V
 
+# Copy sources from volume to docker
 
-export linotp_src_dir="/linotpsrc/linotpd/src"
+local_src_base_dir="/tmp/linotpsrc_copy"
+
+local_nose_base_dir=$LOCAL_NOSE_BASE_DIR
+
+mkdir -p $local_src_base_dir $local_nose_base_dir
+
+cp -r /linotpsrc/* $local_src_base_dir
+
+
+export linotp_src_dir="$local_src_base_dir/linotpd/src"
 export config_template_file="${linotp_src_dir}/linotp/tests/functional/docker_func_cfg.ini"
 
 cd ${linotp_src_dir}
@@ -99,11 +109,11 @@ while ! mysqladmin ping -u"$LINOTP_DB_USER" -p"$LINOTP_DB_PASSWORD" -h"$LINOTP_D
 done
 
 
-echo "---- For easier debugging, list all packages with 'pip freeze' ----"
+echo "----------------- For easier debugging, list all packages with 'pip freeze' ----------------"
 
 pip freeze
 
-echo "---- End of listing all installed packages ----"
+echo "--------------------     End of listing all installed packages   ---------------------------"
 
 echo "-------------------- Preparation done, starting functional tests ---------------------------"
 
@@ -139,7 +149,7 @@ run_nose() {
             --with-pylons=${config_ini_filename} \
             --with-xunit \
             ${exec_nightly_tests} \
-            --xunit-file=nosetests_${execution_number}.xml \
+            --xunit-file=$local_nose_base_dir/nosetests_${execution_number}.xml \
             --tc-file=functional_tc.ini \
             --tc=radius.authport:18012 \
             --tc=radius.acctport:18013 \
@@ -158,12 +168,6 @@ export -f run_nose
 export SHELL=/bin/bash
 export exec_nightly_tests
 export coverage
+export local_nose_base_dir
 parallel -j ${parallel_no_proc} run_nose {} {#} ::: `ls -1 linotp/tests/functional/test_*.py linotp/tests/functional_special/test_*.py`
-
-# Cleanup
-rm -f ${linotp_src_dir}/func_test_[0-9]*.ini
-rm -f ${linotp_src_dir}/encKey \
-      ${linotp_src_dir}/private.pem \
-      ${linotp_src_dir}/public.pem \
-      ${linotp_src_dir}/docker_func_cfg.ini
 
