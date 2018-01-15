@@ -17,6 +17,7 @@ secKey
 PKG-INFO
 *.swp
 linotp-build
+nose
 
 # adminclient
 adminclient/LinOTPAdminClientCLI/LinOTPAdminClientCLI_*.orig.tar.gz
