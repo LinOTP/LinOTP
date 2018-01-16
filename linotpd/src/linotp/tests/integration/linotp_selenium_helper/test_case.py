@@ -258,10 +258,21 @@ class TestCase(unittest.TestCase):
         # Avoid comparisons like below:
         # [u'2', u'10', u'dev2+g2b1b96a'] < ['2', '9', '2'] = True
         filtered_version = []
+
         for version_part in current_AUT_version:
             # Only in case of a 'pure' number, we want to use for comparison
-            if(re.search(r'^\d+$', version_part) is not None):
+            matchObj = re.search(r'^\d+$', version_part)
+            if(matchObj is not None):
                 filtered_version.append(version_part)
+                continue
+
+            # Match '10' in '2.10rc3'
+            matchObj = re.search(r'^(\d+)', version_part)
+            if(matchObj is not None):
+                filtered_version.append(matchObj.group(1))
+                # In case of a release candidate or beta version,
+                # we assume the match is the last relevant entry.
+                break
 
         filtered_version_string = '.'.join(filtered_version)
 
