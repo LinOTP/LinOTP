@@ -30,6 +30,7 @@ from linotp_selenium_helper.manage_ui import MsgType
 
 import tempfile
 import os
+import subprocess
 
 
 class TokenImport(ManageDialog):
@@ -77,6 +78,20 @@ class TokenImport(ManageDialog):
             tf.write(file_content)
             tf.close()
             self.file_path = tf.name
+
+            # We need to make the created file available in the selenium
+            # docker container (Where the browser interaction is done).
+            # For this reason we move the temp file in the shared
+            # volume (integration tests dir), which is mounted inside
+            # the selenium docker container (see docker-compose.yml).
+            cwd = os.getcwd()
+            subprocess.call(["mv",self.file_path,cwd])
+
+            filename = os.path.basename(self.file_path)
+            self.file_path = cwd + "/" + filename
+            # Maybe created by root in the docker container.
+            subprocess.call(["chmod","a+rw",self.file_path])
+
         else:
             # Use the provided xml token file.
             self.file_path = file_path

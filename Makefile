@@ -269,9 +269,6 @@ docker-functional: docker-run-linotp-functional-test
 
 docker-pylint: docker-run-linotp-pylint
 
-
-
-
 ##
 .PHONY: docker-build-all docker-linotp docker-run-selenium docker-unit docker-pylint docker-functional
 
@@ -320,6 +317,7 @@ docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	cp linotpd/src/Dockerfile \
 		linotpd/src/config/*.tmpl \
 		linotpd/src/tools/linotp-create-htdigest \
+		linotpd/src/linotp/tests/integration/testdata/se_mypasswd \
 		$(BUILDDIR)
 
 	# We show the files sent to Docker context here to aid in debugging
@@ -337,12 +335,47 @@ docker-build-selenium: docker-build-linotp
 		&& $(DOCKER_BUILD) \
 			-t selenium_tester .
 
+# Pass TEST_CASE=test_manage.py for picking a specific test case (!No list! Only one test case)
+# Pass TEST_DEBUG=<some val> e.g. TEST_DEBUG=1 - So your pdb.set_trace() hooks will be recognize
+#                                                and execution stops in case of errors/exceptions.
+#
+#                 Remark: Omit TEST_DEBUG completely to disable stop on fails because of error or
+#                         pdb.set_trace() statements.
+#
+# e.g.
+#      make docker-run-selenium TEST_CASE=test_manage.py
+#      make docker-run-selenium TEST_CASE=test_manage.py TEST_DEBUG=1
 .PHONY: docker-run-selenium
 docker-run-selenium: docker-build-selenium
 	cd $(SELENIUM_TESTS_DIR) \
-		&& docker-compose run --rm selenium_tester
+		&& docker-compose run --rm -e TEST_CASE=${TEST_CASE} -e TEST_DEBUG=$(TEST_DEBUG) selenium_tester
 	cd $(SELENIUM_TESTS_DIR) \
 		&& docker-compose down
+
+# Remove all selenium test relevant containers/images
+# We do not remove the LinOTP image:
+#  - Maybe built an up-2-date image some pipeline steps before test execution.
+
+.PHONY: docker-selenium-clean
+docker-selenium-clean:
+# This container triggers the python test scripts
+	docker stop $$(docker ps -a -q --filter "name=integration_selenium_tester_run") 2>/dev/null || echo "Stop integration_selenium_tester_run_*"
+# This container receives the selenium webdriver instructions
+	docker stop $$(docker ps -a -q --filter "name=integration_selenium") 2>/dev/null || echo "Stop integration_selenium_*"
+	docker stop $$(docker ps -a -q --filter "name=integration_linotp") 2>/dev/null || echo "Stop integration_linotp_*"
+	docker stop $$(docker ps -a -q --filter "name=integration_db") 2>/dev/null || echo "Stop integration_db_*"
+
+	docker rm -f $$(docker ps -a -q --filter "name=integration_selenium_tester_run") 2>/dev/null || echo "Remove container integration_selenium_tester_run_*"
+	docker rm -f $$(docker ps -a -q --filter "name=integration_selenium") 2>/dev/null || echo "Remove container integration_selenium_*"
+	docker rm -f $$(docker ps -a -q --filter "name=integration_linotp") 2>/dev/null || echo "Remove container integration_linotp_*"
+	docker rm -f $$(docker ps -a -q --filter "name=integration_db") 2>/dev/null || echo "Remove container integration_db_*"
+
+	docker rmi -f integration_selenium_tester 2>/dev/null || echo "Remove image integration_selenium_tester"
+	docker rmi -f selenium_tester 2>/dev/null || echo "Remove image selenium_tester"
+	docker rmi -f selenium/standalone-chrome-debug 2>/dev/null || echo "Remove image selenium/standalone-chrome-debug"
+	docker rmi -f mysql 2>/dev/null || echo "Removed image mysql"
+	docker images
+	docker ps -a
 
 .PHONY: docker-run-linotp-sqlite
 docker-run-linotp-sqlite: docker-build-linotp
@@ -395,7 +428,7 @@ docker-run-linotp-unit: docker-build-linotp-test-image
 	cd $(UNIT_TESTS_DIR) \
 		&& $(DOCKER_RUN) \
 			--name=$(DOCKER_CONTAINER_NAME)-unit \
-			--volume=$(PWD):/linotpsrc \
+			--volume=$(PWD):/linotpsrc:ro \
 			--entrypoint="" \
 			--env NOSETESTS_ARGS="$(NOSETESTS_ARGS)" \
 			-t linotp_unit_tester \
@@ -403,10 +436,10 @@ docker-run-linotp-unit: docker-build-linotp-test-image
 
 #jenkins pipeline uses this make rule
 .PHONY: docker-run-linotp-unit-pipeline
-docker-run-linotp-unit-pipeline:
-	NOSETESTS_ARGS="-v --with-coverage --with-xunit" \
-	$(MAKE) docker-run-linotp-unit
-
+NOSETESTS_ARGS=-v --with-xunit --xunit-file=/tmp/nosetests.xml
+docker-run-linotp-unit-pipeline: docker-run-linotp-unit
+	docker cp $(DOCKER_CONTAINER_NAME)-unit:/tmp/nosetests.xml $(PWD)
+	docker rm $(DOCKER_CONTAINER_NAME)-unit
 
 #
 # # Pylint

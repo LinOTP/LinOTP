@@ -49,10 +49,19 @@ class Validate:
         "Send a request and parse JSON result"
         url = self.validate_url + "/validate/check?"
 
-        r = requests.get(url,
-                         params,
-                         auth=self.auth,
-                         verify=False)
+        # With newer requests versions it seems, that the
+        # api hook url and its params needs to be
+        # concatenated as string.
+        try:
+            r = requests.get(url,
+                             params,
+                             auth=self.auth,
+                             verify=False)
+        except:
+            r = requests.get(url + str( params ),
+                             auth=self.auth,
+                             verify=False)
+
         if r.status_code != 200:
             return False
         return_json = r.json()

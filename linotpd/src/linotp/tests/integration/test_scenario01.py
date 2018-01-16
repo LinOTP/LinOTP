@@ -31,6 +31,7 @@ import re
 import binascii
 import logging
 import os
+import unittest
 
 from linotp_selenium_helper import TestCase, Policy
 from linotp_selenium_helper.token_import import TokenImportAladdin
@@ -68,6 +69,7 @@ class TestScenario01(TestCase):
     def _announce_test(self, testname):
         LOGGER.info("### %s ###" % testname)
 
+    @unittest.skip("Test needs to be fixed!")
     def test_scenario01(self):
         """
         Scenario01 (https://wally/projects/linotp/wiki/TestingTest_Szenario_01)

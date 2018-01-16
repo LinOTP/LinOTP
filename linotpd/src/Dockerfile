@@ -66,7 +66,7 @@ ARG LINOTP_MIRROR=www.linotp.org
 #   SECRET_FILE_LOCATION=/path/to/encKey
 
 ENV TZ="Europe/Berlin" \
-    LINOTP_USER=linotp \
+	LINOTP_USER=linotp \
 	LINOTP_DB_TYPE=sqlite \
 	LINOTP_DB_NAME=//tmp/linotp.db \
 	LINOTP_DB_HOST=dbhost \
@@ -166,6 +166,8 @@ ENTRYPOINT [ "/usr/local/bin/dockerfy", \
 CMD [ \
 	"/usr/sbin/apache2ctl", "-DFOREGROUND" \
 	]
+
+COPY ./se_mypasswd /etc/se_mypasswd
 
 # Listen on apache port (https 443 by default - see LINOTP_APACHE_SSL and APACHE_PORT)
 EXPOSE 80 81 443
