@@ -1,3 +1,9 @@
+linotp (2.10.0.1~0dev0-1) jessie; urgency=low
+
+  * Set new version 2.10.0.1~0dev0-1
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 16 Jan 2018 16:44:09 +0100
+
 linotp (2.10-1) jessie; urgency=low
   Debian packaging:
   * Adapted for Debian Stretch
