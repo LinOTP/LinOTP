@@ -87,7 +87,7 @@ class PushTokenClassUnitTestCase(unittest.TestCase):
 
         """ PUSHTOKEN: Test url protocol id customization """
 
-        user_public_key = 'MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI='
+        user_public_key = 'L4xhKdgWz1HDdLx/CMPmPtFWz3iu+0plUNl7h5l5d+4='
         mocked_get_secret_key.return_value = user_public_key
 
         fake = FakeTokenModel()

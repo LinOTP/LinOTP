@@ -32,7 +32,7 @@ import json
 
 import unittest2
 from copy import deepcopy
-
+from mock import patch
 from linotp.tests import TestController
 
 
@@ -44,13 +44,6 @@ class TestAutoassignmentController(TestController):
     # Define a list of 5 token with known OTP values. The 'serial' is set
     # during enrollment to the value chosen by LinOTP
     token_list = [
-        {
-            'key': '3132333435363738393031323334353637383930',
-            'type': 'hmac',
-            'serial': None,
-            'otplen': 6,
-            'otps': ['755224', '287082', '359152'],
-        },
         {
             'key': '4132333435363738393031323334353637383930',
             'type': 'hmac',
@@ -66,11 +59,14 @@ class TestAutoassignmentController(TestController):
             'otps': ['841650', '850446', '352919'],
         },
         {
-            'key': '6132333435363738393031323334353637383930',
-            'type': 'hmac',
+            'key': 'my_secret_password',
+            'type': 'pw',
             'serial': None,
-            'otplen': 6,
-            'otps': ['425323', '141798', '123782'],
+            'otplen': len('my_secret_password'),
+            'otps': [
+                'my_secret_password',
+                'my_secret_password',
+                'my_secret_password'],
         },
         {
             'key': '9163508031b20d2fbb1868954e041729',
@@ -82,7 +78,14 @@ class TestAutoassignmentController(TestController):
                 "ecebeeejedecebeg" + "tbkfkdhnfjbjnkcbtbcckklhvgkljifu",
                 "ecebeeejedecebeg" + "ktvkekfgufndgbfvctgfrrkinergbtdj",
                 ],
-            },
+        },
+        {
+            'key': '3132333435363738393031323334353637383930',
+            'type': 'hmac',
+            'serial': None,
+            'otplen': 6,
+            'otps': ['755224', '287082', '359152'],
+        },
         ]
     # set up in setUp
     policies_for_deletion = None
@@ -585,7 +588,6 @@ class TestAutoassignmentController(TestController):
             self.fail("Unknown 'expected' %s" % expected)
         return content
 
-
     def test_autoassign_mixed_token_wo_password(self):
         """
         Autoassignment wo password with 4 HMAC + 1 Yubikey to 5 different users
@@ -622,11 +624,26 @@ class TestAutoassignmentController(TestController):
 
         # validate/check with otp only to autoassign token to users
 
+        class Mocked_c():
+            audit = {}
+
         for i in range(5):
             user_name = users[i]
             token = token_list[i]
 
-            self._validate(user_name, token['otps'][0])
+            mocked_context = Mocked_c()
+
+            with patch("linotp.controllers.validate.c", mocked_context):
+                params = {
+                    'user': user_name.encode('UTF-8'),
+                    'pass': token['otps'][0]}
+
+                response = self.make_validate_request('check', params=params)
+
+                msg = 'Error 65537 while instatiating the CBC mode'
+                self.assertTrue(msg not in mocked_context.audit['info'])
+
+                self.assertTrue('"value": true' in response)
 
         # ----------------------------------------------------------------- --
 
@@ -650,7 +667,13 @@ class TestAutoassignmentController(TestController):
             # the remaining OTP values
 
             for j in range(1, 3):
-                self._validate(user_name, token['otps'][j])
+
+                params = {
+                    'user': user_name.encode('UTF-8'),
+                    'pass': token['otps'][j]}
+
+                response = self.make_validate_request('check', params=params)
+                self.assertTrue('"value": true' in response)
 
         return
 

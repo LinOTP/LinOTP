@@ -53,6 +53,8 @@ import json
 @resolver_registry.class_entry('scimresolver')
 class IdResolver (UserIdResolver):
 
+    db_prefix = 'useridresolver.SCIMIdResolver.IdResolver'
+
     @classmethod
     def setup(cls, config=None, cache_dir=None):
         '''

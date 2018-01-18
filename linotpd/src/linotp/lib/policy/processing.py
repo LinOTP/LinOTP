@@ -174,7 +174,7 @@ def get_client_policy(client, scope=None, action=None, realm=None, user=None,
     return return_policies
 
 
-def getPolicy(param, only_active=False):
+def getPolicy(param, only_active=True):
     """
     migration method for the getPolicy old and new
     """
@@ -213,7 +213,7 @@ def getPolicy(param, only_active=False):
     return return_policies
 
 
-def search_policy(param, only_active=False):
+def search_policy(param, only_active=True):
     """
     migration stub for the new policy engine
     """
@@ -251,7 +251,7 @@ def search_policy(param, only_active=False):
 # interfaces to the new policy engine
 
 
-def new_search_policy(param, only_active=False):
+def new_search_policy(param, only_active=True):
     '''
     Function to retrieve the list of policies.
 
@@ -293,7 +293,7 @@ def new_search_policy(param, only_active=False):
     return new_pols
 
 
-def new_getPolicy(param, only_active=False):
+def new_getPolicy(param, only_active=True):
     '''
     Function to retrieve the list of policies.
 

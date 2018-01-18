@@ -93,6 +93,8 @@ def tokenise(r):
 @resolver_registry.class_entry('passwdresolver')
 class IdResolver (UserIdResolver):
 
+    db_prefix = 'useridresolver.PasswdIdResolver.IdResolver'
+
     fields = {"username": 1, "userid": 1,
               "description": 0,
               "phone": 0, "mobile": 0, "email": 0,
