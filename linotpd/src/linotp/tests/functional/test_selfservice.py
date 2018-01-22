@@ -29,6 +29,7 @@
 """
 
 import logging
+import json
 
 from linotp.tests import TestController, url
 
@@ -633,3 +634,24 @@ class TestSelfserviceController(TestController):
         TODO selfservice: testing getting multiple otps
         '''
         pass
+
+    def test_privilege_escalation_fix(self):
+
+        """
+        Check if logged in users can not see token data
+        of another user through /userservice/context
+
+        refers LINOTP-702
+        """
+
+        auth_user = ('passthru_user1@myDefRealm', 'geheim1')
+
+        params = {'type': 'hmac', 'genkey': '1', 'serial': 'hmac123'}
+        response = self.make_userservice_request('context',
+                                                 params=params,
+                                                 auth_user=auth_user)
+
+        response_dict = json.loads(response.body)
+
+        user = response_dict['user']
+        self.assertEqual(user, 'passthru_user1')
