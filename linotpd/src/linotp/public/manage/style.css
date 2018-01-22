@@ -557,6 +557,14 @@ html {
 /*
  *  Styles for displaying the TokenInfo
  */
+
+#dialog_token_info .tokeninfo-hint {
+	background: #dddddd;
+	border: 1px solid #aaa;
+	padding: 5px 10px;
+	text-align: center;
+}
+
 .tokeninfoInnerTable {
 	border-color: #fe8625;
 	border-width: 1px 0px;
