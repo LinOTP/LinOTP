@@ -558,6 +558,40 @@ html {
  *  Styles for displaying the TokenInfo
  */
 
+table.tokeninfoOuterTable {
+	table-layout: fixed;
+	border-collapse: collapse;
+	word-wrap: break-word;
+	width: 100%;
+}
+
+table.tokeninfoOuterTable td {
+	padding: 3px;
+}
+
+table.tokeninfoOuterTable td.tokeninfoOuterTable {
+		border: 1px solid #fe8625;
+}
+
+table.tokeninfoOuterTable > tbody > tr > td:nth-child(1) {
+    width: 30%;
+}
+
+table.tokeninfoOuterTable > tbody > tr > td:nth-child(3) {
+	width: 40px;
+}
+
+table.tokeninfoOuterTable > tbody > tr > td:nth-child(3) > * {
+	height: 1.3em;
+	width: 100%;
+	display: block;
+}
+
+table.tokeninfoOuterTable div#toolbar {
+    border-radius: inherit;
+		text-align: center;
+}
+
 #dialog_token_info .tokeninfo-hint {
 	background: #dddddd;
 	border: 1px solid #aaa;
@@ -565,18 +599,15 @@ html {
 	text-align: center;
 }
 
-.tokeninfoInnerTable {
-	border-color: #fe8625;
-	border-width: 1px 0px;
-	border-style: solid;
-	border-collapse: collapse
-}
-
-.tokeninfoOuterTable {
+table.tokeninfoInnerTable {
+	table-layout: fixed;
+	word-wrap: break-word;
+	width: 100%;
 	border-collapse: collapse;
-	vertical-align: top;
-	border: 1px solid #fe8625;
-	padding: 0px 3px 0px 3px;
+}
+.tokeninfoInnerTable tr:not(:last-child) {
+	border-bottom: 1px solid #fe8625
+
 }
 
 .collapsed-table tr {

@@ -5725,7 +5725,7 @@ $(document).ready(function(){
         autoOpen: false,
         title: 'Token info',
         resizeable: true,
-        width: 720,
+        width: 800,
         modal: true,
         open: function(){
             $(this).dialog_icons();
