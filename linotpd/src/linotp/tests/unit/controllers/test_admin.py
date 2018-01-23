@@ -45,6 +45,18 @@ class TestAdminController(unittest.TestCase):
             'LinOtp.TokenDesc': u'TestToken1',
         }
 
+    token2 = {
+            'LinOtp.TokenId': 201,
+            'LinOtp.TokenInfo': '',
+            'LinOtp.OtpLen': 6,
+            'LinOtp.TokenType': u'TOTP',
+            'LinOtp.TokenSerialnumber': u'F722362',
+            'LinOtp.CountWindow': 10,
+            'User.username': u'passthru_user1',
+            'LinOtp.TokenDesc': u'TestToken1',
+        }
+
+
     expected_subset = {'validity_period_start': '2001-01-01T01:01:00',
                        'validity_period_end': '2023-12-23T23:23:00'}
 
@@ -98,3 +110,14 @@ class TestAdminController(unittest.TestCase):
     def test_without_tokeninfo_format(self,  mock_parse_tokeninfo,):
         self.check_token(with_json='')
         mock_parse_tokeninfo.assert_not_called()
+
+    def test_parse_empty_tokeninfo(self):
+        """
+        verify that token info is valid even if it is initially empty
+        """
+        tok = copy.deepcopy(self.token2)
+        AdminController.parse_tokeninfo(tok)
+
+        self.assertTrue(tok['LinOtp.TokenInfo'] == {})
+
+        return
