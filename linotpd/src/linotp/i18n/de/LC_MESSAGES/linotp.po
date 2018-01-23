@@ -23,20 +23,31 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 # linotp@keyidentity.com <>, 2015, 2017.
+# Fabian Vallon <fabian.vallon@keyidentity.com>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2017-02-15 11:02+0100\n"
-"Last-Translator: linotp@keyidentity.com\n"
-"Language-Team: Deutsch <>\n"
+"PO-Revision-Date: 2018-01-25 17:18+0100\n"
+"Language-Team: German <>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n!=1);\n"
-"X-Generator: Gtranslator 2.91.6\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Gtranslator 2.91.7\n"
+
+#, python-format
+msgid "Missing parameter: %r"
+msgstr "Fehlender Parameter: %r"
+
+#, fuzzy
+msgid "LinOTP Self Service"
+msgstr "LinOTP Selbstverwaltungsportal"
+
+msgid "LinOTP Self Service Login"
+msgstr "LinOTP Selbstverwaltungsportal Anmeldung"
 
 #, python-format
 msgid ""
@@ -78,13 +89,6 @@ msgstr "Vertriebs-Hotline: "
 
 msgid "+49 6151 86086 277"
 msgstr "+49 6151 86086 277"
-
-msgid "You are not authenticated"
-msgstr "Sie sind nicht authentisiert"
-
-#, python-format
-msgid "No valid authentication session %r"
-msgstr "Keine gültige Authentisierungs-Session %r"
 
 msgid "No valid session"
 msgstr "Keine gültige Session"
@@ -194,75 +198,46 @@ msgstr ""
 "getTokenOwner: Der Benutzer %s im Resolver %s zum Token %s konnte in keinem "
 "Realm gefunden werden!"
 
-msgid "OTP seed"
-msgstr "OTP Seed"
-
-msgid "URL for OCRA token"
-msgstr "URL für OCRA-Token"
-
 #, python-format
-msgid "The provided PIN is too short. It should be at least %i characters."
-msgstr "Die angegebene PIN ist zu kurz. Es sollten mindestens %i Zeichen sein."
+msgid ""
+"You do not have the administrative right to do this. You are missing a "
+"policy scope=%s, action=%s"
+msgstr ""
+"Sie haben nicht die administrativen Rechte dies auszuführen. Es fehlt dazu "
+"eine Richtlinie mit scope=%s und action=%s."
 
 #, python-format
 msgid ""
-"The provided PIN is too long. It should not be longer than %i characters."
-msgstr "Die angegebene PIN ist zu lang. Es sollten maximal %i Zeichen sein."
+"The maximum allowed number of tokens for the realm %s was reached. You can "
+"not init any more tokens. Check the policies scope=enrollment, "
+"action=tokencount."
+msgstr ""
+"Die maximale Anzahl an Token innerhalb des Realms %s wurde erreicht. Sie "
+"koennen keine weiteren Token mehr in diesem Realm ausrollen. Bitte "
+"überprüfen Sie die Richtlinie scope=enrollment, action=tokencount."
 
 #, python-format
 msgid ""
-"The provided PIN does not contain characters of the group or it does "
-"contains characters that are not in the group %s"
+"The maximum number of allowed tokens in realm %s is exceeded. Check policy "
+"tokencount!"
 msgstr ""
-"Die angegebene PIN besteht nicht aus Zeichen der Zeichendefinition oder "
-"beinhaltet Zeichen die nicht in der Zeichendefinition sind: %s"
+"Die Maximalzahl von Token für den Realm %s wurde erreicht - überprüfen Sie "
+"ggf. die Richtlinie 'tokencount'!"
 
 msgid ""
-"The provided PIN does not contain any letters. Check policy otp_pin_contents."
+"You do not have the administrative right to get serials from this realm!"
 msgstr ""
-"Die angegebene PIN hat kein Buchstaben gemäß der Richtlinie "
-"'otp_pin_content'."
-
-msgid ""
-"The provided PIN does not contain any numbers. Check policy otp_pin_contents."
-msgstr ""
-"Die angegebene PIN hat keine Zahlen gemäß der Richtlinie 'otp_pin_content'."
-
-msgid ""
-"The provided PIN does not contain any special characters. It should contain "
-"some of these characters like .: ,;-_<>+*~!/()=?$. Check policy "
-"otp_pin_contents."
-msgstr ""
-"Die angegebene PIN hat keine Sonderzeichen gemäß der Richtlinie "
-"'otp_pin_content'. Sonderzeichen können sein .: ,;-_<>+*~!/()=?$."
-
-msgid ""
-"The provided PIN does not contain any other characters. It should contain "
-"some of these characters that are not contained in letters, digits and the "
-"defined special characters. Check policy otp_pin_contents."
-msgstr ""
-"Die angegebene PIN hat keine besonderen Zeichen gemäß der Richtlinie "
-"'otp_pin_content'. Die PIN sollte einige dieser besonderen Zeichen "
-"beinhalten, die weder Buchstaben noch Ziffern noch aus dem Bereich der "
-"Sonderzeichen sind."
+"Sie haben nicht die administrativen Rechte, um die Seriennummern dieses "
+"Realms zu erfragen!"
 
 #, python-format
-msgid "The PIN contains letters, although it should not! (%s)"
-msgstr "Der PIN beinhaltet Buchstaben, obwohl dies nicht so sein sollte (%s)"
+msgid "Failed to run getPolicyPost. Unknown method: %s"
+msgstr "Fehler bei der Richtlinieüberprüfung - unbekannter Methode %s"
 
-#, python-format
-msgid "The PIN contains digits, although it should not! (%s)"
-msgstr "Der PIN beinhaltet Ziffern, obwohl dies nicht so sein sollte (%s)"
-
-#, python-format
-msgid "The PIN contains special characters, although it should not! (%s)"
+msgid "You do not have system config read rights and not realm admin policies."
 msgstr ""
-"Der PIN beinhaltet Sonderzeichen, obwohl dies nicht so sein sollte (%s)"
-
-#, python-format
-msgid "The PIN contains other characters, although it should not! (%s)"
-msgstr ""
-"Der PIN beinhaltet besondere Zeichen, obwohl dies nicht so sein sollte (%s)"
+"Sie haben nicht die Rechte, um die Systemkonfiguration- oder die "
+"Realmadministrationsrichtlinien zu lesen."
 
 msgid "You do not have any rights in any realm! Check the policies."
 msgstr ""
@@ -383,23 +358,6 @@ msgstr ""
 
 #, python-format
 msgid ""
-"The maximum allowed number of tokens for the realm %s was reached. You can "
-"not init any more tokens. Check the policies scope=enrollment, "
-"action=tokencount."
-msgstr ""
-"Die maximale Anzahl an Token innerhalb des Realms %s wurde erreicht. Sie "
-"koennen keine weiteren Token mehr in diesem Realm ausrollen. Bitte "
-"überprüfen Sie die Richtlinie scope=enrollment, action=tokencount."
-
-msgid ""
-"The maximum number of allowed tokens per user is exceeded. Check the "
-"policies scope=enrollment, action=maxtoken"
-msgstr ""
-"Die maximale Anzahl an Token pro Benutzer wurde erreicht. Bitte überprüfen "
-"Sie die Richtlinie scope=enrollment, action=tokencount."
-
-#, python-format
-msgid ""
 "You do not have the administrative right to unassign token %s. Check the "
 "policies."
 msgstr ""
@@ -413,15 +371,6 @@ msgid ""
 msgstr ""
 "Sie haben nicht die administrativen Rechte für die Benutzerzuweisung für den "
 "Token %s - überprüfen Sie ggf. die Richtlinien."
-
-msgid "the maximum number of allowed tokens is exceeded. Check the policies"
-msgstr ""
-"Die Maximalzahl an lizensierten Token wurde überschritten - überprüfen Sie "
-"ggf. die Richtlinien."
-
-#, python-format
-msgid "Missing parameter: %r"
-msgstr "Fehlender Parameter: %r"
 
 #, python-format
 msgid ""
@@ -531,25 +480,17 @@ msgstr ""
 "Es fehlen die administrativen Rechte zum Importieren von Token für den Realm "
 "%s - überprüfen Sie ggf. die Richtlinien."
 
-#, python-format
+#, fuzzy, python-format
 msgid ""
-"The maximum number of allowed tokens in realm %s is exceeded. Check policy "
-"tokencount!"
+"You do not have the administrative right to unpair token %s. Check the "
+"policies."
 msgstr ""
-"Die Maximalzahl von Token für den Realm %s wurde erreicht - überprüfen Sie "
-"ggf. die Richtlinie 'tokencount'!"
+"Sie haben nicht die administrativen Rechte, um die Benutzerzuweisung für den "
+"Token %s aufzuheben - überprüfen Sie ggf. die Richtlinien."
 
 #, python-format
 msgid "Failed to run checkPolicyPre. Unknown method: %s"
 msgstr "Fehler bei der Richtlinieüberprüfung - unbekannte Methode: %s"
-
-#, python-format
-msgid ""
-"You do not have the administrative right to do this. You are missing a "
-"policy scope=%s, action=%s"
-msgstr ""
-"Sie haben nicht die administrativen Rechte dies auszuführen. Es fehlt dazu "
-"eine Richtlinie mit scope=%s und action=%s."
 
 #, python-format
 msgid "There is no policy gettoken/max_count definable for the tokentype %r"
@@ -561,6 +502,11 @@ msgid ""
 msgstr ""
 "Sie haben nicht die administrativen Rechte den Audit Log anzusehen. Es fehlt "
 "dazu ein Richtlinie mit 'scope=audit' und 'action=view'."
+
+#, python-format
+msgid "You do not have the administrative right to do an ocra/%s"
+msgstr ""
+"Sie haben nicht die administrativen Rechte für die OCRA-Anfrage: ocra/%s."
 
 #, python-format
 msgid ""
@@ -588,11 +534,6 @@ msgstr ""
 msgid "The policy settings do not allow you to issue this request!"
 msgstr "Die Richtlinieneinstellungen unterbinden diese Abfrage!"
 
-msgid "The maximum number of allowed tokens is exceeded. Check the policies"
-msgstr ""
-"Die Maximalzahl der unterstützten Token wurde überschritten - prüfen Sie "
-"ggf. die Richtlinien."
-
 msgid "The policy settings do not allow you to request a serial by OTP!"
 msgstr ""
 "Die Richtlinien erlauben es nicht, die Seriennummer über OTP zu erfragen!"
@@ -607,29 +548,88 @@ msgstr ""
 "Anfrage durch Richtlinie nicht erlaubt - es ist nicht möglich die "
 "Systemkonfiguration anzusehen oder zu ändern (%s)."
 
-#, python-format
-msgid "You do not have the administrative right to do an ocra/%s"
+msgid ""
+"The maximum number of allowed tokens per user is exceeded. Check the "
+"policies scope=enrollment, action=maxtoken"
 msgstr ""
-"Sie haben nicht die administrativen Rechte für die OCRA-Anfrage: ocra/%s."
+"Die maximale Anzahl an Token pro Benutzer wurde erreicht. Bitte überprüfen "
+"Sie die Richtlinie scope=enrollment, action=tokencount."
+
+#, python-format
+msgid ""
+"The maximum number of allowed tokens of type %s per user is exceeded. Check "
+"the policies scope=enrollment, action=maxtoken%s"
+msgstr ""
+"Die maximale Anzahl an Token des Typs %s pro Benutzer wurde erreicht. Bitte "
+"überprüfen Sie die Richtlinie scope=enrollment, action=maxtoken%s"
+
+#, python-format
+msgid "The provided PIN is too short. It should be at least %i characters."
+msgstr "Die angegebene PIN ist zu kurz. Es sollten mindestens %i Zeichen sein."
+
+#, python-format
+msgid ""
+"The provided PIN is too long. It should not be longer than %i characters."
+msgstr "Die angegebene PIN ist zu lang. Es sollten maximal %i Zeichen sein."
+
+#, python-format
+msgid ""
+"The provided PIN does not contain characters of the group or it does "
+"contains characters that are not in the group %s"
+msgstr ""
+"Die angegebene PIN besteht nicht aus Zeichen der Zeichendefinition oder "
+"beinhaltet Zeichen die nicht in der Zeichendefinition sind: %s"
+
+msgid ""
+"The provided PIN does not contain any letters. Check policy otp_pin_contents."
+msgstr ""
+"Die angegebene PIN hat kein Buchstaben gemäß der Richtlinie "
+"'otp_pin_content'."
+
+msgid ""
+"The provided PIN does not contain any numbers. Check policy otp_pin_contents."
+msgstr ""
+"Die angegebene PIN hat keine Zahlen gemäß der Richtlinie 'otp_pin_content'."
+
+msgid ""
+"The provided PIN does not contain any special characters. It should contain "
+"some of these characters like .: ,;-_<>+*~!/()=?$. Check policy "
+"otp_pin_contents."
+msgstr ""
+"Die angegebene PIN hat keine Sonderzeichen gemäß der Richtlinie "
+"'otp_pin_content'. Sonderzeichen können sein .: ,;-_<>+*~!/()=?$."
+
+msgid ""
+"The provided PIN does not contain any other characters. It should contain "
+"some of these characters that are not contained in letters, digits and the "
+"defined special characters. Check policy otp_pin_contents."
+msgstr ""
+"Die angegebene PIN hat keine besonderen Zeichen gemäß der Richtlinie "
+"'otp_pin_content'. Die PIN sollte einige dieser besonderen Zeichen "
+"beinhalten, die weder Buchstaben noch Ziffern noch aus dem Bereich der "
+"Sonderzeichen sind."
+
+#, python-format
+msgid "The PIN contains letters, although it should not! (%s)"
+msgstr "Der PIN beinhaltet Buchstaben, obwohl dies nicht so sein sollte (%s)"
+
+#, python-format
+msgid "The PIN contains digits, although it should not! (%s)"
+msgstr "Der PIN beinhaltet Ziffern, obwohl dies nicht so sein sollte (%s)"
+
+#, python-format
+msgid "The PIN contains special characters, although it should not! (%s)"
+msgstr ""
+"Der PIN beinhaltet Sonderzeichen, obwohl dies nicht so sein sollte (%s)"
+
+#, python-format
+msgid "The PIN contains other characters, although it should not! (%s)"
+msgstr ""
+"Der PIN beinhaltet besondere Zeichen, obwohl dies nicht so sein sollte (%s)"
 
 #, python-format
 msgid "Failed to run getPolicyPre. Unknown controller: %s"
 msgstr "Fehler bei der Richtlinie Überprüfung - unbekannter Controller %s"
-
-msgid ""
-"You do not have the administrative right to get serials from this realm!"
-msgstr ""
-"Sie haben nicht die administrativen Rechte, um die Seriennummern dieses "
-"Realms zu erfragen!"
-
-#, python-format
-msgid "Failed to run getPolicyPost. Unknown method: %s"
-msgstr "Fehler bei der Richtlinieüberprüfung - unbekannter Methode %s"
-
-msgid "You do not have system config read rights and not realm admin policies."
-msgstr ""
-"Sie haben nicht die Rechte, um die Systemkonfiguration- oder die "
-"Realmadministrationsrichtlinien zu lesen."
 
 #, python-format
 msgid "Failed to run getPolicyPost. Unknown controller: %s"
@@ -640,850 +640,6 @@ msgstr "Mehrere Token gefunden - kann den Tokentyp nicht bestimmen!"
 
 msgid "The name of the policy may only contain the characters  a-zA-Z0-9_."
 msgstr "Der Name der Richtlinie darf nur die Zeichen a-zA-Z0-9_ enthalten."
-
-msgid "E-mail token"
-msgstr "E-Mail-Token"
-
-msgid "E-mail address"
-msgstr "E-Mail-Adresse"
-
-msgid "Description"
-msgstr "Beschreibung"
-
-msgid "Protect your token with a static PIN"
-msgstr "Schützen Sie ihren Token durch einen festen PIN:"
-
-msgid "Token PIN:"
-msgstr "Token-PIN:"
-
-msgid "Enter PIN"
-msgstr "PIN setzen"
-
-msgid "Confirm PIN"
-msgstr "PIN bestätigen"
-
-msgid "Enroll EMail Token"
-msgstr "E-Mail-Token ausrollen"
-
-msgid "Input data is not valid!"
-msgstr "Die Formulardaten sind ungültig."
-
-msgid "Enroll your email token"
-msgstr "Rollen Sie Ihren E-Mail-Token aus"
-
-msgid "Your email address"
-msgstr "E-Mail-Adresse"
-
-msgid "enroll email token"
-msgstr "E-Mail-Token ausrollen"
-
-msgid "define if the user should be allowed to define the email address"
-msgstr ""
-"beschreibt, ob der Benutzer die EMail Adresse selbst definieren oder ändern "
-"darf."
-
-msgid ""
-"The text that will be send via email for an email token. Use <otp> and "
-"<serial> as parameters."
-msgstr ""
-"E-Mail-Text, der für ein E-Mail-Token via E-Mail gesendet wird. Parameter "
-"sind <opt> und <serial>."
-
-msgid ""
-"The subject that will be send via email for an email token. Use <otp> and "
-"<serial> as parameters."
-msgstr ""
-"E-Mail-Betreff, der für ein E-Mail-Token via E-Mail gesendet wird. Parameter "
-"sind <opt> und <serial>."
-
-msgid "User is not allowed to set email address"
-msgstr "Der Benutzer darf die E-Mailadresse nicht setzen!"
-
-msgid "Forwarding Token"
-msgstr "Forwarding-Token"
-
-msgid ""
-"Here you can define to which token the authentication request should be "
-"forwarded."
-msgstr ""
-"Hier können Sie angeben, zu welchem Token die Authentisierungsanfrage "
-"weitergeleitet werden soll."
-
-msgid "You can forward the OTP to a target serial number."
-msgstr "Sie können das OTP an eine weitere Seriennummer weiterleiten."
-
-msgid "forward serial"
-msgstr "Forward-Seriennummer"
-
-msgid "Protect your token with a static pin"
-msgstr "Schützen Sie Ihren Token durch eine feste PIN:"
-
-msgid "Token Pin:"
-msgstr "Token-PIN:"
-
-msgid "enter PIN"
-msgstr "PIN setzen"
-
-msgid "confirm PIN"
-msgstr "PIN bestätigen"
-
-msgid ""
-"Specify if the target token fail counter should be incremented / resets or "
-"not"
-msgstr ""
-"Bitte geben Sie an, ob der Fehlzähler des Zieltoken hochgezählt / "
-"zurückgesetzt werden soll"
-
-msgid "HMAC Token Settings"
-msgstr "HMAC-Token Einstellungen"
-
-msgid "HMAC eventbased"
-msgstr "HMAC ereignisbasiert"
-
-msgid "Create a new OATH token - HMAC event based"
-msgstr "Einen neuen OATH-Token anlegen - HMAC ereignisbasiert"
-
-msgid ""
-"The token seed is the secret that is used in the hmac algorithm to make your "
-"token unique. So please take care!"
-msgstr ""
-"Der Tokenschlüssel ist das Geheimnis, das in dem HMAC-Algorithmus verwendet "
-"wird und den Token einzigartig macht. Bitte darauf achten!"
-
-msgid "Token seed:"
-msgstr "Tokenseed:"
-
-msgid "generate random seed"
-msgstr "ein zufälliges Seed generieren"
-
-msgid "Enter seed"
-msgstr "Seed eingeben"
-
-msgid ""
-"The hmac algorithm could be controlled by the following settings. Make sure "
-"that these settings match your hardware token or software token capabilities."
-msgstr ""
-"Der HMAC-Algorithmus kann durch die folgenden Einstellungen beeinflusst "
-"werden. Bitte stellen Sie sicher, dass diese Einstellungen zu ihrem "
-"Hardwaretoken bzw. zu den Fähigkeiten ihres Softtokens passen."
-
-msgid "Token settings:"
-msgstr "Tokeneinstellungen:"
-
-msgid "The Google Authenticator supports only 6 digits and SHA1 hashing."
-msgstr ""
-"Der Google Authenticator unterstützt nur 6 Ziffern und den SHA1 Hash "
-"Algorithmus."
-
-msgid "Google Authenticator compliant"
-msgstr "Google Authenticator konform."
-
-msgid "OTP Digits"
-msgstr "OTP Ziffern"
-
-msgid "Hash algorithm"
-msgstr "Hash-Algorithmus"
-
-msgid "Enroll HOTP Token"
-msgstr "HOTP-Token ausrollen"
-
-msgid "required input field"
-msgstr "Benötigtes Eingabefeld"
-
-msgid "minimum length must be greater than {0}"
-msgstr "Die Länge muss größer als {0} sein."
-
-msgid "maximum length must be lower than {0}"
-msgstr "Die Länge muss kürzer als {0} sein."
-
-msgid ""
-"Please enter a valid init secret. It may only contain numbers and the "
-"letters A-F."
-msgstr ""
-"Bitte geben Sie ein gültiges Initialisierungsseed ein. Es darf nur Nummern "
-"und die Buchstaben A bis F enthalten."
-
-msgid "Form data not valid."
-msgstr "Die Formulardaten sind ungültig."
-
-msgid "Enroll your HOTP token"
-msgstr "Rollen Sie Ihren HOTP-Token aus"
-
-msgid "Token Seed:"
-msgstr "Tokenschlüssel:"
-
-msgid "Generate random seed"
-msgstr "Ein zufälliges Seed generieren"
-
-msgid "Enter token seed"
-msgstr "Tokenseed eingeben"
-
-msgid "Token Settings:"
-msgstr "Tokeneinstellungen:"
-
-msgid "OTP digits"
-msgstr "OTP Ziffern"
-
-msgid "self enrolled"
-msgstr "selbst erstellt"
-
-msgid "enroll hmac token"
-msgstr "HMAC-Token ausrollen"
-
-msgid "Specify the hashlib to be used. Can be sha1 (1) or sha2-256 (2)."
-msgstr ""
-"Geben Sie die Hashlib, die benutzt werden soll, an. Dies kann SHA1 (1) oder "
-"SHA2-256 (2) sein."
-
-msgid "Specify the otplen to be used. Can be 6 or 8 digits."
-msgstr ""
-"Geben Sie die OTP-Länge an, die benutzt werden soll. Dies können 6 oder 8 "
-"Zeichen sein."
-
-msgid "OTPAuth Url"
-msgstr "OTPAuth URL"
-
-msgid "URL for OATH token"
-msgstr "URL für OATH-Token"
-
-msgid "mOTP Token Settings"
-msgstr "mOTP Einstellungen"
-
-msgid "mOTP - mobile otp"
-msgstr "mOTP - Mobiler OTP"
-
-msgid ""
-"Please enter or copy the init-secret, that was generated by your app and the "
-"PIN you are using on your phone."
-msgstr ""
-"Bitten geben Sie den Initialisierungsseed ein. Dieser wurde von der App auf "
-"Ihrem Telefon erzeugt. Geben Sie außerdem die PIN ein, die Sie auf dem "
-"Telefon verwendet haben."
-
-msgid "Init secret"
-msgstr "Init Seed"
-
-msgid "(again)"
-msgstr "(wiederholen)"
-
-msgid "Register mOTP"
-msgstr "mOTP-Token registrieren"
-
-msgid "Register your mOTP Token"
-msgstr "mOTP-Token registrieren"
-
-msgid "Init Secret of motp-Token"
-msgstr "Initialisierungs-Seed des mOTP-Token"
-
-msgid "mOTP PIN"
-msgstr "mOTP-PIN"
-
-msgid "mOTP PIN (again)"
-msgstr "mOTP-PIN (wiederholen)"
-
-msgid "register mOTP Token"
-msgstr "mOTP-Token registrieren"
-
-msgid "OCRA2 Token"
-msgstr "OCRA2-Token"
-
-msgid "OCRA2 token settings"
-msgstr "OCRA2-Token Einstellungen"
-
-msgid "Maximum concurrent OCRA2 challenges"
-msgstr "Maximale Anzahl an gleichzeitigen OCRA2-Challenges"
-
-msgid "This is the maximum concurrent challenges per OCRA2 Token."
-msgstr ""
-"Das ist die maximale Anzahl an gleichzeitigen OCRA2-Challenges, die für "
-"einen OCRA2-Token angefordert werden können."
-
-msgid "OCRA2 challenge timeout"
-msgstr "Timeout für OCRA2 Challenge"
-
-msgid ""
-"After this time a challenge can not be used anymore. Valid entries are like "
-"1D, 2H or 5M where D=day, H=hour, M=minute."
-msgstr ""
-"Nach dieser Zeit wird eine OCRA-Challenge verworfen. Gültige Einträge sind "
-"bspw. 1D, 2H oder 5M. Dabei bedeutet D=Tag, H=Stunde, M=Minute."
-
-msgid "OCRA2 - challenge/response Token"
-msgstr "OCRA2 - Challenge/Response-Token"
-
-msgid "Please enter or copy the OCRA2 key."
-msgstr "Bitte geben Sie den OCRA2-Key ein."
-
-msgid "OCRA2 key"
-msgstr "OCRA2-Key"
-
-msgid "Generate OCRA2 key."
-msgstr "OCRA2-Key vom Server generieren lassen."
-
-msgid "OCRA suite"
-msgstr "OCRA-Suite"
-
-msgid "Enroll your OCRA2 Token"
-msgstr "Rollen Sie Ihren OCRA2-Token aus"
-
-msgid "Token description"
-msgstr "Tokenbeschreibung"
-
-msgid "Generate OCRA2 seed"
-msgstr "OCRA2-Key vom Server generieren lassen."
-
-msgid "Enter seed for the new OCRA2 token:"
-msgstr "Geben Sie das Seed für den neuen OCRA2-Token ein:"
-
-msgid "enroll ocra2 token"
-msgstr "OCRA2-Token ausrollen"
-
-msgid "Activate your OCRA2 Token"
-msgstr "Aktivieren Sie Ihren OCRA2-Token"
-
-msgid "Your OCRA2 Token :"
-msgstr "Ihr OCRA2-Token:"
-
-msgid "1. Enter the activation code :"
-msgstr "1. Geben Sie bitte den Aktivierungscode ein:"
-
-msgid "Failed to enroll token!"
-msgstr "Ausrollen des Tokens fehlgeschlagen!"
-
-msgid "activate your OCRA2 Token"
-msgstr "Aktivieren Sie Ihren OCRA2-Token"
-
-msgid "2. Enter your confirmation code:"
-msgstr "2. Bitte geben Sie den Bestätigungscode ein:"
-
-#, python-format
-msgid "OCRA rollout for token %s completed!"
-msgstr "Rollout des OCRA-Tokens %s abgeschlossen!"
-
-msgid "OCRA token rollout failed! Please retry"
-msgstr "Rollout des OCRA-Tokens fehlgeschlagen. Bitte versuchen Sie es erneut!"
-
-msgid "finish your OCRA2 Token"
-msgstr "OCRA2-Token fertigstellen"
-
-msgid "ocra challenge-response token - hmac event based"
-msgstr "OCRA-Challenge/Response-Token - HMAC ereignisbasiert"
-
-msgid "URL for OCRA2 token"
-msgstr "URL für OCRA2-Token"
-
-msgid "PushToken"
-msgstr "PushToken"
-
-msgid "PushToken Settings"
-msgstr "PushToken-Einstellungen:"
-
-msgid "Maximum concurrent challenges"
-msgstr "Maximale Anzahl an gleichzeitigen Challenges"
-
-msgid "Challenge Timeout"
-msgstr "Challenge Timeout"
-
-msgid "Public key certificate"
-msgstr "Public-Key-Zertifikat"
-
-msgid "certificate id"
-msgstr "Zertifikat-ID"
-
-msgid "PushToken - challenge/response Token"
-msgstr "PushToken - Challenge/Response-Token"
-
-msgid "web ui generated"
-msgstr "WebUI generiert"
-
-msgid "Enroll Push Token"
-msgstr "PushToken ausrollen"
-
-msgid "enroll pushtoken"
-msgstr "PushToken ausrollen"
-
-msgid "Activate Push Token"
-msgstr "Aktivieren Sie Ihren PushToken"
-
-msgid "Select Push Token: "
-msgstr "PushToken auswählen:"
-
-msgid "Enter activation credentials: "
-msgstr "Geben Sie das Aktivierungskennwort ein:"
-
-msgid "Activate token"
-msgstr "Token aktivieren"
-
-msgid "Challenge sent"
-msgstr "Challenge wurde verschickt"
-
-msgid "A push notification has been sent. Please check your mobile phone."
-msgstr ""
-"Eine Pushbenachrichtigung wurde verschickt. Bitte werfen Sie einen Blick auf "
-"Ihr Smartphone."
-
-msgid "activate your PushToken"
-msgstr "Aktivieren Sie Ihren PushToken"
-
-msgid "Policy pushtoken_challenge_callback_url must have a value"
-msgstr "Policy pushtoken_challenge_callback_url benötigt einen Wert"
-
-msgid "Policy pushtoken_pairing_callback_url must have a value"
-msgstr "Policy pushtoken_pairing_callback_url benötigt einen Wert"
-
-msgid "Pairing URL"
-msgstr "Pairing-URL"
-
-msgid "QRToken"
-msgstr "QRToken"
-
-msgid "QRToken Settings"
-msgstr "QRToken-Einstellungen"
-
-msgid "OTP length"
-msgstr "OTP-Länge"
-
-msgid "6 digits"
-msgstr "6 Stellen"
-
-msgid "8 digits"
-msgstr "8 Stellen"
-
-msgid "10 digits"
-msgstr "10 Stellen"
-
-msgid "QRToken - challenge/response Token"
-msgstr "QRToken - Challenge/Response-Token"
-
-msgid "Enroll your QRToken"
-msgstr "Rollen Sie Ihren QRToken aus"
-
-msgid "enroll qrtoken"
-msgstr "QRToken ausrollen"
-
-msgid "Activate your QRToken"
-msgstr "Aktivieren Sie Ihren QRToken"
-
-msgid "Select QRToken: "
-msgstr "Ausgewählter QRToken"
-
-msgid "activate token"
-msgstr "Token aktivieren"
-
-msgid "Challenge triggered successfully"
-msgstr "Challenge wurde erfolgreich angefordert"
-
-msgid ""
-"Please scan the qr code and submit your response or enter the otp value in "
-"the form below."
-msgstr ""
-"Bitte scannen Sie den QR-Code und senden die Antwort oder geben den OTP-Wert "
-"im Formular ein."
-
-msgid "OTP Value: "
-msgstr "OTP-Wert:"
-
-msgid "finalize activation"
-msgstr "Aktivierung abschließen"
-
-msgid "activate your QRToken"
-msgstr "Aktivieren Sie Ihren QRToken"
-
-#, python-format
-msgid "Policy %s must have a value"
-msgstr "Policy %s benötigt einen Wert"
-
-msgid " or "
-msgstr "oder"
-
-msgid "QRToken Pairing Url"
-msgstr "QRToken Pairing-URL"
-
-msgid "QRToken Certificate"
-msgstr "QRToken Zertifikat"
-
-msgid "RADIUS Token"
-msgstr "RADIUS Token"
-
-msgid ""
-"Please enter a valid RADIUS server specification. It needs to be of the form "
-"<name_or_ip>:<port>"
-msgstr ""
-"Bitte geben Sie eine gültige RADIUS Server Spezifikation ein. Diese muss der "
-"Form <Name_oder_IP>:<Port> genügen."
-
-msgid "RADIUS token settings"
-msgstr "RADIUS Tokeneinstellungen:"
-
-msgid "You need to enter the server like myradius:1812"
-msgstr "Sie müssen den Server mit Port im Format 'radiusserver:1812' angeben."
-
-msgid "RADIUS server"
-msgstr "RADIUS Server"
-
-msgid ""
-"The PIN can either be verified on this local LinOTP server or forwarded to "
-"the RADIUS server"
-msgstr ""
-"Die PIN kann entweder hier auf dem lokalen LinOTP Server überprüft werden "
-"oder an den RADIUS Server weitergeleitet werden."
-
-msgid "Check PIN"
-msgstr "Überprüfe PIN"
-
-msgid ""
-"The PIN can either be verified on this local LinOTP server or on the RADIUS "
-"server"
-msgstr ""
-"Die PIN kann entweder hier auf dem lokalen LinOTP Server überprüft werden "
-"oder an den RADIUS Server weitergeleitet werden."
-
-msgid "on RADIUS server"
-msgstr "auf dem RADIUS Server"
-
-msgid "locally"
-msgstr "lokal"
-
-msgid "RADIUS shared secret"
-msgstr "RADIUS Shared Secret"
-
-msgid "RADIUS token"
-msgstr "RADIUS-Token"
-
-msgid ""
-"Here you can define, to which RADIUS server the request should be forwarded."
-msgstr ""
-"Hier können Sie angeben, zu welchem RADIUS Server die "
-"Authentisierungsanfrage weitergeleitet werden soll."
-
-msgid "Please specify the server, the secret and the username"
-msgstr ""
-"Bitte geben Sie den Server, das RADIUS Shared Secret und den Benutzernamen "
-"an."
-
-msgid "RADIUS user"
-msgstr "RADIUS Benutzer"
-
-msgid "Remote Token"
-msgstr "Remote-Token"
-
-msgid ""
-"Please enter a valid remote server specification. It needs to be of the form "
-"http://server or https://server"
-msgstr ""
-"Bitte geben Sie eine gültige Remote Server Spezifikation ein. Diese muss der "
-"Form http://server oder https://server genügen."
-
-msgid "Remote token settings"
-msgstr "Remote-Token-Einstellungen"
-
-msgid "You need to enter the remote LinOTP server like https://remotelinotp"
-msgstr ""
-"Sie müssen den remote LinOTP Server im Format 'https://<FQDN des entfernten "
-"LinOTP Servers>' angeben."
-
-msgid "Remote server"
-msgstr "Remote-Server"
-
-msgid ""
-"The PIN can either be verified on this local LinOTP server or forwarded to "
-"the remote server"
-msgstr ""
-"Die PIN kann entweder hier auf dem lokalen LinOTP Server überprüft werden "
-"oder an den remote Server weitergeleitet werden."
-
-msgid ""
-"The PIN can either be verified on this local LinOTP server or on the remote "
-"server"
-msgstr ""
-"Die PIN kann entweder auf diesem lokalen Server überprüft werden oder auf "
-"dem entfernten LinOTP Server."
-
-msgid "on remote server"
-msgstr "auf dem Remote-Server"
-
-msgid "Remote realm"
-msgstr "Remote-Realm"
-
-msgid "Remote resolver"
-msgstr "Remote-Resolver"
-
-msgid "Remote token"
-msgstr "Remote-Token"
-
-msgid ""
-"Please enter a valid URL for the LinOTP server. It needs to start with "
-"http:// or https://"
-msgstr ""
-"Bitte geben Sie eine gültige URL für den LinOTP server an. Diese muss mit "
-"http:// oder https:// anfangen."
-
-msgid ""
-"Here you can define to which LinOTP Server the authentication request should "
-"be forwarded."
-msgstr ""
-"Hier können Sie angeben, zu welchem LinOTP Server die "
-"Authentisierungsanfrage weitergeleitet werden soll."
-
-msgid ""
-"You can either forward the OTP to a remote serial number or to a remote user."
-msgstr ""
-"Die Authentsierungsanfrage kann entweder an eine entfernte Seriennummer oder "
-"an einen entfernten Benutzer weitergeleitet werden."
-
-msgid ""
-"If you do not enter a remote serial or a remote user, the request will be "
-"forwarded to the remote user with the same username."
-msgstr ""
-"Wenn Sie keine remote Seriennumer und auch keinen remote Benutzernamen "
-"angeben, dann wird die Authentisierungsanfrage an den Benutzer mit dem "
-"gleichen Benutzernamen weitergeleitet."
-
-msgid "You need to enter the server like 'https://linotp2.my.domain'"
-msgstr ""
-"Sie müssen den Server im Format 'https://<FQDN des entfernten LinOTP "
-"Servers>' angeben"
-
-msgid ""
-"The PIN can either be verified on this local LinOTP server or on the remote "
-"LinOTP server"
-msgstr ""
-"Die PIN kann entweder auf diesem lokalen Server überprüft werden oder auf "
-"dem entfernten LinOTP Server."
-
-msgid "remotely"
-msgstr "entfernt"
-
-msgid "Remote OTP len"
-msgstr "Remote OTP-Länge"
-
-msgid "Remote serial"
-msgstr "Remote Seriennummer"
-
-msgid "Remote user"
-msgstr "Remote Benutzer"
-
-msgid "Remote user realm"
-msgstr "Realm des remote Benutzers"
-
-msgid "Remote user UserIdResolver"
-msgstr "UserIdResolver des remote Benutzers"
-
-msgid "SMS OTP"
-msgstr "SMS-OTP"
-
-msgid "Please enter the mobile phone number for the SMS token"
-msgstr "Bitten geben Sie die Mobiltelefonnummer für den SMS-Token ein."
-
-msgid "Phone number"
-msgstr "Mobiltelefonnummer"
-
-msgid "Register SMS"
-msgstr "SMS-Token registrieren"
-
-msgid "minimum length must be greater than 10"
-msgstr "Die minimale Länge muss größer als 10 sein."
-
-msgid ""
-"Please enter a valid phone number. It may only contain numbers and + or /."
-msgstr ""
-"Bitten geben Sie eine gültige Telefonnummer ein. Diese darf nur Ziffer, das "
-"+ und / enthalten."
-
-msgid "Register your SMS OTP Token / mobileTAN"
-msgstr "Registrieren Sie Ihren SMS-OTP-Token / mobileTAN"
-
-msgid "Your mobile phone number"
-msgstr "Ihre Mobiltelefonnummer"
-
-msgid "register SMS Token"
-msgstr "SMS-Token registrieren"
-
-msgid "SMS Token"
-msgstr "SMS-Token"
-
-msgid "sms challenge-response token - hmac event based"
-msgstr "SMS-Challenge/Response-Token - HMAC ereignisbasiert"
-
-msgid "define if the user should be allowed to define the sms"
-msgstr ""
-"beschreibt, ob der Benutzer selbst seine SMS Nummer ändern darf oder nicht."
-
-msgid "User is not allowed to set phone number"
-msgstr "Der Benutzer darf die Telefon Nummer nicht setzen!"
-
-msgid "sending sms failed"
-msgstr "Das Senden der SMS war nicht erfolgreich."
-
-msgid "Simple Pass Token"
-msgstr "Simple-Pass-Token"
-
-msgid "The Simple Pass token will not require any one time password component."
-msgstr "Der Simple-Pass-Token beinhaltet keinen Einmal-Passwort-Anteil."
-
-msgid ""
-"Anyway, you can set an OTP PIN, so that using this token the user can "
-"authenticate always and only with this fixed PIN."
-msgstr ""
-"Sie können aber dennoch eine OTP PIN setzen, so dass dieser Token aufgrund "
-"der OTP-PIN wie ein einfaches Passwort funktioniert."
-
-msgid "Day OTP Token / Tagespasswort"
-msgstr "Tagespasswort"
-
-msgid "Here you can define the 'Tagespasswort' token, that changes every day."
-msgstr ""
-"Hier können Sie den 'Tagespasswort' Token definieren. Dieser ändert den OTP-"
-"Wert nur einmal am Tag. Der OTP-Wert kann aber den ganzen Tag über verwendet "
-"werden."
-
-msgid "DPW key"
-msgstr "DPW-Seed"
-
-msgid "TOTP Token"
-msgstr "TOTP-Token"
-
-msgid "TOTP token settings"
-msgstr "TOTP-Token Einstellungen"
-
-msgid "time step"
-msgstr "Zeitschritt"
-
-msgid "This is the time step for time based tokens. Usually this is 30 or 60."
-msgstr ""
-"Dies ist der Zeitschritt bei zeitbasierten Token. Dies sind gewöhnlich 30 "
-"oder 60 Sekunden."
-
-msgid "time offset"
-msgstr "Zeitversatz"
-
-msgid "This is the default time shift of the server. This should be 0."
-msgstr ""
-"Dies ist der standardmäßige Zeitversatz, um den die Serveruhr und die "
-"Tokenuhr verschoben sind. Dies sollte 0 sein."
-
-msgid "time lookup window"
-msgstr "Zeitfenster"
-
-msgid ""
-"This is the time LinOTP will calculate before and after the current time. A "
-"reasonable value is 300."
-msgstr ""
-"LinOTP wird innerhalb dieses Zeitfensters vor und nach der aktuellen Zeit "
-"versuchen, den OTP-Wert bei einem zeitbasierten Token zu finden."
-
-msgid "HMAC time based"
-msgstr "HMAC zeitbasiert"
-
-msgid "Create a new OATH token - HMAC time based"
-msgstr "Einen neuen OATH-Token anlegen - HMAC zeitbasiert"
-
-msgid ""
-"The :time step: defines the granularity of the time in seconds that is used "
-"in the HMAC algorithm."
-msgstr ""
-"Der :Zeitschritt: definiert die Granularität der Zeit in Sekunden, die in "
-"dem HMAC-Algorithmus verwendet werden."
-
-msgid "Time step"
-msgstr "Zeitschritt"
-
-msgid "seconds"
-msgstr "Sekunden"
-
-msgid "Enroll TOTP Token"
-msgstr "TOTP-Token ausrollen"
-
-msgid "Enroll your TOTP token"
-msgstr "Rollen Sie Ihren TOTP-Token aus"
-
-msgid "enter token seed"
-msgstr "Tokenseed eingeben"
-
-msgid ""
-"The Google Authenticator supports only 6 digits, SHA1 hashing and time step "
-"30."
-msgstr ""
-"Der Google Authenticator unterstützt nur 6 Ziffern, den SHA1 Hash "
-"Algorithmus und einen Zeitschritt von 30 Sekunden."
-
-msgid "enroll TOTP token"
-msgstr "TOTP-Token ausrollen"
-
-msgid "Enroll FIDO U2F Token"
-msgstr "FIDO-U2F-Token ausrollen"
-
-msgid "Enroll token"
-msgstr "Token ausrollen"
-
-msgid "Vasco Token"
-msgstr "Vasco-Token"
-
-msgid "Vasco Digipass Token Class - proprietary timebased tokens"
-msgstr "Vasco-Digipass-Token-Klasse - Proprietäre zeitbasierte Token"
-
-msgid "Yubico"
-msgstr "Yubico"
-
-msgid "Enroll YubiKey"
-msgstr "YubiKey ausrollen"
-
-msgid "Yubico settings"
-msgstr "Yubico-Einstellungen"
-
-msgid "You get your own API key from the yubico website "
-msgstr "Sie können Ihren eigenen API Key auf der Yubico Webseite erhalten."
-
-msgid ""
-"If you do not use your own API key, the LinOTP demo API key will be used!"
-msgstr ""
-"Wenn Sie keinen eigenen API Key eingeben, wird ein LinOTP DEMO API Key "
-"verwendet!"
-
-msgid "You need to enter a valid API id"
-msgstr "Sie müssen eine gültige API-ID angeben."
-
-msgid "Yubico ID"
-msgstr "Yubico-ID"
-
-msgid "You need to enter a valid API key"
-msgstr "Sie müssen einen gültigen API Key eingeben."
-
-msgid "Yubico API key"
-msgstr "Yubico API-Key"
-
-msgid "YubiKey"
-msgstr "YubiKey"
-
-msgid "Here you need to enter the token ID of the YubiKey."
-msgstr "Hier müssen Sie die Token-ID des YubiKeys eingeben."
-
-msgid "You can do this by inserting the YubiKey and simply push the button."
-msgstr ""
-"Sie können dies tun, indem Sie einfach Ihren YubiKey einstecken und auf den "
-"Knopf drücken."
-
-msgid "You need to enter the YubiKey token ID"
-msgstr "Sie müssen die YubiKey-Token-ID eingeben."
-
-msgid "Token ID"
-msgstr "Token-ID"
-
-msgid "Enroll your YubiKey"
-msgstr "Rollen Sie Ihren YubiKey aus"
-
-msgid ""
-"Enter the Token ID of your YubiKey. Simply insert the YubiKey and press the "
-"button."
-msgstr ""
-"Geben Sie die Token-ID Ihres YubiKeys ein. Stecken Sie einfach Ihren Yubikey "
-"ein und drücken Sie den Knopf."
-
-msgid "YubiKey TokenId"
-msgstr "YubiKey Token-ID"
-
-msgid "enroll yubico token"
-msgstr "Yubikey ausrollen"
 
 #, python-format
 msgid "%d tokens of %d migrated"
@@ -1510,80 +666,8 @@ msgstr "Passwort benötigt"
 msgid "not changed"
 msgstr "unverändert"
 
-msgid "Not a valid json string!"
-msgstr "Kein gültiger JSON Text!"
-
-msgid ""
-"Please enter a valid realm name. It may contain characters, numbers and "
-"'_-.'."
-msgstr ""
-"Bitten geben Sie einen gültige Realmnamen ein. Dieser darf nur aus "
-"Buchstaben, Ziffern und '_-.' bestehen."
-
-msgid "Resolver name is already in use"
-msgstr "Resolvername ist bereits vergeben"
-
-msgid ""
-"Please enter a valid resolver name. It may contain characters, numbers and "
-"'_-'."
-msgstr ""
-"Bitten geben Sie eine gültige Resolvernamen ein. Diese darf aus Buchstaben, "
-"Ziffern und '_-.' bestehen."
-
-msgid ""
-"Please enter a valid provider name. It may contain characters, numbers and "
-"'_-'."
-msgstr ""
-"Bitten geben Sie einen gültige Providernamen ein. Dieser darf aus "
-"Buchstaben, Ziffern und '_-.' bestehen."
-
-msgid ""
-"Please enter a valid ldap uri. It needs to start with ldap:// or ldaps://"
-msgstr ""
-"Bitte geben Sie eine gültige LDAP URI ein, die mit ldap:// oder ldaps:// "
-"anfängt."
-
-msgid ""
-"Please enter a valid http uri. It needs to start with http:// or https://"
-msgstr ""
-"Bitte geben Sie eine gültige LDAP URI ein, die mit http:// oder https:// "
-"anfängt."
-
-msgid "Please enter a timeout like: 5.0; 5.0 "
-msgstr "Bitte geben Sie den Timeout im folgenden Format an: 5.0; 5.0"
-
-msgid ""
-"Please enter a valid searchfilter like this: (sAMAccountName=*)"
-"(objectClass=user)"
-msgstr ""
-"Bitte geben sie einen gültigen LDAP Suchfilter ein, wie: (sAMAccountName=*)"
-"(objectClass=user)"
-
-#, python-format
-msgid ""
-"Please enter a valid user searchfilter like this: (&(sAMAccountName=%s)"
-"(objectClass=user))"
-msgstr ""
-"Bitte geben sie einen gültigen LDAP Benutzer Suchfilter ein, wie: "
-"(&(sAMAccountName=%s)(objectClass=user))"
-
-#, python-format
-msgid "Please enter a valid searchfilter like this: %s"
-msgstr "Bitte geben sie einen gültigen Suchfilter ein, wie: %s"
-
-msgid ""
-"Please enter the UID of your LDAP server like DN, entryUUID, objectGUID or "
-"GUID"
-msgstr ""
-"Bitte geben sie die UID (Uniq Identifier) des LDAP Servers z.B. DN, "
-"entryUUID, objectGUID oder GUID"
-
-msgid ""
-"Please enter a valid driver specification like: mysql, postgres, mssql, "
-"oracle, ibm_db_sa or ibm_db_sa+pyodbc"
-msgstr ""
-"Bitte geben sie einen gültigen Treiber an, wie: mysql, postgres, mssql, "
-"oracle, ibm_db_sa oder ibm_db_sa+pyodbc"
+msgid "Description"
+msgstr "Beschreibung"
 
 msgid "Issuer"
 msgstr "Aussteller"
@@ -1774,6 +858,9 @@ msgstr "abonnieren Sie bitte unseren vierteljährlich erscheinenden Newsletter."
 msgid "Do not show this reminder again"
 msgstr "Diesen Erinnerungsdialog nicht mehr anzeigen"
 
+msgid "managed"
+msgstr "intern verwaltet"
+
 msgid "Get Temporary Token"
 msgstr "Temporären Token erzeugen"
 
@@ -1798,30 +885,12 @@ msgstr "Kein Resolver ausgewählt"
 msgid "Please select at least one resolver from the resolver list."
 msgstr "Bitte wählen Sie mindestens einen Resolver aus der Liste."
 
-msgid ""
-"LDAP Server, especially Active Directory, implement a default serverside "
-"maximum size limit of 1000 objects."
-msgstr ""
-"LDAP Server, insbesondere Active Directory, haben auf der Server Seite eine "
-"standardmäßige Beschränkung von 1000 zurückgegebenen Objekten (sizelimit) "
-"pro Anfrage."
-
-msgid ""
-"This is independed of the local sizelimit and does not hinder the "
-"functionality of LinOTP."
-msgstr ""
-"Diese Beschränkung ist unabhängig von der lokal angegebenen Beschränkung und "
-"beeinträchtigt nicht die Funktionalität im Zusammenhang mit LinOTP."
-
 #, python-format
 msgid "Number of users found: %d"
 msgstr "Anzahl der gefundene Benutzer: %d"
 
 msgid "Connection Test: successful"
 msgstr "Verbindungs Test: erfolgreich"
-
-msgid "LDAP Connection Test"
-msgstr "LDAP-Verbindungstest"
 
 msgid "HTTP Connection Test"
 msgstr "HTTP-Verbindungstest"
@@ -1843,6 +912,42 @@ msgstr "Die eingegebenen PINs stimmen nicht überein!"
 
 msgid "Failed to set PIN"
 msgstr "PIN konnte nicht gesetzt werden"
+
+msgid "Change password"
+msgstr "Passwort ändern"
+
+msgid "Save"
+msgstr "Speichern"
+
+msgid "Set Token Expiration"
+msgstr "Ablaufdatum setzen"
+
+msgid "Expiration set successfully"
+msgstr "Ablaufdatum erfolgreich gesetzt"
+
+msgid "An error occurred during saving expiration."
+msgstr "Beim Setzen des Ablaufsdatums ist ein Fehler aufgetreten."
+
+msgid "Error saving expiration"
+msgstr "Fehler beim Speichern des Ablaufdatums"
+
+msgid "An error occurred during token processing."
+msgstr "Fehler bei der Tokenverarbeitung"
+
+msgid "Error loading token info"
+msgstr "Fehler beim Laden der Token-Information"
+
+msgid "Invalid time period"
+msgstr "Ungültige Zeitspanne"
+
+msgid "Password was successfully changed"
+msgstr "Passwort wurde erfolgreich geändert"
+
+msgid "An error occurred during password change."
+msgstr "Fehler beim Ändern des Passworts"
+
+msgid "Error changing password"
+msgstr "Fehler beim Ändern des Passworts"
 
 msgid "Failed to save provider"
 msgstr "Provider konnte nicht gespeichert werden"
@@ -2020,8 +1125,8 @@ msgstr "Erfolgreich"
 msgid "Extended Search"
 msgstr "Erweiterte Suche"
 
-msgid "there is no linotp_selfservice cookie"
-msgstr "Kein linotp_selfservice Cookie gesetzt"
+msgid "there is no user_selfservice cookie"
+msgstr "Kein Cookie für das Selfservice Portal gesetzt"
 
 msgid "Your session has expired!"
 msgstr "Ihre Sitzung ist abgelaufen!"
@@ -2067,6 +1172,9 @@ msgstr "Fehler beim Ermitteln der Seriennummer"
 
 msgid "Error calling token:"
 msgstr "Fehler beim Tokenaufruf"
+
+msgid "Form data not valid."
+msgstr "Die Formulardaten sind ungültig."
 
 msgid "Token enrollment result"
 msgstr "Ergebnis des Tokenausrollprozesses"
@@ -2128,6 +1236,76 @@ msgstr "Fehler bei der Tokenaktivierung\n"
 msgid "Error loading history:\n"
 msgstr "Fehler beim Laden der Historie:\n"
 
+msgid "Import Users"
+msgstr "Benutzer importieren"
+
+msgid "Import"
+msgstr "Importieren"
+
+msgid "Resolver name"
+msgstr "Resolvername"
+
+msgid "Create a new resolver"
+msgstr "Einen neuen Resolver anlegen"
+
+msgid "Create"
+msgstr "Erstellen"
+
+msgid "Select resolver"
+msgstr "Resolver auswählen"
+
+msgid "Confirm changes"
+msgstr "Änderungen bestätigen"
+
+msgid "Confirm"
+msgstr "Bestätigen"
+
+msgid "Connection error"
+msgstr "Verbindungsfehler"
+
+msgid "Error during import users request."
+msgstr "Fehler während des Userimports"
+
+msgid "LinOTP error "
+msgstr "LinOTP Fehler"
+
+msgid "Error during import users request: "
+msgstr "Fehler während des User-Imports:"
+
+msgid "Import successful"
+msgstr "Erfolgreicher Import"
+
+msgid "The resolver  was successfully updated."
+msgstr "Der Resolver wurde erfolgreich geändert"
+
+msgid "No users will be created!"
+msgstr "Es werden keine Benutzer erstellt!"
+
+msgid "No existing users will be modified!"
+msgstr "Es werden keine existierenden Benutzer verändert!"
+
+msgid "No users will be deleted!"
+msgstr "Es werden keine Benutzer gelöscht!"
+
+msgid "No user stays unchanged!"
+msgstr "Kein Benutzer bleibt unverändert!"
+
+#, python-format
+msgid "%s new users"
+msgstr "%s neue Benutzer"
+
+#, python-format
+msgid "%s modified users"
+msgstr "%s geänderte Benutzer"
+
+#, python-format
+msgid "%s users will be deleted"
+msgstr "%s Benutzer werden gelöscht"
+
+#, python-format
+msgid "%s users are identical and therefor unchanged"
+msgstr "%s Benutzer sind identisch und bleiben unverändert"
+
 msgid ""
 "Could not migrate tokens!\n"
 "\n"
@@ -2143,6 +1321,46 @@ msgstr ""
 msgid "Authentication"
 msgstr "Authentisierung"
 
+msgid ""
+"Here you may try to authenticate using a token in challenge response mode."
+msgstr ""
+"Hier können Sie die Authentisierung mit Ihrem Token im Challenge Response "
+"Modus testen."
+
+msgid ""
+"Enter your username and OTP PIN to trigger a challenge and submit the OTP "
+"value after you recieved it."
+msgstr ""
+"Geben Sie Ihren Benutzernamen und die OTP-PIN ein um mit der ausgelösten "
+"Challenge einen OTP-Wert zu erhalten."
+
+msgid "Challenge Response Login"
+msgstr "Anmeldung mit Challenge/Response"
+
+msgid "Create challenge:"
+msgstr "Challenge generieren:"
+
+msgid "username"
+msgstr "Benutzername"
+
+msgid "OTP PIN"
+msgstr "OTP-PIN"
+
+msgid "trigger"
+msgstr "erstellen"
+
+msgid "Submit response:"
+msgstr "Challenge beantworten:"
+
+msgid "Transaction-ID"
+msgstr "Transaktions-ID"
+
+msgid "OTP value"
+msgstr "OTP-Wert"
+
+msgid "submit"
+msgstr "Absenden"
+
 msgid "Here you may try to authenticate using your OCRA OTP token."
 msgstr "Hier können Sie sich mit Ihrem OCRA-OTP-Token authentisieren."
 
@@ -2155,9 +1373,6 @@ msgstr "OCRA-Anmeldung"
 msgid "Submit a challenge:"
 msgstr "Challenge eingeben:"
 
-msgid "username"
-msgstr "Benutzername"
-
 msgid "challenge"
 msgstr "Challenge"
 
@@ -2165,7 +1380,7 @@ msgid "get challenge"
 msgstr "Hole Challenge"
 
 msgid "Scan your challenge and get your OTP:"
-msgstr "Scannen Sie die Challenge und bekommen Sie Ihren OTP Wert:"
+msgstr "Scannen Sie die Challenge um eine OTP Wert zu bekommen:"
 
 msgid "Login:"
 msgstr "Login:"
@@ -2194,20 +1409,23 @@ msgstr "Bitte geben Sie zur Prüfung unten den OTP-Wert ein."
 msgid "OCRA2 Login"
 msgstr "OCRA2-Anmeldung"
 
-msgid "OTP PIN"
-msgstr "OTP-PIN"
-
 msgid "message / data"
 msgstr "Nachricht / data"
 
-msgid "Here you may try to authenticate using your QRToken."
-msgstr "Hier können Sie die Authentisierung mit Ihrem QRToken testen."
+msgid "Here you may try to authenticate using your KeyIdentity Push Token."
+msgstr ""
+"Hier können Sie die Authentisierung mit Ihrem KeyIdentity Push Token testen."
 
-msgid "QRToken Login"
-msgstr "QRToken-Login"
+#, fuzzy
+msgid ""
+"Enter your username, the OTP PIN and the data you want to display to verify "
+"the authentication."
+msgstr ""
+"Geben Sie Ihren Benutzernamen, die OTP-PIN und den Text für die Challenge "
+"ein."
 
-msgid "Create challenge:"
-msgstr "Challenge generieren:"
+msgid "KeyIdentity Push Token Login"
+msgstr "KeyIdentity Push Token Login"
 
 msgid "Check the status of your challenge:"
 msgstr "Prüfen Sie den Status ihrer Challenge:"
@@ -2215,17 +1433,16 @@ msgstr "Prüfen Sie den Status ihrer Challenge:"
 msgid "check status"
 msgstr "Status prüfen"
 
-msgid "Submit response:"
-msgstr "Challenge beantworten:"
+msgid "Here you may try to authenticate using your KeyIdentity QR Token."
+msgstr ""
+"Hier können Sie die Authentisierung mit Ihrem KeyIdentity QRToken testen."
 
-msgid "Transaction-ID"
-msgstr "Transaktions-ID"
+msgid "KeyIdentity QR Token Login"
+msgstr "KeyIdentity QR Token Login"
 
-msgid "OTP value"
-msgstr "OTP-Wert"
-
-msgid "submit"
-msgstr "Absenden"
+#, fuzzy
+msgid "Scan the challenge and get your OTP:"
+msgstr "Scannen Sie die Challenge und bekommen Sie Ihren OTP Wert:"
 
 msgid "Here you may try to authenticate using your OTP token."
 msgstr "Hier können Sie die Authentisierung mit Ihrem OTP-Token testen."
@@ -2267,6 +1484,9 @@ msgstr "E-Mail Providerkonfiguration"
 
 msgid "Push Provider Config"
 msgstr "Push Providerkonfiguration"
+
+msgid "Voice Provider Config"
+msgstr "Voice-Provider-Konfiguration"
 
 msgid "Policies"
 msgstr "Richtlinien"
@@ -2316,9 +1536,6 @@ msgstr "Support und Subskription"
 msgid "About LinOTP"
 msgstr "Über LinOTP"
 
-msgid "Logged in as"
-msgstr "Eingeloggt als"
-
 msgid "Logout"
 msgstr "Abmelden"
 
@@ -2348,6 +1565,9 @@ msgstr "PIN setzen"
 
 msgid "Reset Failcounter"
 msgstr "Fehlzähler zurücksetzen"
+
+msgid "Set Expiration"
+msgstr "Ablaufdatum setzen"
 
 msgid "Delete"
 msgstr "Löschen"
@@ -2472,8 +1692,11 @@ msgstr "Resolver-Lookup-Caching"
 msgid "Enable caching of the realm to user id resolver lookup"
 msgstr "Caching der Zuordnung zwischen Realms und UserIdResolvern aktivieren"
 
-msgid "The expiration of the resolver lookup caching in seconds"
-msgstr "Ablaufzeit des Resolver-Lookup-Cachings in Sekunden"
+msgid ""
+"The expiration of the resolver lookup caching in seconds or as duration "
+"format for days, hours and minutes: >1d 3h 4m<"
+msgstr ""
+"Ablaufzeit des Resolver-Lookup-Cachings in Sekunden oder im Format >1d 3h 4m<"
 
 msgid "User Lookup Caching"
 msgstr "User-Lookup-Caching"
@@ -2481,8 +1704,11 @@ msgstr "User-Lookup-Caching"
 msgid "Enable the caching of user lookup in a resolver"
 msgstr "Caching der Benutzer in UserIdResolvern aktivieren"
 
-msgid "The expiration of the user lookup caching in seconds"
-msgstr "Ablaufzeit des User-Lookup-Cachings in Sekunden"
+msgid ""
+"The expiration of the user lookup caching in seconds or as duration format "
+"for days, hours and minutes: >1d 3h 4m<"
+msgstr ""
+"Ablaufzeit des User-Lookup-Cachings in Sekunden oder im Format >1d 3h 4m<"
 
 msgid "Selfservice portal"
 msgstr "Selbstverwaltungsportal"
@@ -2550,9 +1776,6 @@ msgstr "Timeout"
 msgid "SMS Provider"
 msgstr "SMS-Provider"
 
-msgid "Save"
-msgstr "Speichern"
-
 msgid "Do you want to delete the provider?"
 msgstr "Möchten Sie den Resolver löschen?"
 
@@ -2583,6 +1806,22 @@ msgstr "Push Provider"
 msgid "Push Provider Configuration"
 msgstr "Push-Providerkonfiguration"
 
+msgid "Voice Provider: create and edit"
+msgstr "Voice-Provider: Erstellen und Bearbeiten"
+
+msgid "voice Provider"
+msgstr "Voice-Provider"
+
+msgid "Do you want to delete the voice provider?"
+msgstr "Möchten Sie den Voice-Provider löschen?"
+
+msgid "Voice provider configuration"
+msgstr "Voice-Provider-Konfiguration"
+
+#, fuzzy
+msgid "Save config"
+msgstr "Konfiguration speichern"
+
 msgid "OCRA Token"
 msgstr "OCRA-Token"
 
@@ -2602,6 +1841,13 @@ msgstr ""
 
 msgid "OCRA challenge timeout"
 msgstr "Timeout für OCRA-Challenge"
+
+msgid ""
+"After this time a challenge can not be used anymore. Valid entries are like "
+"1D, 2H or 5M where D=day, H=hour, M=minute."
+msgstr ""
+"Nach dieser Zeit wird eine OCRA-Challenge verworfen. Gültige Einträge sind "
+"bspw. 1D, 2H oder 5M. Dabei bedeutet D=Tag, H=Stunde, M=Minute."
 
 msgid "Default OCRA suite"
 msgstr "Standard OCRA-Suite"
@@ -2666,6 +1912,15 @@ msgstr "Standardwert der OTP-Länge"
 msgid "A new token will be set to this OTP length."
 msgstr "Der OTP-Wert eines neuen Tokens wird mit dieser Länge interpretiert."
 
+msgid "6 digits"
+msgstr "6 Stellen"
+
+msgid "8 digits"
+msgstr "8 Stellen"
+
+msgid "10 digits"
+msgstr "10 Stellen"
+
 msgid "DefaultChallengeValidityTime"
 msgstr "Standardwert des Gültigkeitszeitraums einer Challenge"
 
@@ -2690,6 +1945,25 @@ msgstr "Support und Subskription registrieren"
 msgid "Please choose your support and subscription file"
 msgstr "Bitte wählen Sie eine Support- und Subskriptions-Datei"
 
+msgid ""
+"If LinOTP is setup to manage its administration users, you can change your "
+"LinOTP management password now."
+msgstr ""
+"Wenn LinOTP vollständig eingerichtet ist zur Verwaltung der administrativen "
+"Benutzer, können Sie ihr LinOTP Management Passwort jetzt ändern."
+
+msgid "User:"
+msgstr "Benutzer:"
+
+msgid "Old password"
+msgstr "Altes Passwort"
+
+msgid "New password"
+msgstr "Neues Passwort"
+
+msgid "Confirm new password"
+msgstr "Neues Passwort bestätigen"
+
 msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP - die Open Source Lösung für zwei Faktor Authentisierung."
 
@@ -2713,6 +1987,41 @@ msgstr "Autoren:"
 
 msgid "About KeyIdentity LinOTP"
 msgstr "Über KeyIdentity LinOTP"
+
+msgid "Selected Tokens"
+msgstr "Ausgewählte Token"
+
+#, python-format
+msgid "Changes will affect all %s tokens"
+msgstr "Die Änderungen werden alle %s Token betreffen"
+
+msgid "Usage Count"
+msgstr "Anzahl der Verwendung"
+
+msgid "Set maximum usage limits for the entire token lifetime."
+msgstr "Eine maximale Verwendungsdauer setzen."
+
+msgid "Max. authentication attempts"
+msgstr "Maximum an Authentisierungsversuchen"
+
+msgid "unlimited"
+msgstr "unbegrenzt"
+
+# TODO
+msgid "Max. successful authentications"
+msgstr "Maximum an erfolgreichen Authentisierungen"
+
+msgid "Validity Period"
+msgstr "Gültigkeitszeitraum"
+
+msgid "Set the period of time where the token is enabled."
+msgstr "Die Gültigkeits-Zeitspanne des Tokens setzen."
+
+msgid "Valid from"
+msgstr "Gültig ab"
+
+msgid "Valid until"
+msgstr "Gültig bis"
 
 msgid "You may reset the PINs for the tokens"
 msgstr "Sie können die PINs zurücksetzen für Token"
@@ -2764,6 +2073,18 @@ msgstr "OCRA-Key"
 
 msgid "Generate OCRA key."
 msgstr "OCRA-Key vom Server generieren lassen."
+
+msgid "Protect your token with a static PIN"
+msgstr "Schützen Sie ihren Token durch einen festen PIN:"
+
+msgid "Token PIN:"
+msgstr "Token-PIN:"
+
+msgid "enter PIN"
+msgstr "PIN setzen"
+
+msgid "confirm PIN"
+msgstr "PIN bestätigen"
 
 msgid "Enroll Token"
 msgstr "Token ausrollen"
@@ -2846,6 +2167,74 @@ msgstr ""
 "Bitte geben Sie die Auditseite mit den Auditeinträgen an, die Sie "
 "exportieren wollen."
 
+msgid ""
+"With this dialog you can import users to create an internally managed user "
+"resolver."
+msgstr ""
+"Mit diesem Dialog können Sie Benutzer importieren um einen 'intern "
+"verwalteten' UserIdResolver zu erzeugen."
+
+msgid "You can upload csv files with the following column order:"
+msgstr ""
+"Sie können csv-Dateien mit der folgenden Anordnung der Spalten hochladen:"
+
+msgid "Please choose the csv file containing the users to import"
+msgstr "Bitte wählen Sie eine csv-Datei mit den zu importierenden Benutzern"
+
+msgid "CSV Configuration"
+msgstr "CSV Konfiguration"
+
+msgid "Field delimiter:"
+msgstr "Feld-Trennzeichen:"
+
+msgid "Text delimiter:"
+msgstr "Text-Trennzeichen:"
+
+msgid "Password format:"
+msgstr "Passwort-Format"
+
+msgid "plaintext (will be hashed during import)"
+msgstr "Klartext (wird durch den Import gehasht)"
+
+msgid "Permitted formats are bcrypt, SHA256crypt and SHA512crypt"
+msgstr "Erlaubte Formate sind bcrypt, SHA256crypt und SHA512crypt"
+
+msgid "secure hash"
+msgstr "sicherer Hash"
+
+msgid "Skip first line (header information)"
+msgstr "Erste Zeile mit Spalten Überschriften überspringen"
+
+msgid ""
+"The users of the csv file will update an existing or populate a new managed "
+"resolver. The target resolver has to be added to a realm after the import."
+msgstr ""
+"Die Benutzer aus der CSV-Datei werden einen neuen oder einen bestehenden "
+"'intern verwalteten' Resolver füllen. Dem Ziel-Resolver muss nach dem Import "
+"ein Realm hinzugefügt werden."
+
+#, fuzzy
+msgid "Resolver:"
+msgstr "Resolver"
+
+msgid "create new..."
+msgstr "neu erstellen..."
+
+msgid ""
+"The user import from the selected file would result in the     following "
+"changes. If results are as expected, you have to complete     the import by "
+"confirming the changes."
+msgstr ""
+"Der Benutzer-Import aus der ausgewählten Datei würde folgende Änderungen "
+"bewirken. Wenn das Ergebnis den Erwartungen entspricht, schließen Sie den "
+"Import ab, indem Sie die Änderungen bestätigen"
+
+msgid "Summary"
+msgstr "Übersicht"
+
+msgid "Details"
+msgstr "Details"
+
 msgid "Here you can copy the OTP PIN from one token to the other."
 msgstr ""
 "Hier können Sie die OTP-PIN eines Tokens auf einen anderen Token übertragen, "
@@ -2886,6 +2275,9 @@ msgstr ""
 
 msgid "Please choose the token file"
 msgstr "Bitte wählen Sie eine Tokendatei"
+
+msgid "Hash algorithm"
+msgstr "Hash-Algorithmus"
 
 msgid "automatic detection"
 msgstr "automatisch erkennen"
@@ -2954,11 +2346,17 @@ msgstr "Standardwerte:"
 msgid "HOTP"
 msgstr "HOTP"
 
+msgid "OTP length"
+msgstr "OTP-Länge"
+
+msgid "Time step"
+msgstr "Zeitschritt"
+
+msgid "OCRA suite"
+msgstr "OCRA-Suite"
+
 msgid "optional"
 msgstr "Optional"
-
-msgid "OATH CSV Token File"
-msgstr "OATH-CSV-Tokendatei"
 
 msgid ""
 "Here you can upload a CSV file for your YubiKey token. The file is supposed "
@@ -3106,10 +2504,13 @@ msgid "- Select Temporary Token Type -"
 msgstr "- Temporären Tokentyp wählen -"
 
 msgid "Simple Password Token"
-msgstr "Einfacher Passworttoken"
+msgstr "Einfacher Passwort Token"
 
 msgid "Email Token"
 msgstr "E-Mail-Token"
+
+msgid "SMS Token"
+msgstr "SMS-Token"
 
 msgid "Lost Token"
 msgstr "Verlorener Token"
@@ -3269,9 +2670,6 @@ msgstr "Neuer temporärer Token"
 
 msgid "Server Configuration"
 msgstr "Serverkonfiguration"
-
-msgid "Resolver name"
-msgstr "Resolvername"
 
 msgid "Server-URI"
 msgstr "Server URI"
@@ -3662,6 +3060,9 @@ msgstr "'OATH-Token' App"
 msgid "QR-Code for installing the token in the 'OATH Token' app for iOS."
 msgstr "QR-Code zur Installation des Tokens in der 'OATH-Token' App für iOS."
 
+msgid "OTP seed"
+msgstr "OTP Seed"
+
 msgid "The OATH token seed for installing the token using manual input."
 msgstr "Der OATH-Token-Seed zur manuellen Eingabe."
 
@@ -3721,20 +3122,11 @@ msgstr "Felder leeren"
 msgid "hashlib"
 msgstr "Hash-Algorithmus"
 
-msgid "count auth max"
-msgstr "Authentisierungszähler Maximum"
-
-msgid "count auth success max"
-msgstr "Erfolgs Authentisierungszähler Maximum"
-
-msgid "validity start"
-msgstr "Start Gültigkeitszeitraum"
-
-msgid "validity end"
-msgstr "Ende Gültigkeitszeitraum"
-
 msgid "time window"
 msgstr "Zeitfenster"
+
+msgid "time step"
+msgstr "Zeitschritt"
 
 msgid "time shift"
 msgstr "Zeitversatz"
@@ -3751,8 +3143,24 @@ msgstr "Aktivieren Sie Ihren OCRA-Token"
 msgid "Your OCRA Token :"
 msgstr "Ihr OCRA-Token:"
 
+msgid "1. Enter the activation code :"
+msgstr "1. Geben Sie bitte den Aktivierungscode ein:"
+
+msgid "Failed to enroll token!"
+msgstr "Ausrollen des Tokens fehlgeschlagen!"
+
 msgid "activate your OCRA Token"
 msgstr "Aktivieren Sie Ihren OCRA-Token"
+
+msgid "2. Enter your confirmation code:"
+msgstr "2. Bitte geben Sie den Bestätigungscode ein:"
+
+#, python-format
+msgid "OCRA rollout for token %s completed!"
+msgstr "Rollout des OCRA-Tokens %s abgeschlossen!"
+
+msgid "OCRA token rollout failed! Please retry"
+msgstr "Rollout des OCRA-Tokens fehlgeschlagen. Bitte versuchen Sie es erneut!"
 
 msgid "finish your OCRA Token"
 msgstr "OCRA-Token fertigstellen"
@@ -3792,6 +3200,9 @@ msgstr "Token des Benutzers:"
 
 msgid "in realm"
 msgstr "im Realm"
+
+msgid "Logged in as"
+msgstr "Eingeloggt als"
 
 msgid "Activate your OCRA token"
 msgstr "OCRA-Token aktivieren"
@@ -3886,8 +3297,54 @@ msgstr "Wenn Sie einen Token verloren haben, können Sie diesen deaktivieren."
 msgid "Login to LinOTP self service"
 msgstr "Anmeldung am LinOTP Selbstverwaltungsportal"
 
+msgid "OTP"
+msgstr "OTP"
+
+msgid "No active token found"
+msgstr "Kein aktives Token gefunden"
+
+msgid ""
+"If there is a problem with your current token please contact the help desk."
+msgstr ""
+"Wenn es ein Problem mit Ihrem aktuellen Token gibt, kontaktieren Sie bitte "
+"den HelpDesk."
+
+msgid "Choose your preferred method to authenticate"
+msgstr "Wählen Sie ihre bevorzugte Methode zur Authentisierung"
+
+msgid "Enter the otp value"
+msgstr "Geben Sie Ihren OTP-Wert ein"
+
+msgid "Check your mobile and confirm the login"
+msgstr ""
+"Überprüfen Sie ihr Handy und bestätigen Sie die Anmeldung bzw. Transaktion."
+
+msgid "Scan the QR code and comfirm on your mobile or submit below"
+msgstr ""
+"Scannen Sie den QR-Code und bestätigen Sie auf Ihrem Handy bzw geben Sie "
+"unten die vom Handy generierte TAN an."
+
+msgid "Compare this value to the transaction id shown on your mobile."
+msgstr ""
+"Vergleichen Sie diesen Wert mit der Transactions-Id, die ihr Handy anzeigt."
+
+msgid "Waiting for confirmation..."
+msgstr "Warten auf Bestätigung..."
+
+msgid "Login timed out. Please try again."
+msgstr "Timeout beim Login. Bitte versuchen Sie es nochmal."
+
 msgid "Failed to retrieve the OTP values of your token:"
 msgstr "Das Anfordern der OTP-Werte ist fehlgeschlagen:"
+
+msgid "Register your SMS OTP Token / mobileTAN"
+msgstr "Registrieren Sie Ihren SMS-OTP-Token / mobileTAN"
+
+msgid "Your mobile phone number"
+msgstr "Ihre Mobiltelefonnummer"
+
+msgid "register SMS Token"
+msgstr "SMS-Token registrieren"
 
 msgid "reset Failcounter"
 msgstr "Fehlzähler zurücksetzen"
@@ -4021,8 +3478,955 @@ msgstr "Profil installieren"
 
 msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
-"Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
-"das Profil zu importieren."
+"Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem Handy, um den "
+"Token zu initialisieren."
+
+msgid "E-mail token"
+msgstr "E-Mail-Token"
+
+msgid "E-mail address"
+msgstr "E-Mail-Adresse"
+
+msgid "Enter PIN"
+msgstr "PIN setzen"
+
+msgid "Confirm PIN"
+msgstr "PIN bestätigen"
+
+msgid "Enroll EMail Token"
+msgstr "E-Mail-Token ausrollen"
+
+msgid "Input data is not valid!"
+msgstr "Die Formulardaten sind ungültig."
+
+msgid "Enroll your email token"
+msgstr "Rollen Sie Ihren E-Mail-Token aus"
+
+msgid "Your email address"
+msgstr "E-Mail-Adresse"
+
+msgid "enroll email token"
+msgstr "E-Mail-Token ausrollen"
+
+msgid "define if the user should be allowed to define the email address"
+msgstr ""
+"beschreibt, ob der Benutzer die EMail Adresse selbst definieren oder ändern "
+"darf."
+
+msgid ""
+"The text that will be send via email for an email token. Use <otp> and "
+"<serial> as parameters."
+msgstr ""
+"E-Mail-Text, der für ein E-Mail-Token via E-Mail gesendet wird. Parameter "
+"sind <opt> und <serial>."
+
+msgid ""
+"The subject that will be send via email for an email token. Use <otp> and "
+"<serial> as parameters."
+msgstr ""
+"E-Mail-Betreff, der für ein E-Mail-Token via E-Mail gesendet wird. Parameter "
+"sind <opt> und <serial>."
+
+msgid "User is not allowed to set email address"
+msgstr "Der Benutzer darf die E-Mailadresse nicht setzen!"
+
+msgid "Forwarding Token"
+msgstr "Forwarding-Token"
+
+msgid ""
+"Here you can define to which token the authentication request should be "
+"forwarded."
+msgstr ""
+"Hier können Sie angeben, zu welchem Token die Authentisierungsanfrage "
+"weitergeleitet werden soll."
+
+msgid "You can forward the OTP to a target serial number."
+msgstr "Sie können das OTP an eine weitere Seriennummer weiterleiten."
+
+msgid "forward serial"
+msgstr "Forward-Seriennummer"
+
+msgid "Protect your token with a static pin"
+msgstr "Schützen Sie Ihren Token durch eine feste PIN:"
+
+msgid "Token Pin:"
+msgstr "Token-PIN:"
+
+msgid ""
+"Specify if the target token fail counter should be incremented / resets or "
+"not"
+msgstr ""
+"Bitte geben Sie an, ob der Fehlzähler des Zieltoken hochgezählt / "
+"zurückgesetzt werden soll"
+
+msgid "HMAC Token Settings"
+msgstr "HMAC-Token Einstellungen"
+
+msgid "HMAC eventbased"
+msgstr "HMAC ereignisbasiert"
+
+msgid "Create a new OATH token - HMAC event based"
+msgstr "Einen neuen OATH-Token anlegen - HMAC ereignisbasiert"
+
+msgid ""
+"The token seed is the secret that is used in the hmac algorithm to make your "
+"token unique. So please take care!"
+msgstr ""
+"Der Tokenschlüssel ist das Geheimnis, das in dem HMAC-Algorithmus verwendet "
+"wird und den Token einzigartig macht. Bitte darauf achten!"
+
+msgid "Token seed:"
+msgstr "Tokenseed:"
+
+msgid "generate random seed"
+msgstr "ein zufälliges Seed generieren"
+
+msgid "Enter seed"
+msgstr "Seed eingeben"
+
+msgid ""
+"The hmac algorithm could be controlled by the following settings. Make sure "
+"that these settings match your hardware token or software token capabilities."
+msgstr ""
+"Der HMAC-Algorithmus kann durch die folgenden Einstellungen beeinflusst "
+"werden. Bitte stellen Sie sicher, dass diese Einstellungen zu ihrem "
+"Hardwaretoken bzw. zu den Fähigkeiten ihres Softtokens passen."
+
+msgid "Token settings:"
+msgstr "Tokeneinstellungen:"
+
+msgid "The Google Authenticator supports only 6 digits and SHA1 hashing."
+msgstr ""
+"Der Google Authenticator unterstützt nur 6 Ziffern und den SHA1 Hash "
+"Algorithmus."
+
+msgid "Google Authenticator compliant"
+msgstr "Google Authenticator konform."
+
+msgid "OTP Digits"
+msgstr "OTP Ziffern"
+
+msgid "Enroll HOTP Token"
+msgstr "HOTP-Token ausrollen"
+
+msgid "required input field"
+msgstr "Benötigtes Eingabefeld"
+
+msgid "minimum length must be greater than {0}"
+msgstr "Die Länge muss größer als {0} sein."
+
+msgid "maximum length must be lower than {0}"
+msgstr "Die Länge muss kürzer als {0} sein."
+
+msgid ""
+"Please enter a valid init secret. It may only contain numbers and the "
+"letters A-F."
+msgstr ""
+"Bitte geben Sie ein gültiges Initialisierungsseed ein. Es darf nur Nummern "
+"und die Buchstaben A bis F enthalten."
+
+msgid "Enroll your HOTP token"
+msgstr "Rollen Sie Ihren HOTP-Token aus"
+
+msgid "Token Seed:"
+msgstr "Tokenschlüssel:"
+
+msgid "Generate random seed"
+msgstr "Ein zufälliges Seed generieren"
+
+msgid "Enter token seed"
+msgstr "Tokenseed eingeben"
+
+msgid "Token Settings:"
+msgstr "Tokeneinstellungen:"
+
+msgid "OTP digits"
+msgstr "OTP Ziffern"
+
+msgid "self enrolled"
+msgstr "selbst erstellt"
+
+msgid "enroll hmac token"
+msgstr "HMAC-Token ausrollen"
+
+msgid "Specify the hashlib to be used. Can be sha1 (1) or sha2-256 (2)."
+msgstr ""
+"Geben Sie die Hashlib, die benutzt werden soll, an. Dies kann SHA1 (1) oder "
+"SHA2-256 (2) sein."
+
+msgid "Specify the otplen to be used. Can be 6 or 8 digits."
+msgstr ""
+"Geben Sie die OTP-Länge an, die benutzt werden soll. Dies können 6 oder 8 "
+"Zeichen sein."
+
+msgid "OTPAuth Url"
+msgstr "OTPAuth URL"
+
+msgid "URL for OATH token"
+msgstr "URL für OATH-Token"
+
+msgid "OCRA2 Token"
+msgstr "OCRA2-Token"
+
+msgid "OCRA2 token settings"
+msgstr "OCRA2-Token Einstellungen"
+
+msgid "Maximum concurrent OCRA2 challenges"
+msgstr "Maximale Anzahl an gleichzeitigen OCRA2-Challenges"
+
+msgid "This is the maximum concurrent challenges per OCRA2 Token."
+msgstr ""
+"Das ist die maximale Anzahl an gleichzeitigen OCRA2-Challenges, die für "
+"einen OCRA2-Token angefordert werden können."
+
+msgid "OCRA2 challenge timeout"
+msgstr "Timeout für OCRA2 Challenge"
+
+msgid "OCRA2 - challenge/response Token"
+msgstr "OCRA2 - Challenge/Response-Token"
+
+msgid "Please enter or copy the OCRA2 key."
+msgstr "Bitte geben Sie den OCRA2-Key ein."
+
+msgid "OCRA2 key"
+msgstr "OCRA2-Key"
+
+msgid "Generate OCRA2 key."
+msgstr "OCRA2-Key vom Server generieren lassen."
+
+msgid "Enroll your OCRA2 Token"
+msgstr "Rollen Sie Ihren OCRA2-Token aus"
+
+msgid "Token description"
+msgstr "Tokenbeschreibung"
+
+msgid "Generate OCRA2 seed"
+msgstr "OCRA2-Key vom Server generieren lassen."
+
+msgid "Enter seed for the new OCRA2 token:"
+msgstr "Geben Sie das Seed für den neuen OCRA2-Token ein:"
+
+msgid "enroll ocra2 token"
+msgstr "OCRA2-Token ausrollen"
+
+msgid "Activate your OCRA2 Token"
+msgstr "Aktivieren Sie Ihren OCRA2-Token"
+
+msgid "Your OCRA2 Token :"
+msgstr "Ihr OCRA2-Token:"
+
+msgid "activate your OCRA2 Token"
+msgstr "Aktivieren Sie Ihren OCRA2-Token"
+
+msgid "finish your OCRA2 Token"
+msgstr "OCRA2-Token fertigstellen"
+
+msgid "ocra challenge-response token - hmac event based"
+msgstr "OCRA-Challenge/Response-Token - HMAC ereignisbasiert"
+
+msgid "URL for OCRA2 token"
+msgstr "URL für OCRA2-Token"
+
+msgid "Static Password Token Settings"
+msgstr "Einstellungen für einfachen Passworttoken"
+
+#, fuzzy
+msgid "Static Password Token"
+msgstr "Einfacher Passworttoken"
+
+msgid "Create Static Password Token"
+msgstr "Einfachen Passworttoken erstellen"
+
+msgid "The token seed is the password"
+msgstr "Der Token-Seed ist das Passwort"
+
+msgid "Token Password:"
+msgstr "Token-Passwort"
+
+#, fuzzy
+msgid "Token settings"
+msgstr "Tokeneinstellungen:"
+
+msgid "Enroll Password Token"
+msgstr "Passwort Token ausrollen"
+
+msgid "Enroll static password token"
+msgstr "Erstellen Sie ihren einfachen Passworttoken"
+
+msgid "Enter static password:"
+msgstr "Statisches Passwort eingeben:"
+
+msgid "enroll password token"
+msgstr "erstellen Sie Ihren Passwort-Token"
+
+msgid "RADIUS Token"
+msgstr "RADIUS Token"
+
+msgid ""
+"Please enter a valid RADIUS server specification. It needs to be of the form "
+"<name_or_ip>:<port>"
+msgstr ""
+"Bitte geben Sie eine gültige RADIUS Server Spezifikation ein. Diese muss der "
+"Form <Name_oder_IP>:<Port> genügen."
+
+msgid "RADIUS token settings"
+msgstr "RADIUS Tokeneinstellungen:"
+
+msgid "You need to enter the server like myradius:1812"
+msgstr "Sie müssen den Server mit Port im Format 'radiusserver:1812' angeben."
+
+msgid "RADIUS server"
+msgstr "RADIUS Server"
+
+msgid ""
+"The PIN can either be verified on this local LinOTP server or forwarded to "
+"the RADIUS server"
+msgstr ""
+"Die PIN kann entweder hier auf dem lokalen LinOTP Server überprüft werden "
+"oder an den RADIUS Server weitergeleitet werden."
+
+msgid "Check PIN"
+msgstr "Überprüfe PIN"
+
+msgid ""
+"The PIN can either be verified on this local LinOTP server or on the RADIUS "
+"server"
+msgstr ""
+"Die PIN kann entweder hier auf dem lokalen LinOTP Server überprüft werden "
+"oder an den RADIUS Server weitergeleitet werden."
+
+msgid "on RADIUS server"
+msgstr "auf dem RADIUS Server"
+
+msgid "locally"
+msgstr "lokal"
+
+msgid "RADIUS shared secret"
+msgstr "RADIUS Shared Secret"
+
+msgid "RADIUS token"
+msgstr "RADIUS-Token"
+
+msgid ""
+"Here you can define, to which RADIUS server the request should be forwarded."
+msgstr ""
+"Hier können Sie angeben, zu welchem RADIUS Server die "
+"Authentisierungsanfrage weitergeleitet werden soll."
+
+msgid "Please specify the server, the secret and the username"
+msgstr ""
+"Bitte geben Sie den Server, das RADIUS Shared Secret und den Benutzernamen "
+"an."
+
+msgid "RADIUS user"
+msgstr "RADIUS Benutzer"
+
+msgid "Remote Token"
+msgstr "Remote-Token"
+
+msgid ""
+"Please enter a valid remote server specification. It needs to be of the form "
+"http://server or https://server"
+msgstr ""
+"Bitte geben Sie eine gültige Remote Server Spezifikation ein. Diese muss der "
+"Form http://server oder https://server genügen."
+
+msgid "Remote token settings"
+msgstr "Remote-Token-Einstellungen"
+
+msgid "You need to enter the remote LinOTP server like https://remotelinotp"
+msgstr ""
+"Sie müssen den remote LinOTP Server im Format 'https://<FQDN des entfernten "
+"LinOTP Servers>' angeben."
+
+msgid "Remote server"
+msgstr "Remote-Server"
+
+msgid ""
+"The PIN can either be verified on this local LinOTP server or forwarded to "
+"the remote server"
+msgstr ""
+"Die PIN kann entweder hier auf dem lokalen LinOTP Server überprüft werden "
+"oder an den remote Server weitergeleitet werden."
+
+msgid ""
+"The PIN can either be verified on this local LinOTP server or on the remote "
+"server"
+msgstr ""
+"Die PIN kann entweder auf diesem lokalen Server überprüft werden oder auf "
+"dem entfernten LinOTP Server."
+
+msgid "on remote server"
+msgstr "auf dem Remote-Server"
+
+msgid "Remote realm"
+msgstr "Remote-Realm"
+
+msgid "Remote resolver"
+msgstr "Remote-Resolver"
+
+msgid "Remote token"
+msgstr "Remote-Token"
+
+msgid ""
+"Please enter a valid URL for the LinOTP server. It needs to start with "
+"http:// or https://"
+msgstr ""
+"Bitte geben Sie eine gültige URL für den LinOTP server an. Diese muss mit "
+"http:// oder https:// anfangen."
+
+msgid ""
+"Here you can define to which LinOTP Server the authentication request should "
+"be forwarded."
+msgstr ""
+"Hier können Sie angeben, zu welchem LinOTP Server die "
+"Authentisierungsanfrage weitergeleitet werden soll."
+
+msgid ""
+"You can either forward the OTP to a remote serial number or to a remote user."
+msgstr ""
+"Die Authentsierungsanfrage kann entweder an eine entfernte Seriennummer oder "
+"an einen entfernten Benutzer weitergeleitet werden."
+
+msgid ""
+"If you do not enter a remote serial or a remote user, the request will be "
+"forwarded to the remote user with the same username."
+msgstr ""
+"Wenn Sie keine remote Seriennumer und auch keinen remote Benutzernamen "
+"angeben, dann wird die Authentisierungsanfrage an den Benutzer mit dem "
+"gleichen Benutzernamen weitergeleitet."
+
+msgid "You need to enter the server like 'https://linotp2.my.domain'"
+msgstr ""
+"Sie müssen den Server im Format 'https://<FQDN des entfernten LinOTP "
+"Servers>' angeben"
+
+msgid ""
+"The PIN can either be verified on this local LinOTP server or on the remote "
+"LinOTP server"
+msgstr ""
+"Die PIN kann entweder auf diesem lokalen Server überprüft werden oder auf "
+"dem entfernten LinOTP Server."
+
+msgid "remotely"
+msgstr "entfernt"
+
+msgid "Remote OTP len"
+msgstr "Remote OTP-Länge"
+
+msgid "Remote serial"
+msgstr "Remote Seriennummer"
+
+msgid "Remote user"
+msgstr "Remote Benutzer"
+
+msgid "Remote user realm"
+msgstr "Realm des remote Benutzers"
+
+msgid "Remote user UserIdResolver"
+msgstr "UserIdResolver des remote Benutzers"
+
+msgid "SMS OTP"
+msgstr "SMS-OTP"
+
+msgid "Please enter the mobile phone number for the SMS token"
+msgstr "Bitten geben Sie die Mobiltelefonnummer für den SMS-Token ein."
+
+msgid "Phone number"
+msgstr "Mobiltelefonnummer"
+
+msgid "Register SMS"
+msgstr "SMS-Token registrieren"
+
+msgid "minimum length must be greater than 10"
+msgstr "Die minimale Länge muss größer als 10 sein."
+
+msgid ""
+"Please enter a valid phone number. It may only contain numbers and + or /."
+msgstr ""
+"Bitten geben Sie eine gültige Telefonnummer ein. Diese darf nur Ziffer, das "
+"+ und / enthalten."
+
+msgid "sms challenge-response token - hmac event based"
+msgstr "SMS-Challenge/Response-Token - HMAC ereignisbasiert"
+
+msgid "define if the user should be allowed to define the sms"
+msgstr ""
+"beschreibt, ob der Benutzer selbst seine SMS Nummer ändern darf oder nicht."
+
+msgid ""
+"if set, a new mobile number will be retrieved from the user info instead of "
+"the token"
+msgstr ""
+"Falls gesetzt wird eine neue Handy-Nummer aus der User-Info anstelle des "
+"Token-Datensatzes geladen"
+
+msgid "User is not allowed to set phone number"
+msgstr "Der Benutzer darf die Telefon Nummer nicht setzen!"
+
+msgid "sending sms failed"
+msgstr "Das Senden der SMS war nicht erfolgreich."
+
+msgid "Simple Pass Token"
+msgstr "Simple-Pass-Token"
+
+msgid "The Simple Pass token will not require any one time password component."
+msgstr "Der Simple-Pass-Token beinhaltet keinen Einmal-Passwort-Anteil."
+
+msgid ""
+"Anyway, you can set an OTP PIN, so that using this token the user can "
+"authenticate always and only with this fixed PIN."
+msgstr ""
+"Sie können aber dennoch eine OTP PIN setzen, so dass dieser Token aufgrund "
+"der OTP-PIN wie ein einfaches Passwort funktioniert."
+
+msgid "Day OTP Token / Tagespasswort"
+msgstr "Tagespasswort"
+
+msgid "Here you can define the 'Tagespasswort' token, that changes every day."
+msgstr ""
+"Hier können Sie den 'Tagespasswort' Token definieren. Dieser ändert den OTP-"
+"Wert nur einmal am Tag. Der OTP-Wert kann aber den ganzen Tag über verwendet "
+"werden."
+
+msgid "DPW key"
+msgstr "DPW-Seed"
+
+msgid "TOTP Token"
+msgstr "TOTP-Token"
+
+msgid "TOTP token settings"
+msgstr "TOTP-Token Einstellungen"
+
+msgid "This is the time step for time based tokens. Usually this is 30 or 60."
+msgstr ""
+"Dies ist der Zeitschritt bei zeitbasierten Token. Dies sind gewöhnlich 30 "
+"oder 60 Sekunden."
+
+msgid "time offset"
+msgstr "Zeitversatz"
+
+msgid "This is the default time shift of the server. This should be 0."
+msgstr ""
+"Dies ist der standardmäßige Zeitversatz, um den die Serveruhr und die "
+"Tokenuhr verschoben sind. Dies sollte 0 sein."
+
+msgid "time lookup window"
+msgstr "Zeitfenster"
+
+msgid ""
+"This is the time LinOTP will calculate before and after the current time. A "
+"reasonable value is 300."
+msgstr ""
+"LinOTP wird innerhalb dieses Zeitfensters vor und nach der aktuellen Zeit "
+"versuchen, den OTP-Wert bei einem zeitbasierten Token zu finden."
+
+msgid "HMAC time based"
+msgstr "HMAC zeitbasiert"
+
+msgid "Create a new OATH token - HMAC time based"
+msgstr "Einen neuen OATH-Token anlegen - HMAC zeitbasiert"
+
+msgid ""
+"The :time step: defines the granularity of the time in seconds that is used "
+"in the HMAC algorithm."
+msgstr ""
+"Der :Zeitschritt: definiert die Granularität der Zeit in Sekunden, die in "
+"dem HMAC-Algorithmus verwendet werden."
+
+msgid "seconds"
+msgstr "Sekunden"
+
+msgid "Enroll TOTP Token"
+msgstr "TOTP-Token ausrollen"
+
+msgid "Enroll your TOTP token"
+msgstr "Rollen Sie Ihren TOTP-Token aus"
+
+msgid "enter token seed"
+msgstr "Tokenseed eingeben"
+
+msgid ""
+"The Google Authenticator supports only 6 digits, SHA1 hashing and time step "
+"30."
+msgstr ""
+"Der Google Authenticator unterstützt nur 6 Ziffern, den SHA1 Hash "
+"Algorithmus und einen Zeitschritt von 30 Sekunden."
+
+msgid "enroll TOTP token"
+msgstr "TOTP-Token ausrollen"
+
+msgid "Enroll FIDO U2F Token"
+msgstr "FIDO-U2F-Token ausrollen"
+
+msgid "Enroll token"
+msgstr "Token ausrollen"
+
+msgid "Vasco Token"
+msgstr "Vasco-Token"
+
+msgid "Vasco Digipass Token Class - proprietary timebased tokens"
+msgstr "Vasco-Digipass-Token-Klasse - Proprietäre zeitbasierte Token"
+
+msgid "Yubico"
+msgstr "Yubico"
+
+msgid "Enroll YubiKey"
+msgstr "YubiKey ausrollen"
+
+msgid "Yubico settings"
+msgstr "Yubico-Einstellungen"
+
+msgid "You get your own API key from the yubico website "
+msgstr "Sie können Ihren eigenen API Key auf der Yubico Webseite erhalten."
+
+msgid ""
+"If you do not use your own API key, the LinOTP demo API key will be used!"
+msgstr ""
+"Wenn Sie keinen eigenen API Key eingeben, wird ein LinOTP DEMO API Key "
+"verwendet!"
+
+msgid "You need to enter a valid API id"
+msgstr "Sie müssen eine gültige API-ID angeben."
+
+msgid "Yubico ID"
+msgstr "Yubico-ID"
+
+msgid "You need to enter a valid API key"
+msgstr "Sie müssen einen gültigen API Key eingeben."
+
+msgid "Yubico API key"
+msgstr "Yubico API-Key"
+
+msgid "YubiKey"
+msgstr "YubiKey"
+
+msgid "Here you need to enter the token ID of the YubiKey."
+msgstr "Hier müssen Sie die Token-ID des YubiKeys eingeben."
+
+msgid "You can do this by inserting the YubiKey and simply push the button."
+msgstr ""
+"Sie können dies tun, indem Sie einfach Ihren YubiKey einstecken und auf den "
+"Knopf drücken."
+
+msgid "You need to enter the YubiKey token ID"
+msgstr "Sie müssen die YubiKey-Token-ID eingeben."
+
+msgid "Token ID"
+msgstr "Token-ID"
+
+msgid "Enroll your YubiKey"
+msgstr "Rollen Sie Ihren YubiKey aus"
+
+msgid ""
+"Enter the Token ID of your YubiKey. Simply insert the YubiKey and press the "
+"button."
+msgstr ""
+"Geben Sie die Token-ID Ihres YubiKeys ein. Stecken Sie einfach Ihren Yubikey "
+"ein und drücken Sie den Knopf."
+
+msgid "YubiKey TokenId"
+msgstr "YubiKey Token-ID"
+
+msgid "enroll yubico token"
+msgstr "Yubikey ausrollen"
+
+msgid "mOTP Token Settings"
+msgstr "mOTP Einstellungen"
+
+msgid "mOTP - mobile otp"
+msgstr "mOTP - Mobiler OTP"
+
+msgid ""
+"Please enter or copy the init-secret, that was generated by your app and the "
+"PIN you are using on your phone."
+msgstr ""
+"Bitten geben Sie den Initialisierungsseed ein. Dieser wurde von der App auf "
+"Ihrem Telefon erzeugt. Geben Sie außerdem die PIN ein, die Sie auf dem "
+"Telefon verwendet haben."
+
+msgid "Init secret"
+msgstr "Init Seed"
+
+msgid "(again)"
+msgstr "(wiederholen)"
+
+msgid "Register mOTP"
+msgstr "mOTP-Token registrieren"
+
+msgid "Register your mOTP Token"
+msgstr "mOTP-Token registrieren"
+
+msgid "Init Secret of motp-Token"
+msgstr "Initialisierungs-Seed des mOTP-Token"
+
+msgid "mOTP PIN"
+msgstr "mOTP-PIN"
+
+msgid "mOTP PIN (again)"
+msgstr "mOTP-PIN (wiederholen)"
+
+msgid "register mOTP Token"
+msgstr "mOTP-Token registrieren"
+
+msgid "URL for OCRA token"
+msgstr "URL für OCRA-Token"
+
+msgid "PushToken"
+msgstr "PushToken"
+
+msgid "PushToken Settings"
+msgstr "PushToken-Einstellungen:"
+
+msgid "Maximum concurrent challenges"
+msgstr "Maximale Anzahl an gleichzeitigen Challenges"
+
+msgid "Challenge Timeout"
+msgstr "Challenge Timeout"
+
+msgid "Public key certificate"
+msgstr "Public-Key-Zertifikat"
+
+msgid "certificate id"
+msgstr "Zertifikat-ID"
+
+msgid "PushToken - challenge/response Token"
+msgstr "PushToken - Challenge/Response-Token"
+
+msgid "web ui generated"
+msgstr "WebUI generiert"
+
+msgid "Enroll Push Token"
+msgstr "PushToken ausrollen"
+
+msgid "enroll pushtoken"
+msgstr "PushToken ausrollen"
+
+msgid "Activate Push Token"
+msgstr "Aktivieren Sie Ihren PushToken"
+
+msgid "Select Push Token: "
+msgstr "PushToken auswählen:"
+
+msgid "Enter activation credentials: "
+msgstr "Geben Sie das Aktivierungskennwort ein:"
+
+msgid "Activate token"
+msgstr "Token aktivieren"
+
+msgid "Challenge sent"
+msgstr "Challenge wurde verschickt"
+
+msgid "A push notification has been sent. Please check your mobile phone."
+msgstr ""
+"Eine Pushbenachrichtigung wurde verschickt. Bitte werfen Sie einen Blick auf "
+"Ihr Smartphone."
+
+msgid "activate your PushToken"
+msgstr "Aktivieren Sie Ihren PushToken"
+
+msgid "Policy pushtoken_challenge_callback_url must have a value"
+msgstr "Policy pushtoken_challenge_callback_url benötigt einen Wert"
+
+msgid "Policy pushtoken_pairing_callback_url must have a value"
+msgstr "Policy pushtoken_pairing_callback_url benötigt einen Wert"
+
+msgid "Pairing URL"
+msgstr "Pairing-URL"
+
+msgid "QRToken"
+msgstr "QRToken"
+
+msgid "QRToken Settings"
+msgstr "QRToken-Einstellungen"
+
+msgid "QRToken - challenge/response Token"
+msgstr "QRToken - Challenge/Response-Token"
+
+msgid "Enroll your QRToken"
+msgstr "Rollen Sie Ihren QRToken aus"
+
+msgid "enroll qrtoken"
+msgstr "QRToken ausrollen"
+
+msgid "Activate your QRToken"
+msgstr "Aktivieren Sie Ihren QRToken"
+
+msgid "Select QRToken: "
+msgstr "Ausgewählter QRToken"
+
+msgid "activate token"
+msgstr "Token aktivieren"
+
+msgid "Challenge triggered successfully"
+msgstr "Challenge wurde erfolgreich angefordert"
+
+msgid ""
+"Please scan the qr code and submit your response or enter the otp value in "
+"the form below."
+msgstr ""
+"Bitte scannen Sie den QR-Code und senden die Antwort oder geben den OTP-Wert "
+"im Formular ein."
+
+msgid "OTP Value: "
+msgstr "OTP-Wert:"
+
+msgid "finalize activation"
+msgstr "Aktivierung abschließen"
+
+msgid "activate your QRToken"
+msgstr "Aktivieren Sie Ihren QRToken"
+
+#, python-format
+msgid "Policy %s must have a value"
+msgstr "Policy %s benötigt einen Wert"
+
+msgid " or "
+msgstr "oder"
+
+msgid "QRToken Pairing Url"
+msgstr "QRToken Pairing-URL"
+
+msgid "QRToken Certificate"
+msgstr "QRToken Zertifikat"
+
+msgid "Voice Token"
+msgstr "Voice-Token"
+
+msgid "Please enter the mobile phone number for the Voice token"
+msgstr "Bitten geben Sie die Mobiltelefonnummer für den Voice-Token ein."
+
+msgid "Define the language which should be usedto render the voice message."
+msgstr ""
+"Legen Sie den Sprache fest, mit der Voice-Nachricht gesprochen werden soll"
+
+msgid ""
+"Define the message which will be sendto the voice service for the phonecall."
+msgstr ""
+"Legen Sie die Nachricht fest, die für den Telefonanruf genutzt werden soll."
+
+msgid ""
+"If set, a new mobile number will be retrieved from the user info instead of "
+"the token"
+msgstr ""
+"Falls gesetzt, wird die Handynummer aus den Benutzer Daten statt aus der "
+"Token Information verwendet."
+
+#~ msgid "No valid authentication session %r"
+#~ msgstr "Keine gültige Authentisierungs-Session %r"
+
+#~ msgid "the maximum number of allowed tokens is exceeded. Check the policies"
+#~ msgstr ""
+#~ "Die Maximalzahl an lizensierten Token wurde überschritten - überprüfen "
+#~ "Sie ggf. die Richtlinien."
+
+#~ msgid "The maximum number of allowed tokens is exceeded. Check the policies"
+#~ msgstr ""
+#~ "Die Maximalzahl der unterstützten Token wurde überschritten - prüfen Sie "
+#~ "ggf. die Richtlinien."
+
+#~ msgid "Not a valid json string!"
+#~ msgstr "Kein gültiger JSON Text!"
+
+#~ msgid ""
+#~ "Please enter a valid realm name. It may contain characters, numbers and "
+#~ "'_-.'."
+#~ msgstr ""
+#~ "Bitten geben Sie einen gültige Realmnamen ein. Dieser darf nur aus "
+#~ "Buchstaben, Ziffern und '_-.' bestehen."
+
+#~ msgid "Resolver name is already in use"
+#~ msgstr "Resolvername ist bereits vergeben"
+
+#~ msgid ""
+#~ "Please enter a valid resolver name. It may contain characters, numbers "
+#~ "and '_-'."
+#~ msgstr ""
+#~ "Bitten geben Sie eine gültige Resolvernamen ein. Diese darf aus "
+#~ "Buchstaben, Ziffern und '_-.' bestehen."
+
+#~ msgid ""
+#~ "Please enter a valid provider name. It may contain characters, numbers "
+#~ "and '_-'."
+#~ msgstr ""
+#~ "Bitten geben Sie einen gültige Providernamen ein. Dieser darf aus "
+#~ "Buchstaben, Ziffern und '_-.' bestehen."
+
+#~ msgid ""
+#~ "Please enter a valid ldap uri. It needs to start with ldap:// or ldaps://"
+#~ msgstr ""
+#~ "Bitte geben Sie eine gültige LDAP URI ein, die mit ldap:// oder ldaps:// "
+#~ "anfängt."
+
+#~ msgid ""
+#~ "Please enter a valid http uri. It needs to start with http:// or https://"
+#~ msgstr ""
+#~ "Bitte geben Sie eine gültige LDAP URI ein, die mit http:// oder https:// "
+#~ "anfängt."
+
+#~ msgid "Please enter a timeout like: 5.0; 5.0 "
+#~ msgstr "Bitte geben Sie den Timeout im folgenden Format an: 5.0; 5.0"
+
+#~ msgid ""
+#~ "Please enter a valid searchfilter like this: (sAMAccountName=*)"
+#~ "(objectClass=user)"
+#~ msgstr ""
+#~ "Bitte geben sie einen gültigen LDAP Suchfilter ein, wie: "
+#~ "(sAMAccountName=*)(objectClass=user)"
+
+#~ msgid ""
+#~ "Please enter a valid user searchfilter like this: (&(sAMAccountName=%s)"
+#~ "(objectClass=user))"
+#~ msgstr ""
+#~ "Bitte geben sie einen gültigen LDAP Benutzer Suchfilter ein, wie: "
+#~ "(&(sAMAccountName=%s)(objectClass=user))"
+
+#~ msgid "Please enter a valid searchfilter like this: %s"
+#~ msgstr "Bitte geben sie einen gültigen Suchfilter ein, wie: %s"
+
+#~ msgid ""
+#~ "Please enter the UID of your LDAP server like DN, entryUUID, objectGUID "
+#~ "or GUID"
+#~ msgstr ""
+#~ "Bitte geben sie die UID (Uniq Identifier) des LDAP Servers z.B. DN, "
+#~ "entryUUID, objectGUID oder GUID"
+
+#~ msgid ""
+#~ "Please enter a valid driver specification like: mysql, postgres, mssql, "
+#~ "oracle, ibm_db_sa or ibm_db_sa+pyodbc"
+#~ msgstr ""
+#~ "Bitte geben sie einen gültigen Treiber an, wie: mysql, postgres, mssql, "
+#~ "oracle, ibm_db_sa oder ibm_db_sa+pyodbc"
+
+#~ msgid ""
+#~ "LDAP Server, especially Active Directory, implement a default serverside "
+#~ "maximum size limit of 1000 objects."
+#~ msgstr ""
+#~ "LDAP Server, insbesondere Active Directory, haben auf der Server Seite "
+#~ "eine standardmäßige Beschränkung von 1000 zurückgegebenen Objekten "
+#~ "(sizelimit) pro Anfrage."
+
+#~ msgid ""
+#~ "This is independed of the local sizelimit and does not hinder the "
+#~ "functionality of LinOTP."
+#~ msgstr ""
+#~ "Diese Beschränkung ist unabhängig von der lokal angegebenen Beschränkung "
+#~ "und beeinträchtigt nicht die Funktionalität im Zusammenhang mit LinOTP."
+
+#~ msgid "OATH CSV Token File"
+#~ msgstr "OATH-CSV-Tokendatei"
+
+#~ msgid "count auth max"
+#~ msgstr "Authentisierungszähler Maximum"
+
+#~ msgid "count auth success max"
+#~ msgstr "Erfolgs Authentisierungszähler Maximum"
+
+#~ msgid "validity start"
+#~ msgstr "Start Gültigkeitszeitraum"
+
+#~ msgid "validity end"
+#~ msgstr "Ende Gültigkeitszeitraum"
 
 #~ msgid "sales@lsexperts.de"
 #~ msgstr "sales@lsexperts.de"
@@ -4096,9 +4500,6 @@ msgstr ""
 
 #~ msgid "You do not have the rights to monitor these realms."
 #~ msgstr "Sie haben keine Rechte die folgenden Realms zu monitoren."
-
-#~ msgid "Summary"
-#~ msgstr "Übersicht"
 
 #~ msgid "<h1>contact support</h1>"
 #~ msgstr "<h1>Support kontaktieren</h1>"
@@ -4176,9 +4577,6 @@ msgstr ""
 #~ msgid "remote otp len"
 #~ msgstr "otp Länge des entfernten Tokens"
 
-#~ msgid "Password Token"
-#~ msgstr "Passwort Token"
-
 #~ msgid "__undefined__"
 #~ msgstr "__inaktiv__"
 
@@ -4247,9 +4645,6 @@ msgstr ""
 
 #~ msgid "Export token information"
 #~ msgstr "Tokeninformationen exportieren"
-
-#~ msgid "Export audit information"
-#~ msgstr "Audit exportieren"
 
 #~ msgid "Hash Algorithm"
 #~ msgstr "Hash Algorithmus"
