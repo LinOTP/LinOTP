@@ -295,7 +295,13 @@ class AdminController(BaseController):
         and format validity periode date fields to isoformat
 
         """
-        info = json.loads(tok['LinOtp.TokenInfo'])
+
+        token_info = tok['LinOtp.TokenInfo']
+
+        if token_info:
+            info = json.loads(token_info)
+        else:
+            info = {}
 
         for field in ['validity_period_end', 'validity_period_start']:
             if field in info:

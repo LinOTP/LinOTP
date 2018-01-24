@@ -37,6 +37,9 @@
         <!-- middle column -->
     <td class=tokeninfoOuterTable>
     %if "LinOtp.TokenInfo" == value:
+        <div class="tokeninfo-hint">
+            Timestamps are in UTC
+        </div>
         <table class=tokeninfoInnerTable>
         %for k in c.tokeninfo[value]:
         <tr>
