@@ -85,6 +85,7 @@ from linotp.lib.selfservice import get_imprint
 
 from linotp.lib.selftest import isSelfTest
 from linotp.controllers.userservice import get_auth_user
+from linotp.controllers.userservice import getTokenForUser
 
 from linotp.tokens import tokenclass_registry
 from linotp.lib.context import request_context
@@ -96,27 +97,6 @@ Session = linotp.model.Session
 ENCODING = "utf-8"
 log = logging.getLogger(__name__)
 audit = config.get('audit')
-
-
-def getTokenForUser(user):
-    """
-    should be moved to token.py
-    """
-    tokenArray = []
-
-    log.debug("[getTokenForUser] ...user %s in realm %s." %
-              (user.login, user.realm))
-    tokens = getTokens4UserOrSerial(user=user, serial=None, _class=False)
-
-    for token in tokens:
-        tok = token.get_vars()
-        if tok.get('LinOtp.TokenInfo', None):
-            token_info = json.loads(tok.get('LinOtp.TokenInfo'))
-            tok['LinOtp.TokenInfo'] = token_info
-        tokenArray.append(tok)
-
-    log.debug("[getTokenForUser] found tokenarray: %r" % tokenArray)
-    return tokenArray
 
 
 class SelfserviceController(BaseController):
