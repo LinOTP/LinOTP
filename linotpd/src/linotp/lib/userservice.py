@@ -102,14 +102,18 @@ def getTokenForUser(user, active=None):
     log.debug("[getTokenForUser] ...user %s in realm %s.",
               user.login, user.realm)
 
-    tokens = getTokens4UserOrSerial(user=user, serial=None, _class=False,
+    tokens = getTokens4UserOrSerial(user=user, serial=None, _class=True,
                                     active=active)
 
     for token in tokens:
-        tok = token.get_vars()
+
+        tok = token.token.get_vars()
         if tok.get('LinOtp.TokenInfo', None):
             token_info = json.loads(tok.get('LinOtp.TokenInfo'))
             tok['LinOtp.TokenInfo'] = token_info
+
+        tok['Enrollment'] = token.get_enrollment_status()
+
         tokenArray.append(tok)
 
     log.debug("[getTokenForUser] found tokenarray: %r" % tokenArray)
