@@ -49,7 +49,6 @@ class TestSmsToken(TestCase):
             data.sepasswd_resolver, self.realm_name)
         self.manage_ui.token_view.delete_all_tokens()
 
-    @unittest.skip("Test needs to be fixed!")
     def test_enroll(self):
         """
         Enroll sms token. After enrolling it verifies that the token info contains the

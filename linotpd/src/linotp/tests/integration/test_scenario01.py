@@ -69,7 +69,6 @@ class TestScenario01(TestCase):
     def _announce_test(self, testname):
         LOGGER.info("### %s ###" % testname)
 
-    @unittest.skip("Test needs to be fixed!")
     def test_scenario01(self):
         """
         Scenario01 (https://wally/projects/linotp/wiki/TestingTest_Szenario_01)
