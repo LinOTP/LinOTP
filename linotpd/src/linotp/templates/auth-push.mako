@@ -74,6 +74,10 @@
             <td>
                 <table>
                     <tr>
+                        <td>${_('Transaction-ID')}</td>
+                        <td><input type='text' id='transactionid' name="transactionid" maxlength="200"  class="required"></td>
+                    </tr>
+                    <tr>
                         <td><h2>${_('Check the status of your challenge:')}</h2></td>
                         <td><button id="check_status">${_('check status')}</button></td>
                     </tr>
