@@ -1,9 +1,9 @@
-linotp (2.9.3.5~rc0-1) jessie; urgency=low
+linotp (2.9.3.5-1) jessie; urgency=low
 
   Bug Fixes:
-  * Server: Fix Userservice/context could freely choose user (3af9f6)
+  * Server: Restrict the userservice/context API (3af9f6)
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 26 Jan 2018 14:17:53 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 30 Jan 2018 10:27:05 +0100
 
 linotp (2.9.3.4-1) jessie; urgency=low
 
