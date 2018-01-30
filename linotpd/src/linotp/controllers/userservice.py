@@ -1035,25 +1035,16 @@ class UserserviceController(BaseController):
         authenticated. The _before_ is executed before any other function
         in this controller.
         '''
-        param = {}
-        try:
-            param.update(request.params)
-            user = param['user']
 
-            if "@" in user:
-                user, realm = user.split('@')
-            else:
-                realm = getDefaultRealm()
+        try:
+
+            user = self.authUser.login
+            realm = self.authUser.realm
 
             context = get_context(config, user, realm, self.client)
 
             response.content_type = 'application/json'
             return json.dumps(context, indent=3)
-
-        except KeyError as err:
-            log.exception("[context] failed with error: %r" % err)
-            Session.rollback()
-            return sendError(response, "required parameter: %r" % err)
 
         except Exception as e:
             log.exception("[context] failed with error: %r" % e)
