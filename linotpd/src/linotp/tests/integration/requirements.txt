@@ -32,3 +32,4 @@ requests
 LinOTP
 LinOTPAdminClientCLI
 packaging
+flaky

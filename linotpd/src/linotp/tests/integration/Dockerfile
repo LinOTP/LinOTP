@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install \
 
 RUN pip install packaging
 RUN pip install selenium
+RUN pip install flaky
 
 # Integration tests dir gets mounted in the WORKDIR below.
 # See docker-compose.yml
