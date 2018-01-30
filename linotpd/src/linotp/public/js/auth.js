@@ -111,6 +111,7 @@ function triggerChallenge() {
     params['pass'] = pin;
     params['data'] = data;
     params['qr'] = 'html';
+    params['content_type'] = 0;
 
     var url = '/validate/check';
 
