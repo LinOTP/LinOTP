@@ -72,6 +72,7 @@ class PolicyManager(ManageTab):
         fill_form_element(driver, "policy_action", policy.action)
         fill_form_element(driver, "policy_realm", policy.realm)
         fill_form_element(driver, "policy_name", policy.name)
+        fill_form_element(driver, "policy_user", policy.user)
         self.find_by_id("button_policy_add").click()
         self.wait_for_waiting_finished()
 
@@ -79,11 +80,12 @@ class PolicyManager(ManageTab):
 class Policy(object):
     """Creates a LinOTP Policy"""
 
-    def __init__(self, manage_ui, name, scope, action, realm):
+    def __init__(self, manage_ui, name, scope, action, realm, user="*"):
         """Opens the LinOTP manage interface and creates a Policy"""
         self.name = name
         self.scope = scope
         self.action = action
         self.realm = realm
+        self.user = user
 
         manage_ui.policy_view.set_new_policy(self)
