@@ -142,7 +142,8 @@ node('docker') {
         doGenerateSubmoduleConfigurations: false, 
         extensions: [[$class: 'CleanCheckout']], 
         submoduleCfg: [], 
-        userRemoteConfigs: [[refspec: 'refs/changes/*:refs/changes/*', url: 'ssh://jenkins@harrison:29418/LinOTP.git']]])
+        userRemoteConfigs: [[refspec: 'refs/changes/*:refs/changes/* +refs/heads/*:refs/remotes/origin/*',
+                             url: 'ssh://jenkins@harrison:29418/LinOTP.git']]])
 
       // Delete and recreate the build folder
       sh "rm -rf build && mkdir build"
