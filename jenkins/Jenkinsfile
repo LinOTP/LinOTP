@@ -95,57 +95,6 @@ println """++ Variables: ++
          """.stripIndent()
 
 
-
-node('master') {
-  timestamps{
-    stage('Init') {
-        /*
-         * Checkout LinOTP source
-         *
-         * Once jenkins bug https://issues.jenkins-ci.org/browse/JENKINS-38046
-         * is implemented this can be simplified using a multibranch pipeline.
-         */
-
-        def parms = [$class: 'GitSCM',
-         branches: [],
-         browser: [$class: 'GitWeb', repoUrl: 'https://harrison/gitweb?p=LinOTP.git'],
-         doGenerateSubmoduleConfigurations: false,
-         extensions: [[$class: 'CleanCheckout']],
-         submoduleCfg: [],
-         userRemoteConfigs: [[
-                  url: 'ssh://jenkins@harrison:29418/LinOTP.git']]
-         ]
-
-        if (gerrit_build) {
-          // Gerrit change
-          currentBuild.description = "${GERRIT_BRANCH}"
-          parms.branches << [name: "${GERRIT_BRANCH}"]
-          parms.extensions << [
-                   $class: 'BuildChooserSetting',
-                   buildChooser: [$class: 'com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.GerritTriggerBuildChooser']
-                   ]
-          parms.userRemoteConfigs[0].refspec = "${GERRIT_REFSPEC}"
-
-        } else {
-          // Manual build
-          currentBuild.description = "${PARAM_GIT_REF}"
-          parms.branches << [name: "${PARAM_GIT_REF}"]
-          parms.userRemoteConfigs[0].name = 'origin'
-          parms.userRemoteConfigs[0].refspec = '+refs/*:refs/remotes/origin/*'
-        }
-
-        println "Checkout parameters: ${parms}"
-        checkout(parms)
-
-        if (PARAM_DOCKERFY_URL) {
-          sh "mkdir -pv build; cd build; wget --no-verbose ${PARAM_DOCKERFY_URL}; chmod ugo+x dockerfy"
-        }
-        stash includes: '**', name: 'linotpd', useDefaultExcludes: false
-
-    }
-  }
-}
-
 def doMake(target, timeout_minutes) {
   def make_cmd = "make ${target} ${docker_make_args} DOCKER_TAGS='latest ${docker_image_tag}' LINOTP_IMAGE_TAG=${docker_image_tag} RANCHER_STACK_ID=${docker_image_tag}"
   try {
@@ -182,27 +131,45 @@ def makeIfParam(condition_name, target, timeout_minutes) {
 
 node('docker') {
   timestamps {
-    deleteDir()
-    unstash 'linotpd'
 
+    stage('Init') {
 
-    stage('Linotp builder') {
-        /*
-        * Build the linotp builder docker image
-        */
-        makeIfParam('PARAM_BUILD_DOCKER_IMAGES', 'docker-build-linotp-builder', 5)
+      currentBuild.description = "${PARAM_GIT_REF}"
+
+      checkout(
+        [$class: 'GitSCM', 
+        branches: [[name: '${PARAM_GIT_REF}']],
+        doGenerateSubmoduleConfigurations: false, 
+        extensions: [[$class: 'CleanCheckout']], 
+        submoduleCfg: [], 
+        userRemoteConfigs: [[refspec: 'refs/changes/*:refs/changes/*', url: 'ssh://jenkins@harrison:29418/LinOTP.git']]])
+
+      // Delete and recreate the build folder
+      sh "rm -rf build && mkdir build"
+
+      if (PARAM_DOCKERFY_URL) {
+        sh "mkdir -pv build; cd build; wget --no-verbose ${PARAM_DOCKERFY_URL}; chmod ugo+x dockerfy"
+      }
     }
 
-    stage('Linotp image') {
-        /*
-        * Build the linotp docker image from the debs
-        */
-        makeIfParam('PARAM_BUILD_DOCKER_IMAGES', 'docker-build-linotp', 5)
+    stage('Linotp builder') {
+
+          /*
+          * Build the linotp builder docker image
+          */
+          makeIfParam('PARAM_BUILD_DOCKER_IMAGES', 'docker-build-linotp-builder', 5)
+    }
+
+      stage('Linotp image') {
+          /*
+          * Build the linotp docker image from the debs
+          */
+          makeIfParam('PARAM_BUILD_DOCKER_IMAGES', 'docker-build-linotp', 5)
     }
 
     stage('Run Unittests') {
 
-        makeIfParam('PARAM_RUN_TESTS', 'docker-run-linotp-unit-pipeline', 5)
+      makeIfParam('PARAM_RUN_TESTS', 'docker-run-linotp-unit-pipeline', 5)
 
     }
 
@@ -210,45 +177,45 @@ node('docker') {
 
     stage('Run Functional') {
 
-        makeIfParam('PARAM_RUN_TESTS', 'docker-run-linotp-functional-test', 15)
-        junit 'nose/*.xml'
+      makeIfParam('PARAM_RUN_TESTS', 'docker-run-linotp-functional-test', 15)
+      junit 'nose/*.xml'
 
     }
 
 
-/*
-    stage('Run Pylint') {
+    /*
+      stage('Run Pylint') {
 
         makeIfParam('PARAM_RUN_TESTS', 'docker-run-pylint', 10)
-    }
-*/
+      }
+    */
 
 
     stage('Build debs Pkgs') {
-        /*
-        * Build the linotp debs in the builder image
-        */
-        makeIfParam('PARAM_BUILD_DOCKER_IMAGES', 'docker-build-debs', 5)
-        archiveArtifacts 'build/apt/*'
+      /*
+      * Build the linotp debs in the builder image
+      */
+      makeIfParam('PARAM_BUILD_DOCKER_IMAGES', 'docker-build-debs', 5)
+      archiveArtifacts 'build/apt/*'
     }
 
     stage('Clean Selenium') {
 
-        makeIfParam('PARAM_RUN_TESTS_INTEGRATION', 'docker-selenium-clean', 5)
+      makeIfParam('PARAM_RUN_TESTS_INTEGRATION', 'docker-selenium-clean', 5)
 
     }
 
     stage('Build Selenium') {
 
-        makeIfParam('PARAM_RUN_TESTS_INTEGRATION', 'docker-build-selenium', 5)
+      makeIfParam('PARAM_RUN_TESTS_INTEGRATION', 'docker-build-selenium', 5)
 
-        
+          
     }
 
 
     stage('Run Selenium') {
 
-        makeIfParam('PARAM_RUN_TESTS_INTEGRATION', 'docker-run-selenium', 60)
+      makeIfParam('PARAM_RUN_TESTS_INTEGRATION', 'docker-run-selenium', 60)
 
 
     }
