@@ -2,6 +2,8 @@ version: "2"
 services:
   selenium:
     image: selenium/standalone-chrome-debug
+    volumes:
+      - .:/opt/linotp/tests
     ports:
      - "5900"
 
@@ -12,10 +14,12 @@ services:
         - http_proxy
         - https_proxy
         - no_proxy
-        - DEBIAN_MIRROR
+        - DEBIAN_MIRROR=deb.debian.org
     environment:
       SELENIUM_DRIVER: "chrome"
       NOSETESTS_ARGS: "-v"
+    volumes:
+      - .:/opt/linotp/tests
     depends_on:
       - selenium
       - linotp

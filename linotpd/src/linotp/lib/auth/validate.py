@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -25,6 +25,7 @@
 #
 """ validation processing logic"""
 
+import json
 from hashlib import sha256
 from datetime import datetime
 
@@ -61,7 +62,6 @@ from linotp.lib.policy import get_auth_passthru
 from linotp.lib.policy import get_auth_passOnNoToken
 
 from linotp.lib.policy.forward import ForwardServerPolicy
-
 
 import logging
 
@@ -131,6 +131,17 @@ def check_pin(token, passw, user=None, options=None):
         log.debug("[__checkToken] pin policy=2: checking no pin")
         if len(passw) == 0:
             res = True
+
+    elif 3 in pin_policies:
+        # ignore pin or password
+
+        log.debug("[__checkToken] pin policy=3: ignoreing pin")
+
+        if token.type in ['spass']:
+            res = token.checkPin(passw, options=options)
+        else:
+            res = True
+
     else:
         # old stuff: We check The fixed OTP PIN
         log.debug("[__checkToken] pin policy=0: checkin the PIN")
@@ -160,11 +171,11 @@ def check_otp(token, otpval, options=None):
 
 def split_pin_otp(token, passw, user=None, options=None):
     """
-    split the pin and the otp fron the given password
+    split the pin and the otp from the given password
 
     :param token: the corresponding token
-    :param passw: the to be splitted password
-    :param user: the tokenuser
+    :param passw: the to be split password
+    :param user: the token user
     :param options: currently not used, but might be forwarded to the
                     token.splitPinPass
     :return: tuple of (split status, pin and otpval)
@@ -175,7 +186,7 @@ def split_pin_otp(token, passw, user=None, options=None):
 
     if 0 in pin_policies or "token_pin" in pin_policies:
         # old stuff: We check The fixed OTP PIN
-        log.debug('pin policy=0: checkin the PIN')
+        log.debug('pin policy=0: checking the PIN')
         (pin, otp) = token.splitPinPass(passw)
 
     elif 1 in pin_policies or "password" in pin_policies:
@@ -238,7 +249,8 @@ class ValidationHandler(object):
         for serial in serials:
 
             tokens = getTokens4UserOrSerial(serial=serial,
-                                            token_type=token_type)
+                                            token_type=token_type,
+                                            read_for_update=True)
 
             if not tokens and token_type:
                 continue
@@ -275,7 +287,8 @@ class ValidationHandler(object):
 
         token_type = options.get('token_type', None)
 
-        tokenList = getTokens4UserOrSerial(None, serial, token_type=token_type)
+        tokenList = getTokens4UserOrSerial(None, serial, token_type=token_type,
+                                           read_for_update=True)
 
         if passw is None:
             # other than zero or one token should not happen, as serial is
@@ -383,6 +396,24 @@ class ValidationHandler(object):
             trans_dict['message'] = ch.challenge
             trans_dict['status'] = ch.getStatus()
 
+            # -------------------------------------------------------------- --
+
+            # extend the check status with the accept or deny of a transaction
+
+            challenge_session = ch.getSession()
+
+            if challenge_session:
+
+                challenge_session_dict = json.loads(challenge_session)
+
+                if 'accept' in challenge_session_dict:
+                    trans_dict['accept'] = challenge_session_dict['accept']
+
+                if 'reject' in challenge_session_dict:
+                    trans_dict['reject'] = challenge_session_dict['reject']
+
+            # -------------------------------------------------------------- --
+
             token_dict = {'serial': serial, 'type': token.type}
 
             # 1. check if token supports offline at all
@@ -413,7 +444,7 @@ class ValidationHandler(object):
     def checkUserPass(self, user, passw, options=None):
         """
         :param user: the to be identified user
-        :param passw: the identifiaction pass
+        :param passw: the identification pass
         :param options: optional parameters, which are provided
                     to the token checkOTP / checkPass
 
@@ -454,19 +485,51 @@ class ValidationHandler(object):
                                                           user, passw, options)
                 return res, opt
 
-        token_type = options.get('token_type', None)
+        # ------------------------------------------------------------------ --
+
+        th = TokenHandler()
+
+        # ------------------------------------------------------------------ --
+
+        # auto asignement with otp only if user has no active token
+
+        auto_assign_otp_return = th.auto_assign_otp_only(
+                                                    otp=passw,
+                                                    user=user,
+                                                    options=options)
+
+        if auto_assign_otp_return is True:
+            return (True, None)
+
+        # ------------------------------------------------------------------ --
+
+        token_type = None
+        if options:
+            token_type = options.get('token_type', None)
+
+        # ------------------------------------------------------------------ --
+
+        # if there is a serial provided in the parameters, it overwrites the
+        # token selection by user
+
+        query_user = user
+        if options and 'serial' in  options and options['serial']:
+            serial = options['serial']
+            query_user = None
+
+        # ------------------------------------------------------------------ --
 
         tokenList = getTokens4UserOrSerial(
-                               user,
+                               query_user,
                                serial,
-                               token_type=token_type)
+                               token_type=token_type,
+                               read_for_update=True
+                               )
 
         if len(tokenList) == 0:
             audit['action_detail'] = 'User has no tokens assigned'
 
             # here we check if we should to autoassign and try to do it
-
-            th = TokenHandler()
             auto_assign_return = th.auto_assignToken(passw, user)
             if auto_assign_return is True:
                 # We can not check the token, as the OTP value is already used!
@@ -523,7 +586,7 @@ class ValidationHandler(object):
         :param tokenList: list of identified tokens
         :param passw: the provided passw (mostly pin+otp)
         :param user: the identified use - as class object
-        :param options: additonal parameters, which are passed to the token
+        :param options: additional parameters, which are passed to the token
 
         :return: tuple of boolean and optional response
         """
@@ -784,7 +847,8 @@ class ValidationHandler(object):
             serials.append("%s_%s" % (serialnum, i))
 
         for serial in serials:
-            tokens = getTokens4UserOrSerial(serial=serial)
+            tokens = getTokens4UserOrSerial(serial=serial,
+                                            read_for_update=True)
             tokenList.extend(tokens)
 
         if len(tokenList) == 0:

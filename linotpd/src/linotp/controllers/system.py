@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -104,6 +104,7 @@ from linotp.lib.support import isSupportLicenseValid
 
 from linotp.provider import getProvider
 from linotp.provider import setProvider
+from linotp.provider import loadProvider
 from linotp.provider import delProvider
 from linotp.provider import setDefaultProvider
 
@@ -160,8 +161,10 @@ class SystemController(BaseController):
             request_context['Audit'] = audit
 
             # check authorization
-            if action not in ["_add_dynamic_tokens", 'setupSecurityModule',
-                              'getSupportInfo', 'isSupportValid']:
+            if action not in ["_add_dynamic_tokens",
+                              'setupSecurityModule',
+                              'getSupportInfo',
+                              'isSupportValid']:
                 checkPolicyPre('system', action)
 
             # default return for the __before__ and __after__
@@ -1029,7 +1032,7 @@ class SystemController(BaseController):
             realm = param["realm"]
 
             if 'resolvers' not in param:
-                raise ParameterError("missing required parameter: resolver")
+                raise ParameterError("missing required parameter: resolvers")
 
             resolver_specs_str = param["resolvers"]
             resolver_specs = resolver_specs_str.split(',')
@@ -2119,6 +2122,53 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
+
+    def testProvider(self):
+        """
+        method:
+            system/testProviders
+
+        description:
+            if the provider has a test interface, the provider test is run
+
+        arguments:
+            name required - the name of the provider in LinOTP
+
+        :return: dictionary of provider with its entries as dictionary
+                 {'ProviderA' : { 'Timeout': '100', ...}
+        """
+
+        status = False
+        p_response = "Can't Connect"
+        param = {}
+
+        try:
+            param.update(request.params)
+            try:
+                provider_name = param['name']
+                provider_type = param['type']
+            except KeyError as exx:
+                raise ParameterError('missing key %r' % exx)
+
+            provider = loadProvider(provider_type=provider_type,
+                                    provider_name=provider_name)
+            if provider and hasattr(provider, 'test_connection'):
+                status, p_response = provider.test_connection()
+
+            c.audit['success'] = status
+            c.audit['info'] = provider_name
+
+            Session.commit()
+            return sendResult(response, status, 1)
+
+        except Exception as exx:
+            log.exception("error getting config: %r", exx)
+            Session.rollback()
+            return sendError(response, exx)
+
+        finally:
+            Session.close()
+
 
     def delProvider(self):
         """

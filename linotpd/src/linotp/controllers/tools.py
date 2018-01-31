@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -220,7 +220,6 @@ class ToolsController(BaseController):
 
                 data_file = request.POST['file']
                 resolver_name = params['resolver']
-                target_realm = params['target_realm']
 
             except KeyError as exx:
 
@@ -351,26 +350,6 @@ class ToolsController(BaseController):
             # create / extend target realm for the resolver
 
             resolver_spec = import_handler.get_resolver_spec()
-
-            realms = getRealms()
-            if target_realm not in realms:
-
-                resolvers = resolver_spec
-                setRealm(target_realm, resolver_spec)
-
-            else:
-
-                # extend the list of current existing resolvers of this realm
-
-                target_realm_spec = realms.get(target_realm)
-                resolvers = target_realm_spec.get('useridresolver')
-
-                resolver_set = set()
-                resolver_set.update(resolvers)
-                resolver_set.add(resolver_spec)
-                resolvers = ",".join(list(resolver_set))
-
-            setRealm(target_realm, resolvers)
 
             Session.commit()
 

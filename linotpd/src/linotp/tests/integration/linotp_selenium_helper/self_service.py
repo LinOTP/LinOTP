@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -37,7 +37,6 @@ logger = logging.getLogger(__name__)
 
 
 class SelfService(object):
-
     tab_register_motp = 'Register mOTP'
     tab_disable_token = 'Disable Token'
     tab_resync_token = 'Resync Token'
@@ -58,6 +57,16 @@ class SelfService(object):
     def _find_by_id(self, id_value):
         """Return the element by ID"""
         return self.driver.find_element_by_id(id_value)
+
+    def find_by_class(self, class_name):
+        """Return the element by its class name"""
+        return WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.CLASS_NAME, class_name)))
+
+    def find_by_xpath(self, xpath):
+        """Return the element by its xpath"""
+        return WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, xpath)))
 
     def login(self, user, password, realm=None):
         """

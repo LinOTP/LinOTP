@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -423,6 +423,39 @@ scope = authentication
         # Now check the policies, that we imported...
         response = self.make_system_request(action='getPolicy', method='POST',
                                             params={}, auth_user='superuser')
+
+        self.assertFalse('ded-ee' in response, response)
+
+        return
+
+    def test_import_policy_empty_realm(self):
+        """
+        test import of policies with no or empty realm
+        """
+
+        # load the policy cfg for import
+
+        policy_file = 'policy_realm.cfg'
+
+        file_name = os.path.join(self.fixture_path, policy_file)
+
+        with open(file_name, 'r') as f:
+            policy_content = f.read()
+
+        upload_files = [("file", policy_file, policy_content)]
+
+        response = self.make_system_request(action='importPolicy',
+                                            params={},
+                                            upload_files=upload_files)
+
+        self.assertTrue('<status>True</status>' in response, response)
+
+        # Now check the policies, that we imported...
+
+        response = self.make_system_request(action='getPolicy',
+                                            method='POST',
+                                            params={},
+                                            auth_user='superuser')
 
         self.assertFalse('ded-ee' in response, response)
 

@@ -1,6 +1,6 @@
 /*!
  *   LinOTP - the open source solution for two factor authentication
- *   Copyright (C) 2010 - 2017 KeyIdentity GmbH
+ *   Copyright (C) 2010 - 2018 KeyIdentity GmbH
  *
  *   This file is part of LinOTP server.
  *
@@ -488,6 +488,7 @@ function get_selected(){
         else {
             $("#button_assign").button("disable");
         }
+
         $("#button_unassign").button("enable");
         $("#button_tokenrealm").button("enable");
         $("#button_getmuli").button("enable");
@@ -496,23 +497,15 @@ function get_selected(){
         $("#button_delete").button("enable");
         $("#button_setpin").button("enable");
         $("#button_resetcounter").button("enable");
+        $("#button_setexpiration").button("enable");
 
-        if (selectedTokenItems.length == 0) {
-            $("#button_tokenrealm").button("disable");
-            $("#button_resync").button("disable");
-            $("#button_losttoken").button("disable");
-            $('#button_getmulti').button("disable");
-            $("#button_tokeninfo").button("disable");
-        }
-        else if (selectedTokenItems.length == 1) {
-            $("#button_tokenrealm").button("enable");
+        if (selectedTokenItems.length == 1) {
             $("#button_resync").button("enable");
             $('#button_losttoken').button("enable");
             $('#button_getmulti').button("enable");
             $("#button_tokeninfo").button("enable");
           }
         else if (selectedTokenItems.length > 1) {
-            $("#button_tokenrealm").button("enable");
             $("#button_resync").button("disable");
             $("#button_losttoken").button("disable");
             $('#button_getmulti').button("disable");
@@ -554,7 +547,6 @@ function get_selected(){
             });
         }
     }
-
 };
 
 function disable_all_buttons(){
@@ -567,6 +559,7 @@ function disable_all_buttons(){
     $('#button_setpin').button("disable");
     $('#button_delete').button("disable");
     $('#button_resetcounter').button("disable");
+    $("#button_setexpiration").button("disable");
     $("#button_resync").button("disable");
     $("#button_tokeninfo").button("disable");
     $("#button_losttoken").button("disable");
@@ -607,7 +600,6 @@ function get_server_config(search_key) {
     try {
         var data = jQuery.parseJSON(resp);
         if (data.result.status == false) {
-            //console_log("Failed to access linotp system config: " + data.result.error.message);
             throw("" + data.result.error.message);
         }else {
             if ((search_key === undefined) === false) {
@@ -619,11 +611,9 @@ function get_server_config(search_key) {
             } else {
                 $systemConfig = data.result.value;
             }
-            //console_log("Access linotp system config: " + data.result.value);
         }
     }
     catch (e) {
-        //console_log("Failed to access linotp system config: " + e);
         throw(e);
     }
     return $systemConfig;
@@ -1159,7 +1149,7 @@ function token_setpin(){
  */
 function view_setpin_dialog(tokens) {
     var token_string = tokens.join(", ");
-    $('#dialog_set_pin_token_string').html(escape(token_string));
+    $('#dialog_set_pin_token_string').text(token_string);
     $('#setpin_tokens').val(tokens);
     $dialog_setpin_token.dialog('open');
 }
@@ -1190,23 +1180,49 @@ function view_setpin_after_assigning(tokens) {
 
 }
 
-/******************************************************************************
- *  token info
+/**
+ * load token info in html presentation
+ * @return {string|boolean} the html string containing the token info
+ *                          or false if # of selected tokens not feasible
  */
+
 function token_info(){
-    var tokentab = 0;
     var tokens = get_selected_tokens();
-    var count = tokens.length;
-    if (count != 1) {
+
+    if (tokens.length !== 1) {
         alert_info_text({'text': "text_only_one_token_ti",
                          'is_escaped': true});
         return false;
     }
-    else {
-        var serial = tokens[0];
-        var resp = clientUrlFetchSync("/manage/tokeninfo",{"serial" : serial});
-        return resp;
-    }
+
+    var params = {
+        "serial": tokens[0]
+    };
+
+    return clientUrlFetchSync("/manage/tokeninfo", params);
+}
+
+/**
+ * load token object from linotp
+ * @param  {string} serial    the serial of the token to match
+ * @return {Promise.<Object>} returns a promise that resolves the token object requested from LinOTP
+ */
+function getTokenDetails(serial){
+    return $.ajax({
+        url: '/admin/show',
+        type: 'post',
+        data: {
+            "serial": serial,
+            "tokeninfo_format": "json",
+            "session": getsession()
+        }
+    }).then(function(response, status, promise) {
+        var result = response.result.value;
+        if(result && result.data && result.data.length === 1) {
+            return $.Deferred().resolve(result.data[0]).promise();
+        }
+        return $.Deferred().reject("Request failed").promise();
+    });
 }
 
 
@@ -1537,6 +1553,22 @@ function tokentype_changed(){
             'type': ERROR,
             'is_escaped': true});
     }
+}
+
+/**
+ * enables jquery ui components
+ */
+$.fn.enableUIComponents = function(){
+    $('.ui-button', this).each(function() {
+        var config = {};
+
+        if($(this).attr("data-ui-icon"))
+            config.icons = {primary: $(this).attr("data-ui-icon")};
+
+        $(this).button(config);
+    });
+
+    return this;
 }
 
 /**
@@ -2511,9 +2543,9 @@ function load_push_providers(){
                     }
                     else{
                         selectedEmailProvider = null;
-                        $("#button_email_provider_edit").button("disable");
-                        $("#button_email_provider_delete").button("disable");
-                        $("#button_email_provider_set_default").button("disable");
+                        $("#button_push_provider_edit").button("disable");
+                        $("#button_push_provider_delete").button("disable");
+                        $("#button_push_provider_set_default").button("disable");
                     }
                 },
                 selected: function(event, ui) {
@@ -2527,14 +2559,81 @@ function load_push_providers(){
             });
         }
         else {
-            $('#email_providers_list').html("");
+            $('#push_providers_list').html("");
         };
         hide_waiting();
     });
 }
 
+/* voice provider */
+function load_voice_providers(){
+    show_waiting();
 
+    var params = { 'type': 'voice', 'session': getsession()};
+    $.post('/system/getProvider', params,
+     function(data, textStatus, XMLHttpRequest){
+        voiceProviders = data.result.value;
 
+        // Set selected provider globally
+        selectedPushProvider = null;
+
+        var providers = $('<ol id="voice_providers_select" class="select_list ui-selectable"></ol>');
+        var count = 0;
+
+        $.each(voiceProviders, function(key, provider){
+            var element = '<li class="ui-widget-content"><span class="name">' + escape(key) + '</span>';
+            if(provider.Default === true){
+                element += ' <span class="default">(Default)</span>';
+            }
+            element += '</li>';
+            providers.append(element);
+            count++;
+        });
+
+        $("#button_voice_provider_edit").button("disable");
+        $("#button_voice_provider_delete").button("disable");
+        $("#button_voice_provider_set_default").button("disable");
+
+        if (count > 0) {
+            $('#voice_providers_list').html(providers);
+
+            $('#voice_providers_select').selectable({
+                stop: function(event, ui){
+                    if($("#voice_providers_select .ui-selected").length > 0){
+                        selectedVoiceProvider = escape($("#voice_providers_select .ui-selected .name").html());
+                        $("#button_voice_provider_edit").button("enable");
+                        $("#button_voice_provider_delete").button("enable");
+                        if(voiceProviders[selectedVoiceProvider].Default !== true){
+                            $("#button_voice_provider_set_default").button("enable");
+                        }
+                        else{
+                            $("#button_voice_provider_set_default").button("disable");
+                        }
+                    }
+                    else{
+                        selectedVoiceProvider = null;
+                        $("#button_voice_provider_edit").button("disable");
+                        $("#button_voice_provider_delete").button("disable");
+                        $("#button_voice_provider_set_default").button("disable");
+                    }
+                },
+                selected: function(event, ui) {
+                    // Prevent the selection of multiple items
+                    $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected").each(
+                        function(key,value){
+                            $(value).find('*').removeClass("ui-selected");
+                        }
+                    );
+                }
+            });
+        }
+        else {
+            $('#voice_providers_list').html("");
+        };
+        hide_waiting();
+    });
+}
+/* voice provider end*/
 
 function load_system_config(){
     show_waiting();
@@ -3331,57 +3430,13 @@ function set_tokeninfo_buttons(){
         $dialog_tokeninfo_set.dialog('open');
     });
 
-    $('#ti_button_count_auth_max').button({
-        icons: { primary: 'ui-icon-arrowthickstop-1-n'},
-        text : false,
-        label: "auth max"
-    });
-    $('#ti_button_count_auth_max').click(function(){
-        $dialog_tokeninfo_set.html('<input type="hidden" name="info_type" value="countAuthMax">\
-            <input id=info_value name=info_value></input>\
-            ');
-        translate_dialog_ti_countauthmax();
-        $dialog_tokeninfo_set.dialog('open');
+    $('#ti_button_expiration').button({
+        icons: { primary: 'ui-icon-calendar'}
+    }).click(function() {
+        $().dialog('close');
+        openExpirationDialog();
     });
 
-    $('#ti_button_count_auth_max_success').button({
-        icons: { primary: 'ui-icon-arrowthick-1-n'},
-        text : false,
-        label: "auth max_success"
-    });
-    $('#ti_button_count_auth_max_success').click(function(){
-        $dialog_tokeninfo_set.html($.parseHTML('<input type="hidden" name="info_type" value="countAuthSuccessMax">\
-            <input id=info_value name=info_value></input>\
-            '));
-        translate_dialog_ti_countauthsuccessmax();
-        $dialog_tokeninfo_set.dialog('open');
-    });
-
-    $('#ti_button_valid_start').button({
-        icons: { primary: 'ui-icon-seek-first'},
-        text : false,
-        label: "valid start"
-    });
-    $('#ti_button_valid_start').click(function(){
-        $dialog_tokeninfo_set.html('Format: %d/%m/%y %H:%M<br><input type="hidden" name="info_type" value="validityPeriodStart">\
-            <input id=info_value name=info_value></input>\
-            ');
-        translate_dialog_ti_validityPeriodStart();
-        $dialog_tokeninfo_set.dialog('open');
-    });
-
-    $('#ti_button_valid_end').button({
-        icons: { primary: 'ui-icon-seek-end'},
-        text : false,
-        label: "valid end"
-    });
-    $('#ti_button_valid_end').click(function(){
-        $dialog_tokeninfo_set.html('Format: %d/%m/%y %H:%M<br><input type="hidden" name="info_type" value="validityPeriodEnd">\
-            <input id=info_value name=info_value></input>\
-            ');
-        translate_dialog_ti_validityPeriodEnd();
-        $dialog_tokeninfo_set.dialog('open');
-    });
     $('#ti_button_mobile_phone').button({
         icons: { primary: 'ui-icon-signal'},
         text : false,
@@ -3591,7 +3646,6 @@ function tokenbuttons(){
         if (false != tokeninfo) {
             var pHtml = $.parseHTML(tokeninfo);
             $dialog_token_info.html(pHtml);
-            set_tokeninfo_buttons();
             buttons = {
                 Close: {click: function(){
                     $(this).dialog('close');
@@ -3602,6 +3656,7 @@ function tokenbuttons(){
             };
             $dialog_token_info.dialog('option', 'buttons', buttons);
             $dialog_token_info.dialog('open');
+
             set_tokeninfo_buttons();
         }
         /* event.preventDefault(); */
@@ -3764,62 +3819,14 @@ $(document).ready(function(){
         event.preventDefault();
     });
 
+    $('#button_setexpiration').click(function(e) {
+        openExpirationDialog();
+    });
+
     // Set icons for buttons
-    $('#button_enroll').button({
-        icons: {
-            primary: 'ui-icon-plusthick'
-        }
-    });
-    $('#button_assign').button({
-        icons: {
-            primary: 'ui-icon-arrowthick-2-e-w'
-        }
-    });
-    $('#button_unassign').button({
-        icons: {
-            primary: 'ui-icon-arrowthick-1-w'
-        }
-    });
-
-    $('#button_enable').button({
-        icons: {
-            primary: 'ui-icon-radio-on'
-        }
-    });
-    $('#button_disable').button({
-        icons: {
-            primary: 'ui-icon-radio-off'
-        }
-    });
-    $('#button_setpin').button({
-        icons: {
-            primary: 'ui-icon-pin-s'
-        }
-    });
-    $('#button_delete').button({
-        icons: {
-            primary: 'ui-icon-trash'
-        }
-    });
-
-    $('#button_resetcounter').button({
-        icons: {
-            primary: 'ui-icon-arrowthickstop-1-w'
-        }
-    });
-    $('#button_policy_add').button({
-        icons: {
-            primary: 'ui-icon-plusthick'
-        }
-    });
-    $('#button_policy_delete').button({
-        icons: {
-            primary: 'ui-icon-trash'
-        }
-    });
+    $('body').enableUIComponents();
 
     // Info box
-    $(".button_info_text").button();
     $('.button_info_text').click(function(){
         $(this).parent().hide('blind', {}, 500, toggle_close_all_link);
     });
@@ -3857,8 +3864,6 @@ $(document).ready(function(){
             recycleImage(ui.draggable);
         }
     });
-
-
 
     $dialog_edit_realms = $('#dialog_edit_realms').dialog({
         autoOpen: false,
@@ -3902,17 +3907,6 @@ $(document).ready(function(){
         open: function() {
             $(this).dialog_icons();
             translate_dialog_realm_edit();
-        }
-    });
-
-    $("#form_realmconfig").validate({
-        rules: {
-            realm_name: {
-                required: true,
-                minlength: 4,
-                number: false,
-                realmname: true
-            }
         }
     });
 
@@ -5001,7 +4995,7 @@ $(document).ready(function(){
     $dialog_push_provider_edit = $('#dialog_push_provider_edit').dialog({
         autoOpen: false,
         title: 'Push Provider',
-        width: 600,
+        width: 700,
         modal: true,
         buttons: {
             'Cancel': {
@@ -5067,6 +5061,126 @@ $(document).ready(function(){
         }
     });
 
+    /*********************************************************************
+     * voice provider config
+     */
+
+    var $dialog_voice_provider_config = $('#dialog_voice_providers').dialog({
+        autoOpen: false,
+        title: 'Voice Provider Config',
+        dialogClass: "dialog-voice-provider",
+        width: 600,
+        maxHeight: 600,
+        minHeight: 300,
+        modal: true,
+        buttons: {
+            'New': { click:  function(){
+                    voice_provider_form_dialog("");
+                    },
+                id: "button_voice_provider_new",
+                text: "New"
+            },
+            'Edit': { click: function(){
+                    if(selectedVoiceProvider){
+                        voice_provider_form_dialog(selectedVoiceProvider);
+                    }
+                },
+                id:"button_voice_provider_edit",
+                text: "Edit"
+            },
+            'Delete': { click: function(){
+                    if(selectedVoiceProvider){
+                        $('#dialog_voice_provider_delete').dialog("open");
+                    }
+                },
+                id: "button_voice_provider_delete",
+                text:"Delete"
+            },
+            'Close': { click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_voice_providers_close",
+                text:"Close"
+            }
+        },
+        open: function(event, ui) {
+            $('.ui-dialog :button', this).blur();
+
+            $(this).dialog_icons();
+            translate_dialog_voice_providers();
+        }
+    });
+
+    $dialog_voice_provider_edit = $('#dialog_voice_provider_edit').dialog({
+        autoOpen: false,
+        title: 'Voice Provider',
+        width: 600,
+        modal: true,
+        buttons: {
+            'Cancel': {
+                click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_voice_provider_cancel",
+                text: "Cancel"
+                },
+            'Save': {
+                click: function(){
+                    if ($("#form_voiceprovider").valid()) {
+                        save_voice_provider_config();
+                    }
+                },
+                id: "button_voice_provider_save",
+                text: "Save"
+            }
+        },
+        open: function(event, ui) {
+            $(this).dialog_icons();
+            translate_dialog_voice_provider_edit();
+        },
+        close: function(event, ui) {
+            load_voice_providers();
+        }
+    });
+
+    $dialog_voice_provider_delete = $('#dialog_voice_provider_delete').dialog({
+            autoOpen: false,
+            title: 'Deleting Voice provider',
+            width: 600,
+            modal: true,
+            buttons: {
+                'Delete': {
+                    click: function(){
+                        delete_voice_provider(selectedVoiceProvider);
+                        $(this).dialog('close');
+                    },
+                    id: "button_voice_provider_delete_delete",
+                    text: "Delete"
+                },
+                "Cancel": {
+                    click: function(){
+                        $(this).dialog('close');
+                    },
+                    id: "button_voice_provider_delete_cancel",
+                    text: "Cancel"
+                }
+            },
+            open: function() {
+                $(this).dialog_icons();
+                translate_dialog_voice_provider_delete();
+            },
+            close: function(event, ui) {
+                load_voice_providers();
+            }
+        });
+
+    $('#button_voice_provider_set_default').click(function(){
+        if(selectedVoiceProvider){
+            set_default_provider('voice', selectedVoiceProvider);
+        }
+    });
+
+    /* end of voice provider config */
     
     /*********************************************************************
      * System config
@@ -5125,6 +5239,10 @@ $(document).ready(function(){
         $dialog_push_provider_config.dialog('open');
     });
 
+    $('#menu_voice_provider_config').click(function(){
+        load_voice_providers();
+        $dialog_voice_provider_config.dialog('open');
+    });
 
     $('#menu_token_config').click(function(){
         try {
@@ -5567,10 +5685,10 @@ $(document).ready(function(){
                 });
             }
             return;
+        },
+        load: function(event, ui){
+            $(ui.panel).enableUIComponents();
         }
-        //load: function(event, ui){
-        //    get_selected();
-        //}
     });
 
     /**********************************************************************
@@ -5607,7 +5725,7 @@ $(document).ready(function(){
         autoOpen: false,
         title: 'Token info',
         resizeable: true,
-        width: 720,
+        width: 800,
         modal: true,
         open: function(){
             $(this).dialog_icons();
@@ -5689,6 +5807,183 @@ $(document).ready(function(){
 });
 //--------------------------------------------------------------------------------------
 // End of document ready
+
+/** 
+ * openExpirationDialog
+ *
+ * is the handler to create and or open the dialog to set the expiration
+ * on one or many tokens 
+ */
+function openExpirationDialog() {
+    var setexpiration_validator;
+    $("#dialog_setexpiration").dialog({
+        title: i18n.gettext('Set Token Expiration'),
+        width: 600,
+        modal: true,
+        buttons: [
+            {
+                click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_setexpiration_cancel",
+                text: i18n.gettext("Cancel")
+            },
+            {
+                click: function(){
+                    var dialog = $(this);
+
+                    if(!setexpiration_validator.valid()) {
+                        return;
+                    }
+
+                    var validityPeriodStart = $("#setexpiration_period_start").datetimepicker('getValue');
+                    validityPeriodStart = $("#setexpiration_period_start").val() ? parseInt(validityPeriodStart.valueOf()/1000) : "unlimited";
+
+                    var validityPeriodEnd = $("#setexpiration_period_end").datetimepicker('getValue');
+                    validityPeriodEnd = $("#setexpiration_period_end").val() ? parseInt(validityPeriodEnd.valueOf()/1000) : "unlimited";
+
+                    var data = {
+                        "tokens": get_selected_tokens(),
+                        "session": getsession(),
+                        "countAuthMax": $("#setexpiration_count_requests").val() || "unlimited",
+                        "countAuthSuccessMax": $("#setexpiration_count_success").val() || "unlimited",
+                        "validityPeriodStart": validityPeriodStart,
+                        "validityPeriodEnd": validityPeriodEnd
+                    }
+
+
+                    $.post("/admin/setValidity", data, function(data, textStatus, XMLHttpRequest) {
+                        if (data.result && data.result.status == true) {
+                            alert_info_text({'text': i18n.gettext("Expiration set successfully"),
+                                             'is_escaped': true});
+                            dialog.dialog('close');
+                        }
+                        else {
+                            var message = i18n.gettext("An error occurred during saving expiration.");
+                            message += (isDefinedKey(data, ["result", "error", "message"]) ? "<br><br>" + escape(data.result.error.message) : "");
+
+                            alert_box({
+                                'title': i18n.gettext('Error saving expiration'),
+                                'text': message,
+                                'type': ERROR,
+                                'is_escaped': true
+                            });
+                        }
+                    });
+                },
+                id: "button_setexpiration_save",
+                text: i18n.gettext("Save")
+            }
+        ],
+        open: function() {
+            var tokens = get_selected_tokens();
+            $('#dialog_setexpiration_tokens').text(tokens.join(", "));
+
+            setexpiration_validator = $("form", this).validate()
+            setexpiration_validator.resetForm();
+
+            var showWarning = tokens.length > 1;
+
+            if(showWarning) {
+                $(".multiple-tokens.warning .tokencount", this).text(tokens.length);
+            }
+            else if(tokens.length === 1) {
+                show_waiting();
+                getTokenDetails(tokens[0]).then(function(token) {
+                    var countRequests = token["LinOtp.TokenInfo"]["count_auth_max"];
+                    var countSuccess = token["LinOtp.TokenInfo"]["count_auth_success_max"];
+
+                    $("#setexpiration_count_requests").val(countRequests);
+                    $("#setexpiration_count_success").val(countSuccess);
+
+                    var periodStartISO = token["LinOtp.TokenInfo"]["validity_period_start"];
+                    var periodEndISO = token["LinOtp.TokenInfo"]["validity_period_end"];
+
+                    // append timezone to and wrap backend datetime string twice to convert
+                    // it to a valid and localized js date time object
+                    var timezone = "+0000";
+                    if(periodStartISO) {
+                        var periodStart = new Date(new Date(periodStartISO + timezone));
+                        $('#setexpiration_period_start').datetimepicker({value: periodStart});
+                    }
+                    if(periodEndISO) {
+                        var periodEnd = new Date(new Date(periodEndISO + timezone));
+                        $('#setexpiration_period_end').datetimepicker({value: periodEnd});
+                    }
+
+                    hide_waiting();
+                }, function() {
+                    var message = i18n.gettext("An error occurred during token processing.");
+                    alert_box({
+                        'title': i18n.gettext('Error loading token info'),
+                        'text': message,
+                        'type': ERROR,
+                        'is_escaped': true
+                    });
+
+                    hide_waiting();
+                });
+            }
+
+            $(".multiple-tokens.warning").toggleClass("hidden", !showWarning);
+
+        },
+        create: function() {
+            $(".multiple-tokens.warning", this).html(sprintf($(".multiple-tokens.warning", this).text(), "<span class='tokencount'></span>"));
+
+            $("input", this).change(function() {
+                if($(this).val() === "0") {
+                    $(this).val("");
+                }
+            });
+
+            jQuery.datetimepicker.setLocale(CURRENT_LANGUAGE);
+
+            var dtStart = $('#setexpiration_period_start'),
+                dtEnd = $('#setexpiration_period_end'),
+                dtConfig = {
+                    format: "Y-m-d H:i (T)",
+                    dayOfWeekStart: 1,
+                    onShow: function(event, $input) {
+                        if(!$input.is(":focus")) {
+                            setTimeout(function() {$input.datetimepicker("hide");});
+                        }
+                    }
+                };
+
+            function dtStartOnChange() {
+                if(dtStart.datetimepicker('getValue') > dtEnd.datetimepicker('getValue')) {
+                    dtEnd.datetimepicker("reset");
+                    dtEndOnChange();
+                }
+                dtEnd.datetimepicker({
+                    minDate: dtStart.val()
+                });
+            }
+            function dtEndOnChange() {
+                var invalidPeriod = dtStart.val().length !== 0
+                        && dtEnd.val().length !== 0
+                        && dtStart.datetimepicker('getValue') > dtEnd.datetimepicker('getValue');
+                if(invalidPeriod) {
+                    var valid_cfg = {};
+                    valid_cfg[dtEnd.attr("name")] = i18n.gettext("Invalid time period");
+                    setexpiration_validator.showErrors(valid_cfg);
+                }
+                else {
+                    setexpiration_validator.errorList.pop(dtEnd);
+                    dtEnd.next().hide(); // hide the error label so that error is not shown anymore.
+                                         // JQuery-validates data model is updated correct, but the label
+                                         // is not removed, so we do it manually.
+                }
+            }
+
+            dtStart.datetimepicker($.extend({"onChangeDateTime":dtStartOnChange}, dtConfig));
+            dtEnd.datetimepicker($.extend({"onChangeDateTime":dtEndOnChange}, dtConfig));
+
+            $(this).dialog_icons();
+        }
+    });
+}
 
 /**
  * submits the change password form to the linotp backend
@@ -5989,7 +6284,7 @@ function delete_email_provider(provider){
 
 /************************************************************************
 *
-*  Email provider edit
+*  Push provider edit
 */
 
 function push_provider_form_dialog(name){
@@ -6070,6 +6365,118 @@ function delete_push_provider(provider){
    $.post('/system/delProvider', params,
      function(data, textStatus, XMLHttpRequest){
        load_push_providers();
+       if (data.result.status == true && data.result.value == true) {
+           var message = sprintf(i18n.gettext('Provider %s deleted'),
+                                 escape(provider));
+
+           alert_info_text({'text': message,
+                            'is_escaped': true});
+
+       } else if (data.result.value == false) {
+           var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
+           alert_box({'title': i18n.gettext('Failed to delete provider'),
+                      'text': reason_text,
+                      'type': ERROR,
+                      'is_escaped': true});
+
+           var message = sprintf(i18n.gettext('Failed to delete provider %s'),
+                                 escape(provider));
+           alert_info_text({'text': message,
+                            'type': ERROR,
+                            'is_escaped': true});
+       } else {
+           alert_box({'title': i18n.gettext('Error deleting provider'),
+                      'text': escape(data.result.error.message),
+                      'type': ERROR,
+                      'is_escaped': true});
+       }
+       hide_waiting();
+   });
+}
+
+/************************************************************************
+*
+*  Voice provider edit
+*/
+
+function voice_provider_form_dialog(name){
+   if(name){
+       $("#voice_provider_name").val(name);
+       $("#voice_provider_class").val(voiceProviders[name].Class);
+       $("#voice_provider_config").val(voiceProviders[name].Config);
+       $("#voice_provider_timeout").val(voiceProviders[name].Timeout);
+   }
+   else{
+       $("#voice_provider_name").val($("#voice_provider_name").attr("placeholder"));
+       // to be replaced by getProviderDef
+       $("#voice_provider_class").val($("#voice_provider_class").attr("placeholder"));
+       $("#voice_provider_config").val($("#voice_provider_config").attr("placeholder"));
+       $("#voice_provider_timeout").val($("#voice_provider_timeout").attr("placeholder"));
+   }
+
+   $("#dialog_voice_provider_edit").dialog("open");
+
+   $("#form_voiceprovider").validate({
+       rules: {
+           voice_provider_config: {
+               valid_json: true
+           },
+           voice_provider_name: {
+               required: true,
+               minlength: 4,
+               number: false,
+               providername: true
+           }
+       }
+   });
+}
+
+function save_voice_provider_config(){
+   // Load Values from still opened form
+   var provider = $('#voice_provider_name').val();
+   var params = {
+       'name': provider,
+       'class': $('#voice_provider_class').val(),
+       'config': $('#voice_provider_config').val(),
+       'timeout': $('#voice_provider_timeout').val(),
+       'type': 'voice',
+       'session': getsession()
+   };
+   show_waiting();
+
+   $.post('/system/setProvider', params,
+   function(data, textStatus, XMLHttpRequest){
+       if (data.result.status == true && data.result.value == true) {
+           $dialog_voice_provider_edit.dialog('close');
+       } else if (data.result.value == false) {
+           alert_box({'title': i18n.gettext('Failed to save provider'),
+                      'text': escape(data.detail.message),
+                      'type': ERROR,
+                      'is_escaped': true});
+
+           var message = sprintf(i18n.gettext('Failed to save provider %s'),
+                                 escape(provider));
+           alert_info_text({'text': message,
+                            'type': ERROR,
+                            'is_escaped': true});
+       } else {
+           alert_box({'title': i18n.gettext('Error saving provider'),
+                      'text': escape(data.result.error.message),
+                      'type': ERROR,
+                      'is_escaped': true});
+       }
+       hide_waiting();
+   });
+}
+
+function delete_voice_provider(provider){
+   show_waiting();
+   var params =  {'name': provider,
+                  'type': 'voice',
+                  'session': getsession()};
+   $.post('/system/delProvider', params,
+     function(data, textStatus, XMLHttpRequest){
+       load_voice_providers();
        if (data.result.status == true && data.result.value == true) {
            var message = sprintf(i18n.gettext('Provider %s deleted'),
                                  escape(provider));
@@ -6728,8 +7135,8 @@ function resolver_sql(name, duplicate){
             sql_driver: {
                 required: true,
                 minlength: 3,
-                number: false,
-                sql_driver: true
+                number: false
+                //sql_driver: true
             },
             sql_port: {
                 minlength: 1,
@@ -6863,7 +7270,7 @@ function view_policy() {
             dblClickResize: true
     });
 
-    $('#policy_export').attr("href", '/system/getPolicy/policy.cfg?session=' + getsession());
+    $('#policy_export').attr("href", '/system/getPolicy/policy.cfg?display_inactive=true&session=' + getsession());
 
     $('#policy_import').click(function(){
         $dialog_import_policy.dialog("open");
@@ -7115,23 +7522,4 @@ function view_audit() {
     });
 }
 
-/*
- * window.CURRENT_LANGUAGE is set in the template from the mako lib.
- * Here, we dynamically load the desired language JSON file for Jed.
- */
-var browser_lang = window.CURRENT_LANGUAGE || 'en';
-if (browser_lang && browser_lang !== 'en') {
-    try {
-        var url = sprintf("/i18n/%s.json", browser_lang);
-        $.get(
-            url,
-            {},
-            function(data, textStatus) {
-                i18n.options.locale_data.messages = data;
-            },
-            "json"
-        );
-    } catch(e) {
-        alert('Unsupported localisation for ' + escape(browser_lang));
-    }
-}
+loadTranslations();

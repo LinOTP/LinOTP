@@ -1,0 +1,37 @@
+version: "3"
+services:
+  linotp:
+    image: linotp_unit_tester
+    container_name: ${FUNCTIONAL_DOCKER_CONTAINER_NAME:-linotp_functional_tests}
+    restart: "no"
+    environment:
+      TZ: "Europe/Berlin"
+      LINOTP_DB_TYPE: "mysql"
+      LINOTP_DB_HOST: "db"
+      LINOTP_DB_PORT: "3306"
+      LINOTP_DB_USER: "linotpuser"
+      LINOTP_DB_PASSWORD: "linotppass"
+      LINOTP_DB_NAME: "linotp_db"
+      LINOTP_APACHE_AUTH: "false"
+      MYSQL_ROOT_PASSWORD: "Test123!"
+      NIGHTLY: "${NIGHTLY:-no}"
+      COVERAGE_ENABLED: "${COVERAGE_ENABLED:-no}"
+      LOCAL_NOSE_BASE_DIR: "${LOCAL_NOSE_BASE_DIR:-/tmp/nose}"
+    volumes:
+      - .:/linotpsrc:ro
+    depends_on:
+      - db
+    entrypoint:
+      - ""
+    command: bash /linotpsrc/linotpd/src/linotp/tests/functional/docker-run-functional-tsts.sh
+
+
+  db:
+    image: mysql:5.5
+    container_name: ${FUNCTIONAL_MYSQL_CONTAINER_NAME:-mysql_functional_tests}
+    environment:
+      MYSQL_ROOT_PASSWORD: "Test123!"
+      MYSQL_DATABASE: "linotp_db"
+      MYSQL_USER: "linotpuser"
+      MYSQL_PASSWORD: "linotppass"
+    restart: "no"

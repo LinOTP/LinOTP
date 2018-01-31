@@ -48,7 +48,30 @@ BUILDDIR:=$(PWD)/build
 # in this repository
 LINOTPD_PROJS := linotpd adminclient/LinOTPAdminClientCLI
 
-###################
+# These variables let you set the amount of stuff LinOTP is logging.
+#
+# LINOTP_LOGLEVEL controls the amount of logging in general while
+# LINOTP_CONSOLE_LOGLEVEL controls logging to the console (as opposed
+# to logstash -- logstash always gets whatever LINOTP_LOGLEVEL lets
+# through, so LINOTP_CONSOLE_LOGLEVEL can be used to have less stuff
+# show up on the console than in logstash).
+# SQLALCHEMY_LOGLEVEL controls the amount of logging done by SQLAlchemy
+# (who would have guessed); DEBUG will log SQL queries and results,
+# INFO will log just queries (no results) and WARN will log neither.
+# APACHE_LOGLEVEL limits the amount of stuff Apache writes to its error
+# output; normally anything that is written to the LinOTP console goes
+# through here, too, so there isn't a lot of sense in setting this
+# differently to LINOTP_CONSOLE_LOGLEVEL unless you're doing nonstandard
+# trickery and/or use a different (and unsupported by us) web server
+# than Apache to run LinOTP.
+
+export LINOTP_LOGLEVEL=INFO
+export LINOTP_CONSOLE_LOGLEVEL=DEBUG
+export SQLALCHEMY_LOGLEVEL=ERROR
+export APACHE_LOGLEVEL=DEBUG
+
+
+#############################################################################################
 # Recursive targets
 #
 # These invoke make in the project subdirectories
@@ -59,6 +82,7 @@ LINOTPD_PROJS := linotpd adminclient/LinOTPAdminClientCLI
 # Each target will be expanded into the subdirectory targets
 #
 # e.g. build -> build.subdirmake -> build.smsprovider + build.useridresolver + build.linotpd
+#############################################################################################
 
 # Targets that should recurse into linotp project directories
 LINOTPD_TARGETS := install clean
@@ -112,7 +136,7 @@ develop:
 	$(call run-in-linotpd-projs,$(PYTHON) setup.py $@)
 
 
-#####################
+###############################################################################
 # Unit test targets
 #
 #
@@ -122,12 +146,13 @@ develop:
 # unittests - just the unit tests
 # integrationtests - selenium integration tests
 # test - all tests
+###############################################################################
 
 ifndef NOSETESTS_ARGS
-NOSETESTS_ARGS?=-v
+    NOSETESTS_ARGS?=-v
 endif
 
-test: unittests integrationtests
+test: unittests integrationtests functionaltests
 
 unittests:
 	$(MAKE) -C linotpd/src/linotp/tests/unit $@
@@ -146,15 +171,17 @@ integrationtests:
 .PHONY: test unittests functionaltests integrationtests
 
 
-#####################
+
+###############################################################################
 # Packaging targets
 #
-
+#
 # These targets run the various commands needed
 # to create packages of linotp
-
+#
 # builddeb: Generate .debs
 # deb-install: Build .debs and install to DESTDIR
+###############################################################################
 
 DEBPKG_PROJS := linotpd adminclient/LinOTPAdminClientCLI
 BUILDARCH = $(shell dpkg-architecture -q DEB_BUILD_ARCH)
@@ -180,17 +207,22 @@ deb-install: builddeb
 	find $(DESTDIR)
 	cd $(DESTDIR) && dpkg-scanpackages -m . > Packages
 
-#####################
+
+
+######################################################################################################
 # Docker container targets
 #
 # These targets are for building and running docker containers
 # for integration and builds
-
+#
 # Container name | Dockerfile location | Purpose
 # ---------------------------------------------------------------------------------------------------
 # linotp-builder | Dockerfile.builder             | Container ready to build linotp packages
 # linotp         | linotpd/src                    | Runs linotp in apache
 # selenium-test  | linotpd/src/tests/integration  | Run LinOTP Selenium tests against selenium remote
+# linotp-unit    | linotpd/src/linotp/tests/unit  | Run LinOTP Unit tests
+######################################################################################################
+
 
 # Extra arguments can be passed to docker build
 DOCKER_BUILD_ARGS=
@@ -214,7 +246,12 @@ DOCKER_RUN_ARGS=
 
 DOCKER_BUILD = docker build $(DOCKER_BUILD_ARGS) $(DOCKER_PROXY_BUILD_ARGS)
 DOCKER_RUN = docker run $(DOCKER_RUN_ARGS)
-SELENIUM_TESTS_DIR=linotpd/src/linotp/tests/integration
+
+TESTS_DIR=linotpd/src/linotp/tests
+
+SELENIUM_TESTS_DIR=$(TESTS_DIR)/integration
+UNIT_TESTS_DIR=$(TESTS_DIR)/unit
+FUNCTIONAL_TESTS_DIR=$(TESTS_DIR)/functional
 
 ## Toplevel targets
 # Toplevel target to build all containers
@@ -223,11 +260,16 @@ docker-build-all: docker-build-debs  docker-build-linotp docker-build-selenium
 # Toplevel target to build linotp container
 docker-linotp: docker-build-debs  docker-build-linotp
 
-# Build and run Selenium tests
+# Build and run Selenium /integration tests
 docker-selenium: docker-build-linotp docker-build-selenium docker-run-selenium
 
-##
-.PHONY: docker-build-all docker-linotp docker-run-selenium
+docker-unit: docker-build-linotp docker-build-linotp-test-image docker-run-linotp-unit
+
+docker-functional: docker-run-linotp-functional-test
+
+docker-pylint: docker-run-linotp-pylint
+
+.PHONY: docker-build-all docker-linotp docker-run-selenium docker-unit docker-pylint docker-functional
 
 # This is expanded during build to add image tags
 DOCKER_TAG_ARGS=$(foreach tag,$(DOCKER_TAGS),-t $(DOCKER_IMAGE):$(tag))
@@ -246,7 +288,8 @@ docker-build-linotp-builder:
 		.
 
 # A unique name to reference containers for this build
-NAME_PREFIX := linotpbuilder-$(shell date +%H%M%S-%N)
+DOCKER_CONTAINER_TIMESTAMP := $(shell date +%H%M%S-%N)
+NAME_PREFIX := linotpbuilder-$(DOCKER_CONTAINER_TIMESTAMP)
 DOCKER_CONTAINER_NAME = $(NAME_PREFIX)
 
 .PHONY: docker-build-debs
@@ -255,8 +298,8 @@ docker-build-debs: docker-build-linotp-builder
 	rm -f $(BUILDDIR)/apt/Packages
 	$(MAKE) $(BUILDDIR)/apt/Packages
 
+# Build the debian packages in a container, then extract them from the image
 $(BUILDDIR)/apt/Packages:
-	# Build the debs in a container, then extract them from the image
 	$(DOCKER_RUN) \
 		--workdir=/pkg/linotp \
 		--name=$(DOCKER_CONTAINER_NAME)-apt \
@@ -270,10 +313,11 @@ $(BUILDDIR)/apt/Packages:
 
 .PHONY: docker-build-linotp
 docker-build-linotp: DOCKER_IMAGE=linotp
-docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
+docker-build-linotp: docker-build-linotp-builder $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	cp linotpd/src/Dockerfile \
 		linotpd/src/config/*.tmpl \
 		linotpd/src/tools/linotp-create-htdigest \
+		linotpd/src/linotp/tests/integration/testdata/se_mypasswd \
 		$(BUILDDIR)
 
 	# We show the files sent to Docker context here to aid in debugging
@@ -290,12 +334,48 @@ docker-build-selenium: docker-build-linotp
 	cd $(SELENIUM_TESTS_DIR) \
 		&& $(DOCKER_BUILD) \
 			-t selenium_tester .
+
+# Pass TEST_CASE=test_manage.py for picking a specific test case (!No list! Only one test case)
+# Pass TEST_DEBUG=<some val> e.g. TEST_DEBUG=1 - So your pdb.set_trace() hooks will be recognize
+#                                                and execution stops in case of errors/exceptions.
+#
+#                 Remark: Omit TEST_DEBUG completely to disable stop on fails because of error or
+#                         pdb.set_trace() statements.
+#
+# e.g.
+#      make docker-run-selenium TEST_CASE=test_manage.py
+#      make docker-run-selenium TEST_CASE=test_manage.py TEST_DEBUG=1
 .PHONY: docker-run-selenium
 docker-run-selenium: docker-build-selenium
 	cd $(SELENIUM_TESTS_DIR) \
-		&& docker-compose run --rm selenium_tester
+		&& docker-compose run --rm -e TEST_CASE=${TEST_CASE} -e TEST_DEBUG=$(TEST_DEBUG) selenium_tester
 	cd $(SELENIUM_TESTS_DIR) \
 		&& docker-compose down
+
+# Remove all selenium test relevant containers/images
+# We do not remove the LinOTP image:
+#  - Maybe built an up-2-date image some pipeline steps before test execution.
+
+.PHONY: docker-selenium-clean
+docker-selenium-clean:
+# This container triggers the python test scripts
+	docker stop $$(docker ps -a -q --filter "name=integration_selenium_tester_run") 2>/dev/null || echo "Stop integration_selenium_tester_run_*"
+# This container receives the selenium webdriver instructions
+	docker stop $$(docker ps -a -q --filter "name=integration_selenium") 2>/dev/null || echo "Stop integration_selenium_*"
+	docker stop $$(docker ps -a -q --filter "name=integration_linotp") 2>/dev/null || echo "Stop integration_linotp_*"
+	docker stop $$(docker ps -a -q --filter "name=integration_db") 2>/dev/null || echo "Stop integration_db_*"
+
+	docker rm -f $$(docker ps -a -q --filter "name=integration_selenium_tester_run") 2>/dev/null || echo "Remove container integration_selenium_tester_run_*"
+	docker rm -f $$(docker ps -a -q --filter "name=integration_selenium") 2>/dev/null || echo "Remove container integration_selenium_*"
+	docker rm -f $$(docker ps -a -q --filter "name=integration_linotp") 2>/dev/null || echo "Remove container integration_linotp_*"
+	docker rm -f $$(docker ps -a -q --filter "name=integration_db") 2>/dev/null || echo "Remove container integration_db_*"
+
+	docker rmi -f integration_selenium_tester 2>/dev/null || echo "Remove image integration_selenium_tester"
+	docker rmi -f selenium_tester 2>/dev/null || echo "Remove image selenium_tester"
+	docker rmi -f selenium/standalone-chrome-debug 2>/dev/null || echo "Remove image selenium/standalone-chrome-debug"
+	docker rmi -f mysql 2>/dev/null || echo "Removed image mysql"
+	docker images
+	docker ps -a
 
 .PHONY: docker-run-linotp-sqlite
 docker-run-linotp-sqlite: docker-build-linotp
@@ -307,7 +387,10 @@ docker-run-linotp-sqlite: docker-build-linotp
 			 -e LINOTP_DB_HOST= \
 			 -e LINOTP_DB_PORT= \
 			 -e HEALTHCHECK_PORT=80 \
-			 -e APACHE_LOGLEVEL=DEBUG \
+			 -e LINOTP_LOGLEVEL=$(LINOTP_LOGLEVEL) \
+			 -e LINOTP_CONSOLE_LOGLEVEL=$(LINOTP_CONSOLE_LOGLEVEL) \
+			 -e SQLALCHEMY_LOGLEVEL=$(SQLALCHEMY_LOGLEVEL) \
+			 -e APACHE_LOGLEVEL=$(APACHE_LOGLEVEL) \
 			linotp
 
 # Dockerfy tool
@@ -327,10 +410,96 @@ $(BUILDDIR)/dockerfy:
 	tar -C $(BUILDDIR) -xvf $(BUILDDIR)/dockerfy-tmp/dockerfy-linux-amd64*.gz
 	rm -r $(BUILDDIR)/dockerfy-tmp
 
-#####################
+
+#
+# # Unit tests
+#
+
+# Build Unittest Docker Container, based on linotp image
+.PHONY: docker-build-linotp-test-image
+docker-build-linotp-test-image: docker-build-linotp
+	cd $(UNIT_TESTS_DIR) \
+		&& $(DOCKER_BUILD) \
+			-t linotp_unit_tester .
+
+# Run Unit tests. Use $NOSETESTS_ARGS for additional nosetest settings
+.PHONY: docker-run-linotp-unit
+docker-run-linotp-unit: docker-build-linotp-test-image
+	cd $(UNIT_TESTS_DIR) \
+		&& $(DOCKER_RUN) \
+			--name=$(DOCKER_CONTAINER_NAME)-unit \
+			--volume=$(PWD):/linotpsrc:ro \
+			--entrypoint="" \
+			--env NOSETESTS_ARGS="$(NOSETESTS_ARGS)" \
+			-t linotp_unit_tester \
+			/usr/bin/make test
+
+#jenkins pipeline uses this make rule
+.PHONY: docker-run-linotp-unit-pipeline
+NOSETESTS_ARGS=-v --with-xunit --xunit-file=/tmp/nosetests.xml
+docker-run-linotp-unit-pipeline: docker-run-linotp-unit
+	docker cp $(DOCKER_CONTAINER_NAME)-unit:/tmp/nosetests.xml $(PWD)
+	docker rm $(DOCKER_CONTAINER_NAME)-unit
+
+#
+# # Pylint
+#
+
+
+# Run Pylint Code Analysis
+.PHONY: docker-run-linotp-pylint
+docker-run-linotp-pylint: docker-build-linotp-test-image
+	$(DOCKER_RUN) \
+		--name=$(DOCKER_CONTAINER_NAME)-pylint \
+		--volume=$(PWD):/linotpsrc \
+		-w="/linotpsrc" \
+		--entrypoint="" \
+		--env "LANG=C.UTF-8" \
+		-t linotp_unit_tester \
+	 	pylint --output-format=parseable --reports=y --rcfile=.pylintrc \
+		--disable=E1101,maybe-no-member --ignore tests,functional,integration linotp > pylint.log; exit 0
+
+
+#
+# # Functional Tests
+#
+
+
+# NIGHTLY variable controls, if certain long-runnig tests are skipped
+#
+# NIGHTLY="no" or unset: long-running tests are skipped
+# NIGHTLY="yes" all tests are executed
+#
+# Example:
+# $ export NIGHTLY="yes"
+# $ make docker-run-linotp-functional-test
+
+LOCAL_NOSE_BASE_DIR=/tmp/nose
+FUNCTIONAL_DOCKER_CONTAINER_NAME=linotp-$(DOCKER_CONTAINER_TIMESTAMP)-functional
+FUNCTIONAL_MYSQL_CONTAINER_NAME=mysql-$(DOCKER_CONTAINER_TIMESTAMP)-functional
+
+.PHONY: docker-run-linotp-functional-test
+docker-run-linotp-functional-test: docker-build-linotp-test-image
+	cd $(FUNCTIONAL_TESTS_DIR) && \
+		export NIGHTLY=${NIGHTLY} && \
+		export LOCAL_NOSE_BASE_DIR=$(LOCAL_NOSE_BASE_DIR) && \
+		export FUNCTIONAL_DOCKER_CONTAINER_NAME=$(FUNCTIONAL_DOCKER_CONTAINER_NAME) && \
+		export FUNCTIONAL_MYSQL_CONTAINER_NAME=$(FUNCTIONAL_MYSQL_CONTAINER_NAME) && \
+		docker-compose --project-directory $(PWD) up \
+			--abort-on-container-exit \
+			--force-recreate
+	rm -rf $(BUILDDIR)/../nose
+	docker cp $(FUNCTIONAL_DOCKER_CONTAINER_NAME):$(LOCAL_NOSE_BASE_DIR) $(BUILDDIR)/../
+	docker rm $(FUNCTIONAL_DOCKER_CONTAINER_NAME) $(FUNCTIONAL_MYSQL_CONTAINER_NAME)
+
+
+###############################################################################
 # Rancher targets
 #
 # These targets are for deploying built linotp images to rancher
+#
+###############################################################################
+
 
 # Override with ID e.g. branch name, tag or git commit
 LINOTP_IMAGE_TAG=$(shell git rev-parse --short HEAD)
@@ -343,9 +512,13 @@ RANCHER_STACK_NAME=linotp-$(RANCHER_STACK_TYPE)-$(RANCHER_STACK_ID)
 
 DOCKER_REGISTRY=$(subst https://,,$(DOCKER_REGISTRY_URL))
 
-$(BUILDDIR)/rancher/docker-compose.yml:
+RANCHER_DOCKER_COMPOSER_FILE=$(BUILDDIR)/rancher/docker-compose.yml
+
+$(RANCHER_DOCKER_COMPOSER_FILE):
 	$(MAKE) rancher-prepare
 
+
+.PHONY: rancher-prepare
 rancher-prepare:
 	# Overrides to compose file specific to this stack
 	mkdir -pv $(BUILDDIR)/rancher
@@ -353,36 +526,37 @@ rancher-prepare:
 	  echo 'services:' ;\
 	  echo '  linotp:' ;\
 	  echo '    image: $(DOCKER_REGISTRY)/linotp:$(LINOTP_IMAGE_TAG)' ;\
-	) > $(BUILDDIR)/rancher/docker-compose.yml
+	) > $(RANCHER_DOCKER_COMPOSER_FILE)
 
 RANCHER_COMPOSE=rancher-compose --project-name $(RANCHER_STACK_NAME)
 RANCHER_COMPOSE_FILES_LINOTP=-f linotpd/src/docker-compose.yml \
-								-f $(BUILDDIR)/rancher/docker-compose.yml
+								-f $(RANCHER_DOCKER_COMPOSER_FILE)
 
 # Uncomment to aid debugging
 # export RANCHER_CLIENT_DEBUG=true
 
 # Run a given command
+
+.PHONY: rancher-linotp-do
 rancher-linotp-do:
 	$(RANCHER_COMPOSE) $(RANCHER_COMPOSE_FILES_LINOTP) $(CMD)
-.PHONY: rancher-prepare rancher-linotp-do
 
 rancher-linotp-create: rancher-prepare
 	$(MAKE) rancher-linotp-do CMD=create
 
-rancher-linotp-rm: $(BUILDDIR)/rancher/docker-compose.yml
+rancher-linotp-rm: $(RANCHER_DOCKER_COMPOSER_FILE)
 	$(MAKE) rancher-linotp-do CMD=rm
 
-rancher-linotp-start: $(BUILDDIR)/rancher/docker-compose.yml
+rancher-linotp-start: $(RANCHER_DOCKER_COMPOSER_FILE)
 	$(MAKE) rancher-linotp-do CMD="start -d"
 
-rancher-linotp-stop: $(BUILDDIR)/rancher/docker-compose.yml
+rancher-linotp-stop: $(RANCHER_DOCKER_COMPOSER_FILE)
 	$(MAKE) rancher-linotp-do CMD=stop
 
-rancher-linotp-up: $(BUILDDIR)/rancher/docker-compose.yml
+rancher-linotp-up: $(RANCHER_DOCKER_COMPOSER_FILE)
 	$(MAKE) rancher-linotp-do CMD="up -d"
 
-rancher-linotp-down: $(BUILDDIR)/rancher/docker-compose.yml
+rancher-linotp-down: $(RANCHER_DOCKER_COMPOSER_FILE)
 	$(MAKE) rancher-linotp-do CMD=down
 
 .PHONY: rancher-linotp-create rancher-linotp-rm

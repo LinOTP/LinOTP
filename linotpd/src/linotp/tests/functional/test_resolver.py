@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -32,6 +32,8 @@ from pylons import config
 
 import json
 import os
+
+from mock import patch
 
 from sqlalchemy.engine import create_engine
 from sqlalchemy import engine_from_config
@@ -368,4 +370,70 @@ class TestResolver(TestController):
 
         return
 
-# eof #########################################################################
+    def test_userlist_with_ldap_resolver(self):
+        """
+        ldap resolver userlist decryptes the bindpw during response iteration
+        """
+
+        # define the mocked lobj is used during the userlist iteration
+
+        class Mock_lObj():
+
+            def simple_bind_s(self, dn_encode, pw_encode):
+                self.pw = pw_encode
+                self.dn = dn_encode
+
+            def result3(self, *args, **kwargs):
+                raise StopIteration('stop')
+
+            def search_ext(self, *args, **kwargs):
+                return 'sdsafsdf'
+
+        # ------------------------------------------------------------------ --
+
+        # define resolver fake_ldap with a bind password and add the resolver
+        # to the realm 'lino'
+
+        ldap_name = 'fake_ldap'
+        bind_pw = 'Test123!'
+
+        params = {'BINDPW': bind_pw}
+        response, params = self.define_ldap_resolver(ldap_name, params=params)
+        self.assertTrue('"value": true' in response.body)
+
+        params = {
+            'resolvers':
+                'useridresolver.LDAPIdResolver.IdResolver.' + ldap_name,
+            'realm': 'lino'}
+        response = self.make_system_request('setRealm', params=params)
+        self.assertTrue('"value": true' in response.body)
+
+        # ------------------------------------------------------------------ --
+
+        # run the 'userlist' request against the faked ldap resolver
+
+        with patch('linotp.useridresolver.LDAPIdResolver.IdResolver') \
+            as mock_resolver:
+
+            mock_lobj = Mock_lObj()
+            mock_resolver.connect.return_value = mock_lobj
+
+            params = {'realm': 'lino'}
+            response = self.make_admin_request('userlist', params=params)
+            self.assertTrue('"queried" : 0' in response.body)
+
+            # finally the test that the decryption was sucessful
+
+            self.assertTrue(mock_lobj.pw == bind_pw)
+
+        params = {'realm': 'lino'}
+        response = self.make_system_request('delRealm', params)
+        self.assertTrue('"result": true' in response.body)
+
+        params = {'resolver': 'fake_ldap'}
+        response = self.make_system_request('delResolver', params)
+        self.assertTrue('"value": true' in response.body)
+
+        return
+
+# eof #

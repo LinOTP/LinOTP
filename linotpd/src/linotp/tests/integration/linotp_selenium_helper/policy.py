@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -25,6 +25,8 @@
 #
 """Contains Policy class"""
 
+import time
+
 from manage_elements import ManageTab
 from helper import select, fill_form_element
 
@@ -44,6 +46,7 @@ class PolicyManager(ManageTab):
             if not policies:
                 break
             self.delete_policy(policies[0])
+            time.sleep(1)
 
     def delete_policy(self, p):
         p.click()

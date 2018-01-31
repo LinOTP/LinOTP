@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -24,6 +24,7 @@
 #    Support: www.keyidentity.com
 #
 from subprocess import check_output
+import unittest
 import re
 
 from linotp_selenium_helper import TestCase

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -102,6 +102,9 @@ class TestController(unittest2.TestCase):
 
         self.session = 'justatest'
         self.resolvers = {}  # Set up of resolvers in create_common_resolvers
+
+        # dict of all autheticated users cookies
+        self.user_service = {}
 
         url._push_object(URLGenerator(config['routes.map'], environ))
         unittest2.TestCase.__init__(self, *args, **kwargs)
@@ -331,6 +334,28 @@ class TestController(unittest2.TestCase):
                 headers=headers,
                 **pparams
             )
+    @staticmethod
+    def get_http_basic_header(username='admin', method='GET'):
+        """
+        Returns a string to be used as 'Authorization' in the headers
+        dictionary.
+
+        See for full example:
+            http://en.wikipedia.org/wiki/Digest_access_authentication
+        """
+        if method is None:
+            method = TestController.DEFAULT_WEB_METHOD
+
+        assert username
+
+        if isinstance(username, tuple):
+            login, pw = username
+        else:
+            login = username
+            pw = "randompwd"
+
+        # Authorization: Basic d2lraTpwZWRpYQ==
+        return "Basic %s" % base64.b64encode(login + ':' + pw)
 
     @staticmethod
     def get_http_digest_header(username='admin', method='GET'):
@@ -395,7 +420,8 @@ class TestController(unittest2.TestCase):
             cookies=None,
             auth_user='admin',
             upload_files=None,
-            client=None
+            client=None,
+            auth_type='Digest'
     ):
         """
         Makes an authenticated request (setting HTTP Digest header, cookie and
@@ -409,9 +435,13 @@ class TestController(unittest2.TestCase):
         if 'admin_session' not in cookies:
             cookies['admin_session'] = self.session
         if 'Authorization' not in headers:
-            headers['Authorization'] = TestController.get_http_digest_header(
-                username=auth_user
-            )
+            if auth_type == 'Basic':
+                headers['Authorization'] = \
+                    TestController.get_http_basic_header(username=auth_user)
+            else:
+                headers['Authorization'] = \
+                    TestController.get_http_digest_header(username=auth_user)
+
         return self.make_request(
             controller,
             action,
@@ -424,7 +454,8 @@ class TestController(unittest2.TestCase):
         )
 
     def make_admin_request(self, action, params=None, method=None,
-                           auth_user='admin', client=None, upload_files=None):
+                           auth_user='admin', client=None, upload_files=None,
+                           auth_type='Digest'):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -437,11 +468,13 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
-            client=client
+            client=client,
+            auth_type=auth_type
         )
 
     def make_audit_request(self, action, params=None, method=None,
-                           auth_user='admin', client=None,):
+                           auth_user='admin', client=None,
+                           auth_type='Digest'):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -454,10 +487,12 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             client=client,
+            auth_type=auth_type
         )
 
     def make_manage_request(self, action, params=None, method=None,
-                            auth_user='admin', client=None, upload_files=None):
+                            auth_user='admin', client=None, upload_files=None,
+                            auth_type='Digest'):
         """
         Makes an authenticated request to /manage/'action'
         """
@@ -471,10 +506,12 @@ class TestController(unittest2.TestCase):
             auth_user=auth_user,
             upload_files=upload_files,
             client=client,
+            auth_type=auth_type
         )
 
     def make_system_request(self, action, params=None, method=None,
-                            auth_user='admin', client=None, upload_files=None):
+                            auth_user='admin', client=None, upload_files=None,
+                            auth_type='Digest'):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -487,7 +524,8 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
-            client=client
+            client=client,
+            auth_type=auth_type
         )
 
     def make_ocra_request(self, action, params=None, method=None,
@@ -509,7 +547,8 @@ class TestController(unittest2.TestCase):
 
     def make_gettoken_request(self, action, params=None, method=None,
                               auth_user='admin', client=None,
-                              upload_files=None):
+                              upload_files=None,
+                              auth_type='Digest'):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -522,7 +561,8 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
-            client=client
+            client=client,
+            auth_type=auth_type
         )
 
     # due to noestests search pattern for test, we have to mangle the name here :(
@@ -551,7 +591,8 @@ class TestController(unittest2.TestCase):
         return res
 
     def make_tools_request(self, action, params=None, method=None,
-                           auth_user='admin', client=None, upload_files=None):
+                           auth_user='admin', client=None, upload_files=None,
+                           auth_type='Digest'):
         """
         Makes an authenticated request to /tools/'action'
         """
@@ -564,7 +605,8 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
-            client=client
+            client=client,
+            auth_type=auth_type
         )
     def make_validate_request(self, action, params=None, method=None,
                               client=None):
@@ -873,23 +915,29 @@ class TestController(unittest2.TestCase):
         self.assertIn('default', realms['mydefrealm'])
         self.assertTrue(realms['mydefrealm']['default'])
 
-    def _user_service_init(self, auth_user, password):
+    def _user_service_init(self, auth_user, password, otp=None):
 
-        passw = ':' + base64.b32encode(password)
+        if otp:
+            passw = base64.b32encode(otp) + ':' + base64.b32encode(password)
+        else:
+            passw = ':' + base64.b32encode(password)
+
         params = {'login': auth_user, 'password': passw}
         response = self.app.get(url(controller='userservice',
                                     action='auth'), params=params)
 
         cookies = TestController.get_cookies(response)
         auth_cookie = cookies.get('userauthcookie')
-        self.assertIsNotNone(auth_cookie, "%r::%r" % (cookies, response.body))
+
+        if not auth_cookie:
+            return response, None
 
         self.user_service[auth_user] = auth_cookie
 
-        return auth_cookie
+        return response, auth_cookie
 
     def make_userservice_request(self, action, params=None,
-                                 auth_user=None):
+                                 auth_user=None, new_auth_cookie=False):
 
         if not params:
             params = {}
@@ -897,9 +945,24 @@ class TestController(unittest2.TestCase):
         if not hasattr(self, 'user_service'):
             setattr(self, 'user_service', {})
 
-        user, password = auth_user
-        auth_cookie = self.user_service.get(user,
-                                            self._user_service_init(user, password))
+        otp = None
+        if len(auth_user) == 3:
+            user, password, otp = auth_user
+        else:
+            user, password = auth_user
+
+        if new_auth_cookie and user in self.user_service:
+            del self.user_service[user]
+
+        auth_cookie = self.user_service.get(user, None)
+
+        if not auth_cookie:
+            response, auth_cookie = self._user_service_init(user,
+                                                            password, otp)
+
+            if not auth_cookie:
+                return response
+
         TestController.set_cookie(self.app, 'userauthcookie', auth_cookie)
 
         params['session'] = auth_cookie
@@ -910,4 +973,119 @@ class TestController(unittest2.TestCase):
 
         return response
 
-###eof#########################################################################
+    # ---------------------------------------------------------------------- --
+
+    # new selfservice authentication
+
+    def _user_service_login(self, auth_user=None, password=None, otp=None):
+
+        params = {}
+
+        if auth_user is not None:
+            params['login'] = auth_user
+
+        if password is not None:
+            params['password'] = password
+
+        if otp is not None:
+            params['otp'] = otp
+
+        response = self.app.get(url(controller='userservice',
+                                    action='login'), params=params)
+
+        cookies = TestController.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+
+        return response, auth_cookie
+
+    def make_userselfservice_request(self, action, params=None,
+                                     auth_user=None, new_auth_cookie=False):
+
+        if not params:
+            params = {}
+
+        # ------------------------------------------------------------------ --
+
+        # identify login credentials
+
+        user = auth_user.get('login')
+        password = auth_user.get('password')
+        otp = auth_user.get('otp')
+
+        if new_auth_cookie and user in self.user_service:
+            del self.user_service[user]
+
+        # ------------------------------------------------------------------ --
+
+        if not hasattr(self, 'user_selfservice'):
+            setattr(self, 'user_selfservice', {})
+
+        auth_cookie = self.user_selfservice.get(user)
+
+        if not auth_cookie:
+            response, auth_cookie = self._user_service_login(user,
+                                                             password,
+                                                             otp)
+
+            if not auth_cookie or '"value": false' in response.body:
+                return response
+
+            self.user_selfservice[user] = auth_cookie
+
+        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+
+        params['session'] = auth_cookie
+        # params['user'] = user
+        response = self.app.get(url(controller='userservice',
+                                    action=action),
+                                params=params)
+
+        return response
+
+
+    # ------------------------------------------------------------------------ -
+
+    def make_selfservice_request(self, action, params=None,
+                                 auth_user=None, new_auth_cookie=False):
+
+        if not params:
+            params = {}
+
+        # ------------------------------------------------------------------ --
+
+        # identify login credentials
+
+        user = auth_user.get('login')
+        password = auth_user.get('password')
+        otp = auth_user.get('otp')
+
+        if new_auth_cookie and user in self.user_service:
+            del self.user_service[user]
+
+        # ------------------------------------------------------------------ --
+
+        if not hasattr(self, 'user_selfservice'):
+            setattr(self, 'user_selfservice', {})
+
+        auth_cookie = self.user_selfservice.get(user)
+
+        if not auth_cookie:
+            response, auth_cookie = self._user_service_login(user,
+                                                             password,
+                                                             otp)
+
+            if not auth_cookie or '"value": false' in response.body:
+                return response
+
+            self.user_selfservice[user] = auth_cookie
+
+        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+
+        params['session'] = auth_cookie
+        # params['user'] = user
+        response = self.app.get(url(controller='selfservice',
+                                    action=action),
+                                params=params)
+
+        return response
+# eof #

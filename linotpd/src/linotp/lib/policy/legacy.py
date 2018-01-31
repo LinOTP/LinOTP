@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -371,7 +371,7 @@ def legacy_getAuthorization(scope, action):
     return {'active': active, 'auth': auth, 'admin': admin_user['login']}
 
 
-def legacy_getPolicy(param, only_active=False):
+def legacy_getPolicy(param, only_active=True):
     '''
     Function to retrieve the list of policies.
 
@@ -405,7 +405,7 @@ def legacy_getPolicy(param, only_active=False):
         Policies = lPolicies
 
     # Now we need to clean up policies, that are inactive
-    if not only_active:
+    if only_active:
         pol2delete = []
         for polname, policy in Policies.items():
             pol_active = policy.get("active", "True")

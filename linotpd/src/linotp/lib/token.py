@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -25,13 +25,10 @@
 #
 """ contains several token api functions"""
 
-
+import binascii
 import datetime
 import logging
 import string
-
-import binascii
-
 
 import os
 
@@ -42,9 +39,6 @@ except ImportError:
 
 from sqlalchemy import or_, and_
 from sqlalchemy import func
-
-
-from pylons import config
 
 from linotp.lib.challenges import Challenges
 
@@ -69,8 +63,13 @@ from linotp.lib.config import getFromConfig
 
 from linotp.lib.realm import createDBRealm, getRealmObject
 
+from linotp.lib.type_utils import parse_duration
+
 from linotp.lib.context import request_context as context
 from linotp.tokens import tokenclass_registry
+
+from linotp.lib.policy import get_autoassignment_from_realm
+from linotp.lib.policy import get_autoassignment_without_pass
 
 import linotp.model.meta
 
@@ -84,8 +83,6 @@ required = False
 ENCODING = "utf-8"
 
 ###############################################
-
-
 
 class TokenHandler(object):
 
@@ -300,15 +297,13 @@ class TokenHandler(object):
 
         return (True, reply)
 
-    def losttoken(self, serial, new_serial=None, password=None,
-                  default_validity=0, param=None):
+    def losttoken(self, serial, new_serial=None, password=None, param=None):
         """
         This is the workflow to handle a lost token
 
         :param serial: Token serial number
         :param new_serial: new serial number
         :param password: new password
-        :param default_validity: set the token to be valid
         :param param: additional arguments for the password, email or sms token
             as dict
 
@@ -334,17 +329,6 @@ class TokenHandler(object):
         pol = linotp.lib.policy.get_client_policy(client,
                                         scope="enrollment", realm=owner.realm,
                                         user=owner.login, userObj=owner)
-
-        validity = linotp.lib.policy.getPolicyActionValue(pol,
-                                                          "lostTokenValid",
-                                                          max=False)
-
-        if validity == -1:
-            validity = 10
-        if 0 != default_validity:
-            validity = default_validity
-
-        log.debug("losttoken: validity: %r" % (validity))
 
         if not new_serial:
             new_serial = "lost%s" % serial
@@ -414,7 +398,7 @@ class TokenHandler(object):
                                          user=User('', '', ''))
 
         res['init'] = ret
-        if True == ret:
+        if ret is True:
             # copy the assigned user
             res['user'] = self.copyTokenUser(serial, new_serial)
 
@@ -423,13 +407,18 @@ class TokenHandler(object):
             if getTokenType(serial) not in ["spass"]:
                 res['pin'] = self.copyTokenPin(serial, new_serial)
 
-            # set validity period
-            end_date = (datetime.date.today()
-                        + datetime.timedelta(days=validity)).\
-                        strftime("%d/%m/%y")
+            # ------------------------------------------------------------- --
 
-            end_date = "%s 23:59" % end_date
+            # set the validity of the temporary token
+
+            validity = linotp.lib.policy.getPolicyActionValue(
+                                    pol, "lostTokenValid", max=False)
+
+            end_date = _calculate_validity_end(validity)
+
             tokenObj.validity_period_end = end_date
+
+            # ------------------------------------------------------------- --
 
             # fill results
             res['valid_to'] = "xxxx"
@@ -475,10 +464,9 @@ class TokenHandler(object):
 
         (uuserid, uidResolver, uidResolverClass) = token.getUser()
 
-        if uidResolver == idResolver:
-            if uidResolverClass == idResolverClass:
-                if uuserid == userid:
-                    ret = True
+        if uidResolverClass == idResolverClass:
+            if uuserid == userid:
+                ret = True
 
         return ret
 
@@ -547,6 +535,71 @@ class TokenHandler(object):
             new_serial = "%s_%02i" % (serial, i)
 
         return (result, new_serial)
+
+    def auto_assign_otp_only(self, otp, user, options=None):
+        '''
+        This function is called to auto_assign a token, when the
+        user enters an OTP value of an not assigned token.
+        '''
+        if options is None:
+            options = {}
+
+        auto = get_autoassignment_without_pass(user)
+        if not auto:
+            log.debug("no autoassigment configured")
+            return False
+
+        # only auto assign if no token exists
+
+        tokens = getTokens4UserOrSerial(user)
+        if len(tokens) > 0:
+            log.debug("No auto_assigment for user %r@%r. User already has"
+                      " some tokens.", user.login, user.realm)
+            return False
+
+        token_src_realm = get_autoassignment_from_realm(user)
+
+        if not token_src_realm:
+            token_src_realm = user.realm
+
+        # get all tokens of the users realm, which are not assigned
+        token_type = options.get('token_type', None)
+
+        # List of (token, pin) pairs
+        matching_tokens = []
+
+        tokens = self.getTokensOfType(typ=token_type,
+                                      realm=token_src_realm,
+                                      assigned="0")
+        for token in tokens:
+
+            token_exists = token.check_otp_exist(
+                                        otp=otp,
+                                        window=token.getOtpCountWindow())
+
+            if token_exists >= 0:
+                matching_tokens.append(token)
+
+        if len(matching_tokens) != 1:
+            log.warning("[auto_assignToken] %d tokens with "
+                        "the given OTP value found.", len(matching_tokens))
+            return False
+
+        token = matching_tokens[0]
+        serial = token.getSerial()
+
+        # if found, assign the found token to the user.login
+        try:
+            self.assignToken(serial, user, pin="")
+            context['audit']['serial'] = serial
+            context['audit']['info'] = "Token with otp auto assigned"
+            context['audit']['token_type'] = token.getType()
+            return True
+        except Exception as exx:
+            log.exception("Failed to assign token: %r", exx)
+            return False
+
+        return False
 
     def auto_assignToken(self, passw, user, _pin="", param=None):
         '''
@@ -1428,7 +1481,8 @@ def getAllTokenUsers():
 
 
 def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
-                           _class=True):
+                           _class=True, read_for_update=False,
+                           active=None):
     tokenList = []
     tokenCList = []
     tok = None
@@ -1437,23 +1491,38 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
         log.warning("[getTokens4UserOrSerial] missing user or serial")
         return tokenList
 
-    if (serial is not None):
+    sconditions = ()
+
+    if active in [True, False]:
+        sconditions += ((Token.LinOtpIsactive == active),)
+
+    if token_type:
+        sconditions += ((func.lower(Token.LinOtpTokenType) ==
+                         token_type.lower()),)
+
+    if serial:
+        log.debug("[getTokens4UserOrSerial] getting"
+                  " token object with serial: %r" % serial)
         #  SAWarning of non unicode type
         serial = linotp.lib.crypto.uencode(serial)
-        sconditions = ()
-        if token_type:
-            sconditions += (and_(func.lower(Token.LinOtpTokenType) ==
-                                 token_type.lower()),)
 
         if '*' in serial:
             serial = serial.replace('*', '%')
-            sconditions += (and_(Token.LinOtpTokenSerialnumber.like(serial)),)
+            sconditions += ((Token.LinOtpTokenSerialnumber.like(serial)),)
         else:
-            sconditions += (and_(Token.LinOtpTokenSerialnumber == serial),)
+            sconditions += ((Token.LinOtpTokenSerialnumber == serial),)
 
         # finally run the query on token serial
         condition = and_(*sconditions)
+
         sqlQuery = Session.query(Token).filter(condition)
+
+        # ------------------------------------------------------------------ --
+
+        # for the validation we require an read for update lock
+
+        if read_for_update:
+            sqlQuery = sqlQuery.with_lockmode('update').all()
 
         for token in sqlQuery:
             tokenList.append(token)
@@ -1461,6 +1530,7 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
     if user is not None:
 
         if not user.is_empty and user.login:
+
             for user_definition in user.get_uid_resolver():
                 uid, resolverClass = user_definition
                 # in the database could be tokens of ResolverClass:
@@ -1471,22 +1541,25 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                 # Remark: when the token is loaded the response to the
                 # resolver class is adjusted
 
-                uconditions = ()
+                uconditions = (sconditions)
 
                 resolverClass = resolverClass.replace('useridresolveree.',
                                                       'useridresolver.')
                 resolverClass = resolverClass.replace('useridresolver.',
                                                       'useridresolver%.')
 
-                uconditions += (and_(model.Token.LinOtpUserid == uid),)
-                uconditions += (and_(model.Token.LinOtpIdResClass.like(resolverClass)),)
-
-                if token_type:
-                    uconditions += (and_(func.lower(Token.LinOtpTokenType) ==
-                                         token_type.lower()),)
+                uconditions += ((model.Token.LinOtpUserid == uid),)
+                uconditions += ((model.Token.LinOtpIdResClass.like(resolverClass)),)
 
                 condition = and_(*uconditions)
                 sqlQuery = Session.query(Token).filter(condition)
+
+                # ---------------------------------------------------------- --
+
+                # for the validation we require an read for update lock
+
+                if read_for_update:
+                    sqlQuery = sqlQuery.with_lockmode('update').all()
 
                 for token in sqlQuery:
                     # we have to check that the token is in the same realm as the user
@@ -1498,8 +1571,10 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                                 log.debug("user realm and token realm missmatch %r::%r"
                                       % (u_realm, t_realms))
                                 continue
-                    tokenList.append(token)
 
+                    log.debug("[getTokens4UserOrSerial] user serial (user): %r"
+                              % token.LinOtpTokenSerialnumber)
+                    tokenList.append(token)
 
     if _class is True:
         for tok in tokenList:
@@ -1770,6 +1845,7 @@ def setPinSo(soPin, serial):
 
     return len(tokenList)
 
+
 def resetToken(user=None, serial=None):
 
     if (user is None) and (serial is None):
@@ -1863,5 +1939,40 @@ def getTokenConfig(tok, section=None):
             res = tclt.getClassInfo(section, ret={})
 
     return res
+
+
+def _calculate_validity_end(validity):
+    """
+    helper function to calculate the validity end for a token
+
+    :param validity: the validity as days (int) or as duration expression
+    :return: the end date as string
+    """
+
+    if validity == -1:
+        validity = 10
+
+    try:
+
+        int(validity)
+
+        # in case of only <int> days are given, for compatibility
+        # the day ends at 23:59 minutes. So we adjust the duration
+        # expression with remaining hours and minutes
+
+        end_date = (datetime.date.today()
+                    + datetime.timedelta(days=validity)
+                    ).strftime("%d/%m/%y")
+
+        end_date = "%s 23:59" % end_date
+
+    except ValueError:
+
+        end_date = (datetime.datetime.now() + parse_duration(validity)
+                    ).strftime("%d/%m/%y %H:%M")
+
+    log.debug("losttoken: validity: %r" % (validity))
+
+    return end_date
 
 # eof #########################################################################

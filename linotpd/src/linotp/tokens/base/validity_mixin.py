@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -76,6 +76,10 @@ class TokenValidityMixin(object):
 
         self.addToTokenInfo("count_auth_success_max", int(count))
 
+    def del_count_auth_success_max(self):
+        ''' delete the success access counter '''
+        self.removeFromTokenInfo("count_auth_success_max")
+
     @property
     def count_auth_success(self):
         ''' getter for the count_auth_success '''
@@ -107,6 +111,10 @@ class TokenValidityMixin(object):
         ''' Sets the counter for the maximum allowed login attemps '''
         self.addToTokenInfo("count_auth_max", int(count))
 
+    def del_count_auth_max(self):
+        ''' delete the access counter '''
+        self.removeFromTokenInfo("count_auth_max")
+
     @property
     def count_auth(self):
         return int(self.getFromTokenInfo("count_auth", 0))
@@ -122,6 +130,11 @@ class TokenValidityMixin(object):
         self.count_auth = self.count_auth + 1
 
         return self.count_auth
+
+    def del_count_auth(self):
+        ''' delete the access counter '''
+
+        self.removeFromTokenInfo("count_auth")
 
     # time based validity handling
 
@@ -144,6 +157,12 @@ class TokenValidityMixin(object):
         datetime.strptime(end_date, "%d/%m/%y %H:%M")
         self.addToTokenInfo("validity_period_end", end_date)
 
+    def del_validity_period_end(self):
+        '''
+        delete the end date of the validity period for a token
+        '''
+        self.removeFromTokenInfo("validity_period_end")
+
     @property
     def validity_period_start(self):
         '''
@@ -163,3 +182,10 @@ class TokenValidityMixin(object):
         datetime.strptime(start_date, "%d/%m/%y %H:%M")
         self.addToTokenInfo("validity_period_start", start_date)
 
+    def del_validity_period_start(self):
+        '''
+        delete the start date of the validity period for a token
+        '''
+        self.removeFromTokenInfo("validity_period_start")
+
+# eof

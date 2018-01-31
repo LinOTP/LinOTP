@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -227,6 +227,7 @@ class TestQRToken(TestController):
         self.public_key = calc_dh_base(self.secret_key)
         self.tokens = defaultdict(dict)
         self.tan_length = 8
+        self.uri = self.appconf.get('mobile_app_protocol_id', 'lseqr')
 
     def tearDown(self):
         self.delete_all_policies()
@@ -272,7 +273,7 @@ class TestQRToken(TestController):
 
         pairing_url = response_dict.get('detail', {}).get('pairing_url')
         self.assertIsNotNone(pairing_url)
-        self.assertTrue(pairing_url.startswith('lseqr://pair/'))
+        self.assertTrue(pairing_url.startswith(self.uri + '://pair/'))
 
         return pairing_url, pin
 
@@ -641,7 +642,7 @@ class TestQRToken(TestController):
 
         # extract metadata and the public key
 
-        data_encoded = pairing_url[len('lseqr://pair/'):]
+        data_encoded = pairing_url[len(self.uri + '://pair/'):]
         data = decode_base64_urlsafe(data_encoded)
         version, token_type, flags = struct.unpack('<bbI', data[0:6])
         partition = struct.unpack('<I', data[6:10])[0]
@@ -733,7 +734,7 @@ class TestQRToken(TestController):
             cant' be sent be the server (is generated from signature)
         """
 
-        challenge_data_encoded = challenge_url[len('lseqr://chal/'):]
+        challenge_data_encoded = challenge_url[len(self.uri + '://chal/'):]
         challenge_data = decode_base64_urlsafe(challenge_data_encoded)
 
         # ------------------------------------------------------------------- --
@@ -1589,7 +1590,7 @@ class TestQRToken(TestController):
 
         challenge_url = detail.get('message')
 
-        self.assertTrue(challenge_url.startswith('lseqr://'))
+        self.assertTrue(challenge_url.startswith(self.uri + '://'))
 
         return challenge_url
 
@@ -1861,7 +1862,7 @@ class TestQRToken(TestController):
 
         challenge_url = detail.get('message')
 
-        self.assertTrue(challenge_url.startswith('lseqr://'))
+        self.assertTrue(challenge_url.startswith(self.uri + '://'))
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
@@ -1919,7 +1920,7 @@ class TestQRToken(TestController):
 
         challenge_url = detail.get('message')
 
-        self.assertTrue(challenge_url.startswith('lseqr://'))
+        self.assertTrue(challenge_url.startswith(self.uri + '://'))
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
@@ -2022,7 +2023,7 @@ class TestQRToken(TestController):
 
         challenge_url = detail.get('message')
 
-        self.assertTrue(challenge_url.startswith('lseqr://'))
+        self.assertTrue(challenge_url.startswith(self.uri + '://'))
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
@@ -2076,7 +2077,7 @@ class TestQRToken(TestController):
 
         challenge_url = detail.get('message')
 
-        self.assertTrue(challenge_url.startswith('lseqr://'))
+        self.assertTrue(challenge_url.startswith(self.uri + '://'))
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -54,10 +54,13 @@ from linotp.lib.crypto import check
 
 from linotp.tests import TestController, url
 
+from nose.plugins.attrib import attr
+
 log = logging.getLogger(__name__)
 
 
-class OcraOtp(object):
+@attr('nightly')
+class OcraOtp(TestController):
 
     def __init__(self, ocrapin=None):
         self.ocra = None
@@ -73,9 +76,10 @@ class OcraOtp(object):
         ''' take the response of the first init to setup the OcraOtp'''
 
         jresp = json.loads(response.body)
-        app_import = unicode(jresp.get('detail').get('app_import'))
-        self.sharedsecret = unicode(jresp.get('detail').get('sharedsecret'))
-        self.serial = unicode(jresp.get('detail').get('serial'))
+        self.assertTrue('detail' in jresp, response.body)
+        app_import = unicode(jresp.get('detail', {}).get('app_import'))
+        self.sharedsecret = unicode(jresp.get('detail', {}).get('sharedsecret'))
+        self.serial = unicode(jresp.get('detail', {}).get('serial'))
 
         # now parse the appurl for the ocrasuite
         uri = urlparse(app_import.replace('lseqr://', 'http://'))
@@ -124,9 +128,10 @@ class OcraOtp(object):
         self.activationkey = activationKey
 
         jresp = json.loads(response.body)
-        self.nonce = unicode(jresp.get('detail').get('nonce'))
-        self.transid = unicode(jresp.get('detail').get('transactionid'))
-        app_import = unicode(jresp.get('detail').get('app_import'))
+        self.assertTrue('detail' in jresp, response.body)
+        self.nonce = unicode(jresp.get('detail', {}).get('nonce'))
+        self.transid = unicode(jresp.get('detail', {}).get('transactionid'))
+        app_import = unicode(jresp.get('detail', {}).get('app_import'))
 
         # now parse the appurl for the ocrasuite
         uri = urlparse(app_import.replace('lseqr://', 'http://'))
@@ -200,6 +205,7 @@ class OcraOtp(object):
         return otp
 
 
+@attr('nightly')
 class OcraTest(TestController):
     """
     ocra2 test class:
@@ -509,7 +515,8 @@ class OcraTest(TestController):
             ocra.init_1(response1)
 
             jresp = json.loads(response1.body)
-            app_import_1 = unicode(jresp.get('detail').get('app_import'))
+            self.assertTrue('detail' in jresp, response1.body)
+            app_import_1 = unicode(jresp.get('detail', {}).get('app_import'))
 
             message = 'abc'
             (response2, activationkey) = self.init_1_QR_Token(user='root',
@@ -519,7 +526,8 @@ class OcraTest(TestController):
             (challenge, transid) = ocra.init_2(response2, activationkey)
 
             jresp = json.loads(response2.body)
-            app_import_2 = unicode(jresp.get('detail').get('app_import'))
+            self.assertTrue('detail' in jresp, response2.body)
+            app_import_2 = unicode(jresp.get('detail', {}).get('app_import'))
 
             testdata['ocrasuite'] = ocra.ocrasuite
             testdata['nonce'] = ocra.nonce
@@ -555,9 +563,11 @@ class OcraTest(TestController):
                 (response, challenge, transid) = \
                     self.get_challenge(ocra.serial,
                                        challenge_data=param.get('data'))
+
                 jresp = json.loads(response.body)
-                app_import = unicode(jresp.get('detail').get('data'))
-                challenge = unicode(jresp.get('detail').get("challenge"))
+                self.assertTrue('detail' in jresp, response.body)
+                app_import = unicode(jresp.get('detail', {}).get('data'))
+                challenge = unicode(jresp.get('detail', {}).get("challenge"))
 
                 counter += 1
                 otp = ocra.callcOtp(challenge, counter=counter)
@@ -759,8 +769,9 @@ class OcraTest(TestController):
 
         # -3.a- calculate the otp response from the challenge
         jresp = json.loads(response.body)
-        challenge = unicode(jresp.get('detail').get('challenge'))
-        transid = unicode(jresp.get('detail').get('transactionid'))
+        self.assertTrue('detail' in jresp, response.body)
+        challenge = unicode(jresp.get('detail', {}).get('challenge'))
+        transid = unicode(jresp.get('detail', {}).get('transactionid'))
 
         ocra = OcraSuite(ocrasuite)
 
@@ -817,8 +828,8 @@ class OcraTest(TestController):
             self.assertTrue('"status": true' in response, response)
 
             jresp = json.loads(response.body)
-
-            d_root = jresp.get('result').get('value').get('data')
+            self.assertTrue('result' in jresp, response.body)
+            d_root = jresp.get('result', {}).get('value', {}).get('data')
             for tok in d_root:
                 serial = tok.get("LinOtp.TokenSerialnumber")
                 serials.append(serial)
@@ -871,9 +882,10 @@ class OcraTest(TestController):
 
         # on the return we get the shared secret
         jresp = json.loads(response.body)
-        app_import1 = unicode(jresp.get('detail').get('app_import'))
-        sharedsecret = unicode(jresp.get('detail').get('sharedsecret'))
-        serial = unicode(jresp.get('detail').get('serial'))
+        self.assertTrue('detail' in jresp, response.body)
+        app_import1 = unicode(jresp.get('detail', {}).get('app_import'))
+        sharedsecret = unicode(jresp.get('detail', {}).get('sharedsecret'))
+        serial = unicode(jresp.get('detail', {}).get('serial'))
         log.debug("%r" % sharedsecret)
 
         # now parse the appurl for the ocrasuite
@@ -891,6 +903,7 @@ class OcraTest(TestController):
                                           params=aparm, auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
         jresp = json.loads(response.body)
+        self.assertTrue('result' in jresp, response.body)
         activationcode = unicode(jresp.get('result', {}).get('value', {})
                                  .get('activationcode', None))
 
@@ -911,9 +924,10 @@ class OcraTest(TestController):
         self.assertTrue('"value": true' in response, response)
 
         jresp = json.loads(response.body)
-        _nonce = unicode(jresp.get('detail').get('nonce'))
-        transid = unicode(jresp.get('detail').get('transactionid'))
-        app_import2 = unicode(jresp.get('detail').get('app_import'))
+        self.assertTrue('detail' in jresp, response.body)
+        _nonce = unicode(jresp.get('detail', {}).get('nonce'))
+        transid = unicode(jresp.get('detail', {}).get('transactionid'))
+        app_import2 = unicode(jresp.get('detail', {}).get('app_import'))
 
         # now parse the appurl for the ocrasuite
         uri = urlparse(app_import2.replace('lseqr://', 'http://'))
@@ -938,7 +952,8 @@ class OcraTest(TestController):
                                           params=p, auth_user=auth_user)
         log.info("response %s\n", response)
         jresp = json.loads(response.body)
-        otp = unicode(jresp.get('result').get('value').get('otp'))
+        self.assertTrue('result' in jresp, response.body)
+        otp = unicode(jresp.get('result', {}).get('value', {}).get('otp'))
 
         p = {"transactionid": transid, "pass": 'pin' + otp}
 
@@ -996,9 +1011,10 @@ class OcraTest(TestController):
 
         # on the return we get the shared secret
         jresp = json.loads(response.body)
-        app_import = unicode(jresp.get('detail').get('app_import'))
-        sharedsecret = unicode(jresp.get('detail').get('sharedsecret'))
-        serial = unicode(jresp.get('detail').get('serial'))
+        self.assertTrue('detail' in jresp, response.body)
+        app_import = unicode(jresp.get('detail', {}).get('app_import'))
+        sharedsecret = unicode(jresp.get('detail', {}).get('sharedsecret'))
+        serial = unicode(jresp.get('detail', {}).get('serial'))
 
         # now parse the appurl for the ocrasuite
         uri = urlparse(app_import.replace('lseqr://', 'http://'))
@@ -1028,9 +1044,10 @@ class OcraTest(TestController):
         # -3.a- we got on the return side a transactionId and a challenge
 
         jresp = json.loads(response.body)
-        _nonce = unicode(jresp.get('detail').get('nonce'))
-        transid = unicode(jresp.get('detail').get('transactionid'))
-        app_import = unicode(jresp.get('detail').get('app_import'))
+        self.assertTrue('detail' in jresp, response.body)
+        _nonce = unicode(jresp.get('detail', {}).get('nonce'))
+        transid = unicode(jresp.get('detail', {}).get('transactionid'))
+        app_import = unicode(jresp.get('detail', {}).get('app_import'))
 
         # now parse the appurl for the ocrasuite
         uri = urlparse(app_import.replace('lseqr://', 'http://'))
@@ -1091,8 +1108,9 @@ class OcraTest(TestController):
 
             # -3.a- calculate the otp response from the challenge
             jresp = json.loads(response.body)
-            challenge = unicode(jresp.get('detail').get('challenge'))
-            transid = unicode(jresp.get('detail').get('transactionid'))
+            self.assertTrue('detail' in jresp, response.body)
+            challenge = unicode(jresp.get('detail', {}).get('challenge'))
+            transid = unicode(jresp.get('detail', {}).get('transactionid'))
 
             ocra = OcraSuite(ocrasuite)
 
@@ -1163,9 +1181,10 @@ class OcraTest(TestController):
 
         # on the return we get the shared secret
         jresp = json.loads(response.body)
-        app_import = unicode(jresp.get('detail').get('app_import'))
-        sharedsecret = unicode(jresp.get('detail').get('sharedsecret'))
-        serial = unicode(jresp.get('detail').get('serial'))
+        self.assertTrue('detail' in jresp, response.body)
+        app_import = unicode(jresp.get('detail', {}).get('app_import'))
+        sharedsecret = unicode(jresp.get('detail', {}).get('sharedsecret'))
+        serial = unicode(jresp.get('detail', {}).get('serial'))
 
         # now parse the appurl for the ocrasuite
         uri = urlparse(app_import.replace('lseqr://', 'http://'))
@@ -1197,9 +1216,10 @@ class OcraTest(TestController):
 
         # -3.a- we got on the return side a transactionId and a challenge
         jresp = json.loads(response.body)
-        _nonce = unicode(jresp.get('detail').get('nonce'))
-        transid = unicode(jresp.get('detail').get('transactionid'))
-        app_import = unicode(jresp.get('detail').get('app_import'))
+        self.assertTrue('detail' in jresp, response.body)
+        _nonce = unicode(jresp.get('detail', {}).get('nonce'))
+        transid = unicode(jresp.get('detail', {}).get('transactionid'))
+        app_import = unicode(jresp.get('detail', {}).get('app_import'))
 
         # now parse the appurl for the ocrasuite
         uri = urlparse(app_import.replace('lseqr://', 'http://'))
@@ -1261,8 +1281,9 @@ class OcraTest(TestController):
 
             # -3.a- calculate the otp response from the challenge
             jresp = json.loads(response.body)
-            challenge = unicode(jresp.get('detail').get('challenge'))
-            transid = unicode(jresp.get('detail').get('transactionid'))
+            self.assertTrue('detail' in jresp, response.body)
+            challenge = unicode(jresp.get('detail', {}).get('challenge'))
+            transid = unicode(jresp.get('detail', {}).get('transactionid'))
 
             ocra = OcraSuite(ocrasuite)
 
@@ -1341,9 +1362,10 @@ class OcraTest(TestController):
 
         # on the return we get the shared secret
         jresp = json.loads(response.body)
-        app_import = unicode(jresp.get('detail').get('app_import'))
-        sharedsecret = unicode(jresp.get('detail').get('sharedsecret'))
-        serial = unicode(jresp.get('detail').get('serial'))
+        self.assertTrue('detail' in jresp, response.body)
+        app_import = unicode(jresp.get('detail', {}).get('app_import'))
+        sharedsecret = unicode(jresp.get('detail', {}).get('sharedsecret'))
+        serial = unicode(jresp.get('detail', {}).get('serial'))
 
         # now parse the appurl for the ocrasuite
         uri = urlparse(app_import.replace('lseqr://', 'http://'))
@@ -1375,9 +1397,10 @@ class OcraTest(TestController):
         # -3.a- we got on the return side a transactionId and a challenge
 
         jresp = json.loads(response.body)
-        _nonce = unicode(jresp.get('detail').get('nonce'))
-        transid = unicode(jresp.get('detail').get('transactionid'))
-        app_import = unicode(jresp.get('detail').get('app_import'))
+        self.assertTrue('detail' in jresp, response.body)
+        _nonce = unicode(jresp.get('detail', {}).get('nonce'))
+        transid = unicode(jresp.get('detail', {}).get('transactionid'))
+        app_import = unicode(jresp.get('detail', {}).get('app_import'))
 
         # now parse the appurl for the ocrasuite
         uri = urlparse(app_import.replace('lseqr://', 'http://'))
@@ -1456,10 +1479,11 @@ class OcraTest(TestController):
         # -3.a- we got on the return side a transactionId and a challenge
 
         jresp = json.loads(response.body)
+        self.assertTrue('detail' in jresp, response.body)
         try:
-            nonce = unicode(jresp.get('detail').get('nonce'))
-            transid = unicode(jresp.get('detail').get('transactionid'))
-            app_import = unicode(jresp.get('detail').get('app_import'))
+            nonce = unicode(jresp.get('detail', {}).get('nonce'))
+            transid = unicode(jresp.get('detail', {}).get('transactionid'))
+            app_import = unicode(jresp.get('detail', {}).get('app_import'))
         except Exception as e:
             log.debug(" %r" % e)
 
@@ -1577,8 +1601,9 @@ class OcraTest(TestController):
 
                 # -3.a- calculate the otp response from the challenge
                 jresp = json.loads(response.body)
-                challenge = unicode(jresp.get('detail').get('challenge'))
-                transid = unicode(jresp.get('detail').get('transactionid'))
+                self.assertTrue('detail' in jresp, response.body)
+                challenge = unicode(jresp.get('detail', {}).get('challenge'))
+                transid = unicode(jresp.get('detail', {}).get('transactionid'))
 
                 ocra = OcraSuite(ocrasuite)
 
@@ -1683,8 +1708,9 @@ class OcraTest(TestController):
 
                 # -3.a- calculate the otp response from the challenge
                 jresp = json.loads(response.body)
-                challenge = unicode(jresp.get('detail').get('challenge'))
-                transid = unicode(jresp.get('detail').get('transactionid'))
+                self.assertTrue('detail' in jresp, response.body)
+                challenge = unicode(jresp.get('detail', {}).get('challenge'))
+                transid = unicode(jresp.get('detail', {}).get('transactionid'))
 
                 ocra = OcraSuite(ocrasuite)
 
@@ -1829,8 +1855,9 @@ class OcraTest(TestController):
 
                 # -3.a- calculate the otp response from the challenge
                 jresp = json.loads(response.body)
-                challenge = unicode(jresp.get('detail').get('challenge'))
-                transid = unicode(jresp.get('detail').get('transactionid'))
+                self.assertTrue('detail' in jresp, response.body)
+                challenge = unicode(jresp.get('detail', {}).get('challenge'))
+                transid = unicode(jresp.get('detail', {}).get('transactionid'))
 
                 # -3- verify the wrong otp value
                 parameters = {"transactionid": transid,
@@ -1858,8 +1885,9 @@ class OcraTest(TestController):
 
                 # -6.a- calculate the otp response from the challenge
                 jresp = json.loads(response.body)
-                challenge = unicode(jresp.get('detail').get('challenge'))
-                transid = unicode(jresp.get('detail').get('transactionid'))
+                self.assertTrue('detail' in jresp, response.body)
+                challenge = unicode(jresp.get('detail', {}).get('challenge'))
+                transid = unicode(jresp.get('detail', {}).get('transactionid'))
 
                 ocra = OcraSuite(ocrasuite)
 
@@ -1960,8 +1988,9 @@ class OcraTest(TestController):
 
                 # -3.a- from the response get the challenge
                 jresp = json.loads(response.body)
-                challenge = unicode(jresp.get('detail').get('challenge'))
-                transid = unicode(jresp.get('detail').get('transactionid'))
+                self.assertTrue('detail' in jresp, response.body)
+                challenge = unicode(jresp.get('detail', {}).get('challenge'))
+                transid = unicode(jresp.get('detail', {}).get('transactionid'))
 
                 log.debug(" %r" % challenge)
 
@@ -2054,8 +2083,9 @@ class OcraTest(TestController):
 
                 # -2b- from the response get the challenge
                 jresp = json.loads(response.body)
-                challenge1 = unicode(jresp.get('detail').get('challenge'))
-                transid1 = unicode(jresp.get('detail').get('transactionid'))
+                self.assertTrue('detail' in jresp, response.body)
+                challenge1 = unicode(jresp.get('detail', {}).get('challenge'))
+                transid1 = unicode(jresp.get('detail', {}).get('transactionid'))
 
                 ocra = OcraSuite(ocrasuite)
 
@@ -2087,8 +2117,9 @@ class OcraTest(TestController):
 
                 # -3b- from the response get the challenge
                 jresp = json.loads(response.body)
-                challenge2 = unicode(jresp.get('detail').get('challenge'))
-                transid2 = unicode(jresp.get('detail').get('transactionid'))
+                self.assertTrue('detail' in jresp, response.body)
+                challenge2 = unicode(jresp.get('detail', {}).get('challenge'))
+                transid2 = unicode(jresp.get('detail', {}).get('transactionid'))
 
                 ocra = OcraSuite(ocrasuite)
 
@@ -2192,8 +2223,9 @@ class OcraTest(TestController):
 
                 # -2b- from the response get the challenge
                 jresp = json.loads(response.body)
-                challenge1 = unicode(jresp.get('detail').get('challenge'))
-                transid1 = unicode(jresp.get('detail').get('transactionid'))
+                self.assertTrue('detail' in jresp, response.body)
+                challenge1 = unicode(jresp.get('detail', {}).get('challenge'))
+                transid1 = unicode(jresp.get('detail', {}).get('transactionid'))
 
                 ocra = OcraSuite(ocrasuite)
 
@@ -2225,8 +2257,9 @@ class OcraTest(TestController):
 
                 # -3b- from the response get the challenge
                 jresp = json.loads(response.body)
-                challenge2 = unicode(jresp.get('detail').get('challenge'))
-                transid2 = unicode(jresp.get('detail').get('transactionid'))
+                self.assertTrue('detail' in jresp, response.body)
+                challenge2 = unicode(jresp.get('detail', {}).get('challenge'))
+                transid2 = unicode(jresp.get('detail', {}).get('transactionid'))
 
                 ocra = OcraSuite(ocrasuite)
 
@@ -2301,8 +2334,9 @@ class OcraTest(TestController):
 
         # -2b- from the response get the challenge
         jresp = json.loads(response.body)
-        challenge1 = unicode(jresp.get('detail').get('challenge'))
-        transid1 = unicode(jresp.get('detail').get('transactionid'))
+        self.assertTrue('detail' in jresp, response.body)
+        challenge1 = unicode(jresp.get('detail', {}).get('challenge'))
+        transid1 = unicode(jresp.get('detail', {}).get('transactionid'))
 
         now = datetime.now()
         if ttime is not None:
@@ -2343,8 +2377,9 @@ class OcraTest(TestController):
     def exctract_challenge(self, response):
         try:
             jresp = json.loads(response.body)
-            challenge = unicode(jresp.get('detail').get('challenge'))
-            transid = unicode(jresp.get('detail').get('transactionid'))
+            self.assertTrue('detail' in jresp, response.body)
+            challenge = unicode(jresp.get('detail', {}).get('challenge'))
+            transid = unicode(jresp.get('detail', {}).get('transactionid'))
         except Exception as e:
             challenge = None
             transid = None
@@ -2732,9 +2767,10 @@ class OcraTest(TestController):
 
         # on the return we get the shared secret
         jresp = json.loads(response.body)
-        app_import = unicode(jresp.get('detail').get('app_import'))
-        secret = unicode(jresp.get('detail').get('sharedsecret'))
-        serial = unicode(jresp.get('detail').get('serial'))
+        self.assertTrue('detail' in jresp, response.body)
+        app_import = unicode(jresp.get('detail', {}).get('app_import'))
+        secret = unicode(jresp.get('detail', {}).get('sharedsecret'))
+        serial = unicode(jresp.get('detail', {}).get('serial'))
 
         # now parse the appurl for the ocrasuite
         uri = urlparse(app_import.replace('lseqr://', 'http://'))
@@ -2771,9 +2807,10 @@ class OcraTest(TestController):
 
         # -3.a- we got on the return side a transactionId and a challenge
         jresp = json.loads(response.body)
-        _nonce = unicode(jresp.get('detail').get('nonce'))
-        transid = unicode(jresp.get('detail').get('transactionid'))
-        app_import = unicode(jresp.get('detail').get('app_import'))
+        self.assertTrue('detail' in jresp, response.body)
+        _nonce = unicode(jresp.get('detail', {}).get('nonce'))
+        transid = unicode(jresp.get('detail', {}).get('transactionid'))
+        app_import = unicode(jresp.get('detail', {}).get('app_import'))
 
         # now parse the appurl for the ocrasuite
         uri = urlparse(app_import.replace('lseqr://', 'http://'))
@@ -4267,5 +4304,8 @@ class OcraTest(TestController):
 
         self.removeTokens(serial=ocra.serial)
         return
+
+
+
 
 ##eof##########################################################################

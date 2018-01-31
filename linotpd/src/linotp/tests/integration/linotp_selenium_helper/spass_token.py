@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -32,6 +32,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
+
 class SpassToken(Token):
     """Creates a Spass Token in the LinOTP WebUI"""
 
@@ -42,7 +43,15 @@ class SpassToken(Token):
                  description="Selenium enrolled"):
         Token.__init__(self, driver=driver, base_url=base_url)
         select_tag = driver.find_element_by_id("tokentype")
-        select(driver, select_element=select_tag, option_text="Simple Pass Token")
+
+        select(driver, select_element=select_tag,
+               option_text="Simple Pass Token")
+
+        WebDriverWait(self.driver, 6).until(
+            EC.visibility_of_element_located(
+                (By.ID, "spass_pin1"))
+        )
+
         driver.find_element_by_id("spass_pin1").clear()
         driver.find_element_by_id("spass_pin1").send_keys(pin)
         driver.find_element_by_id("spass_pin2").clear()
@@ -53,12 +62,12 @@ class SpassToken(Token):
 
         # Wait for API call to complete
         WebDriverWait(self.driver, 10).until_not(
-                EC.visibility_of_element_located((By.ID, "do_waiting")))
+            EC.visibility_of_element_located((By.ID, "do_waiting")))
 
-        info_boxes = driver.find_elements_by_css_selector("#info_box > .info_box > span")
+        info_boxes = driver.find_elements_by_css_selector(
+            "#info_box > .info_box > span")
         for box in info_boxes:
             if box.text.startswith("created token with serial"):
                 self.serial = box.find_element_by_tag_name("span").text
         if not self.serial or not self.serial.startswith("LSSP"):
             raise Exception("Simple pass token was not enrolled correctly.")
-

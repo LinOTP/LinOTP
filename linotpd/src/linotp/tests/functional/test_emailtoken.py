@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -222,6 +222,17 @@ class TestEmailtokenController(TestController):
         response = response.json
         self.assertTrue(response['result']['status'])
         self.assertFalse(response['result']['value'], "Challenge should have timed out")
+
+    def test_otp_not_reused(self):
+
+        """
+        check if otp isn't reused
+        """
+
+        __, otp1 = self._trigger_challenge()
+        __, otp2 = self._trigger_challenge()
+
+        self.assertNotEqual(otp1, otp2, "OTP counter not working properly")
 
     def test_blocking(self):
         """

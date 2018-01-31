@@ -1,6 +1,6 @@
 /*!
  *   LinOTP - the open source solution for two factor authentication
- *   Copyright (C) 2010 - 2017 KeyIdentity GmbH
+ *   Copyright (C) 2010 - 2018 KeyIdentity GmbH
  *
  *   This file is part of LinOTP server.
  *
@@ -557,18 +557,57 @@ html {
 /*
  *  Styles for displaying the TokenInfo
  */
-.tokeninfoInnerTable {
-	border-color: #fe8625;
-	border-width: 1px 0px;
-	border-style: solid;
-	border-collapse: collapse
+
+table.tokeninfoOuterTable {
+	table-layout: fixed;
+	border-collapse: collapse;
+	word-wrap: break-word;
+	width: 100%;
 }
 
-.tokeninfoOuterTable {
+table.tokeninfoOuterTable td {
+	padding: 3px;
+}
+
+table.tokeninfoOuterTable td.tokeninfoOuterTable {
+		border: 1px solid #fe8625;
+}
+
+table.tokeninfoOuterTable > tbody > tr > td:nth-child(1) {
+    width: 30%;
+}
+
+table.tokeninfoOuterTable > tbody > tr > td:nth-child(3) {
+	width: 40px;
+}
+
+table.tokeninfoOuterTable > tbody > tr > td:nth-child(3) > * {
+	height: 1.3em;
+	width: 100%;
+	display: block;
+}
+
+table.tokeninfoOuterTable div#toolbar {
+    border-radius: inherit;
+		text-align: center;
+}
+
+#dialog_token_info .tokeninfo-hint {
+	background: #dddddd;
+	border: 1px solid #aaa;
+	padding: 5px 10px;
+	text-align: center;
+}
+
+table.tokeninfoInnerTable {
+	table-layout: fixed;
+	word-wrap: break-word;
+	width: 100%;
 	border-collapse: collapse;
-	vertical-align: top;
-	border: 1px solid #fe8625;
-	padding: 0px 3px 0px 3px;
+}
+.tokeninfoInnerTable tr:not(:last-child) {
+	border-bottom: 1px solid #fe8625
+
 }
 
 .collapsed-table tr {
@@ -758,4 +797,12 @@ span.managed-tag {
 
 #resolvers_select .managed-tag {
 	float: right;
+}
+
+.hidden {
+	display: none;
+}
+
+div#dialog_setexpiration p, div#dialog_setexpiration div {
+    margin: 10px 0;
 }

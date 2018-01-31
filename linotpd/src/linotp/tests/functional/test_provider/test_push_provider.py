@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -165,14 +165,6 @@ class TestPushProviderController(TestController):
             configDict['access_certificate'] = cert_file_name
             push_prov.loadConfig(configDict)
 
-        #
-        # test if missing required parameters is detected
-        #
-
-        with self.assertRaises(KeyError):
-            del configDict['access_certificate']
-            push_prov.loadConfig(configDict)
-
         # restore access certificate parameter
         cert_file_name = os.path.join(self.fixture_path, 'cert.pem')
         configDict['access_certificate'] = cert_file_name
@@ -226,8 +218,10 @@ class TestPushProviderController(TestController):
         TestPushProviderController.R_AUTH_STATUS = 200
 
         # run the fake request
-        status, response = push_prov.push_notification(message=message,
-                                                       gda=gda)
+        status, response = push_prov.push_notification(
+                                            challenge=message,
+                                            gda=gda,
+                                            transactionId='012345678901234')
 
         self.assertEquals(status, True)
         self.assertEquals(response, VALID_REQUEST)

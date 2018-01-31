@@ -3,7 +3,7 @@
 <%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
- *   Copyright (C) 2010 - 2017 KeyIdentity GmbH
+ *   Copyright (C) 2010 - 2018 KeyIdentity GmbH
  *
  *   This file is part of LinOTP server.
  *
@@ -47,8 +47,6 @@ if isinstance(lang, list):
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
 <meta http-equiv="content-style-type" content="text/css">
 
-<meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
-
 <link type="text/css" rel="stylesheet" href="/css/linotp.css">
 <link type="text/css" rel="stylesheet" href="/selfservice/style.css">
 <link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css">
@@ -89,14 +87,7 @@ if isinstance(lang, list):
     <span class="portalname float_left">${_("Selfservice Portal")}</span>
     <div id="logo" class="float_right"> </div>
 </div>
-<div class="logout">
-    <p>${_("Logged in as")}:${c.user}@${c.realm} | <a href=# onclick='SelfLogout("/account/logout");return false;'>${_("Logout")}</a> </p>
-</div>
-
-<div id="do_waiting">
-    <img src="/images/ajax-loader.gif" border="0" alt=""><span>${_("Communicating with LinOTP server...")}</span>
-</div>
-
+<div id="content">
 <div id="sidebar">
 
     <div>${_("Tokens for user:")} ${c.user} ${_("in realm")} ${c.realm}</div>
@@ -112,6 +103,14 @@ if isinstance(lang, list):
 </div> <!-- sidebar -->
 
 <div id="main">
+
+<div class="logout">
+    <p>${_("Logged in as")}: ${c.user}@${c.realm} | <a href=# onclick='SelfLogout("/selfservice/logout");return false;'>${_("Logout")}</a> </p>
+</div>
+
+<div id="do_waiting">
+    <img src="/images/ajax-loader.gif" border="0" alt=""><span>${_("Communicating with LinOTP server...")}</span>
+</div>
 
 <div id="tabs">
     <ul>
@@ -170,7 +169,7 @@ if isinstance(lang, list):
 <div id='successDiv'> </div>
 
 </div>  <!-- end of main-->
-
+</div>  <!-- end of content-->
 <div id="footer">
 ${c.version} --- &copy; ${c.licenseinfo}
 </div>

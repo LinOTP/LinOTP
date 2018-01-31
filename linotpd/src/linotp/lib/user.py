@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -178,23 +178,6 @@ class User(object):
             except Exception as exx:
                 log.exception("Error while accessing resolver %r", exx)
 
-    def does_exists(self, resolvers=None):
-        """
-        check if the user exists - will iterate through the resolvers
-
-        :param resolvers: list of resolvers, where to do the user lookup
-        :return: boolean - True if user exist in a resolver
-        """
-        try:
-            uid, _reso = self.get_uid_resolver(resolvers=resolvers).next()
-        except StopIteration:
-            return False
-
-        if uid is not None:
-            return True
-
-        return False
-
     @property
     def is_empty(self):
         return len(self.login) == 0 and \
@@ -306,7 +289,7 @@ class User(object):
 
         self._exists = False
 
-        realms = getRealms(self.realm)
+        realms = getRealms(self.realm.lower())
         if not realms:
             return self._exists
 
@@ -384,6 +367,21 @@ def splitUser(username):
     return (user, group)
 
 
+def _get_resolver_from_param(param):
+    """
+    extract the resolver shortname from the given parameter,
+    which could be "res_name (fq resolber name) "
+    """
+
+    resolver_config_identifier = param.get("resConf", '')
+
+    if not resolver_config_identifier or "(" not in resolver_config_identifier:
+        return resolver_config_identifier
+
+    resolver_config_id, __ = resolver_config_identifier.split("(")
+    return resolver_config_id.strip()
+
+
 def getUserFromParam(param):
     """
     establish an user object from the request parameters
@@ -391,58 +389,70 @@ def getUserFromParam(param):
 
     log.debug("[getUserFromParam] entering function")
 
-    realm = ""
-    user = param.get("user")
+    realm = param.get("realm", '')
+    login = param.get("user", '')
+    resolver_config_id = _get_resolver_from_param(param)
 
-    log.debug("[getUserFromParam] got user <<%r>>", user)
+    log.debug("[getUserFromParam] got user <<%r>>", login)
 
-    if user is None:
-        user = ""
-    else:
-        splitAtSign = getFromConfig("splitAtSign", "true")
+    # ---------------------------------------------------------------------- --
 
-        if splitAtSign.lower() == "true":
-            (user, realm) = splitUser(user)
+    if not login and not realm and not resolver_config_id:
+        return User()
 
-    if "realm" in param:
-        realm = param["realm"]
+    # ---------------------------------------------------------------------- --
 
-    if user != "":
-        if not realm:
-            realm = getDefaultRealm()
+    if realm:
 
-    usr = User(user, realm, "")
+        usr = User(login=login, realm=realm,
+                   resolver_config_identifier=resolver_config_id)
 
-    resolver_config_id = ''
-    if "resConf" in param:
-        resolver_config_identifier = param["resConf"]
-        # with the short resolvernames, we have to extract the
-        # configuration name from the resolver spec
-        if "(" in resolver_config_identifier and \
-           ")" in resolver_config_identifier:
-            resolver_config_id, __ = resolver_config_identifier.split(" ")
-        usr.resolver_config_identifier = resolver_config_id
-    else:
-        if len(usr.login) > 0 or \
-           len(usr.realm) > 0 or \
-           len(usr.resolver_config_identifier) > 0:
+        return usr
 
-            res = getResolversOfUser(usr)
+    # ---------------------------------------------------------------------- --
 
-            #
-            # if nothing is found, we try to find fall back to the
-            # user definition like u@r
+    # no realm but a user!
 
-            if not res and '@' in usr.login:
-                ulogin, _, urealm = usr.login.rpartition('@')
-                if urealm in getRealms():
-                    usr = User(ulogin, urealm)
-                    res = getResolversOfUser(usr)
+    splitAtSign = getFromConfig("splitAtSign", "true")
 
-            usr.resolvers_list = res
+    if splitAtSign.lower() == "true":
+        (login, realm) = splitUser(login)
+
+    if login and not realm:
+        realm = getDefaultRealm()
+
+    # ---------------------------------------------------------------------- --
+
+    # everything ready to create the user
+
+    usr = User(login, realm, resolver_config_identifier=resolver_config_id)
+
+    # ---------------------------------------------------------------------- --
+
+    # if no resolver determined, we try to extend the user info
+
+    if "resConf" not in param:
+
+        res = getResolversOfUser(usr)
+
+        #
+        # if nothing is found, we try to find fall back to the
+        # user definition like u@r
+
+        if not res and 'realm' not in param and '@' in usr.login:
+
+            ulogin, _, urealm = usr.login.rpartition('@')
+
+            if urealm in getRealms():
+                realm = urealm
+                login = ulogin
+                usr = User(ulogin, urealm)
+                res = getResolversOfUser(usr)
+
+        usr.resolvers_list = res
 
     log.debug("[getUserFromParam] creating user object %r,%r,%r",
-              user, realm, resolver_config_id)
+              login, realm, resolver_config_id)
     log.debug("[getUserFromParam] created user object %r ", usr)
 
     return usr
@@ -451,28 +461,62 @@ def getUserFromParam(param):
 def getUserFromRequest(request, config=None):
     '''
     This function first tries to get the user from
-     * a DigestAuth and otherwise from
-     * basic auth and otherwise from
-     * the client certificate
+     * already authenticated systems (REMOTE_USER)
+     * a Basic / DigestAuth and
+     *  otherwise from the client certificate
+    :param request: the pylons request
+    :param config: the LinOTP configuration
+
+    :return: the authentication dict
+
+    :remark: the function catches all exceptions which are only logged
+    :remark: the selfservice authentication should be removed!!
     '''
+
     d_auth = {'login': ''}
 
     param = request.params
 
     try:
-        # Do BasicAuth
+
+        # ------------------------------------------------------------------ --
+
+        # accept remote authenticated users
+
         if 'REMOTE_USER' in request.environ:
+
             d_auth['login'] = request.environ['REMOTE_USER']
+
             log.debug("[getUserFromRequest] BasicAuth: found the "
                       "REMOTE_USER: %r", d_auth)
 
+        # ------------------------------------------------------------------ --
+
         # Find user name from HTTP_AUTHORIZATION (Basic or Digest auth)
+
         elif 'HTTP_AUTHORIZATION' in request.environ:
+
             hdr = request.environ['HTTP_AUTHORIZATION']
+
+            # -------------------------------------------------------------- --
+
+            # Basic Authentication
+
             if hdr.startswith('Basic '):
+
                 a_auth = b64decode(hdr[5:].strip())
-                d_auth['login'], junk, junk = a.auth.partition(':')
+
+                d_auth['login'], _junk, _junk = a_auth.partition(':')
+
+                log.debug("[getUserFromRequest] BasicAuth: found "
+                          "this HTTP_AUTHORIZATION: %r", d_auth)
+
+            # -------------------------------------------------------------- --
+
+            # Digest authentication
+
             else:
+
                 for field in hdr.split(","):
                     (key, _delimiter, value) = field.partition("=")
                     d_auth[key.lstrip(' ')] = value.strip('"')
@@ -482,26 +526,36 @@ def getUserFromRequest(request, config=None):
             log.debug("[getUserFromRequest] DigestAuth: found "
                       "this HTTP_AUTHORIZATION: %r", d_auth)
 
+        # ------------------------------------------------------------------ --
+
         # Do SSL Client Cert
+
         elif 'SSL_CLIENT_S_DN_CN' in request.environ:
+
             d_auth['login'] = request.environ.get('SSL_CLIENT_S_DN_CN', '')
+
             log.debug("[getUserFromRequest] SSLClientCert Auth: found "
                       "this SSL_CLIENT_S_DN_CN: %r", d_auth)
 
-        # In case of selftest
-        self_test = isSelfTest(config=config)
-        log.debug("[getUserFromRequest] Doing selftest!: %r", self_test)
+        # ------------------------------------------------------------------ --
 
-        if self_test:
+        # In case of selftest
+
+        if isSelfTest(config=config):
+
             log.debug("[getUserFromRequest] Doing selftest!")
-            param = request.params
+
             login = param.get("selftest_admin")
+
             if login:
                 d_auth['login'] = login
                 log.debug("[getUserFromRequest] Found selfservice user: %r in "
                           "the request.", d_auth)
 
+        # ------------------------------------------------------------------ --
+
     except Exception as exx:
+
         log.exception("[getUserFromRequest] An error occurred when trying"
                       " to fetch the user from the request: %r", exx)
 
@@ -844,12 +898,9 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
     :return: login, uid
 
     """
-    if not user_info:
-        log.info("lookup the user %r or uid %r for resolver %r",
-                 login, user_id, resolver_spec)
-    else:
-        log.info("filling cache for user %r in resolver %r",
-                 user_info, resolver_spec)
+
+    log.info("lookup the user %r or uid %r for resolver %r",
+             login, user_id, resolver_spec)
 
     def _lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
@@ -920,21 +971,22 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
     # if both, the login and the uid is available
 
     if result:
-        _login, _user_id, resolver_spec = result
+        r_login, r_user_id, _user_info = result
 
-        if _login and _user_id:
-            key = {'login': _login,
+        if r_login and r_user_id:
+            key = {'login': r_login,
                    'user_id': None,
                    'resolver_spec': resolver_spec}
-            p_key = json.dumps(key)
+            login_key = json.dumps(key)
 
-            request_context['UserLookup'][p_key] = result
+            request_context['UserLookup'][login_key] = result
 
             key = {'login': None,
-                   'user_id': _user_id,
+                   'user_id': r_user_id,
                    'resolver_spec': resolver_spec}
-            p_key = json.dumps(key)
-            request_context['UserLookup'][p_key] = result
+            id_key = json.dumps(key)
+
+            request_context['UserLookup'][id_key] = result
 
     log.info("lookup done %r", p_key)
 
@@ -948,7 +1000,6 @@ def _get_user_lookup_cache(resolver_spec):
     :param resolver_spec: resolver description
     :return: the user lookup cache
     """
-
     config = request_context['Config']
 
     enabled = config.get('linotp.user_lookup_cache.enabled',

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -110,5 +110,5 @@ class TestCreateUserIdResolvers(TestCase):
     def test_11_multiple_resolvers(self):
         testdata = (data.musicians_ldap_resolver, data.physics_ldap_resolver,
                     data.sql_resolver, data.sepasswd_resolver)
-        return self.create_resolvers_and_realm(testdata)
 
+        return self.create_resolvers_and_realm(testdata)

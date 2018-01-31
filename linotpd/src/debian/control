@@ -11,7 +11,7 @@ Build-Depends: cdbs,
                python-pastescript,
                python-pylons (>=0.9.7),
                python-setuptools,
-               python-support (>=0.6)
+               dh-python
 Standards-Version: 3.9.8
 Homepage: https://www.linotp.org/
 X-Python-Version: >= 2.7
@@ -20,11 +20,10 @@ Package: linotp
 Architecture: all
 Depends: apache2,
          libapache2-mod-wsgi | httpd-wsgi,
-	 openssl,
+         openssl,
          python-pycryptodomex,
          python-pysodium,
          python-requests,
-         python-socksipy,
          python-httplib2,
          ${misc:Depends},
          ${python:Depends}
@@ -49,7 +48,6 @@ Pre-Depends: adduser,
              python-pylons (>=0.9.7),
              python-pyrad,
              python-qrcode,
-             python-repoze.who (<=1.9),
              python-routes,
              python-simplejson,
              python-sqlalchemy (>=0.6),
@@ -57,8 +55,12 @@ Pre-Depends: adduser,
              python-weberror,
              python-webhelpers,
              python-webob
-Replaces: linotp-ee (<< 2.7-1~)
-Breaks: linotp-ee (<< 2.7-1~)
+Replaces: linotp-ee (<< 2.7-1~),
+          linotp-smsprovider (<< 2.10),
+          linotp-useridresolver (<< 2.10)
+Breaks: linotp-ee (<< 2.7-1~),
+        linotp-smsprovider (<< 2.10),
+        linotp-useridresolver (<< 2.10)
 Description: Server Core of the LinOTP 2 authentication solution
  LinOTP is an open solution for strong two-factor authentication with One Time
  Passwords.

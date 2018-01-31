@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -314,9 +314,8 @@ class SecurityProvider(object):
                             raise exx
                         error = u"%r: %r" % (provider_id, exx)
 
-                    except Exception as e:
-                        error = u"%r" % e
-                        log.exception("[createHSMPool] %r " % (e))
+                    except Exception as exx:
+                        log.exception("[createHSMPool] %r ", exx)
                         error = u"%r: %r" % (provider_id, exx)
 
                     pool.append({'obj': hsm, 'session': 0, 'error': error})

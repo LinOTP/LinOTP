@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -516,7 +516,7 @@ def getResolverObject(resolver_spec, config=None, load_config=True):
     if resolver_spec in resolvers_loaded:
         return resolvers_loaded.get(resolver_spec)
 
-    # no resolver - so instatiate one
+    # no resolver - so instantiate one
     else:
 
         cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
@@ -541,6 +541,7 @@ def getResolverObject(resolver_spec, config=None, load_config=True):
                 resolver.loadConfig(config, config_identifier)
             except Exception as exx:
                 # FIXME: Except clause is too general. resolver
+                # should be ResolverLoadConfigError
                 # exceptions in the useridresolver modules should
                 # have their own type, so we can filter here
                 log.error('Resolver config loading failed for resolver with '
@@ -777,7 +778,7 @@ def initResolvers():
         create  a deep copy of the dict with the global resolver classes
     """
     try:
-        # dict of all resolvers, which are instatiated during the request
+        # dict of all resolvers, which are instantiated during the request
         context['resolvers_loaded'] = {}
 
     except Exception as exx:
@@ -801,14 +802,43 @@ def closeResolvers():
     return
 
 
-def getResolverClassName(resolver_type, resolver_name):
+def getResolverClassName(cls_identifier, resolver_name):
 
-    resolver_cls = get_resolver_class(resolver_type)
+    """
+    Constructs a database identifier for a specific
+    resolver by concatenating the database prefix
+    with the resolver_name
 
-    if resolver_cls is None:
+    :param cls_identifier: The identifier for the resolver
+        class (as defined in the registry)
+
+    :param resolver_name: The name of the resolver
+    """
+
+    db_prefix = get_resolver_db_prefix(cls_identifier)
+
+    if db_prefix is None:
         return ''
 
-    return 'useridresolver.%s.%s' % (resolver_type, resolver_name)
+    return '%s.%s' % (db_prefix, resolver_name)
+
+
+def get_resolver_db_prefix(cls_identifier):
+
+    """
+    Returns the database prefix used in the user column
+    for a given resolver class identifier
+
+    :param cls_identifier: The identifier for the resolver
+        class (as defined in the registry)
+    """
+
+    resolver_cls = get_resolver_class(cls_identifier)
+
+    if resolver_cls is None:
+        return None
+
+    return resolver_cls.db_prefix
 
 
 # internal functions

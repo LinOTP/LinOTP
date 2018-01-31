@@ -3,7 +3,7 @@
 
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP userid resolvers.
 #
@@ -43,11 +43,11 @@ log = logging.getLogger(__name__)
 # indirectly) import any module that might not yet be installed when installing
 # LinOtpUserIdResolver.
 
-__copyright__ = "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
+__copyright__ = "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
 __email__ = "linotp@keyidentity.com"
-__version__ = '2.9.3.dev0'
+__version__ = '2.9.3'
 
 
 # ------------------------------------------------------------------------------

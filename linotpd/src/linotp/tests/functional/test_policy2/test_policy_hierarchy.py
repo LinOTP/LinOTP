@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -158,5 +158,47 @@ class TestPolicyHierarchy(TestController):
         resp = TestController.get_json_body(losetoken)
         values = resp.get('result').get('value')
         self.assertEqual(values.get('end_date'), validity_special, resp)
+
+    def test_lostToken_policy_hierarchy_3(self):
+        """
+        losttoken policy hierarchy test, create policies in different order
+
+        two policies are definded, one for specific user, one for wildcard user
+        """
+        serial = '0001'
+        policy_special = {
+            'name': 'losttoken_valid_hans',
+            'scope': 'enrollment',
+            'action': 'lostTokenValid=8 d 1m',
+            'realm': '*',
+            'user': 'hans',
+            'time': '',
+            'client': '',
+        }
+        policy_wildcard = {
+            'name': 'losttoken_valid_all',
+            'scope': 'enrollment',
+            'action': 'lostTokenValid=5',
+            'realm': '*',
+            'user': '',
+            'time': '',
+            'client': '',
+        }
+        token = {'serial': serial}
+
+        self._create_token(serial=serial, user='hans')
+        self.create_policy(params=policy_wildcard)
+        self.create_policy(params=policy_special)
+
+        today = datetime.now()
+        validity_special = (today + timedelta(days=8)).strftime("%d/%m/%y")
+        losetoken = self.make_authenticated_request(
+            controller='admin', action='losttoken', params=token)
+        resp = TestController.get_json_body(losetoken)
+        values = resp.get('result').get('value')
+        self.assertTrue(validity_special in values.get('end_date'), resp)
+
+# eof #
+
 
 

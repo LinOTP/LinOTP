@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -142,7 +142,7 @@ class TestSpecialController(TestController):
         Start the dummy radius server
 
         We need to start the radius server for every test, since every test
-        instatiates a new TestClass and thus the radius server process will
+        instantiates a new TestClass and thus the radius server process will
         not be accessable outside of a test anymore
         """
         import subprocess

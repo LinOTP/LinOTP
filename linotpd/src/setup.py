@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -76,14 +76,12 @@ setup(
         "docutils>=0.4",
         "simplejson>=2.0",
         "pycryptodomex>=3.4",
-        "repoze.who<=1.1",
         "pyrad>=1.1",
         "netaddr",
         "qrcode>=2.4",
         "configobj>=4.6.0",
         "httplib2",
         "requests",
-	"smpplib",
         "pysodium>=0.6.8",
         "python-ldap",
         # We also need M2Crypto. But this package is so problematic on many
@@ -124,6 +122,7 @@ setup(
         (
             'etc/linotp2/',
             [
+                # 'alembic.ini',
                 'config/linotp.ini.example',
                 'config/linotp.ini.paster',
                 'config/linotpapp.wsgi',
@@ -213,7 +212,7 @@ setup(
                     }
                 ),
             (
-                'lib/tokens/*.mako',
+                'tokens/**.mako',
                 'mako',
                 {
                     'input_encoding': 'utf-8'

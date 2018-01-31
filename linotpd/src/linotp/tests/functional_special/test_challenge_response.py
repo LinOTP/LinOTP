@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -728,6 +728,102 @@ class TestChallengeResponseController(TestSpecialController):
 
     @patch.object(linotp.provider.smsprovider.HttpSMSProvider.HttpSMSProvider,
                   'submitMessage', mocked_submitMessage_request)
+    def test_13_dynamic_mobile_number(self):
+        '''
+        Challenge Response Test: SMS token challenge dynamic mobile number
+        '''
+
+        params = {
+            'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+        }
+        _response = self.make_system_request(action='setConfig', params=params)
+        sms_conf = {"URL": self.sms_url,
+                    "PARAMETER": {"account": "clickatel",
+                                  "username": "legit"},
+                    "SMS_TEXT_KEY": "text",
+                    "SMS_PHONENUMBER_KEY": "destination",
+                    "HTTP_Method": "GET",
+                    "RETURN_SUCCESS": "ID"
+                    }
+
+        params = {
+            'SMSProviderConfig': json.dumps(sms_conf),
+        }
+
+        response = self.make_system_request(action='setConfig', params=params)
+        self.assertTrue('"status": true' in response, response)
+
+        # normal test
+        serial = self.createToken(pin="shortpin",
+                                  typ='sms',
+                                  phone='12345',
+                                  user='passthru_user1')
+
+        # ------------------------------------------------------------------ --
+
+        # trigger challenge against the token phone number
+
+        params = {"user": "passthru_user1", "pass": "shortpin"}
+        response = self.make_validate_request(action='check',
+                                              params=params)
+
+        self.assertTrue('"value": false' in response, response)
+
+        (sms_mobile_number, sms_otp) = SMS_MESSAGE_OTP
+
+        self.assertTrue(sms_mobile_number == '12345')
+
+        params = {"user": "passthru_user1", "pass": "shortpin" + sms_otp}
+        response = self.make_validate_request(action='check',
+                                              params=params)
+
+        self.assertTrue('"value": true' in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # define the dynamic_mobile_number
+
+        policy = {
+            'name': 'dynamic_mobile_number',
+            'scope': 'authentication',
+            'realm': '*',
+            'user': 'passthru_user1',
+            'action': 'sms_dynamic_mobile_number',
+            'active': 'true',
+            'client': ''}
+
+        response = self.make_system_request(action='setPolicy', params=policy)
+        self.assertTrue('"status": true' in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # trigger challenge against the token owner mobile number
+
+        params = {"user": "passthru_user1", "pass": "shortpin"}
+        response = self.make_validate_request(action='check',
+                                              params=params)
+
+        self.assertTrue('"value": false' in response, response)
+
+        (sms_mobile_number, sms_otp) = SMS_MESSAGE_OTP
+
+        self.assertTrue(sms_mobile_number == '+49(0)1234-24')
+
+        params = {"user": "passthru_user1", "pass": "shortpin" + sms_otp}
+        response = self.make_validate_request(action='check',
+                                              params=params)
+
+        self.assertTrue('"value": true' in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        self.delete_token(serial)
+        self.delete_policy('dynamic_mobile_number')
+
+        return
+
+    @patch.object(linotp.provider.smsprovider.HttpSMSProvider.HttpSMSProvider,
+                  'submitMessage', mocked_submitMessage_request)
     def test_14_sms_with_check_s(self):
         '''
         CR: SMS token challenge without pin and check_s
@@ -1165,43 +1261,6 @@ class TestChallengeResponseController(TestSpecialController):
         counter = self.do_email_auth("", counter, typ=typ)
 
         self.delete_token(serial)
-        return
-
-    def test_54_totp_auth(self):
-        '''
-        Challenge Response Test: totp token challenge with otppin=1 + otppin=2
-        '''
-
-        typ = 'totp'
-        counter = 0
-        otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
-
-        serial = self.createToken(pin="shortpin", typ=typ,
-                                  otpkey=otpkey, user='passthru_user1')
-
-        # now switch policy on for challenge_response
-        response = self.setPinPolicy(name="ch_resp", realm='myDefRealm',
-                                     action='challenge_response=hmac totp,')
-        self.assertTrue('"status": true,' in response, response)
-
-        counter = self.do_auth("shortpin", counter, typ=typ)
-
-        # with otppin==1 the pin should be the same as the password
-        response = self.setPinPolicy(realm='myDefRealm', action='otppin=1, ')
-        self.assertTrue('"status": true,' in response, response)
-
-        counter = self.do_auth("geheim1", counter + 1, typ=typ)
-
-        # with otppin==2 the pin should be the same as the password
-        response = self.setPinPolicy(realm='myDefRealm', action='otppin=2, ')
-        self.assertTrue('"status": true,' in response, response)
-
-        counter = self.do_auth("", counter + 1, typ=typ)
-
-        self.delete_token(serial)
-        self.delete_policy(name="ch_resp")
-        self.delete_policy(name="otpPin")
-
         return
 
     def test_60_hmac_two_tokens(self):

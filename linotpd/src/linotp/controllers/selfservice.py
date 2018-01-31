@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -36,20 +36,24 @@ import os
 import json
 import webob
 
+from paste.httpexceptions import HTTPFound
+
 from pylons import request
 from pylons import response
 from pylons import config
 from pylons import tmpl_context as c
+from pylons import url
 
 from pylons.controllers.util import abort
+from pylons.controllers.util import redirect
 from pylons.templating import render_mako as render
+from pylons.i18n.translation import _
 
 from mako.exceptions import CompileException
 
 import linotp.model
 from linotp.lib.base import BaseController
 from linotp.lib.error import ParameterError
-from linotp.lib.reply import sendError
 
 from linotp.lib.token import getTokenType
 from linotp.lib.token import getTokens4UserOrSerial
@@ -57,20 +61,31 @@ from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.policy import getSelfserviceActions
 from linotp.lib.policy import _get_auth_PinPolicy
 
-from linotp.lib.util import check_selfservice_session
 from linotp.lib.util import remove_empty_lines
+
+from linotp.lib.reply import sendError
+
+from linotp.lib.realm import getRealms
+from linotp.lib.realm import getDefaultRealm
+
+from linotp.lib.user import getRealmBox
+
 from linotp.lib.util import get_version
 from linotp.lib.util import get_copyright_info
 from linotp.lib.util import get_client
 
+
 from linotp.lib.userservice import add_dynamic_selfservice_enrollment
 from linotp.lib.userservice import add_dynamic_selfservice_policies
+from linotp.lib.userservice import get_pre_context
+from linotp.lib.userservice import remove_auth_cookie
+from linotp.lib.userservice import check_session
 
 from linotp.lib.selfservice import get_imprint
-from linotp.lib.user import User
 
 from linotp.lib.selftest import isSelfTest
 from linotp.controllers.userservice import get_auth_user
+from linotp.controllers.userservice import getTokenForUser
 
 from linotp.tokens import tokenclass_registry
 from linotp.lib.context import request_context
@@ -82,27 +97,6 @@ Session = linotp.model.Session
 ENCODING = "utf-8"
 log = logging.getLogger(__name__)
 audit = config.get('audit')
-
-
-def getTokenForUser(user):
-    """
-    should be moved to token.py
-    """
-    tokenArray = []
-
-    log.debug("[getTokenForUser] ...user %s in realm %s." %
-              (user.login, user.realm))
-    tokens = getTokens4UserOrSerial(user=user, serial=None, _class=False)
-
-    for token in tokens:
-        tok = token.get_vars()
-        if tok.get('LinOtp.TokenInfo', None):
-            token_info = json.loads(tok.get('LinOtp.TokenInfo'))
-            tok['LinOtp.TokenInfo'] = token_info
-        tokenArray.append(tok)
-
-    log.debug("[getTokenForUser] found tokenarray: %r" % tokenArray)
-    return tokenArray
 
 
 class SelfserviceController(BaseController):
@@ -138,37 +132,101 @@ class SelfserviceController(BaseController):
         _before_ is executed before any other function in this controller.
         '''
 
-        try:
-            c.audit = request_context['audit']
-            c.audit['success'] = False
-            c.audit['client'] = get_client(request)
+        self.redirect = None
 
+        try:
             c.version = get_version()
             c.licenseinfo = get_copyright_info()
 
+            c.audit = request_context['audit']
+            c.audit['success'] = False
+            self.client = get_client(request)
+            c.audit['client'] = self.client
+
             request_context['Audit'] = audit
 
-            (auth_type, auth_user) = get_auth_user(request)
+            # -------------------------------------------------------------- --
 
-            if not auth_user or auth_type not in ['repoze', 'selftest']:
-                abort(401, "You are not authenticated")
+            # handle requests which dont require authetication
 
-            (c.user, _foo, c.realm) = auth_user.rpartition('@')
-            self.authUser = User(c.user, c.realm, '')
+            if action in ['logout', 'custom_style']:
+                return
 
-            if auth_type == "repoze":
+            # -------------------------------------------------------------- --
+
+            # get the authenticated user
+
+            auth_type, auth_user, auth_state = get_auth_user(request)
+
+            # -------------------------------------------------------------- --
+
+            # handle not authenticated requests
+
+            if not auth_user or auth_type not in ['user_selfservice']:
+
+                if action in ['login']:
+                    return
+
+                if action in ['index']:
+                    self.redirect = True
+                    redirect(url(controller='selfservice', action='login'))
+
+                else:
+                    abort(403, "No valid session")
+
+            # -------------------------------------------------------------- --
+
+            # handle authenticated requests
+
+            # there is only one special case, which is the login that
+            # could be forwarded to the index page
+
+            if action in ['login']:
+                if auth_state != 'authenticated':
+                    return
+
+                self.redirect = True
+                redirect(url(controller='selfservice', action='index'))
+
+            # -------------------------------------------------------------- --
+
+            # in case of user_selfservice, an unauthenticated request should always go to login
+            if auth_user and auth_type is 'user_selfservice' \
+                    and auth_state is not 'authenticated':
+                self.redirect = True
+                redirect(url(controller='selfservice', action='login'))
+
+
+            # futher processing with the authenticated user
+
+            if auth_state != 'authenticated':
+                abort(403, "No valid session")
+
+            c.user = auth_user.login
+            c.realm = auth_user.realm
+            self.authUser = auth_user
+
+            # -------------------------------------------------------------- --
+
+            # authenticated session verification
+
+            if auth_type == 'user_selfservice':
+
                 # checking the session only for not_form_access actions
                 if action not in self.form_access_methods:
-                    call_url = "selfservice/%s" % action
-                    valid_session = check_selfservice_session(
-                                                    url=call_url,
-                                                    cookies=request.cookies,
-                                                    params=request.params)
+
+                    valid_session = check_session(request,
+                                                  auth_user,
+                                                  self.client)
+
                     if not valid_session:
                         c.audit['action'] = request.path[1:]
                         c.audit['info'] = "session expired"
                         audit.log(c.audit)
-                        abort(401, "No valid session")
+
+                        abort(403, "No valid session")
+
+            # -------------------------------------------------------------- --
 
             c.imprint = get_imprint(c.realm)
 
@@ -193,7 +251,7 @@ class SelfserviceController(BaseController):
                         # w.r.t. javascript evaluation
                         try:
                             nval = int(val)
-                        except:
+                        except ValueError:
                             nval = val
                         c.__setattr__(name.strip(), nval)
 
@@ -214,12 +272,15 @@ class SelfserviceController(BaseController):
 
             return response
 
-        except webob.exc.HTTPUnauthorized as acc:
+        except (webob.exc.HTTPUnauthorized, webob.exc.HTTPForbidden) as acc:
             # the exception, when an abort() is called if forwarded
             log.info("[__before__::%r] webob.exception %r" % (action, acc))
             Session.rollback()
             Session.close()
             raise acc
+
+        except HTTPFound as exx:
+            raise exx
 
         except Exception as e:
             log.exception("[__before__] failed with error: %r" % e)
@@ -231,6 +292,9 @@ class SelfserviceController(BaseController):
         '''
 
         '''
+        if self.redirect:
+            return
+
         param = request.params
 
         try:
@@ -281,9 +345,69 @@ class SelfserviceController(BaseController):
         '''
         This is the redirect to the first template
         '''
-        c.title = "LinOTP Self Service"
-        ren = render('/selfservice/base.mako')
-        return ren
+
+        c.title = _("LinOTP Self Service")
+        return render('selfservice/base.mako')
+
+    def logout(self):
+        """
+        handle the logout
+
+        we delete the cookies from the server and the client and
+        redirect to the login page
+        """
+
+        cookie = request.cookies.get('user_selfservice')
+        if cookie:
+            remove_auth_cookie(cookie)
+            response.delete_cookie('user_selfservice')
+
+        self.redirect = True
+        redirect(url(controller='selfservice', action='login'))
+
+    def login(self):
+        '''
+        render the selfservice login page
+        '''
+
+        cookie = request.cookies.get('user_selfservice')
+        if cookie:
+            remove_auth_cookie(cookie)
+            response.delete_cookie('user_selfservice')
+
+        c.title = _("LinOTP Self Service Login")
+
+        # ------------------------------------------------------------------ --
+
+        # prepare the realms and put the default realm on the top
+
+        defaultRealm = getDefaultRealm()
+        realmArray = [defaultRealm]
+
+        for realm in getRealms():
+            if realm != defaultRealm:
+                realmArray.append(realm)
+
+        # ------------------------------------------------------------------ --
+
+        # prepare the global context c for the rendering context
+
+        c.defaultRealm = defaultRealm
+        c.realmArray = realmArray
+
+        c.realmbox = getRealmBox()
+
+        context = get_pre_context(c.audit['client'])
+
+        mfa_login = context['mfa_login']
+        mfa_3_fields = context['mfa_3_fields']
+
+        c.otp = False
+        c.mfa_3_fields = False
+        if mfa_login and mfa_3_fields:
+            c.mfa_3_fields = True
+
+        return render('/selfservice/login.mako')
 
     def load_form(self):
         '''

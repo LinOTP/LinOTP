@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -27,10 +27,8 @@
 
 
 import re
-import json
 from datetime import timedelta
 from linotp.lib.crypto.encrypted_data import EncryptedData
-
 
 duration_regex = re.compile(r'((?P<weeks>\d+?)(w|week|weeks))?'
                             '((?P<days>\d+?)(d|day|days))?'

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -53,6 +53,7 @@ log = logging.getLogger(__name__)
 
 provider_registry = ClassRegistry()
 
+from linotp.lib.config import linotp_config_tree
 
 def load_provider_classes():
 
@@ -70,6 +71,7 @@ def load_provider_classes():
         import_submodules("%s.%s" % (__name__, "pushprovider"))
         import_submodules("%s.%s" % (__name__, "emailprovider"))
         import_submodules("%s.%s" % (__name__, "smsprovider"))
+        import_submodules("%s.%s" % (__name__, "voiceprovider"))
     except ImportError as exx:
         log.error('unable to load provider module : %s (%r)', __name__, exx)
         raise Exception(exx)
@@ -85,6 +87,7 @@ Provider_types = {
     'sms': {'prefix': 'linotp.SMSProvider.'},
     'email': {'prefix': 'linotp.EmailProvider.'},
     'push': {'prefix': 'linotp.PushProvider.'},
+    'voice': {'prefix': 'linotp.VoiceProvider.'},
     }
 
 # legacy keys used in the linotp config
@@ -104,13 +107,15 @@ Legacy_Provider_Name = 'imported_default'
 Default_Provider_Key = {
     'email': 'linotp.Provider.Default.email_provider',
     'sms': 'linotp.Provider.Default.sms_provider',
-    'push': 'linotp.Provider.Default.push_provider'
+    'push': 'linotp.Provider.Default.push_provider',
+    'voice': 'linotp.Provider.Default.voice_provider'
     }
 
 Policy_action_name = {
     'email': 'email_provider',
     'sms': 'sms_provider',
     'push': 'push_provider',
+    'voice': 'voice_provider',
     }
 
 # lookup definition to support legacy provider classes definitions
@@ -877,7 +882,10 @@ def _load_provider_class(provider_slass_spec):
     # we only can check for the existance of the required methods :-(
     #
 
-    required_method = ['submitMessage', 'push_notification']
+    required_method = ['submitMessage',
+                       'push_notification',
+                       'submitVoiceMessage']
+
     is_provider = False
     for method in required_method:
         if hasattr(provider_class_obj, method):

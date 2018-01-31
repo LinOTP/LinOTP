@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -25,6 +25,7 @@
 #
 
 
+import unittest
 import requests
 from requests.auth import HTTPDigestAuth
 
@@ -42,8 +43,8 @@ class TestYubikey(TestCase):
 
     def setUp(self):
         """
-        Create a AD UserIdResolver and add it to a realm. Verify that the user we
-        want to test with exists.
+        Create a AD UserIdResolver and add it to a realm. Verify that the user
+        we want to test with exists.
         """
         TestCase.setUp(self)
 
@@ -55,8 +56,9 @@ class TestYubikey(TestCase):
 
         user_view = self.manage_ui.user_view
         user_view.select_realm(self.realm_name)
-        self.assertTrue(user_view.user_exists(self.user_name), "User '" + self.user_name +
-                                                               "' should exist.")
+        self.assertTrue(user_view.user_exists(self.user_name),
+                        "User '" + self.user_name +
+                        "' should exist.")
         self.user_view = user_view
 
     def test_yubico_mode(self):
@@ -70,7 +72,9 @@ class TestYubikey(TestCase):
         lotpc = linotpclient(self.http_protocol,
                              url,
                              admin=self.http_username,
-                             adminpw=self.http_password)
+                             adminpw=self.http_password,
+                             cert=None, key=None,
+                             disable_ssl_certificate_validation=True)
         serialnum = "01382015"
         yubi_slot = 1
         serial = "UBAM%s_%s" % (serialnum, yubi_slot)

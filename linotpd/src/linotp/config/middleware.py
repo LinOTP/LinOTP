@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -64,22 +64,6 @@ import re
 import os
 import tempfile
 
-profile_load = False
-try:
-    from repoze.profile.profiler import AccumulatingProfileMiddleware
-    profile_load = True
-except ImportError:
-    pass
-
-repoze_load = False
-try:
-    from repoze.who.config import make_middleware_with_config as make_who_with_config
-    repoze_load = True
-except ImportError:
-    # could not load repoze
-    pass
-
-
 def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
     """
     Create a Pylons WSGI application and return it
@@ -110,18 +94,6 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
     # The Pylons WSGI app
     app = PylonsApp()
 
-    # Profiling Middleware
-    if profile_load:
-        if asbool(config['profile']):
-            app = AccumulatingProfileMiddleware(
-                app,
-                log_filename='/var/log/linotp/profiling.log',
-                cachegrind_filename='/var/log/linotp/cachegrind.out',
-                discard_first_request=True,
-                flush_at_shutdown=True,
-                path='/__profile__'
-            )
-
     # Routing/Session/Cache Middleware
     app = RoutesMiddleware(app, config['routes.map'])
     app = SessionMiddleware(app, config)
@@ -150,24 +122,6 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
         # Serve static files
         static_app = StaticURLParser(config['pylons.paths']['static_files'])
         app = Cascade([static_app, app])
-
-    # repoze.who
-    if repoze_load:
-        if 'who.generate_random_secret' in app_conf and not app_conf['who.generate_random_secret']:
-            app = make_who_with_config(app, global_conf, app_conf['who.config_file'], app_conf['who.log_file'], app_conf['who.log_level'])
-        else:
-            # Read the current configuration file and replace "secret" keys in every line
-            who_config_lines = []
-            secret = binascii.hexlify(os.urandom(16))
-            if len(secret) != 32:
-                raise RuntimeError('Could not generate random repoze.who secret, no os.urandom support?')
-
-            with open(app_conf['who.config_file']) as f:
-                for line in f.readlines():
-                    who_config_lines.append(re.sub(r'^(secret)\s*=\s*.*$', r'\1 = %s' % secret, line))
-            with tempinput(''.join(who_config_lines)) as who_config_file:
-                app = make_who_with_config(app, global_conf, who_config_file, app_conf['who.log_file'], app_conf['who.log_level'])
-
 
     # this is a compatibility hack for pylons > 1.0!!!
     conf = PyConf(config)

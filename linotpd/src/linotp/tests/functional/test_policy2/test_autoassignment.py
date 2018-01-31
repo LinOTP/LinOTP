@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -28,10 +28,11 @@
 """
 Test the autoassignment Policy.
 """
+import json
 
 import unittest2
 from copy import deepcopy
-
+from mock import patch
 from linotp.tests import TestController
 
 
@@ -43,13 +44,6 @@ class TestAutoassignmentController(TestController):
     # Define a list of 5 token with known OTP values. The 'serial' is set
     # during enrollment to the value chosen by LinOTP
     token_list = [
-        {
-            'key': '3132333435363738393031323334353637383930',
-            'type': 'hmac',
-            'serial': None,
-            'otplen': 6,
-            'otps': ['755224', '287082', '359152'],
-        },
         {
             'key': '4132333435363738393031323334353637383930',
             'type': 'hmac',
@@ -65,11 +59,14 @@ class TestAutoassignmentController(TestController):
             'otps': ['841650', '850446', '352919'],
         },
         {
-            'key': '6132333435363738393031323334353637383930',
-            'type': 'hmac',
+            'key': 'my_secret_password',
+            'type': 'pw',
             'serial': None,
-            'otplen': 6,
-            'otps': ['425323', '141798', '123782'],
+            'otplen': len('my_secret_password'),
+            'otps': [
+                'my_secret_password',
+                'my_secret_password',
+                'my_secret_password'],
         },
         {
             'key': '9163508031b20d2fbb1868954e041729',
@@ -81,7 +78,14 @@ class TestAutoassignmentController(TestController):
                 "ecebeeejedecebeg" + "tbkfkdhnfjbjnkcbtbcckklhvgkljifu",
                 "ecebeeejedecebeg" + "ktvkekfgufndgbfvctgfrrkinergbtdj",
                 ],
-            },
+        },
+        {
+            'key': '3132333435363738393031323334353637383930',
+            'type': 'hmac',
+            'serial': None,
+            'otplen': 6,
+            'otps': ['755224', '287082', '359152'],
+        },
         ]
     # set up in setUp
     policies_for_deletion = None
@@ -517,7 +521,8 @@ class TestAutoassignmentController(TestController):
             self.assertTrue(content['result']['status'])
             self.assertEqual(1, content['result']['value'])
 
-    def _create_autoassignment_policy(self, name, realm):
+    def _create_autoassignment_policy(self, name, realm,
+                                      action='autoassignment'):
         """
         Create an autoassignment policy with name 'name' for realm 'realm'.
 
@@ -527,7 +532,7 @@ class TestAutoassignmentController(TestController):
         params = {
             'name': name,
             'scope': 'enrollment',
-            'action': 'autoassignment',
+            'action': action,
             'user': '*',
             'realm': realm,
         }
@@ -583,3 +588,93 @@ class TestAutoassignmentController(TestController):
             self.fail("Unknown 'expected' %s" % expected)
         return content
 
+    def test_autoassign_mixed_token_wo_password(self):
+        """
+        Autoassignment wo password with 4 HMAC + 1 Yubikey to 5 different users
+
+        - 5 Token (4 HMAC + 1 Yubikey) are enrolled and put together in
+          the same token realm.
+
+        - An autoenrollment policy for that realm is created.
+
+        - 5 different users from that realm autoassign themselves one token
+          each by authenticating with the OTP value corresponding to
+          that token.
+
+        """
+
+        # 5 users from myDefRealm
+        users = [u'molière', u'shakespeare', u'lorca', u'aἰσχύλος', u'beckett']
+
+        # 5 token descriptions
+        token_list = deepcopy(self.token_list)
+
+        # ----------------------------------------------------------------- --
+
+        # create the policies for autoassigment without pin
+
+        self._create_autoassignment_policy(
+                            name='my_autoassign_policy_wo_pass',
+                            realm='mydefrealm',
+                            action='autoassignment_without_password')
+
+        self._set_token_realm(token_list, 'mydefrealm')
+
+        # ----------------------------------------------------------------- --
+
+        # validate/check with otp only to autoassign token to users
+
+        class Mocked_c():
+            audit = {}
+
+        for i in range(5):
+            user_name = users[i]
+            token = token_list[i]
+
+            mocked_context = Mocked_c()
+
+            with patch("linotp.controllers.validate.c", mocked_context):
+                params = {
+                    'user': user_name.encode('UTF-8'),
+                    'pass': token['otps'][0]}
+
+                response = self.make_validate_request('check', params=params)
+
+                msg = 'Error 65537 while instatiating the CBC mode'
+                self.assertTrue(msg not in mocked_context.audit['info'])
+
+                self.assertTrue('"value": true' in response)
+
+        # ----------------------------------------------------------------- --
+
+        # verify the correct assignment of the token to the user
+
+        for i in range(5):
+
+            user_name = users[i]
+            token = token_list[i]
+            params = {'serial': token['serial']}
+
+            response = self.make_admin_request('getTokenOwner', params=params)
+            content = json.loads(response.body)
+
+            self.assertTrue(content['result']['status'])
+            self.assertEqual(user_name, content['result']['value']['username'])
+
+            # -------------------------------------------------------------- --
+
+            # verify the correct working of the token by validate/check with
+            # the remaining OTP values
+
+            for j in range(1, 3):
+
+                params = {
+                    'user': user_name.encode('UTF-8'),
+                    'pass': token['otps'][j]}
+
+                response = self.make_validate_request('check', params=params)
+                self.assertTrue('"value": true' in response)
+
+        return
+
+# eof #

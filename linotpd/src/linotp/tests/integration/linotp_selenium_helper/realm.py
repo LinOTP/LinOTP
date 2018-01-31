@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -26,6 +26,7 @@
 """Contains Realm class"""
 
 import logging
+import time
 
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
@@ -98,10 +99,9 @@ class EditRealmDialog(ManageDialog):
         resolver_elements = [
             r.element for r in resolvers if r.name in linked_resolvers]
 
-        ActionChains(self.driver).key_down(Keys.CONTROL).perform()
         for element in resolver_elements:
-            element.click()
-        ActionChains(self.driver).key_up(Keys.CONTROL).perform()
+            ActionChains(self.driver).key_down(Keys.CONTROL).click(
+                element).key_up(Keys.CONTROL).perform()
 
     def save(self):
         self.find_by_id(self.edit_save_button_id).click()
@@ -217,6 +217,8 @@ class RealmManager(ManageDialog):
 
         dialog = self.click_new_realm()
         dialog.fill_and_save(name, resolvers)
+        time.sleep(1)
+
         self.reparse()
 
         new_realms = self.get_realms_list()

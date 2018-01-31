@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -49,10 +49,29 @@ class Validate:
         "Send a request and parse JSON result"
         url = self.validate_url + "/validate/check?"
 
-        r = requests.get(url,
-                         params,
-                         auth=self.auth,
-                         verify=False)
+        # With newer requests versions it seems, that the
+        # api hook url and its params needs to be
+        # concatenated as string.
+        try:
+            r = requests.get(url,
+                             params,
+                             auth=self.auth,
+                             verify=False)
+        except:
+            # We need to concatenate parameter names (key)
+            # and values to a valid url parameter string.
+            # e.g.
+            #     user=bach@se_scenario01_realm1&pass=bachnewpin118881
+            strparams = ""
+            for key in params:
+                strparams += key + "=" + params[key] + "&"
+            # Remove last '&'
+            strparams = strparams[:-1]
+
+            r = requests.get(url + strparams,
+                             auth=self.auth,
+                             verify=False)
+
         if r.status_code != 200:
             return False
         return_json = r.json()

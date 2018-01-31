@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -501,10 +501,11 @@ class ValidateController(BaseController):
 
         try:
             param.update(request.params)
-            try:
-                passw = param['pass']
-            except KeyError:
+
+            if 'pass' not in param:
                 raise ParameterError("Missing parameter: 'pass'")
+
+            passw = param['pass']
 
             transid = param.get('state', None)
             if transid is not None:
@@ -551,6 +552,129 @@ class ValidateController(BaseController):
         finally:
             Session.close()
 
+    # ------------------------------------------------------------------------ -
+
+    def accept_transaction(self):
+
+        """
+        confirms a transaction.
+
+        needs the mandatory url query parameters:
+
+            * transactionid: unique id for the transaction
+            * signature: signature for the confirmation
+        """
+
+        try:
+
+            param = {}
+            param.update(request.params)
+
+            # -------------------------------------------------------------- --
+
+            # check the parameters
+
+            if 'signature' not in param:
+                raise ParameterError("Missing parameter: 'signature'!")
+
+            if 'transactionid' not in param:
+                raise ParameterError("Missing parameter: 'transactionid'!")
+
+            # -------------------------------------------------------------- --
+
+            # start the processing
+
+            passw = {'accept': param['signature']}
+            transid = param['transactionid']
+
+            vh = ValidationHandler()
+            ok, _opt = vh.check_by_transactionid(transid=transid,
+                                                 passw=passw,
+                                                 options=param)
+
+            # -------------------------------------------------------------- --
+
+            # finish the result
+
+            c.audit['info'] = 'accept transaction: %r' % ok
+
+            c.audit['success'] = ok
+            Session.commit()
+
+            return sendResult(response, ok)
+
+        except Exception as exx:
+
+            log.exception("validate/accept_transaction failed: %r" % exx)
+            c.audit['info'] = "%r" % exx
+            Session.rollback()
+
+            return sendResult(response, False, 0)
+
+        finally:
+            Session.close()
+
+    # ------------------------------------------------------------------------ -
+
+    def reject_transaction(self):
+
+        """
+        rejects a transaction.
+
+        needs the mandatory url query parameters:
+
+            * transactionid: unique id for the transaction
+            * signature: signature for the rejection
+        """
+
+        try:
+
+            param = {}
+            param.update(request.params)
+
+            # -------------------------------------------------------------- --
+
+            # check the parameters
+
+            if 'signature' not in param:
+                raise ParameterError("Missing parameter: 'signature'!")
+
+            if 'transactionid' not in param:
+                raise ParameterError("Missing parameter: 'transactionid'!")
+
+            # -------------------------------------------------------------- --
+
+            # start the processing
+
+            passw = {'reject': param['signature']}
+            transid = param['transactionid']
+
+            vh = ValidationHandler()
+            ok, _opt = vh.check_by_transactionid(transid=transid,
+                                                 passw=passw,
+                                                 options=param)
+
+            # -------------------------------------------------------------- --
+
+            # finish the result
+
+            c.audit['info'] = 'reject transaction: %r' % ok
+
+            c.audit['success'] = ok
+            Session.commit()
+
+            return sendResult(response, ok)
+
+        except Exception as exx:
+
+            log.exception("validate/reject_transaction failed: %r" % exx)
+            c.audit['info'] = "%r" % exx
+            Session.rollback()
+
+            return sendResult(response, False, 0)
+
+        finally:
+            Session.close()
 
     def check_s(self):
         '''

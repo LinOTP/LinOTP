@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -97,12 +97,10 @@ class FinishTokens(object):
 
         # if there is no token left, we end up here
         if not (self.pin_matching_tokens + self.invalid_tokens):
-
-            self.create_audit_entry(action_detail="no token found!",
+            self.create_audit_entry(self.audit_entry.get('action_detail', "no token found!"),
                                     tokens=[])
 
             log.info("no valid token found: %r" % self.audit_entry)
-
             return False, None
 
         if self.user:
@@ -346,7 +344,8 @@ class FinishTokens(object):
         for token in all_tokens:
             token.incOtpFailCounter()
 
-    def create_audit_entry(self, action_detail=None, tokens=None):
+    @staticmethod
+    def create_audit_entry(action_detail="no token found!", tokens=None):
         """
         setting global audit entry
 
@@ -357,12 +356,7 @@ class FinishTokens(object):
         # get the audit dict from the context
         audit = context['audit']
 
-        # initialize by the given entry
-        audit.update(self.audit_entry)
-
-        # and allow overwrite by actual details
-        if action_detail:
-            audit['action_detail'] = action_detail
+        audit['action_detail'] = action_detail
 
         if not tokens:
             audit['serial'] = ''

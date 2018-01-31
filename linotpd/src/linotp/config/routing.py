@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -32,6 +32,7 @@ refer to the routes manual at http://routes.groovie.org/docs/
 """
 
 from pylons import config
+
 from routes import Mapper
 
 
@@ -68,17 +69,25 @@ def make_map(global_conf, app_conf,):
     # in case of selfservice, we route the default / to selfservice
     selfservice = app_conf.get('service.selfservice', 'True') == 'True'
     if selfservice:
-        routeMap.connect(
-            '/selfservice/custom-style.css', controller='selfservice', action='custom_style')
-        routeMap.connect('/selfservice', controller='selfservice', action='index')
-        routeMap.connect('/', controller='selfservice', action='index')
-        for cont in ['selfservice', 'account']:
-            routeMap.connect('/%s/{action}' % cont, controller=cont)
-            routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
+        routeMap.connect('/selfservice/custom-style.css',
+                         controller='selfservice', action='custom_style')
 
-    # in case of support for a remote selfservice, we have to enable this hook
+        routeMap.redirect('/account/login', '/selfservice/')
+        routeMap.redirect('/account/logout', '/selfservice/logout')
+
+        routeMap.redirect('/', '/selfservice/')
+        routeMap.connect('/selfservice/',
+                         controller='selfservice', action='index')
+
+        cont = 'selfservice'
+        routeMap.connect('/%s/{action}' % cont, controller=cont)
+        routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
+
+    # in case of support for a remote selfservice or the local selfservice,
+    # we have to enable this hook
+
     userservice = app_conf.get('service.userservice', 'True') == 'True'
-    if userservice:
+    if userservice or selfservice:
         routeMap.connect('/userservice', controller='userservice', action='index')
         for cont in ['userservice']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)

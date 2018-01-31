@@ -2,7 +2,7 @@
 
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP userid resolvers.
 #
@@ -52,6 +52,8 @@ import json
 @resolver_registry.class_entry('useridresolver.scimresolver')
 @resolver_registry.class_entry('scimresolver')
 class IdResolver (UserIdResolver):
+
+    db_prefix = 'useridresolver.SCIMIdResolver.IdResolver'
 
     @classmethod
     def setup(cls, config=None, cache_dir=None):

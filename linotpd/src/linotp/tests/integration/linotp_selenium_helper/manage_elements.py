@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2015 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2015 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -23,6 +23,8 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+
+import time
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
@@ -107,6 +109,7 @@ class ManageTab(ManageElement):
         super(ManageTab, self).__init__(manage_ui)
         self.tabbutton_css = 'div#tabs > ul[role=tablist] > li[role=tab]:nth-of-type(%s) > a > span' % (
             self.TAB_INDEX)
+
         self.tabpane_css = 'div#tabs > div.ui-tabs-panel:nth-of-type(%s)' % (
             self.TAB_INDEX)
         self.flexigrid_css = self.tabpane_css + ' div.flexigrid'
@@ -147,8 +150,19 @@ class ManageTab(ManageElement):
 
         tab_button = self.find_by_css(self.tabbutton_css)
 
+        WebDriverWait(self.driver, 3).until(
+            EC.element_to_be_clickable(
+                (By.CSS_SELECTOR, self.tabbutton_css))
+        )
+        time.sleep(1)
         if tab_button.is_enabled():
             self.manage.close_dialogs_and_click(tab_button)
+        time.sleep(1)
+
+        WebDriverWait(self.driver, 3).until(
+            EC.visibility_of_element_located(
+                (By.CSS_SELECTOR, self.tabpane_css))
+        )
 
         assert self._is_tab_open(), "Tab should be open"
 
@@ -184,21 +198,26 @@ class ManageDialog(ManageElement):
     "CSS of the menu where the entry can be found"
 
     menu_item_id = None
-    "ID of the associated menu entry, if applicable (e.g. useridresolver, realms dialog)"
+    "ID of the menu entry, if applicable (e.g. useridresolver, realms dialog)"
 
-    def __init__(self, manage_ui, dialog_body_id, close_button_id=None, menu_item_id=None, menu_css=None):
+    def __init__(self, manage_ui, dialog_body_id=None,
+                 close_button_id=None, menu_item_id=None, menu_css=None):
         """
         Initialise the dialog box
 
-        @param body_id The ID of the dialog body element
-        @param menu_item_id The ID of the menu item to open the dialog, if applicable
-        @param menu_css CSS selector for toplevel menu. Defaults to MENU_LINOTP_CONFIG_CSS (LinOTP Config menu)
+        :param manage_ui: ref for basic LinOTP UI handling
+        :param dialog_body_id: The ID of the dialog body element
+        :param close_button_id: html element id of the dialog close button
+        :param menu_item_id: The ID of the menu item to open the dialog
+        :param menu_css: Default is CSS selector for the LinOTP config menu
         """
         self.manage = manage_ui
-        self.body_id = dialog_body_id
 
-        # Configure class. These are only set if not None, so alternatively, derived classes can
-        # set these in their class definition
+        # Configure class. These are only set if not None, so alternatively,
+        # derived classes can set these in their class definition
+
+        if dialog_body_id:
+            self.body_id = dialog_body_id
         if menu_item_id:
             self.menu_item_id = menu_item_id
         if menu_css:
@@ -258,7 +277,7 @@ class ManageDialog(ManageElement):
         """
         Click a button in the dialog
 
-        @param button_id ID of the element to click. Defaults to any button 
+        :param button_id: ID of the element to click. Defaults to any button
         """
         button_css = self.buttonset_css + ' button'
         if button_id:

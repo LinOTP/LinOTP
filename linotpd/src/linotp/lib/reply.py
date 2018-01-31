@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -41,6 +41,8 @@ from linotp.lib.error import LinotpError
 from linotp.lib.util import get_version
 from linotp.lib.util import get_api_version
 
+from linotp.lib.context import request_context_safety
+from linotp.lib.context import request_context
 
 optional = True
 required = False
@@ -299,9 +301,11 @@ def sendResult(response, obj, id=1, opt=None, status=True):
     return json.dumps(res, indent=3)
 
 
-def sendResultIterator(obj, id=1, opt=None, rp=None, page=None):
+def sendResultIterator(obj, id=1, opt=None, rp=None, page=None,
+                       request_context_copy=None):
     '''
         sendResultIterator - return an json result document in a streamed mode
+                             which requires a request context to be avaliable
 
         :param obj: iterator of generator object like dict, string or list
         :param  id: id value, for future versions
@@ -311,91 +315,105 @@ def sendResultIterator(obj, id=1, opt=None, rp=None, page=None):
 
         :return: generator of response data (yield)
     '''
-    api_version = get_api_version()
-    linotp_version = get_version()
 
-    res = {"jsonrpc": api_version,
-            "result": {"status": True,
-                       "value": "[DATA]",
-                      },
-           "version": linotp_version,
-           "id": id}
+    if request_context_copy is None:
+        request_context_copy = {}
 
-    err = {"jsonrpc": api_version,
-            "result":
-                {"status": False,
-                 "error": {},
-                },
-            "version": linotp_version,
-            "id": id
-        }
+    # establish the request context within the pylons middleware
 
-    start_at = 0
-    stop_at = 0
-    if page:
-        if not rp:
-            rp = 16
-        try:
-            start_at = int(page) * int(rp)
-            stop_at = start_at + int(rp)
-        except ValueError as exx:
-            err['result']['error'] = {
-                            "code": 9876,
-                            "message": "%r" % exx,
-                            }
-            log.exception("failed to convert paging request parameters: %r"
-                          % exx)
-            yield json.dumps(err)
-            # finally we signal end of error result
-            raise StopIteration()
+    with request_context_safety():
 
-    typ = "%s" % type(obj)
-    if 'generator' not in typ and 'iterator' not in typ:
-        raise Exception('no iterator method for object %r' % obj)
+        for key, value in request_context_copy.items():
+            request_context[key] = value
 
-    res = {"jsonrpc": api_version,
-            "result": {"status": True,
-                       "value": "[DATA]",
-                      },
-           "version": linotp_version,
-           "id": id}
-    if page:
-        res['result']['page'] = int(page)
+        api_version = get_api_version()
+        linotp_version = get_version()
 
-    if opt is not None and len(opt) > 0:
-        res["detail"] = opt
+        res = {"jsonrpc": api_version,
+                "result": {"status": True,
+                           "value": "[DATA]",
+                          },
+               "version": linotp_version,
+               "id": id}
 
-    surrounding = json.dumps(res)
-    prefix, postfix = surrounding.split('"[DATA]"')
+        err = {"jsonrpc": api_version,
+                "result":
+                    {"status": False,
+                     "error": {},
+                    },
+                "version": linotp_version,
+                "id": id
+            }
 
-    # first return the opening
-    yield prefix + " ["
 
-    sep = ""
-    counter = 0
-    for next_one in obj:
-        counter = counter + 1
-        # are we running in paging mode?
+        start_at = 0
+        stop_at = 0
         if page:
-            if counter >= start_at and counter < stop_at:
+            if not rp:
+                rp = 16
+            try:
+                start_at = int(page) * int(rp)
+                stop_at = start_at + int(rp)
+            except ValueError as exx:
+                err['result']['error'] = {
+                                "code": 9876,
+                                "message": "%r" % exx,
+                                }
+                log.exception("failed to convert paging request parameters: %r"
+                              % exx)
+                yield json.dumps(err)
+                # finally we signal end of error result
+                raise StopIteration()
+
+        typ = "%s" % type(obj)
+        if 'generator' not in typ and 'iterator' not in typ:
+            raise Exception('no iterator method for object %r' % obj)
+
+        res = {"jsonrpc": api_version,
+                "result": {"status": True,
+                           "value": "[DATA]",
+                          },
+               "version": linotp_version,
+               "id": id}
+        if page:
+            res['result']['page'] = int(page)
+
+        if opt is not None and len(opt) > 0:
+            res["detail"] = opt
+
+
+        surrounding = json.dumps(res)
+        prefix, postfix = surrounding.split('"[DATA]"')
+
+        # first return the opening
+        yield prefix + " ["
+
+
+        sep = ""
+        counter = 0
+        for next_one in obj:
+            counter = counter + 1
+            # are we running in paging mode?
+            if page:
+                if counter >= start_at and counter < stop_at:
+                    res = "%s%s\n" % (sep, next_one)
+                    sep = ','
+                    yield res
+                if counter >= stop_at:
+                    # stop iterating if we reached the last one of the page
+                    break
+            else:
+                # no paging - no limit
                 res = "%s%s\n" % (sep, next_one)
                 sep = ','
                 yield res
-            if counter >= stop_at:
-                # stop iterating if we reached the last one of the page
-                break
-        else:
-            # no paging - no limit
-            res = "%s%s\n" % (sep, next_one)
-            sep = ','
-            yield res
 
-    # we add the amount of queried objects
-    total = '"queried" : %d' % counter
-    postfix = ', %s %s' % (total, postfix)
+        # we add the amount of queried objects
+        total = '"queried" : %d' % counter
+        postfix = ', %s %s' % (total, postfix)
 
-    # last return the closing
-    yield "] " + postfix
+        # last return the closing
+        yield "] " + postfix
 
 
 def sendCSVResult(response, obj, flat_lines=False,
@@ -594,6 +612,26 @@ def create_png(data, alt=None):
     return o_data
 
 
+def create_img_src(data):
+    '''
+        _create_img - create the qr image data
+
+        :param data: input data that will be munched into the qrcode
+        :type  data: string
+        :param width: image width in pixel
+        :type  width: int
+
+        :return: <img/> taged data
+        :rtype:  string
+    '''
+
+    o_data = create_png(data)
+    data_uri = o_data.encode("base64").replace("\n", "")
+    ret_img_src = 'data:image/png;base64,%s' % data_uri
+
+    return ret_img_src
+
+
 def create_img(data, width=0, alt=None, img_id="challenge_qrcode"):
     '''
         _create_img - create the qr image data
@@ -609,17 +647,17 @@ def create_img(data, width=0, alt=None, img_id="challenge_qrcode"):
     width_str = ''
     alt_str = ''
 
-    o_data = create_png(data, alt=alt)
-    data_uri = o_data.encode("base64").replace("\n", "")
+    img_src = create_img_src(data)
 
     if width != 0:
         width_str = " width=%d " % (int(width))
 
     if alt is not None:
-        val = urllib.urlencode({'alt':alt})
+        val = urllib.urlencode({'alt': alt})
         alt_str = " alt=%r " % (val[len('alt='):])
 
-    ret_img = '<img id="%s" %s  %s  src="data:image/png;base64,%s"/>' % (img_id, alt_str, width_str, data_uri)
+    ret_img = ('<img id="%s" %s  %s  src="%s"/>' %
+               (img_id, alt_str, width_str, img_src))
 
     return ret_img
 

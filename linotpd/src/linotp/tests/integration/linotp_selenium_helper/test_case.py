@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -25,7 +25,9 @@
 #
 import unittest
 import logging
+import re
 from contextlib import contextmanager
+from packaging import version
 
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
@@ -34,6 +36,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.remote.file_detector import UselessFileDetector
 
 from helper import get_from_tconfig, load_tconfig_from_file
 from manage_ui import ManageUi
@@ -56,7 +59,8 @@ class TestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """Initializes the base_url and sets the driver - called from unit tests"""
+        """Initializes the base_url and sets the driver -
+        called from unit tests"""
         cls.loadClsConfig()
         cls.driver = cls.startDriver()
 
@@ -164,12 +168,16 @@ class TestCase(unittest.TestCase):
 
     def setUp(self):
         self.enableImplicitWait()
+        self.disableFileUploadForSendKeys()
         self.verification_errors = []
         self.accept_next_alert = True
 
     def tearDown(self):
         """Closes the driver and displays all errors"""
         self.assertEqual([], self.verification_errors)
+
+    def disableFileUploadForSendKeys(self):
+        self.driver.file_detector = UselessFileDetector()
 
     def disableImplicitWait(self):
         self.driver.implicitly_wait(0)
@@ -198,7 +206,7 @@ class TestCase(unittest.TestCase):
         self.disableImplicitWait()
         try:
             elements = WebDriverWait(self.driver, 0).until(
-                EC.presence_of_all_elements_located(
+                EC.visibility_of_all_elements_located(
                     (By.XPATH, 'id("%s")//%s' % (parent_id, element_type)))
             )
         except TimeoutException:
@@ -239,21 +247,47 @@ class TestCase(unittest.TestCase):
             self._linotp_version = self.validate.version()
         return self._linotp_version
 
-    def need_linotp_version(self, version):
+    def need_linotp_version(self, version_minimum):
         """
         Raise a unittest skip exception if the server version is too old
 
-        @param version: Minimum version. Example: '2.9.1'
-        @raises unittest.SkipTest if the version is too old
+        :param version: Minimum version. Example: '2.9.1'
+        :raises unittest.SkipTest: if the version is too old
         """
-        if self.linotp_version.split('.') < version.split('.'):
+        current_AUT_version = self.linotp_version.split('.')
+        # Avoid comparisons like below:
+        # [u'2', u'10', u'dev2+g2b1b96a'] < ['2', '9', '2'] = True
+        filtered_version = []
+
+        for version_part in current_AUT_version:
+            # Only in case of a 'pure' number, we want to use for comparison
+            matchObj = re.search(r'^\d+$', version_part)
+            if(matchObj is not None):
+                filtered_version.append(version_part)
+                continue
+
+            # Match '10' in '2.10rc3'
+            matchObj = re.search(r'^(\d+)', version_part)
+            if(matchObj is not None):
+                filtered_version.append(matchObj.group(1))
+                # In case of a release candidate or beta version,
+                # we assume the match is the last relevant entry.
+                break
+
+        filtered_version_string = '.'.join(filtered_version)
+
+        if(version.parse(filtered_version_string) <
+                version.parse(version_minimum)):
             raise SkipTest(
-                'LinOTP version %s <  %s' % (self.linotp_version, version))
+                'LinOTP version %s (%s) <  %s' % (filtered_version_string,
+                                                  self.linotp_version,
+                                                  version_minimum))
 
     def reset_resolvers_and_realms(self, resolver=None, realm=None):
         """
-        Clear resolvers and realms. Then optionally create a userIdResolver with
-        given data and add it to a realm of given name.
+        Clear resolvers and realms. Then optionally create a
+        userIdResolver with given data and add it to a realm
+        of given name.
         """
         self.realm_manager.clear_realms()
         self.useridresolver_manager.clear_resolvers()

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -82,7 +82,7 @@ class TestPolicyMaxtoken(TestController):
 
         self.create_policy(policy)
 
-        for i in range(1, 3):
+        for i in range(1, 4):
             token_params = {'serial': '#TCOUNT%d' % i, }
             response = self.enroll_token(token_params)
             self.assertTrue('#TCOUNT%d' % i in response)
@@ -98,7 +98,7 @@ class TestPolicyMaxtoken(TestController):
         params = {'serial': '#TCOUNT%d' % i,
                   'user': 'def'}
         response = self.make_admin_request('assign', params=params)
-        message = "ERR410: the maximum number of allowed tokens is exceeded"
+        message = "ERR410: The maximum number of allowed tokens"
         self.assertTrue(message in response, response)
 
         return

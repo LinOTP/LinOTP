@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -29,6 +29,9 @@ admin controller - interfaces to administrate LinOTP
 """
 import os
 import logging
+from datetime import datetime
+
+import json
 
 from pylons import request
 from pylons import response
@@ -285,6 +288,28 @@ class AdminController(BaseController):
         finally:
             Session.close()
 
+    @staticmethod
+    def parse_tokeninfo(tok):
+        """
+        Parse TokenInfo to JSON
+        and format validity periode date fields to isoformat
+
+        """
+
+        token_info = tok['LinOtp.TokenInfo']
+
+        if token_info:
+            info = json.loads(token_info)
+        else:
+            info = {}
+
+        for field in ['validity_period_end', 'validity_period_start']:
+            if field in info:
+                date = datetime.strptime(info[field], '%d/%m/%y %H:%M')
+                info[field] = date.isoformat()
+
+        tok['LinOtp.TokenInfo'] = info
+
     def show(self):
         """
         method:
@@ -312,6 +337,9 @@ class AdminController(BaseController):
             * pagesize- optional: limit the number of returned tokens
             * user_fields - optional: additional user fields from the userid resolver of the owner (user)
             * outform - optional: if set to "csv", than the token list will be given in CSV
+            * tokeninfo_format - optional: if set to "json", this will be supplied in embedded JSON
+                                 otherwise, string format is returned with dates in format
+                                 DD/MM/YYYY TODO
 
         returns:
             a json result with:
@@ -334,6 +362,7 @@ class AdminController(BaseController):
             realm = param.get("viewrealm", param.get("realm", ''))
             ufields = param.get("user_fields")
             output_format = param.get("outform")
+            is_tokeninfo_json = param.get("tokeninfo_format") == "json"
 
             user_fields = []
             if ufields:
@@ -373,7 +402,10 @@ class AdminController(BaseController):
             # now row by row
             lines = []
             for tok in toks:
-                # CKO:
+
+                if is_tokeninfo_json:
+                    self.parse_tokeninfo(tok)
+
                 lines.append(tok)
 
             result["data"] = lines
@@ -1188,6 +1220,160 @@ class AdminController(BaseController):
         finally:
             Session.close()
 
+    def setValidity(self):
+        """
+        dedicated backend for setting the token validity for
+        multiple selected tokens.
+
+        arguments:
+
+        * tokens[]: the token serials (required)
+
+        * countAuthSuccessMax:
+            the maximum number of allowed successful authentications
+
+        * countAuthMax:
+            the maximum number of allowed successful authentications
+
+        * validityPeriodStart: utc - unix seconds as int
+
+        * validityPeriodEnd: utc - unix seconds as int
+
+        remark:
+
+            the parameter names are the same as with the admin/set
+            while admin/set does not support multiple tokens
+
+        remark:
+
+            if the value is 'unlimited' the validity limit will be removed
+
+        return:
+
+        * json document with the value field containing the serials of
+          the modified tokens
+
+        """
+        try:
+
+            c.audit['info'] = "set token validity"
+
+            param = getLowerParams(request.params)
+
+            # -------------------------------------------------------------- --
+
+            # check admin authorization
+
+            admin_user = getUserFromRequest(request)
+
+            checkPolicyPre('admin', 'set', param, user=admin_user)
+
+            # -------------------------------------------------------------- --
+
+            # process the arguments
+
+            unlimited = 'unlimited'
+
+            countAuthSuccessMax = None
+            if "countAuthSuccessMax".lower() in param:
+                countAuthSuccessMax = param.get(
+                                        'countAuthSuccessMax'.lower()).strip()
+
+            countAuthMax = None
+            if "countAuthMax".lower() in param:
+                countAuthMax = param.get(
+                                        'countAuthMax'.lower()).strip()
+
+            validityPeriodStart = None
+            if "validityPeriodStart".lower() in param:
+                validityPeriodStart = param.get(
+                                        'validityPeriodStart'.lower()).strip()
+
+            validityPeriodEnd = None
+            if "validityPeriodEnd".lower() in param:
+                validityPeriodEnd = param.get(
+                                        'validityPeriodEnd'.lower()).strip()
+
+            # -------------------------------------------------------------- --
+
+            if 'tokens[]' not in request.params:
+                raise ParameterError('missing parameter: tokens[]')
+
+            serials = request.params.getall("tokens[]")
+
+            tokens = []
+            for serial in serials:
+                tokens.extend(getTokens4UserOrSerial(serial=serial))
+
+            # -------------------------------------------------------------- --
+
+            # push the validity values into the tokens
+
+            for token in tokens:
+
+                # ---------------------------------------------------------- --
+
+                if countAuthMax == unlimited:
+                    token.del_count_auth_max()
+
+                elif countAuthMax is not None:
+                    token.count_auth_max = int(countAuthMax)
+
+                # ---------------------------------------------------------- --
+
+                if countAuthSuccessMax == unlimited:
+                    token.del_count_auth_success_max()
+
+                elif countAuthSuccessMax is not None:
+                    token.count_auth_success_max = int(countAuthSuccessMax)
+
+                # ---------------------------------------------------------- --
+
+                if validityPeriodStart == unlimited:
+                    token.del_validity_period_start()
+
+                elif validityPeriodStart is not None:
+
+                    validity_period_start = datetime.utcfromtimestamp(
+                                    int(validityPeriodStart)).strftime(
+                                        "%d/%m/%y %H:%M").strip()
+                    token.validity_period_start = validity_period_start
+
+                # ---------------------------------------------------------- --
+
+                if validityPeriodEnd == unlimited:
+                    token.del_validity_period_end()
+
+                elif validityPeriodEnd is not None:
+
+                    validity_period_end = datetime.utcfromtimestamp(
+                                    int(validityPeriodEnd)).strftime(
+                                        "%d/%m/%y %H:%M").strip()
+
+                    token.validity_period_end = validity_period_end
+
+            c.audit['success'] = 1
+
+            c.audit['action_detail'] = ("%r " % serials)[:80]
+
+            Session.commit()
+            return sendResult(response, serials, 1)
+
+        except PolicyException as pex:
+            log.exception('policy failed%r', pex)
+            Session.rollback()
+            return sendError(response, unicode(pex), 1)
+
+        except Exception as exx:
+
+            c.audit['success'] = False
+
+            log.exception('%r', exx)
+            Session.rollback()
+            return sendError(response, unicode(exx), 0)
+
+        finally:
+            Session.close()
 
 
 ########################################################
@@ -1677,8 +1863,27 @@ class AdminController(BaseController):
                 Session.commit()
 
                 response.content_type = 'application/json'
-                return sendResultIterator(iterate_users(users_iters),
-                                          rp=rp, page=page)
+
+                # ---------------------------------------------------------- --
+
+                # the result iterator is called in the middle of the
+                # pylons middleware. Thus the request_context has been
+                # terminated already and we have no request context available
+                # within the respons iterations. Therefore we make copy the
+                # request context to establish a new request context from
+                # the given parameter within the response iterator
+
+                request_context_copy = {}
+
+                for key, value in request_context.items():
+                    request_context_copy[key] = value
+
+                return sendResultIterator(
+                        iterate_users(users_iters),
+                        rp=rp, page=page,
+                        request_context_copy=request_context_copy)
+
+                # ---------------------------------------------------------- --
 
         except PolicyException as pe:
             log.exception('[userlist] policy failed %r' % pe)
@@ -2092,7 +2297,10 @@ class AdminController(BaseController):
             log.debug("[loadtokens] %r" % request.POST)
             tokenFile = request.POST['file']
             fileType = request.POST['type']
-            targetRealm = request.POST.get('realm', None)
+            targetRealm = request.POST.get(
+                            'realm', request.POST.get(
+                                'targetrealm', '')).lower()
+
 
             # for encrypted token import data, this is the decryption key
             transportkey = request.POST.get('transportkey', None)
@@ -2187,52 +2395,91 @@ class AdminController(BaseController):
                                           "possible. Please check the log file"
                                           " for more details.")
 
-            # determin the target realm
-            tokenrealm = None
-            # default for available realms if no admin policy is defined
+            tokenrealm = ''
+
+            # -------------------------------------------------------------- --
+            # first check if we are allowed to import the tokens at all
+            # if not, this will raise a PolicyException
+
+            rights = checkPolicyPre('admin', 'import', {})
+
+            # if an empty list of realms is returned, there is no admin policy
+            # defined at all. So we grant access to all realms
+
+            access_realms = rights.get('realms')
+            if access_realms == []:
+                access_realms = ['*']
+
+            # -------------------------------------------------------------- --
+
+            # determin the admin realms
+
             available_realms = getRealms()
 
-            # this needs to return the valid realms of the admin.
-            # it also checks the token number
-            res = checkPolicyPre('admin', 'import', {})
-            if res['realms']:
-                # by defualt, wee put the token in the FIRST realm of the admin
-                # so tokenrealm will either be ONE realm or NONE
-                tokenrealm = res.get('realms')[0]
-                available_realms = res.get('realms')
+            if '*' in access_realms:
 
-            # if parameter realm is provided, we have to check if this target
-            # realm exists and is in the set of the allowed realms
-            if targetRealm and targetRealm.lower() in available_realms:
-                    tokenrealm = targetRealm
-            log.info("[loadtokens] setting tokenrealm %s" % tokenrealm)
+                admin_realms = available_realms
+
+            else:
+
+                # remove non existing realms from the admin realms
+
+                admin_realms = list(set(available_realms) & set(access_realms))
+
+                # this is a ugly unlogical case for legacy compliance
+
+                if admin_realms:
+                    tokenrealm = admin_realms[0]
+
+            # -------------------------------------------------------------- --
+
+            # determin the target tokenrealm
+
+            if targetRealm:
+
+                if targetRealm not in admin_realms:
+                    raise Exception('target realm could not be assigned')
+
+                tokenrealm = targetRealm
+
+                # double check, if this is an allowed targetrealm
+
+                checkPolicyPre('admin', 'loadtokens',
+                               {'tokenrealm': tokenrealm})
+
+            log.info("[loadtokens] setting tokenrealm %r", tokenrealm)
+
+            # -------------------------------------------------------------- --
+
+            # Now import the Tokens from the dictionary
 
             log.debug("[loadtokens] read %i tokens. starting import now"
                       % len(TOKENS))
 
-            # Now import the Tokens from the dictionary
             ret = ""
             th = TokenHandler()
             for serial in TOKENS:
                 log.debug("[loadtokens] importing token %s" % TOKENS[serial])
 
-                log.info("[loadtokens] initialize token. serial: %s, realm: %s" % (serial, tokenrealm))
+                log.info("[loadtokens] initialize token. "
+                         "serial: %r, realm: %r", serial, tokenrealm)
 
-                # # for the eToken dat we assume, that it brings all its
-                # # init parameters in correct format
+                # for the eToken dat we assume, that it brings all its
+                # init parameters in correct format
+
                 if typeString == "dat":
                     init_param = TOKENS[serial]
 
                 else:
                     init_param = {
-                            'serial': serial,
-                            'type': TOKENS[serial]['type'],
-                            'description': TOKENS[serial].get("description", "imported"),
-                            'otpkey': TOKENS[serial]['hmac_key'],
-                            'otplen': TOKENS[serial].get('otplen'),
-                            'timeStep': TOKENS[serial].get('timeStep'),
-                            'hashlib': TOKENS[serial].get('hashlib')
-                            }
+                        'serial': serial,
+                        'type': TOKENS[serial]['type'],
+                        'description': TOKENS[serial].get(
+                            "description", "imported"),
+                        'otpkey': TOKENS[serial]['hmac_key'],
+                        'otplen': TOKENS[serial].get('otplen'),
+                        'timeStep': TOKENS[serial].get('timeStep'),
+                        'hashlib': TOKENS[serial].get('hashlib')}
 
                 # add additional parameter for vasco tokens
                 if TOKENS[serial]['type'] == "vasco":
@@ -2248,16 +2495,19 @@ class AdminController(BaseController):
                 if hashlib and hashlib != "auto":
                     init_param['hashlib'] = hashlib
 
-                if tokenrealm:
-                    checkPolicyPre('admin', 'loadtokens',
-                                   {'tokenrealm': tokenrealm})
-
-                (ret, tokenObj) = th.initToken(init_param, User('', '', ''),
+                (ret, _tokenObj) = th.initToken(
+                                            init_param,
+                                            User('', '', ''),
                                             tokenrealm=tokenrealm)
 
-                checkPolicyPost('admin', 'loadtokens',
+                # check policy to set token pin random
+                checkPolicyPost('admin', 'init',
                                {'serial': serial})
 
+            # check the max tokens per realm
+
+            checkPolicyPost('admin', 'loadtokens',
+                           {'tokenrealm': tokenrealm})
 
             log.info ("[loadtokens] %i tokens imported." % len(TOKENS))
             res = { 'value' : True, 'imported' : len(TOKENS) }
@@ -2271,15 +2521,15 @@ class AdminController(BaseController):
             Session.commit()
             return sendResultMethod(response, res)
 
-        except PolicyException as pe:
-            log.exception("[loadtokens] Failed checking policy: %r" % pe)
+        except PolicyException as pex:
+            log.exception("[loadtokens] Failed checking policy: %r", pex)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, "%r" % pex, 1)
 
-        except Exception as e:
-            log.exception("[loadtokens] failed! %r" % e)
+        except Exception as exx:
+            log.exception("[loadtokens] failed! %r", exx)
             Session.rollback()
-            return sendErrorMethod(response, unicode(e))
+            return sendErrorMethod(response, "%r" % exx)
 
         finally:
             Session.close()

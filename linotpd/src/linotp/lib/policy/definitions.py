@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -53,6 +53,7 @@ SYSTEM_ACTIONS = {
     'setProvider': 'write',
     'setDefaultProvider': 'write',
     'delProvider': 'write',
+    'testProvider': 'read',
     'getProvider': 'read', }
 
 
@@ -132,9 +133,12 @@ def getPolicyDefinitions(scope=""):
             'getserial': {
                 'type': 'bool',
                 'desc': 'Allow to search an unassigned token by OTP value.'},
-            'otpLogin': {
+            'mfa_login': {
                 'type': 'bool',
                 'desc': 'Requires OTP for selfservice authentication'},
+            'mfa_3_fields': {
+                'type': 'bool',
+                'desc': 'optional OTP for selfservice authentication'},
             },
         'system': {
             'read': {'type': 'bool'},
@@ -165,10 +169,24 @@ def getPolicyDefinitions(scope=""):
                 'type': 'str',
                 'desc': 'users can enroll a token just by using the '
                         'pin to authenticate and will an otp for authentication'},
+
             'autoassignment_forward': {
                 'type': 'bool',
                 'desc': 'in case of an autoassignement with a remotetoken, '
                         'the credentials are forwarded'},
+
+            'autoassignment_from_realm': {
+                'type': 'str',
+                'desc': 'define the src realm, where the unassigned tokens '
+                        'should be taken from'},
+
+            'autoassignment_without_password': {
+                'type': 'bool',
+                'desc': 'users can assign a token just by using the '
+                        'unassigned token to authenticate providing the '
+                        'otp value only.'
+                },
+
             'autoassignment': {
                 'type': 'bool',
                 'desc': 'users can assign a token just by using the '
@@ -186,9 +204,11 @@ def getPolicyDefinitions(scope=""):
                 'desc': 'The contents of the temporary password, '
                         'described by the characters C, c, n, s.'},
             'lostTokenValid': {
-                'type': 'int',
+                'type': 'set',
+                'value': ['int', 'duration'],
                 'desc': 'The length of the validity for the temporary '
-                        'token (in days).'},
+                        'token as days or duration with "d"-days, "h"-hours,'
+                        ' "m"-minutes, "s"-seconds.'},
             },
         'authentication': {
             "delete_on_authentication_exceed": {
@@ -199,6 +219,10 @@ def getPolicyDefinitions(scope=""):
                 'type': 'bool',
                 'desc': ('should the token be disabled if maximum '
                          'authentication count was reached')},
+            "voice_provider": {
+                'type': 'str',
+                'desc': 'The voice provider that should be used to '
+                        'send voice notifications'},
             "push_provider": {
                 'type': 'str',
                 'desc': 'The push provider that should be used to '
@@ -221,10 +245,12 @@ def getPolicyDefinitions(scope=""):
                         'Use <otp> and <serial> as parameters.'},
             'otppin': {
                 'type': 'set',
-                'value': [0, 1, 2, "token_pin", "password", "only_otp"],
+                'value': [0, 1, 2, 3,
+                          "token_pin", "password", "only_otp", "ignore_pin"],
                 'desc': 'either use the Token PIN (0=token_pin), '
-                        'use the Userstore Password (1=password) or '
-                        'use no fixed password component (2=only_otp).'},
+                        'use the Userstore Password (1=password),'
+                        'use no fixed password component (2=only_otp) or'
+                        'ignore the pin/password (3=ignore_pin).'},
             'autosms': {
                 'type': 'bool',
                 'desc': 'if set, a new SMS OTP will be sent after '
@@ -290,7 +316,7 @@ def getPolicyDefinitions(scope=""):
                 'value': ['qr', 'u2f'], # TODO: currently hardcoded
                 'desc': 'The token types that should support offline '
                         'authentication'
-             }
+             },
             },
         'authorization': {
             'authorize': {
@@ -403,6 +429,9 @@ def getPolicyDefinitions(scope=""):
     token_type_list = linotp.lib.token.get_token_type_list()
 
     for ttype in token_type_list:
+
+        pol['enrollment']["maxtoken%s" % ttype.upper()] = {'type': 'int'}
+
         pol['admin']["init%s" % ttype.upper()] = {'type': 'bool'}
 
         # TODO: action=initETNG

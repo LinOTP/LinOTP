@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -48,6 +48,7 @@ from linotp.lib.pairing import generate_pairing_url
 from linotp.lib.config import getFromConfig
 from linotp.lib.policy import get_single_auth_policy
 from linotp.provider import loadProviderFromPolicy
+from pylons import config
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from pysodium import crypto_sign_detached
@@ -62,7 +63,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-CHALLENGE_URL_VERSION = 1
+CHALLENGE_URL_VERSION = 2
 
 CONTENT_TYPE_SIGNREQ = 0
 CONTENT_TYPE_PAIRING = 1
@@ -389,7 +390,10 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         log.debug("pushing notification: %r : %r", challenge_url, gda)
 
-        success, response = push_provider.push_notification(challenge_url, gda)
+        success, response = push_provider.push_notification(
+                                                challenge_url,
+                                                gda,
+                                                transaction_id)
 
         if not success:
             raise Exception('push mechanism failed. response was %r'
@@ -439,7 +443,27 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         self.ensure_state_is_in(valid_states)
 
-        # ------------------------------------------------------------------- --
+        # ------------------------------------------------------------------ --
+
+        # new pushtoken protocoll supports the keyword based accept or deny.
+        # the old 'passwd' argument is not supported anymore
+
+        try:
+
+            signature_accept = passwd.get('accept', None)
+            signature_reject = passwd.get('reject', None)
+
+        except AttributeError:  # will be raised with a get() on a str object
+
+            raise Exception('Pushtoken version %r requires "accept" or'
+                            ' "reject" as parameter' % CHALLENGE_URL_VERSION)
+
+        if signature_accept is not None and signature_reject is not None:
+
+            raise Exception('Pushtoken version %r requires "accept" or'
+                            ' "reject" as parameter' % CHALLENGE_URL_VERSION)
+
+        # ------------------------------------------------------------------ --
 
         filtered_challenges = []
         serial = self.getSerial()
@@ -449,11 +473,11 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         max_fail = int(getFromConfig('PushMaxChallenges', '3'))
 
-        # ------------------------------------------------------------------- --
+        # ------------------------------------------------------------------ --
 
         if 'transactionid' in options:
 
-            # --------------------------------------------------------------- --
+            # -------------------------------------------------------------- --
 
             # fetch all challenges that match the transaction id or serial
 
@@ -461,7 +485,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
             challenges = Challenges.lookup_challenges(serial, transaction_id)
 
-            # --------------------------------------------------------------- --
+            # -------------------------------------------------------------- --
 
             # filter into filtered_challenges
 
@@ -481,7 +505,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                 elif not tan_is_valid and fail_counter <= max_fail:
                     filtered_challenges.append(challenge)
 
-        # ------------------------------------------------------------------- --
+        # ------------------------------------------------------------------ --
 
         if not filtered_challenges:
             return -1
@@ -492,25 +516,74 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             # plaintext. we retrieve the original plaintext (saved
             # in createChallenge) and check for a match
 
+            data = challenge.getData()
+            data_to_verify = b64decode(data['sig_base'])
+
             b64_dsa_public_key = self.getFromTokenInfo('user_dsa_public_key')
             user_dsa_public_key = b64decode(b64_dsa_public_key)
 
-            data = challenge.getData()
-            sig_base = data['sig_base']
+            # -------------------------------------------------------------- --
 
-            passwd_as_bytes = decode_base64_urlsafe(passwd)
-            sig_base_as_bytes = b64decode(sig_base)
-            try:
-                verify_sig(passwd_as_bytes,
-                           sig_base_as_bytes,
-                           user_dsa_public_key)
-                return 1
-            except ValueError:  # signature mismatch
-                return -1
+            # handle the accept case
+
+            if signature_accept is not None:
+
+                accept_signature_as_bytes = decode_base64_urlsafe(
+                                                        signature_accept)
+
+                accept_data_to_verify_as_bytes = (
+                                struct.pack('<b', CHALLENGE_URL_VERSION) +
+                                b'ACCEPT\0' +
+                                data_to_verify)
+
+                try:
+                    verify_sig(accept_signature_as_bytes,
+                               accept_data_to_verify_as_bytes,
+                               user_dsa_public_key)
+
+                    challenge.add_session_info({'accept': True})
+
+                    return 1
+                except ValueError:  # accept signature mismatch
+
+                    challenge.add_session_info({'accept': False})
+                    log.error("accept signature mismatch!")
+
+                    return -1
+
+            # -------------------------------------------------------------- --
+
+            # handle the reject case
+
+            elif signature_reject is not None:
+
+                reject_signature_as_bytes = decode_base64_urlsafe(
+                                                            signature_reject)
+
+                reject_data_to_verify_as_bytes = (
+                                struct.pack('<b', CHALLENGE_URL_VERSION) +
+                                b'DENY\0' +
+                                data_to_verify)
+
+                try:
+                    verify_sig(reject_signature_as_bytes,
+                               reject_data_to_verify_as_bytes,
+                               user_dsa_public_key)
+
+                    challenge.add_session_info({'reject': True})
+
+                    return 1
+
+                except ValueError:  # reject signature mismatch
+
+                    challenge.add_session_info({'reject': False})
+                    log.error("reject signature mismatch!")
+
+                    return -1
 
         return -1
 
-# --------------------------------------------------------------------------- --
+# -------------------------------------------------------------------------- --
 
     def statusValidationSuccess(self):
 
@@ -902,6 +975,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         signature = crypto_sign_detached(unsigned_raw_data, secret_key)
         raw_data = unsigned_raw_data + signature
 
-        url = 'lseqr://push/' + encode_base64_urlsafe(raw_data)
+        protocol_id = config.get('mobile_app_protocol_id', 'lseqr')
+        url = protocol_id + '://push/' + encode_base64_urlsafe(raw_data)
 
         return url, (signature + plaintext)

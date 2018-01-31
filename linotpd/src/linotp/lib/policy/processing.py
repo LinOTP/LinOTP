@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -88,7 +88,7 @@ def _getAuthorization(scope, action):
 
 
 def has_client_policy(client, scope=None, action=None, realm=None, user=None,
-                      find_resolver=True, userObj=None):
+                      find_resolver=True, userObj=None, active_only=True):
     """
     migration stub for the new policy engine
 
@@ -107,7 +107,8 @@ def has_client_policy(client, scope=None, action=None, realm=None, user=None,
                                          action=action,
                                          realm=realm, user=user,
                                          find_resolver=find_resolver,
-                                         userObj=userObj)
+                                         userObj=userObj,
+                                         active_only=active_only)
 
     if not use_new_one or compare:
         old_pols = legacy_get_client_policy(client, scope=scope,
@@ -133,7 +134,7 @@ def has_client_policy(client, scope=None, action=None, realm=None, user=None,
 
 
 def get_client_policy(client, scope=None, action=None, realm=None, user=None,
-                      find_resolver=True, userObj=None):
+                      find_resolver=True, userObj=None, active_only=True):
     """
     migration stub for the new policy engine
     """
@@ -147,7 +148,8 @@ def get_client_policy(client, scope=None, action=None, realm=None, user=None,
                                          action=action,
                                          realm=realm, user=user,
                                          find_resolver=find_resolver,
-                                         userObj=userObj)
+                                         userObj=userObj,
+                                         active_only=active_only)
 
     if not use_new_one or compare:
         pols_old = legacy_get_client_policy(client, scope=scope,
@@ -172,7 +174,7 @@ def get_client_policy(client, scope=None, action=None, realm=None, user=None,
     return return_policies
 
 
-def getPolicy(param, only_active=False):
+def getPolicy(param, only_active=True):
     """
     migration method for the getPolicy old and new
     """
@@ -211,7 +213,7 @@ def getPolicy(param, only_active=False):
     return return_policies
 
 
-def search_policy(param, only_active=False):
+def search_policy(param, only_active=True):
     """
     migration stub for the new policy engine
     """
@@ -249,7 +251,7 @@ def search_policy(param, only_active=False):
 # interfaces to the new policy engine
 
 
-def new_search_policy(param, only_active=False):
+def new_search_policy(param, only_active=True):
     '''
     Function to retrieve the list of policies.
 
@@ -291,7 +293,7 @@ def new_search_policy(param, only_active=False):
     return new_pols
 
 
-def new_getPolicy(param, only_active=False):
+def new_getPolicy(param, only_active=True):
     '''
     Function to retrieve the list of policies.
 
@@ -393,7 +395,8 @@ def new_getAuthorization(scope, action):
 
 
 def new_get_client_policy(client, scope=None, action=None, realm=None,
-                          user=None, find_resolver=True, userObj=None):
+                          user=None, find_resolver=True, userObj=None,
+                          active_only=True):
     '''
     This function returns the dictionary of policies for the given client.
 
@@ -427,6 +430,9 @@ def new_get_client_policy(client, scope=None, action=None, realm=None,
 
     policy_eval.filter_for_time()
 
+    if active_only:
+        policy_eval.filter_for_active(state=True)
+
     if userObj:
         policy_eval.filter_for_user(userObj)
     elif user:
@@ -438,7 +444,8 @@ def new_get_client_policy(client, scope=None, action=None, realm=None,
 
 
 def new_has_client_policy(client, scope=None, action=None, realm=None,
-                          user=None, find_resolver=True, userObj=None):
+                          user=None, find_resolver=True, userObj=None,
+                          active_only=True):
     '''
     This function returns the dictionary of policies for the given client.
 
@@ -471,6 +478,9 @@ def new_has_client_policy(client, scope=None, action=None, realm=None,
 
     if action:
         param['action'] = action
+
+    if active_only:
+        policy_eval.filter_for_active(state=True)
 
     if client:
         param['client'] = client

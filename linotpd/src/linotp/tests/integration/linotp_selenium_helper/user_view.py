@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -28,6 +28,10 @@
 
 from manage_elements import ManageTab
 from helper import select
+
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 
 class UserViewException(Exception):
@@ -57,6 +61,12 @@ class UserView(ManageTab):
             realm_name = realm_name.lower()
 
         realm_select = self.driver.find_element_by_id('realm')
+
+        WebDriverWait(self.driver, 6).until(
+            EC.visibility_of_element_located(
+                (By.ID, "realm"))
+        )
+
         select(self.driver, realm_select, realm_name)
         self.wait_for_grid_loading()
 
@@ -72,7 +82,8 @@ class UserView(ManageTab):
         Returns the element containing the user view
         """
         tab = self._get_tab()
-        self.select_realm(realm_name)
+        if(realm_name is not None):
+            self.select_realm(realm_name)
         return tab
 
     def get_num_users(self, realm_name=None):
@@ -84,7 +95,7 @@ class UserView(ManageTab):
         usertab = self._open_tab_user_view(realm_name)
         assert usertab, "User tab could not be opened for realm %s" % realm_name
 
-        self.clear_filters()
+        self.clear_filters(realm_name)
         pPageStat = usertab.find_element_by_css_selector("div.flexigrid "
                                                          "> div.pDiv > div.pDiv2 > div.pGroup > span.pPageStat").text
         if pPageStat == "No items":
@@ -104,15 +115,15 @@ class UserView(ManageTab):
                                                           "> div.sDiv > div.sDiv2 > input[name=\"q\"]")
         return search_box
 
-    def clear_filters(self):
+    def clear_filters(self, realm_name=None):
         # Clear filter settings and reload
         e = self._get_searchbox_element()
         e.clear()
-        self._submit_search()
+        self._submit_search(realm_name)
         self.wait_for_grid_loading()
 
-    def _submit_search(self):
-        usertab = self._open_tab_user_view()
+    def _submit_search(self, realm_name=None):
+        usertab = self._open_tab_user_view(realm_name)
         submit_button = usertab.find_element_by_css_selector(
             "div.flexigrid > div.sDiv > div.sDiv2 > "
             "input[name=\"search_button\"]"
@@ -134,7 +145,7 @@ class UserView(ManageTab):
             "div.flexigrid > div.sDiv > div.sDiv2 > "
             "select[name=\"qtype\"]"
         )
-        select(self.driver, select_type, "in username")
+        select(self.driver, select_type, "Username")
 
         self._submit_search()
         self.wait_for_grid_loading()

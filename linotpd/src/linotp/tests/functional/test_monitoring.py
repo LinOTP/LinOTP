@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -415,7 +415,7 @@ class TestMonitoringController(TestController):
         self.create_token(serial='0061', user='other_user', realm='myotherrealm')
         self.create_token(serial='0062', user='root', realm='myotherrealm')
         # mymixrealm = both resolvers
-        self.create_token(serial='0063', user='root@myDefRes', realm='mymixrealm')
+        self.create_token(serial='0063', user='root', realm='mymixrealm')
         self.create_token(serial='0064', user='max1', realm='mymixrealm')
 
         response = self.make_authenticated_request(

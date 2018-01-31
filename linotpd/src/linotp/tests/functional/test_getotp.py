@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -410,7 +410,7 @@ class TestGetOtpController(TestController):
                                                  auth_user=auth_user)
         print response
         self.assertTrue('"message": "The serial hotp1 does not belong'
-                        ' to user passthru_user1@myDefRealm"' in response, response)
+                        ' to user passthru_user1@mydefrealm"' in response, response)
 
         return
 

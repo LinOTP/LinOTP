@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2016 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2016 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -39,6 +39,10 @@ TCFILE=server_cfg.ini
 # Nosetests arguments
 NOSETESTS_ARGS=-v
 
+ifdef TEST_DEBUG
+DEBUG_ARGS=-s --pdb
+endif
+
 # Additional test arguments can be specified in SELENIUMTESTS_ARGS
 SELENIUMTESTS_ARGS=
 
@@ -58,6 +62,6 @@ test: integrationtests
 
 integrationtests:
 	# integrationtests - selenium integration tests
-	nosetests $(NOSETESTS_ARGS) --tc-file=$(TCFILE) $(LOGFILTER_ARGS) $(SELENIUMTESTS_ARGS)
+	nosetests $(NOSETESTS_ARGS) --tc-file=$(TCFILE) $(LOGFILTER_ARGS) $(SELENIUMTESTS_ARGS) $(DEBUG_ARGS) $(TEST_CASE)
 
 .PHONY: test integrationtests

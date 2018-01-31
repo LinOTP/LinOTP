@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2016 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2016 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -60,8 +60,13 @@ ARG LINOTP_MIRROR=www.linotp.org
 #   LOGSTASH_HOST=logstash1
 #   LOGSTASH_PORT=5000
 #   LOGSTASH_TAGS=('instance1', 'server1')
+#
+# To change the location of the database
+# encryption key file, set
+#   SECRET_FILE_LOCATION=/path/to/encKey
 
-ENV LINOTP_USER=linotp \
+ENV TZ="Europe/Berlin" \
+	LINOTP_USER=linotp \
 	LINOTP_DB_TYPE=sqlite \
 	LINOTP_DB_NAME=//tmp/linotp.db \
 	LINOTP_DB_HOST=dbhost \
@@ -73,10 +78,14 @@ ENV LINOTP_USER=linotp \
 	LINOTP_APACHE_AUTH=true \
 	LINOTP_APACHE_SSL=true \
 	LINOTP_APACHE_HSTS=true \
+	LINOTP_LOGLEVEL=INFO \
+	LINOTP_CONSOLE_LOGLEVEL=DEBUG \
+	SQLALCHEMY_LOGLEVEL=ERROR \
 	APACHE_LOGLEVEL=info \
 	LOGSTASH_HOST= \
 	LOGSTASH_PORT= \
-	LOGSTASH_TAGS=()
+	LOGSTASH_TAGS=() \
+	SECRET_FILE_LOCATION=
 
 # Internal environment variables used by the docker images
 ENV LINOTP_INI_TEMPLATE=/etc/linotp/linotp-docker.ini.tmpl \
@@ -112,7 +121,7 @@ RUN \
 		python-decorator python-docutils python-formencode python-httplib2 \
 		python-ldap python-m2crypto python-mako python-mysqldb python-netaddr \
 		python-paste python-pastedeploy python-pastescript python-pygments python-pylons \
-		python-pyrad python-qrcode python-repoze.who python-routes python-simplejson \
+		python-pyrad python-qrcode python-routes python-simplejson \
 		python-sqlalchemy python-tempita python-weberror python-webhelpers python-webob \
 		apache2 libapache2-mod-wsgi python-pycryptodomex python-pysodium python-requests
 
@@ -125,7 +134,7 @@ RUN echo "linotp linotp/apache/activate boolean true" > /opt/linotp/apt/debconf-
 	&& echo "deb [trusted=yes] file:/opt/linotp/apt ./" > /etc/apt/sources.list.d/linotp-local.list \
 	&& (echo "Package: *"; echo "Pin: origin \"\""; echo "Pin-Priority: 900") > /etc/apt/preferences.d/linotp \
 	&& apt-get update \
-	&& apt-get install linotp linotp-smsprovider linotp-useridresolver python-logstash \
+	&& apt-get install linotp python-logstash \
 	&& rm /etc/apt/sources.list.d/linotp-local.list \
 	&& rm -r /opt/linotp/apt /etc/apache2/sites-enabled/000-default.conf \
 	&& rm /etc/linotp2/linotp.ini /etc/linotp2/encKey /etc/linotp2/*.pem
@@ -157,6 +166,8 @@ ENTRYPOINT [ "/usr/local/bin/dockerfy", \
 CMD [ \
 	"/usr/sbin/apache2ctl", "-DFOREGROUND" \
 	]
+
+COPY ./se_mypasswd /etc/se_mypasswd
 
 # Listen on apache port (https 443 by default - see LINOTP_APACHE_SSL and APACHE_PORT)
 EXPOSE 80 81 443

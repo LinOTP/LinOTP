@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -72,6 +72,7 @@ def parse_dat_data(data, d_string=None):
 
     :return: It returns a dictionary of serial : { /admin/init parameters }
     '''
+
     from linotp.lib.ImportOTP  import ImportException
 
     #the result set

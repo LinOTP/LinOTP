@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -27,8 +27,13 @@
 
 import logging
 
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+
+from selenium.webdriver.support.select import Select
 from manage_elements import ManageTab, ManageDialog
-from helper import fill_form_element, find_by_css, find_by_id
+from helper import fill_form_element, find_by_id
 
 logger = logging.getLogger(__name__)
 
@@ -58,11 +63,24 @@ class TokenView(ManageTab):
         """Select the 'Token View' tab"""
         self.open_tab()
 
-        self.driver.find_element_by_css_selector(
-            "option[value=\"100\"]").click()  # Show 100 tokens in view
+        # If the '100' in the items-per-page combobox is
+        # already selected,
+        # chrome browser ignores the 're-selection' of '100', and
+        # does not fire a change event.
+        # That is fine, because if there are pre-selected items
+        # in e.g. the token list view, the selection is lost.
+        # BUT firefox fires an event even if the '100' is already
+        # selected.
+        # To avoid loosing selected items, we check if the '100'
+        # is selected.
+
+        select = Select(self.driver.find_element_by_name("rp"))
+        if(select.first_selected_option.text.strip() != '100'):
+            # Show 100 tokens in view
+            self.driver.find_element_by_css_selector(
+                "option[value=\"100\"]").click()
 
         self.wait_for_grid_loading()
-        # self.manage.wait_for_waiting_finished()
 
     def _get_status_text(self):
         # Information text about number of tokens shown
@@ -174,9 +192,11 @@ class TokenView(ManageTab):
         self.select_token(token_serial)
 
         assign_id = "button_assign"
-        # WebDriverWait(self.driver, 4).until(
-        #             EC.element_to_be_clickable((By.ID, assign_id))
-        #        )
+
+        WebDriverWait(self.driver, 4).until(
+            EC.element_to_be_clickable((By.ID, assign_id))
+        )
+
         driver.find_element_by_id(assign_id).click()
 
         self.wait_for_waiting_finished()

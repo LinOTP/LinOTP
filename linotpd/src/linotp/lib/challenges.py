@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -39,6 +39,24 @@ log = logging.getLogger(__name__)
 
 class Challenges(object):
 
+    DefaultTransactionIdLength = 17
+
+    @staticmethod
+    def get_tranactionid_length():
+        """
+        get transaction_id length from config and check if it is in range
+        :return: length of transaction id
+        """
+        transid_len = int(
+            context.get(
+            'Config', {}).get(
+            'TransactionIdLength', Challenges.DefaultTransactionIdLength))
+
+        if transid_len < 12 or transid_len > 17:
+            raise Exception("TransactionIdLength must be between 12 and 17, "
+                            "was %d" % transid_len)
+        return transid_len
+
     @staticmethod
     def lookup_challenges(serial=None, transid=None, filter_open=False):
         """
@@ -61,8 +79,7 @@ class Challenges(object):
         conditions = ()
 
         if transid:
-            transid_len = int(
-                context.get('Config').get('TransactionIdLength', 12) or 12)
+            transid_len = Challenges.get_tranactionid_length()
 
             if len(transid) == transid_len:
                 conditions += (and_(Challenge.transid == transid),)
@@ -75,7 +92,7 @@ class Challenges(object):
         if filter_open is True:
             conditions += (and_(Challenge.session.like('%"status": "open"%')),)
 
-        # SQLAlchemy requires the conditions in one arg as tupple
+        # SQLAlchemy requires the conditions in one arg as tuple
         condition = and_(*conditions)
         challenges = Session.query(Challenge).\
             filter(condition).order_by(desc(Challenge.id)).all()
@@ -126,9 +143,9 @@ class Challenges(object):
 
         hsm = context['hsm'].get('obj')
 
-        id_length = int(
-            context.get('Config', None).get('TransactionIdLength', 12)) - \
-                        len(id_postfix)
+        transid_len = Challenges.get_tranactionid_length()
+
+        id_length = transid_len - len(id_postfix)
 
         while True:
             try:
@@ -178,7 +195,7 @@ class Challenges(object):
                     transactionid = open_transactionid
 
             else:
-                # in case the init was successfull, we preserve no the
+                # in case the init was successful, we preserve no the
                 # challenge data to support the implementation of a blocking
                 # based on the previous stored data
                 challenge_obj.setChallenge(message)
@@ -349,7 +366,7 @@ class Challenges(object):
         handle related challenges and close these
 
         :param matching_challenges: all challenges that have
-                                    been correctly answerd
+                                    been correctly answered
         """
         from linotp.lib.token import getTokens4UserOrSerial
 

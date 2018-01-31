@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2015 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2015 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -88,7 +88,7 @@ physics_ldap_resolver = {
     'binddn': u'cn="Clark Maxwell",ou=corp,dc=hotad,dc=example,dc=net',
     'password': "Test123!",
     'preset_ldap': False,
-    'expected_users': 12,
+    'expected_users': 26,
 }
 
 sql_resolver = {

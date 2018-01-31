@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -131,7 +131,7 @@ ppa-preprocess: source
 .PHONY: builddeb
 builddeb:
 	$(MAKE) prepare-deb-source DEB_BUILDDIR=$(DEB_BUILDDIR) TAR_SUFFIX=orig.tar.gz
-	cd $(DEB_BUILDDIR); dpkg-buildpackage -i -I -rfakeroot
+	cd $(DEB_BUILDDIR); dpkg-buildpackage -i -I -rfakeroot $(DPKG_BUILDPACKAGE_ARGS)
 
 .PHONY: clean
 clean:

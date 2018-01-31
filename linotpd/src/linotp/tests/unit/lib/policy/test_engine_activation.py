@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -242,7 +242,10 @@ class TestEngineActivation(unittest.TestCase):
 
         _return_value = has_client_policy(*largs, **kwargs)
 
-        mocked_new_has_client_policy.assert_called_once_with(*largs, **kwargs)
+        new_kwargs = {'active_only': True}
+        new_kwargs.update(kwargs)
+        mocked_new_has_client_policy.assert_called_once_with(*largs,
+                                                             **new_kwargs)
         mocked_legacy_get_client_policy.assert_not_called()
 
         mocked_new_has_client_policy.reset_mock()
@@ -289,7 +292,8 @@ class TestEngineActivation(unittest.TestCase):
 
         # check the call
 
-        mocked_new_has_client_policy.assert_called_once_with(*largs, **kwargs)
+        mocked_new_has_client_policy.assert_called_once_with(*largs,
+                                                             **new_kwargs)
         mocked_legacy_get_client_policy.assert_called_once_with(
                                                             *largs, **kwargs)
 
@@ -320,9 +324,10 @@ class TestEngineActivation(unittest.TestCase):
 
         # check the calling
 
-        mocked_new_has_client_policy.assert_called_once_with(*largs, **kwargs)
-        mocked_legacy_get_client_policy.assert_called_once_with(
-                                                            *largs, **kwargs)
+        mocked_new_has_client_policy.assert_called_once_with(*largs,
+                                                             **new_kwargs)
+        mocked_legacy_get_client_policy.assert_called_once_with(*largs,
+                                                                **kwargs)
 
         call = ('old: new %r <> %r', old_pols, new_pols)
         mocked_LOG_error.assert_any_call(*call)
@@ -354,13 +359,17 @@ class TestEngineActivation(unittest.TestCase):
 
         largs = [None]
 
-        kwargs = {
+        legacy_kwargs = {
             'action': action,
             'scope': scope,
             'realm': 'mydefrealm',
             'user': '',
             'find_resolver': True,
             'userObj': User(login='', realm='mydefrealm')}
+
+        kwargs = {}
+        kwargs.update(legacy_kwargs)
+        kwargs['active_only'] = True
 
         ret_policy = {'self_02': {
                         'realm': 'myotherrealm',
@@ -411,7 +420,8 @@ class TestEngineActivation(unittest.TestCase):
 
         mocked_new_get_client_policy.assert_not_called()
         mocked_legacy_get_client_policy.assert_called_once_with(
-                                                        *largs, **kwargs)
+                                                        *largs, 
+                                                        **legacy_kwargs)
 
         mocked_new_get_client_policy.reset_mock()
         mocked_legacy_get_client_policy.reset_mock()
@@ -436,7 +446,8 @@ class TestEngineActivation(unittest.TestCase):
 
         mocked_new_get_client_policy.assert_called_once_with(*largs, **kwargs)
         mocked_legacy_get_client_policy.assert_called_once_with(
-                                                            *largs, **kwargs)
+                                                            *largs,
+                                                            **legacy_kwargs)
 
         mocked_LOG_error.assert_not_called()
 
@@ -467,7 +478,8 @@ class TestEngineActivation(unittest.TestCase):
 
         mocked_new_get_client_policy.assert_called_once_with(*largs, **kwargs)
         mocked_legacy_get_client_policy.assert_called_once_with(
-                                                            *largs, **kwargs)
+                                                            *largs,
+                                                            **legacy_kwargs)
 
         call = ('old: new %r <> %r', old_pols, new_pols)
         mocked_LOG_error.assert_any_call(*call)

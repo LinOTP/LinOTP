@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP userid resolvers.
 #
@@ -92,6 +92,8 @@ def tokenise(r):
 @resolver_registry.class_entry('useridresolver.passwdresolver')
 @resolver_registry.class_entry('passwdresolver')
 class IdResolver (UserIdResolver):
+
+    db_prefix = 'useridresolver.PasswdIdResolver.IdResolver'
 
     fields = {"username": 1, "userid": 1,
               "description": 0,

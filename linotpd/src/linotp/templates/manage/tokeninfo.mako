@@ -2,7 +2,7 @@
 <%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
- *   Copyright (C) 2010 - 2017 KeyIdentity GmbH
+ *   Copyright (C) 2010 - 2018 KeyIdentity GmbH
  *
  *   This file is part of LinOTP server.
  *
@@ -37,20 +37,20 @@
         <!-- middle column -->
     <td class=tokeninfoOuterTable>
     %if "LinOtp.TokenInfo" == value:
+        <div class="tokeninfo-hint">
+            Timestamps are in UTC
+        </div>
         <table class=tokeninfoInnerTable>
         %for k in c.tokeninfo[value]:
         <tr>
         <td class=tokeninfoInnerTable>${k}</td>
-        <td class=tokeninfoInnerTable>${c.tokeninfo[value][k]}</td>
+        <td class=tokeninfoInnerTable id="tokeninfo_${k}">${c.tokeninfo[value][k]}</td>
         </tr>
         %endfor
         </table>
         <div id="toolbar" class="ui-widget-header ui-corner-all">
             <button id="ti_button_hashlib">${_("hashlib")}</button>
-            <button id="ti_button_count_auth_max">${_("count auth max")}</button>
-            <button id="ti_button_count_auth_max_success">${_("count auth success max")}</button>
-            <button id="ti_button_valid_start">${_("validity start")}</button>
-            <button id="ti_button_valid_end">${_("validity end")}</button>
+            <button id="ti_button_expiration">${_("Set Expiration")}</button>
             %if ttype in [ "totp", "ocra" ]:
             <button id="ti_button_time_window">${_("time window")}</button>
             <button id="ti_button_time_step">${_("time step")}</button>

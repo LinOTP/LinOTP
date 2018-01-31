@@ -3,7 +3,7 @@
 <%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
- *   Copyright (C) 2010 - 2017 KeyIdentity GmbH
+ *   Copyright (C) 2010 - 2018 KeyIdentity GmbH
  *
  *   This file is part of LinOTP server.
  *
@@ -48,8 +48,6 @@ if isinstance(lang, list):
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
 <meta http-equiv="content-style-type" content="text/css">
 
-<meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
-
 %if c.debug:
     <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.structure.css">
     <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.theme.css">
@@ -59,6 +57,7 @@ if isinstance(lang, list):
 %endif
 <link type="text/css" rel="stylesheet" href="/css/flexigrid/flexigrid.css">
 <link type='text/css' rel='stylesheet' media='screen' href='/css/superfish.css'>
+<link type="text/css" rel="stylesheet" href="/css/datetimepicker/jquery.datetimepicker.css">
 <link type="text/css" rel="stylesheet" href="/css/linotp.css?ref=${c.version_ref}">
 <link type="text/css" rel="stylesheet" href="/manage/style.css?ref=${c.version_ref}">
 <link type="text/css" rel="stylesheet" href="/manage/custom-style.css">
@@ -69,6 +68,7 @@ if isinstance(lang, list):
     <script type="text/javascript" src="/js/jquery.validate.js"></script>
     <script type="text/javascript" src="/js/jquery.form.js"></script>
     <script type="text/javascript" src="/js/jquery.cookie.js"></script>
+    <script type='text/javascript' src='/js/jquery.datetimepicker.js'></script>
     <script type='text/javascript' src='/js/hoverIntent.js'></script>
     <script type='text/javascript' src='/js/superfish.js'></script>
 %else:
@@ -77,6 +77,7 @@ if isinstance(lang, list):
     <script type="text/javascript" src="/js/jquery.validate.min.js"></script>
     <script type="text/javascript" src="/js/jquery.form.min.js"></script>
     <script type="text/javascript" src="/js/jquery.cookie.min.js"></script>
+    <script type='text/javascript' src='/js/jquery.datetimepicker.min.js'></script>
     <script type='text/javascript' src='/js/hoverIntent.js'></script>
     <script type='text/javascript' src='/js/superfish.min.js'></script>
 %endif
@@ -128,6 +129,7 @@ if isinstance(lang, list):
                         <li><a href='#' id='menu_sms_provider_config'>${_("SMS Provider Config")}</a>
                         <li><a href='#' id='menu_email_provider_config'>${_("Email Provider Config")}</a>
                         <li><a href='#' id='menu_push_provider_config'>${_("Push Provider Config")}</a>
+                        <li><a href='#' id='menu_voice_provider_config'>${_("Voice Provider Config")}</a>
                     </ul>
                  </li>
                 % endif
@@ -203,23 +205,43 @@ if isinstance(lang, list):
         </fieldset>
     </div>
     <div id="realms">
-    ${_("Realms")}: <select id="realm"> </select>
+        ${_("Realms")}:
+        <select id="realm"> </select>
     </div>
-    <button class='action-button' id='button_enroll'>${_("Enroll")}</button>
-    <button class='action-button' id='button_assign'>${_("Assign")}</button>
-    <button class='action-button' id='button_unassign'>${_("Unassign")}</button>
-    <button class='action-button' id='button_enable'>${_("Enable")}</button>
-    <button class='action-button' id='button_disable'>${_("Disable")}</button>
-    <button class='action-button' id='button_setpin'>${_("Set PIN")}</button>
-    <button class='action-button' id='button_resetcounter'>${_("Reset Failcounter")}</button>
-    <button class='action-button' id='button_delete'>${_("Delete")}</button>
+    <button class='action-button ui-button' id='button_enroll' data-ui-icon="ui-icon-plusthick">
+        ${_("Enroll")}
+    </button>
+    <button class='action-button ui-button' id='button_assign' data-ui-icon="ui-icon-arrowthick-2-e-w">
+        ${_("Assign")}
+    </button>
+    <button class='action-button ui-button' id='button_unassign' data-ui-icon="ui-icon-arrowthick-1-w">
+        ${_("Unassign")}
+    </button>
+    <button class='action-button ui-button' id='button_enable' data-ui-icon="ui-icon-radio-on">
+        ${_("Enable")}
+    </button>
+    <button class='action-button ui-button' id='button_disable' data-ui-icon="ui-icon-radio-off">
+        ${_("Disable")}
+    </button>
+    <button class='action-button ui-button' id='button_setpin' data-ui-icon="ui-icon-pin-s">
+        ${_("Set PIN")}
+    </button>
+    <button class='action-button ui-button' id='button_resetcounter' data-ui-icon="ui-icon-arrowthickstop-1-w">
+        ${_("Reset Failcounter")}
+    </button>
+    <button class='action-button ui-button' id='button_setexpiration' data-ui-icon="ui-icon-calendar">
+        ${_("Set Expiration")}
+    </button>
+    <button class='action-button ui-button' id='button_delete' data-ui-icon="ui-icon-trash">
+        ${_("Delete")}
+    </button>
 </div> <!-- sidebar -->
 
 <div id="main">
     <div id="info_box">
         <div id='info_bar'>
           <span id="info_text"></span>
-          <button class="button_info_text">OK</button>
+          <button class="ui-button button_info_text">OK</button>
        </div>
     </div>
     <a href="#" class="close_all">${_("Close all")}</a>
@@ -566,12 +588,12 @@ if isinstance(lang, list):
                               id="push_provider_config" cols='35' rows='6'
                               placeholder=
 '{
-"push_url": "https://push.keyidentity.com/send",
-"access_certificate": "/etc/linotp2/push-license.pem",
-"server_certificate": "/etc/linotp2/keyidentity-push-ca-bundle.crt"
+  "push_url": "https://<challenge-service>/v1/challenge",
+  "access_certificate": "/etc/linotp2/challenge-service-client.pem",
+  "server_certificate": "/etc/linotp2/challenge-service-ca.crt"
 }'
-
-syst></textarea></td>
+                    ></textarea>
+                </td>
             </tr>
             <tr>
                 <td><label for="push_provider_timeout">${_("Timeout (sec)")}</label>: </td>
@@ -614,8 +636,96 @@ syst></textarea></td>
     }
 </script>
 
+<!-- ############ voice provider settings ################# -->
+<div id='dialog_voice_providers'>
+    <div class="list-wrapper"><div id='voice_providers_list'> </div></div>
+    <div class="ui-dialog-buttonpane flat"><button id='button_voice_provider_set_default'>${_("Set as default")}</button></div>
+</div>
+<script type="text/javascript">
+    function translate_dialog_voice_providers() {
+        $("#dialog_voice_providers" ).dialog( "option", "title", '${_("Voice Provider: create and edit")}');
+        $('#button_voice_provider_new').button("option", "label", '${_("New")}');
+        $('#button_voice_provider_edit').button("option", "label", '${_("Edit")}');
+        $('#button_voice_provider_delete').button("option", "label", '${_("Delete")}');
+        $('#button_voice_providers_close').button("option", "label", '${_("Close")}');
+    }
+</script>
 
+<!-- ############ voice provider edit ################# -->
+<div id="dialog_voice_provider_edit">
+    <form class="cmxform" id="form_voiceprovider" action="">
+        <table>
+            <tr>
+                <td><label for="voice_provider_name">${_("Name")}</label>: </td>
+                <td><input type="text" name="voice_provider_name" class="required"
+                                       id="voice_provider_name" size="37" maxlength="80"
+                                       placeholder=""></td>
+            </tr>
+            <tr>
+                <td><label for="voice_provider_class">${_("Class")}</label>: </td>
+                <td><input type="text" name="voice_provider_class" class="required"
+                           id="voice_provider_class" size="37" maxlength="80"
+                           placeholder="CustomVoiceProvider"></td>
+            </tr>
+            <tr>
+                <td><label for='voice_provider_config'>${_("Config")}</label>: </td>
+                <td><textarea name="voice_provider_config" class="required"
+                              id="voice_provider_config" cols='35' rows='6'
+                              placeholder=
+'{
+"server_url": "url of the voice service (required)",
+"access_certificate": "client authentication certificate (optional)",
+"server_certificate": "server verification certificate (optional)",
+"proxy": "proxy url (optional)",
+"twilioConfig": {
+    "authToken": "authentication token",
+    "accountSid": "account identifier",
+    "voice": "reader voice - default is alice",
+    "callerNumber": "number of the originator"}
+}
+'
+></textarea></td>
+            </tr>
+            <tr>
+                <td><label for="voice_provider_timeout">${_("Timeout (sec)")}</label>: </td>
+                <td><input type="number" name="voice_provider_timeout" class="required"
+                              placeholder="120" id="voice_provider_timeout" size="5" maxlength="5"></td>
+            </tr>
+        </table>
+    </form>
+</div>
+<script type="text/javascript">
+    function translate_dialog_voice_provider_edit() {
+        $("#dialog_voice_provider_edit" ).dialog( "option", "title", '${_("voice Provider")}' );
+        $('#button_voice_provider_cancel').button("option", "label", '${_("Cancel")}');
+        $('#button_voice_provider_save').button("option", "label", '${_("Save")}');
+    }
+</script>
 
+<!-- ################## voice provider delete ###################### -->
+<div id='dialog_voice_provider_delete'>
+    <p>${_("Do you want to delete the voice provider?")}</p>
+</div>
+<script type="text/javascript">
+    function translate_dialog_voice_provider_delete() {
+        $("#dialog_voice_provider_delete" ).dialog( "option", "title", '${_("Deleting provider")} ' + selectedVoiceProvider );
+        $('#button_voice_provider_delete_delete').button("option", "label", '${_("Delete")}');
+        $('#button_voice_provider_delete_cancel').button("option", "label", '${_("Cancel")}');
+    }
+</script>
+
+<!-- ############ voice provider settings ################# -->
+<div id='dialog_voice_provider_settings'>
+
+</div>
+
+<script type="text/javascript">
+    function translate_voice_provider_settings() {
+        $("#dialog_voice_provider_settings" ).dialog( "option", "title", '${_("Voice provider configuration")}' );
+        $('#button_voice_provider_save').button("option", "label", '${_("Save config")}');
+        $('#button_voice_provider_cancel').button("option", "label", '${_("Cancel")}');
+    }
+</script>
 
 <!-- ############ dialog settings ################# -->
 <div id='dialog_token_settings'>
@@ -904,7 +1014,7 @@ syst></textarea></td>
 
 <div id='dialog_about'>
     <p id='about_id'>${_("LinOTP - the open source solution for two factor authentication.")}</p>
-    <p id='about_copyright'>${_("Copyright (C) 2010 - 2017 KeyIdentity GmbH")}</p>
+    <p id='about_copyright'>${_("Copyright (C) 2010 - 2018 KeyIdentity GmbH")}</p>
     <p id='about_licens'>${_("Licensed under AGPLv3")}</p>
     <p id='about_lse_id'>${_("For more information please visit:")}</p>
     <p><a href="https://www.linotp.org" rel="noreferrer" target="_blank">https://www.linotp.org</a>
@@ -926,6 +1036,62 @@ syst></textarea></td>
         $('#button_about_close').button("option", "label", '${_("Close")}');
     }
 </script>
+
+
+<!-- ##################### Set expiration ######################### -->
+<div id='dialog_setexpiration'>
+    <p>${_("Selected Tokens")}:
+    <span id='dialog_setexpiration_tokens'></span></p>
+    <p class="warning multiple-tokens hidden">${_("Changes will affect all %s tokens")}</p>
+    <form class="cmxform" action="">
+        <table>
+            <tr>
+                <td colspan="2">
+                    <h4>${_("Usage Count")}</h4>
+                    <p>${_("Set maximum usage limits for the entire token lifetime.")}</p>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="setexpiration_count_requests">${_("Max. authentication attempts")}:</label>
+                </td>
+                <td>
+                    <input type="number" name="countAuthMax" id="setexpiration_count_requests" class="ph_focus_fadeout" placeholder='${_("unlimited")}'>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="setexpiration_count_success">${_("Max. successful authentications")}:</label>
+                </td>
+                <td>
+                    <input type="number" name="countAuthSuccessMax" id="setexpiration_count_success" class="ph_focus_fadeout" placeholder='${_("unlimited")}'>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <h4>${_("Validity Period")}</h4>
+                    <p>${_("Set the period of time where the token is enabled.")}</p>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="setexpiration_period_start">${_("Valid from")}:</label>
+                </td>
+                <td>
+                    <input type="text" name="validityPeriodStart" id="setexpiration_period_start" class="ph_focus_fadeout" placeholder='${_("unlimited")}'>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="setexpiration_period_end">${_("Valid until")}:</label>
+                </td>
+                <td>
+                    <input type="text" name="validityPeriodEnd" id="setexpiration_period_end" class="ph_focus_fadeout" placeholder='${_("unlimited")}'>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
 
 
 <!-- ##################### Set PIN ######################### -->
@@ -1241,7 +1407,7 @@ syst></textarea></td>
             </table>
         </fieldset>
         <br>
-        <p>${_("The users of the csv file will update an existing or populate a new managed resolver which needs to be added to a realm to view them in the user view.")}</p>
+        <p>${_("The users of the csv file will update an existing or populate a new managed resolver. The target resolver has to be added to a realm after the import.")}</p>
         <table>
             <tr>
                 <td>${_("Resolver:")}</td>
@@ -1253,21 +1419,6 @@ syst></textarea></td>
                             </td>
                             <td style="white-space: nowrap">
                                 &nbsp;or <a href="#" id="import_users_create_resolver">${_("create new...")}</a>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            <tr>
-                <td>${_("Target realm:")}</td>
-                <td>
-                    <table>
-                        <tr>
-                            <td style="width: 100%">
-                                <select name="target_realm" id="import_users_targetrealm" required></select>
-                            </td>
-                            <td style="white-space: nowrap">
-                                &nbsp;or <a href="#" id="import_users_create_realm">${_("create new...")}</a>
                             </td>
                         </tr>
                     </table>
@@ -1683,7 +1834,7 @@ syst></textarea></td>
             <p>${_("You are creating a new realm.")}
             ${_("You may add resolvers by holding down Ctrl-Key and left-clicking.")}</p>\
             <p><label for=realm_name>${_("Realm name")}:</label>
-                <input type='text' class="required" id='realm_name' size='20' maxlength='60' value="">
+                <input type='text' class="required" id='realm_name' name='realm_name' size='20' maxlength='60' value="">
                 </p>
         </div>
         <div id='realm_intro_edit'>

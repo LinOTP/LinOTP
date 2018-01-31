@@ -1,7 +1,7 @@
 # Chinese translations for LinOTP package - Chinese messages for LinOTP.
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP admin clients.
 #
@@ -2472,7 +2472,7 @@ msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP，双因素身份验证的开源解决方案。"
 
 #, fuzzy
-msgid "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
+msgid "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
 msgstr "版权所有 (C) 2010 - 2017 LSE Leading Security Experts GmbH"
 
 msgid "Licensed under AGPLv3"

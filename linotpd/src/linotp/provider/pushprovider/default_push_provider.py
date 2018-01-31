@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -98,11 +98,13 @@ class DefaultPushProvider(IPushProvider):
             self.push_server_url = configDict['push_url']
 
             #
-            # for authentication on the pnp we require a client certificate
+            # for authentication on the challenge service we can use a
+            # client certificate
             #
 
-            self.client_cert = configDict['access_certificate']
-            if not os.path.isfile(self.client_cert):
+            self.client_cert = configDict.get('access_certificate')
+
+            if self.client_cert and not os.path.isfile(self.client_cert):
                 raise IOError("required authenticating client"
                               " cert could not be found %r" %
                               self.client_cert)
@@ -120,8 +122,10 @@ class DefaultPushProvider(IPushProvider):
 
             if server_cert:
 
-                if (not os.path.isfile(server_cert) and
-                   not os.path.isdir(server_cert)):
+                if (
+                    not os.path.isfile(server_cert) and
+                    not os.path.isdir(server_cert)):
+
                     raise IOError("server certificate verification could not"
                                   " be made as certificate could not be found"
                                   " %r" % server_cert)
@@ -160,10 +164,12 @@ class DefaultPushProvider(IPushProvider):
                 # verify the url scheme
                 parsed_url = urlparse(configDict['proxy'])
                 if parsed_url.scheme not in ['http', 'https']:
-                    raise requests.exceptions.InvalidSchema(configDict['proxy'])
+                    raise requests.exceptions.InvalidSchema(
+                                                        configDict['proxy'])
 
                 if parsed_url.path and parsed_url.path != '/':
-                    raise requests.exceptions.InvalidSchema(configDict['proxy'])
+                    raise requests.exceptions.InvalidSchema(
+                                                        configDict['proxy'])
 
                 self.proxy = DefaultPushProvider.get_proxy_definition(
                                     configDict.get('proxy'))
@@ -172,12 +178,13 @@ class DefaultPushProvider(IPushProvider):
             log.error('Missing Configuration entry %r', exx)
             raise exx
 
-    def push_notification(self, message, gda):
+    def push_notification(self, challenge, gda, transactionId):
         """
         Sends out the push notification message.
 
-        :param message: The push notification message / challenge
+        :param challenge: The push notification message / challenge
         :param gda: the gda - global device identifier
+        :param transactionId: The push notification transaction reference
 
         :return: A tuple of success and result message
         """
@@ -185,17 +192,16 @@ class DefaultPushProvider(IPushProvider):
         if not self.push_server_url:
             raise Exception("Missing Server Push Url configuration!")
 
-        if not self.client_cert:
-            raise Exception("Missing Access Certificate configuration!")
-
-        if not message:
-            raise Exception("No message to submit!")
+        if not challenge:
+            raise Exception("No challenge to submit!")
 
         if not gda:
             raise Exception("Missing target description!")
 
         (success,
-         result_message) = self._http_push(message=message, gda=gda)
+         result_message) = self._http_push(challenge,
+                                           gda,
+                                           transactionId)
 
         return success, result_message
 
@@ -213,7 +219,7 @@ class DefaultPushProvider(IPushProvider):
 
         return proxy
 
-    def _http_push(self, message, gda):
+    def _http_push(self, challenge, gda, transactionId):
         """
         push the notification over http by calling the requests POST api
 
@@ -222,9 +228,22 @@ class DefaultPushProvider(IPushProvider):
         :return: tuple with response status and content / reason
         """
 
+        # ----------------------------------------------------------------- --
+
+        # Challenge Service expectes the following document
+
+        # {"challenge": {
+        #    "transactionId": "string",
+        #    "gda": "string",
+        #    "challenge": "string" }
+        # }
+
         params = {}
-        params['challenge'] = message
+        params['transactionId'] = transactionId
         params['gda'] = gda
+        params['challenge'] = challenge
+
+        json_challenge = {"challenge": params}
 
         #
         # using **args for the timeout parameter
@@ -235,6 +254,13 @@ class DefaultPushProvider(IPushProvider):
             pparams['timeout'] = self.timeout
 
         try:
+            # submitting the json body requires the correct HTTP headers
+            # with contenttype declaration:
+
+            headers = {
+                'Content-type': 'application/json',
+                'Accept': 'text/plain'}
+
             http_session = requests.Session()
 
             if self.proxy:
@@ -257,10 +283,10 @@ class DefaultPushProvider(IPushProvider):
                 http_session.verify = server_cert
 
             response = http_session.post(self.push_server_url,
-                                         data=params,
+                                         json=json_challenge,
+                                         headers=headers,
                                          **pparams)
 
-            result = ''
             if not response.ok:
                 result = response.reason
             else:
@@ -339,6 +365,7 @@ def main():
     except Exception as exx:
         log.error('Failed to push the notification (%r): %r',
                   exx, configDict)
+
 
 if __name__ == '__main__':
 

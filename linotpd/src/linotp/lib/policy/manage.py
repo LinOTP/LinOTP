@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -55,22 +55,22 @@ def import_policies(policies):
     """
     import policies
 
-    :param policies: the ploicies as dict or as result of the parsed ConfigObj
+    :param policies: the policies as dict or a result of the parsed ConfigObj
     :return: the number of the imported policies
     """
 
     for policy_name in policies:
 
-        policy_defintion = policies.get(policy_name)
+        policy_definition = policies.get(policy_name)
 
         policy = {'name': policy_name,
-                  'action': policy_defintion['action'],
-                  'active': policy_defintion.get('active', "True"),
-                  'scope': policy_defintion['scope'],
-                  'realm': policy_defintion.get('realm', ""),
-                  'user': policy_defintion.get('user', ""),
-                  'time': policy_defintion.get('time', ""),
-                  'client': policy_defintion.get('client', ""),
+                  'action': policy_definition['action'],
+                  'active': policy_definition.get('active', "True"),
+                  'scope': policy_definition['scope'],
+                  'realm': policy_definition.get('realm', "*") or "*",
+                  'user': policy_definition.get('user', "*") or "*",
+                  'time': policy_definition.get('time', "*") or "*",
+                  'client': policy_definition.get('client', "*") or "*",
                   }
 
         if policy['scope'] == 'system':

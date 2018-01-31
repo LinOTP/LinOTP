@@ -4,7 +4,7 @@
 # Any changes made to the generated file will be overwritten.
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2016 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2016 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -86,7 +86,11 @@ linotp.splitAtSign = True
 linotpGetotp.active = False
 
 ## Encrytion key:
+{{ if .Env.SECRET_FILE_LOCATION }}
+linotpSecretFile = {{ .Env.SECRET_FILE_LOCATION }}
+{{ else }}
 linotpSecretFile = %(here)s/encKey
+{{ end }}
 
 ## RADIUS Token:
 radius.dictfile= %(here)s/dictionary
@@ -128,7 +132,7 @@ keys = root, linotp, sqlalchemy
 
 ## root module logging definition:
 [logger_root]
-level = INFO
+level = {{ default .Env.LINOTP_LOGLEVEL "INFO" }}
 {{ if .Env.LOGSTASH_HOST }}
 handlers = console, logstash
 {{ else }}
@@ -137,12 +141,12 @@ handlers = console
 
 ## linotp module logging definition:
 [logger_linotp]
-level = INFO
+level = {{ default .Env.LINOTP_LOGLEVEL "INFO" }}
 handlers =
 qualname = linotp
 
 [logger_sqlalchemy]
-level = ERROR
+level = {{ default .Env.SQLALCHEMY_LOGLEVEL "ERROR" }}
 handlers =
 qualname = sqlalchemy.engine
 # "level = INFO" logs SQL queries.
@@ -159,7 +163,7 @@ keys = console
 [handler_console]
 class = StreamHandler
 args = (sys.stdout,)
-level = DEBUG
+level = {{ default .Env.LINOTP_CONSOLE_LOGLEVEL "DEBUG" }}
 formatter = generic
 
 {{ if .Env.LOGSTASH_HOST }}
@@ -181,5 +185,5 @@ keys = generic
 ## Caution: The SecureFormatter will only work with python >= 2.7
 ##
 #class = linotp.lib.log.SecureFormatter
-format = %(asctime)s %(levelname)-5.5s {%(request_id)s} [%(name)s][%(funcName)s #%(lineno)d] %(message)s
+format = %(asctime)s %(levelname)-5.5s [%(name)s][%(funcName)s #%(lineno)d] %(message)s
 datefmt = %Y/%m/%d - %H:%M:%S

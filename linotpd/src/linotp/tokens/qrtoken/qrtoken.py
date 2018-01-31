@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -30,6 +30,7 @@ import zlib
 from os import urandom
 from base64 import b64encode
 from base64 import b64decode
+from pylons import config
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from Cryptodome.Cipher import AES
@@ -504,7 +505,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         ciphertext, tag = cipher.encrypt_and_digest(plaintext)
 
         raw_data = data_header + R + ciphertext + tag
-        url = 'lseqr://chal/' + encode_base64_urlsafe(raw_data)
+        protocol_id = config.get('mobile_app_protocol_id', 'lseqr')
+        url = protocol_id + '://chal/' + encode_base64_urlsafe(raw_data)
 
         return url, user_sig
 
@@ -760,7 +762,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                 # maybe we got a tan instead of a signature
 
                 correct_passwd_as_bytes = decode_base64_urlsafe(correct_passwd)
-                tan_length = 8  # TODO fetch from policy
+                tan_length = self.getOtpLen()
                 correct_tan = extract_tan(correct_passwd_as_bytes, tan_length)
 
                 # TODO PYLONS-HACK pylons silently converts integers in

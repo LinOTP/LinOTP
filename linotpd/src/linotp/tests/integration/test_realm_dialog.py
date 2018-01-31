@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -49,6 +49,7 @@ class TestCreateRealmDialog(TestCase):
 
         resolver_data = data.musicians_ldap_resolver
         m.create_resolver(resolver_data)
+        m.close_if_open()
 
         r.create("test_clear_realm", resolver_data['name'])
 

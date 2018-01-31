@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -26,8 +26,10 @@
 
 import unittest
 from mock import patch
+from linotp.model.meta import Session
 
 from linotp.controllers.system import SystemController
+
 
 class TestSetResolver(unittest.TestCase):
 
@@ -36,13 +38,15 @@ class TestSetResolver(unittest.TestCase):
         unittest.TestCase.setUp(self)
         self.system = SystemController()
 
+    def tearDown(self):
+        Session.remove()
+
     @patch('linotp.controllers.system.getResolverList', return_value=[])
     @patch('linotp.controllers.system.request')
     @patch('linotp.controllers.system.prepare_resolver_parameter')
     @patch('linotp.controllers.system._')
-    @patch('linotp.controllers.system.Session')
     @patch('linotp.controllers.system.defineResolver')
-    def set_resolver(self, params, mock_define_resolver, mock_session, mock_translate, mock_prepare, mock_request, mock_resolverlist):
+    def set_resolver(self, params, mock_define_resolver, mock_translate, mock_prepare, mock_request, mock_resolverlist):
         # Call set resolver with given parameters
 
         params['name'] = 'UnitTestResolver'

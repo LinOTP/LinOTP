@@ -2,7 +2,7 @@
 <%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
- *   Copyright (C) 2010 - 2017 KeyIdentity GmbH
+ *   Copyright (C) 2010 - 2018 KeyIdentity GmbH
  *
  *   This file is part of LinOTP server.
  *
@@ -27,23 +27,23 @@
 </%doc>
 
 <%block name="title">
-        <title>LinOTP QRToken Auth testing</title>
+        <title>LinOTP QR Token Auth Testing</title>
 </%block>
 
 <%inherit file="auth-base.mako"/>
 
 <div id="sidebar">
-    <p>${_("Here you may try to authenticate using your QRToken.")}</p>
+    <p>${_("Here you may try to authenticate using your KeyIdentity QR Token.")}</p>
     <p>${_('Enter your username, the OTP PIN and the OTP value.')}</p>
 </div> <!-- sidebar -->
 
 <div id="main">
-<h1>${_('QRToken Login')}</h1>
+<h1>${_('KeyIdentity QR Token Login')}</h1>
 <div id='auth' class="qrtoken">
     <table>
         <tr>
             <td>
-                <form class="cmxform"  id="form_challenge_qrtoken" method="post" action="">
+                <form class="cmxform"  id="form_challenge_trigger" method="post" action="">
                     <frameset name=login>
                         <table>
                             <tr>
@@ -74,7 +74,7 @@
             <td>
                 <table>
                     <tr>
-                        <td><h2>${_('Scan your challenge and get your OTP:')}</h2></td>
+                        <td><h2>${_('Scan the challenge and get your OTP:')}</h2></td>
                         <td><div id='display'> </div></td>
                     </tr>
                 </table>
@@ -90,7 +90,7 @@
         </tr>
         <tr>
             <td>
-                <form class="cmxform"  id="form_login_qrtoken" method="post" action="">
+                <form class="cmxform"  id="form_challenge_submit" method="post" action="">
                     <frameset name=login>
                         <table>
                             <tr>
