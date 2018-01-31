@@ -1346,6 +1346,9 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
                 ldict[key] = "%r" % val
         return ldict
 
+    def get_enrollment_status(self):
+        return {'status': 'completed'}
+
     def getAuthDetail(self):
 
         return self.auth_info

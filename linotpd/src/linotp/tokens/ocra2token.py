@@ -549,6 +549,21 @@ class Ocra2TokenClass(TokenClass):
 
         return
 
+    def get_enrollment_status(self):
+        """
+        return the enrollemnt status
+        """
+        info = self.getTokenInfo()
+
+        if 'rollout' in info:
+            return {'status': 'not completed',
+                    'rollout':  '%r' % info['rollout']}
+
+        if 'ocrasuite' not in info:
+            return {'status': 'undefined'}
+
+        return {'status': 'completed'}
+
     def _prepare_callback_url(self, params, policy_lookup_funtion,
                                transactionid=None):
         """
