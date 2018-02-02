@@ -25,14 +25,11 @@
 #
 
 
-import time
-
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.auth_ui import AuthUi
 from linotp_selenium_helper.hotp_token import HotpToken
 from linotp_selenium_helper.manage_ui import ManageUi
 from linotp_selenium_helper.user_view import UserView
-from linotp_selenium_helper.token_view import TokenView
 
 import integration_data as data
 

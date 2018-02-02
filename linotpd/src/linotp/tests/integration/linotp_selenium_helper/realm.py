@@ -188,6 +188,21 @@ class RealmManager(ManageDialog):
             % (realm_count, len(self.realms))
         )
 
+    def clear_realms_via_api(self):
+        """
+        Get all realms via API call
+        and delete all by realm name.
+        """
+
+        # Get the realms in json format
+        json_response = self.manage.admin_api_call("system/getRealms")
+
+        realms = json_response["result"]["value"]
+        if(realms):
+            for curr_realm in realms:
+                self.manage.admin_api_call("system/delRealm",
+                                           {'realm': realms[curr_realm]['realmname']})
+
     def clear_realms(self):
         """Clear all existing realms"""
         self.open()
