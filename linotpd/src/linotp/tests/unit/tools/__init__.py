@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -23,14 +23,3 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-
-import ConfigParser
-INI_FILE = "/etc/linotp2/linotp.ini"
-
-def config_get(section, option, default="", ini_file=INI_FILE):
-    config = ConfigParser.ConfigParser()
-    config.read([ini_file])
-    if config.has_option(section, option):
-        return config.get(section, option)
-    else:
-        return default

@@ -1,3 +1,10 @@
+linotp (2.10.0.2-1) jessie; urgency=low
+
+  Bug Fix:
+  * Tools: Fix exception in linotp-token-usage/tokens-used
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 02 Feb 2018 17:12:25 +0100
+
 linotp (2.10.0.1-1) jessie; urgency=low
 
   Bug Fixes:

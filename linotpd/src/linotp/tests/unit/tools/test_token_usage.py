@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -24,13 +24,21 @@
 #    Support: www.keyidentity.com
 #
 
-import ConfigParser
-INI_FILE = "/etc/linotp2/linotp.ini"
+import mock
 
-def config_get(section, option, default="", ini_file=INI_FILE):
-    config = ConfigParser.ConfigParser()
-    config.read([ini_file])
-    if config.has_option(section, option):
-        return config.get(section, option)
-    else:
-        return default
+from script_testing_lib import ScriptTester
+
+# -------------------------------------------------------------------------- --
+
+class TestLinotpTokenUsage(ScriptTester):
+
+    script_name = 'linotp-token-usage'
+
+    @mock.patch('linotp_token_usage.token_usage')
+    @mock.patch('sys.exit')
+    def test_main(self, mock_exit, mock_usage):
+        self.script_module.main()
+        mock_usage.assert_called_once()
+
+    def test_token_usage(self):
+        self.script_module.token_usage(None, None, '')
