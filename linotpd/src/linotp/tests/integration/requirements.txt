@@ -33,3 +33,4 @@ LinOTP
 LinOTPAdminClientCLI
 packaging
 flaky
+pysocks
