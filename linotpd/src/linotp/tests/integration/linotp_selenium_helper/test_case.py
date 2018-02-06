@@ -30,6 +30,8 @@ from contextlib import contextmanager
 from packaging import version
 from flaky import flaky
 import time
+import urllib3
+
 
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
@@ -46,6 +48,7 @@ from manage_ui import ManageUi
 from validate import Validate
 from unittest.case import SkipTest
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 logger = logging.getLogger(__name__)
 
 
