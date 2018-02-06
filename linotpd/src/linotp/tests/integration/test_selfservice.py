@@ -46,7 +46,7 @@ class TestSelfservice(TestCase):
 
     def test_selfservice(self):
         """Creates User-Id-Resolvers"""
-        self.manage_ui.policy_view.clear_policies()
+        self.manage_ui.policy_view.clear_policies_via_api()
         Policy(self.manage_ui, "SE_policy_selfservice",
                "selfservice", "setOTPPIN, ", self.realm_name.lower())
 

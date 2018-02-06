@@ -243,6 +243,21 @@ class UserIdResolverManager(ManageDialog):
             % (resolver_count, len(self.resolvers))
         )
 
+    def clear_resolvers_via_api(self):
+        """
+        Get all resolvers via API call
+        and delete all by resolver name.
+        """
+
+        # Get the resolvers in json format
+        json_response = self.manage.admin_api_call("system/getResolvers")
+
+        resolvers = json_response["result"]["value"]
+        if(resolvers):
+            for curr_resolver in resolvers:
+                self.manage.admin_api_call("system/delResolver",
+                                           {'resolver': resolvers[curr_resolver]['resolvername']})
+
     def clear_resolvers(self):
         """Clear all existing resolvers"""
         self.open()

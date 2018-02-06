@@ -309,8 +309,8 @@ class TestCase(unittest.TestCase):
         userIdResolver with given data and add it to a realm
         of given name.
         """
-        self.realm_manager.clear_realms()
-        self.useridresolver_manager.clear_resolvers()
+        self.realm_manager.clear_realms_via_api()
+        self.useridresolver_manager.clear_resolvers_via_api()
 
         if resolver:
             self.useridresolver_manager.create_resolver(resolver)

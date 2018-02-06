@@ -78,9 +78,10 @@ class TestPolicies(TestCase):
         # - realms
         # - policies
         # - tokens
+
         self.reset_resolvers_and_realms()
-        self.manage_ui.policy_view.clear_policies()
-        self.token_view.delete_all_tokens()
+        self.manage_ui.policy_view.clear_policies_via_api()
+        self.token_view.clear_tokens_via_api()
 
         # Create LDAP UserIdResolver
         ldap_data = data.musicians_ldap_resolver

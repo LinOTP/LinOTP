@@ -66,12 +66,14 @@ def find_by_id(driver, id_value):
     """
     return _find_and_wait(driver, By.ID, id_value)
 
+
 def find_by_class(driver, class_name):
     """
     Returns the element defined by the HTML class, waiting up to 10 seconds for it
     to appear.
     """
     return _find_and_wait(driver, By.CLASS_NAME, class_name)
+
 
 def find_by_xpath(driver, xpath):
     """

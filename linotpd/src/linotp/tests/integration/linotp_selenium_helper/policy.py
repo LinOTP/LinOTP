@@ -37,6 +37,21 @@ class PolicyManager(ManageTab):
 
     TAB_INDEX = 3
 
+    def clear_policies_via_api(self):
+        """
+        Get all policies via API call
+        and delete all by policy name.
+        """
+
+        # Get the policies in json format
+        json_response = self.manage.admin_api_call("system/getPolicy")
+
+        policies = json_response["result"]["value"]
+        if(policies):
+            for curr_policy in policies:
+                self.manage.admin_api_call("system/delPolicy",
+                                           {'name': policies[curr_policy]['name']})
+
     def clear_policies(self):
         self.open_tab()
 

@@ -26,8 +26,8 @@
 
 import logging
 import helper
-import re
 import os
+import requests
 
 from operator import methodcaller
 
@@ -282,6 +282,42 @@ class ManageUi(object):
 
         is_visible = (element is not False)
         return is_visible
+
+    def admin_api_call(self,
+                       call,
+                       params=None):
+        """
+        Give the API endpoint (call) and the params. Omit the session
+        because it will be added automatically to your params.
+        :param call Something like 'system/delPolicy'
+        :param params Something like {'name': 'policy1'}
+        :return Return json structure with API result
+        """
+
+        if(params is None):
+            params = {}
+
+        url = self.testcase.http_protocol + \
+            "://" + self.testcase.http_host + \
+            ":" + self.testcase.http_port + "/"
+
+        params['session'] = helper.get_session(url,
+                                               self.testcase.http_username,
+                                               self.testcase.http_password)
+
+        auth = requests.auth.HTTPDigestAuth(
+            self.testcase.http_username,
+            self.testcase.http_password)
+
+        response = requests.post(url + call.strip('/'),
+                                 auth=auth,
+                                 params=params,
+                                 cookies={'admin_session': params['session']},
+                                 verify=False)
+
+        response.raise_for_status()
+
+        return response.json()
 
 
 class MsgType(object):
