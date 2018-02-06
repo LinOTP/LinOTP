@@ -27,6 +27,7 @@
 
 import logging
 import time
+import re
 
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
@@ -116,9 +117,12 @@ class RealmManager(ManageDialog):
 
     list_css = "#realm_list > ol"
 
+    alert_box_handler = None
+
     def __init__(self, manage_ui):
         ManageDialog.__init__(self, manage_ui, 'dialog_realms')
         self.edit_realm_dialog = EditRealmDialog(manage_ui)
+        self.alert_box_handler = self.manage.alert_box_handler
 
     def parse_contents(self):
         """
@@ -181,6 +185,13 @@ class RealmManager(ManageDialog):
         # We should be back to the realm list
         self.raise_if_closed()
 
+        # Realm name would be e. g. : 'test_realm5 [SE_musicians ]'
+        # Capture only realm name.
+        realm = re.search(r'([^\[(]+)', name).group(1).strip(' ')
+        delete_ok = self.alert_box_handler.check_last_message(
+            "Realm deleted: " + realm)
+        assert delete_ok, "Error during realm deletion!"
+
         # Reload realms
         self.reparse()
         assert (len(self.realms) == realm_count - 1), (
@@ -204,10 +215,40 @@ class RealmManager(ManageDialog):
                                            {'realm': realms[curr_realm]['realmname']})
 
     def clear_realms(self):
-        """Clear all existing realms"""
+        """
+        Clear all existing realms.
+
+        The clean up will be done via
+        the following steps.
+        1. Clear all alert boxes in the /manage UI
+        2. Open the realm dialog and get all
+           realms.
+        3. Delete realm x and check alert box.
+        4. Repeat 3. #realms times
+        """
+        # /manage needs to be open for clean up
+        # alert box messages.
+        self.manage.open_manage()
+
+        # Maybe /manage was already open:
+        #
+        # Ensure that dialogs are closed.
+        # Otherwise we can not clear the old
+        # alert boxes. Realm dialog blocks
+        # underlying GUI elements.
+        self.manage.close_all_dialogs()
+
+        self.alert_box_handler.clear_messages()
+
+        # The open method 'reparses' the dialog.
+        # This reparse sets an internal list
+        # with current realms.
         self.open()
 
         while True:
+            # get_realms_list only returns the
+            # reparsed list of realms - set by self.open.
+            # Does not 'parse' the list in the GUI again.
             realms = self.get_realms_list()
             if not realms:
                 break

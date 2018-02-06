@@ -28,6 +28,7 @@ import logging
 import helper
 import os
 import requests
+import re
 
 from operator import methodcaller
 
@@ -110,7 +111,6 @@ class ManageUi(object):
         self.user_view = UserView(self)
         self.policy_view = PolicyManager(self)
         self.system_config = SystemConfig(self)
-        self.alert_box_handler = AlertBoxHandler(self)
 
         self.alert_dialog = ManageDialog(self, 'alert_box')
 
@@ -124,6 +124,13 @@ class ManageUi(object):
         The URL of the page
         """
         return self.testcase.base_url + self.URL
+
+    @property
+    def alert_box_handler(self):
+        """
+        Return an instance of an alert box handler.
+        """
+        return AlertBoxHandler(self)
 
     @property
     def driver(self):
@@ -195,7 +202,7 @@ class ManageUi(object):
         self.open_manage()
 
         menu_element = self.find_by_css(menu_css)
-        #helper.hover(self.driver, menu_element)
+        # helper.hover(self.driver, menu_element)
 
         self.close_dialogs_and_click(menu_element)
 
@@ -381,14 +388,81 @@ class AlertBoxHandler:
         except:
             pass
 
+    def check_info_message(self, msg):
+        """
+        Wrap check_message with message type Info.
+        """
+        return self.check_message(msg, MsgType.Info)
+
+    def check_error_message(self, msg):
+        """
+        Wrap check_message with message type Error.
+        """
+        return self.check_message(msg, MsgType.Error)
+
+    def check_last_message(self, msg_regex):
+        """
+        Get the last alert and search the message for
+        regular expression pattern 'msg_regex'.
+
+        Example of the 'mother' box covering the alert boxes.
+
+         div id=info_box // mother info box
+          +
+          +-> div id=info_bar // auto created
+          |
+          +-> div class=info_box style="display:none" // auto created
+          |
+          +-> div class=info_box style="display:block" // 1st alert
+          +   +>span
+          |     +  "Realm created: "
+          |     |
+          |     +->span class=test_param1
+          |               "test_realm2
+          |
+          +-> div class=error_box style="display:none"
+          +
+          |      // example for deleted alert box
+          |      // display set to none
+          |
+          +-> div class=info_box style="display:block"
+
+                 // new alert boxes are added at the
+                 // end of the mother info box
+                 //
+                 // THE LAST BOX WE ARE TALKING ABOUT HERE!
+
+        :param msg_regex Regular expression pattern matching the message
+                         of the last alert.
+        :return Return True if alert exists.
+        """
+        try:
+            info_box_mother_div = self.manageui.driver.find_element_by_xpath(
+                "//*[@id='info_box']")
+
+            child_divs = info_box_mother_div.find_elements_by_tag_name("div")
+
+            for curr_div in reversed(child_divs):
+                # We want the last visible alert box
+                if(curr_div.is_displayed()):
+                    if(re.search(msg_regex, curr_div.text)):
+                        return True
+                    else:
+                        return False
+
+        except:
+            return False
+
     def check_message(self, msg, msg_type):
         """
-        Return True if the message string is a substring of the
-        found info/error message
+        Return True if the message string is a substring of any(!)
+        found info/error message. Maybe it makes sense to clean up
+        the messages with /sa clear_messages.
         :param msg The substring to search for in the open alert boxes
         :param msg_type Specify box type where you expect 'msg'. /sa MsgType
         :return Return True if 'msg' is part of any alert box of 'msg_type'.
         """
+
         xpath = None
         try:
             if(msg_type == MsgType.Error):
