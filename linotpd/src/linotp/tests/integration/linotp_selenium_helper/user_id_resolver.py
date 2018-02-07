@@ -29,10 +29,6 @@ from selenium.common.exceptions import NoSuchElementException
 import re
 import logging
 
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-
 from helper import find_by_css, find_by_id, fill_element_from_dict
 from manage_elements import ManageDialog
 
@@ -53,6 +49,8 @@ class UserIdResolverManager(ManageDialog):
     close_button_id = 'button_resolver_close'
     menu_item_id = 'menu_edit_resolvers'
 
+    alert_box_handler = None
+
     def __init__(self, manage_ui):
         ManageDialog.__init__(self, manage_ui, 'dialog_resolvers')
         self.resolvers = None
@@ -60,6 +58,7 @@ class UserIdResolverManager(ManageDialog):
         self.new_resolvers_dialog = NewResolverDialog(manage_ui)
         self.no_realms_defined_dialog = ManageDialog(
             manage_ui, 'text_no_realm')
+        self.alert_box_handler = self.manage.alert_box_handler
 
     @staticmethod
     def get_resolver_for_type(resolver_type):
@@ -235,6 +234,13 @@ class UserIdResolverManager(ManageDialog):
         self.raise_if_closed()
         self.manage.wait_for_waiting_finished()
 
+        # Resolver name would be e. g. : 'test_realm5 [SE_musicians ]'
+        # Capture only resolver name.
+        resolver = re.search(r'([^\[(]+)', name).group(1).strip(' ')
+        delete_ok = self.alert_box_handler.check_last_message(
+            "Resolver deleted successfully: " + resolver)
+        assert delete_ok, "Error during resolver deletion!"
+
         # Reload resolvers
         self.parse_contents()
 
@@ -259,10 +265,41 @@ class UserIdResolverManager(ManageDialog):
                                            {'resolver': resolvers[curr_resolver]['resolvername']})
 
     def clear_resolvers(self):
-        """Clear all existing resolvers"""
+        """
+        Clear all existing resolvers.
+
+        The clean up will be done via
+        the following steps.
+        1. Clear all alert boxes in the /manage UI
+        2. Open the resolver dialog and get all
+           resolvers.
+        3. Delete resolver x and check alert box.
+        4. Repeat 3. #resolvers times
+        """
+
+        # /manage needs to be open for clean up
+        # alert box messages.
+        self.manage.open_manage()
+
+        # Maybe /manage was already open:
+        #
+        # Ensure that dialogs are closed.
+        # Otherwise we can not clear the old
+        # alert boxes. Realm dialog blocks
+        # underlying GUI elements.
+        self.manage.close_all_dialogs()
+
+        self.alert_box_handler.clear_messages()
+
+        # The open method 'reparses' the dialog.
+        # This reparse sets an internal list
+        # with current realms.
         self.open()
 
         while True:
+            # self.resolvers only returns the
+            # reparsed list of resolvers - set by self.open.
+            # Does not 'parse' the list in the GUI again.
             resolvers = self.resolvers
             if not resolvers:
                 break
