@@ -23,14 +23,3 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-
-nose
-nose-testconfig
-selenium
-simplejson
-requests
-LinOTP
-LinOTPAdminClientCLI
-packaging
-flaky
-pysocks

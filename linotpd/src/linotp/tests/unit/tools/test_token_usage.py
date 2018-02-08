@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -24,13 +24,21 @@
 #    Support: www.keyidentity.com
 #
 
-nose
-nose-testconfig
-selenium
-simplejson
-requests
-LinOTP
-LinOTPAdminClientCLI
-packaging
-flaky
-pysocks
+import mock
+
+from script_testing_lib import ScriptTester
+
+# -------------------------------------------------------------------------- --
+
+class TestLinotpTokenUsage(ScriptTester):
+
+    script_name = 'linotp-token-usage'
+
+    @mock.patch('linotp_token_usage.token_usage')
+    @mock.patch('sys.exit')
+    def test_main(self, mock_exit, mock_usage):
+        self.script_module.main()
+        mock_usage.assert_called_once()
+
+    def test_token_usage(self):
+        self.script_module.token_usage(None, None, '')

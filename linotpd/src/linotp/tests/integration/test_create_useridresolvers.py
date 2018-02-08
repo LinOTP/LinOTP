@@ -38,7 +38,7 @@ class TestCreateUserIdResolvers(TestCase):
 
     def clear_realms(self):
         # Need to clear realms so that useridresolvers can be deleted
-        self.manage_ui.realm_manager.clear_realms()
+        self.manage_ui.realm_manager.clear_realms_via_api()
 
     def create_resolvers_and_realm(self, resolver_data):
         """Test the connection with the corresponding button in the UI.

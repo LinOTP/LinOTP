@@ -28,9 +28,14 @@ import logging
 import re
 from contextlib import contextmanager
 from packaging import version
+from flaky import flaky
+import time
+import urllib3
+
 
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver import DesiredCapabilities
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -43,9 +48,27 @@ from manage_ui import ManageUi
 from validate import Validate
 from unittest.case import SkipTest
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 logger = logging.getLogger(__name__)
 
 
+def is_flaky_exception(err, *args):
+    """
+    In case of some exceptions we
+    want to re-run the test case.
+    """
+    if(issubclass(err[0], AssertionError) or
+       issubclass(err[0], TimeoutException) or
+       issubclass(err[0], WebDriverException) or
+       issubclass(err[0], StaleElementReferenceException)):
+
+        time.sleep(30)
+        return True
+
+    return False
+
+
+@flaky(rerun_filter=is_flaky_exception)
 class TestCase(unittest.TestCase):
     """Basic LinOTP TestCase class"""
 
@@ -289,8 +312,8 @@ class TestCase(unittest.TestCase):
         userIdResolver with given data and add it to a realm
         of given name.
         """
-        self.realm_manager.clear_realms()
-        self.useridresolver_manager.clear_resolvers()
+        self.realm_manager.clear_realms_via_api()
+        self.useridresolver_manager.clear_resolvers_via_api()
 
         if resolver:
             self.useridresolver_manager.create_resolver(resolver)

@@ -141,6 +141,21 @@ class TokenView(ManageTab):
                 "The token list should be shorter. Before:%s After:%s" % (
                     len(tokens_before), len(tokens_after))
 
+    def clear_tokens_via_api(self):
+        """
+        Get all tokens via API call
+        and delete all by token serial.
+        """
+
+        # Get the tokens in json format
+        json_response = self.manage.admin_api_call("admin/show")
+
+        tokens = json_response["result"]["value"]["data"]
+        if(tokens):
+            for curr_token in tokens:
+                self.manage.admin_api_call("admin/remove",
+                                           {'serial': curr_token['LinOtp.TokenSerialnumber']})
+
     def delete_all_tokens(self):
         self.open()
         self.select_all_tokens()

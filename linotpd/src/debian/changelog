@@ -1,8 +1,16 @@
-linotp (2.10.0.1~0dev0-1) jessie; urgency=low
+linotp (2.10.0.2-1) jessie; urgency=low
 
-  * Set new version 2.10.0.1~0dev0-1
+  Bug Fix:
+  * Tools: Fix exception in linotp-token-usage/tokens-used
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 16 Jan 2018 16:44:09 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 02 Feb 2018 17:12:25 +0100
+
+linotp (2.10.0.1-1) jessie; urgency=low
+
+  Bug Fixes:
+  * Server: Restrict the userservice/context API (270527)
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 30 Jan 2018 10:24:36 +0100
 
 linotp (2.10-1) jessie; urgency=low
   Debian packaging:
