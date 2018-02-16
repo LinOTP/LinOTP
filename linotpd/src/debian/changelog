@@ -1,3 +1,9 @@
+linotp (2.10.0.3~0dev0-1) UNRELEASED; urgency=low
+
+  * Set new version 2.10.0.3~0dev0-1
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 16 Feb 2018 08:26:56 +0100
+
 linotp (2.10.0.2-1) jessie; urgency=low
 
   Bug Fix:
