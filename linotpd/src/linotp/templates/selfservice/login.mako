@@ -48,7 +48,7 @@ if isinstance(lang, list):
   <meta http-equiv="content-style-type" content="text/css">
 
   <link type="text/css" rel="stylesheet" href="/selfservice/style.css">
-  <link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css">
+  <link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
   <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.min.css">
 </head>
 

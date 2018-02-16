@@ -49,7 +49,7 @@ if isinstance(lang, list):
 
 <link type="text/css" rel="stylesheet" href="/css/linotp.css">
 <link type="text/css" rel="stylesheet" href="/selfservice/style.css">
-<link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css">
+<link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
 <link type="text/css" rel="stylesheet" href="/css/flexigrid/flexigrid.css">
 
 <link type="text/css" href="/css/jquery-ui/jquery-ui.min.css" rel="stylesheet">

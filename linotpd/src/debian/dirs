@@ -1,2 +1,4 @@
 etc/linotp2
+etc/linotp2/custom-templates
+etc/linotp2/custom-style
 var/log/linotp

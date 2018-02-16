@@ -60,7 +60,7 @@ if isinstance(lang, list):
 <link type="text/css" rel="stylesheet" href="/css/datetimepicker/jquery.datetimepicker.css">
 <link type="text/css" rel="stylesheet" href="/css/linotp.css?ref=${c.version_ref}">
 <link type="text/css" rel="stylesheet" href="/manage/style.css?ref=${c.version_ref}">
-<link type="text/css" rel="stylesheet" href="/manage/custom-style.css">
+<link type="text/css" rel="stylesheet" href="/custom/manage-style.css">
 
 %if c.debug:
     <script type="text/javascript" src="/js/jquery-1.12.4.js"></script>

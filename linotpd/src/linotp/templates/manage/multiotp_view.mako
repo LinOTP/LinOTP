@@ -31,7 +31,7 @@
 <title>${_("OTP values")}</title>
 
 <link type="text/css" rel="stylesheet" href="/selfservice/style.css">
-<link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css">
+<link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
 
 <%
 type=c.ret.get('type',"")
