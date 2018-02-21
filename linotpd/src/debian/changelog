@@ -1,8 +1,20 @@
-linotp (2.10.0.3~0dev0-1) UNRELEASED; urgency=low
+linotp (2.10.0.3-1) jessie; urgency=low
 
-  * Set new version 2.10.0.3~0dev0-1
+  Enhancements:
+  * Move customisation files location (CSS, logos) to /etc/linotp2/custom-style
+   (35198d8f)
+  * Replace crypto/pbkdf2 with more uptodate version (aa765bc0)
+  * Add German translations (ead85071)
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 16 Feb 2018 08:26:56 +0100
+  Bug fixes:
+  * Fix /auth/pushtoken test page (bf5835f4, 9417d702)
+
+  Build infrastructure:
+  * Add Docker enabled Jenkins Pipeline Script (f72773cc, cd21e3e3, 6a4736ec)
+  * Selenium: Updates and fixes to tests (750167fa, 6b526be3, cf7de4f8, 8cfdeecc,
+    eedd83a4, 29a92717)
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 22 Feb 2018 10:28:26 +0100
 
 linotp (2.10.0.2-1) jessie; urgency=low
 
