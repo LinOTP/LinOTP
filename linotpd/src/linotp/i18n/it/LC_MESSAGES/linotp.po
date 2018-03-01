@@ -1,7 +1,7 @@
 # Italian translations for LinOTP package - Italian messages for LinOTP.
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
 #
 #    This file is part of LinOTP admin clients.
 #
@@ -1979,8 +1979,8 @@ msgstr "Password Bind"
 msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP - la soluzione Open Source per l'autenticazione a due fattori."
 
-msgid "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
-msgstr "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
+msgid "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
+msgstr "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Autorizzato da AGPLv3"
