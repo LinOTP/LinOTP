@@ -37,11 +37,11 @@ from linotp.lib.user import User
 class TestTokenSearch(unittest.TestCase):
 
     @patch('linotp.lib.tokeniterator.getTokens4UserOrSerial')
-    @patch('linotp.lib.tokeniterator.getAllTokenUsers')
+    @patch('linotp.lib.tokeniterator.token_owner_iterator')
     @patch('linotp.lib.tokeniterator.TokenIterator.__init__')
     def test_singechar_wildcard(self,
                                 mocked_tokenIterator_init,
-                                mocked_getAllTokenUsers,
+                                mocked_token_owner_iterator,
                                 mocked_getTokens4UserOrSerial
                                 ):
 
@@ -58,12 +58,12 @@ class TestTokenSearch(unittest.TestCase):
         user = User(login='pass*thru', realm='user2')
         tik._get_user_condition(user, valid_realms)
 
-        assert mocked_getAllTokenUsers.call_count == 1
+        assert mocked_token_owner_iterator.call_count == 1
 
         # ------------------------------------------------------------------ --
 
-        mocked_getAllTokenUsers.called = False
-        mocked_getAllTokenUsers.call_count = 0
+        mocked_token_owner_iterator.called = False
+        mocked_token_owner_iterator.call_count = 0
 
         # ------------------------------------------------------------------ --
 
@@ -74,7 +74,7 @@ class TestTokenSearch(unittest.TestCase):
         user = User(login='pass.thru', realm='user2')
         tik._get_user_condition(user, valid_realms)
 
-        assert not mocked_getAllTokenUsers.called
+        assert not mocked_token_owner_iterator.called
         assert mocked_getTokens4UserOrSerial.call_count == 1
 
         return

@@ -62,6 +62,7 @@ from linotp.lib.reply import sendResult
 from linotp.lib.util import remove_empty_lines
 from linotp.lib.util import get_client
 from linotp.lib.util import unicode_compare
+from linotp.lib.realm import getRealms
 
 from linotp.lib.policy import checkPolicyPre
 from linotp.lib.policy import PolicyException
@@ -344,14 +345,27 @@ class ManageController(BaseController):
             user = User()
 
             if c.qtype == "loginname":
-                if "@" in c.filter:
-                    (login, realm) = c.filter.split("@")
-                    user = User(login, realm)
-                else:
-                    user = User(c.filter)
+
+                # we take by default the given expression as a loginname,
+                # especially if it contains a "*" wildcard.
+                # it only might be more, a user and a realm, if there
+                # is an '@' sign in the loginname and the part after the
+                # last '@' sign is matching an existing realm
+
+                user = User(login=c.filter)
+
+                if "*" not in c.filter and "@" in c.filter:
+
+                    login, _ , realm = c.filter.rpartition("@")
+
+                    if realm.lower() in getRealms():
+                        user = User(login, realm)
+                        if not user.exists():
+                            user = User(login=c.filter)
 
             elif c.qtype == "all":
                 filter_all = c.filter
+
             elif c.qtype == "realm":
                 filter_realm = c.filter
 

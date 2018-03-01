@@ -43,7 +43,7 @@ from linotp.lib.error import UserError
 
 from linotp.lib.token import (getTokenRealms,
                               getTokens4UserOrSerial,
-                              getAllTokenUsers
+                              token_owner_iterator
                               )
 from linotp.lib.user import getUserId, getUserInfo
 from linotp.lib.user import User
@@ -57,6 +57,67 @@ from linotp.lib.config  import getFromConfig
 
 
 log = logging.getLogger(__name__)
+
+
+def _compile_regex(search_text):
+    """
+    :param search_text: compile a regex from the search text
+    :return: search regex
+    """
+
+    searcH_regex = re.compile(
+        "^%s$" % search_text.replace('.', '\.').replace('*', '.*'))
+
+    return searcH_regex
+
+
+def _compare_regex(regex, compare_string):
+    """
+    helper function to check if a wildcard search expression
+    matches one of the token owners
+
+    :params regex: compiled expression like 'max*@example.*.net
+    :params compare_string: the string to be compared
+
+    :return: boolean
+    """
+
+    try:
+        if compare_string is None:
+            return False
+
+        match = regex.match(u'' + compare_string.lower())
+        if match is not None:
+            return True
+
+    except Exception as exx:
+        log.exception("error with regular expression matching %r", exx)
+
+    return False
+
+
+def _user_expression_match(login_user, token_owner_iterator):
+    """
+    :param login_user: the user expression we want to match
+    :param token_owner_iterator: tuple iterator of (serial an owner_name)
+
+    :return: list of serials
+    """
+
+    # create regex
+    user_search_expression = _compile_regex(login_user)
+
+    serials = []
+
+    # compare for each owner
+
+    for serial, owner in token_owner_iterator:
+        if _compare_regex(user_search_expression, owner):
+            serials.append(serial)
+
+    return serials
+
+
 class TokenIterator(object):
     '''
     TokenIterator class - support a smooth iterating through the tokens
@@ -191,28 +252,16 @@ class TokenIterator(object):
 
         ## handle case, when nothing found in former cases
         if searchType == "wildcard":
-            serials = []
-            users = getAllTokenUsers()
-            logRe = None
-            lU = loginUser.replace('*', '.*')
-            #lU = lU.replace('..', '.')
-            logRe = re.compile(lU)
 
-            for ser in users:
-                userInfo = users.get(ser)
-                tokenUser = userInfo.get('username').lower()
-                try:
-                    if logRe.match(u'' + tokenUser) is not None:
-                        serials.append(ser)
-                except Exception as e:
-                    log.error('error no express %r ' % e)
+            serials = _user_expression_match(loginUser, token_owner_iterator())
 
-            ## to prevent warning, we check is serials are found
-            ## SAWarning: The IN-predicate on
-            ## "Token.LinOtpTokenSerialnumber" was invoked with an
-            ## empty sequence. This results in a contradiction, which
-            ## nonetheless can be expensive to evaluate.  Consider
-            ## alternative strategies for improved performance.
+            # to prevent warning, we check is serials are found
+            # SAWarning: The IN-predicate on
+            # "Token.LinOtpTokenSerialnumber" was invoked with an
+            # empty sequence. This results in a contradiction, which
+            # nonetheless can be expensive to evaluate.  Consider
+            # alternative strategies for improved performance.
+
             if len(serials) > 0:
                 ucondition = and_(Token.LinOtpTokenSerialnumber.in_(serials))
             else:

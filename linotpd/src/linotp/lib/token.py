@@ -1454,12 +1454,14 @@ def getTokenNumResolver(resolver=None, active=True):
                 Token.LinOtpIdResClass.like(resolver)).count()
         return sqlQuery
 
-def getAllTokenUsers():
+def token_owner_iterator():
     '''
-        return a list of all users
+        iterate all tokens for serial and users
     '''
-    users = {}
-    sqlQuery = Session.query(Token)
+
+    sqlQuery = Session.query(Token).filter(
+        model.Token.LinOtpUserid != '').all()
+
     for token in sqlQuery:
         userInfo = {}
 
@@ -1474,10 +1476,7 @@ def getAllTokenUsers():
         if len(userId) > 0 and len(userInfo) == 0:
             userInfo['username'] = u'/:no user info:/'
 
-        if len(userInfo) > 0:
-            users[serial] = userInfo
-
-    return users
+        yield serial, userInfo['username']
 
 
 def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
