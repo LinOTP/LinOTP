@@ -69,7 +69,7 @@ def make_map(global_conf, app_conf,):
     # in case of selfservice, we route the default / to selfservice
     selfservice = app_conf.get('service.selfservice', 'True') == 'True'
     if selfservice:
-        routeMap.connect('/selfservice/custom-style.css',
+        routeMap.connect('/custom/selfservice-style.css',
                          controller='selfservice', action='custom_style')
 
         routeMap.redirect('/account/login', '/selfservice/')
@@ -112,7 +112,8 @@ def make_map(global_conf, app_conf,):
     # in case of manage, we route the default / to manage
     manage = app_conf.get('service.manage', 'True') == 'True'
     if manage:
-        routeMap.connect('/manage/custom-style.css', controller='manage', action='custom_style')
+        routeMap.connect('/custom/manage-style.css',
+                         controller='manage', action='custom_style')
         routeMap.connect('/admin', controller='admin', action='show')
         routeMap.connect('/system', controller='system', action='getConfig')
         routeMap.connect('/manage/', controller='manage', action='index')
@@ -143,6 +144,8 @@ def make_map(global_conf, app_conf,):
     if openid:
         # the default openid will be the status
         routeMap.connect('/openid/', controller='openid', action='status')
+        routeMap.connect('/custom/openid-style.css',
+                         controller='openid', action='custom_style')
         for cont in ['openid']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)

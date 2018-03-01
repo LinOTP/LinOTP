@@ -38,7 +38,7 @@
 <meta http-equiv="content-style-type" content="text/css">
 
 <link type="text/css" rel="stylesheet" href="/openid/style.css">
-<link type="text/css" rel="stylesheet" href="/openid/custom-style.css">
+<link type="text/css" rel="stylesheet" href="/custom/openid-style.css">
 
 </head>
 

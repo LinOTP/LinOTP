@@ -185,13 +185,6 @@ class RealmManager(ManageDialog):
         # We should be back to the realm list
         self.raise_if_closed()
 
-        # Realm name would be e. g. : 'test_realm5 [SE_musicians ]'
-        # Capture only realm name.
-        realm = re.search(r'([^\[(]+)', name).group(1).strip(' ')
-        delete_ok = self.alert_box_handler.check_last_message(
-            "Realm deleted: " + realm)
-        assert delete_ok, "Error during realm deletion!"
-
         # Reload realms
         self.reparse()
         assert (len(self.realms) == realm_count - 1), (

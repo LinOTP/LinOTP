@@ -10,17 +10,22 @@ export DEB_VERSION = $(shell sed -ne '1{s/^.* (//;s/).*$$//;p}' debian/changelog
 %:
 	dh $@ --with python2 --buildsystem=pybuild
 
-# Make sure that the stuff setuptools puts into /usr/etc actually ends up in /etc;
-# otherwise the postinst gets confused.
-# Also, replace “@@@DEB_VERSION@@@” by the Debian package version number (as per
-# the changelog, see above) in all {pre,post}{inst,rm} files.
-
 override_dh_installdeb:
 	dh_installdeb
+
+	# Make sure that the stuff setuptools puts into /usr/etc actually ends up in /etc;
+	# otherwise the postinst gets confused.
+	# Also, replace “@@@DEB_VERSION@@@” by the Debian package version number (as per
+	# the changelog, see above) in all {pre,post}{inst,rm} files.
 	for pkg in $$(dh_listpackages -i); do \
 		if [ -d debian/$$pkg/usr/etc ]; then \
-			mv debian/$$pkg/usr/etc/* debian/$$pkg/etc ; \
-			rmdir debian/$$pkg/usr/etc ; \
+			cp -a debian/$$pkg/usr/etc/* debian/$$pkg/etc ; \
+			rm -r debian/$$pkg/usr/etc ; \
 		fi ; \
 		sed -ie 's/@@@DEB_VERSION@@@/$(DEB_VERSION)/' debian/$$pkg/DEBIAN/*; \
 	done
+
+	find debian/linotp/usr -ls | grep public
+	# Add a symlink to the custom style directory for apache to follow
+	find debian/linotp/usr -type d -name public -ls \
+		-execdir ln -s /etc/linotp2/custom-style {}/custom \;

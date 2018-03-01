@@ -176,7 +176,12 @@ function check_status() {
     } else {
         if (true === data.result.value) {
             if(data.detail.transactions[transactionid]["received_tan"] === true){
-                alert("User successfully authenticated!");
+                if(data.detail.transactions[transactionid]["valid_tan"] === true){
+                    alert("User successfully authenticated!");
+                }
+                else {
+                    alert("User rejected the authentication request");
+                }
             }
             else if(data.detail.transactions[transactionid]["received_tan"] === false){
                 alert("User did not authenticate yet!");

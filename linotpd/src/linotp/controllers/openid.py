@@ -579,4 +579,12 @@ class OpenidController(BaseController):
             login, token = cookie.split(":")
         return login, token
 
+    def custom_style(self):
+        '''
+        If this action was called, the user hasn't created a custom css yet. To avoid hitting
+        the debug console over and over, we serve an empty file.
+        '''
+        response.headers['Content-type'] = 'text/css'
+        return ''
+
 # eof #
