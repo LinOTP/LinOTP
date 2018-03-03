@@ -27,7 +27,12 @@
 
 
 import re
+import socket
+import netaddr
+
 from datetime import timedelta
+from netaddr.ip import IPNetwork
+
 from linotp.lib.crypto.encrypted_data import EncryptedData
 
 duration_regex = re.compile(r'((?P<weeks>\d+?)(w|week|weeks))?'
@@ -159,3 +164,124 @@ def boolean(value):
         raise Exception("unable to convert %r" % value)
 
     return value.lower() in true_def
+
+
+def check_networks_expression(networks):
+    """
+    check if a given term is realy a description of networks
+
+    :param networks: the term which should describe a network
+                    eg. "192.168.178.1/24, example.com/32"
+    :return: boolean - true if this is a network description
+    """
+
+    if not isinstance(networks, str) and not isinstance(networks, unicode):
+        return False
+
+    networks = networks.strip()
+
+    # we require to accept, otherwise the setConfig will fail
+    if networks == '':
+        return True
+
+    ok = True
+
+    for network in networks.split(','):
+        ok = ok and is_network(network)
+    return ok
+
+
+def is_network(network):
+    """
+    test if a given term is realy a network description
+
+    :param network: the term which should describe a network
+                    eg. 192.168.178.1/24 or example.com/32
+    :return: boolean - true if this is a network description
+    """
+    return get_ip_network(network) is not None
+
+
+def get_ip_network(network):
+    """
+    get the ip network representation from netaddr
+
+    :param network: the term which should describe a network
+                    eg. 192.168.178.1/24 or example.com/32
+    :return: None or the netaddr.IPNetwork object
+    """
+
+    if not network or not network.strip():
+        return None
+
+    network = network.strip()
+
+    try:
+        ip_network = netaddr.IPNetwork(network)
+        return ip_network
+
+    except netaddr.core.AddrFormatError:
+        try:
+
+            # support for cidr on named network like 'keyidentity.com/29'
+            cidr = None
+            if '/' in network:
+                network, _sep, cidr = network.rpartition('/')
+
+            ip_addr = socket.gethostbyname(network)
+
+            if cidr:
+                ip_addr = ip_addr + "/" + cidr
+
+            ip_network = netaddr.IPNetwork(ip_addr)
+            return ip_network
+
+        except socket.gaierror:
+            return None
+
+    return None
+
+
+def get_ip_address(address):
+    """
+    get the ip address representation from netaddr
+
+    :param address: the term which should describe a ip address
+                    eg. 192.168.178.1 or www.example.com
+    :return: None or the netaddr.IPAddress object
+    """
+    if not address or not address.strip():
+        return None
+
+    address = address.strip()
+
+    try:
+        ip_address = netaddr.IPAddress(address)
+        return ip_address
+
+    except (netaddr.core.AddrFormatError, ValueError):
+        try:
+
+            ip_addr_str = socket.gethostbyname(address)
+            ip_address = netaddr.IPNetwork(ip_addr_str)
+
+            if isinstance(ip_address, IPNetwork):
+                return ip_address.ip
+
+            return ip_address
+
+        except socket.gaierror:
+            return None
+
+    return None
+
+
+def is_ip_address(address):
+    """
+    get the ip address representation from netaddr
+
+    :param address: the term which should describe a ip address
+                    eg. 192.168.178.1 or www.example.com
+    :return: boolean - true if it is an IPAddress
+    """
+    return get_ip_address(address) is not None

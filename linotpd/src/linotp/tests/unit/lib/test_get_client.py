@@ -33,6 +33,11 @@ from mock import patch
 
 
 from linotp.lib.util import _get_client_from_request
+from linotp.lib.util import _is_addr_in_network
+
+from linotp.lib.type_utils import get_ip_network
+from linotp.lib.type_utils import get_ip_address
+
 
 # client.FORWARDED_PROXY
 # client.X_FORWARDED_FOR
@@ -129,19 +134,28 @@ class TestGetClientCase(unittest.TestCase):
 
         LinConfig = {
             'client.X_FORWARDED_FOR': 'true',
-            'client.FORWARDED_PROXY': 'localhost, 123.234.123.234', }
+            'client.FORWARDED_PROXY': 'www.example.com.xx, 123.234.123.234', }
 
-        message = "invalid IPNetwork"
         request = Request(environ)
-        with self.assertRaises(Exception) as exx:
-            _get_client_from_request(request)
 
-        self.assertTrue(message in exx.exception.message)
+        # with self.assertRaises(Exception) as exx:
+        client = _get_client_from_request(request)
+        self.assertTrue(client == '11.22.33.44')
+
+        LinConfig = {
+            'client.X_FORWARDED_FOR': 'true',
+            'client.FORWARDED_PROXY': '11.22.33.0/32, 123.234.123.234', }
+
+        request = Request(environ)
+
+        # with self.assertRaises(Exception) as exx:
+        client = _get_client_from_request(request)
+        self.assertTrue(client == '11.22.33.44')
 
         return
 
     @patch('linotp.lib.util.getFromConfig', mocked_getFromConfig)
-    def test_000_get_client_from_request_by_forwarded(self):
+    def test_get_client_from_request_by_forwarded(self):
         """
         according to the spec the old expression is the same as the
         new one:
@@ -179,5 +193,77 @@ class TestGetClientCase(unittest.TestCase):
             client = _get_client_from_request(request)
 
             self.assertTrue(client == forward_test_string[1], client)
+
+    def test_ipaddr_value(self):
+        """ unit test for get_ip_address """
+
+        ip_address = get_ip_address('www.example.com')
+        ip_tuple = ip_address.words
+        assert (93, 184, 216, 34) == ip_tuple
+
+        ip_addr = get_ip_address('93.184.216.34')
+        ip_tuple = ip_addr.words
+        assert (93, 184, 216, 34) == ip_tuple
+
+        ip_addr = get_ip_address('93.184.216.34/32')
+        assert ip_addr is None
+
+        ip_addr = get_ip_address('example.com.xxx')
+        assert ip_addr is None
+
+        ip_addr = get_ip_address('  ')
+        assert ip_addr is None
+
+        return
+
+    def test_network_value(self):
+        """ unit test for get_ip_network """
+
+        ip_network = get_ip_network('93.184.216.34/29')
+        assert len(list(ip_network)) == 8
+        ip_tuple = ip_network.network.words
+        assert (93, 184, 216, 32) == ip_tuple
+
+        ip_network = get_ip_network('gsi.de')
+        ip_tuple = ip_network.network.words
+        ip_range = (ip_tuple[0], ip_tuple[1], ip_tuple[2])
+        assert (140, 181, 3) == ip_range
+
+        ip_network = get_ip_network('keyidentity.com/29')
+        assert len(list(ip_network)) == 8
+        ip_tuple = ip_network.network.words
+        ip_range = (ip_tuple[0], ip_tuple[1], ip_tuple[2])
+        assert (136, 243, 104) == ip_range
+
+        ip_network = get_ip_network('example.xxx')
+        assert ip_network is None
+
+        ip_network = get_ip_network('  ')
+        assert ip_network is None
+
+        ip_network = get_ip_network(None)
+        assert ip_network is None
+
+        return
+
+    def test_addr_in_network(self):
+        """ unit test for _is_addr_in_network """
+
+        in_network = _is_addr_in_network('136.243.104.66', 'keyidentity.com/29')
+        assert in_network is True
+
+        in_network = _is_addr_in_network('140.181.3.7', '140.181.3.1/29')
+        assert in_network is True
+
+        in_network = _is_addr_in_network(' 140.181.3.121', ' 140.181.3.1/16 ')
+        assert in_network is True
+
+        in_network = _is_addr_in_network('140.181.3.121', ' ')
+        assert in_network is False
+
+        in_network = _is_addr_in_network('140.181.3.121', 'example.net.xxx ')
+        assert in_network is False
+
+        return
 
 # eof #
