@@ -2642,9 +2642,6 @@ function load_system_config(){
      function(data, textStatus, XMLHttpRequest){
         // checkboxes this way:
         checkBoxes = new Array();
-        if (data.result.value.splitAtSign == "True") {
-            checkBoxes.push("sys_splitAtSign");
-        };
         if (data.result.value.allowSamlAttributes == "True") {
             checkBoxes.push("sys_allowSamlAttributes");
         };
@@ -2669,6 +2666,12 @@ function load_system_config(){
         $("input:checkbox").val(checkBoxes);
         $('#sys_autoResyncTimeout').val(data.result.value.AutoResyncTimeout);
         $('#sys_mayOverwriteClient').val(data.result.value.mayOverwriteClient);
+
+        if (data.result.value.splitAtSign === "False") {
+            $('#sys_splitAtSign').prop('checked', false);
+        } else {
+            $('#sys_splitAtSign').prop('checked', true);
+        };
 
         if (data.result.value['client.X_FORWARDED_FOR'] == "True") {
             $('#sys_x_forwarded_for').prop('checked', true);
