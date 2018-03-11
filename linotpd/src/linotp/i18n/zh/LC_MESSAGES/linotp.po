@@ -1578,11 +1578,10 @@ msgid "Override authentication client"
 msgstr "覆盖认证客户端"
 
 msgid ""
-"This is a comma separated list of clients, that may send another client IP "
-"for authorization policies."
+"This is a comma-separated list of the LinOTP clients, for example a RADIUS "
+"Server, which are allowed to pass their own clients IP-address as a "
+"parameter. This modified address can then be used in policy definitions."
 msgstr ""
-"这是一个用逗号分隔的 IP 地址列表，将自有的 IP 地址用其它地址覆盖，并和授权策"
-"略共同发送。"
 
 msgid "Resolver Lookup Caching"
 msgstr "解析器查找缓存"
@@ -1858,7 +1857,7 @@ msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP，双因素身份验证的开源解决方案。"
 
 #, fuzzy
-msgid "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
+msgid "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
 msgstr "版权所有 (C) 2010 - 2017 LSE Leading Security Experts GmbH"
 
 msgid "Licensed under AGPLv3"
@@ -2458,10 +2457,6 @@ msgstr "您可以添加域，按住 Ctrl 键并单击左键。"
 
 msgid "Edit Realms of Token"
 msgstr "编辑令牌所属域"
-
-#, fuzzy
-msgid "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
-msgstr "版权所有 (C) 2010 - 2017 LSE Leading Security Experts GmbH"
 
 msgid "Set Realm"
 msgstr "设置令牌域"
@@ -4054,6 +4049,17 @@ msgid ""
 "If set, a new mobile number will be retrieved from the user info instead of "
 "the token"
 msgstr ""
+
+#~ msgid ""
+#~ "This is a comma separated list of clients, that may send another client "
+#~ "IP for authorization policies."
+#~ msgstr ""
+#~ "这是一个用逗号分隔的 IP 地址列表，将自有的 IP 地址用其它地址覆盖，并和授权"
+#~ "策略共同发送。"
+
+#, fuzzy
+#~ msgid "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
+#~ msgstr "版权所有 (C) 2010 - 2017 LSE Leading Security Experts GmbH"
 
 #~ msgid "No valid authentication session %r"
 #~ msgstr "无有效的验证会话 %r"

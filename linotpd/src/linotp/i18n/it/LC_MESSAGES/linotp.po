@@ -1686,11 +1686,10 @@ msgid "Override authentication client"
 msgstr "Sovrascrive client di autenticazione"
 
 msgid ""
-"This is a comma separated list of clients, that may send another client IP "
-"for authorization policies."
+"This is a comma-separated list of the LinOTP clients, for example a RADIUS "
+"Server, which are allowed to pass their own clients IP-address as a "
+"parameter. This modified address can then be used in policy definitions."
 msgstr ""
-"Si tratta di un elenco separato da virgole di client che possono inviare un "
-"client IP diverso per i criteri di autorizzazione."
 
 msgid "Resolver Lookup Caching"
 msgstr "Resolver Lookup Caching"
@@ -1979,8 +1978,8 @@ msgstr "Password Bind"
 msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP - la soluzione Open Source per l'autenticazione a due fattori."
 
-msgid "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
-msgstr "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
+msgid "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
+msgstr "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Autorizzato da AGPLv3"
@@ -2995,9 +2994,6 @@ msgstr ""
 
 msgid "Error loading HTTP resolver"
 msgstr "Errore durante il caricamento del Resolver HTTP"
-
-msgid "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
-msgstr "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
 
 msgid "Error loading SQL resolver"
 msgstr "Errore durante il caricamento del Resolver SQL"
@@ -4289,6 +4285,16 @@ msgid ""
 "If set, a new mobile number will be retrieved from the user info instead of "
 "the token"
 msgstr ""
+
+#~ msgid ""
+#~ "This is a comma separated list of clients, that may send another client "
+#~ "IP for authorization policies."
+#~ msgstr ""
+#~ "Si tratta di un elenco separato da virgole di client che possono inviare "
+#~ "un client IP diverso per i criteri di autorizzazione."
+
+#~ msgid "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
+#~ msgstr "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
 
 #~ msgid "No valid authentication session %r"
 #~ msgstr "Sessione di autenticazione non valida %r"

@@ -1707,11 +1707,10 @@ msgid "Override authentication client"
 msgstr "Sobrescribir cliente que debe ser autenticado"
 
 msgid ""
-"This is a comma separated list of clients, that may send another client IP "
-"for authorization policies."
+"This is a comma-separated list of the LinOTP clients, for example a RADIUS "
+"Server, which are allowed to pass their own clients IP-address as a "
+"parameter. This modified address can then be used in policy definitions."
 msgstr ""
-"Se trata de una lista separada por comas de direcciones IP que pueden enviar "
-"una dirección IP distinta a la propia para las directrices de autorización."
 
 msgid "Resolver Lookup Caching"
 msgstr "Caché de Consultas del Solucionador"
@@ -2001,8 +2000,8 @@ msgid "LinOTP - the open source solution for two factor authentication."
 msgstr ""
 "LinOTP, la solución de código abierto para la autenticación de dos factores."
 
-msgid "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
-msgstr "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
+msgid "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
+msgstr "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Bajo licencia AGPLv3"
@@ -2970,9 +2969,6 @@ msgstr "Error al guardar la configuración del dominio"
 
 msgid "Realm created"
 msgstr "Dominio creado"
-
-msgid "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
-msgstr "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
 
 msgid "Error setting Token realms"
 msgstr "Error al establecer el dominio del token"
@@ -4331,6 +4327,17 @@ msgid ""
 "If set, a new mobile number will be retrieved from the user info instead of "
 "the token"
 msgstr ""
+
+#~ msgid ""
+#~ "This is a comma separated list of clients, that may send another client "
+#~ "IP for authorization policies."
+#~ msgstr ""
+#~ "Se trata de una lista separada por comas de direcciones IP que pueden "
+#~ "enviar una dirección IP distinta a la propia para las directrices de "
+#~ "autorización."
+
+#~ msgid "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
+#~ msgstr "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
 
 #~ msgid "No valid authentication session %r"
 #~ msgstr "No es una sesión de autenticación válida %r"

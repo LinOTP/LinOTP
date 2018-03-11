@@ -317,7 +317,7 @@ if isinstance(lang, list):
                 <legend>${_("Authorization")}</legend>
                     <label for=sys_mayOverwriteClient>${_("Override authentication client")}:</label>
                     <input type='text' name='sys_mayOverwriteClient' id='sys_mayOverwriteClient' size='40'
-                    title="${_('This is a comma separated list of clients, that may send another client IP for authorization policies.')}">
+                    title="${_('This is a comma-separated list of the LinOTP clients, for example a RADIUS Server, which are allowed to pass their own clients IP-address as a parameter. This modified address can then be used in policy definitions.')}">
             </fieldset>
         </div>
         <div id="tab_content_system_caching">

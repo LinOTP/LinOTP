@@ -1678,13 +1678,16 @@ msgstr "Authorisierung"
 msgid "Override authentication client"
 msgstr "Authentisierenden Client überschreiben"
 
+#, fuzzy
 msgid ""
-"This is a comma separated list of clients, that may send another client IP "
-"for authorization policies."
+"This is a comma-separated list of the LinOTP clients, for example a RADIUS "
+"Server, which are allowed to pass their own clients IP-address as a "
+"parameter. This modified address can then be used in policy definitions."
 msgstr ""
-"Dies ist eine Komma-separierte Liste an IP-Adressen, die statt ihrer eigenen "
-"IP-Adresse eine andere IP-Adresse für Authorisierungs-Richtlinien "
-"mitschicken dürfen."
+"Dies ist eine kommaseparierte Liste der LinOTP Clients, z.B. Radiusserver, "
+"denen gestattet wird, die IPs ihrer Clients als Parameter an LinOTP "
+"weiterzureichen. Diese können als Grundlage für Authorisierungsrichtlinien "
+"verwendet werden."
 
 msgid "Resolver Lookup Caching"
 msgstr "Resolver-Lookup-Caching"
@@ -1692,6 +1695,7 @@ msgstr "Resolver-Lookup-Caching"
 msgid "Enable caching of the realm to user id resolver lookup"
 msgstr "Caching der Zuordnung zwischen Realms und UserIdResolvern aktivieren"
 
+#, fuzzy
 msgid ""
 "The expiration of the resolver lookup caching in seconds or as duration "
 "format for days, hours and minutes: >1d 3h 4m<"
@@ -1967,8 +1971,8 @@ msgstr "Neues Passwort bestätigen"
 msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP - die Open Source Lösung für zwei Faktor Authentisierung."
 
-msgid "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
-msgstr "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
+msgid "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
+msgstr "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Lizensiert unter AGPLv3"
@@ -2616,9 +2620,6 @@ msgstr "Realms des Tokens bearbeiten"
 
 msgid "Set Realm"
 msgstr "Tokenrealm setzen"
-
-msgid "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
-msgstr "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
 
 msgid "You may get OTP values for token:"
 msgstr "Für diesen Token können Sie OTP-Werte anfragen:"
@@ -4314,6 +4315,9 @@ msgid ""
 msgstr ""
 "Falls gesetzt, wird die Handynummer aus den Benutzer Daten statt aus der "
 "Token Information verwendet."
+
+#~ msgid "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
+#~ msgstr "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
 
 #~ msgid "No valid authentication session %r"
 #~ msgstr "Keine gültige Authentisierungs-Session %r"
