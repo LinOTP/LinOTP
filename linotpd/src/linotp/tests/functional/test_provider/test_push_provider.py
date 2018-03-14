@@ -31,6 +31,7 @@ import requests
 from mock import patch
 
 from linotp.tests import TestController
+from linotp.lib.remote_service import AllServicesUnavailable
 from linotp.provider.pushprovider.default_push_provider \
         import DefaultPushProvider
 
@@ -47,34 +48,33 @@ VALID_REQUEST = 'You received an authentication request.'
 log = logging.getLogger(__name__)
 
 
-def mocked_http_request(HttpObject, *argparams, **kwparams):
+def generate_mocked_http_response(status=200, text=VALID_REQUEST):
+    def mocked_http_request(HttpObject, *argparams, **kwparams):
 
-    class Response:
-        pass
+        class Response:
+            pass
 
-    r = Response()
+        r = Response()
 
-    r.status = TestPushProviderController.R_AUTH_STATUS
-    r.text = TestPushProviderController.R_AUTH_DETAIL
+        r.status = status
+        r.text = text
 
-    if r.status == 200:
-        r.ok = True
-        r.content = r.text
+        if r.status == 200:
+            r.ok = True
+            r.content = r.text
+            return r
+
+        r.ok = False
+        r.reason = r.text
+
         return r
 
-    r.ok = False
-    r.reason = r.text
-
-    return r
-
+    return mocked_http_request
 
 class TestPushProviderController(TestController):
     """
     test the push provider
     """
-
-    R_AUTH_STATUS = 200
-    R_AUTH_DETAIL = VALID_REQUEST
 
     def setUp(self):
         return
@@ -99,7 +99,10 @@ class TestPushProviderController(TestController):
         configDict['access_certificate'] = os.path.join(self.fixture_path,
                                                         'cert.pem')
 
-        configDict['push_url'] = "https://Notification.keyidentity.com/send"
+        configDict['push_url'] = [
+                "https://Notification1.keyidentity.com/send",
+                "https://Notification2.keyidentity.com/send",
+        ]
 
         push_prov.loadConfig(configDict)
 
@@ -112,10 +115,24 @@ class TestPushProviderController(TestController):
             push_prov.loadConfig(configDict)
 
         #
+        # verify that multiple urls are also being checked
+        #
+
+        with self.assertRaises(requests.exceptions.InvalidSchema):
+            configDict['push_url'] = [
+                    "https://proxy.keyidentity.com:8800/send",
+                    "hXXXs://proxy.keyidentity.com:8800/send"
+            ]
+            push_prov.loadConfig(configDict)
+
+        #
         # restore configuration for push_url
         #
 
-        configDict['push_url'] = "https://Notification.keyidentity.com/send"
+        configDict['push_url'] = [
+                "https://Notification1.keyidentity.com/send",
+                "https://Notification2.keyidentity.com/send"
+        ]
 
         #
         # extended option: proxy
@@ -193,7 +210,7 @@ class TestPushProviderController(TestController):
 
         return
 
-    @patch.object(requests.Session, 'post', mocked_http_request)
+    @patch.object(requests.Session, 'post', generate_mocked_http_response())
     def test_request(self):
         """
         do some mocking of a requests request
@@ -214,9 +231,6 @@ class TestPushProviderController(TestController):
                "c31ea1a4f3222660435f")
         message = "Authentication request for user bla"
 
-        # set the response status
-        TestPushProviderController.R_AUTH_STATUS = 200
-
         # run the fake request
         status, response = push_prov.push_notification(
                                             challenge=message,
@@ -227,3 +241,72 @@ class TestPushProviderController(TestController):
         self.assertEquals(response, VALID_REQUEST)
 
         return
+
+
+def cond_failing_http_response(session, *args, **kwargs):
+
+    url = args[0]
+
+    assert type(url) is str
+
+    if 'success' in url:
+        return generate_mocked_http_response()(session, *args, **kwargs)
+
+    raise requests.ConnectionError("this request should fail")
+
+
+class TestPushProviderFailover(TestController):
+
+    def _test_servers(self, servers):
+        configDict = {}
+        configDict['Timeout'] = '30'
+        configDict['access_certificate'] = os.path.join(self.fixture_path,
+                                                        'cert.pem')
+        configDict['push_url'] = servers
+
+        push_prov = DefaultPushProvider()
+        push_prov.loadConfig(configDict)
+
+        push_prov = DefaultPushProvider()
+        push_prov.loadConfig(configDict)
+        gda = ("apn.98c78e19e9842a1cfdeb887bf42142b615865b1ec513"
+               "c31ea1a4f3222660435f")
+        message = "Authentication request for user bla"
+
+        # run the fake request
+        status, response = push_prov.push_notification(
+                                            challenge=message,
+                                            gda=gda,
+                                            transactionId='012345678901234')
+
+        self.assertEquals(status, True)
+        self.assertEquals(response, VALID_REQUEST)
+
+    @patch.object(requests.Session, 'post', cond_failing_http_response)
+    def test_single_server(self):
+        """
+        Verify that a single server suceeds
+        """
+
+        self._test_servers(["https://success.server/push"])
+
+    @patch.object(requests.Session, 'post', cond_failing_http_response)
+    def test_single_failing_server(self):
+        """
+        verify that a single faiiling server should return failure
+        """
+        with self.assertRaises(AllServicesUnavailable):
+            self._test_servers(["https://failing.server/"])
+
+    @patch.object(requests.Session, 'post', cond_failing_http_response)
+    def test_multiple_servers(self):
+        """
+        Verify that multiple servers of which one fails succeeds
+        """
+
+        self._test_servers([
+            "https://failing1.server/push",
+            "https://failing2.server/push",
+            "https://success2.server/push"
+        ])
+
