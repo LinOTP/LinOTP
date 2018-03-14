@@ -32,9 +32,12 @@ import os
 import logging
 import requests
 from urlparse import urlparse
+from functools import partial
 
 from linotp.provider import provider_registry
 from linotp.provider.pushprovider import IPushProvider
+
+from linotp.lib.remote_service import RemoteServiceList
 
 #
 # set the default connection and request timeouts
@@ -56,13 +59,31 @@ class DefaultPushProvider(IPushProvider):
 
     def __init__(self):
 
-        self.push_server_url = None
+        self.push_server_urls = None
         self.client_cert = None
         self.server_cert = None
         self.proxy = None
         self.timeout = DEFAULT_TIMEOUT
+        self.remote_services = RemoteServiceList(
+                failure_threshold=2, # after two failures try next service
+                recovery_timeout=30, # after 30 seconds retry a failed service
+                # mark services a failed if a requests.ConnectionError occured
+                expected_exception=requests.ConnectionError,
+        )
+        self.session = requests.Session()
 
         IPushProvider.__init__(self)
+
+    @staticmethod
+    def _validate_url(url):
+        """
+        Validate that a URLs scheme is http or https.
+
+        :param url: The url as string that should be validated
+        """
+        parsed_url = urlparse(url)
+        if parsed_url.scheme not in ['http', 'https']:
+            raise requests.exceptions.InvalidSchema(url)
 
     def loadConfig(self, configDict):
         """
@@ -73,7 +94,7 @@ class DefaultPushProvider(IPushProvider):
 
         {
             "push_url":
-                the push provider target url,
+                the push provider target url or a list of those,
             "access_certificate":
                 the client_certificate
             "server_certificate":
@@ -87,15 +108,23 @@ class DefaultPushProvider(IPushProvider):
         try:
 
             #
-            # define the request calling endpoint
+            # define the request calling endpoint(s)
+            # we support lists and single values (for compatibility)
             #
+            push_server_urls = []
+            push_url = configDict['push_url']
+            if isinstance(push_url, (list, tuple)):
+                # verify the url scheme of all entries
+                for url in configDict['push_url']:
+                    self._validate_url(url)
+                    push_server_urls.append(url)
+            else:
+                self._validate_url(push_url)
+                push_server_urls = [push_url]
 
-            # verify the url scheme
-            parsed_url = urlparse(configDict['push_url'])
-            if parsed_url.scheme not in ['http', 'https']:
-                raise requests.exceptions.InvalidSchema(configDict['push_url'])
-
-            self.push_server_url = configDict['push_url']
+            # bind all discovered urls to self.session.post for later usage
+            for url in push_server_urls:
+                self.remote_services.append(partial(self.session.post, url))
 
             #
             # for authentication on the challenge service we can use a
@@ -189,8 +218,8 @@ class DefaultPushProvider(IPushProvider):
         :return: A tuple of success and result message
         """
 
-        if not self.push_server_url:
-            raise Exception("Missing Server Push Url configuration!")
+        if not self.remote_services:
+            raise Exception("Missing Server Push Url configurations!")
 
         if not challenge:
             raise Exception("No challenge to submit!")
@@ -261,10 +290,8 @@ class DefaultPushProvider(IPushProvider):
                 'Content-type': 'application/json',
                 'Accept': 'text/plain'}
 
-            http_session = requests.Session()
-
             if self.proxy:
-                http_session.proxies.update(self.proxy)
+                pparams['proxies'] = self.proxy
 
             #
             # we check if the client certificate exists, which is
@@ -272,7 +299,7 @@ class DefaultPushProvider(IPushProvider):
             #
 
             if self.client_cert and os.path.isfile(self.client_cert):
-                http_session.cert = self.client_cert
+                pparams['cert'] = self.client_cert
 
             server_cert = self.server_cert
             if server_cert is not None:
@@ -280,12 +307,15 @@ class DefaultPushProvider(IPushProvider):
                 if isinstance(server_cert, unicode):
                     server_cert = server_cert.encode('utf-8')
 
-                http_session.verify = server_cert
+                pparams['verify'] = server_cert
 
-            response = http_session.post(self.push_server_url,
-                                         json=json_challenge,
-                                         headers=headers,
-                                         **pparams)
+            #
+            # Call out to our list of services
+            #
+            response = self.remote_services.call_first_available(
+                                            json=json_challenge,
+                                            headers=headers,
+                                            **pparams)
 
             if not response.ok:
                 result = response.reason
