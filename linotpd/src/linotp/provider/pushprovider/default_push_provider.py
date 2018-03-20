@@ -28,9 +28,11 @@
 '''
 
 
-import os
+import hashlib
 import logging
+import os
 import requests
+import time
 from urlparse import urlparse
 from functools import partial
 
@@ -50,12 +52,12 @@ log = logging.getLogger(__name__)
 
 @provider_registry.class_entry('DefaultPushProvider')
 @provider_registry.class_entry('linotp.provider.DefaultPushProvider')
-@provider_registry.class_entry('linotp.lib.pushprovider.'
-                               'DefaultPushProvider')
+@provider_registry.class_entry('linotp.lib.pushprovider.DefaultPushProvider')
 class DefaultPushProvider(IPushProvider):
     """
     Send a push notification to the default push notification proxy (PNP).
     """
+    _remote_services = {}
 
     def __init__(self):
 
@@ -64,15 +66,65 @@ class DefaultPushProvider(IPushProvider):
         self.server_cert = None
         self.proxy = None
         self.timeout = DEFAULT_TIMEOUT
-        self.remote_services = RemoteServiceList(
+        self.remote_services = None
+
+        IPushProvider.__init__(self)
+
+    @classmethod
+    def get_or_create_remote_services(cls, urls, garbage_collect_timeout=120):
+        """
+        Create a session per unique set of connections.
+
+        On each access to the list we purge entries that haven't been accesses within
+        `garbage_collect_timeout`
+
+        :parm urls: urls within the service, used to retrieve and construct
+                    a new RemoteServiceList
+        :param garbage_collect_timeout: timeout in seconds after which to
+                                        remove entries from the cache
+        """
+
+        # start by hashing all urls so we have a way to refer to a configuration
+        m = hashlib.md5()
+        for u in urls:
+            m.update(u)
+
+        h = m.hexdigest()
+
+        # get the current time once
+        now = time.time()
+
+        # cleanup the dict of existing cache entries based on the given timeout
+        for key in cls._remote_services.keys():
+            ts, _ = cls._remote_services[key]
+            if ts + garbage_collect_timeout < now:
+                del cls._remote_services[key]
+
+        # search for the entry we are looking for
+        item = cls._remote_services.get(h)
+        if not item:
+            # if no entry was found create a new session and store it within the cache
+            log.debug('Cache miss. Creating new entry for hash %s', h)
+            session = requests.Session()
+            rs = RemoteServiceList(
                 failure_threshold=2, # after two failures try next service
                 recovery_timeout=30, # after 30 seconds retry a failed service
                 # mark services a failed if a requests.ConnectionError occured
                 expected_exception=requests.ConnectionError,
-        )
-        self.session = requests.Session()
+            )
+            for url in urls:
+                rs.append(partial(session.post, url))
+            item = (now, rs)
+            cls._remote_services[h] = item
+        else:
+            # update the access time to the current time if the entry already existed
+            log.debug('Cache hit. Updating timestamp of %s', h)
+            _, rs = item
+            cls._remote_services[h] = (now, rs)
 
-        IPushProvider.__init__(self)
+        # return only the actual RemoteServiceList
+        _, rs = item
+        return rs
 
     @staticmethod
     def _validate_url(url):
@@ -122,9 +174,12 @@ class DefaultPushProvider(IPushProvider):
                 self._validate_url(push_url)
                 push_server_urls = [push_url]
 
-            # bind all discovered urls to self.session.post for later usage
-            for url in push_server_urls:
-                self.remote_services.append(partial(self.session.post, url))
+            #
+            # retrieve of create a new session
+            # this is required to propagate failover information between multiple
+            # push notification requests
+            #
+            self.remote_services = self.get_or_create_remote_services(push_server_urls)
 
             #
             # for authentication on the challenge service we can use a
@@ -218,7 +273,7 @@ class DefaultPushProvider(IPushProvider):
         :return: A tuple of success and result message
         """
 
-        if not self.remote_services:
+        if not self.remote_services or len(self.remote_services) == 0:
             raise Exception("Missing Server Push Url configurations!")
 
         if not challenge:

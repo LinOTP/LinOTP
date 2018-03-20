@@ -27,8 +27,10 @@
 import os
 import logging
 import requests
+import datetime
 
 from mock import patch
+from freezegun import freeze_time
 
 from linotp.tests import TestController
 from linotp.lib.remote_service import AllServicesUnavailable
@@ -209,6 +211,50 @@ class TestPushProviderController(TestController):
             push_prov.loadConfig(configDict)
 
         return
+
+    @patch('linotp.lib.remote_service.RemoteServiceList.append', autospec=True)
+    def test_reuses_remote_service_list(self, append_mock):
+        """
+        Construct the DefaultPushProvider multiple times while keeping the
+        config the same.
+        The DefaultPushProvider should re-use the RemoteServiceList as long as
+        the remote services do not change.
+        """
+
+        with freeze_time() as frozen_dt:
+            config = dict(push_url=['https://srv1/send', 'https://srv2/send'])
+            push_prov = DefaultPushProvider()
+
+            # initiall the object should be constructed and populated
+            push_prov.loadConfig(config)
+            self.assertTrue(append_mock.called)
+            append_mock.reset_mock()
+
+            # re-using the same amount list of urls should not create a new object
+            push_prov.loadConfig(config)
+            self.assertFalse(append_mock.called)
+            append_mock.reset_mock()
+
+            # after a few minutes the cached entry should be expired and re-created
+            frozen_dt.tick(delta=datetime.timedelta(minutes=10))
+            push_prov.loadConfig(config)
+            self.assertTrue(append_mock.called)
+            append_mock.reset_mock()
+
+            # having another provider with a different set of urls should
+            # create a new object
+            config2 = dict(push_url='http://srv3/send')
+            push_prov2 = DefaultPushProvider()
+            push_prov2.loadConfig(config2)
+            self.assertTrue(append_mock.called)
+            append_mock.reset_mock()
+
+            # BUT the other object should still be cached and not recreated
+            push_prov = DefaultPushProvider()
+            push_prov.loadConfig(config)
+            self.assertFalse(append_mock.called)
+
+
 
     @patch.object(requests.Session, 'post', generate_mocked_http_response())
     def test_request(self):
