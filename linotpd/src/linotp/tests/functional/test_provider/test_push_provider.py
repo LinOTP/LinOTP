@@ -83,6 +83,57 @@ class TestPushProviderController(TestController):
         self.delete_all_resolvers()
         super(TestPushProviderController, self).tearDown()
 
+    def test_timeout_negative(self):
+        """
+        Verify that a negative timeout value throws an ValueError
+        """
+
+        push_prov = DefaultPushProvider()
+        with self.assertRaises(ValueError):
+            push_prov.loadConfig(dict(timeout='-1', push_url='https://x'))
+
+
+    def test_timeout_invalid_tuple_size(self):
+        """
+        Verify that tuples with a size != 2 cause an ValueError
+        """
+
+        push_prov = DefaultPushProvider()
+        with self.assertRaises(ValueError):
+            push_prov.loadConfig(dict(timeout='1,', push_url='https://x'))
+
+        with self.assertRaises(ValueError):
+            push_prov.loadConfig(dict(timeout='1,2,3', push_url='https://x'))
+
+        with self.assertRaises(ValueError):
+            push_prov.loadConfig(dict(timeout='1,2,3,', push_url='https://x'))
+
+        with self.assertRaises(ValueError):
+            push_prov.loadConfig(dict(timeout='1,2,3,4', push_url='https://x'))
+
+    def test_timeout_doesnt_accept_strings(self):
+        """
+        Verify that the timeout parameter only accepts numbers (int, float) and
+        not strings (str, unicode, …)
+        """
+
+        push_prov = DefaultPushProvider()
+
+        for s in ['invalid timeout', 'invalid,timeout', '1,timeout', 'invalid,1']:
+            for t in [str, unicode]:
+                v = t(s)
+                with self.assertRaises(ValueError):
+                    push_prov.loadConfig(dict(timeout=v, push_url='https://x'))
+
+        with self.assertRaises(ValueError):
+            push_prov.loadConfig(dict(timeout='invalid,timeout', push_url='https://x'))
+
+        with self.assertRaises(ValueError):
+            push_prov.loadConfig(dict(timeout='1,timeout', push_url='https://x'))
+
+        with self.assertRaises(ValueError):
+            push_prov.loadConfig(dict(timeout='invalid,1', push_url='https://x'))
+
     def test_read_config(self):
         """
         test push provider configuration handling
@@ -102,6 +153,14 @@ class TestPushProviderController(TestController):
         configDict['push_url'] = "https://Notification.keyidentity.com/send"
 
         push_prov.loadConfig(configDict)
+
+        #
+        # verify that we support loading of timeout tuples
+        #
+
+        configDict['Timeout'] = '3,10'
+        push_prov.loadConfig(configDict)
+        self.assertEqual(push_prov.timeout, (3.0, 10.0))
 
         #
         # verify server url check
