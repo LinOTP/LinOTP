@@ -231,11 +231,21 @@ class DefaultPushProvider(IPushProvider):
                 #
 
                 if ',' in timeout:
-                    conection_timeout, request_timeout = timeout.split(',')
-                    timeout = (float(conection_timeout),
-                               float(request_timeout))
+                    connection_timeout, request_timeout = map(float, timeout.split(','))
+
+                    # validate inputs, we do not allow values <= 0
+                    if connection_timeout <= 0:
+                        raise ValueError(connection_timeout)
+                    if request_timeout <= 0:
+                        raise ValueError(request_timeout)
+
+                    self.timeout = (connection_timeout, request_timeout)
                 else:
-                    self.timeout = float(timeout)
+                    timeout = float(timeout)
+                    if timeout <= 0:
+                        raise ValueError(timeout)
+
+                    self.timeout = timeout
 
             #
             # we support proxy configuration, whereby here 'requests'
