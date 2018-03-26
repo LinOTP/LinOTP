@@ -1,3 +1,10 @@
+linotp (2.10.0.4-1) jessie; urgency=low
+
+  Bug Fix:
+  * Use utc time as base for cookie expiration
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 26 Mar 2018 17:51:20 +0200
+
 linotp (2.10.0.3-1) jessie; urgency=low
 
   Enhancements:
