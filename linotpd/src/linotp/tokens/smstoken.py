@@ -542,20 +542,24 @@ class SmsTokenClass(HmacTokenClass):
                  attributes - additional attributes, which are displayed in the
                     output
         """
-        success = False
-        sms = ""
-        message = ""
+        if options is None:
+            options = {}
+
+        message = getFromConfig(
+                            self.type.upper() + "_CHALLENGE_PROMPT",
+                            'sms submitted')
+
         attributes = {'state': transactionid}
 
         options['state'] = transactionid
         success, sms = self.submitChallenge(options=options)
 
         if success is True:
-            message = 'sms submitted'
             self.setValidUntil()
         else:
             attributes = {'state': ''}
             message = 'sending sms failed'
+
             if sms:
                 message = sms
 

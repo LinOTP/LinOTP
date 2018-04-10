@@ -590,7 +590,9 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         additional ``attributes``, which are displayed in the JSON response.
         """
 
-        message = 'Otp: '
+        message = getFromConfig(self.type.upper() + "_CHALLENGE_PROMPT",
+                                'Otp: ')
+
         data = {'serial': self.getSerial()}
         attributes = None
         return (True, message, data, attributes)

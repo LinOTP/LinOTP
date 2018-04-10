@@ -314,7 +314,10 @@ class HmacTokenClass(TokenClass):
                  data is preserved in the challenge
                  attributes are additional attributes, which could be returned
         '''
-        message = 'Please enter your otp value: '
+        message = getFromConfig(
+                        self.type.upper() + "_CHALLENGE_PROMPT",
+                        'Please enter your otp value: ')
+
         data = {
                 'serial' : self.token.getSerial(),
                 'date' : "%s" % datetime.now()
