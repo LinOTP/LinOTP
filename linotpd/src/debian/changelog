@@ -1,3 +1,10 @@
+linotp (2.10.0.5~rc0-1) jessie; urgency=low
+
+  Enhancements:
+  * Add redundant challenge service configuration
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 12 Apr 2018 16:49:21 +0200
+
 linotp (2.10.0.4-1) jessie; urgency=low
 
   Bug Fix:
