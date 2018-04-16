@@ -43,8 +43,11 @@ Listen 81
         Require all denied
     </Location>
 
-    # Healthcheck - allow HTTP access to validate/ok
+    # Healthcheck - allow HTTP access to validate/ok and maintenance/check_status
     <Location /validate/ok >
+        Require all granted
+    </Location>
+    <Location /maintenance/check_status >
         Require all granted
     </Location>
 

@@ -28,7 +28,7 @@
 #
 {{/*
 #
-# LinOTP - Docker container configuration template 
+# LinOTP - Docker container configuration template
 #
 # linotp.ini is generated from this file by dockerfy on container startup
 # This file is in Go template syntax.
@@ -112,9 +112,7 @@ sqlalchemy.url = {{ printf "%s://%s:%s@%s:%s/%s" .Env.LINOTP_DB_TYPE .Env.LINOTP
 
 sqlalchemy.pool_recycle = 3600
 
-who.config_file = %(here)s/who.ini
-who.log_level = warning
-who.log_file = /var/log/linotp/linotp.log
+service.maintenance = True
 
 full_stack = true
 static_files = true
