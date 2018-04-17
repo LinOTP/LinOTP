@@ -340,7 +340,7 @@ class ValidationHandler(object):
         :return: tuple of success and detail dict
         """
 
-        expired, challenges = Challenges.get_challenges(None, transid=transid)
+        expired, challenges = Challenges.get_challenges(token=None, transid=transid)
 
         # remove all expired challenges
         if expired:
@@ -352,13 +352,6 @@ class ValidationHandler(object):
         # there is only one challenge per transaction id
         # if not multiple challenges, where transaction id is the parent one
         reply = {}
-
-        pin_policies = get_pin_policies(user)
-        if 1 in pin_policies:
-            pin_match = check_pin(None, password, user=user, options=None)
-            if not pin_match:
-                return False, None
-
         involved_tokens = []
 
         transactions = {}
@@ -369,24 +362,37 @@ class ValidationHandler(object):
                 continue
 
             # is the requester authorized
-            serial = ch.getTokenSerial()
-            tokens = getTokens4UserOrSerial(serial=serial)
+            challenge_serial = ch.getTokenSerial()
+            if serial and challenge_serial != serial:
+                continue
+
+            tokens = getTokens4UserOrSerial(serial=challenge_serial)
             if not tokens:
                 continue
+
             involved_tokens.extend(tokens)
 
             # as one challenge belongs exactly to only one token,
             # we take this one as the token
             token = tokens[0]
+            owner = get_token_owner(token)
 
-            if 1 not in pin_policies:
-                pin_match = check_pin(token, password, user=user,
-                                      options=None)
-                if not pin_match:
-                    ret = False
-                    continue
+            if user and user != owner:
+                continue
 
-            ret = True
+            involved_tokens.extend(tokens)
+
+            # we only check the user password / token pin if the user
+            # paranmeter is given
+
+            if user and owner:
+                pin_match = check_pin(token, password, user=owner,
+                                       options=None)
+            else:
+                pin_match = token.checkPin(password)
+
+            if not pin_match:
+                continue
 
             trans_dict = {}
 
@@ -439,7 +445,7 @@ class ValidationHandler(object):
         if transactions:
             reply['transactions'] = transactions
 
-        return ret, reply
+        return len(reply) > 0, reply
 
     def checkUserPass(self, user, passw, options=None):
         """

@@ -726,7 +726,7 @@ class TestPushToken(TestController):
 
         """ PushToken: Check if signing transactions works correctly """
 
-        user_token_id = self.execute_correct_pairing()
+        user_token_id = self.execute_correct_pairing(user='root')
         challenge_url = self.trigger_challenge(user_token_id, data=(
             'Yes, I want to know why doctors hate this guy. Take these '
             '6000 $ with all my sincere benevolence and send me the black '

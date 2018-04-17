@@ -501,4 +501,70 @@ class TestCheckStatus(TestController):
 
         return
 
+    def test_check_status_wo_username(self):
+        '''
+        test check_status does work without pin
+        '''
+
+        empty_pin = ''
+
+        # define challenge response for hmac token
+
+        policy = {'name': 'hmac_challenge_response',
+                  'scope': 'authentication',
+                  'action': 'challenge_response=hmac',
+                  'realm': '*',
+                  'user': '*',
+                  }
+
+        response = self.make_system_request('setPolicy', params=policy)
+        self.assertTrue('"status": true' in response, response)
+
+        param = {'DefaultChallengeValidityTime': '120'}
+        response = self.make_system_request('setConfig', params=param)
+        self.assertTrue('"status": true' in response, response)
+
+        serial, _otps = self.create_hmac_token(user='passthru_user1',
+                                               pin=empty_pin)
+
+        # trigger challenge end extract the transaction id
+
+        params = {'serial': serial,
+                  'pass': ''}
+        response = self.make_validate_request('check_s', params)
+        self.assertTrue('"value": false' in response, response)
+
+        jresp = json.loads(response.body)
+        transid = jresp.get('detail', {}).get('transactionid', '')
+
+        # now check for the status
+        params = {'serial': serial,
+                  'pass': empty_pin,
+                  'transactionid': transid}
+
+        response_stat = self.make_validate_request('check_status',
+                                                   params)
+        jresp = json.loads(response_stat.body)
+        status = jresp.get('detail', {}).get(
+                           'transactions', {}).get(
+                            transid, {}).get('status')
+        self.assertTrue(status == "open", jresp)
+
+        # now check for the status
+        params = {'pass': empty_pin,
+                  'transactionid': transid}
+
+        response_stat = self.make_validate_request('check_status',
+                                                   params)
+        jresp = json.loads(response_stat.body)
+        status = jresp.get('detail', {}).get(
+                           'transactions', {}).get(
+                            transid, {}).get('status')
+        self.assertTrue(status == "open")
+
+        self.delete_token(serial)
+        self.delete_policy('hmac_challenge_response')
+
+        return
+
 # eof #########################################################################

@@ -291,13 +291,8 @@ class ValidateController(BaseController):
 
             serial = param.get('serial', None)
 
-            #
-            # but user is an required parameter
-
-            if "user" not in param:
-                raise ParameterError(_('Missing required parameter "serial"'
-                                     ' or "user"!'))
-
+            # user is an optional parameter:
+            # if no 'user' in the parameters, the User object will be empty
             user = getUserFromParam(param)
 
             passw = param.get('pass')
