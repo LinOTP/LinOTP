@@ -41,7 +41,7 @@ services:
       - "443"
 
   db:
-    image: mysql
+    image: mysql:5.5
     environment:
       MYSQL_ROOT_PASSWORD: "Test123!"
       MYSQL_DATABASE: "linotp_db"
