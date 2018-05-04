@@ -26,7 +26,10 @@
 
 import unittest
 import json
+import base64
+
 from contextlib import nested
+from pysodium import crypto_sign_keypair
 
 from pylons import config
 
@@ -87,8 +90,10 @@ class PushTokenClassUnitTestCase(unittest.TestCase):
 
         """ PUSHTOKEN: Test url protocol id customization """
 
-        user_public_key = 'L4xhKdgWz1HDdLx/CMPmPtFWz3iu+0plUNl7h5l5d+4='
-        mocked_get_secret_key.return_value = user_public_key
+        public_key, secret_key = crypto_sign_keypair()
+
+        mocked_get_secret_key.return_value = secret_key
+        user_public_key = base64.b64encode(public_key)
 
         fake = FakeTokenModel()
 
