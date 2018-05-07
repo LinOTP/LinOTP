@@ -170,7 +170,7 @@ node('docker') {
 
     stage('Run Unittests') {
 
-      makeIfParam('PARAM_RUN_TESTS', 'docker-run-linotp-unit-pipeline', 5)
+      makeIfParam('PARAM_RUN_TESTS', 'docker-run-linotp-unit-pipeline', 10)
 
     }
 
