@@ -663,7 +663,7 @@ def loadProviderFromPolicy(provider_type, realm=None, user=None):
         raise Exception('unknown provider_type for policy lookup! %r'
                         % provider_type)
 
-    if not user:
+    if user is None:
         raise Exception('unknown user for policy lookup! %r'
                         % user)
 

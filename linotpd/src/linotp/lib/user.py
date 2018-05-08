@@ -329,6 +329,26 @@ class User(object):
 
         return res
 
+    def __ne__(self, other):
+        """ support for: user1 != user2 """
+        if self.login != other.login:
+            return True
+        if self.realm:
+            return self.realm != other.realm
+        if self.resolverConf and self.resolverConf != other.resolverConf:
+            return True
+        return False
+
+    def __eq__(self, other):
+        """ support for: user1 == user2 """
+        return not self.__ne__(other)
+
+    def __nonzero__(self):
+        """ support for: if user: """
+        if self.login is None:
+            return False
+        return len(self.login) > 0
+
 
 def getUserResolverId(user, report=False):
     # here we call the userid resolver!!"
@@ -1008,8 +1028,9 @@ def _get_user_lookup_cache(resolver_spec):
         return None
 
     try:
-        expiration = int(config.get('linotp.user_lookup_cache.expiration',
-                                36 * 3600))
+        expiration_conf = config.get(
+                            'linotp.user_lookup_cache.expiration', 36 * 3600)
+        expiration = get_duration(expiration_conf)
     except ValueError:
         log.info("user caching is disabled due to a value error in user_lookup_cache.expiration config")
         return None
