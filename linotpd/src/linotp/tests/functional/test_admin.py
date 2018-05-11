@@ -807,6 +807,69 @@ class TestAdminController(TestController):
         self.assertTrue('"set validityPeriodStart": 1' in response, response)
         self.assertTrue('"set validityPeriodEnd": 1' in response, response)
 
+    def test_set_validity_interface(self):
+        '''
+        Setting validity period via admin/setValidity interface
+        '''
+
+        token_serial_1 = 'token_set_validity1'
+        token_serial_2 = 'token_set_validity2'
+
+        response = self.app.get(url(controller='admin', action='init'),
+                                params={'serial': token_serial_1,
+                                        'type': 'spass'})
+
+        self.assertTrue('"value": true' in response, response)
+
+        response = self.app.get(url(controller='admin', action='init'),
+                                params={'serial': token_serial_2,
+                                        'type': 'spass'})
+
+        self.assertTrue('"value": true' in response, response)
+
+        response = self.make_admin_request('setValidity',
+                                params={
+                                    'tokens': [
+                                        token_serial_1,
+                                        token_serial_2
+                                        ],
+                                     'validityPeriodStart': '2012-10-12',
+                                     'validityPeriodEnd': '2013-12-30',
+                                     },
+                                content_type='application/json')
+
+        self.assertTrue('"status": false' in response, response)
+        msg = "invalid literal for int() with base 10: '2012-10-12'"
+        self.assertTrue(msg in response, response)
+
+        response = self.make_admin_request(
+                                action='setValidity',
+                                params={
+                                    'tokens': [
+                                        token_serial_1,
+                                        token_serial_2,
+                                        ],
+                                        'validityPeriodStart': '1355302800',
+                                        'validityPeriodEnd': '1355310000',
+                                        },
+                                content_type="application/json"
+                                )
+
+        self.assertTrue(
+            response.json['result']['status'] is True,
+            'Expected response.result.status to be True in response text: "{}"'
+                .format(response.text))
+
+        self.assertTrue(
+            token_serial_1 in response.json['result']['value'],
+            'Expected response.result.value to contain token id "{}" in response text: "{}"'
+                .format(token_serial_1, response.text))
+
+        self.assertTrue(
+            token_serial_2 in response.json['result']['value'],
+            'Expected response.result.value to contain token id "{}" in response text: "{}"'
+                .format(token_serial_2, response.text))
+
     def test_set_empty(self):
         '''
         Running set without parameter

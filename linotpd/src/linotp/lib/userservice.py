@@ -47,7 +47,7 @@ from linotp.lib.policy import (get_client_policy,
 
 from linotp.lib.util import (get_version,
                              get_copyright_info,
-                             )
+                             get_request_param)
 
 from linotp.lib.type_utils import parse_duration
 
@@ -300,7 +300,7 @@ def check_session(request, user, client):
         'user_selfservice', request.cookies.get(
             'userauthcookie', 'no_auth_cookie'))
 
-    session = request.params.get('session', 'no_session')
+    session = get_request_param(request, 'session', 'no_session')
 
     if session == cookie:
         ret = check_auth_cookie(cookie, user, client)

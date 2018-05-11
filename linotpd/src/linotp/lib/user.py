@@ -52,6 +52,8 @@ from linotp.lib.resolver import getResolverList
 
 from linotp.lib.type_utils import get_duration
 
+from linotp.lib.util import get_request_param
+
 from functools import partial
 
 from linotp.lib._compat import str_
@@ -495,8 +497,6 @@ def getUserFromRequest(request, config=None):
 
     d_auth = {'login': ''}
 
-    param = request.params
-
     try:
 
         # ------------------------------------------------------------------ --
@@ -565,7 +565,7 @@ def getUserFromRequest(request, config=None):
 
             log.debug("[getUserFromRequest] Doing selftest!")
 
-            login = param.get("selftest_admin")
+            login = get_request_param(request, "selftest_admin")
 
             if login:
                 d_auth['login'] = login

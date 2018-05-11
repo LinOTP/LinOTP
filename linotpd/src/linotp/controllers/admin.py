@@ -1292,7 +1292,7 @@ class AdminController(BaseController):
             # -------------------------------------------------------------- --
 
             try:
-                serials = self.request_params.getall('tokens[]')
+                serials = self.request_params['tokens']
             except KeyError:
                 raise ParameterError('missing parameter: tokens[]')
 

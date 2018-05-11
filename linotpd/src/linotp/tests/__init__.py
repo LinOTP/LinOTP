@@ -286,8 +286,9 @@ class TestController(unittest2.TestCase):
             params=None,
             headers=None,
             cookies=None,
+            client=None,
             upload_files=None,
-            client=None
+            content_type=None
     ):
         """
         Makes a request using WebTest app self.app
@@ -303,6 +304,10 @@ class TestController(unittest2.TestCase):
         pparams = {}
         if upload_files:
             pparams['upload_files'] = upload_files
+        if content_type:
+            pparams['content_type'] = content_type
+            if content_type == "application/json":
+                params = json.dumps(params)
 
         if client:
             if not headers:
@@ -421,7 +426,8 @@ class TestController(unittest2.TestCase):
             auth_user='admin',
             upload_files=None,
             client=None,
-            auth_type='Digest'
+            auth_type='Digest',
+            content_type=None
     ):
         """
         Makes an authenticated request (setting HTTP Digest header, cookie and
@@ -450,12 +456,14 @@ class TestController(unittest2.TestCase):
             headers=headers,
             cookies=cookies,
             upload_files=upload_files,
-            client=client
+            client=client,
+            content_type=content_type
         )
 
-    def make_admin_request(self, action, params=None, method=None,
+    def make_admin_request(self, action, params=None, method=None, headers=None,
                            auth_user='admin', client=None, upload_files=None,
-                           auth_type='Digest'):
+                           auth_type='Digest',
+                           content_type=None):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -469,12 +477,14 @@ class TestController(unittest2.TestCase):
             auth_user=auth_user,
             upload_files=upload_files,
             client=client,
-            auth_type=auth_type
+            auth_type=auth_type,
+            content_type=content_type
         )
 
     def make_audit_request(self, action, params=None, method=None,
                            auth_user='admin', client=None,
-                           auth_type='Digest'):
+                           auth_type='Digest',
+                           content_type=None):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -487,12 +497,14 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             client=client,
-            auth_type=auth_type
+            auth_type=auth_type,
+            content_type=content_type
         )
 
     def make_manage_request(self, action, params=None, method=None,
                             auth_user='admin', client=None, upload_files=None,
-                            auth_type='Digest'):
+                            auth_type='Digest',
+                            content_type=None):
         """
         Makes an authenticated request to /manage/'action'
         """
@@ -506,12 +518,14 @@ class TestController(unittest2.TestCase):
             auth_user=auth_user,
             upload_files=upload_files,
             client=client,
-            auth_type=auth_type
+            auth_type=auth_type,
+            content_type=content_type
         )
 
     def make_system_request(self, action, params=None, method=None,
                             auth_user='admin', client=None, upload_files=None,
-                            auth_type='Digest'):
+                            auth_type='Digest',
+                            content_type=None):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -525,7 +539,8 @@ class TestController(unittest2.TestCase):
             auth_user=auth_user,
             upload_files=upload_files,
             client=client,
-            auth_type=auth_type
+            auth_type=auth_type,
+            content_type=content_type
         )
 
     def make_ocra_request(self, action, params=None, method=None,
@@ -592,7 +607,8 @@ class TestController(unittest2.TestCase):
 
     def make_tools_request(self, action, params=None, method=None,
                            auth_user='admin', client=None, upload_files=None,
-                           auth_type='Digest'):
+                           auth_type='Digest',
+                           content_type=None):
         """
         Makes an authenticated request to /tools/'action'
         """
@@ -606,7 +622,8 @@ class TestController(unittest2.TestCase):
             auth_user=auth_user,
             upload_files=upload_files,
             client=client,
-            auth_type=auth_type
+            auth_type=auth_type,
+            content_type=content_type
         )
     def make_validate_request(self, action, params=None, method=None,
                               client=None):

@@ -117,6 +117,15 @@ def getParam(param, which, optional=True):
 
     return ret
 
+def  get_request_param(request, key, default=None):
+    """
+    Returns the get / post / etc. param with the given key dependent on
+    the content type
+    """
+    if request.content_type == 'application/json':
+        return request.json_body.get(key, default)
+    else:
+        return request.params.get(key, default)
 
 def getLowerParams(param):
     ret = {}
@@ -188,7 +197,7 @@ def check_session(request):
         log.debug('[check_session] requesting a new session cookie')
     else:
         cookie = request.cookies.get('admin_session')
-        session = request.params.get('session')
+        session = get_request_param(request, 'session')
         # doing any other request, we need to check the session!
         log.debug("[check_session]: session: %s" % session)
         log.debug("[check_session]: cookie:  %s" % cookie)
@@ -342,12 +351,11 @@ def get_client(request):
 
     client = _get_client_from_request(request)
 
-    params = {}
-    params.update(request.params)
     if client in may_overwrite or client is None:
         log.debug("client %s may overwrite!" % client)
-        if "client" in params:
-            client = params["client"]
+
+        client = get_request_param(request, "client")
+        if client:
             log.debug("client overwritten to %s" % client)
 
     log.debug("returning client %s" % client)

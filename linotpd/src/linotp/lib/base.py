@@ -523,8 +523,6 @@ class BaseController(WSGIController):
 
                 load_provider_ini(config['provider.config_file'])
 
-        return
-
     def __call__(self, environ, start_response):
         '''Invoke the Controller'''
         # WSGIController.__call__ dispatches to the Controller method
@@ -540,11 +538,13 @@ class BaseController(WSGIController):
         with request_context_safety():
 
             try:
-                # provide request.params as class attribute in controllers
-                self.request_params = request.params
-                self.create_context(request, environ)
+                self._parse_request_params(request)
             except UnicodeDecodeError as exx:
-                log.warning('Failed to identify user due to %r' % exx)
+                # we supress Exception here as it will be handled in the
+                # controller which will return corresponding response
+                log.warning('Failed to access request parameters: %r' % exx)
+
+            self.create_context(request, environ)
 
             try:
                 try:
@@ -576,6 +576,21 @@ class BaseController(WSGIController):
                 log_request_timedelta(log)
 
             return ret
+
+    def _parse_request_params(self, _request):
+        """
+        Parses the request params from the request objects body / params
+        dependent on request content_type.
+        """
+        if _request.content_type == 'application/json':
+            self.request_params = _request.json_body
+        else:
+            self.request_params = {}
+            for key in request.params:
+                if(key.endswith('[]')):
+                    self.request_params[key[:-2]] = _request.params.getall(key)
+                else:
+                    self.request_params[key] = _request.params[key]
 
     def set_language(self, headers):
         '''Invoke before everything else. And set the translation language'''
