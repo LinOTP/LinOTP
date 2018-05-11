@@ -220,13 +220,11 @@ class ValidateController(BaseController):
             If ``value`` is ``true`` the user was authenticated successfully.
         '''
 
-        param = {}
+        param = self.request_params.copy()
         ok = False
         opt = None
 
         try:
-            param.update(request.params)
-
             # prevent the detection if a user exist
             # by sending a request w.o. pass parameter
             try:
@@ -275,8 +273,7 @@ class ValidateController(BaseController):
 
         try:
 
-            param = {}
-            param.update(request.params)
+            param = self.request_params
 
             #
             # we require either state or transactionid as parameter
@@ -352,12 +349,10 @@ class ValidateController(BaseController):
                 }
         '''
 
-        param = request.params
-
         try:
 
             try:
-                passw = param['pass']
+                passw = self.request_params['pass']
             except KeyError:
                 raise ParameterError("Missing parameter: 'pass'")
 
@@ -391,10 +386,8 @@ class ValidateController(BaseController):
         This function works with pam_url.
         '''
         ok = False
-        param = {}
+        param = self.request_params
         try:
-            param.update(request.params)
-
             try:
                 (ok, opt) = self._check(param)
             except AuthorizeException as acc:
@@ -448,7 +441,7 @@ class ValidateController(BaseController):
 
         try:
             opt = None
-            param = request.params
+            param = self.request_params
             (ok, opt) = self._check(param)
             attributes = {}
 
@@ -489,14 +482,12 @@ class ValidateController(BaseController):
 
     def check_t(self):
 
-        param = {}
+        param = self.request_params.copy()
         value = {}
         ok = False
         opt = {}
 
         try:
-            param.update(request.params)
-
             if 'pass' not in param:
                 raise ParameterError("Missing parameter: 'pass'")
 
@@ -562,8 +553,7 @@ class ValidateController(BaseController):
 
         try:
 
-            param = {}
-            param.update(request.params)
+            param = self.request_params.copy()
 
             # -------------------------------------------------------------- --
 
@@ -624,8 +614,7 @@ class ValidateController(BaseController):
 
         try:
 
-            param = {}
-            param.update(request.params)
+            param = self.request_params.copy()
 
             # -------------------------------------------------------------- --
 
@@ -686,8 +675,7 @@ class ValidateController(BaseController):
         returns:
             JSON response
         '''
-        param = {}
-        param.update(request.params)
+        param = self.request_params
 
         options = {}
         options.update(param)
@@ -792,7 +780,7 @@ class ValidateController(BaseController):
                 in case of any error
         '''
         opt = None
-        param = request.params
+        param = self.request_params
         res = []
 
         try:
@@ -858,7 +846,7 @@ class ValidateController(BaseController):
             JSON response
         '''
         ret = False
-        param = request.params
+        param = self.request_params
         state = ''
         message = 'No sms message defined!'
 
@@ -914,9 +902,7 @@ class ValidateController(BaseController):
 
             # -------------------------------------------------------------- --
 
-            params = dict(**request.params)
-
-            enc_response = params.get('pairing_response')
+            enc_response = self.request_params.get('pairing_response')
 
             if enc_response is None:
                 raise Exception('Parameter missing')

@@ -51,9 +51,6 @@ class TestSetResolver(unittest.TestCase):
 
         params['name'] = 'UnitTestResolver'
 
-        # Pass our parameters in
-        mock_request.params = params
-
         # prepare_request_params simply returns the parameters unchanged
         mock_prepare.side_effect = lambda new_resolver_name, param, previous_name: (param, False, False)
 
@@ -62,6 +59,7 @@ class TestSetResolver(unittest.TestCase):
                 # sendError returns the exception
                 mock_senderror.side_effect = lambda response, exx: exx
                 mock_sendresult.side_effect = lambda response, obj, *args: obj
+                self.system.request_params = params
                 ret = self.system.setResolver()
 
         return ret

@@ -118,15 +118,13 @@ class TestingController(BaseController):
             JSON response
         '''
 
-        param = request.params
         try:
-
             if isSelfTest() is False:
                 Session.rollback()
                 return sendError(response, "The testing controller can only"
                                  " be used in SelfTest mode!", 0)
 
-            if "user" not in param:
+            if "user" not in self.request_params:
                 raise ParameterError("Missing parameter: 'user'")
 
             ok = get_auth_AutoSMSPolicy()
@@ -177,11 +175,9 @@ class TestingController(BaseController):
             account = clickatel, username = <!legit>
                 -> Response Success: "FAILED" (Text)
         '''
-        param = {}
+        param = self.request_params
 
         try:
-            param.update(request.params)
-
             try:
                 account = param["account"]
             except KeyError:

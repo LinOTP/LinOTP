@@ -96,9 +96,7 @@ class MonitoringController(BaseController):
     def __after__(self, action):
         """
         """
-        params = {}
         try:
-            params.update(request.params)
             c.audit['administrator'] = getUserFromRequest(request).get('login')
 
             audit.log(c.audit)
@@ -144,13 +142,11 @@ class MonitoringController(BaseController):
         """
         result = {}
         try:
-            param = request.params
-
-            status = param.get('status', ['total'])
+            status = self.request_params.get('status', ['total'])
             if status != ['total']:
                 status = status.split(',')
                 status.append('total')
-            request_realms = param.get('realms', '').split(',')
+            request_realms = self.request_params.get('realms', '').split(',')
 
             monit_handler = MonitorHandler()
             realm_whitelist = []
@@ -335,8 +331,7 @@ class MonitoringController(BaseController):
         """
         result = {}
         try:
-            param = request.params
-            request_realms = param.get('realms', '').split(',')
+            request_realms = self.request_params.get('realms', '').split(',')
 
             monit_handler = MonitorHandler()
 
@@ -398,8 +393,7 @@ class MonitoringController(BaseController):
         """
         result = {}
         try:
-            param = request.params
-            request_realms = param.get('realms', '').split(',')
+            request_realms = self.request_params.get('realms', '').split(',')
 
             monit_handl = MonitorHandler()
 

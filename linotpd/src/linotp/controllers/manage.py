@@ -139,13 +139,13 @@ class ManageController(BaseController):
             log.debug("[__before__::%r] done" % (action))
 
     def __after__(self):
-
         if c.audit['action'] in ['manage/tokenview_flexi',
                                  'manage/userview_flexi' ]:
             c.audit['administrator'] = getUserFromRequest(request).get("login")
-            if request.params.has_key('serial'):
-                    c.audit['serial'] = request.params['serial']
-                    c.audit['token_type'] = getTokenType(request.params['serial'])
+            if 'serial' in self.request_params:
+                serial = self.request_params['serial']
+                c.audit['serial'] = serial
+                c.audit['token_type'] = getTokenType(serial)
 
             audit.log(c.audit)
 
@@ -329,7 +329,7 @@ class ManageController(BaseController):
         Unlike the complex /admin/show function, it only returns a
         simple array of the tokens.
         '''
-        param = request.params
+        param = self.request_params
 
         try:
             c.page = param.get("page")
@@ -436,7 +436,7 @@ class ManageController(BaseController):
         Unlike the complex /admin/userlist function, it only returns a
         simple array of the tokens.
         '''
-        param = request.params
+        param = self.request_params
 
         try:
 
@@ -543,7 +543,7 @@ class ManageController(BaseController):
         '''
         this returns the contents of /admin/show?serial=xyz in an html format
         '''
-        param = request.params
+        param = self.request_params
 
         try:
             try:

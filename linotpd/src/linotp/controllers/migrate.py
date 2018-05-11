@@ -110,13 +110,11 @@ class MigrateController(BaseController):
         :param backupid: used to controll the intermediate backup file
 
         """
-        params = {}
-        try:
-            params.update(request.params)
 
+        try:
             try:
-                backupid = params['backupid']
-                passphrase = params['pass']
+                backupid = self.request_params['backupid']
+                passphrase = self.request_params['pass']
             except KeyError as exx:
                 raise Exception("missing Parameter:%r" % exx)
 
@@ -185,7 +183,6 @@ class MigrateController(BaseController):
                 Default is that backup is deleted, even in case of error
 
         """
-        params = {}
         backup_file = ""
         remove_backup_file = True
 
@@ -194,13 +191,11 @@ class MigrateController(BaseController):
         decryption_error = False
 
         try:
-            params.update(request.params)
-
             try:
-                backupid = params['backupid']
-                passphrase = params['pass']
+                backupid = self.request_params['backupid']
+                passphrase = self.request_params['pass']
                 remove_backup_file = (
-                            params.get("remove_backup", "True") == "True")
+                            self.request_params.get("remove_backup", "true").lower() == "true")
             except KeyError as exx:
                 missing_param = True
                 raise Exception("missing Parameter:%r" % exx)

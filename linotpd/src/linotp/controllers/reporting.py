@@ -94,9 +94,7 @@ class ReportingController(BaseController):
     def __after__(self, action):
         """
         """
-        params = {}
         try:
-            params.update(request.params)
             c.audit['administrator'] = getUserFromRequest(request).get('login')
 
             audit.log(c.audit)
@@ -139,9 +137,8 @@ class ReportingController(BaseController):
         """
         result = {}
         try:
-            param = request.params
-            request_realms = param.get('realms', '').split(',')
-            status = param.get('status', ['total'])
+            request_realms = self.request_params.get('realms', '').split(',')
+            status = self.request_params.get('status', ['total'])
             if status != ['total']:
                 status = status.split(',')
 
@@ -198,9 +195,8 @@ class ReportingController(BaseController):
         """
 
         try:
-            param = request.params
-            request_realms = param.get('realms', '').split(',')
-            status = param.get('status', ['total'])
+            request_realms = self.request_params.get('realms', '').split(',')
+            status = self.request_params.get('status', ['total'])
             if status != ['total']:
                 status = status.split(',')
 
@@ -266,15 +262,12 @@ class ReportingController(BaseController):
         """
 
         try:
-
-            param = request.params
-            request_realms = param.get('realms', '').split(',')
-            status = param.get('status', ['total'])
+            request_realms = self.request_params.get('realms', '').split(',')
+            status = self.request_params.get('status', ['total'])
             if status != ['total']:
                 status = status.split(',')
 
-            param = request.params
-            border_day = param.get('date')
+            border_day = self.request_params.get('date')
 
             # this may throw ValueError if date is in wrong format
             datetime.strptime(border_day, "%Y-%m-%d")
@@ -351,7 +344,7 @@ class ReportingController(BaseController):
         """
 
         try:
-            param = request.params
+            param = self.request_params
             page = param.get('page')
             sort = param.get('sortby')
             sortdir = param.get('sortdir')

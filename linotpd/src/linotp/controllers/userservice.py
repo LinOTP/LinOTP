@@ -311,8 +311,6 @@ class UserserviceController(BaseController):
     def __after__(self, action):
         '''
         '''
-        param = request.params
-
         try:
             if c.audit['action'] not in ['userservice/context',
                                          'userservice/pre_context',
@@ -330,9 +328,10 @@ class UserserviceController(BaseController):
                 log.debug("[__after__] authenticating as %s in realm %s!"
                           % (c.audit['user'], c.audit['realm']))
 
-                if 'serial' in param:
-                    c.audit['serial'] = param['serial']
-                    c.audit['token_type'] = getTokenType(param['serial'])
+                if 'serial' in self.request_params:
+                    serial = self.request_params['serial']
+                    c.audit['serial'] = serial
+                    c.audit['token_type'] = getTokenType(serial)
 
                 if action in ['assign', 'unassign', 'enable', 'disable',
                               'enroll', 'delete', 'activateocratoken',
@@ -432,8 +431,7 @@ class UserserviceController(BaseController):
 
         try:
 
-            param = {}
-            param.update(request.params)
+            param = self.request_params
 
             # -------------------------------------------------------------- --
 
@@ -792,9 +790,7 @@ class UserserviceController(BaseController):
         """
 
         try:
-
-            param = {}
-            param.update(request.params)
+            param = self.request_params.copy()
 
             # -------------------------------------------------------------- --
 
@@ -927,14 +923,10 @@ class UserserviceController(BaseController):
         This returns a tokenlist as html output
         '''
 
-        param = {}
-
         try:
-            param.update(request.params)
-
-            if param.get('active', '').lower() in ['true']:
+            if self.request_params.get('active', '').lower() in ['true']:
                 active = True
-            elif param.get('active', '').lower() in ['false']:
+            elif self.request_params.get('active', '').lower() in ['false']:
                 active = True
             else:
                 active = None
@@ -1012,10 +1004,7 @@ class UserserviceController(BaseController):
         authenticated. The _before_ is executed before any other function
         in this controller.
         '''
-        param = {}
         try:
-            param.update(request.params)
-
             pre_context = get_pre_context(self.client)
             response.content_type = 'application/json'
             return json.dumps(pre_context, indent=3)
@@ -1066,14 +1055,10 @@ class UserserviceController(BaseController):
         :return: rendered html of the requested token
         '''
         res = ''
-        param = {}
 
         try:
-
-            param.update(request.params)
-
             try:
-                act = param["type"]
+                act = self.request_params["type"]
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%s'" % exx.message)
 
@@ -1131,7 +1116,7 @@ class UserserviceController(BaseController):
         enables a token or all tokens of a user
 
         as this is a controller method, the parameters are taken from
-        request.params
+        BaseController.request_params
 
         :param serial: serial number of the token *required
         :param user: username in format user@realm *required
@@ -1139,12 +1124,11 @@ class UserserviceController(BaseController):
         :return: a linotp json doc with result {u'status': True, u'value': 2}
 
         """
-        param = {}
+        param = self.request_params
         res = {}
         log.debug("remoteservice enable to enable/disable a token")
 
         try:
-            param.update(request.params)
             try:
                 serial = param["serial"]
             except KeyError as exx:
@@ -1186,7 +1170,7 @@ class UserserviceController(BaseController):
         disables a token
 
         as this is a controller method, the parameters are taken from
-        request.params
+        BaseController.request_params
 
         :param serial: serial number of the token *required
         :param user: username in format user@realm *required
@@ -1194,12 +1178,11 @@ class UserserviceController(BaseController):
         :return: a linotp json doc with result {u'status': True, u'value': 2}
 
         """
-        param = {}
+        param = self.request_params
         res = {}
         log.debug("remoteservice disable a token")
 
         try:
-            param.update(request.params)
 
             try:
                 serial = param["serial"]
@@ -1241,11 +1224,10 @@ class UserserviceController(BaseController):
         the self service portal. The user is only allowed to delete token,
         that belong to him.
         '''
-        param = {}
+        param = self.request_params
         res = {}
 
         try:
-            param.update(request.params)
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userdelete', param, self.authUser)
 
@@ -1287,11 +1269,10 @@ class UserserviceController(BaseController):
         This internally resets the failcounter of the given token.
         '''
         res = {}
-        param = {}
+        param = self.request_params
         serial = None
 
         try:
-            param.update(request.params)
             checkPolicyPre('selfservice', 'userreset', param, self.authUser)
             try:
                 serial = param["serial"]
@@ -1331,12 +1312,11 @@ class UserserviceController(BaseController):
         the self service portal. The user is only allowed to unassign token,
         that belong to him.
         '''
-        param = {}
+        param = self.request_params
         res = {}
 
         try:
             # check selfservice authorization
-            param.update(request.params)
             checkPolicyPre('selfservice', 'userunassign', param, self.authUser)
 
             try:
@@ -1379,12 +1359,10 @@ class UserserviceController(BaseController):
         When the user hits the set pin button, this function is called.
         '''
         res = {}
-        param = {}
+        param = self.request_params
 
         # # if there is a pin
         try:
-            param.update(request.params)
-
             # check selfservice authorization
             checkPolicyPre('selfservice', 'usersetpin', param, self.authUser)
 
@@ -1440,11 +1418,9 @@ class UserserviceController(BaseController):
         When the user hits the set pin button, this function is called.
         '''
         res = {}
-        param = {}
+        param = self.request_params
         # # if there is a pin
         try:
-            param.update(request.params)
-
             # check selfservice authorization
             checkPolicyPre('selfservice', 'usersetmpin', param, self.authUser)
             try:
@@ -1486,11 +1462,10 @@ class UserserviceController(BaseController):
         '''
 
         res = {}
-        param = {}
+        param = self.request_params
         serial = "N/A"
 
         try:
-            param.update(request.params)
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userresync', param, self.authUser)
 
@@ -1533,11 +1508,10 @@ class UserserviceController(BaseController):
         This is the internal assign function that is called from within
         the self service portal
         '''
-        param = {}
+        param = self.request_params
         res = {}
 
         try:
-            param.update(request.params)
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userassign', param, self.authUser)
 
@@ -1612,11 +1586,9 @@ class UserserviceController(BaseController):
             if an error occurs an exception is serialized and returned
 
         '''
-        param = {}
+        param = self.request_params
         res = {}
         try:
-            param.update(request.params)
-
             # check selfservice authorization
             checkPolicyPre('selfservice', 'usergetserialbyotp', param,
                                 self.authUser)
@@ -1657,11 +1629,9 @@ class UserserviceController(BaseController):
         enroll token
         '''
         response_detail = {}
-        param = {}
+        param = self.request_params.copy()
 
         try:
-            param.update(request.params)
-
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userinit', param, self.authUser)
 
@@ -1767,13 +1737,11 @@ class UserserviceController(BaseController):
         It returns the data and the URL containing the HMAC key
         '''
         log.debug("[userwebprovision] calling function")
-        param = {}
+        param = self.request_params.copy()
 
         try:
-
             ret = {}
             ret1 = False
-            param.update(request.params)
 
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userwebprovision',
@@ -1940,12 +1908,10 @@ class UserserviceController(BaseController):
         if "True" != getotp_active:
             return sendError(response, _("getotp is not activated."), 0)
 
-        param = {}
+        param = self.request_params
         ret = {}
 
         try:
-            param.update(request.params)
-
             try:
                 serial = param["serial"]
                 count = int(param["count"])
@@ -2019,11 +1985,10 @@ class UserserviceController(BaseController):
             JSON response
         '''
 
-        param = {}
+        param = self.request_params
         res = {}
 
         try:
-            param.update(request.params)
             log.debug("params: %s" % param)
             checkPolicyPre('selfservice', 'userhistory', param, self.authUser)
 
@@ -2081,12 +2046,10 @@ class UserserviceController(BaseController):
                         'serial' :  serial,
                     }  }
         '''
-        param = {}
+        param = self.request_params
         ret = {}
 
         try:
-            param.update(request.params)
-
             # check selfservice authorization
             checkPolicyPre('selfservice', 'useractivateocratoken',
                                                     param, self.authUser)
@@ -2179,7 +2142,7 @@ class UserserviceController(BaseController):
 
         '''
 
-        param = request.params
+        param = self.request_params
 
         try:
             ''' check selfservice authorization '''
@@ -2281,8 +2244,8 @@ class UserserviceController(BaseController):
 
         '''
 
-        param = {}
-        param.update(request.params)
+        param = self.request_params.copy()
+
         if 'session' in param:
             del param['session']
 
@@ -2338,13 +2301,11 @@ class UserserviceController(BaseController):
         '''
             the generic method call for an dynamic token
         '''
-        param = {}
+        param = self.request_params.copy()
 
         res = {}
 
         try:
-            param.update(request.params)
-
             # # method could be part of the virtual url
             context = request.path_info.split('/')
             if len(context) > 2:

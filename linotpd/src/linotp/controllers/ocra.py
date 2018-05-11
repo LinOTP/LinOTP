@@ -180,7 +180,7 @@ class OcraController(BaseController):
         dataobj = ""
 
         try:
-            param = getLowerParams(request.params)
+            param = getLowerParams(self.request_params)
             log.info("[request] saving default configuration: %r" % param)
 
             checkPolicyPre('ocra', "request")
@@ -309,7 +309,7 @@ class OcraController(BaseController):
         description = 'ocra/check_t: validate a token request.'
 
         try:
-            param = getLowerParams(request.params)
+            param = getLowerParams(self.request_params)
             log.info("[check_t] check OCRA token: %r" % param)
 
             # TODO: checkPolicyPre('ocra', "check_t")
@@ -463,7 +463,7 @@ class OcraController(BaseController):
                        '"transactionid", "user" or "serial"')
 
         try:
-            param = getLowerParams(request.params)
+            param = getLowerParams(self.request_params)
             log.debug("[checkstatus] check OCRA token status: %r" % param)
 
             checkPolicyPre('ocra', "status")
@@ -566,7 +566,7 @@ class OcraController(BaseController):
         # description = 'ocra/getActivationCode'
 
         try:
-            params = getLowerParams(request.params)
+            params = getLowerParams(self.request_params)
             log.debug("[getActivationCode]: %r" % params)
 
             checkPolicyPre('ocra', "activationcode")
@@ -608,7 +608,7 @@ class OcraController(BaseController):
         # otp from the given init2 response '
 
         try:
-            params = getLowerParams(request.params)
+            params = getLowerParams(self.request_params)
             log.debug("[calculateOtp]: %r" % params)
 
             checkPolicyPre('ocra', "calcOTP")

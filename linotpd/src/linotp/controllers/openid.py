@@ -233,15 +233,7 @@ class OpenidController(BaseController):
         and returns to the given "openid." either directly or after authenticating the user
         openid.claimed_id.
         '''
-
-        req_method = request.environ.get('REQUEST_METHOD')
-
-        if "POST" == req_method:
-            params = request.environ.get('webob._parsed_post_vars')
-            params = params[0]
-        else:
-            # we got a GET request
-            params = request.params
+        params = self.request_params
 
         # distpatching the request depending on the mode
         if 'openid.mode' not in params:
@@ -339,14 +331,14 @@ class OpenidController(BaseController):
         '''
         This is called when the user accepts - hit the submit button - that he will login to the consumer
         '''
-        param = request.params
-        log.debug("[checkid_submit] params: %s" % param)
+        log.debug("[checkid_submit] params: %s" % self.request_params)
+
         try:
-            redirect_token = param["redirect_token"]
+            redirect_token = self.request_params["redirect_token"]
         except KeyError:
             raise ParameterError("Missing parameter: 'redirect_token'", id=905)
-            
-        verify_always = param.get("verify_always")
+
+        verify_always = self.request_params.get("verify_always")
         r_url, site, handle = self.storage.get_redirect(redirect_token)
         self.storage.add_site(site, handle)
 
@@ -403,19 +395,14 @@ class OpenidController(BaseController):
 
         response.delete_cookie(COOKIE_NAME)
 
-        params = {}
-        params.update(request.params)
-        p = {}
-
         ## are we are called during an openid auth request?
-        if "openid.return_to" in params:
+        if "openid.return_to" in self.request_params:
             redirect_to = "/openid/login"
-            p.update(params)
-            do_redirect = url(str("%s?%s" % (redirect_to, urlencode(p))))
+            do_redirect = url(str("%s?%s" % (redirect_to, urlencode(self.request_params))))
 
         else:
             redirect_to = "/openid/status"
-            do_redirect = url(str("%s?%s" % (redirect_to, urlencode(p))))
+            do_redirect = url(redirect_to)
 
         redirect(do_redirect)
 
@@ -423,7 +410,7 @@ class OpenidController(BaseController):
         '''
         This is the redirect of the first template
         '''
-        param = request.params
+        param = self.request_params
 
         c.defaultRealm = getDefaultRealm()
         c.p = {}
@@ -456,15 +443,12 @@ class OpenidController(BaseController):
         '''
         This shows the login status.
         '''
-        param = {}
-        param.update(request.params)
-
         cookie = request.cookies.get(COOKIE_NAME)
         if cookie is not None:
             c.login, token = cookie.split(":")
 
-        if "message" in param:
-            c.message = param.get("message")
+        if "message" in self.request_params:
+            c.message = self.request_params.get("message")
 
         return render("/openid/status.mako")
 
@@ -485,13 +469,11 @@ class OpenidController(BaseController):
             JSON response
         '''
         ok = False
-        param = {}
+        param = self.request_params
         do_redirect = None
         message = None
 
         try:
-            param.update(request.params)
-
             same_user = True
             passw = param.get("pass")
 
@@ -538,7 +520,6 @@ class OpenidController(BaseController):
             p = {}
             redirect_to = param.get("redirect_to")
             if redirect_to and ok:
-                p = {}
                 for k in  [ 'openid.return_to', "openid.realm", "openid.ns", "openid.claimed_id", "openid.mode",
                             "openid.identity" ]:
                     p[k] = param[k]

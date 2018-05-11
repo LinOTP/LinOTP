@@ -120,12 +120,9 @@ class ToolsController(BaseController):
         """
         abilty to set password in managed / admin_user resolver
         """
-        params = {}
         try:
-            params.update(request.params)
-
-            old_pw = params['old_password']
-            new_pw = params['new_password']
+            old_pw = self.request_params['old_password']
+            new_pw = self.request_params['new_password']
 
             username = request_context['AuthUser'].get('login', '')
 
@@ -171,14 +168,11 @@ class ToolsController(BaseController):
 
         from linotp.lib.tools.migrate_resolver import MigrateResolverHandler
 
-        params = {}
         ret = {}
 
         try:
-            params.update(request.params)
-
-            src = params['from']
-            target = params['to']
+            src = self.request_params['from']
+            target = self.request_params['to']
 
             from linotp.lib.resolver import getResolverList
             resolvers = getResolverList()

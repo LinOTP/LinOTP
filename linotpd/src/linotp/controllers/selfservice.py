@@ -295,7 +295,7 @@ class SelfserviceController(BaseController):
         if self.redirect:
             return
 
-        param = request.params
+        param = self.request_params
 
         try:
             if c.audit['action'] in ['selfservice/index']:
@@ -421,14 +421,10 @@ class SelfserviceController(BaseController):
         :return: rendered html of the requested token
         '''
         res = ''
-        param = {}
 
         try:
-
-            param.update(request.params)
-
             try:
-                act = param["type"]
+                act = self.request_params["type"]
             except KeyError:
                 raise ParameterError("Missing parameter: 'type'", id=905)
 

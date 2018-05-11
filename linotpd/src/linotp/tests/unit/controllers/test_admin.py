@@ -89,7 +89,7 @@ class TestAdminController(unittest.TestCase):
         call admin/show with/without argument tokeninfo_format
         and return if parse_tokeninfo has been called
         """
-        mock_request.params = {
+        request_params = {
             'tokeninfo_format': with_json,
         }
         mock_check_policy_pre.return_value = {'active': False,
@@ -99,6 +99,7 @@ class TestAdminController(unittest.TestCase):
         mock_TokenIterator.return_value = [tok]
 
         admin = AdminController()
+        admin.request_params = request_params
         admin.show()
 
     @mock.patch('linotp.controllers.admin.AdminController.parse_tokeninfo')

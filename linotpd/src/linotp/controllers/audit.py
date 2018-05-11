@@ -119,24 +119,20 @@ class AuditController(BaseController):
             JSON response or csv format
         '''
 
-        param = {}
         try:
-            param.update(request.params)
-
-            log.debug("[search] params: %s" % param)
+            log.debug("[search] params: %s" % self.request_params)
 
             checkPolicyPre('audit', 'view', {})
 
             # remove the param outform (and other parameters that should not
             # be used for search!
-            search_params = {}
-            search_params.update(param)
+            search_params = self.request_params.copy()
             for key in ["outform", 'delimiter']:
                 if key in search_params:
                     del search_params[key]
 
-            output_format = param.get("outform", 'json') or 'json'
-            delimiter = param.get('delimiter', ',') or ','
+            output_format = self.request_params.get("outform", 'json') or 'json'
+            delimiter = self.request_params.get('delimiter', ',') or ','
 
             audit_iterator = None
 

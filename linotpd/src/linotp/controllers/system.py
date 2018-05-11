@@ -258,7 +258,7 @@ class SystemController(BaseController):
                 "DefaultResetFailCount"]
 
         try:
-            param = getLowerParams(request.params)
+            param = getLowerParams(self.request_params)
             log.info("[setDefault] saving default configuration: %r",
                      param.keys())
 
@@ -317,18 +317,16 @@ class SystemController(BaseController):
         """
 
         res = {}
-        param = {}
+        param = self.request_params
 
         try:
-            param.update(request.params)
             log.info("[setConfig] saving configuration: %r", param.keys())
 
             if "key" in param:
-
-                key = param.get("key") or None
-                val = param.get("value", None)
-                typ = param.get("type", None)
-                des = param.get("description", None)
+                key = param["key"]
+                val = param.get("value")
+                typ = param.get("type")
+                des = param.get("description")
 
                 if val is None or key is None:
                     raise ParameterError("Required parameters: value and key")
@@ -390,15 +388,14 @@ class SystemController(BaseController):
         :returns: a json result with the deleted value
 
         """
+        log.info("[delConfig] with params: %r", self.request_params)
+
         res = {}
 
         try:
-            param = getLowerParams(request.params)
-            log.info("[delConfig] with params: %r", param)
-
-            if 'key' not in param:
+            if 'key' not in self.request_params:
                 raise ParameterError("missing required parameter: key")
-            key = param["key"]
+            key = self.request_params["key"]
             ret = removeFromConfig(key)
             string = "delConfig " + key
             res[string] = ret
@@ -436,9 +433,9 @@ class SystemController(BaseController):
 
         """
         res = {}
-        param = {}
+
         try:
-            param.update(request.params)
+            param = self.request_params.copy()
             log.debug("[getConfig] with params: %r", param)
 
             if 'session' in param:
@@ -531,8 +528,7 @@ class SystemController(BaseController):
         '''
 
         try:
-            param = getLowerParams(request.params)
-            log.debug("[getRealms] with params: %r", param)
+            log.debug("[getRealms] with params: %r", self.request_params)
 
             c.audit['success'] = True
             all_realms = getRealms()
@@ -608,15 +604,12 @@ class SystemController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-
-        param = {}
+        param = self.request_params.copy()
         resolver_loaded = False
         msg = _("Unable to instantiate the resolver %r."
                 "Please verify configuration or connection!")
 
         try:
-            param.update(request.params)
-
             if 'name' not in param:
                 raise ParameterError('missing required parameter "name"')
 
@@ -817,11 +810,12 @@ class SystemController(BaseController):
         res = {}
 
         try:
-            param = getLowerParams(request.params)
+            param = getLowerParams(self.request_params)
             log.info("[delResolver] deleting resolver: %r", param)
 
             if 'resolver' not in param:
                 raise ParameterError("missing required parameter: resolver")
+
             resolver = param["resolver"]
 
             # only delete a resolver, if it is not used by any realm
@@ -883,11 +877,12 @@ class SystemController(BaseController):
         res = {}
 
         try:
-            param = getLowerParams(request.params)
+            param = getLowerParams(self.request_params)
             log.debug("[getResolver] with param: %r", param)
 
             if 'resolver' not in param:
                 raise ParameterError("missing required parameter: resolver")
+
             resolver = param["resolver"]
 
             if (len(resolver) == 0):
@@ -932,7 +927,7 @@ class SystemController(BaseController):
         res = False
 
         try:
-            param = getLowerParams(request.params)
+            param = getLowerParams(self.request_params)
             log.info("[setDefaultRealm] with param: %r", param)
 
             defRealm = param.get("realm", '')
@@ -1021,10 +1016,9 @@ class SystemController(BaseController):
         res = False
         err = ""
         realm = ""
-        param = {}
+        param = self.request_params
 
         try:
-            param.update(request.params)
             log.info("[setRealm] setting a realm: %r", param)
 
             if 'realm' not in param:
@@ -1033,9 +1027,7 @@ class SystemController(BaseController):
 
             if 'resolvers' not in param:
                 raise ParameterError("missing required parameter: resolvers")
-
-            resolver_specs_str = param["resolvers"]
-            resolver_specs = resolver_specs_str.split(',')
+            resolver_specs = param["resolvers"].split(',')
 
             valid_resolver_specs = []
             for resolver_spec in resolver_specs:
@@ -1090,12 +1082,11 @@ class SystemController(BaseController):
         res = {}
 
         try:
-            param = request.params
-            log.info("[delRealm] deleting realm: %r ", param)
+            log.info("[delRealm] deleting realm: %r ", self.request_params)
 
-            if 'realm' not in param:
+            if 'realm' not in self.request_params:
                 raise ParameterError("missing required parameter: realm")
-            realm = param["realm"]
+            realm = self.request_params["realm"]
 
             #
             # we test if before delete there has been a default
@@ -1178,10 +1169,9 @@ class SystemController(BaseController):
 
         """
         res = {}
-        param = {}
+        param = self.request_params.copy()
         try:
-            log.debug("[setPolicy] params: %r", request.params)
-            param.update(request.params)
+            log.debug("[setPolicy] params: %r", param)
 
             if 'session' in param:
                 del param['session']
@@ -1267,7 +1257,7 @@ class SystemController(BaseController):
         pol = {}
 
         try:
-            param = getLowerParams(request.params)
+            param = getLowerParams(self.request_params)
             log.debug("[policies_flexi] viewing policies with params: %r",
                       param)
 
@@ -1371,7 +1361,7 @@ class SystemController(BaseController):
         pol = {}
 
         try:
-            param = getLowerParams(request.params)
+            param = getLowerParams(self.request_params)
             log.debug("[getPolicy] getting policy definitions: %r", param)
 
             scope = param.get("scope")
@@ -1532,7 +1522,7 @@ class SystemController(BaseController):
         res = {}
 
         try:
-            param = getLowerParams(request.params)
+            param = getLowerParams(self.request_params)
 
             if 'user' not in param:
                 raise ParameterError("missing required parameter: user")
@@ -1634,7 +1624,7 @@ class SystemController(BaseController):
 
         """
 
-        param = getLowerParams(request.params)
+        param = getLowerParams(self.request_params)
 
         log.debug("[getPolicy] getting policy: %r", param)
         export = None
@@ -1743,19 +1733,17 @@ class SystemController(BaseController):
         """
         res = {}
         ret = {}
-        param = {}
         try:
-            param.update(request.params)
-            log.info("[delPolicy] deleting policy: %r", param)
+            log.info("[delPolicy] deleting policy: %r", self.request_params)
 
             # support the ignor of policy impact check
-            enforce = param.get("enforce", 'False')
+            enforce = self.request_params.get("enforce", 'False')
             if enforce.lower() == 'true':
                 enforce = True
             else:
                 enforce = False
 
-            name_param = param["name"]
+            name_param = self.request_params["name"]
             names = name_param.split(',')
             for name in names:
                 log.debug("[delPolicy] trying to delete policy %s", name)
@@ -1784,7 +1772,7 @@ class SystemController(BaseController):
         res = {}
 
         try:
-            params = getLowerParams(request.params)
+            params = getLowerParams(self.request_params)
             log.debug("[setupSecurityModule] parameters: %r", params.keys())
 
             hsm_id = params.get('hsm_id', None)
@@ -2012,10 +2000,9 @@ class SystemController(BaseController):
         """
 
         res = {}
-        params = {}
+        params = self.request_params.copy()
 
         try:
-            params.update(request.params)
             try:
                 name = params['name']
                 p_type = params['type']
@@ -2090,10 +2077,9 @@ class SystemController(BaseController):
         """
 
         res = {}
-        param = {}
+        param = self.request_params
 
         try:
-            param.update(request.params)
             try:
                 provider_type = param['type']
             except KeyError as exx:
@@ -2140,13 +2126,11 @@ class SystemController(BaseController):
 
         status = False
         p_response = "Can't Connect"
-        param = {}
 
         try:
-            param.update(request.params)
             try:
-                provider_name = param['name']
-                provider_type = param['type']
+                provider_name = self.request_params['name']
+                provider_type = self.request_params['type']
             except KeyError as exx:
                 raise ParameterError('missing key %r' % exx)
 
@@ -2187,13 +2171,11 @@ class SystemController(BaseController):
         """
 
         res = {}
-        params = {}
 
         try:
-            params.update(request.params)
             try:
-                provider_name = params['name']
-                provider_type = params['type']
+                provider_name = self.request_params['name']
+                provider_type = self.request_params['type']
             except KeyError as exx:
                 raise ParameterError('missing key %r' % exx)
 
@@ -2202,11 +2184,11 @@ class SystemController(BaseController):
             if (provider_def and provider_name in provider_def and
                 'Managed' in provider_def[provider_name]):
 
-                if 'managed' not in params:
+                if 'managed' not in self.request_params:
                     raise Exception('Not allowed to delete the '
                                     'managed provider')
 
-                password = params['managed']
+                password = self.request_params['managed']
                 crypt_password = provider_def[provider_name]['Managed']
 
                 if libcrypt_password(
@@ -2248,13 +2230,11 @@ class SystemController(BaseController):
         """
 
         res = {}
-        params = {}
 
         try:
-            params.update(request.params)
             try:
-                provider_name = params['name']
-                provider_type = params['type']
+                provider_name = self.request_params['name']
+                provider_type = self.request_params['type']
             except KeyError as exx:
                 raise ParameterError('missing key %r' % exx)
 
@@ -2291,13 +2271,11 @@ class SystemController(BaseController):
         """
 
         res = {}
-        params = {}
 
         try:
-            params.update(request.params)
             try:
-                _provider_name = params['name']
-                _provider_type = params['type']
+                _provider_name = self.request_params['name']
+                _provider_type = self.request_params['type']
             except KeyError as exx:
                 raise ParameterError('missing key %r' % exx)
 

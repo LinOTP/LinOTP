@@ -95,9 +95,10 @@ class GettokenController(BaseController):
 
     def __after__(self):
         c.audit['administrator'] = getUserFromRequest(request).get("login")
-        if 'serial' in request.params:
-                c.audit['serial'] = request.params['serial']
-                c.audit['token_type'] = getTokenType(request.params['serial'])
+        if 'serial' in self.request_params:
+            serial = self.request_params['serial']
+            c.audit['serial'] = serial
+            c.audit['token_type'] = getTokenType(serial)
         audit.log(c.audit)
 
     def getmultiotp(self):
@@ -122,7 +123,7 @@ class GettokenController(BaseController):
         if "True" != getotp_active:
             return sendError(response, "getotp is not activated.", 0)
 
-        param = request.params
+        param = self.request_params
         ret = {}
 
         try:
@@ -190,7 +191,7 @@ class GettokenController(BaseController):
         if "True" != getotp_active:
             return sendError(response, "getotp is not activated.", 0)
 
-        param = request.params
+        param = self.request_params
         ret = {}
         res = -1
         otpval = ""

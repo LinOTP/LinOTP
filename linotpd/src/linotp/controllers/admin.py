@@ -153,20 +153,18 @@ class AdminController(BaseController):
     def __after__(self, action):
         '''
         '''
-        params = {}
 
         try:
             # prevent logging of getsession or other irrelevant requests
             if action in ['getsession', 'dropsession']:
                 return request
 
-            params.update(request.params)
-
             c.audit['administrator'] = getUserFromRequest(request).get("login")
-            if 'serial' in params:
-                    serial = request.params['serial']
-                    c.audit['serial'] = serial
-                    c.audit['token_type'] = getTokenType(serial)
+
+            serial = self.request_params.get('serial')
+            if serial:
+                c.audit['serial'] = serial
+                c.audit['token_type'] = getTokenType(serial)
             if action in ['assign', 'unassign', 'enable', 'disable', 'init',
                           'loadtokens', 'copyTokenUser', 'losttoken',
                           'remove', 'tokenrealm']:
@@ -257,14 +255,12 @@ class AdminController(BaseController):
         provide the userinfo of the token, which is specified as serial
         """
 
-        param = {}
         ret = {}
         try:
-            param.update(request.params)
-            serial = param["serial"]
+            serial = self.request_params["serial"]
 
             # check admin authorization
-            checkPolicyPre('admin', 'tokenowner', param)
+            checkPolicyPre('admin', 'tokenowner', self.request_params)
             th = TokenHandler()
             owner = th.getTokenOwner(serial)
             if owner.info:
@@ -351,7 +347,7 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
         """
 
-        param = request.params
+        param = self.request_params
         try:
             serial = param.get("serial")
             page = param.get("page")
@@ -454,7 +450,7 @@ class AdminController(BaseController):
 
         """
 
-        param = request.params
+        param = self.request_params
 
         try:
             serial = param.get("serial")
@@ -527,7 +523,7 @@ class AdminController(BaseController):
 
         """
 
-        param = request.params
+        param = self.request_params
         try:
             serial = param.get("serial")
             user = getUserFromParam(param)
@@ -604,7 +600,7 @@ class AdminController(BaseController):
         """
 
         ret = {}
-        param = request.params
+        param = self.request_params
 
         try:
             try:
@@ -680,7 +676,7 @@ class AdminController(BaseController):
 
         """
 
-        param = request.params
+        param = self.request_params
         try:
             serial = param.get("serial")
             user = getUserFromParam(param)
@@ -753,10 +749,9 @@ class AdminController(BaseController):
 
         '''
 
-        param = request.params
         try:
             try:
-                serial = param["serial"]
+                serial = self.request_params["serial"]
             except KeyError:
                 raise ParameterError("Missing parameter: 'serial'")
 
@@ -849,7 +844,7 @@ class AdminController(BaseController):
 
         try:
 
-            params = dict(request.params)
+            params = self.request_params.copy()
             params.setdefault('key_size', 20)
 
             # --------------------------------------------------------------- --
@@ -1002,7 +997,7 @@ class AdminController(BaseController):
 
         """
 
-        param = request.params
+        param = self.request_params
 
         try:
             try:
@@ -1076,7 +1071,7 @@ class AdminController(BaseController):
 
         """
 
-        param = request.params
+        param = self.request_params
 
         try:
 
@@ -1152,7 +1147,7 @@ class AdminController(BaseController):
         sopin\
         "
         try:
-            param = getLowerParams(request.params)
+            param = getLowerParams(self.request_params)
 
             # # if there is a pin
             if "userpin" in param:
@@ -1258,7 +1253,7 @@ class AdminController(BaseController):
 
             c.audit['info'] = "set token validity"
 
-            param = getLowerParams(request.params)
+            param = getLowerParams(self.request_params)
 
             # -------------------------------------------------------------- --
 
@@ -1296,10 +1291,10 @@ class AdminController(BaseController):
 
             # -------------------------------------------------------------- --
 
-            if 'tokens[]' not in request.params:
+            try:
+                serials = self.request_params.getall('tokens[]')
+            except KeyError:
                 raise ParameterError('missing parameter: tokens[]')
-
-            serials = request.params.getall("tokens[]")
 
             tokens = []
             for serial in serials:
@@ -1439,7 +1434,7 @@ class AdminController(BaseController):
         msg = ""
 
         try:
-            param = getLowerParams(request.params)
+            param = getLowerParams(self.request_params)
 
             serial = param.get("serial")
             user = getUserFromParam(param)
@@ -1724,7 +1719,7 @@ class AdminController(BaseController):
 
         """
 
-        param = request.params
+        param = self.request_params
         try:
             serial = param.get("serial")
             user = getUserFromParam(param)
@@ -1804,12 +1799,11 @@ class AdminController(BaseController):
 
         """
         users = []
-        param = {}
+        param = self.request_params.copy()
 
         # check admin authorization
         # check if we got a realm or resolver, that is ok!
         try:
-            param.update(request.params)
             realm = param.get("realm")
             checkPolicyPre('admin', 'userlist', param)
 
@@ -1913,7 +1907,7 @@ class AdminController(BaseController):
             * realms    - required -  comma seperated list of realms
         '''
 
-        param = request.params
+        param = self.request_params
         try:
             try:
                 serial = param["serial"]
@@ -1977,7 +1971,7 @@ class AdminController(BaseController):
 
         """
 
-        param = request.params
+        param = self.request_params
 
         serial = param.get("serial")
         user = getUserFromParam(param)
@@ -2046,7 +2040,7 @@ class AdminController(BaseController):
         """
         ret = 0
         err_string = ""
-        param = request.params
+        param = self.request_params
 
         try:
 
@@ -2126,7 +2120,7 @@ class AdminController(BaseController):
         """
         ret = 0
         err_string = ""
-        param = request.params
+        param = self.request_params
 
         try:
 
@@ -2211,10 +2205,9 @@ class AdminController(BaseController):
 
         ret = 0
         res = {}
-        param = {}
+        param = self.request_params.copy()
 
         try:
-            param.update(request.params)
             serial = param["serial"]
 
             # check admin authorization
@@ -2619,8 +2612,7 @@ class AdminController(BaseController):
         """
 
         try:
-            request_params = {}
-            request_params.update(request.params)
+            request_params = self.request_params.copy()
 
             try:
 
@@ -2706,9 +2698,13 @@ class AdminController(BaseController):
         :return: json result of token and challenges
 
         """
-        res = {}
-        param = {}
 
+        res = {}
+
+        param = self.request_params.copy()
+        only_open_challenges = True
+
+        log.debug("[checkstatus] check challenge token status: %r" % param)
 
         description = """
             admin/checkstatus: check the token status -
@@ -2717,12 +2713,6 @@ class AdminController(BaseController):
             """
 
         try:
-
-            only_open_challenges = True
-
-            param.update(request.params)
-            log.debug("[checkstatus] check challenge token status: %r" % param)
-
             checkPolicyPre('admin', "checkstatus")
 
             transid = param.get('transactionid', None) or param.get('state', None)
@@ -2810,7 +2800,7 @@ class AdminController(BaseController):
 
         try:
 
-            params = dict(**request.params)
+            params = self.request_params.copy()
 
             serial = params.get("serial")
             user = getUserFromParam(params)

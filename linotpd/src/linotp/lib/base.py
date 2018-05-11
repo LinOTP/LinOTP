@@ -522,7 +522,7 @@ class BaseController(WSGIController):
                 from linotp.provider import load_provider_ini
 
                 load_provider_ini(config['provider.config_file'])
-            
+
         return
 
     def __call__(self, environ, start_response):
@@ -539,10 +539,14 @@ class BaseController(WSGIController):
 
         with request_context_safety():
 
-            self.create_context(request, environ)
+            try:
+                # provide request.params as class attribute in controllers
+                self.request_params = request.params
+                self.create_context(request, environ)
+            except UnicodeDecodeError as exx:
+                log.warning('Failed to identify user due to %r' % exx)
 
             try:
-
                 try:
                     user_desc = getUserFromRequest(request)
                     self.base_auth_user = user_desc.get('login', '')
@@ -618,15 +622,6 @@ class BaseController(WSGIController):
         request_context['Path'] = environment.get("PATH_INFO", "") or ""
         request_context['hsm'] = self.hsm
 
-        request_params = {}
-
-        try:
-            request_params.update(request.params)
-        except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
-
-        request_context['Params'] = request_params
-
         initResolvers()
 
         client = None
@@ -651,7 +646,7 @@ class BaseController(WSGIController):
 
         requestUser = None
         try:
-            requestUser = getUserFromParam(request_params)
+            requestUser = getUserFromParam(self.request_params)
         except UnicodeDecodeError as exx:
             log.error("Failed to decode request parameters %r" % exx)
         request_context['RequestUser'] = requestUser
