@@ -158,19 +158,19 @@ node('docker') {
           /*
           * Build the linotp builder docker image
           */
-          makeIfParam('PARAM_BUILD_DOCKER_IMAGES', 'docker-build-linotp-builder', 5)
+          makeIfParam('PARAM_BUILD_DOCKER_IMAGES', 'docker-build-linotp-builder', 10)
     }
 
       stage('Linotp image') {
           /*
           * Build the linotp docker image from the debs
           */
-          makeIfParam('PARAM_BUILD_DOCKER_IMAGES', 'docker-build-linotp', 5)
+          makeIfParam('PARAM_BUILD_DOCKER_IMAGES', 'docker-build-linotp', 10)
     }
 
     stage('Run Unittests') {
 
-      makeIfParam('PARAM_RUN_TESTS', 'docker-run-linotp-unit-pipeline', 5)
+      makeIfParam('PARAM_RUN_TESTS', 'docker-run-linotp-unit-pipeline', 10)
 
     }
 
