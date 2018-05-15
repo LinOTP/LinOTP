@@ -81,7 +81,7 @@ class TestAdminController(unittest.TestCase):
     @mock.patch('linotp.controllers.admin.Session')
     @mock.patch('linotp.controllers.admin.response')
     @mock.patch('linotp.controllers.admin.request')
-    @mock.patch('linotp.controllers.system.BaseController.__init__', return_value=None)
+    @mock.patch('linotp.controllers.admin.BaseController.__init__', return_value=None)
     def check_token(self, mock_base, mock_request, mock_response, mock_session,
                     mock_check_policy_pre, mock_c, mock_TokenIterator,
                     with_json):
