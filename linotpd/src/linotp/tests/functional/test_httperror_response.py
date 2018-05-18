@@ -286,7 +286,7 @@ class TestHTTPError(TestController):
 
     def test_httperror_and_invalid_utf8(self):
         """
-        Return httperror even if params contain invalid UTF-8
+        Return error response on httperror and invalid UTF-8 in params
 
         Invalid UTF-8 causes problems when LinOTP tries to process the request
         parameters. 'httperror' should still be honoured.
@@ -322,7 +322,7 @@ class TestHTTPError(TestController):
 
     def test_no_httperror_and_invalid_utf8(self):
         """
-        Return httperror even if params contain invalid UTF-8
+        Return error response on invalid UTF-8 in params without httperror
 
         Invalid UTF-8 causes problems when LinOTP tries to process the request
         parameters.
