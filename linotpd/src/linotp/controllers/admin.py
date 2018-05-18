@@ -1271,23 +1271,19 @@ class AdminController(BaseController):
 
             countAuthSuccessMax = None
             if "countAuthSuccessMax".lower() in param:
-                countAuthSuccessMax = param.get(
-                                        'countAuthSuccessMax'.lower()).strip()
+                countAuthSuccessMax = param.get('countAuthSuccessMax'.lower())
 
             countAuthMax = None
             if "countAuthMax".lower() in param:
-                countAuthMax = param.get(
-                                        'countAuthMax'.lower()).strip()
+                countAuthMax = param.get('countAuthMax'.lower())
 
             validityPeriodStart = None
             if "validityPeriodStart".lower() in param:
-                validityPeriodStart = param.get(
-                                        'validityPeriodStart'.lower()).strip()
+                validityPeriodStart = param.get('validityPeriodStart'.lower())
 
             validityPeriodEnd = None
             if "validityPeriodEnd".lower() in param:
-                validityPeriodEnd = param.get(
-                                        'validityPeriodEnd'.lower()).strip()
+                validityPeriodEnd = param.get('validityPeriodEnd'.lower())
 
             # -------------------------------------------------------------- --
 
@@ -1558,7 +1554,7 @@ class AdminController(BaseController):
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
-                    tok.count_auth = int(ca)
+                    tok.count_auth = ca
                     count = count + 1
                     ret += 1
                 res["set countAuth"] = ret
@@ -1573,7 +1569,7 @@ class AdminController(BaseController):
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
-                    tok.count_auth_max = int(ca)
+                    tok.count_auth_max = ca
                     count = count + 1
                     ret += 1
                 res["set countAuthMax"] = ret
@@ -1588,7 +1584,7 @@ class AdminController(BaseController):
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
-                    tok.count_auth_success = int(ca)
+                    tok.count_auth_success = ca
                     count = count + 1
                     ret += 1
                 res["set countAuthSuccess"] = ret
@@ -1603,7 +1599,7 @@ class AdminController(BaseController):
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
-                    tok.count_auth_success_max = int(ca)
+                    tok.count_auth_success_max = ca
                     count = count + 1
                     ret += 1
                 res["set countAuthSuccessMax"] = ret

@@ -94,16 +94,15 @@ class MaintenanceController(BaseController):
             # if no logger name is supplied we default to '' (which translates
             # to the root logger in the python stdlib logging api)
 
-            name = request.POST.get('loggerName', '')
+            name = self.request_params.get('loggerName', '')
 
             # ----------------------------------------------------------------
 
-            level_as_str = request.POST.get('level', '')
-
-            if not level_as_str.isdigit():
-                raise Exception("'level' %r contains nondigits!")
-
-            level = int(level_as_str)
+            try:
+                level = self.request_params.get('level', 0)
+                level = int(level)
+            except ValueError as e:
+                raise Exception("debug level {} contains nondigits!".format(level))
 
             # ----------------------------------------------------------------------
 

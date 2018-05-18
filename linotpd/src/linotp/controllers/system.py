@@ -1266,8 +1266,8 @@ class SystemController(BaseController):
             scope = param.get("scope")
             sortname = param.get("sortname")
             sortorder = param.get("sortorder")
-            page = param.get("page", "1")
-            psize = param.get("rp", )
+            page = param.get("page", 1)
+            psize = param.get("rp", 0)
 
             log.debug("[policies_flexi] retrieving policy name: %s, realm:"
                       " %s, scope: %s, sort:%s by %s", name, realm, scope,
