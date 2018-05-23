@@ -28,6 +28,8 @@ import os
 import json
 import struct
 import mock
+from nose.tools import raises
+
 from tempfile import NamedTemporaryFile
 from collections import defaultdict
 from linotp.tests import TestController
@@ -213,7 +215,7 @@ class TestPushToken(TestController):
 
 # -------------------------------------------------------------------------- --
 
-    def enroll_pushtoken(self, user=None, pin='1234'):
+    def enroll_pushtoken(self, user=None, pin='1234', serial=None):
 
         """
         enrolls a pushtoken
@@ -231,6 +233,9 @@ class TestPushToken(TestController):
 
         if user:
             params['user'] = user
+
+        if serial:
+            params['serial'] = serial
 
         response = self.make_admin_request('init', params)
 
@@ -250,7 +255,7 @@ class TestPushToken(TestController):
 
 # -------------------------------------------------------------------------- --
 
-    def execute_correct_pairing(self, user=None, pin='1234'):
+    def execute_correct_pairing(self, user=None, pin='1234' , serial=None):
 
         """
         enroll token and pair it
@@ -266,7 +271,7 @@ class TestPushToken(TestController):
 
         # enroll token
 
-        pairing_url = self.enroll_pushtoken(user=user, pin=pin)
+        pairing_url = self.enroll_pushtoken(user=user, pin=pin, serial=serial)
 
         # ------------------------------------------------------------------ --
 
@@ -780,6 +785,132 @@ class TestPushToken(TestController):
 
         return
 
+# -------------------------------------------------------------------------- --
+    @raises(Exception)
+    def test_multiple_signreq(self):
+        """ PushToken: Check if signing multiple transactions works correctly """
+
+        user_token_id = self.execute_correct_pairing(user='root',
+                                                     serial='KIPuOne')
+
+        # ------------------------------------------------------------------ --
+
+        created_challenges = []
+        for i in range(0, 10):
+
+            challenge_url = self.trigger_challenge(user_token_id, data=(
+                'Yes, I want to know why doctors hate this guy. Take these '
+                '%d000 $ with all my sincere benevolence and send me the black '
+                'magic diet pill they don\'t want me to know about' % i),
+                content_type=CONTENT_TYPE_SIGNREQ)
+
+            challenge, sig = self.decrypt_and_verify_challenge(
+                challenge_url, action='ACCEPT')
+
+            # ------------------------------------------------------------------ --
+
+            # check if the content type is right
+
+            content_type = challenge['content_type']
+            self.assertEqual(content_type, CONTENT_TYPE_SIGNREQ)
+
+            created_challenges.append((challenge_url, challenge, sig))
+
+        # ------------------------------------------------------------------ --
+
+        # verify that all challenges are kept
+
+        params = {'serial': 'KIPuOne',
+                  'open': True}
+
+        response = self.make_admin_request('checkstatus', params)
+        response_dict = json.loads(response.body)
+
+        challenges = response_dict.get(
+            'result', {}).get(
+                'value', {}).get(
+                    'values', {}).get(
+                        'KIPuOne', {}).get(
+                            'challenges', [])
+
+        # remark:
+        # we have here one additonal challenge, which was the inital
+        # pairing challenge
+
+        self.assertTrue(len(challenges) == (len(created_challenges) + 1))
+
+        # ------------------------------------------------------------------ --
+
+        # validate the one of the eldest challenge:
+        # from 10 challenges 5 are left open, so we take the 7th one
+
+        (challenge_url, challenge, sig) = created_challenges[7]
+
+        # prepare params for validate
+
+        params = {'transactionid': challenge['transaction_id'],
+                  'signature': sig}
+
+        # again, we ignore the callback definitions
+
+        response = self.make_validate_request('accept_transaction', params)
+        response_dict = json.loads(response.body)
+
+        status = response_dict.get('result', {}).get('status')
+        self.assertTrue(status)
+
+        value = response_dict.get('result', {}).get('value')
+        self.assertTrue(value, response)
+
+        # ------------------------------------------------------------------ --
+
+        # status check
+
+        params = {'transactionid': challenge['transaction_id'],
+                  'user': 'root', 'pass': '1234'}
+
+        response = self.make_validate_request('check_status', params)
+        response_dict = json.loads(response.body)
+
+        transactions = response_dict.get('detail', {}).get('transactions', {})
+        transaction = transactions[challenge['transaction_id']]
+
+        self.assertTrue(transaction['status'] == 'closed', response)
+        self.assertTrue(transaction['accept'], response)
+        self.assertTrue(transaction['valid_tan'], response)
+
+        # verify that all challenges are kept
+
+        params = {'serial': 'KIPuOne', 'open': True}
+
+        response = self.make_admin_request('checkstatus', params)
+        response_dict = json.loads(response.body)
+
+        challenges = response_dict.get(
+            'result', {}).get(
+                'value', {}).get(
+                    'values', {}).get(
+                        'KIPuOne', {}).get(
+                            'challenges', [])
+
+        open_challenges = 0
+        accept_challenges = 0
+
+        for challenge in challenges.values():
+
+            status = challenge['session']['status']
+            accept = challenge['session'].get('accept')
+
+            if status == 'open':
+                open_challenges += 1
+
+            if status == 'closed' and accept:
+                accept_challenges += 1
+
+        self.assertTrue(open_challenges == 9)
+        self.assertTrue(accept_challenges == 2)
+
+        return
 
 # -------------------------------------------------------------------------- --
 
