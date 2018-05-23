@@ -481,9 +481,10 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
             # fetch all challenges that match the transaction id or serial
 
-            transaction_id = options.get('transaction_id')
+            transaction_id = options.get('transactionid')
 
-            challenges = Challenges.lookup_challenges(serial, transaction_id)
+            challenges = Challenges.lookup_challenges(serial=serial,
+                transid=transaction_id, filter_open=True)
 
             # -------------------------------------------------------------- --
 
