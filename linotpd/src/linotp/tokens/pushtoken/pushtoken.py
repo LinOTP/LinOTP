@@ -989,3 +989,17 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         url = protocol_id + '://push/' + encode_base64_urlsafe(raw_data)
 
         return url, (signature + plaintext)
+
+    def challenge_janitor(self, matching_challenges, challenges):
+        '''
+        This is the pushtoken challenges janitor.
+
+        The idea is to not close any challenge and rely on the timeout of the
+        challenges
+
+        :param matching_challenges: the list of matching challenges (ignored)
+        :param challenges: all current challenges (ignored)
+        :return: list of all challenges, which should be closed
+        '''
+
+        return []

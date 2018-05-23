@@ -786,7 +786,7 @@ class TestPushToken(TestController):
         return
 
 # -------------------------------------------------------------------------- --
-    @raises(Exception)
+
     def test_multiple_signreq(self):
         """ PushToken: Check if signing multiple transactions works correctly """
 
