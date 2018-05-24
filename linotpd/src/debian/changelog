@@ -1,13 +1,8 @@
 linotp (2.10.0.5-1) jessie; urgency=low
 
   Enhancements:
-  * Add redundant challenge service configuration (5b0048,50d791)
-  * Add new SMS Provider which supports HTTP REST interface (f6c5ed)
-
-  Build infrastructure:
-  * Unit tests: Increase timeout in Jenkins pipeline
-  * Increase timeout for dockerfile builder in Jenkins pipeline
-  * Integration tests: Pin MySQL version to 5.5 in docker-compose
+  * Add redundant challenge service configuration
+  * Add new SMS Provider which supports HTTP REST interface
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 24 May 2018 15:43:43 +0200
 
