@@ -1,4 +1,4 @@
-linotp (2.10.0.5~rc2-1) jessie; urgency=low
+linotp (2.10.0.5-1) jessie; urgency=low
 
   Enhancements:
   * Add redundant challenge service configuration (5b0048,50d791)
@@ -9,7 +9,7 @@ linotp (2.10.0.5~rc2-1) jessie; urgency=low
   * Increase timeout for dockerfile builder in Jenkins pipeline
   * Integration tests: Pin MySQL version to 5.5 in docker-compose
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 22 May 2018 11:09:47 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 24 May 2018 15:43:43 +0200
 
 linotp (2.10.0.4-1) jessie; urgency=low
 
