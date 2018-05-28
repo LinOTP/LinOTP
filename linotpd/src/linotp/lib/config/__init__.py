@@ -143,6 +143,9 @@ def storeConfig(key, val, typ=None, desc=None):
         if not isinstance(val, EncryptedData):
             val = EncryptedData.from_unencrypted(val)
 
+    if isinstance(val, EncryptedData):
+        typ = 'encrypted_data'
+
     log.debug('Changing config entry %r: New value is %r', key, val)
     conf = getLinotpConfig()
 
@@ -191,9 +194,13 @@ def updateConfig(confi):
     return True
 
 
-def getFromConfig(key, defVal=None):
+def getFromConfig(key, defVal=None, decrypt=False):
     conf = getLinotpConfig()
     value = conf.get(key, defVal)
+
+    if isinstance(value, EncryptedData) and decrypt:
+        return value.get_unencrypted()
+
     return value
 
 

@@ -62,7 +62,6 @@ class TestSupport(TestController):
 
         return TestController.setUp(self)
 
-    @raises
     def test_demo_license_expiration(self):
         """
         """
