@@ -1964,10 +1964,10 @@ class SystemController(BaseController):
             log.debug("[setSupport] license %s", support_description)
 
             res, msg = setSupportLicense(support_description)
-            if res is False:
-                message = {'reason': msg}
-
             c.audit['success'] = res
+
+            if res is False:
+                raise Exception('Failed to set License: %r' % msg)
 
             Session.commit()
             return sendResultMethod(response, res, 1, opt=message)

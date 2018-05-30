@@ -195,7 +195,17 @@ def updateConfig(confi):
 
 
 def getFromConfig(key, defVal=None, decrypt=False):
+    """
+    retrieve an entry from the linotp config
+
+    :param key: the name of the value
+    :param defValue: default value if the entry could not be found
+    :param decrypt: boolean, if true and the entry is an encrypted data object,
+                    return the decrypted value
+    """
+
     conf = getLinotpConfig()
+
     value = conf.get(key, defVal)
 
     if isinstance(value, EncryptedData) and decrypt:

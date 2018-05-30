@@ -97,7 +97,6 @@ class TestSupport(TestController):
 
         return
 
-    @raises
     def test_set_expires_license(self):
         """
         check that installation of expired license fails

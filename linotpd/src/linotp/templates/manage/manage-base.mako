@@ -961,7 +961,7 @@ if isinstance(lang, list):
     <form id="set_support_form" action="/system/setSupport" method="post"
                 enctype="multipart/form-data" onsubmit="return false;">
         <p>${_("Please choose your support and subscription file")}:</p>
-        <p><input name="license" id="license_file" type="file" size="30" accept="text/*">
+        <p><input name="license" id="license_file" type="file" size="30" accept=".pem">
         </p>
     </form>
 </div>
