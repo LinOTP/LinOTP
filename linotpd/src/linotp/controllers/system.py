@@ -26,9 +26,7 @@
 """
 system controller - to configure the system
 """
-import base64
-
-from os import urandom
+import os
 
 import json
 import webob
@@ -101,6 +99,8 @@ from linotp.lib.support import getSupportLicenseInfo
 from linotp.lib.support import setSupportLicense
 from linotp.lib.support import do_nagging
 from linotp.lib.support import isSupportLicenseValid
+from linotp.lib.support import setDemoSupportLicense
+from linotp.lib.support import running_on_appliance
 
 from linotp.provider import getProvider
 from linotp.provider import setProvider
@@ -1901,6 +1901,15 @@ class SystemController(BaseController):
                 licString = binascii.unhexlify(license_txt)
             except TypeError:
                 licString = license_txt
+
+            # if there is no license and we are running on an appliance
+            # we install the demo license
+
+            if not licString and running_on_appliance():
+                res, msg = setDemoSupportLicense()
+                Session.flush()
+                license_txt = getFromConfig('license', '')
+                licString = binascii.unhexlify(license_txt)
 
             (res, msg,
              lic_info) = isSupportLicenseValid(licString)

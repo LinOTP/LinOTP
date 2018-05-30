@@ -51,9 +51,8 @@ log = logging.getLogger(__name__)
 
 
 class TestSupport(TestController):
-    
+
     def setUp(self):
-        
         params = {'key': 'license'}
         response = self.make_system_request('delConfig', params)
         msg = '"delConfig license": true'
@@ -145,7 +144,6 @@ class TestSupport(TestController):
         msg = "volume exceeded: tokens used: 9 > tokens supported: 5"
         self.assertTrue(msg in response)
 
-    @raises(InvalidLicenseException)
     def test_appliance_demo_licence(self):
         """
         verify that if we are running on a sva2, the demo license is installed

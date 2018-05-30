@@ -89,6 +89,24 @@ BLACK_SIGNATURES = [("BQ+Iney5b97jAS2pxDNqtsqYTItYZCyF55/s1jwJwdGoJJLwe"
                      "dD9D5ZGd/nBSO2HajAEa4s/8EeDLoRUs0umZX3nn9nQOYGuw==")
                     ]
 
+DEMO_LICENSE = """-----BEGIN LICENSE-----
+comment=Demo License for LSE LinOTP 2
+contact-email=unknown/unbekannt
+licensee=Demo License
+expire=14 days
+contact-phone=unknown/unbekannt
+address=unknown/unbekannt
+subscription=
+token-num=5
+contact-name=unknown/unbekannt
+version=2
+issuer=LSE Leading Security Experts GmbH
+-----END LICENSE-----
+-----BEGIN LICENSE SIGNATURE-----
+SMyYfVhZKPgS3mjcSYsfUG9awcgfwUU/ssEw0FLqSbTQiIJf2gWN9dx02iVSJREUnlf80Gy3ZQd0l4EVOucGw2GYWGGo3JRj/XrL7NnZFeP5d0SpPmcRwb4qyVYZ+yhQFtYkh4PMVnhPbjZyuILA1gBY1jUTeHqtfswg9QYwkCKlqosyyHnI1jA+usW3RcGuI74BNQK0qS7cQmoZBKG0PN/UbD3fA4wNVqJbh0FPQi2fnduZysWHFqmuMkpQ5epkVOfmkDTL6QQwl9R5We6RgepBdMkX5+E1hmCeDoIsXo8/+zAVYeejVQ9LWpdMExN443W0oQ0VIxA8/kTzuaEX9A==
+-----END LICENSE SIGNATURE-----"""
+
+
 class LicenseInfo(dict):
     """
     LicenseInfo
@@ -275,6 +293,17 @@ def check_license_restrictions():
 
     return False
 
+def setDemoSupportLicense():
+    """
+    set the demo license to be the current one
+
+    :param licString: the license with description and signature
+    :return: tuple with status (boolean) and if an error occured, the reason
+    """
+    return setSupportLicense(DEMO_LICENSE)
+
+def running_on_appliance():
+    return os.path.isdir("/etc/lseappliance")
 
 def setSupportLicense(licString):
     """
