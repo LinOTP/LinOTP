@@ -33,6 +33,7 @@ import os
 import logging
 import json
 
+from mock import patch
 from nose.tools import raises
 
 from datetime import datetime
@@ -41,6 +42,9 @@ from datetime import timedelta
 from freezegun import freeze_time
 
 from linotp.tests import TestController
+
+import linotp.lib.support
+from linotp.lib.support import InvalidLicenseException
 
 
 log = logging.getLogger(__name__)
@@ -64,6 +68,7 @@ class TestSupport(TestController):
 
     def test_demo_license_expiration(self):
         """
+        text that the demo license expires after 14 days
         """
 
         demo_license_file = os.path.join(self.fixture_path, "demo-lic.pem")
@@ -139,8 +144,72 @@ class TestSupport(TestController):
                                             upload_files=upload_files)
         msg = "volume exceeded: tokens used: 9 > tokens supported: 5"
         self.assertTrue(msg in response)
-        
-        
+
+    @raises(InvalidLicenseException)
+    def test_appliance_demo_licence(self):
+        """
+        verify that if we are running on a sva2, the demo license is installed
+        """
+
+        # ------------------------------------------------------------------ --
+
+        # first determin if the module support provides the function
+        # running_on_appliance
+
+        requires_patch = False
+        if "running_on_appliance" in dir(linotp.lib.support):
+            requires_patch = True
+
+        # ------------------------------------------------------------------ --
+
+        # depending on the existance of the function we must patch it or not
+
+        if not requires_patch:
+            return self.check_appliance_demo_licence()
+
+        with patch("linotp.controllers.system."
+                   "running_on_appliance") as mocked_running_on_appliance:
+
+            mocked_running_on_appliance.return_value = True
+            return self.check_appliance_demo_licence()
+
+    def check_appliance_demo_licence(self):
+        """
+        helper test which is called mocked or unmocked
+        """
+
+        # ------------------------------------------------------------------ --
+
+        # check that there is no license installed
+
+        params = {'key': 'license'}
+        response = self.make_system_request('getConfig', params)
+        self.assertTrue('"getConfig license": null' in response)
+
+        response = self.make_system_request("isSupportValid")
+
+        if "your product is unlicensed" in response:
+            raise InvalidLicenseException("your product is unlicensed")
+
+        self.assertTrue('"status": true' in response)
+        self.assertTrue('"value": true' in response)
+
+        # ------------------------------------------------------------------ --
+
+        # now check that the demo license with expiry in +14 day is installed
+
+        response = self.make_system_request("getSupportInfo")
+        jresp = json.loads(response.body)
+        expiry = jresp.get("result", {}).get("value", {}).get("expire")
+
+        expiry_date = datetime.strptime(expiry, "%Y-%m-%d")
+        expected_expiry = datetime.now() + timedelta(days=14)
+
+        self.assertTrue(expiry_date.year == expected_expiry.year)
+        self.assertTrue(expiry_date.month == expected_expiry.month)
+        self.assertTrue(expiry_date.day == expected_expiry.day)
+
+        return
 
 
 # eof ########################################################################
