@@ -30,6 +30,7 @@ import string
 import re
 
 import netaddr
+
 import logging
 
 from pylons import config
@@ -43,7 +44,10 @@ from linotp.lib.selftest import isSelfTest
 from linotp.lib.error import ParameterError
 from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.config import getFromConfig
+
 from linotp.lib.type_utils import boolean
+from linotp.lib.type_utils import get_ip_network
+from linotp.lib.type_utils import get_ip_address
 
 from linotp import (__version__ as linotp_version,
                     __copyright__ as linotp_copyright,
@@ -242,6 +246,30 @@ def remove_session_from_param(param):
 
 ###############################################################################
 # Client overwriting stuff
+
+
+def _is_addr_in_network(addr, network):
+    """
+    helper method to check if a client is in the proxy network range
+
+    :param addr: the client address
+    :param network: the network range description
+    :return: boolean - True if match is given
+    """
+
+    ip_network = get_ip_network(network)
+    if ip_network is None:
+        log.error('no valid ip_network: %r', network)
+        return False
+
+    ip_addr = get_ip_address(addr)
+    if ip_addr is None:
+        log.error('no valid ip_address: %r', addr)
+        return False
+
+    return ip_addr in ip_network
+
+
 def _get_client_from_request(request=None):
     '''
     This function returns the client as it is passed in the HTTP Request.
@@ -265,9 +293,7 @@ def _get_client_from_request(request=None):
                         'client.FORWARDED_PROXY', '')).split(',')
 
         for x_forwarded_proxy in x_forwarded_proxies:
-            if (x_forwarded_proxy.strip() and
-               netaddr.IPAddress(remote_addr) in
-               netaddr.IPNetwork(x_forwarded_proxy.strip())):
+            if _is_addr_in_network(remote_addr, x_forwarded_proxy):
 
                 ref_clients = request.environ.get('HTTP_X_FORWARDED_FOR', '')
                 for ref_client in ref_clients.split(','):
@@ -297,9 +323,7 @@ def _get_client_from_request(request=None):
                             'client.FORWARDED_PROXY', '').split(','))
 
         for forwarded_proxy in forwarded_proxies:
-            if (forwarded_proxy.strip() and
-               netaddr.IPAddress(remote_addr) in
-               netaddr.IPNetwork(forwarded_proxy)):
+            if _is_addr_in_network(remote_addr, forwarded_proxy):
 
                 # example is:
                 # "Forwarded: for=192.0.2.43, for=198.51.100.17"
