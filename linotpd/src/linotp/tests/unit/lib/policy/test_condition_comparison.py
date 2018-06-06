@@ -27,6 +27,7 @@
 """ unit test for complex policy comparisons """
 
 import unittest
+from nose.tools import raises
 
 from datetime import datetime
 
@@ -34,6 +35,7 @@ from linotp.lib.policy.evaluate import time_list_compare
 from linotp.lib.policy.evaluate import user_list_compare
 from linotp.lib.policy.evaluate import ip_list_compare
 from linotp.lib.policy.evaluate import value_list_compare
+from linotp.lib.policy.evaluate import wildcard_list_compare
 
 from linotp.lib.user import User
 
@@ -72,6 +74,24 @@ class TestCompare(unittest.TestCase):
         value_condition = ", a , b ,,, c=x, ,"
         res = value_list_compare(value_condition, "b=a")
         assert res == False
+
+    @raises(IndexError)
+    def test_wildcard_list_compare(self):
+        """
+        test wildcard list compare
+        """
+
+        value_condition = "read, write, execute, "
+        res = wildcard_list_compare(value_condition, "write")
+        assert res == True
+
+        value_condition = " , ,,,,, , ,,     ,,  ,"
+        res = wildcard_list_compare(value_condition, "write")
+        assert res == False
+
+        value_condition = "* , write"
+        res = wildcard_list_compare(value_condition, "write")
+        assert res == True
 
     def test_time_compare(self):
         """
