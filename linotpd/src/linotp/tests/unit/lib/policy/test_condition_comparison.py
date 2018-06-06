@@ -33,6 +33,7 @@ from datetime import datetime
 from linotp.lib.policy.evaluate import time_list_compare
 from linotp.lib.policy.evaluate import user_list_compare
 from linotp.lib.policy.evaluate import ip_list_compare
+from linotp.lib.policy.evaluate import value_list_compare
 
 from linotp.lib.user import User
 
@@ -42,6 +43,35 @@ class TestCompare(unittest.TestCase):
     unit tests for some comparison methods
      - will be moved into the unit tests
     """
+
+    def test_value_list_compare(self):
+        """
+        test value list comparison
+        """
+
+        value_condition = ", , ,, "
+        res = value_list_compare(value_condition, "d")
+        assert res == False
+
+        value_condition = ", a , b ,,, c"
+        res = value_list_compare(value_condition, "d")
+        assert res == False
+
+        value_condition = ", a , b ,,, c"
+        res = value_list_compare(value_condition, "b")
+        assert res == True
+
+        value_condition = ", a , b=x ,,, c"
+        res = value_list_compare(value_condition, "b")
+        assert res == True
+
+        value_condition = ", a , b=x ,,, c=x"
+        res = value_list_compare(value_condition, "b=a")
+        assert res == False
+
+        value_condition = ", a , b ,,, c=x, ,"
+        res = value_list_compare(value_condition, "b=a")
+        assert res == False
 
     def test_time_compare(self):
         """
