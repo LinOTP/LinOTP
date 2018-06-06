@@ -75,7 +75,6 @@ class TestCompare(unittest.TestCase):
         res = value_list_compare(value_condition, "b=a")
         assert res == False
 
-    @raises(IndexError)
     def test_wildcard_list_compare(self):
         """
         test wildcard list compare
