@@ -1,9 +1,10 @@
-linotp (2.10.0.6~rc0-1) jessie; urgency=low
+linotp (2.10.0.6-1) jessie; urgency=low
 
   Bug Fix:
   * Let Push Token handle multiple active challenges
+  * Policy: Fix index error during wildcard value list evaluation by policy
 
- --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 24 May 2018 16:08:05 +0200
+ --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 07 Jun 2018 11:05:54 +0200
 
 linotp (2.10.0.5-1) jessie; urgency=low
 
