@@ -23,6 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+from linotp.lib.crypto.encrypted_data import EncryptedData
 """ methods to handle support files """
 
 import os
@@ -87,6 +88,24 @@ BLACK_SIGNATURES = [("BQ+Iney5b97jAS2pxDNqtsqYTItYZCyF55/s1jwJwdGoJJLwe"
                      "blwWPKhUbMgem/aXwBSs1r3TitD0Nh/cZW8Fu/DuRM0QSRZbB"
                      "dD9D5ZGd/nBSO2HajAEa4s/8EeDLoRUs0umZX3nn9nQOYGuw==")
                     ]
+
+DEMO_LICENSE = """-----BEGIN LICENSE-----
+comment=Demo License for LSE LinOTP 2
+contact-email=unknown/unbekannt
+licensee=Demo License
+expire=14 days
+contact-phone=unknown/unbekannt
+address=unknown/unbekannt
+subscription=
+token-num=5
+contact-name=unknown/unbekannt
+version=2
+issuer=LSE Leading Security Experts GmbH
+-----END LICENSE-----
+-----BEGIN LICENSE SIGNATURE-----
+SMyYfVhZKPgS3mjcSYsfUG9awcgfwUU/ssEw0FLqSbTQiIJf2gWN9dx02iVSJREUnlf80Gy3ZQd0l4EVOucGw2GYWGGo3JRj/XrL7NnZFeP5d0SpPmcRwb4qyVYZ+yhQFtYkh4PMVnhPbjZyuILA1gBY1jUTeHqtfswg9QYwkCKlqosyyHnI1jA+usW3RcGuI74BNQK0qS7cQmoZBKG0PN/UbD3fA4wNVqJbh0FPQi2fnduZysWHFqmuMkpQ5epkVOfmkDTL6QQwl9R5We6RgepBdMkX5+E1hmCeDoIsXo8/+zAVYeejVQ9LWpdMExN443W0oQ0VIxA8/kTzuaEX9A==
+-----END LICENSE SIGNATURE-----"""
+
 
 class LicenseInfo(dict):
     """
@@ -274,6 +293,17 @@ def check_license_restrictions():
 
     return False
 
+def setDemoSupportLicense():
+    """
+    set the demo license to be the current one
+
+    :param licString: the license with description and signature
+    :return: tuple with status (boolean) and if an error occured, the reason
+    """
+    return setSupportLicense(DEMO_LICENSE)
+
+def running_on_appliance():
+    return os.path.isdir("/etc/lseappliance")
 
 def setSupportLicense(licString):
     """
@@ -382,8 +412,10 @@ def get_expiration_date(lic_dict):
     if expiration and 'days' in expiration:
 
         date_format = "%d%m%y"
+
         # fetch config and split the signature and the expiration date
-        duration = getFromConfig('enclinotp.license_duration', None)
+        duration = _get_license_duration()
+
         _signature, _sep, date = duration.rpartition(':')
 
         # now we create the volatile entry for the expiration
@@ -408,7 +440,7 @@ def verify_duration(lic_dict, raiseException=False):
     date_format = "%d%m%y"
 
     # get the decrypted value from the config, if there is one
-    duration = getFromConfig('enclinotp.license_duration', None)
+    duration = _get_license_duration()
 
     # no entry set by now, so this must be an error
     if not duration:
@@ -457,6 +489,14 @@ def setSupportLicenseInfo(lic_dict, lic_sign):
 
     return True
 
+def _get_license_duration():
+    """
+    helper to retreive the license duration from the config
+
+    :return: text with signature:timestamp
+    """
+    return getFromConfig('enclinotp.license_duration', getFromConfig(
+                            'linotp.license_duration', decrypt=True))
 
 def set_duration(lic_dict, raiseException=False):
     """
@@ -485,7 +525,8 @@ def set_duration(lic_dict, raiseException=False):
     date_format = "%d%m%y"
 
     # get the decrypted value from the config, if there is one
-    expiration = getFromConfig('enclinotp.license_duration', None)
+    expiration = _get_license_duration()
+
     if expiration:
         # fetch config and split the signature and the expiration date
         signature, _sep, _date_str = expiration.rpartition(':')
@@ -510,7 +551,8 @@ def set_duration(lic_dict, raiseException=False):
     signature = base64.b64encode(lic_sign)[:500]
     license_expire = "%s:%s" % (signature, expires_str)
 
-    storeConfig("license_duration", license_expire, typ='password')
+    enc_license_expire = EncryptedData.from_unencrypted(license_expire)
+    storeConfig("license_duration", enc_license_expire)
     log.info("Set license expiration to %s" % license_expire)
 
     return True
@@ -780,7 +822,8 @@ def check_duration(expire, lic_info):
     # if there is already a license with duration installed
     # check if it is still valid
     date_format = "%d%m%y"
-    duration = getFromConfig('enclinotp.license_duration', None)
+
+    duration = _get_license_duration()
 
     if duration:
         signature, _sep, date = duration.rpartition(':')

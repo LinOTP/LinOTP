@@ -1951,80 +1951,48 @@ function parsePolicyImport(xml, textStatus) {
     hide_waiting();
 };
 
-// calback to handle response when license has been submitted
-function parseLicense(xml_response, textStatus, xhr){
-    var xml = null;
+//calback to handle response when license has been submitted
+function parseLicense(response, textStatus, xhr){
 
-    if(testXMLObject(xml_response)){
-        xml = xml_response;
-    }
-    else{
-        try{ // try for activeX errors
-            if( window.DOMParser ){ // good browser
-                var parser = new DOMParser();
-                xml = parser.parseFromString(xhr.responseText,"text/xml");
-            }
-            else{ // Internet Explorer
-                xml = new ActiveXObject("Microsoft.XMLDOM");
-                xml.async = "false";
-                if(typeof xhr.responseXML.xml !== 'undefined'){
-                    xml.loadXML(xhr.responseXML.xml);
-                }
-                else{ // IE 9
-                    alert(xhr.responseXML.activeElement.innerText);
-                    xmlstr = xhr.responseXML.activeElement.innerText.replace(/[\n\r]-?/g, '');
-                    xml.loadXML(xmlstr);
-                }
-            }
-            if(!testXMLObject(xml)){
-                throw "Error: xml could not be parsed";
-            }
-        }
-        catch(e){ // if nothing helped
-            xml = null;
-        }
-    }
+    if(response &&
+        response.result &&
+        response.result.status &&
+        response.result.value) {
 
-    var status = $(xml).find('status').text();
-    var value = $(xml).find('value').text();
-    var xml_message = $(xml).find('message').text();
-    var reason = $(xml).find('reason').text();
+        alert_info_text({
+            text: i18n.gettext("Support license installed successfully."),
+            is_escaped: true
+        });
 
-    var error_intro = i18n.gettext('The upload of your support and subscription license failed: ');
-    var dialog_title = i18n.gettext('License upload');
-
-    // error occured
-    if(xml == null){
-        var status_unkown = i18n.gettext('License uploaded');
-        alert_info_text({'text': status_unkown,
-                     'is_escaped': true
-                     });
-    }
-    else if(status.toLowerCase() == "false") {
-        var message = i18n.gettext('Invalid License') + ': <br>' + escape(xml_message);
-        alert_info_text({'text': message,
-                         'type': ERROR,
-                         'is_escaped': true
-                         });
-
-        alert_box({'title': dialog_title,
-                   'text': error_intro + message,
-                   'is_escaped': true});
     } else {
-        if (value.toLowerCase() == "false"){
-            var message = i18n.gettext('Invalid License') + ': <br>' + escape(reason);
-            alert_info_text({'text': message,
-                             'type': ERROR,
-                             'is_escaped': true});
-            alert_box({'title': dialog_title,
-                       'text': error_intro + message,
-                       'is_escaped': true});
+
+        var message = i18n.gettext('The upload of your support and ' +
+                                   'subscription license failed: ');
+
+        if(response &&
+            response.result &&
+            response.result.error &&
+            response.result.error.message) {
+
+            message += '<br>' + escape(response.result.error.message);
         } else {
-            alert_box({'title': dialog_title,
-                       'text': "text_support_lic_installed",
-                       'is_escaped': true});
+            message += i18n.gettext('Unknown error');
         }
+
+        alert_info_text({
+            'text': message,
+            'type': ERROR,
+            'is_escaped': true
+            });
+
+        alert_box({
+            'title': i18n.gettext('License upload'),
+            'text': message,
+            'is_escaped': true
+            })
+
     }
+
     hide_waiting();
 };
 
@@ -2147,7 +2115,7 @@ function support_set(){
         type: "POST",
         error: parseLicense,
         success: parseLicense,
-        dataType: 'xml'
+        dataType: 'json'
     });
     } else {
         alert_info_text({'text': "text_import_pem",
