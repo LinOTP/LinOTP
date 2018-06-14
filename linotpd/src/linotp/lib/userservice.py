@@ -158,7 +158,7 @@ def create_auth_cookie(user, client, state='authenticated', state_data=None):
     else:
         delta = parse_duration(expiry)
 
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
     expires = now + delta
     expiration = expires.strftime(TIMEFORMAT)
 
@@ -194,7 +194,7 @@ def get_cookie_authinfo(cookie):
 
     # handle session expiration
 
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
     expires = datetime.datetime.strptime(expiration, TIMEFORMAT)
     if now > expires:
         log.info("session is expired")
@@ -238,7 +238,7 @@ def check_auth_cookie(cookie, user, client):
 
     # handle session expiration
 
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
     expires = datetime.datetime.strptime(expiration, TIMEFORMAT)
 
     if now > expires:

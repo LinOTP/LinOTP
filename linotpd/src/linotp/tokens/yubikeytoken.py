@@ -244,10 +244,10 @@ class YubikeyTokenClass(TokenClass):
                     6 Implementation details
 
         """
-        res = -1
 
         if len(otpVal) < self.getOtpLen():
-            return res
+            log.warning("otp len to short")
+            return -1
 
         serial = self.token.getSerial()
         secObj = self._get_secret_object()
@@ -261,7 +261,8 @@ class YubikeyTokenClass(TokenClass):
         # verify the prefix if any
         enroll_prefix = self.getFromTokenInfo('public_uid', None)
         if enroll_prefix and enroll_prefix != yubi_prefix:
-            return res
+            log.warning("token prefix missmatch")
+            return -1
 
         # The variable otp val is the last 32 chars
         yubi_otp = anOtpVal[-32:]
@@ -269,15 +270,19 @@ class YubikeyTokenClass(TokenClass):
         try:
             otp_bin = modhex_decode(yubi_otp)
             msg_bin = secObj.aes_decrypt(otp_bin)
-        except KeyError:
-            log.warning("failed to decode yubi_otp!")
-            return res
+        except (KeyError, TypeError, ValueError) as exx:
+            log.warning("failed to decode yubi_otp! %r", exx)
+            return -1
 
         msg_hex = binascii.hexlify(msg_bin)
 
         uid = msg_hex[0:12]
         log.debug("[checkOtp] uid: %r" % uid)
-        log.debug("[checkOtp] prefix: %r" % binascii.hexlify(modhex_decode(yubi_prefix)))
+        try:
+            prefix = modhex_decode(yubi_prefix)
+            log.debug("[checkOtp] prefix: %r" % binascii.hexlify(prefix))
+        except (TypeError, KeyError) as exx:
+            log.info("Unable to decode token prefix %r! %r", yubi_prefix, exx)
 
         # usage_counter can go from 1 – 0x7fff
         usage_counter = msg_hex[12:16]
@@ -285,7 +290,6 @@ class YubikeyTokenClass(TokenClass):
         # TODO: We also could check the timestamp
         # - the timestamp. see http://www.yubico.com/wp-content/uploads/2013/04/YubiKey-Manual-v3_1.pdf
         timestamp = msg_hex[16:22]
-
 
         # session counter can go from 00 to 0xff
         session_counter = msg_hex[22:24]
@@ -325,6 +329,6 @@ class YubikeyTokenClass(TokenClass):
 
         log.debug('[checkOtp] compare counter to LinOtpCount: %r' % self.token.LinOtpCount)
         if count_int >= self.token.LinOtpCount:
-            res = count_int
+            return count_int
 
-        return res
+        return -1

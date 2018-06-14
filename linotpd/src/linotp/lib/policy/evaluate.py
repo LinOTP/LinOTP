@@ -386,7 +386,6 @@ def value_list_compare(policy_conditions, action_name):
 
     return False
 
-
 def wildcard_list_compare(policy_conditions, value):
     """
     check if given string value matches the conditions
@@ -422,7 +421,7 @@ def wildcard_icase_list_compare(policy_conditions, value, ignore_case=True):
 
         its_a_not_condition = False
 
-        if condition[0] in ['-', '!']:
+        if condition and condition[0] in ['-', '!']:
             its_a_not_condition = True
             condition = condition[1:]
 
@@ -443,7 +442,6 @@ def wildcard_icase_list_compare(policy_conditions, value, ignore_case=True):
                 matched = True
 
     return matched
-
 
 def string_compare(policy_condition, value):
     """

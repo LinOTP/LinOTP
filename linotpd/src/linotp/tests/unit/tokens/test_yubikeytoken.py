@@ -152,6 +152,85 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         self.assertEqual(counter_expected, counter_actual,
                          "OTP: " + otp + " should no longer be accepted.")
 
+    def test_checkotp_with_wrong_prefix(self):
+        """
+        check: if no prefix has been enrolled, the token will not complain about any prefix
+        """
+
+        # Passing bad prefix - xx is not decodeable
+        otp = 'xx' + "fcniufvgvjturjgvinhebbbertjnihit"
+        counter_expected = 256
+
+        # suppress the warning
+        logger = logging.getLogger("linotp.tokens.yubikeytoken")
+        logger.disabled = True
+
+        counter_actual = self.yubikey_token.checkOtp(otp)
+
+        self.assertEqual(counter_expected, counter_actual,
+                         "verification for malicous prefix: %s "
+                         "should fail." % otp)
+
+        logger.disabled = False
+
+        # Passing a too short prefix
+        otp = 'iibb' + "fcniufvgvjturjgvinhebbbertjnihit"
+        counter_expected = 256
+
+        # suppress the warnings
+        logger = logging.getLogger("linotp.tokens.yubikeytoken")
+        logger.disabled = True
+
+        counter_actual = self.yubikey_token.checkOtp(otp)
+
+        self.assertEqual(counter_expected, counter_actual,
+                         "verification for malicous prefix: %s "
+                         "should fail." % otp)
+
+        logger.disabled = False
+
+    def test_checkotp_with_wrong_prefix_fail(self):
+        """
+        check: if prefix has been enrolled, the token will complain about wrong prefix
+        """
+
+        # Passing not matching prefix
+        token_info = {"public_uid": self.public_uid}
+        self.model_token.getInfo.return_value = json.dumps(token_info)
+
+        wrong_pub_id = self.public_uid.replace('e', 'i')
+        otp = wrong_pub_id + "fcniufvgvjturjgvinhebbbertjnihit"
+
+        counter_expected = -1
+
+        # suppress the warning
+        logger = logging.getLogger("linotp.tokens.yubikeytoken")
+        logger.disabled = True
+
+        counter_actual = self.yubikey_token.checkOtp(otp)
+
+        self.assertEqual(counter_expected, counter_actual,
+                         "verification for malicous prefix: %s "
+                         "should fail." % otp)
+
+        logger.disabled = False
+
+        # Passing a too short prefix will complain as well
+        otp = 'iibb' + "fcniufvgvjturjgvinhebbbertjnihit"
+        counter_expected = -1
+
+        # suppress the warnings
+        logger = logging.getLogger("linotp.tokens.yubikeytoken")
+        logger.disabled = True
+
+        counter_actual = self.yubikey_token.checkOtp(otp)
+
+        self.assertEqual(counter_expected, counter_actual,
+                         "verification for malicous prefix: %s "
+                         "should fail." % otp)
+
+        logger.disabled = False
+
     def test_checkotp_wrong_crc(self):
         """
         Verify that an OTP with corrupt data is not accepted
