@@ -165,6 +165,27 @@ def get_auth_smstext(user="", realm=""):
     return ret, smstext
 
 
+def enforce_smstext(user="", realm=""):
+    '''
+    this function checks the boolean policy
+                            scope=authentication,
+                            action=enforce_smstext
+
+    The function returns true if the smstext should be used instead of the
+    challenge data
+    :return: bool
+    '''
+    pol = get_client_policy(context['Client'], scope="authentication",
+                            realm=realm, user=user, action="enforce_smstext")
+
+    if len(pol) > 0:
+        enforce_smstext = getPolicyActionValue(pol, "enforce_smstext")
+        log.debug("got enforce_smstext = %r" % enforce_smstext)
+        return enforce_smstext or False
+
+    return False
+
+
 def is_phone_editable(user=""):
     '''
     this function checks the policy scope=selfservice, action=edit_sms
@@ -446,6 +467,9 @@ class SmsTokenClass(HmacTokenClass):
             # Gateway error, since checkPIN is successful, as the bail
             # out would cancel the checking of the other tokens
             try:
+                sms_ret = False
+                new_message = None
+
                 realms = self.getRealms()
                 if realms:
                     sms_ret, new_message = get_auth_smstext(realm=realms[0])
@@ -458,12 +482,33 @@ class SmsTokenClass(HmacTokenClass):
                     if sms_ret:
                         message = new_message
 
+                # ---------------------------------------------------------- --
+
+                # if there is a data or message part in the request, it might
+                # overrule the given smstext
+
                 if 'data' in options or 'message' in options:
-                    message = options.get('data',
+
+                    # if there is an enforce policy
+                    # we do not allow the owerwrite
+
+                    enforce = enforce_smstext(
+                        user=user, realm=user.realm or realms[0] or "")
+
+                    if not enforce:
+                        message = options.get('data',
                                           options.get('message', '<otp>'))
+
+                # ---------------------------------------------------------- --
+
+                # fallback if no message is defined
 
                 if not message:
                     message = "<otp>"
+
+                # ---------------------------------------------------------- --
+
+                # submit the sms message
 
                 transactionid = options.get('transactionid', None)
                 res, result = self.sendSMS(message=message,
