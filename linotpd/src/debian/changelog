@@ -1,10 +1,10 @@
-linotp (2.10.0.7~rc0-1) jessie; urgency=low
+linotp (2.10.0.7-1) jessie; urgency=low
 
   Feature:
   * policy enforce_smstext to ignore request param data for sms token
     challenge
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 21 Jun 2018 12:25:53 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 22 Jun 2018 15:01:26 +0200
 
 linotp (2.10.0.6-1) jessie; urgency=low
 
