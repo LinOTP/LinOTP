@@ -41,6 +41,8 @@ from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from pysodium import crypto_sign_keypair as gen_dsa_keypair
 from pysodium import crypto_sign_detached
 from pysodium import crypto_sign_verify_detached
+from pysodium import crypto_sign_keypair
+
 import linotp.provider.pushprovider.default_push_provider as default_provider
 
 from Cryptodome.Cipher import AES
@@ -938,7 +940,7 @@ class TestPushToken(TestController):
         # temporarily switch the secret key (used for signature)
 
         tmp_secret_key = self.secret_key
-        self.secret_key = '7' * 32
+        _public_key, self.secret_key = crypto_sign_keypair()
 
         # ------------------------------------------------------------------ --
 
