@@ -68,6 +68,24 @@ import logging
 
 log = logging.getLogger(__name__)
 
+def _get_otppin_mode(pin_policies):
+    """
+        helper to get the otppin operational mode from policies
+    """
+
+    if 0 in pin_policies or "token_pin" in pin_policies:
+        return 0
+
+    elif 1 in pin_policies or "password" in pin_policies:
+        return 1
+
+    elif 2 in pin_policies or "only_otp" in pin_policies:
+        return 2
+
+    elif 3 in pin_policies or "ignore_pin" in pin_policies:
+        return 3
+
+    return 0
 
 def check_pin(token, passw, user=None, options=None):
     '''
@@ -81,9 +99,10 @@ def check_pin(token, passw, user=None, options=None):
     :return: boolean, if pin matched True
     '''
     res = False
-    pin_policies = get_pin_policies(user)
 
-    if 1 in pin_policies:
+    otppin_mode = _get_otppin_mode(get_pin_policies(user))
+
+    if 1 == otppin_mode:
         # We check the Users Password as PIN
         log.debug("pin policy=1: checking the users password as pin")
         # this should not be the case
@@ -126,28 +145,27 @@ def check_pin(token, passw, user=None, options=None):
         if res is True:
             options['pin_match']['found'] = True
 
-    elif 2 in pin_policies:
+        return res
+
+    elif otppin_mode == 2:
         # NO PIN should be entered atall
         log.debug("[__checkToken] pin policy=2: checking no pin")
-        if len(passw) == 0:
-            res = True
+        return len(passw) == 0
 
-    elif 3 in pin_policies:
+    elif otppin_mode == 3:
         # ignore pin or password
 
         log.debug("[__checkToken] pin policy=3: ignoreing pin")
 
         if token.type in ['spass']:
-            res = token.checkPin(passw, options=options)
-        else:
-            res = True
+            return token.checkPin(passw, options=options)
+
+        return True
 
     else:
         # old stuff: We check The fixed OTP PIN
         log.debug("[__checkToken] pin policy=0: checkin the PIN")
-        res = token.checkPin(passw, options=options)
-
-    return res
+        return token.checkPin(passw, options=options)
 
 
 def check_otp(token, otpval, options=None):
@@ -180,36 +198,35 @@ def split_pin_otp(token, passw, user=None, options=None):
                     token.splitPinPass
     :return: tuple of (split status, pin and otpval)
     """
-    pin_policies = get_pin_policies(user)
 
-    policy = 0
+    otppin_mode = _get_otppin_mode(get_pin_policies(user))
 
-    if 0 in pin_policies or "token_pin" in pin_policies:
+    if 0 == otppin_mode:
         # old stuff: We check The fixed OTP PIN
         log.debug('pin policy=0: checking the PIN')
         (pin, otp) = token.splitPinPass(passw)
+        return 0, pin, otp
 
-    elif 1 in pin_policies or "password" in pin_policies:
+    elif 1 == otppin_mode:
         log.debug('pin policy=1: checking the users password as pin')
         # split the passw into password and otp value
         (pin, otp) = token.splitPinPass(passw)
-        policy = 1
+        return 1, pin, otp
 
-    elif 2 in pin_policies or "only_otp" in pin_policies:
+    elif 2 == otppin_mode:
         # NO PIN should be entered at all
         log.debug('pin policy=2: checking no pin')
         (pin, otp) = ('', passw)
         token.auth_info = {'auth_info': [('pin_length', 0),
                                          ('otp_length', len(passw))]}
-        policy = 2
+        return 2, pin, otp
 
-    else:
-        # old stuff: We check The fixed OTP PIN
-        log.debug('pin policy=0: checkin the PIN')
+    elif 3 == otppin_mode:
+        # no pin should be checked
+        log.debug('pin policy=3: ignoring the pin')
         (pin, otp) = token.splitPinPass(passw)
 
-    res = policy
-    return (res, pin, otp)
+        return 3, pin, otp
 
 
 class ValidationHandler(object):
