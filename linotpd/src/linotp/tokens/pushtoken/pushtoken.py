@@ -494,9 +494,10 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
             # fetch all challenges that match the transaction id or serial
 
-            transaction_id = options.get('transaction_id')
+            transaction_id = options.get('transactionid')
 
-            challenges = Challenges.lookup_challenges(serial, transaction_id)
+            challenges = Challenges.lookup_challenges(serial=serial,
+                transid=transaction_id, filter_open=True)
 
             # -------------------------------------------------------------- --
 
@@ -523,76 +524,85 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         if not filtered_challenges:
             return -1
 
-        for challenge in filtered_challenges:
+        if len(filtered_challenges) > 1:
+            log.error('multiple challenges for one transaction and for one'
+                      ' token found!')
+            return -1
 
-            # client verifies the challenge by signing the challenge
-            # plaintext. we retrieve the original plaintext (saved
-            # in createChallenge) and check for a match
+        # for the serial and the transaction id there could always be only
+        # at max one challenge matching. This is even true for sub transactions
 
-            data = challenge.getData()
-            data_to_verify = b64decode(data['sig_base'])
+        challenge = filtered_challenges[0]
 
-            b64_dsa_public_key = self.getFromTokenInfo('user_dsa_public_key')
-            user_dsa_public_key = b64decode(b64_dsa_public_key)
+        # client verifies the challenge by signing the challenge
+        # plaintext. we retrieve the original plaintext (saved
+        # in createChallenge) and check for a match
 
-            # -------------------------------------------------------------- --
+        data = challenge.getData()
+        data_to_verify = b64decode(data['sig_base'])
 
-            # handle the accept case
+        b64_dsa_public_key = self.getFromTokenInfo('user_dsa_public_key')
+        user_dsa_public_key = b64decode(b64_dsa_public_key)
 
-            if signature_accept is not None:
+        # -------------------------------------------------------------- --
 
-                accept_signature_as_bytes = decode_base64_urlsafe(
-                                                        signature_accept)
+        # handle the accept case
 
-                accept_data_to_verify_as_bytes = (
-                                struct.pack('<b', CHALLENGE_URL_VERSION) +
-                                b'ACCEPT\0' +
-                                data_to_verify)
+        if signature_accept is not None:
 
-                try:
-                    verify_sig(accept_signature_as_bytes,
-                               accept_data_to_verify_as_bytes,
-                               user_dsa_public_key)
+            accept_signature_as_bytes = decode_base64_urlsafe(
+                                                    signature_accept)
 
-                    challenge.add_session_info({'accept': True})
+            accept_data_to_verify_as_bytes = (
+                            struct.pack('<b', CHALLENGE_URL_VERSION) +
+                            b'ACCEPT\0' +
+                            data_to_verify)
 
-                    return 1
-                except ValueError:  # accept signature mismatch
+            try:
+                verify_sig(accept_signature_as_bytes,
+                           accept_data_to_verify_as_bytes,
+                           user_dsa_public_key)
 
-                    challenge.add_session_info({'accept': False})
-                    log.error("accept signature mismatch!")
+                challenge.add_session_info({'accept': True})
 
-                    return -1
+                return 1
 
-            # -------------------------------------------------------------- --
+            except ValueError:
 
-            # handle the reject case
+                challenge.add_session_info({'accept': False})
+                log.error("accept signature mismatch!")
 
-            elif signature_reject is not None:
+                return -1
 
-                reject_signature_as_bytes = decode_base64_urlsafe(
-                                                            signature_reject)
+        # -------------------------------------------------------------- --
 
-                reject_data_to_verify_as_bytes = (
-                                struct.pack('<b', CHALLENGE_URL_VERSION) +
-                                b'DENY\0' +
-                                data_to_verify)
+        # handle the reject case
 
-                try:
-                    verify_sig(reject_signature_as_bytes,
-                               reject_data_to_verify_as_bytes,
-                               user_dsa_public_key)
+        elif signature_reject is not None:
 
-                    challenge.add_session_info({'reject': True})
+            reject_signature_as_bytes = decode_base64_urlsafe(
+                                                        signature_reject)
 
-                    return 1
+            reject_data_to_verify_as_bytes = (
+                            struct.pack('<b', CHALLENGE_URL_VERSION) +
+                            b'DENY\0' +
+                            data_to_verify)
 
-                except ValueError:  # reject signature mismatch
+            try:
+                verify_sig(reject_signature_as_bytes,
+                           reject_data_to_verify_as_bytes,
+                           user_dsa_public_key)
 
-                    challenge.add_session_info({'reject': False})
-                    log.error("reject signature mismatch!")
+                challenge.add_session_info({'reject': True})
 
-                    return -1
+                return 1
+
+            except ValueError:
+
+                challenge.add_session_info({'reject': False})
+                log.error("reject signature mismatch!")
+
+                return -1
 
         return -1
 
@@ -992,3 +1002,17 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         url = protocol_id + '://push/' + encode_base64_urlsafe(raw_data)
 
         return url, (signature + plaintext)
+
+    def challenge_janitor(self, matching_challenges, challenges):
+        '''
+        This is the pushtoken challenges janitor.
+
+        The idea is to not close any challenge and rely on the timeout of the
+        challenges
+
+        :param matching_challenges: the list of matching challenges (ignored)
+        :param challenges: all current challenges (ignored)
+        :return: list of all challenges, which should be closed
+        '''
+
+        return []

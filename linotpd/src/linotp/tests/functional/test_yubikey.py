@@ -179,25 +179,64 @@ class TestYubikeyController(TestController):
 
         return
 
+    def test_yubico_getSerialByOtp_false(self):
+        """
+        getSerialByOtp - false test for yubikey token
+        """
+
+        # enroll a yubikey token
+        self.init_token(public_uid='', use_public_id=True)
+
+        # first test wrong chars in yubi otp
+        false_otp1 = self.valid_otps[0].replace('i','x')
+
+        # test for longer otp - wrong hex()
+        false_otp2 = self.valid_otps[0] + "i"
+
+        # test for longer otp - wrong decrypt
+        false_otp3 = self.valid_otps[0] + "ii"
+
+        # test for otp - with undeclared prefix
+        false_otp4 = "ecebeeejedecebeg" + self.valid_otps[0] + 'ii'
+
+        for otp in [false_otp4, false_otp3, false_otp2, false_otp1]:
+            params = {
+                'otp': otp,
+                'session': self.session,
+                }
+            response = self.make_admin_request('getSerialByOtp', params=params)
+
+            self.assertTrue('"status": true' in response,
+                            "Response: %r" % response)
+
+            # now access the data / serial number
+            resp = json.loads(response.body)
+            data = resp.get("result", {}).get('value', {})
+            get_serial = data.get('serial')
+            self.assertEqual(get_serial, "", resp)
+
+        return
+
     def test_yubico_getSerialByOtp(self):
         """
         getSerialByOtp test for yubikey token w. and wo. prefix
         """
+
         public_uids = ["ecebeeejedecebeg", '']
 
         for public_uid in public_uids:
 
             # preserve the serial number for later check
             serial = self.init_token(public_uid=public_uid, use_public_id=True)
+
             for otp in self.valid_otps:
                 params = {
                     'otp': otp,
                     'session': self.session,
                     }
-                response = self.app.get(
-                    url(controller='admin', action='getSerialByOtp'),
-                    params=params,
-                    )
+                response = self.make_admin_request('getSerialByOtp',
+                                                    params=params)
+
                 self.assertTrue('"status": true' in response,
                                 "Response: %r" % response)
 

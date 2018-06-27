@@ -2,7 +2,7 @@ LinOTP
 ======
 
 LinOTP - the Open Source solution for two factor authentication
-  Copyright (C) 2010 - 2017 KeyIdentity GmbH
+  Copyright (C) 2010 - 2018 KeyIdentity GmbH
 
 
 This repository contains all parts to build your own solution
