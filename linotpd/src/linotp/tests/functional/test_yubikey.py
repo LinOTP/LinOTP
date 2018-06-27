@@ -24,7 +24,6 @@
 #    Support: www.keyidentity.com
 #
 
-
 """
   Test the Yubikey.
 """
@@ -71,7 +70,9 @@ class TestYubikeyController(TestController):
                    yubi_slot=1,
                    otpkey="9163508031b20d2fbb1868954e041729",
                    public_uid="ecebeeejedecebeg",
-                   use_public_id=False
+                   use_public_id=False,
+                   user=None,
+                   pin=None
                    ):
         serial = "UBAM%s_%s" % (serialnum, yubi_slot)
 
@@ -80,31 +81,21 @@ class TestYubikeyController(TestController):
             'serial': serial,
             'otpkey': otpkey,
             'description': "Yubikey enrolled in functional tests",
-            'session': self.session
+            'user': 'root',
         }
+
+        if user:
+            params['user'] = user
+
+        if pin:
+            params['pin'] = pin
 
         if not use_public_id:
             params['otplen'] = 32 + len(public_uid)
         else:
             params['public_uid'] = public_uid
 
-        response = self.app.get(
-            url(controller='admin', action='init'),
-            params=params
-            )
-        self.assertTrue('"value": true' in response, "Response: %r" % response)
-
-        # test initial assign
-        params = {
-            "serial": serial,
-            "user": "root",
-            'session': self.session,
-            }
-        response = self.app.get(
-            url(controller='admin', action='assign'),
-            params=params
-            )
-        # Test response...
+        response = self.make_admin_request('init', params=params)
         self.assertTrue('"value": true' in response, "Response: %r" % response)
 
         # setup the otp values, that we check against
@@ -248,3 +239,111 @@ class TestYubikeyController(TestController):
 
         return
 
+    def test_yubikey_auth_otppin(self):
+        """
+        Yubikey with multiple tokens and otppin policies
+
+        check if with multiple tokens the otppin policies the yubikey works
+        """
+
+        user = 'passthru_user1@myDefRealm'
+        orig_pin = '!1234!'
+
+        public_uids = ["ecebeeejedecebeg", '']
+
+        # ------------------------------------------------------------------ --
+
+        # create alternative yubikey with a different pin
+
+        self.init_token(public_uid=public_uids[0],
+                        user=user,
+                        pin='alternative_pin')
+
+        pw_password = 'very secret'
+        params = {
+            'user': user,
+            'pin': orig_pin,
+            'type': 'pw',
+            'otpkey': pw_password
+        }
+        response = self.make_admin_request('init', params)
+        self.assertTrue('false' not in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # we iterate over all otppin policies
+        # 0,1,2,3 and "token_pin", "password", "only_otp", "ignore_pin"
+
+        pp = {
+            '0': orig_pin,
+            '1': 'geheim1',
+            '2': '',
+            '3': 'this is not the correct pin',
+            'token_pin': orig_pin,
+            'password': 'geheim1',
+            'only_otp': '',
+            'ignore_pin': 'this is not the correct pin'
+            }
+
+        for otppin_mode, pin in pp.items():
+
+            # -------------------------------------------------------------- --
+
+            # setup the otppin policy
+
+            params = {
+                'name': "otppin_policy",
+                'scope': 'authentication',
+                'active': True,
+                'action': 'otppin=' + otppin_mode,
+                'user': '*',
+                'realm': '*',
+                }
+            response = self.make_system_request('setPolicy', params=params)
+            self.assertTrue('false' not in response, response)
+
+            # -------------------------------------------------------------- --
+
+            # setup the token
+
+            self.init_token(public_uid=public_uids[0],
+                            user=user,
+                            pin=orig_pin)
+
+            # -------------------------------------------------------------- --
+
+            # check the yubikey otp
+
+            otp = self.valid_otps[0]
+            params = {
+                'user': user,
+                'pass': pin + otp
+                }
+            response = self.make_validate_request('check', params=params)
+            self.assertTrue('"value": true' in response, otppin_mode)
+
+            # -------------------------------------------------------------- --
+
+            # and verify that otp has been checked by check against replay
+
+            params = {
+                'user': user,
+                'pass': pin + otp
+                }
+            response = self.make_validate_request('check', params=params)
+            self.assertFalse('"value": true' in response, response)
+
+            # -------------------------------------------------------------- --
+
+            # check that the other token will work as well
+
+            params = {
+                'user': user,
+                'pass': pin + pw_password
+                }
+            response = self.make_validate_request('check', params=params)
+            self.assertTrue('"value": true' in response, response)
+
+        return
+
+# eof
