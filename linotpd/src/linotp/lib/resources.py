@@ -47,6 +47,14 @@ GLOBAL_REGISTRY = {}
 log = logging.getLogger(__name__)
 
 
+class AllResourcesUnavailable(Exception):
+    """
+    to be thrown when all services are unavailable.
+    """
+    pass
+
+
+
 def string_to_list(string_list, sep=','):
     """
     tiny helper to create a list from a string with seperators
