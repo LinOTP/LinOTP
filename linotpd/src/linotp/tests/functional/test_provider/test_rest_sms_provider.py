@@ -41,6 +41,10 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 import logging
 import urlparse
 import requests
+from datetime import datetime
+from datetime import timedelta
+
+from freezegun import freeze_time
 
 from mock import patch
 from nose.tools import raises
@@ -50,12 +54,16 @@ from linotp.tests.functional_special import TestSpecialController
 import linotp.provider.smsprovider.RestSMSProvider
 
 REQUEST_BODY = ''
+REQUEST_HEADERS = {}
 
 
 def mocked_http_request(HttpObject, *argparams, **kwparams):
 
     global REQUEST_BODY
     REQUEST_BODY = kwparams['json']
+
+    global REQUEST_HEADERS
+    REQUEST_HEADERS = kwparams.get('headers', {})
 
     # build up response
     class Response:
@@ -67,6 +75,7 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
     r.ok = True
 
     r.headers = {'fake': True}
+    r.headers.update(kwparams.get('headers', {}))
     r.text = ""  # rest does not return a body
     r.content = ""
 
@@ -181,6 +190,9 @@ class TestRestSmsController(TestSpecialController):
                         'text': 'Message: <message>',
                         'destination': ''
                         },
+                    "HEADERS": {
+                        "Authorization":
+                                "Bearer da634870addc4568859092b2e0223376"},
                     "PASSWORD": "v3ry53cr3t",
                     'USERNAME': 'heinz',
                     "SMS_TEXT_KEY": "text",
@@ -232,10 +244,15 @@ class TestRestSmsController(TestSpecialController):
         global REQUEST_BODY
         REQUEST_BODY = {}
 
+        global REQUEST_HEADERS
+        REQUEST_HEADERS = {}
+
         response = self.make_validate_request('check', params=params)
 
         self.assertTrue('this is your otp' in REQUEST_BODY.get('text', ''),
                         REQUEST_BODY)
+
+        self.assertTrue('Authorization' in REQUEST_HEADERS, REQUEST_HEADERS)
 
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('transactionid' in response, response)
@@ -275,6 +292,9 @@ class TestRestSmsController(TestSpecialController):
                         'text': 'Message: <message>',
                         'destination': ''
                         },
+                    "HEADERS": {
+                        "Authorization":
+                                "Bearer da634870addc4568859092b2e0223376"},
                     "PASSWORD": "v3ry53cr3t",
                     'USERNAME': 'heinz',
                     "SMS_TEXT_KEY": "text",
@@ -334,10 +354,9 @@ class TestRestSmsController(TestSpecialController):
 
         response = self.make_validate_request('check', params=params)
 
-        self.assertTrue('this is your otp' not in REQUEST_BODY.get(
-                                                        'text',
-                                                        'this is your otp'),
-                                                                REQUEST_BODY)
+        self.assertTrue('this is your otp' not in
+                        REQUEST_BODY.get('text', 'this is your otp'),
+                        REQUEST_BODY)
 
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('transactionid' in response, response)
@@ -361,20 +380,23 @@ class TestRestSmsController(TestSpecialController):
             'pass': '1234',
             'data': 'this is your otp <otp>'
         }
-
+        global REQUEST_BODY
         REQUEST_BODY = {}
 
-        response = self.make_validate_request('check', params=params)
 
-        self.assertTrue('no data' in REQUEST_BODY.get('text', ''),
-                                                            REQUEST_BODY)
-        self.assertTrue('this is your otp' not in REQUEST_BODY.get(
-                                                        'text',
-                                                        'this is your otp'),
+        
+        with freeze_time(datetime.now()+timedelta(seconds=120)):
+
+            response = self.make_validate_request('check', params=params)
+
+            self.assertTrue('no data' in REQUEST_BODY.get('text', ''),
                                                                 REQUEST_BODY)
+            self.assertTrue('this is your otp' not in
+                            REQUEST_BODY.get('text', 'this is your otp'),
+                            REQUEST_BODY)
 
-        self.assertTrue('"value": false' in response, response)
-        self.assertTrue('transactionid' in response, response)
+            self.assertTrue('"value": false' in response, response)
+            self.assertTrue('transactionid' in response, response)
 
         return
 
