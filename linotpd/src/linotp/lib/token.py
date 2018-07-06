@@ -440,18 +440,33 @@ class TokenHandler(object):
         return res
 
     def isTokenOwner(self, serial, user):
-        ret = False
+        """
+        verify that user is the token owner
 
-        userid = ""
-        idResolver = ""
-        idResolverClass = ""
+        :param serial: the token serial
+        :param user: the given user
+        :return: boolean - True on success
+        """
 
-        if user is not None and (not user.is_empty):
-        # the upper layer will catch / at least should
-            (userid, idResolver, idResolverClass) = getUserId(user)
+        # ----------------------------------------------------------------- --
 
-        if len(userid) + len(idResolver) + len(idResolverClass) == 0:
+        # handle the given user
+
+        if user is None or user.is_empty:
+            raise TokenAdminError("no user found %r" % user, id=1104)
+
+        (userid, idResolver, idResolverClass) = getUserId(user)
+
+        # special case for the sqlresolver with uid column defined as int
+        if isinstance(userid, (int, long)):
+            userid = "%d" % userid
+
+        if not (userid and idResolver and idResolverClass):
             raise TokenAdminError("no user found %s" % user.login, id=1104)
+
+        # ----------------------------------------------------------------- --
+
+        # handle the token owner
 
         toks = getTokens4UserOrSerial(None, serial)
 
@@ -462,19 +477,24 @@ class TokenHandler(object):
 
         token = toks[0]
 
-        (uuserid, uidResolver, uidResolverClass) = token.getUser()
+        (token_userid, _idResolver, token_idResolverClass) = token.getUser()
 
-        if uidResolverClass == idResolverClass:
-            if uuserid == userid:
-                ret = True
+        # ----------------------------------------------------------------- --
 
-        return ret
+        # compare the user with the owner
+
+        if token_idResolverClass == idResolverClass and  token_userid == userid:
+            return True
+
+        return False
 
     def hasOwner(self, serial):
         '''
         returns true if the token is owned by any user
+
+        :param serial: the token serial number
+        :return: boolean - True if it has an owner
         '''
-        ret = False
 
         toks = getTokens4UserOrSerial(None, serial)
 
@@ -487,10 +507,10 @@ class TokenHandler(object):
 
         (uuserid, uidResolver, uidResolverClass) = token.getUser()
 
-        if len(uuserid) + len(uidResolver) + len(uidResolverClass) > 0:
-            ret = True
+        if uuserid and uidResolver and uidResolverClass:
+            return True
 
-        return ret
+        return False
 
     def getTokenOwner(self, serial):
         '''
@@ -1547,7 +1567,11 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                 resolverClass = resolverClass.replace('useridresolver.',
                                                       'useridresolver%.')
 
-                uconditions += ((model.Token.LinOtpUserid == uid),)
+                if isinstance(uid, (int, long)):
+                    uconditions += ((model.Token.LinOtpUserid == "%d" % uid),)
+                else:
+                    uconditions += ((model.Token.LinOtpUserid == uid),)
+
                 uconditions += ((model.Token.LinOtpIdResClass.like(resolverClass)),)
 
                 condition = and_(*uconditions)
