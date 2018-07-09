@@ -161,11 +161,13 @@ secure_cookie = True
 
 if config.get('debug') is True or config.get('unitTest') in [True, 'True']:
 
-    if request.application_url.startswith('https://'):
-        secure_cookie = True
-    else:
-        secure_cookie = False
+    try:
+        app_url = request.application_url
+    except TypeError:
+        app_url = ''
 
+    if not app_url.startswith('https://'):
+        secure_cookie = False
 
 # -------------------------------------------------------------------------- --
 
