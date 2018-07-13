@@ -266,6 +266,11 @@ def getPolicyDefinitions(scope=""):
                 'desc': 'If set, the users authentication request will be '
                         'forwarded to another linotp or radius server.'
                 },
+            'forward_on_no_token': {
+                'type': 'bool',
+                'desc': 'the authentication request of the user will be'
+                        'forwarded, if the user has no token'
+                },
             'passOnNoToken': {
                 'type': 'bool',
                 'desc': 'if the user has no token, the authentication request '

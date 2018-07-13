@@ -49,18 +49,18 @@ class TestCheckWithSerial(unittest.TestCase):
     in the options should focus the search of the tokens only on this token
     with the serial number.
     """
-
+     
     @patch("linotp.lib.auth.validate.context", mocked_context)
     @patch("linotp.lib.auth.validate.TokenHandler", mocked_TokenHandler)
     @patch("linotp.lib.auth.validate.getTokens4UserOrSerial",
            mocked_getTokens4UserOrSerial)
+    @patch("linotp.lib.auth.validate.get_auth_forward_on_no_token")
     @patch("linotp.lib.auth.validate.ValidationHandler.checkTokenList")
     @patch("linotp.lib.auth.validate.get_auth_forward")
     @patch("linotp.lib.auth.validate.getUserId")
-    def test_validate_check_with_serial(self, mocked_geUserId,
-                                        mocked_get_auth_forward,
-                                        mocked_checkTokenList,
-                                        ):
+    def test_validate_check_with_serial(
+            self, mocked_geUserId, mocked_get_auth_forward,
+            mocked_checkTokenList, mocked_auth_forward_no_token):
         """
         test calling checkUserPass with serial in the list of optional args
         """
@@ -73,7 +73,8 @@ class TestCheckWithSerial(unittest.TestCase):
 
         serial = 'tok123'
         options = {'serial': serial}
-        
+
+        mocked_auth_forward_no_token.return_value = True 
         mocked_geUserId.return_value = ('uid', 'resolver', 'resolverClass')
         mocked_get_auth_forward.return_value = None
         mocked_checkTokenList.return_value = True, None

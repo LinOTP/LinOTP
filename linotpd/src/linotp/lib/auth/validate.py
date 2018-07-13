@@ -60,6 +60,7 @@ from linotp.lib.policy import delete_on_authentication_exceed
 from linotp.lib.policy import get_pin_policies
 from linotp.lib.policy import get_auth_passthru
 from linotp.lib.policy import get_auth_passOnNoToken
+from linotp.lib.policy import get_auth_forward_on_no_token
 
 from linotp.lib.policy.forward import ForwardServerPolicy
 
@@ -484,7 +485,7 @@ class ValidationHandler(object):
                     return (False, opt)
 
         # if we have an user, check if we forward the request to another server
-        if user_exists:
+        if user_exists and get_auth_forward_on_no_token(user) is False:
             servers = get_auth_forward(user)
             if servers:
                 res, opt = ForwardServerPolicy.do_request(servers, env,
@@ -574,7 +575,15 @@ class ValidationHandler(object):
                     'Authenticated by passOnNoToken policy')
                 return (True, opt)
 
-            return (False, opt)
+            # if we have an user, check if we forward the request to another server
+            elif get_auth_forward_on_no_token(user) is True:
+                servers = get_auth_forward(user)
+                if servers:
+                    res, opt = ForwardServerPolicy.do_request(
+                                            servers, env, user, passw, options)
+                    return res, opt
+
+            return False, opt
 
         if passw is None:
             raise ParameterError(u"Missing parameter:pass", id=905)
