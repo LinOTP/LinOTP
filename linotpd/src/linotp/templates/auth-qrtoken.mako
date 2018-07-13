@@ -51,11 +51,11 @@
                             </tr>
                             <tr>
                                 <td>${_('username')}</td>
-                                <td><input type='text' id='user' name="user" maxlength="200"  class="required"></td>
+                                <td><input type='text' id='user' name="user"  class="required"></td>
                             </tr>
                             <tr>
                                 <td>${_('OTP PIN')}</td>
-                                <td><input type='password' id='pin' name="pin" maxlength="200"  class="required"></td>
+                                <td><input type='password' id='pin' name="pin"  class="required"></td>
                             </tr>
                             <tr>
                                 <td>${_('message / data')}</td>
@@ -98,11 +98,11 @@
                             </tr>
                             <tr>
                                 <td>${_('Transaction-ID')}</td>
-                                <td><input type='text' id='transactionid' name="transactionid" maxlength="200"  class="required"></td>
+                                <td><input type='text' id='transactionid' name="transactionid"  class="required"></td>
                             </tr>
                             <tr>
                                 <td>${_('OTP value')}</td>
-                                <td><input type="text" autocomplete="off" name="otp" id="otp" maxlength=200 class=required></td>
+                                <td><input type="text" autocomplete="off" name="otp" id="otp" class=required></td>
                             </tr>
                             <tr>
                                 <td> </td>

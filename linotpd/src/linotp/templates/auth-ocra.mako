@@ -53,7 +53,7 @@ ${_('Enter your username, the OTP PIN and the OTP value.')}
                     <td><h2>${_('Submit a challenge:')}</h2></td>
                 </tr><tr>
                 <td>${_('username')}</td>
-                <td><input type='text' id='user' name="user" maxlength="200"  ></td>
+                <td><input type='text' id='user' name="user"  ></td>
                 </tr><tr>
                     <td>${_('challenge')}</td>
                     <td><textarea cols="40" rows="6" id='challenge' class="required"> </textarea></td>
@@ -80,10 +80,10 @@ ${_('Enter your username, the OTP PIN and the OTP value.')}
                     <td><h2>${_('Login:')}</h2></td>
                 </tr><tr>
                     <td>${_('username')}</td>
-                    <td><input type='text' id='user2' name="user" maxlength="200"  class="required"></td>
+                    <td><input type='text' id='user2' name="user"  class="required"></td>
                 </tr><tr>
                     <td>${_('OTP PIN and OTP value')}</td>
-                    <td><input type="password" autocomplete="off" name="pass" id="pass" maxlength=200 class=required></td>
+                    <td><input type="password" autocomplete="off" name="pass" id="pass" class=required></td>
                 </tr></table>
                 </frameset>
                 <input type="submit"  value="${_('login')}">

@@ -50,11 +50,11 @@ ${_("Enter your username, the OTP PIN (Password) and the OTP value.")}
                 <table>
                 <tr>
                     <td>${_("username")}</td>
-                    <td><input type='text' id='user' name="user" maxlength="200"  class="required"></td>
+                    <td><input type='text' id='user' name="user"  class="required"></td>
                 </tr>
                 <tr>
                     <td>${_("OTP PIN and OTP value")}</td>
-                    <td><input type="password" autocomplete="off" name="pass" id="pass" maxlength=200 class=required></td>
+                    <td><input type="password" autocomplete="off" name="pass" id="pass" class=required></td>
                 </tr>
                 </table>
             </frameset>

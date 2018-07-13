@@ -51,15 +51,15 @@
                             </tr>
                             <tr>
                                 <td>${_('username')}</td>
-                                <td><input type='text' id='user' name="user" maxlength="200"  class="required"></td>
+                                <td><input type='text' id='user' name="user"  class="required"></td>
                             </tr>
                             <tr>
                                 <td>${_('OTP PIN')}</td>
-                                <td><input type='password' id='pin' name="pin" maxlength="200"  class="required"></td>
+                                <td><input type='password' id='pin' name="pin"  class="required"></td>
                             </tr>
                             <tr>
                                 <td>${_('message / data')}</td>
-                                <td><textarea cols="40" rows="6" maxlength="500" id='challenge' name="data" class="required"> </textarea></td>
+                                <td><textarea cols="40" rows="6" id='challenge' name="data" class="required"> </textarea></td>
                             </tr>
                             <tr>
                                 <td> </td>
@@ -75,7 +75,7 @@
                 <table>
                     <tr>
                         <td>${_('Transaction-ID')}</td>
-                        <td><input type='text' id='transactionid' name="transactionid" maxlength="200"  class="required"></td>
+                        <td><input type='text' id='transactionid' name="transactionid"  class="required"></td>
                     </tr>
                     <tr>
                         <td><h2>${_('Check the status of your challenge:')}</h2></td>

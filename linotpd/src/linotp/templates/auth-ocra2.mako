@@ -55,10 +55,10 @@ ${_('To verify your result enter the OTP value into the form below.')}
                     <td><h2>${_('Submit a challenge:')}</h2></td>
                 </tr><tr>
                 <td>${_('username')}</td>
-                <td><input type='text' id='user' name="user" maxlength="200"  class="required"></td>
+                <td><input type='text' id='user' name="user"  class="required"></td>
                 </tr><tr>
                 <td>${_('OTP PIN')}</td>
-                <td><input type='text' id='pin' name="pass" maxlength="200"  class="required"></td>
+                <td><input type='text' id='pin' name="pass"  class="required"></td>
                 </tr><tr>
                     <td>${_('message / data')}</td>
                     <td><textarea cols="40" rows="6" id='challenge' name="data" class="required"> </textarea></td>
@@ -84,10 +84,10 @@ ${_('To verify your result enter the OTP value into the form below.')}
                     <td><h2>${_('Login:')}</h2></td>
                 </tr><tr>
                     <td>${_('username')}</td>
-                    <td><input type='text' id='user2' name="user" maxlength="200"  class="required"></td>
+                    <td><input type='text' id='user2' name="user" class="required"></td>
                 </tr><tr>
                     <td>${_('OTP PIN and OTP value')}</td>
-                    <td><input type="password" autocomplete="off" name="pass" id="pass" maxlength=200 class=required></td>
+                    <td><input type="password" autocomplete="off" name="pass" id="pass" class=required></td>
                 </tr></table>
                 </frameset>
                 <input type="submit"  value="${_('login')}">
