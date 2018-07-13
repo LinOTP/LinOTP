@@ -23,23 +23,28 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+
 '''
 * implementation of the KeyIdentity PushProvider
 '''
 
-
-import hashlib
 import logging
 import os
 import requests
-import time
+
 from urlparse import urlparse
-from functools import partial
+
+from requests.exceptions import Timeout
+from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectTimeout
+from requests.exceptions import ReadTimeout
+from requests.exceptions import TooManyRedirects
 
 from linotp.provider import provider_registry
 from linotp.provider.pushprovider import IPushProvider
 
-from linotp.lib.remote_service import RemoteServiceList
+from linotp.lib.resources import ResourceScheduler
+from linotp.lib.resources import AllResourcesUnavailable
 
 #
 # set the default connection and request timeouts
@@ -57,7 +62,6 @@ class DefaultPushProvider(IPushProvider):
     """
     Send a push notification to the default push notification proxy (PNP).
     """
-    _remote_services = {}
 
     def __init__(self):
 
@@ -66,65 +70,9 @@ class DefaultPushProvider(IPushProvider):
         self.server_cert = None
         self.proxy = None
         self.timeout = DEFAULT_TIMEOUT
-        self.remote_services = None
 
         IPushProvider.__init__(self)
 
-    @classmethod
-    def get_or_create_remote_services(cls, urls, garbage_collect_timeout=120):
-        """
-        Create a session per unique set of connections.
-
-        On each access to the list we purge entries that haven't been accesses within
-        `garbage_collect_timeout`
-
-        :parm urls: urls within the service, used to retrieve and construct
-                    a new RemoteServiceList
-        :param garbage_collect_timeout: timeout in seconds after which to
-                                        remove entries from the cache
-        """
-
-        # start by hashing all urls so we have a way to refer to a configuration
-        m = hashlib.md5()
-        for u in urls:
-            m.update(u)
-
-        h = m.hexdigest()
-
-        # get the current time once
-        now = time.time()
-
-        # cleanup the dict of existing cache entries based on the given timeout
-        for key in cls._remote_services.keys():
-            ts, _ = cls._remote_services[key]
-            if ts + garbage_collect_timeout < now:
-                del cls._remote_services[key]
-
-        # search for the entry we are looking for
-        item = cls._remote_services.get(h)
-        if not item:
-            # if no entry was found create a new session and store it within the cache
-            log.debug('Cache miss. Creating new entry for hash %s', h)
-            session = requests.Session()
-            rs = RemoteServiceList(
-                failure_threshold=2, # after two failures try next service
-                recovery_timeout=30, # after 30 seconds retry a failed service
-                # mark services a failed if a requests.ConnectionError occured
-                expected_exception=requests.ConnectionError,
-            )
-            for url in urls:
-                rs.append(partial(session.post, url))
-            item = (now, rs)
-            cls._remote_services[h] = item
-        else:
-            # update the access time to the current time if the entry already existed
-            log.debug('Cache hit. Updating timestamp of %s', h)
-            _, rs = item
-            cls._remote_services[h] = (now, rs)
-
-        # return only the actual RemoteServiceList
-        _, rs = item
-        return rs
 
     @staticmethod
     def _validate_url(url):
@@ -174,12 +122,7 @@ class DefaultPushProvider(IPushProvider):
                 self._validate_url(push_url)
                 push_server_urls = [push_url]
 
-            #
-            # retrieve of create a new session
-            # this is required to propagate failover information between multiple
-            # push notification requests
-            #
-            self.remote_services = self.get_or_create_remote_services(push_server_urls)
+            self.push_server_urls = push_server_urls
 
             #
             # for authentication on the challenge service we can use a
@@ -283,7 +226,7 @@ class DefaultPushProvider(IPushProvider):
         :return: A tuple of success and result message
         """
 
-        if not self.remote_services or len(self.remote_services) == 0:
+        if not self.push_server_urls:
             raise Exception("Missing Server Push Url configurations!")
 
         if not challenge:
@@ -347,51 +290,90 @@ class DefaultPushProvider(IPushProvider):
         if self.timeout:
             pparams['timeout'] = self.timeout
 
-        try:
-            # submitting the json body requires the correct HTTP headers
-            # with contenttype declaration:
+        # submitting the json body requires the correct HTTP headers
+        # with contenttype declaration:
 
-            headers = {
-                'Content-type': 'application/json',
-                'Accept': 'text/plain'}
+        headers = {
+            'Content-type': 'application/json',
+            'Accept': 'text/plain'}
 
-            if self.proxy:
-                pparams['proxies'] = self.proxy
+        if self.proxy:
+            pparams['proxies'] = self.proxy
 
-            #
-            # we check if the client certificate exists, which is
-            # referenced as a filename
-            #
+        #
+        # we check if the client certificate exists, which is
+        # referenced as a filename
+        #
 
-            if self.client_cert and os.path.isfile(self.client_cert):
-                pparams['cert'] = self.client_cert
+        if self.client_cert and os.path.isfile(self.client_cert):
+            pparams['cert'] = self.client_cert
 
-            server_cert = self.server_cert
-            if server_cert is not None:
-                # Session.post() doesn't like unicode values in Session.verify
-                if isinstance(server_cert, unicode):
-                    server_cert = server_cert.encode('utf-8')
+        server_cert = self.server_cert
+        if server_cert is not None:
+            # Session.post() doesn't like unicode values in Session.verify
+            if isinstance(server_cert, unicode):
+                server_cert = server_cert.encode('utf-8')
 
-                pparams['verify'] = server_cert
+            pparams['verify'] = server_cert
 
-            #
-            # Call out to our list of services
-            #
-            response = self.remote_services.call_first_available(
-                                            json=json_challenge,
-                                            headers=headers,
-                                            **pparams)
+        # ------------------------------------------------------------------ --
 
-            if not response.ok:
-                result = response.reason
-            else:
-                result = response.content
+        # schedule all resources
 
-        finally:
-            log.debug("leaving push notification provider")
+        res_scheduler = ResourceScheduler(
+                                tries=2, uri_list=self.push_server_urls)
 
-        return response.ok, result
+        # ------------------------------------------------------------------ --
 
+        # location to preserve the last exception, so we can report this if
+        # every resource access failed
+
+        last_exception = None
+
+        # ------------------------------------------------------------------ --
+
+        # iterate through all resources
+
+        for uri in res_scheduler.next():
+
+            try:
+
+                response = requests.post(
+                    uri, json=json_challenge, headers=headers, **pparams)
+
+                if not response.ok:
+                    result = response.reason
+                else:
+                    result = response.content
+
+                return response.ok, result
+
+            except (Timeout, ConnectTimeout, ReadTimeout,
+                    ConnectionError, TooManyRedirects) as exx:
+
+                log.exception('resource %r not available!', uri)
+
+                # mark the url as blocked
+
+                res_scheduler.block(uri, delay=30)
+
+                # and preserve the exception, so that we are able to raise this
+                # when no resources are available at all
+
+                last_exception = exx
+
+        # ------------------------------------------------------------------ --
+
+        # if we reach here, no resource has been availabel
+
+        log.error('non of the resources %r available!', self.push_server_urls)
+
+        if last_exception:
+            log.error("Last Exception was %r", exx)
+            raise last_exception
+
+        raise AllResourcesUnavailable('non of the resources %r available!' %
+                        self.push_server_urls)
 
 def main():
     """
@@ -470,6 +452,5 @@ if __name__ == '__main__':
     #
 
     main()
-
 
 # eof

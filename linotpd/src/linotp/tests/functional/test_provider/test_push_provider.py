@@ -27,13 +27,12 @@
 import os
 import logging
 import requests
-import datetime
 
 from mock import patch
-from freezegun import freeze_time
+
+from requests.exceptions import ConnectionError
 
 from linotp.tests import TestController
-from linotp.lib.remote_service import AllServicesUnavailable
 from linotp.provider.pushprovider.default_push_provider \
         import DefaultPushProvider
 
@@ -51,7 +50,8 @@ log = logging.getLogger(__name__)
 
 
 def generate_mocked_http_response(status=200, text=VALID_REQUEST):
-    def mocked_http_request(HttpObject, *argparams, **kwparams):
+
+    def mocked_http_request(*argparams, **kwparams):
 
         class Response:
             pass
@@ -271,51 +271,8 @@ class TestPushProviderController(TestController):
 
         return
 
-    @patch('linotp.lib.remote_service.RemoteServiceList.append', autospec=True)
-    def test_reuses_remote_service_list(self, append_mock):
-        """
-        Construct the DefaultPushProvider multiple times while keeping the
-        config the same.
-        The DefaultPushProvider should re-use the RemoteServiceList as long as
-        the remote services do not change.
-        """
 
-        with freeze_time() as frozen_dt:
-            config = dict(push_url=['https://srv1/send', 'https://srv2/send'])
-            push_prov = DefaultPushProvider()
-
-            # initiall the object should be constructed and populated
-            push_prov.loadConfig(config)
-            self.assertTrue(append_mock.called)
-            append_mock.reset_mock()
-
-            # re-using the same amount list of urls should not create a new object
-            push_prov.loadConfig(config)
-            self.assertFalse(append_mock.called)
-            append_mock.reset_mock()
-
-            # after a few minutes the cached entry should be expired and re-created
-            frozen_dt.tick(delta=datetime.timedelta(minutes=10))
-            push_prov.loadConfig(config)
-            self.assertTrue(append_mock.called)
-            append_mock.reset_mock()
-
-            # having another provider with a different set of urls should
-            # create a new object
-            config2 = dict(push_url='http://srv3/send')
-            push_prov2 = DefaultPushProvider()
-            push_prov2.loadConfig(config2)
-            self.assertTrue(append_mock.called)
-            append_mock.reset_mock()
-
-            # BUT the other object should still be cached and not recreated
-            push_prov = DefaultPushProvider()
-            push_prov.loadConfig(config)
-            self.assertFalse(append_mock.called)
-
-
-
-    @patch.object(requests.Session, 'post', generate_mocked_http_response())
+    @patch.object(requests, 'post', generate_mocked_http_response())
     def test_request(self):
         """
         do some mocking of a requests request
@@ -348,14 +305,14 @@ class TestPushProviderController(TestController):
         return
 
 
-def cond_failing_http_response(session, *args, **kwargs):
+def cond_failing_http_response(*args, **kwargs):
 
     url = args[0]
 
     assert type(url) is str
 
     if 'success' in url:
-        return generate_mocked_http_response()(session, *args, **kwargs)
+        return generate_mocked_http_response()(*args, **kwargs)
 
     raise requests.ConnectionError("this request should fail")
 
@@ -387,7 +344,7 @@ class TestPushProviderFailover(TestController):
         self.assertEquals(status, True)
         self.assertEquals(response, VALID_REQUEST)
 
-    @patch.object(requests.Session, 'post', cond_failing_http_response)
+    @patch.object(requests, 'post', cond_failing_http_response)
     def test_single_server(self):
         """
         Verify that a single server suceeds
@@ -395,15 +352,15 @@ class TestPushProviderFailover(TestController):
 
         self._test_servers(["https://success.server/push"])
 
-    @patch.object(requests.Session, 'post', cond_failing_http_response)
+    @patch.object(requests, 'post', cond_failing_http_response)
     def test_single_failing_server(self):
         """
         verify that a single faiiling server should return failure
         """
-        with self.assertRaises(AllServicesUnavailable):
+        with self.assertRaises(ConnectionError):
             self._test_servers(["https://failing.server/"])
 
-    @patch.object(requests.Session, 'post', cond_failing_http_response)
+    @patch.object(requests, 'post', cond_failing_http_response)
     def test_multiple_servers(self):
         """
         Verify that multiple servers of which one fails succeeds
