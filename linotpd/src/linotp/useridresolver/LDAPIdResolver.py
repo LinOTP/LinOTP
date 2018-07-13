@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 #
 #   LinOTP - the open source solution for two factor authentication
 #   Copyright (C) 2010 - 2018 KeyIdentity GmbH
@@ -51,6 +50,9 @@ from ldap.controls import SimplePagedResultsControl
 from linotp.lib.type_utils import encrypted_data
 from linotp.lib.type_utils import text
 from linotp.lib.type_utils import boolean
+
+from linotp.lib.resources import ResourceScheduler
+from linotp.lib.resources import string_to_list
 
 from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 from linotp.useridresolver.UserIdResolver import UserIdResolver
@@ -109,7 +111,7 @@ def _add_cacertificates_to_file(ca_file, cacertificates):
 @resolver_registry.class_entry('useridresolveree.LDAPIdResolver.IdResolver')
 @resolver_registry.class_entry('useridresolver.ldapresolver')
 @resolver_registry.class_entry('ldapresolver')
-class IdResolver (UserIdResolver):
+class IdResolver(UserIdResolver):
     '''
     LDAP User Id resolver
     '''
@@ -624,14 +626,14 @@ class IdResolver (UserIdResolver):
                           (BIND_NOT_POSSIBLE_TIMEOUT - tdelta.seconds))
                 return False
 
-        uri = ""
-        urilist = self.ldapuri.split(',')
-        i = 0
+        # iterate through the ldap uris
 
+        urilist = string_to_list(self.ldapuri)
         log.debug("[bind] trying to bind to one of the servers: %r", urilist)
-        l_obj = None
-        while i < len(urilist):
-            uri = urilist[i]
+
+        resource_scheduler = ResourceScheduler(tries=2, uri_list=urilist)
+
+        for uri in resource_scheduler.next():
             try:
                 l_obj = IdResolver.connect(uri, caller=self)
 
@@ -641,24 +643,23 @@ class IdResolver (UserIdResolver):
                 pw_encode = passwd.encode(ENCODING)
 
                 l_obj.simple_bind_s(dn_encode, pw_encode)
-                if i > 0:
-                    urilist[i] = urilist[0]
-                    urilist[0] = uri
-                    self.ldapuri = ','.join(urilist)
 
                 self.l_obj = l_obj
                 return l_obj
 
             except ldap.LDAPError as error:
+                resource_scheduler.block(uri, delay=30)
                 log.exception("[bind] LDAP error: %r", error)
-                i = i + 1
 
         # We were not able to do a successful bind! :-(
         self.bind_not_possible = True
         self.bind_not_possible_time = datetime.now()
-        self.l_obj = l_obj
 
-        return l_obj
+        self.l_obj = None
+
+        log.error('Failed to bind to any resource %r', urilist)
+
+        return None
 
     def unbind(self, lobj):
         """
@@ -1345,16 +1346,15 @@ class IdResolver (UserIdResolver):
 
         log.debug("[checkPass] DN: %r", DN)
 
-        uri = ""
-        urilist = self.ldapuri.split(',')
-
-        i = 0
+        urilist = string_to_list(self.ldapuri)
 
         log.debug("[checkPass] we will try to authenticate to these LDAP "
                   "servers: %r", urilist)
 
-        while i < len(urilist):
-            uri = urilist[i]
+        last_error = None
+        resource_scheduler = ResourceScheduler(tries=2, uri_list=urilist)
+
+        for uri in resource_scheduler.next():
             l_obj = None
             try:
                 log.info("[checkPass] check password for user %r "
@@ -1367,16 +1367,22 @@ class IdResolver (UserIdResolver):
 
             except ldap.INVALID_CREDENTIALS as error:
                 log.warning("[checkPass] invalid credentials: %r", error)
-                break
+                return False
 
             except ldap.LDAPError as error:
                 log.warning("[checkPass] checking password failed: %r", error)
+                resource_scheduler.block(uri, delay=30)
+                last_error = error
 
             finally:
                 if l_obj is not None:
                     l_obj.unbind_s()
 
-            i = i + 1
+        log.error("[checkPass] failed to connect to any resource %r", urilist)
+
+        if last_error:
+            log.error("[checkPass] access to resource failed: %r", last_error)
+
         return False
 
     def guid2str(self, guid):
