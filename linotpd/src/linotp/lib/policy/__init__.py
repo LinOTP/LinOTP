@@ -2398,6 +2398,22 @@ def get_auth_forward(user):
 
     return servers
 
+def get_auth_forward_on_no_token(user):
+    '''
+    returns True, if the user in this realm should be forwarded
+    in case the user has no tokens assigned.
+    '''
+    client = _get_client()
+
+    pol = has_client_policy(
+        client, scope="authentication", action="forward_on_no_token",
+        realm=user.realm, user=user.login, userObj=user)
+
+    if len(pol) > 0:
+        return True
+
+    return False
+
 
 def get_auth_passOnNoToken(user):
     '''

@@ -59,6 +59,8 @@ class TestForwardServer(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
+        global Rad_Serv
+        Rad_Serv = None
 
     def define_user_forward(self):
         # ------------------------------------------------------------------ --
@@ -160,6 +162,107 @@ class TestForwardServer(TestController):
         _response = self.make_validate_request(action='check', params=params)
 
         self.assertTrue('127.0.0.1' not in Rad_Serv, Rad_Serv)
+
+        return
+
+
+    @patch('linotp.lib.auth.validate.ForwardServerPolicy',
+           MockForwardServerPolicy)
+    def test_000000_server_forwarding_with_no_token(self):
+        '''
+        conditional forward request only if no user has no token
+         '''
+
+        # ------------------------------------------------------------------ --
+
+        # define forwarding policies
+
+        params = {
+            'name': 'forward_user',
+            'realm': 'mydefrealm',
+            'action': ("forward_server=radius://127.0.0.1:1812/"
+                       "?secret=geheim1, forward_on_no_token"),
+            'client': '',
+            'user': 'passthru_user1',
+            'time': '',
+            'active': True,
+            'scope': 'authentication'}
+
+        response = self.make_system_request('setPolicy', params=params)
+        self.assertTrue('false' not in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # create token for user passthru_user1
+
+        params = {
+            'type': 'pw',
+            'otpkey': 'test123!',
+            'user': 'passthru_user1',
+            'pin': 'pin',
+            'serial': 'my_pw_token'
+            }
+
+        response = self.make_admin_request('init', params=params)
+        self.assertTrue('false' not in response, response)
+
+        # ----------------------------------------------------------------- --
+
+        # check passthru_user1 - should not be forwarded to server
+
+        global Rad_Serv
+        Rad_Serv = None
+
+        params = {
+            'user': 'passthru_user1',
+            'pass': 'pintest123!'}
+
+        response = self.make_validate_request(action='check', params=params)
+        self.assertTrue('false' not in response, response)
+        self.assertTrue(Rad_Serv is None, Rad_Serv)
+
+        # ----------------------------------------------------------------- --
+
+        # remove token of passthru_user1
+
+        params = {
+            'serial': 'my_pw_token'
+            }
+        response = self.make_admin_request('disable', params=params)
+        self.assertTrue('false' not in response, response)
+
+        # ----------------------------------------------------------------- --
+
+        # passthru_user1 should now be forwarded
+
+        params = {
+            'user': 'passthru_user1',
+            'pass': 'geheim1'}
+
+        response = self.make_validate_request(action='check', params=params)
+        self.assertTrue('false' in response, response)
+        self.assertTrue(Rad_Serv is None, Rad_Serv)
+
+        # ----------------------------------------------------------------- --
+
+        # remove token of passthru_user1
+
+        params = {
+            'serial': 'my_pw_token'
+            }
+        response = self.make_admin_request('remove', params=params)
+        self.assertTrue('false' not in response, response)
+
+        # ----------------------------------------------------------------- --
+
+        # passthru_user1 should now be forwarded
+
+        params = {
+            'user': 'passthru_user1',
+            'pass': 'geheim1'}
+
+        _response = self.make_validate_request(action='check', params=params)
+        self.assertTrue('127.0.0.1' in Rad_Serv, Rad_Serv)
 
         return
 
