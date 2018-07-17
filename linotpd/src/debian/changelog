@@ -1,11 +1,9 @@
-linotp (2.10.0.8~rc1-1) jessie; urgency=low
+linotp (2.10.0.8-1) jessie; urgency=low
 
   Feature:
   * Support setting http header for e.g. authorization in rest sms provider
-  Bug Fix:
-  * Support SQL resolver with user id column type integer
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 11 Jul 2018 15:19:48 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 17 Jul 2018 13:10:26 +0200
 
 linotp (2.10.0.7-1) jessie; urgency=low
 
