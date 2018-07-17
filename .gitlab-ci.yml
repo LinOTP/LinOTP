@@ -1,0 +1,162 @@
+variables:
+  LANG: C.UTF-8
+  IMAGE_NAME: linotp-build-environment_stretch
+  BUILD_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_COMMIT_REF_NAME
+  LATEST_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:latest
+  DOCKERFY_URL: $INTERNAL_REPOSITORY/jenkins/dockerfy/dockerfy
+  DEBIAN_MIRROR: ftp.de.debian.org
+  DOCKER_DISTRO_BASE: stretch 
+  LINOTP_MIRROR: $INTERNAL_REPOSITORY/deb-repo
+  DOCKER_TAGS: 2.10.1-dev-stretch
+  MAKE_PARAMS: DOCKER_DISTRO_BASE=$DOCKER_DISTRO_BASE LINOTP_MIRROR=$LINOTP_MIRROR DOCKER_TAGS=$DOCKER_TAGS
+
+stages:
+  - unit_test
+  - functional_test
+  - docker_test
+  - prepare_environment
+  - build
+  - deploy
+  - builder
+  - debs
+
+wip_linotp_builder:
+  stage: builder
+  image: docker:latest
+  services:
+    - name: $KI_REPO/ki-dind
+  script:
+    - apk add --no-cache make
+    - make docker-build-linotp-builder $MAKE_PARAMS
+
+wip_linotp_deb_build:
+  stage: debs
+  image: linotp-builder:latest
+  variables:
+  script:
+    - rm -f build/apt/Packages
+    - make deb-install $MAKE_PARAMS
+  artifacts:
+    paths:
+    - build/apt
+    expire_in: 1 week
+
+
+wip_docker_test:
+  stage: docker_test
+  image: docker:latest 
+  when: manual
+  services:
+    - name: $KI_REPO/ki-dind
+  script:
+    - apk add --no-cache make
+    - make -d docker-functional DOCKER_DISTRO_BASE=stretch LINOTP_MIRROR=$INTERNAL_REPOSITORY/deb-repo DOCKER_TAGS=2.10.1-dev-stretch
+    - make -d docker-linotp DOCKER_DISTRO_BASE=$DOCKER_DISTRO_BASE LINOTP_MIRROR=$LINOTP_MIRROR DOCKER_TAGS=$DOCKER_TAGS
+    - make -d docker-functional DOCKER_DISTRO_BASE=$DOCKER_DISTRO_BASE LINOTP_MIRROR=$LINOTP_MIRROR DOCKER_TAGS=$DOCKER_TAGS
+
+unit-test:
+  stage: unit_test
+  when: manual
+  image: $KI_REPO/linotp-build-stretch
+  before_script:
+    - apt-get update && apt-get install --yes --no-install-recommends librrd-dev pkg-config libsystemd-dev python-pip 
+    - cd linotpd/src
+    - pip install -e .[tests]
+    - python tools/linotp-create-enckey -f test.ini
+    - python tools/linotp-create-auditkeys -f test.ini
+  script:
+    - nosetests --with-pylons=test.ini -v linotp/tests/unit/
+
+wip_functional_test:
+  stage: functional_test
+  image: $KI_REPO/linotp-build-stretch
+  when: manual
+  services:
+    - name: mysql:5
+      alias: mysql
+  variables:
+    MYSQL_DATABASE: linotp_db
+    MYSQL_ROOT_PASSWORD: linotppass
+    MYSQL_USER: linotpuser
+    MYSQL_PASSWORD: linotppass
+    MYSQL_HOST: mysql
+    NIGHTLY: "no"
+    COVERAGE_ENABLED: "no"
+  before_script:
+    - apt-get update && apt-get install --yes --no-install-recommends parallel librrd-dev pkg-config libsystemd-dev python-pip mysql-client python-mysqldb
+    - pip install -U pip
+    - pip install unittest2 nose-testconfig
+    - cd linotpd/src
+    - pip install mysql pillow freezegun
+    - pip install -e .[tests]
+  script:
+    - cp linotp/tests/functional/docker_func_cfg.ini gitlab_test.ini
+    - python tools/linotp-create-enckey -f gitlab_test.ini
+    - python tools/linotp-create-auditkeys -f gitlab_test.ini
+    - python setup.py develop
+    - bash run_gitlab_tests.sh
+
+
+test_deb_build_environment:
+  stage: prepare_environment
+  when: manual
+  image: docker:latest
+  services:
+    - name: $KI_REPO/ki-dind
+  script:
+    - docker build --rm --tag="$CI_COMMIT_SHA" -f Dockerfile-build-environment .
+    - docker rmi "$CI_COMMIT_SHA"
+
+
+deb_build_environment:
+  stage: prepare_environment
+  when: manual
+  image: docker:latest
+  services:
+    - name: $KI_REPO/ki-dind
+  script:
+    - echo "latest_code image - $LATEST_CODE_IMAGE"
+    - echo "build_code image - $BUILD_CODE_IMAGE"
+    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+    - docker build --tag="$LATEST_CODE_IMAGE" -f Dockerfile-build-environment .
+    - docker push $LATEST_CODE_IMAGE
+    # - docker push $BUILD_CODE_IMAGE
+
+
+build-debs:
+  stage: build
+  image: $KI_REPO/linotp-build-environment_stretch
+  when: manual
+  before_script:
+    - CURR_PWD=$PWD
+    - cd linotpd/src
+    - apt-get update
+    - mk-build-deps --install --remove --tool "apt-get --yes --no-install-recommends"
+    - cd $CURR_PWD
+  script:
+    - make deb-install DESTDIR=pkg/apt
+  artifacts:
+    paths:
+    - pkg/apt/
+    expire_in: 1 week
+
+
+upload-debs:
+  stage: deploy
+  when: manual
+  image: $KI_REPO/linotp-build-environment_stretch
+  dependencies:
+    - build-debs
+  before_script:
+    - 'which ssh-agent || ( apt-get update --yes && apt-get install openssh-client --yes )'
+    - eval $(ssh-agent -s)
+    - echo "$DEV_REPO_SSH_SUBMIT_KEY" | tr -d '\r' | ssh-add - >/dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "CheckHostIP no" >>~/.ssh/config
+    - echo "$DEV_REPO_KNOWN_HOSTS" >~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+
+  script:
+    - sed -i -e "s/@DEV_REPO_HOST@/$DEV_REPO_HOST/" /etc/dput.cf
+    - deb-upload-check -c kideps dput /pkg/apt/*.changes
