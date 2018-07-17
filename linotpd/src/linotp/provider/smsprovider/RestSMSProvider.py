@@ -112,6 +112,7 @@ class RestSMSProvider(ISMSProvider):
         # keys where the phone and the message is replaced within
 
         self.payload = configDict['PAYLOAD']
+        self.headers = configDict.get('HEADERS', {})
         self.sms_text_key = configDict['SMS_TEXT_KEY']
         self.sms_phone_key = configDict["SMS_PHONENUMBER_KEY"]
 
@@ -196,6 +197,9 @@ class RestSMSProvider(ISMSProvider):
         headers = {
             'Content-type': 'application/json',
             'Accept': 'application/json'}
+
+        if self.headers:
+            headers.update(self.headers)
 
         http_session = requests.Session()
 

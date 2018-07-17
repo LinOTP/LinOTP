@@ -4,13 +4,28 @@ linotp (2.10.1~0dev0-1) jessie; urgency=low
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 14 Jun 2018 18:45:22 +0200
 
+linotp (2.10.0.8-1) jessie; urgency=low
+
+  Feature:
+  * Support setting http header for e.g. authorization in rest sms provider
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 17 Jul 2018 13:10:26 +0200
+
+linotp (2.10.0.7-1) jessie; urgency=low
+
+  Feature:
+  * policy enforce_smstext to ignore request param data for sms token
+    challenge
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 22 Jun 2018 15:01:26 +0200
+
 linotp (2.10.0.6-1) jessie; urgency=low
 
   Bug Fix:
   * Let Push Token handle multiple active challenges
   * Policy: Fix index error during wildcard value list evaluation by policy
 
- --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 07 Jun 2018 11:05:54 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 07 Jun 2018 11:05:54 +0200
 
 linotp (2.10.0.5-1) jessie; urgency=low
 

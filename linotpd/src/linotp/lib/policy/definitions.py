@@ -243,6 +243,10 @@ def getPolicyDefinitions(scope=""):
                 'type': 'str',
                 'desc': 'The text that will be send via SMS for an SMS token. '
                         'Use <otp> and <serial> as parameters.'},
+            'enforce_smstext': {
+                'type': 'bool',
+                'desc': 'if swith enforce_smstext, the challenge "data" is '
+                        'ignored ignored if smstext is set'},
             'otppin': {
                 'type': 'set',
                 'value': [0, 1, 2, 3,
