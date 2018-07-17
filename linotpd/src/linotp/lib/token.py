@@ -450,11 +450,7 @@ class TokenHandler(object):
         # the upper layer will catch / at least should
             (userid, idResolver, idResolverClass) = getUserId(user)
 
-            # special case for the sqlresolver with uid column defined as int
-            if isinstance(userid, int):
-                userid = "%d" % userid
-
-        if not (userid and idResolver and idResolverClass):
+        if len(userid) + len(idResolver) + len(idResolverClass) == 0:
             raise TokenAdminError("no user found %s" % user.login, id=1104)
 
         toks = getTokens4UserOrSerial(None, serial)
@@ -478,6 +474,7 @@ class TokenHandler(object):
         '''
         returns true if the token is owned by any user
         '''
+        ret = False
 
         toks = getTokens4UserOrSerial(None, serial)
 
@@ -490,10 +487,10 @@ class TokenHandler(object):
 
         (uuserid, uidResolver, uidResolverClass) = token.getUser()
 
-        if uuserid and uidResolver and uidResolverClass:
-            return True
+        if len(uuserid) + len(uidResolver) + len(uidResolverClass) > 0:
+            ret = True
 
-        return False
+        return ret
 
     def getTokenOwner(self, serial):
         '''
@@ -1551,11 +1548,7 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                 resolverClass = resolverClass.replace('useridresolver.',
                                                       'useridresolver%.')
 
-                if isinstance(uid, int):
-                    uconditions += ((model.Token.LinOtpUserid == "%d" % uid),)
-                else:
-                    uconditions += ((model.Token.LinOtpUserid == uid),)
-
+                uconditions += ((model.Token.LinOtpUserid == uid),)
                 uconditions += ((model.Token.LinOtpIdResClass.like(resolverClass)),)
 
                 condition = and_(*uconditions)
