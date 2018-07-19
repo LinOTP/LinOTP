@@ -382,6 +382,48 @@ def _get_resolver_from_param(param):
     return resolver_config_id.strip()
 
 
+def get_user_from_options(options_dict, fallback_user=None, fallback_realm=None):
+    """
+    return a tuple of user login and realm considering the options contexts
+
+    in the token implementation we often require to make a policy lookup. As the policies
+    are user and realm dependend we require to define for whitch user or realm this lookup
+    should be made. The input can be taken from:
+    - the token owner or
+    - options, the request addtional parameters which might contain a user
+      object or a login name or
+    - the token realm, if neither user or owner is given
+
+    :param options_dict: the request options dict with the user
+    :param fallback_user: which should be set with the token owner
+    :param fallback_realm: which should be set with the token realm
+
+    :return: the tuple with user login and realm
+    """
+
+    options = options_dict or {}
+    user = fallback_user or User()
+
+    if 'user' in options and options['user']:
+
+        if isinstance(options['user'], (str, unicode)):
+            user = getUserFromParam(options)
+
+        elif isinstance(options['user'], User):
+            user = options['user']
+
+        else:
+            log.warning("unknow type of user object %r", options['user'])
+
+    realm = user.realm
+    login = user.login or ""
+
+    if not login and not user.realm:
+        realm = fallback_realm
+
+    return login, realm
+
+
 def getUserFromParam(param):
     """
     establish an user object from the request parameters
