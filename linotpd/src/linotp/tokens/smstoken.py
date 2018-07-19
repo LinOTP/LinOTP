@@ -448,10 +448,11 @@ class SmsTokenClass(HmacTokenClass):
         _ = context['translate']
 
         res = 0
-        user = None
 
         if not options:
             options = {}
+
+        user = options.get('user', None)
 
         message = options.get('challenge', "<otp>")
         result = _("sending sms failed")
@@ -476,7 +477,6 @@ class SmsTokenClass(HmacTokenClass):
                     if sms_ret:
                         message = new_message
 
-                user = options.get('user', '')
                 if user:
                     sms_ret, new_message = get_auth_smstext(realm=user.realm)
                     if sms_ret:
@@ -492,12 +492,18 @@ class SmsTokenClass(HmacTokenClass):
                     # if there is an enforce policy
                     # we do not allow the owerwrite
 
-                    enforce = enforce_smstext(
-                        user=user, realm=user.realm or realms[0] or "")
+                    if user:
+                        realm = user.realm
+                    elif realms:
+                        realm = realms[0]
+                    else:
+                        realm = ""
+
+                    enforce = enforce_smstext(user=user, realm=realm)
 
                     if not enforce:
                         message = options.get('data',
-                                          options.get('message', '<otp>'))
+                                              options.get('message', '<otp>'))
 
                 # ---------------------------------------------------------- --
 
