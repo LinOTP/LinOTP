@@ -1,3 +1,10 @@
+linotp (2.10.0.9-1) jessie; urgency=low
+
+  Bug Fix:
+  * Fix auto enrollment for SMS token via RADIUS
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 23 Jul 2018 14:49:04 +0200
+
 linotp (2.10.0.8-1) jessie; urgency=low
 
   Feature:
