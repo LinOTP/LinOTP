@@ -1,3 +1,11 @@
+linotp (2.10.0.9~rc1-1) jessie; urgency=low
+
+  Bug Fix:
+  * Policy enforce_smstext no longer causes SMS token to fail when the user is
+    undefined or unknown
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 19 Jul 2018 10:49:04 +0200
+
 linotp (2.10.0.8-1) jessie; urgency=low
 
   Feature:
