@@ -400,4 +400,78 @@ class TestRestSmsController(TestSpecialController):
 
         return
 
+    @patch('requests.Session.post', mocked_http_request)
+    def test_phone_list(self):
+        '''
+        Successful SMS sending (via smspin) and authentication
+        '''
+        sms_url = 'http://myfake.com/'
+
+        sms_conf = {
+                "URL": sms_url, 
+                "PAYLOAD": {
+                    "to": ["<phone>"],
+                    "from": "123456789",
+                    "body":"Your OTP is: <message>"
+                    },
+                "HEADERS": {
+                   "Authorization": "Bearer <APITOKEN>",
+                   "Content-Type": "application/json"
+                   },
+                "SMS_TEXT_KEY": "body",
+                "SMS_PHONENUMBER_KEY": "to"
+            }
+
+        params = {'name': 'newone',
+                  'config': json.dumps(sms_conf),
+                  'timeout': '301',
+                  'type': 'sms',
+                  'class': 'RestSMSProvider'
+                  }
+
+        response = self.make_system_request('setProvider', params=params)
+        self.assertTrue('"value": true' in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # next we have to make it the default provider
+
+        params = {'name': 'smsprovider_newone',
+                  'scope': 'authentication',
+                  'realm': '*',
+                  'action': 'sms_provider=newone',
+                  'user': '*',
+                  }
+
+        response = self.make_system_request(action='setPolicy',
+                                            params=params)
+        self.assertTrue('false' not in response, response)
+
+        parameters = {'serial': 'SMS_4_REST',
+                      'realm': 'myDefRealm',
+                      'type': 'sms',
+                      'user': 'passthru_user1',
+                      'pin': '1234',
+                      'phone': '016012345678',
+                      }
+        response = self.make_admin_request('init', params=parameters)
+
+        self.assertTrue('"value": true' in response, response)
+
+        global REQUEST_BODY
+        REQUEST_BODY = {}
+
+        params = {
+            'user': 'passthru_user1',
+            'pass': '1234'
+        }
+        response = self.make_validate_request('check', params=params)
+
+        self.assertTrue('"value": false' in response, response)
+        self.assertTrue('transactionid' in response, response)
+
+        self.assertTrue('016012345678' in REQUEST_BODY.get('to',[])[0])
+
+        return
+
 ###eof#########################################################################

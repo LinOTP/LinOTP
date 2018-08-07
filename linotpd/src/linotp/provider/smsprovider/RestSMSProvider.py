@@ -26,7 +26,6 @@
 """This is the SMSClass to send SMS via HTTP Post Rest Interface Gateways"""
 
 
-
 from linotp.provider.smsprovider import ISMSProvider
 from linotp.provider import provider_registry
 
@@ -119,6 +118,42 @@ class RestSMSProvider(ISMSProvider):
         self.client_cert = configDict.get("CLIENT_CERTIFICATE_FILE")
         self.server_cert = configDict.get("SERVER_CERTIFICATE")
 
+    @staticmethod
+    def _apply_phone_template(phone, sms_phone_template=None):
+        """
+        replace the phone number in the template
+
+        :param phone: the target phone number
+        :param sms_phone_template: string or list - template which contains
+                                   the template string <phone> which is
+                                   replaced
+        :return: the phone number replaced in the template if template is given
+        """
+
+        # if the template is a simple string, we do a simple replace
+
+        if isinstance(sms_phone_template, (str, unicode)):
+            if sms_phone_template and '<phone>' in sms_phone_template:
+                return sms_phone_template.replace('<phone>', phone)
+
+        # if the template is a list, we replace text items
+        # while others are preserved
+
+        if isinstance(sms_phone_template, list):
+
+            sms_phone = []
+            for phone_tmpl in sms_phone_template:
+                if (isinstance(phone_tmpl, (str, unicode)) and
+                        '<phone>' in phone_tmpl):
+                    sms_phone.append(phone_tmpl.replace('<phone>', phone))
+                else:
+                    sms_phone.append(phone_tmpl)
+            return sms_phone
+
+        # in any other case we do no replacement
+
+        return phone
+
     def _submitMessage(self, phone, message):
         '''
         send out a message to a phone via an http sms connector
@@ -172,11 +207,12 @@ class RestSMSProvider(ISMSProvider):
         if msisdn:
             phone = self._get_msisdn_phonenumber(phone)
 
-        sms_phone = json_body[self.sms_phone_key]
-        if sms_phone and '<phone>' in sms_phone:
-            sms_phone = sms_phone.replace('<phone>', phone)
-        else:
-            sms_phone = phone
+        # ------------------------------------------------------------------ --
+
+        # replace the phone if there is a given template for it
+
+        sms_phone = self._apply_phone_template(phone,
+                                               json_body.get(self.sms_phone_key))
 
         json_body[self.sms_phone_key] = sms_phone
 
