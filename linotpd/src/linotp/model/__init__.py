@@ -1070,7 +1070,8 @@ class Challenge(object):
 
         :return: success - boolean
         """
-        if self.session == '':
+        # Added check for the null case
+        if not(self.session) or self.session == '':
             self.session = '{}'
         session = json.loads(self.session)
         status = session.get('status', 'open')
@@ -1168,6 +1169,11 @@ challenge_mapping['ochallenge'] = challenges_table.c.challenge
 
 # new challenge column point now to the challenge member
 challenge_mapping['challenge'] = challenges_table.c.lchallenge
+
+# Added mapping for session and timestamp columns
+challenge_mapping['timestamp'] = challenges_table.c.get(timestamp_column)
+challenge_mapping['session'] = challenges_table.c.get(session_column)
+
 orm.mapper(Challenge, challenges_table, properties=challenge_mapping,)
 
 
