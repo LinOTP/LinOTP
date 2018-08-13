@@ -114,7 +114,7 @@ if isinstance(lang, list):
 
 <div id="tabs">
     <ul>
-        % if not 'hide_landing_page' in c.actions:
+        % if 'show_landing_page' in c.actions:
         <li><a href="/selfservice/landing"><span class="ui-icon ui-icon-home" title='${_("Selfservice Home")}'></span></a></li>
         % endif
 
