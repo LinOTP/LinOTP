@@ -88,6 +88,10 @@ class TestCompare(unittest.TestCase):
         res = wildcard_list_compare(value_condition, "write")
         assert res == False
 
+        value_condition = ""
+        res = wildcard_list_compare(value_condition, "write")
+        assert res == False
+
         value_condition = "* , write"
         res = wildcard_list_compare(value_condition, "write")
         assert res == True
