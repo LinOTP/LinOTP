@@ -23,6 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+
 """This file containes the dynamic sms token implementation:
               - SMSTokenClass (sms)
 
@@ -105,6 +106,9 @@ import datetime
 from linotp.lib.HMAC import HmacOtp
 
 from linotp.lib.user import getUserDetail
+from linotp.lib.user import getUserFromParam
+from linotp.lib.user import get_user_from_options
+from linotp.lib.user import User
 
 from linotp.lib.auth.validate import check_pin
 from linotp.lib.auth.validate import check_otp
@@ -448,10 +452,11 @@ class SmsTokenClass(HmacTokenClass):
         _ = context['translate']
 
         res = 0
-        user = None
 
-        if not options:
-            options = {}
+        fallback_realm = (self.getRealms() or [None])[0]
+        login, realm = get_user_from_options(options,
+                                     fallback_user=get_token_owner(self),
+                                     fallback_realm=fallback_realm)
 
         message = options.get('challenge', "<otp>")
         result = _("sending sms failed")
@@ -459,78 +464,72 @@ class SmsTokenClass(HmacTokenClass):
         # it is configurable, if sms should be triggered by a valid pin
         send_by_PIN = getFromConfig("sms.sendByPin") or True
 
-        if self.isActive() is True and send_by_PIN is True:
-            counter = self.getOtpCount()
-            log.debug("[submitChallenge] counter=%r" % counter)
+        # if the token is not active or there is no pin triggered sending, we leave
+        if not(self.isActive() is True and send_by_PIN is True):
+            return res, result
 
-            # At this point we MUST NOT bail out in case of an
-            # Gateway error, since checkPIN is successful, as the bail
-            # out would cancel the checking of the other tokens
-            try:
-                sms_ret = False
-                new_message = None
+        counter = self.getOtpCount()
+        log.debug("[submitChallenge] counter=%r" % counter)
 
-                realms = self.getRealms()
-                if realms:
-                    sms_ret, new_message = get_auth_smstext(realm=realms[0])
-                    if sms_ret:
-                        message = new_message
+        # At this point we MUST NOT bail out in case of an
+        # Gateway error, since checkPIN is successful, as the bail
+        # out would cancel the checking of the other tokens
+        try:
+            sms_ret = False
+            new_message = None
 
-                user = options.get('user', '')
-                if user:
-                    sms_ret, new_message = get_auth_smstext(realm=user.realm)
-                    if sms_ret:
-                        message = new_message
+            sms_ret, new_message = get_auth_smstext(user=login, realm=realm)
+            if sms_ret:
+                message = new_message
 
-                # ---------------------------------------------------------- --
+            # ---------------------------------------------------------- --
 
-                # if there is a data or message part in the request, it might
-                # overrule the given smstext
+            # if there is a data or message part in the request, it might
+            # overrule the given smstext
 
-                if 'data' in options or 'message' in options:
+            if 'data' in options or 'message' in options:
 
-                    # if there is an enforce policy
-                    # we do not allow the owerwrite
+                # if there is an enforce policy
+                # we do not allow the owerwrite
 
-                    enforce = enforce_smstext(
-                        user=user, realm=user.realm or realms[0] or "")
+                enforce = enforce_smstext(
+                    user=login, realm=realm)
 
-                    if not enforce:
-                        message = options.get('data',
-                                          options.get('message', '<otp>'))
+                if not enforce:
+                    message = options.get(
+                                'data', options.get('message', '<otp>'))
 
-                # ---------------------------------------------------------- --
+            # ---------------------------------------------------------- --
 
-                # fallback if no message is defined
+            # fallback if no message is defined
 
-                if not message:
-                    message = "<otp>"
+            if not message:
+                message = "<otp>"
 
-                # ---------------------------------------------------------- --
+            # ---------------------------------------------------------- --
 
-                # submit the sms message
+            # submit the sms message
 
-                transactionid = options.get('transactionid', None)
-                res, result = self.sendSMS(message=message,
-                                           transactionid=transactionid)
+            transactionid = options.get('transactionid', None)
+            res, result = self.sendSMS(message=message,
+                                       transactionid=transactionid)
 
-                self.info['info'] = "SMS sent: %r" % res
-                log.debug('SMS sent: %s', result)
+            self.info['info'] = "SMS sent: %r" % res
+            log.debug('SMS sent: %s', result)
 
-            except Exception as e:
-                # The PIN was correct, but the SMS could not be sent.
-                self.info['info'] = unicode(e)
-                info = ("The SMS could not be sent: %r" % e)
-                log.warning("[submitChallenge] %s" % info)
-                res = False
-                result = info
+            return res, result
 
-            finally:
-                # we increment the otp in any case, independend if sending
-                # of the sms was sucsessful
-                self.incOtpCounter(counter, reset=False)
+        except Exception as e:
+            # The PIN was correct, but the SMS could not be sent.
+            self.info['info'] = unicode(e)
+            info = ("The SMS could not be sent: %r" % e)
+            log.warning("[submitChallenge] %s", info)
+            return False, info
 
-        return res, result
+        finally:
+            # we increment the otp in any case, independend if sending
+            # of the sms was sucsessful
+            self.incOtpCounter(counter, reset=False)
 
     def initChallenge(self, transactionid, challenges=None, options=None):
         """
