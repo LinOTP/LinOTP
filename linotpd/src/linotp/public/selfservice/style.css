@@ -23,14 +23,11 @@
  *    Support: www.keyidentity.com
  *
  */
-/*** STYLES ***/
-a.activeToken {
-	color: black;
-	background-color:white;
-}
-a.disabledToken {
-	color: black;
+
+button.token.disabled {
+	color: #999;
 	text-decoration:line-through;
+	opacity: 1;
 }
 
 h1 {
@@ -242,18 +239,31 @@ div#tabs {
 	box-shadow: inset 0px 0px 5px 0px rgba(0,0,0,0.25);
 }
 
-#tokenDiv ul li:hover, #tokenDiv ul li:hover a {
-	background-color: #F7F7F7;
-}
-
-#tokenDiv ul li{
+#tokenDiv button{
+    background-color: inherit;
 	padding: 5px 5px 5px 10px;
-	border-bottom: 1px solid #EEE;
+	border: 0 solid #EEE;
+	border-bottom-width: 1px;
 	cursor: pointer;
+	margin: 0;
+    display: block;
+    width: 100%;
 }
 
-#tokenDiv ul li:first-child{
-	border-top: 1px solid #EEE;
+#tokenDiv li:first-child button{
+	border-top-width: 1px;
+}
+#tokenDiv button .serial {
+    font-weight: bold;
+}
+
+#tokenDiv li {
+    display: inline-block;
+    width: 100%;
+}
+
+#tokenDiv li:hover {
+	background-color: #F7F7F7;
 }
 
 #tokenDiv ul {
@@ -390,4 +400,26 @@ div#login-box a.cancel-otp {
 
 div#login-box .ui-button {
     background: whitesmoke;
+}
+
+div.empty-token-list {
+	color: #777;
+	text-align: center;
+	padding: 2em;
+}
+
+.info-box {
+    padding: 1.5em;
+    background-color:#f6a350;
+    border: 2px solid #e29548;
+    color: white;
+    -webkit-box-shadow: inset 0px 0px 5px 0px rgba(255,255,255,0.5);
+    -moz-box-shadow: inset 0px 0px 5px 0px rgba(255,255,255,0.5);
+    /* box-shadow: inset 0px 0px 5px 0px rgba(255,255,255,0.5); */
+}
+
+.info-box .info-box-icon {
+    padding 0 .5em:;
+    padding-right: .5em;
+    font-weight:bold
 }

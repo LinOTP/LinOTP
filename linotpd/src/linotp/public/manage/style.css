@@ -258,18 +258,6 @@ a.close_all {
 	padding: 0.5em;
 }
 
-/*
- * Toke stuff
- */
-a.activeToken {
-	color: black;
-	background-color:white;
-}
-a.disabledToken {
-	color: black;
-	text-decoration: line-through;
-}
-
 label.error {
 	float: none;
 	color: red;
