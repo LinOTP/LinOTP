@@ -117,17 +117,35 @@ class SelfService(object):
         self.select_tab(tabname)
         # Now wait for token field to be visible
         WebDriverWait(self.driver, 5).until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, self.selected_token_css)))
-        self.driver.find_element_by_id('tokenDiv').find_element_by_partial_link_text(
-            token).click()
+            EC.visibility_of_element_located((By.CSS_SELECTOR,
+                                              self.selected_token_css)))
+
+        # Assume, that there is any token/button in the token list
+        # on the left side.
+        WebDriverWait(self.driver, 5).until(
+            EC.presence_of_element_located((By.XPATH,
+                                            '//*[@id="tokenDiv"]/ul/li/button')))
+
+        # Here we get ALL buttons on the page. Doesn't matter, since there
+        # shouldn't be one, whoms text starts with the token serial;
+        # Except the token button we search.
+        buttons = self.driver.find_elements(By.XPATH, '//button')
+
+        for button in buttons:
+            # == 0 means here, starts with.
+            if button.text.find(token) == 0:
+                button.click()
+                break
 
         # Wait for token field value to update
         try:
             WebDriverWait(self.driver, 5).until(
-                EC.text_to_be_present_in_element_value((By.CSS_SELECTOR, self.selected_token_css), token))
+                EC.text_to_be_present_in_element_value((By.CSS_SELECTOR,
+                                                        self.selected_token_css), token))
         except TimeoutException:
             logger.error(
-                'selfservice was not able to activate tab:%s token:%s', tabname, token)
+                'selfservice was not able to activate tab:%s token:%s',
+                tabname, token)
             raise
 
     def set_pin(self, token, pin):
@@ -155,8 +173,8 @@ class SelfService(object):
         fill_form_element(driver, pin2_id, pin2)
         driver.find_element_by_id(button_id).click()
         msg = close_alert_and_get_its_text(self.driver)
-        assert msg == expected_msg, \
-            "Unexpected message - Expected:%s - Found:%s" % (expected_msg, msg)
+        assert msg == expected_msg, "Unexpected message - Expected:%s - Found:%s" % (
+            expected_msg, msg)
 
     def resync_token(self, token, otp1, otp2):
         """
@@ -170,8 +188,8 @@ class SelfService(object):
         driver.find_element_by_id("button_resync").click()
         msg = close_alert_and_get_its_text(self.driver)
         expected_msg = "Token resynced successfully"
-        assert msg == expected_msg, \
-            "Unexpected message - Expected:%s - Found:%s" % (expected_msg, msg)
+        assert msg == expected_msg, "Unexpected message - Expected:%s - Found:%s" % (
+            expected_msg, msg)
 
     def disable_token(self, token):
         """
@@ -183,8 +201,8 @@ class SelfService(object):
         driver.find_element_by_id("button_disable").click()
         msg = close_alert_and_get_its_text(self.driver)
         expected_msg = "Token disabled successfully"
-        assert msg == expected_msg, \
-            "Unexpected message - Expected:%s - Found:%s" % (expected_msg, msg)
+        assert msg == expected_msg, "Unexpected message - Expected:%s - Found:%s" % (
+            expected_msg, msg)
 
     def logout(self):
         self.driver.find_element_by_link_text("Logout").click()
