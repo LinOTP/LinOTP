@@ -114,6 +114,10 @@ if isinstance(lang, list):
 
 <div id="tabs">
     <ul>
+        % if 'show_landing_page' in c.actions:
+        <li><a href="/selfservice/landing"><span class="ui-icon ui-icon-home" title='${_("Selfservice Home")}'></span></a></li>
+        % endif
+
         % for entry in c.dynamic_actions:
             <li><a href='/selfservice/load_form?type=${entry}'>
                 <span>${c.dynamic_actions[entry] |n}</span></a></li>

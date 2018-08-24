@@ -266,6 +266,7 @@ class TestScenario01(TestCase):
             "mozart": serial_token_mozart,
             "beethoven": serial_token_beethoven
         }
+
         for user, token in user_token_dict.iteritems():
             selfservice.login(user, "Test123!", test1_realm)
             selfservice.set_pin(token, user + "newpin")

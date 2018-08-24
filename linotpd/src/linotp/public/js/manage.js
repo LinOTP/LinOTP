@@ -2138,14 +2138,14 @@ function support_view(){
 
         if ($.isEmptyObject(support_info)) {
             var info = "";
-            info += '<h2 class="contact_info">' + i18n.gettext('Professional LinOTP support and enterprise subscription') + '</h2>';
+            info += '<h2 class="contact_info center-text">' + i18n.gettext('Professional LinOTP support and enterprise subscription') + '</h2>';
             info += sprintf(i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact %s for support agreement purchase.'),
-                        '<p class="contact_info"><a href="mailto:sales@keyidentity.com">KeyIdentity GmbH</a></p>');
+                        '<p class="contact_info center-text"><a href="mailto:sales@keyidentity.com">KeyIdentity GmbH</a></p>');
             $("#dialog_support_view").html($.parseHTML(info));
 
         } else {
             var info = "";
-            info += '<h2 class="contact_info">' + i18n.gettext('Your LinOTP support subscription') + '</h2>';
+            info += '<h2 class="contact_info center-text">' + i18n.gettext('Your LinOTP support subscription') + '</h2>';
             info += "<table><tbody>";
             $.map(support_info, function(value,key){
                 if ( support_license_dict.hasOwnProperty(key) ) {

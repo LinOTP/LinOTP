@@ -2,7 +2,7 @@
 <%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
- *   Copyright (C) 2010 - 2018 KeyIdentity GmbH
+ *   Copyright (C) 2010 - 2017 KeyIdentity GmbH
  *
  *   This file is part of LinOTP server.
  *
@@ -25,25 +25,17 @@
  *    Support: www.keyidentity.com
  *
 </%doc>
-<ul>
+<h1 class="center-text">${_("Welcome to the LinOTP Selfservice Portal")}</h1>
+<br>
+<p>This portal enables you to manage your tokens according to the options available for your account.</p>
+<p>Functions are available through their own separate tab.</p>
+<p>When your selected action modifies an existing token, please select the intended token in the list on the left.</p>
+<br>
 % if c.tokenArray:
-% for tok in c.tokenArray:
-    <li>
-        <button
-                data-serial="${tok['LinOtp.TokenSerialnumber']}"
-                data-tokentype="${tok['LinOtp.TokenType']}"
-                class="token ${'active' if tok['LinOtp.Isactive'] else 'disabled'}">
-            <span class="serial">
-                ${tok['LinOtp.TokenSerialnumber']}
-            </span>
-            <br>
-            <span class="description">
-                ${tok['LinOtp.TokenDesc']}
-            </span>
-        </button>
-    </li>
-% endfor
+
 % else:
-<div class="empty-token-list">You currently have no tokens enrolled</div>
+<p class="info-box">
+  <span class="info-box-icon">➔</span>
+  To get started, you need to enroll your first token.
+</p>
 % endif
-</ul>
