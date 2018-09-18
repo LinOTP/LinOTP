@@ -165,7 +165,7 @@ def create_auth_cookie(user, client, state='authenticated', state_data=None):
     data = [user, client, expiration, state, state_data]
 
     digest = hmac.new(key, "%r" % data, digestmod=hashlib.sha256).digest()
-    auth_cookie = base64.urlsafe_b64encode(digest).decode()
+    auth_cookie = base64.urlsafe_b64encode(digest).decode().strip("=")
 
     Cookie_Cache[auth_cookie] = data
 
