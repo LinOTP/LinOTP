@@ -1,3 +1,10 @@
+linotp (2.10.0.10-1) jessie; urgency=low
+
+  Bug Fix:
+  * Fix invalid session cookie in Selfservice
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 18 Sep 2018 16:02:38 +0200
+
 linotp (2.10.0.9-1) jessie; urgency=low
 
   Bug Fix:
