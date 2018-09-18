@@ -1,3 +1,10 @@
+linotp (2.10.1~rc1-1) jessie; urgency=low
+
+  * Set new version 2.10.1~rc1-1
+  * merge TK patches from master
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 24 Aug 2018 12:51:05 +0200
+
 linotp (2.10.1~rc0-1) jessie; urgency=low
 
   * Set new version 2.10.1~rc0-1
@@ -9,6 +16,20 @@ linotp (2.10.1~0dev1-1) jessie; urgency=low
   * Set new version 2.10.1~0dev1-1
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 17 Jul 2018 15:32:43 +0200
+
+linotp (2.10.0.10-1) jessie; urgency=low
+
+  Bug Fix:
+  * Fix invalid session cookie in Selfservice
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 18 Sep 2018 16:02:38 +0200
+
+linotp (2.10.0.9-1) jessie; urgency=low
+
+  Bug Fix:
+  * Fix auto enrollment for SMS token via RADIUS
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 23 Jul 2018 14:49:04 +0200
 
 linotp (2.10.0.8-1) jessie; urgency=low
 
@@ -89,9 +110,9 @@ linotp (2.10-1) jessie; urgency=low
   * Package: Remove unused smpplib dependency (a47a932)
 
   Token changes:
-  * Introduce new token: Voice Token (65656ee2, 395dab25, 7d2124ba, 13fce4cc, 
-    341de16c, 4c852ef9, 8925905a, 548d6b9d, 3ceab2cb, 6372fb90, 606b8a7d, 
-    765c125b, ee0b53e6, 9ec1458c, 69b476c6, b6a611be, 8ae8bd4d, 16fafefd, 
+  * Introduce new token: Voice Token (65656ee2, 395dab25, 7d2124ba, 13fce4cc,
+    341de16c, 4c852ef9, 8925905a, 548d6b9d, 3ceab2cb, 6372fb90, 606b8a7d,
+    765c125b, ee0b53e6, 9ec1458c, 69b476c6, b6a611be, 8ae8bd4d, 16fafefd,
     9bb47552, b04986a0, bfdbfc0a, 8da9de22)
   * Enhance Push Token (incompatible with previous Push Token version) (1df19db)
 
@@ -104,16 +125,16 @@ linotp (2.10-1) jessie; urgency=low
     * Moved tokens to new location in src tree (8c37e1d, 952f311)
     * Support shorter lost token duration (days, hours, and minutes added)
       (b517af2)
-    * Autoassign a token if a request arrives with only username (without 
+    * Autoassign a token if a request arrives with only username (without
       password) (4f25bcb)
     * Document the otppin policy 3=ignore_pin in the policy UI (27969f0)
     * Removed IE compatibility mode from templates (09d3e5a)
-    * Take the already stored mobile number of a token owner (available from 
-      UserIdResolver) if it exists, otherwise take the number stored in the 
+    * Take the already stored mobile number of a token owner (available from
+      UserIdResolver) if it exists, otherwise take the number stored in the
       token info (a18d46c)
     * Autoassignment without password (4f25bcb)
     * OATH csv import with sha256 + sha512
-    
+
   Web UI changes:
   * Add Auth Demo pages for challenge-response and push token
       * /auth/challenge-response
@@ -126,9 +147,9 @@ linotp (2.10-1) jessie; urgency=low
   * Removed IE compatibility mode from templates (27a518f)
   * Update favicon to follow company rename (61fc468)
   * Add UI in manage and selfservice for "static password" token (7a37b52)
-  * Improved Selfservice login with MFA support (9c28919, 7ae1849, c116490, 
-    7c61edc, 4dd8956, c2eb554, ac9589b, 3d4429, 65c04c, 05ec119, 086467, 
-    e44f3be, 78f4d39) 
+  * Improved Selfservice login with MFA support (9c28919, 7ae1849, c116490,
+    7c61edc, 4dd8956, c2eb554, ac9589b, 3d4429, 65c04c, 05ec119, 086467,
+    e44f3be, 78f4d39)
 
   Other changes:
   * SMSProvider: Moved the SMSProviders to become part of linotp (b50e5629)
@@ -144,18 +165,18 @@ linotp (2.10-1) jessie; urgency=low
   * Server: Fix missing 'serial' for audit and policy check in
             selfservice.enroll (8910dd)
   * Server: Fix for loading active token modules (bf1abb)
-  * Server: On LDAP test connection always close dialog (d5f607cd)     
-  * Server: Fix encoding error that prevented Token View from being displayed 
+  * Server: On LDAP test connection always close dialog (d5f607cd)
+  * Server: Fix encoding error that prevented Token View from being displayed
             in the web interface. (75b52f)
-  * Server: Fix challenge validation to check only one request at a time. 
+  * Server: Fix challenge validation to check only one request at a time.
             Prevent (positive) double authentication with the same transaction
             ID and OTP. This used to happen when a user submitted the OTP for a
-            transaction ID more than once within a very short timeframe 
+            transaction ID more than once within a very short timeframe
             (f150d9, d676de)
   * Server: Fix for missing LDAP uft-8 conversion (1a3db9)
   * Server: Fix default hash algorithm. This  was causing issues in the YubiKey
             import (77ab04)
-  * Server: Fix wrong audit log entries where "failcounter exceeded" was 
+  * Server: Fix wrong audit log entries where "failcounter exceeded" was
             incorrectly being replaced with "no token found" (e34a96)
   * Server: Fix QRToken to use the tan length defined at enrollment (9ee93d)
   * Server: Fix password and lost token password comparison (dd93fe)
