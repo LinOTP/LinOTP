@@ -43,6 +43,7 @@ import logging
 # global registry, where all current resolver uri and
 
 GLOBAL_REGISTRY = {}
+MAX_BLOCK_COUNTER = 8  # delay = delay + delay * 2**block_counter
 
 log = logging.getLogger(__name__)
 
@@ -57,10 +58,10 @@ class AllResourcesUnavailable(Exception):
 
 def string_to_list(string_list, sep=','):
     """
-    tiny helper to create a list from a string with seperators
+    tiny helper to create a list from a string with separators
 
     :param string_list: single string which should be split into a list
-    :param sep: the item seperator
+    :param sep: the item separator
     """
     entries = []
 
@@ -113,7 +114,7 @@ class DictResourceRegistry(ResourceRegistry):
             pyfaq/what-kinds-of-global-value-mutation-are-thread-safe.htm
 
     remark:
-    we use the treadsafe dictionary method 'setdefault' which is an atomic
+    we use the tread safe dictionary method 'setdefault' which is an atomic
     version of:
 
     >>>    if key not in dict:
@@ -155,7 +156,7 @@ class DictResourceRegistry(ResourceRegistry):
 class ResourceScheduler(object):
     """
     Class to manage the list of resources (uris) in a global register, while
-    keeping track of the connectability
+    keeping track of the connect-ability
 
     example usage:
 
@@ -170,12 +171,75 @@ class ResourceScheduler(object):
     >>>
     >>>    print "all resouces unavailable!"
 
+
+    *about:blocking*
+
+    the blocking with a fixed delay could lead to the problem, that when
+    a server is offline, the server will be retried after a short delay.
+    Looking at the relevant functions next (S) and block (b) we have the
+    following event sequence with a constant delay between the retries.
+
+    ----------------------------------------------------------> timeline
+          S     S    b    S    b    S    b    S    b    S   S
+
+    * the sequence ( S -> S ) indicate that the server has been reachable
+      in the first request.
+
+    What required is, is that we remember if the previous state already has
+    been blocked - the block_indicator
+
+    ----------------------------------------------------------> timeline
+          S     S    b    S    b    S    b    S    b    S   S
+    in    0     0    0    1    0    1    0    1    0    1   0
+    out   0     0    1    0    1    0    1    0    1    0   0
+
+    as we can see, that if the next():S gets the input 1, it knows, that
+    the former request was blocked.
+
+    But this helps nothing as the next():S always resets the block status
+    to give a chance for a new request. The idea is now to just remember
+    the former state and this could as well be used to aggregate the number
+    of b->S sequences. Therefore we use a second state, the block_counter.
+    Thus we have the tuple
+             (block_indicator, block_counter)
+
+    with the following algorithm
+
+    * the func block():b
+      always only sets the block_indicator (x,n) -> (1,n)
+
+    * the func next():S  takes the block_indicator
+      - if set, and adds it to the block_counter       (1,n) -> (0, n+1)
+      - if not set, the block_counter will be reseted  (0,n) -> (0,0)
+
+    the upper sequence would have the following counters:
+
+    ----------------------------------------------------------> timeline
+          s     S    b    S    b    S    b    S    b    S   S
+    in    0,0  0,0  0,0  1,0  0,1  1,1  0,2  1,2  0,3  1,4  0,5
+    out   0,0  0,0  1,0  0,1  1,1  0,2  1,2  0,3  1,4  0,5  0,0
+
+    Now we can dynamically adjust the delay by the doubling the time
+    based on the counter: delay + delay * 2**n  assuming a delay of
+    30 seconds, this will result in a sequence of doubling delays
+
+       0 -> 30                   =   0,5 Min
+       1 -> 30 + 30 * 2^1 =   90 =   1,5 Min
+       2 -> 30 + 30 * 2^2 =  150 =   2,5 Min
+       3 -> 30 + 30 * 2^3 =  270 =   4,5 Min
+       4 -> 30 + 30 * 2^4 =  510 =   8,5 Min
+       5 -> 30 + 30 * 2^5 =  990 =  16,5 Min
+       6 -> 30 + 30 * 2^6 = 1950 =  32,5 Min
+       7 -> 30 + 30 * 2^7 = 3970 =  64,5 Min
+       8 -> 30 + 30 * 2^8 = 7710 = 128,5 Min
+
+    the max delay time should be limited to 8 which is ~2 hours
     """
 
     def __init__(self, uri_list=None, tries=1,
                  resource_registry_class=DictResourceRegistry):
         """
-        :param: uri_list - the list of unique resouces
+        :param: uri_list - the list of unique resources
         :param retry: number of retries
         """
 
@@ -193,7 +257,7 @@ class ResourceScheduler(object):
 
     def next(self):
         """
-        iterate trough all the resouces and return only those, which are
+        iterate trough all the resources and return only those, which are
         currently not blocked
 
         :yield: return the next, not blocked resource of the resource list
@@ -207,14 +271,28 @@ class ResourceScheduler(object):
 
             # check if the resouce is not blocked anymore
 
-            blocked_until = self.resource_registry.store_or_retrieve(uri, None)
+            (blocked_until,
+             block_indicator,
+             block_counter) = self.resource_registry.store_or_retrieve(
+                uri, (None, 0, 0))
+
             if not self._is_blocked(blocked_until):
 
                 # ---------------------------------------------------------- --
 
-                # if the resource is not blocked anymore we unblock its
+                # we calculate the new blocking counter from the blocking
+                # indicator
+                if block_indicator == 0:
+                    new_block_conuter = 0
 
-                self.resource_registry.store(uri, None)
+                else:
+                    new_block_conuter = min(
+                        MAX_BLOCK_COUNTER, block_indicator+block_counter)
+
+                # if the resource is not blocked anymore we unblock it with
+                # setting it to None, while remembering the blocking counter
+
+                self.resource_registry.store(uri, (None, 0, new_block_conuter))
                 log.debug('resource %r unlocked', uri)
 
                 # ---------------------------------------------------------- --
@@ -236,14 +314,25 @@ class ResourceScheduler(object):
 
         :param resource: the resource that should be blocked
         :param delay: optional - specify the delay, till a request
-                      should be retriggerd
+                      should be re-triggered
         :param immediately: should be locked immediately
         """
 
         if self._retry_complete or immediately:
 
-            block_until = datetime.utcnow() + timedelta(seconds=delay)
-            self.resource_registry.store(resource, block_until)
+            # get the former values of the resource
+            (_blocked_until,
+             block_indicator,
+             block_counter) = self.resource_registry.store_or_retrieve(
+                 resource, (None, 0, 0))
+
+            adjusted_delay = delay + delay*2**block_counter
+            block_until = datetime.utcnow() + timedelta(seconds=adjusted_delay)
+
+            log.info('blocking for %r seconds', adjusted_delay)
+
+            self.resource_registry.store(resource, (
+                block_until, block_indicator +1, block_counter))
 
             log.info('blocking resource %r till %r', resource, block_until)
 
@@ -281,7 +370,7 @@ class ResourceScheduler(object):
     @classmethod
     def _is_blocked(cls, blocked_until):
         """
-        interal helper, which check if the given blocking time
+        internal helper, which check if the given blocking time
         is expired
 
         :param blocked_until: blocking date or None

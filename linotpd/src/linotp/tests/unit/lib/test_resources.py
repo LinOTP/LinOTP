@@ -28,12 +28,17 @@ unit test for the ResourceScheduler handling, which supports circuit breaking
 """
 
 import unittest
+import datetime
 
 from freezegun import freeze_time
+
 
 from linotp.lib.resources import ResourceScheduler, string_to_list
 from linotp.lib.resources import DictResourceRegistry
 
+
+class DummyException(Exception):
+    pass
 
 class TestResourceScheduler(unittest.TestCase):
     """
@@ -136,8 +141,12 @@ class TestResourceScheduler(unittest.TestCase):
 
         # check that every uri is registered in the global registry
 
-        for _key, value in res_sched.resource_registry.registry.items():
+        for _key, val in res_sched.resource_registry.registry.items():
+            value, b_ind, b_count = val
+
             self.assertTrue(value is None)
+            self.assertTrue(b_ind == 0 )
+            self.assertTrue(b_count == 0)
 
         return
 
@@ -192,9 +201,14 @@ class TestResourceScheduler(unittest.TestCase):
 
             # verify that the blocked one is marked as blocked in the registry
 
-            for key, value in res_sched.resource_registry.registry.items():
+            for key, val in res_sched.resource_registry.registry.items():
+                value, b_ind, b_count = val
+
                 if key == the_blocked_one:
                     self.assertTrue(value is not None)
+                    self.assertTrue(b_ind == 1)
+                    self.assertTrue(b_count == 0)
+
                 else:
                     self.assertTrue(value is None)
 
@@ -217,8 +231,78 @@ class TestResourceScheduler(unittest.TestCase):
             # verify that the former blocked one is as well unblocked in the
             # registry
 
-            for _key, value in res_sched.resource_registry.registry.items():
+            for _key, val in res_sched.resource_registry.registry.items():
+                value, _b_ind, _b_count = val
                 self.assertTrue(value is None)
+
+        return
+
+
+    def test_blocking_counter(self):
+        """
+        test that if for one entry the blocking counter increments at max of 8
+
+        run a connection timeout simulation by rising an exception for a
+        special uri - we have to run many more times as the blocking url
+        is not involved in every run. Thus we count the number when it is
+        involved and terminate after 10 calls. THe max though should be t 8.
+        """
+
+        # -------------------------------------------------------------- --
+
+        # setup a local registry for the test
+
+        DictResourceRegistry.registry = {}
+
+        # -------------------------------------------------------------- --
+
+        # setup the Resource Scheduler
+
+        res_sched = ResourceScheduler(
+            tries=1, resource_registry_class=DictResourceRegistry)
+
+        res_sched.uri_list = string_to_list(
+            "bluri://1, bluri://2, bluri://3, ")
+
+        the_blocked_one = res_sched.uri_list[1]
+
+        # -------------------------------------------------------------- --
+
+        # run the loop
+
+        raise_counter = 0
+        i = 0
+
+        while raise_counter < 10:
+            i += 1
+            with freeze_time(
+                datetime.datetime.utcnow() + datetime.timedelta(minutes=i)):
+
+                try:
+                    for uri in res_sched.next():
+
+                        if uri == the_blocked_one:
+                            raise DummyException()
+
+                except DummyException:
+                    raise_counter += 1
+                    res_sched.block(the_blocked_one, 30, immediately=True)
+
+        # -------------------------------------------------------------- --
+
+        # check the result
+
+        for key, val in res_sched.resource_registry.registry.items():
+            value, b_ind, b_count = val
+            if b_ind == 1:
+                assert value is not None
+                assert key == the_blocked_one
+                assert b_count == 8
+
+            else:
+                assert value is None
+                assert b_count == 0
+                assert b_ind == 0
 
         return
 
