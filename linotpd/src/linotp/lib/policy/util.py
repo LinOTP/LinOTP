@@ -147,9 +147,7 @@ def getPolicyActionValue(policies, action, max=True,
     for _polname, pol in policies.items():
         action_key = action
         action_value = pol['action'].strip()
-        # the regex requires a trailing ','
-        if action_value[-1:] != ',':
-            action_value = action_value + ','
+
         values = parse_action_value(action_value)
 
         if subkey:
@@ -258,51 +256,66 @@ def _parse_action(action_value):
     :yield: tuple of key and value
     """
 
-    key = None
-    value = None
+    action = []
 
-    for entry in _tokenise_action(action_value):
+    for entry in _tokenise_action("%s," % action_value):
 
-        entry = entry.strip()
-
-        if not entry:
+        if entry != ',':  # in case of an ',' the key=value is completed
+            action.append(entry)
             continue
 
-        # if we have an escaped string, we remove the sourounding " or '
+        if len(action) == 1:  # boolean value
+            key = action[0].strip()
+            value = True
 
-        if entry[0] in ["'", '"']:
-            if entry[-1:] not in ["'", '"']:
-                raise Exception('non terminated string value entry %r' % entry)
-            entry = entry[1:-1]
+            if key.startswith("!"):
+                key = key[1:]
+                value = False
 
-        # in case of an ',' the key=value is completed
+        elif len(action) > 2:  # key=value pair
 
-        if entry == ',':
+            key = action[0].strip()
+            value = "".join(action[2:]).strip()
 
-            if key:
-                yield (key, value or True)
-                key = None
-                value = None
+            # if case of an escaped string, remove the sourounding " or '
+            if "'" in value or '"' in value:
+                value = _strip_quotes(value)
 
-        # we automaticaly switch from key to value by assigning entry
+        if key:
+            yield key, value
 
-        elif entry == '=':
-            continue
+        action = []
 
-        elif key is None:
-            key = entry
-
-        elif value is None:
-            value = entry
-
-            yield (key, value or True)
-            key = None
-            value = None
-
-    if key:
-        yield (key, value or True)
+    if action:
+        raise Exception('non terminated action %r' % action)
 
     return
+
+
+def _strip_quotes(value):
+    """
+    remove surrounding quotes if possible
+
+    valid: "'a = b '"
+    invalid: "'a=b' 'c=d'"
+
+    """
+    # make sure that if it starts with a quote and
+    for quote in ["'", '"']:
+
+        if (value.startswith(quote) and not value.endswith(quote) or
+            not value.startswith(quote) and value.endswith(quote)):
+
+            if quote not in value[1:-1]:
+                raise Exception(
+                    'non terminated string value entry %r' % value)
+
+    for quote in ["'", '"']:
+        if value.startswith(quote) and value.endswith(quote):
+            if quote not in value[1:-1]:
+                value = value.strip(quote)
+
+    return value
 
 def parse_action_value(action_value):
     """
@@ -313,10 +326,6 @@ def parse_action_value(action_value):
     params = {}
 
     for key, value in _parse_action(action_value):
-
-        if key.startswith('!') and value in [True, False]:
-            key = key[1:]
-            value = not value
 
         if key in params:
             raise Exception("duplicate key defintion %r" % key)

@@ -124,7 +124,7 @@ class TestParseActionValue(unittest.TestCase):
         with self.assertRaises(Exception) as exx:
             parse_action_value(', delete="12 ,  3')
 
-        msg = "non terminated string value entry"
+        msg = "non terminated action"
         assert msg in exx.exception.message
 
         with self.assertRaises(Exception) as exx:
@@ -133,12 +133,59 @@ class TestParseActionValue(unittest.TestCase):
         msg = "duplicate key defintion"
         assert msg in exx.exception.message
 
-
         with self.assertRaises(Exception) as exx:
             parse_action_value(', del=1, del = 4 ,')
 
         msg = "duplicate key defintion"
         assert msg in exx.exception.message
+
+        return
+
+
+    def test_action_values(self):
+        """
+        some test vectors
+        """
+
+        test_set = [
+
+            (" f = 'bla blub, ' ,a=c,,d=b       n,,e='b       n'", {
+                'a': 'c',
+                'd': 'b       n',
+                'e': 'b       n',
+                'f': 'bla blub, '
+                }),
+
+            ("a=ur=asdad, !b,, pp='1,0', k='abc = 1' ppp = '1 ,0'", {
+                "a": "ur=asdad",
+                "b": False,
+                "pp": '1,0',
+                "k": "'abc = 1' ppp = '1 ,0'"
+                }),
+            ("f =,", {
+                'f':''
+                }),
+
+            ("forward_server=radius://192.168.100.212:1812/?encsecr"
+                "et=f23847c20,sdasd=123",{
+                "forward_server":"radius://192.168.100.212:1812/?encsecret=f23847c20", "sdasd": "123"
+                }),
+
+            ("f=v,,", {
+                'f':'v'
+                }),
+            (", ,f =v,,", {
+                'f':'v'
+                }),
+
+            ("t,f = v,,,", {
+                't':True,
+                'f':'v'
+                })
+            ]
+
+        for val, expect in test_set:
+            assert expect == parse_action_value(val)
 
         return
 
