@@ -682,7 +682,7 @@ class OcraTokenClass(TokenClass):
                 return ret
             else:
                 err = 'No open transaction found!'
-                log.error(err)
+                log.info(err)
                 if type(options) == dict and 'transactionid' in options:
                     raise Exception(err)
                 ret = -1
@@ -996,7 +996,7 @@ class OcraTokenClass(TokenClass):
 
         if len(challenge1) == 0 or len(challenge2) == 0:
             error = "No challenges found!"
-            log.error('[OcraTokenClass:resync] %s' % (error))
+            log.info('[OcraTokenClass:resync] %s' % (error))
             raise Exception('[OcraTokenClass:resync] %s' % (error))
 
         secObj = self._get_secret_object()
@@ -1123,7 +1123,7 @@ class OcraTokenClass(TokenClass):
                 elif period == 'S':
                     delta = delta + datetime.timedelta(seconds=quantity)
         else:
-            log.warning('OcraChallengeTimeout value %r does not match timedelta'
+            log.info('OcraChallengeTimeout value %r does not match timedelta'
                         ' definition (^(\d+[DHMS])+$)' % (scopeDef))
             try:
                 scope_def = int(scopeDef)
@@ -1137,7 +1137,7 @@ class OcraTokenClass(TokenClass):
             OcraChallenge.timestamp < datetime.datetime.now() - delta)
 
         for ocraChallenge in ocraChallenges:
-            log.warning("Dropping outdated ocra challenge %r for token %r" %
+            log.info("Dropping outdated ocra challenge %r for token %r" %
                         (ocraChallenge.transid, ocraChallenge.tokenserial))
             Session.delete(ocraChallenge)
 
@@ -1160,7 +1160,7 @@ class OcraTokenClass(TokenClass):
             OcraChallenge.received_count >= maxRequests)
 
         for ocraChallenge in ocraChallenges:
-            log.warning("Dropping outdated ocra challenge %r for token %r"
+            log.info("Dropping outdated ocra challenge %r for token %r"
                         % (ocraChallenge.transid, ocraChallenge.tokenserial))
             Session.delete(ocraChallenge)
 
@@ -1204,7 +1204,7 @@ class OcraTokenClass(TokenClass):
                 serial = challenge.tokenserial
 
         if serial is None:
-            log.error('Ocra max challenge janitor: Failed to lookup result '
+            log.info('Ocra max challenge janitor: Failed to lookup result '
                       'for transid %r or serial %r' % (transId, serial))
             return
 
@@ -1217,7 +1217,7 @@ class OcraTokenClass(TokenClass):
             if len(lastIds) < ones:
                 lastIds.add(challenge.id)
             else:
-                log.warning("Dropping ocra challenge %r (transaction id %r) "
+                log.info("Dropping ocra challenge %r (transaction id %r) "
                             "for token %r", challenge.id, challenge.transid,
                             challenge.tokenserial)
                 Session.delete(challenge)
@@ -1261,7 +1261,7 @@ class OcraTokenClass(TokenClass):
             count += 1
 
         if count == 0 or count > 1:
-            log.error('%r ocraChallenge token found for this transaction %r '
+            log.info('%r ocraChallenge token found for this transaction %r '
                       % (count, transId))
 
         return ocraChallenge
