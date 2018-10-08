@@ -366,7 +366,7 @@ if isinstance(lang, list):
                             title='${_("If checked a realm dropdown box will be displayed on the selfservice portal logon page.")}'></td></tr>
 
                         <tr><td><label for=sys_forwarded_proxy> ${_("Trusted Forwarding Proxy")}: </label></td><td></td></tr>
-                        <tr><td colspan=2><input type="text" name="sys_forwarded_proxy" class="required"  id="sys_forwarded_proxy" size="35"
+                        <tr><td colspan=2><input type="text" name="sys_forwarded_proxy" id="sys_forwarded_proxy" size="35"
                                 title='${_("The ip address of the trusted forwarding proxy, which provides the REMOTE_ADDR.")}'></td></tr>
 
                     </table>
