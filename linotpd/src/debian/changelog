@@ -1,21 +1,11 @@
-linotp (2.10.1~rc1-1) jessie; urgency=low
+linotp (2.10.1rc2-1) UNRELEASED; urgency=medium
 
-  * Set new version 2.10.1~rc1-1
-  * merge TK patches from master
+  * merge TK patches from master 
+  * resource blocking (LINOTP-828)
+  * Forward Proxy un-setting (LINOTP-827)
+  * parsing policy action values (LinOTP-823)
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 24 Aug 2018 12:51:05 +0200
-
-linotp (2.10.1~rc0-1) jessie; urgency=low
-
-  * Set new version 2.10.1~rc0-1
-
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 20 Aug 2018 10:55:30 +0200
-
-linotp (2.10.1~0dev1-1) jessie; urgency=low
-
-  * Set new version 2.10.1~0dev1-1
-
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 17 Jul 2018 15:32:43 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 08 Oct 2018 11:06:56 +0200
 
 linotp (2.10.0.10-1) jessie; urgency=low
 
