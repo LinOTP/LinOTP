@@ -182,7 +182,7 @@ class IdResolver (UserIdResolver):
 
         while line:
             line = line.strip()
-            if len(line) == 0:
+            if len(line) == 0 or line.startswith('#'):
                 line = fileHandle.readline()
                 continue
 
