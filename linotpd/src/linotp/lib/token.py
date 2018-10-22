@@ -211,7 +211,7 @@ class TokenHandler(object):
         # check if autoenrollt is configured
         auto = False
         try:
-            auto, token_type = linotp.lib.policy.get_auto_enrollment(user)
+            auto, token_types = linotp.lib.policy.get_auto_enrollment(user)
         except Exception as exx:
             log.exception("%r", exx)
             raise Exception("[auto_enrollToken] %r" % exx)
@@ -226,36 +226,64 @@ class TokenHandler(object):
 
         # enroll token for user
         desc = 'auto enrolled for %s@%s' % (user.login, user.realm)
-        token_init = {'genkey': 1, "type": token_type,
-                      'description': desc[:80]}
+        token_init = {'genkey': 1, 'description': desc[:80]}
 
-        # for sms get phone number of user
-        if token_type == 'sms':
-            mobile = u_info.get('mobile', None)
+        email = u_info.get('email', None)
+        mobile = u_info.get('mobile', None)
+
+        # check if token type is in defined set of types
+        if not token_types:
+            msg = ('auto_enrollment for user %s failed: unknown token type %r'
+                   % (user, token_types))
+            log.warning(msg)
+            return False, {'error': msg}
+
+        if not email and not mobile:
+            msg = ('auto_enrollment for user %s failed: '
+                   'missing sms or email!' % user)
+            log.warning(msg)
+            return False, {'error': msg}
+
+        # for sms token we require a valid phone number of the user
+        if token_types == ['sms']:
             if not mobile:
                 msg = ('auto_enrollment for user %s failed: missing '
                        'mobile number!' % user)
                 log.warning(msg)
                 return False, {'error': msg}
 
+            token_init['type'] = 'sms'
             token_init['phone'] = mobile
 
-        # for email get email address
-        elif token_type == 'email':
-            email = u_info.get('email', None)
+        # for email token we require a valid email address of the user
+        elif token_types == ['email']:
             if not email:
                 msg = ('auto_enrollment for user %s failed: missing email!'
-                            % user)
+                       % user)
                 log.warning(msg)
                 return False, {'error': msg}
+
+            token_init['type'] = 'email'
             token_init['email_address'] = email
 
-        # else: token type undefined
-        else:
-            msg = ('auto_enrollment for user %s failed: unknown token type %r'
-                        % (user, token_type))
-            log.warning(msg)
-            return False, {'error': msg}
+        # if email or sms, at least one of email or sms is required
+        elif token_types == ['email', 'sms']:
+            if email:
+                token_init['type'] = 'email'
+                token_init['email_address'] = email
+            else:
+                token_init['type'] = 'sms'
+                token_init['phone'] = mobile
+
+        # if sms or email, at least one of sms or email is required
+        elif token_types == ['sms', 'email'] or token_types == ['*']:
+            if mobile:
+                token_init['type'] = 'sms'
+                token_init['phone'] = mobile
+            else:
+                token_init['type'] = 'email'
+                token_init['email_address'] = email
+
 
         authUser = get_authenticated_user(user.login, user.realm, passw)
         if authUser is None:

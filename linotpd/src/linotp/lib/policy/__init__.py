@@ -1858,16 +1858,22 @@ def get_auto_enrollment(user):
     pol = has_client_policy(client, scope='enrollment',
                             realm=user.realm, user=user.login, userObj=user)
 
-    if len(pol) > 0:
-        t_typ = getPolicyActionValue(pol, "autoenrollment", is_string=True)
+    if len(pol) == 0:
+        return False, ''
 
-        log.debug("got the token type = %s", t_typ)
+    t_typ = getPolicyActionValue(pol, "autoenrollment", is_string=True)
 
-        if type(t_typ) in [str, unicode] and t_typ.lower() in ['sms', 'email']:
-            ret = True
-            token_typ = t_typ.lower()
+    if type(t_typ) not in [str, unicode]:
+        log.info("unsupported token type for auto enrollment %r", t_typ)
+        return False, ''
 
-    return ret, token_typ
+    token_types = [x.strip() for x in t_typ.lower().split()]
+
+    if not set(token_types).issubset(set(['sms', 'email', '*'])):
+        log.info("unsupported token type for auto enrollment %r", t_typ)
+        return False, ''
+
+    return True, token_types
 
 
 def autoassignment_forward(user):
