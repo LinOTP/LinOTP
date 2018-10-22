@@ -146,7 +146,7 @@ class TestImportUser(TestController):
         self.assertTrue('"updated": {}' in response, response)
         jresp = json.loads(response.body)
         created = jresp.get('result', {}).get('value', {}).get('created', {})
-        self.assertTrue(len(created) == 25, response)
+        self.assertTrue(len(created) == 27, response)
 
         csv_data = content.split('\n')[4:]
         content = '\n'.join(csv_data)
@@ -161,7 +161,7 @@ class TestImportUser(TestController):
         self.assertTrue(len(deleted) == 4, response)
 
         updated = jresp.get('result', {}).get('value', {}).get('updated', {})
-        self.assertTrue(len(updated) == 21, response)
+        self.assertTrue(len(updated) == 23, response)
 
         self.assertTrue('"created": {}' in response, response)
 
@@ -193,7 +193,7 @@ class TestImportUser(TestController):
 
         jresp = json.loads(response.body)
         created = jresp.get('result', {}).get('value', {}).get('created', {})
-        self.assertTrue(len(created) == 25, response)
+        self.assertTrue(len(created) == 27, response)
 
         upload_files = [("file", "user_list", content)]
         params = {'resolver': self.resolver_name,
@@ -211,7 +211,7 @@ class TestImportUser(TestController):
 
         jresp = json.loads(response.body)
         created = jresp.get('result', {}).get('value', {}).get('created', {})
-        self.assertTrue(len(created) == 25, response)
+        self.assertTrue(len(created) == 27, response)
 
         # make sure that no resolver has been created on dryrun
 

@@ -376,7 +376,7 @@ class TestMonitoringController(TestController):
         mymixrealm = resp.get('result').get('value').get('Realms').get(
             'mymixrealm')
         self.assertEqual(mymixrealm.get('myOtherRes'), 8, response)
-        self.assertEqual(mymixrealm.get('myDefRes'), 25, response)
+        self.assertEqual(mymixrealm.get('myDefRes'), 27, response)
 
     def test_userinfo_policy(self):
         # set policy:
@@ -397,7 +397,7 @@ class TestMonitoringController(TestController):
         mymixrealm = resp.get('result').get('value').get('Realms').get(
             'mymixrealm')
         self.assertEqual(mymixrealm.get('myOtherRes'), 8, response)
-        self.assertEqual(mymixrealm.get('myDefRes'), 25, response)
+        self.assertEqual(mymixrealm.get('myDefRes'), 27, response)
 
     def test_active_users(self):
         # mydefrealm = mydefresolver

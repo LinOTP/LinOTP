@@ -23,3 +23,5 @@ shakespeare:$6$QempxPrcLppmUING$w33iUzQHnQM9kCg9oW7PY2OpWQvHAG4I3GRgEaYbQrWSwuMu
 lorca:$6$MlG3hFoLDBVJAMDz$ZPDGAJGY4QSaJYl4hCA11O1bWlYuciJuh2L5ta6gFsUQD25EXPUHdFXlxb1NTa8qTxA4eWdYyseOwahZdMWB4/:8862:8862:Federico García Lorca,Password is lorca1,+49 0 123458,+49 0 55667790,lorca@example.com::
 aἰσχύλος:$6$UcLcRasNJYGYCxMY$KQ93rXcEKMXS7ZBYwz..CtzYWdSqn9/zvCINXSrKZXIKhNnJfUHn3tAP39V49hL2RI3gYi.xEsGg0cTEZDiRk1:8863:8863:Αἰσχύλος,Password is Πέρσαι,+49 0 123459,+49 0 55667791,aischylos@example.com::
 beckett:$6$cSVhdG4ulVxnK/HH$nTVHIt4NnLoA4VcIfPb5EVrxeoXW8sahz3eCYe6DCHn5XK7zeV4LFdruw221MJ0pKhY2nfUJjUuGJPTSvEjvJ.:8864:8864:Samuel Beckett,Password is beckett1,+49 0 123460,+49 0 55667792,beckett@example.com::
+email_only:JT7bTACk0ud6U:8888:8861:Emil Shakespeare,Password is shakespeare1,,,shakespeare@example.com::
+mobile_only:JT7bTACk0ud6U:8889:8862:Mobi Shakespeare,Password is shakespeare1,+49 0 123457,+49 0 55667789,::
