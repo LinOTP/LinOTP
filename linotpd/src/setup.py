@@ -84,6 +84,7 @@ setup(
         "requests",
         "pysodium>=0.6.8",
         "python-ldap",
+        "passlib",
         # We also need M2Crypto. But this package is so problematic on many
         # distributions, that we do not require it here!
     ],

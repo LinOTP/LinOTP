@@ -25,6 +25,7 @@ Depends: apache2,
          python-pysodium,
          python-requests,
          python-httplib2,
+         python-passlib,
          ${misc:Depends},
          ${python:Depends}
 Pre-Depends: adduser,
