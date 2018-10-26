@@ -332,11 +332,30 @@ class User(object):
         return res
 
     def __ne__(self, other):
-        """ support for: user1 != user2 """
-        if self.login != other.login:
-            return True
+        """
+        operator to support user comparison: user1 != user2
+
+        a user is the same if he has the same uid and the same realm or
+        resolver - in case the user is a virtual one like manage admin, we
+        only can rely on the login name
+
+        """
+
+        if not self.exists() or not other.exists():
+            if self.login != other.login:
+                return True
+
+        else:
+
+            self_info = self.getUserInfo()
+            other_info = other.getUserInfo()
+
+            if self_info['userid'] != other_info['userid']:
+                return True
+
         if self.realm:
             return self.realm != other.realm
+
         if self.resolverConf and self.resolverConf != other.resolverConf:
             return True
         return False
