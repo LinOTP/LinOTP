@@ -785,6 +785,8 @@ class TestPushToken(TestController):
         self.assertTrue(transaction['accept'], response)
         self.assertTrue(transaction['valid_tan'], response)
 
+        self.assertTrue('KIPT' in transaction['token']['serial'], response)
+
         return
 
 # -------------------------------------------------------------------------- --
