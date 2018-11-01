@@ -137,7 +137,10 @@ def run_data_model_migration(meta, target_version=None):
     hook for database schema upgrade
     """
 
-    if target_version and target_version == "2.9.1.0":
+    if not target_version:
+        return
+
+    if target_version == "2.9.1.0":
         try:
 
             # add new bigger sized challenge column
@@ -162,5 +165,32 @@ def run_data_model_migration(meta, target_version=None):
         except Exception as exx:
             log.exception('Failed to upgrade database! %r', exx)
             raise exx
+
+
+    elif target_version == "2.10.1.0":
+        try:
+
+            # add new bigger sized challenge column
+            bchallenges = sa.Column('bchallenge', sa.types.Binary())
+
+            if not has_column(meta, 'challenges', bchallenges):
+                add_column(meta.engine, 'challenges', bchallenges)
+
+           # add new bigger sized challenge column
+            bdata = sa.Column('bdata', sa.types.Binary())
+
+            if not has_column(meta, 'challenges', bdata):
+                add_column(meta.engine, 'challenges', bdata)
+
+        except ProgrammingError as exx:
+            log.exception('Failed to upgrade database! %r', exx)
+
+        except OperationalError as exx:
+            log.exception('Failed to upgrade database! %r', exx)
+
+        except Exception as exx:
+            log.exception('Failed to upgrade database! %r', exx)
+            raise exx
+
 
     return
