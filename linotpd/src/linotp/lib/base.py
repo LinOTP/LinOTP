@@ -418,7 +418,7 @@ def setup_app(conf, conf_global=None, unitTest=False):
     if current_data_model_version != sql_data_model_version:
         run_data_model_migration(meta, target_version=sql_data_model_version)
         set_config('sql_data_model_version',
-                   sql_data_model_version, typ='text')
+                   sql_data_model_version, typ='text', update=True)
 
     #
     # create the secret key file if it does not exist
