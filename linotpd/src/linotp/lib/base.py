@@ -145,14 +145,14 @@ def get_config(key):
     get an intial config entry, if it does not exist return None
 
     :param key: the key
-    :return: entry or None
+    :return: entry.Value or None
     '''
 
-    entries = Session.query(linotp.model.Config).filter(
-                          linotp.model.Config.Key == "linotp." + key).all()
+    entry = Session.query(linotp.model.Config).filter(
+                          linotp.model.Config.Key == "linotp." + key).first()
 
-    if entries:
-        return entries[0]
+    if entry:
+        return entry.Value
 
     return None
 
