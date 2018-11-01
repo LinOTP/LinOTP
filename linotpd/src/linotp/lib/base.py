@@ -399,7 +399,7 @@ def setup_app(conf, conf_global=None, unitTest=False):
     #
 
     # define the most recent target version
-    sql_data_model_version = "2.9.1.0"
+    sql_data_model_version = "2.10.1.0"
 
     # get the actual version - should be None or should be the same
     # if migration is finished

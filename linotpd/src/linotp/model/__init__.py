@@ -831,10 +831,14 @@ challenges_table = sa.Table('challenges', meta.metadata,
                                       index=True),
                             sa.Column('data',
                                       sa.types.Unicode(512), default=u''),
+                            sa.Column('bdata',
+                                      sa.types.Binary(), default=None),
                             sa.Column('challenge',
                                       sa.types.Unicode(512), default=u''),
                             sa.Column('lchallenge',
                                       sa.types.Unicode(2000), default=u''),
+                            sa.Column('bchallenge',
+                                      sa.types.Binary, default=None),
                             sa.Column(session_column,
                                       sa.types.Unicode(512), default=u''),
                             sa.Column('tokenserial',
@@ -868,15 +872,22 @@ class Challenge(object):
 
         self.ptransid = u''
 
-        #
-        # for migration of the challenge column to a new format
-        # we require a new target for the old challenge in the orm mapping
+        # adjust challenge to be binary compatible
 
-        self.challenge = u'' + challenge
+        if isinstance(challenge, (str, unicode)):
+            challenge = challenge.encode('utf-8')
+        self.challenge = challenge
+
         self.ochallenge = ''
 
         self.tokenserial = u'' + tokenserial
-        self.data = u'' + data
+
+        # adjust data to be binary compatible
+
+        if isinstance(data, (str, unicode)):
+            data = data.encode('utf-8')
+        self.data = data
+
         self.timestamp = datetime.now()
         self.session = u'' + session
         self.received_count = 0
@@ -925,16 +936,19 @@ class Challenge(object):
 
     def setData(self, data):
         if type(data) in [dict, list]:
-            self.data = json.dumps(data)
+            save_data = json.dumps(data)
         else:
-            self.data = unicode(data)
+            save_data = data
+
+        self.data = save_data.encode('utf-8')
 
     def getData(self):
         data = {}
+        saved_data = self.data.decode('utf-8')
         try:
-            data = json.loads(self.data)
+            data = json.loads(saved_data)
         except:
-            data = self.data
+            data = saved_data
         return data
 
     def get(self, key=None, fallback=None, save=False):
@@ -1032,7 +1046,10 @@ class Challenge(object):
         return result
 
     def setChallenge(self, challenge):
-        self.challenge = unicode(challenge)
+        self.challenge = challenge.encode('utf8')
+
+    def getChallenge(self):
+        return self.challenge.decode('utf8')
 
     def setTanStatus(self, received=False, valid=False, increment=True):
         self.received_tan = received
@@ -1090,9 +1107,6 @@ class Challenge(object):
     def getTanCount(self):
         return self.received_count
 
-    def getChallenge(self):
-        return self.challenge
-
     def getTransactionId(self):
         return self.transid
 
@@ -1111,7 +1125,7 @@ class Challenge(object):
             Session.flush()
 
         except Exception as exce:
-            log.exception('[save]Error during saving challenge: %r' % exce)
+            log.exception('[save]Error during saving challenge')
 
         return self.transid
 
@@ -1163,11 +1177,15 @@ class Challenge(object):
 challenge_mapping = {}
 challenge_mapping['ptransid'] = challenges_table.c.ptransid
 
-# old challenge column maps to ochallenge member
-challenge_mapping['ochallenge'] = challenges_table.c.challenge
+# old challenge / data column maps to ochallenge / odata member
+challenge_mapping['oochallenge'] = challenges_table.c.challenge
+challenge_mapping['ochallenge'] = challenges_table.c.lchallenge
+challenge_mapping['odata'] = challenges_table.c.data
 
-# new challenge column point now to the challenge member
-challenge_mapping['challenge'] = challenges_table.c.lchallenge
+# new challenge / data column point now to the bchallenge / bdata member
+challenge_mapping['challenge'] = challenges_table.c.bchallenge
+challenge_mapping['data'] = challenges_table.c.bdata
+
 orm.mapper(Challenge, challenges_table, properties=challenge_mapping,)
 
 
