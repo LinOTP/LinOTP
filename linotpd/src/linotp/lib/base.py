@@ -89,7 +89,7 @@ Audit = config.get('audit')
 accept_language_regexp = re.compile(r'\s*([^\s;,]+)\s*[;\s*q=[0-9.]*]?\s*,?')
 
 
-def set_config(key, value, typ, description=None):
+def set_config(key, value, typ, description=None, update=False):
     '''
     create an intial config entry, if it does not exist
 
@@ -106,6 +106,35 @@ def set_config(key, value, typ, description=None):
     if count == 0:
         config_entry = linotp.model.Config(key, value,
                                            Type=typ, Description=description)
+        Session.add(config_entry)
+
+    elif update:
+        config_entry = Session.query(linotp.model.Config).filter(
+                    linotp.model.Config.Key == "linotp." + key).first()
+
+        if not key.startswith('linotp.'):
+            key = u'linotp.' + key
+
+        if isinstance(key, str):
+            key = key.encode()
+
+        config_entry.Key = key
+
+        if isinstance(value, str):
+            value = value.encode()
+
+        config_entry.Value = value
+
+        if isinstance(typ, str):
+            typ = typ.encode()
+
+        config_entry.Type = typ
+
+        if isinstance(description, str):
+            description = description.encode()
+
+        config_entry.Description = description
+
         Session.add(config_entry)
 
     return
