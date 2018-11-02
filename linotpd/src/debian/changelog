@@ -1,14 +1,24 @@
+linotp (2.10.1.1-1) jessie; urgency=low
+
+  Bug Fixes:
+  * Server: validate/check_status query with user parameter now returns token serial
+  * Server: Use userid instead of user name to identify open challenges.
+            This mitigates the usage of capitals in user names with Active Directory
+            as UserIdResolver backend.
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 02 Nov 2018 10:26:17 +0100
+
 linotp (2.10.1-1) jessie; urgency=low
 
   Enhancements:
   * Server: LDAPUserIdResolver failover:
-            stay with working LDAP-Servers for an incrementing time 
+            stay with working LDAP-Servers for an incrementing time
             before retrying the first server
   * Server: Add charset/collate clauses to database generation commands:
             ensures compatibility with recent versions of MariaDB
-  * Server: New policy 'forward_on_no_token' to forward request 
+  * Server: New policy 'forward_on_no_token' to forward request
             to server if user has no token
-  * Server: Allow configuration of the challenge prompt via 
+  * Server: Allow configuration of the challenge prompt via
             system/setConfig?SMS_CHALLENGE_PROMPT=MESSAGE
   * Server: New policy 'enforce_smstext' to ignore request param data
   * Server: Support to configure HTTP headers in Rest SMS Provider
@@ -22,7 +32,7 @@ linotp (2.10.1-1) jessie; urgency=low
 
   Bug Fixes:
   * Server: Fix LDAPUserIdResolver failover
-  * Server: Fix RADIUS Forward Token 
+  * Server: Fix RADIUS Forward Token
   * Server: Search token list with userPrincipalName
   * Server: String 'ignore_pin' instead of '3' is now correctly processed
             for 'otppin' policy action
@@ -31,7 +41,7 @@ linotp (2.10.1-1) jessie; urgency=low
   * Server: Fix backend for setExpiration UI dialog which failed in some cases
   * Server: Provide error message if the setup of a license fails
   * Server: Set default time zone to make time-based tokens work in all setups
-  * Server: Support for SQLUserIdResolvers where the user id is defined as int. 
+  * Server: Support for SQLUserIdResolvers where the user id is defined as int.
             This fixes actions in the selfservice portal.
   * Web UI: Default for splitAtSign is now correctly displayed in the UI
 
