@@ -38,6 +38,9 @@ import os
 import re
 import logging
 
+from passlib.hash import (
+    md5_crypt, sha1_crypt, sha256_crypt, sha512_crypt, des_crypt)
+
 from . import resolver_registry
 
 from UserIdResolver import UserIdResolver
@@ -182,7 +185,8 @@ class IdResolver (UserIdResolver):
 
         while line:
             line = line.strip()
-            if len(line) == 0:
+            if len(line) == 0 or line.startswith('#'):
+                line = fileHandle.readline()
                 continue
 
             line = str2unicode(line)
@@ -231,7 +235,6 @@ class IdResolver (UserIdResolver):
         We do not support shadow passwords at the moment. so the seconds column
         of the passwd file needs to contain the crypted password
         """
-        import crypt
 
         if type(password) is unicode:
             log.debug("Password is a unicode string. Encoding to UTF-8 for \
@@ -241,25 +244,54 @@ class IdResolver (UserIdResolver):
         cryptedpasswd = self.passDict[uid]
         log.debug("[checkPass] We found the crypted pass %s for uid %s"
                                                     % (cryptedpasswd, uid))
-        if cryptedpasswd:
-            if cryptedpasswd == 'x' or cryptedpasswd == '*':
-                err = "Sorry, currently no support for shadow passwords"
-                log.error("[checkPass] %s " % err)
-                raise NotImplementedError(err)
-            cp = crypt.crypt(password, cryptedpasswd)
-            log.debug("[checkPass] crypted pass is %s" % cp)
-            if crypt.crypt(password, cryptedpasswd) == cryptedpasswd:
-                log.info("[checkPass] successfully authenticated user uid %s"
-                                                                        % uid)
-                return True
-            else:
-                log.warning("[checkPass] user uid %s failed to authenticate"
-                                                                        % uid)
-                return False
-        else:
+        if not cryptedpasswd:
             log.warning("[checkPass] Failed to verify password. "
                                         "No crypted password found in file")
             return False
+
+        if cryptedpasswd == 'x' or cryptedpasswd == '*':
+            err = "Sorry, currently no support for shadow passwords"
+            log.error("[checkPass] %s " % err)
+            raise NotImplementedError(err)
+
+        if self._verify_password(password, cryptedpasswd):
+            log.info("[checkPass] successfully authenticated user uid %s"
+                     % uid)
+            return True
+        else:
+            log.warning("[checkPass] user uid %s failed to authenticate"
+                        % uid)
+            return False
+
+
+    @staticmethod
+    def _verify_password(password, hashed_password):
+        '''
+        _verify_password - checks the given password against the stored hash.
+
+        check the Modular Crypt Format (MCF):
+
+        $<id>[$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
+
+        s. https://en.wikipedia.org/wiki/Crypt_%28C%29
+
+        :param password: the plain text password
+        :param hashed_password: the hashed password
+        :return :  true in case of success, false if password does not match
+
+        '''
+        # ------------------------------------------------------------------ --
+
+        crypt_methods = [
+            md5_crypt, des_crypt, sha1_crypt, sha256_crypt, sha512_crypt]
+
+        for crypt_method in crypt_methods:
+            if (hasattr(crypt_method, "identify") and
+                    crypt_method.identify(hashed_password)):
+                return crypt_method.verify(password, hashed_password)
+
+        return False  # pragma: no cover
+
 
     def getUserInfo(self, userId, no_passwd=False):
         """
