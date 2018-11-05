@@ -89,7 +89,7 @@ Audit = config.get('audit')
 accept_language_regexp = re.compile(r'\s*([^\s;,]+)\s*[;\s*q=[0-9.]*]?\s*,?')
 
 
-def set_config(key, value, typ, description=None):
+def set_config(key, value, typ, description=None, update=False):
     '''
     create an intial config entry, if it does not exist
 
@@ -108,6 +108,35 @@ def set_config(key, value, typ, description=None):
                                            Type=typ, Description=description)
         Session.add(config_entry)
 
+    elif update:
+        config_entry = Session.query(linotp.model.Config).filter(
+                    linotp.model.Config.Key == "linotp." + key).first()
+
+        if not key.startswith('linotp.'):
+            key = u'linotp.' + key
+
+        if isinstance(key, str):
+            key = key.encode()
+
+        config_entry.Key = key
+
+        if isinstance(value, str):
+            value = value.encode()
+
+        config_entry.Value = value
+
+        if isinstance(typ, str):
+            typ = typ.encode()
+
+        config_entry.Type = typ
+
+        if isinstance(description, str):
+            description = description.encode()
+
+        config_entry.Description = description
+
+        Session.add(config_entry)
+
     return
 
 
@@ -116,14 +145,14 @@ def get_config(key):
     get an intial config entry, if it does not exist return None
 
     :param key: the key
-    :return: entry or None
+    :return: entry.Value or None
     '''
 
-    entries = Session.query(linotp.model.Config).filter(
-                          linotp.model.Config.Key == "linotp." + key).all()
+    entry = Session.query(linotp.model.Config).filter(
+                          linotp.model.Config.Key == "linotp." + key).first()
 
-    if entries:
-        return entries[0]
+    if entry:
+        return entry.Value
 
     return None
 
@@ -370,7 +399,7 @@ def setup_app(conf, conf_global=None, unitTest=False):
     #
 
     # define the most recent target version
-    sql_data_model_version = "2.9.1.0"
+    sql_data_model_version = "2.10.1.0"
 
     # get the actual version - should be None or should be the same
     # if migration is finished
@@ -389,7 +418,7 @@ def setup_app(conf, conf_global=None, unitTest=False):
     if current_data_model_version != sql_data_model_version:
         run_data_model_migration(meta, target_version=sql_data_model_version)
         set_config('sql_data_model_version',
-                   sql_data_model_version, typ='text')
+                   sql_data_model_version, typ='text', update=True)
 
     #
     # create the secret key file if it does not exist
