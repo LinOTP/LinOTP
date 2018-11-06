@@ -286,9 +286,10 @@ class ValidationHandler(object):
             if opt:
                 reply.update(opt)
 
+            reply['value'] = ok
             reply['token_type'] = token.getType()
             reply['failcount'] = token.getFailCount()
-            reply['value'] = ok
+            reply['serial'] = token.getSerial()
 
             if ok:
                 break
