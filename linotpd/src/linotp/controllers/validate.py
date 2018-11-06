@@ -581,6 +581,12 @@ class ValidateController(BaseController):
 
             # finish the result
 
+            if 'serial' in _opt:
+                c.audit['serial'] = _opt['serial']
+
+            if 'token_type' in _opt:
+                c.audit['token_type'] = _opt['token_type']
+
             c.audit['info'] = 'accept transaction: %r' % ok
 
             c.audit['success'] = ok
@@ -641,6 +647,12 @@ class ValidateController(BaseController):
             # -------------------------------------------------------------- --
 
             # finish the result
+
+            if 'serial' in _opt:
+                c.audit['serial'] = _opt['serial']
+
+            if 'token_type' in _opt:
+                c.audit['token_type'] = _opt['token_type']
 
             c.audit['info'] = 'reject transaction: %r' % ok
 
@@ -953,6 +965,7 @@ class ValidateController(BaseController):
 
             token.pair(pairing_data)
             c.audit['success'] = 1
+            c.audit['serial'] = token.getSerial()
 
             Session.commit()
             return sendResult(response, False)
