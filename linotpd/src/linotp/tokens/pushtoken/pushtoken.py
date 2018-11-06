@@ -355,7 +355,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         else:
 
-            content_type_as_str = options.get('content_type')
+            content_type_as_str = options.get(
+                'content_type', CONTENT_TYPE_SIGNREQ)
 
             try:
 
