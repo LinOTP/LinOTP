@@ -242,16 +242,26 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         gda = pairing_data.gda
 
         valid_states = ['unpaired',
-                        'active']
+                        'active',
+
+                        # we support re enroll by rescan
+                        # as long as the token is not active
+                        'pairing_response_received',
+                        'pairing_challenge_sent']
 
         self.ensure_state_is_in(valid_states)
 
         # ------------------------------------------------------------------- --
 
-        if self.current_state == 'unpaired':
+        if self.current_state in ['pairing_challenge_sent',
+                                  'pairing_response_received']:
 
-            # original pairing case: we save all the information
-            # supplied by the client
+            log.info("pairing the 'not completed' token %s in state %s again.",
+                     self.token.getSerial() ,self.current_state)
+
+        if self.current_state in ['unpaired',
+                                  'pairing_challenge_sent',
+                                  'pairing_response_received']:
 
             self.addToTokenInfo('user_token_id', user_token_id)
             b64_user_dsa_public_key = b64encode(user_dsa_public_key)
@@ -302,8 +312,13 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             output data (unused in here)
         """
 
-        valid_states = ['pairing_response_received',
-                        'active']
+        valid_states = ['active',
+                        'pairing_response_received',
+
+                        # we support re activation
+                        # as long as the token is not active
+                        'pairing_challenge_sent',
+                        ]
 
         self.ensure_state_is_in(valid_states)
 
@@ -344,7 +359,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         # ------------------------------------------------------------------- --
 
-        if self.current_state == 'pairing_response_received':
+        if self.current_state in ['pairing_response_received',
+                                  'pairing_challenge_sent']:
 
             content_type = CONTENT_TYPE_PAIRING
 
@@ -353,7 +369,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                                                                 content_type,
                                                                 callback_url)
 
-        else:
+        elif self.current_state in ['active']:
 
             content_type_as_str = options.get(
                 'content_type', CONTENT_TYPE_SIGNREQ)

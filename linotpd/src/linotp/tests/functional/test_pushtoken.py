@@ -256,45 +256,40 @@ class TestPushToken(TestController):
         return pairing_url
 
 # -------------------------------------------------------------------------- --
-
-    def execute_correct_pairing(self, user=None, pin='1234' , serial=None):
-
+    def activate_token(self, user_token_id, data='', retry_activation=1):
         """
-        enroll token and pair it
+            activate the token
+            - create the activation challenge by calling /validate/check
+            - calculate the resonse in the test user token
+            - send the signature to /validate/accept_transaction
 
-        :param user: the user the token should be assigned to
-            (default: None)
-        :param pin: the pin the token should have (default '1234')
-
-        :return user_token_id (key for self.tokens)
+         :param user_token_id: the id to the to be used token
+         :param data: the data which is used during activation
+         :return: the activation challenge and signature
         """
 
-        # ------------------------------------------------------------------ --
+        for i in range(0,retry_activation):
 
-        # enroll token
+            # ------------------------------------------------------------- --
 
-        pairing_url = self.enroll_pushtoken(user=user, pin=pin, serial=serial)
+            # request activation challenge
 
-        # ------------------------------------------------------------------ --
+            challenge_url = self.trigger_challenge(user_token_id, data=data)
 
-        # execute the first step of the pairing
+            # ------------------------------------------------------------- --
 
-        challenge_url = self.pair_until_challenge(pairing_url, pin)
+            # parse, descrypt and verify the challenge url
 
-        # ------------------------------------------------------------------ --
+            challenge, sig = self.decrypt_and_verify_challenge(
+                                                challenge_url, action='ACCEPT')
 
-        # parse, descrypt and verify the challenge url
+            # ------------------------------------------------------------- --
 
-        challenge, sig = self.decrypt_and_verify_challenge(challenge_url,
-                                                           action='ACCEPT')
+            # check if the content type is right (we are doing pairing
+            # right now, so type must be CONTENT_TYPE_PAIRING)
 
-        # ------------------------------------------------------------------ --
-
-        # check if the content type is right (we are doing pairing
-        # right now, so type must be CONTENT_TYPE_PAIRING)
-
-        content_type = challenge['content_type']
-        self.assertEqual(content_type, CONTENT_TYPE_PAIRING)
+            content_type = challenge['content_type']
+            self.assertEqual(content_type, CONTENT_TYPE_PAIRING)
 
         # ----------------------------------------------------------------- --
 
@@ -314,24 +309,60 @@ class TestPushToken(TestController):
         value = response_dict.get('result', {}).get('value')
         self.assertTrue(value, response)
 
-        user_token_id = challenge['user_token_id']
+
+    def execute_correct_pairing(self, user=None, pin='1234' , serial=None,
+                                retry_pairing=1, retry_activation=1):
+
+        """
+        enroll token and pair it
+
+        :param user: the user the token should be assigned to
+            (default: None)
+        :param pin: the pin the token should have (default '1234')
+        :param retry_pairing: num of re-pairing
+        :param retry_activation: num of re-activation
+
+        :return user_token_id (index for self.tokens)
+        """
+
+        # ------------------------------------------------------------------ --
+
+        # enroll token
+
+        pairing_url = self.enroll_pushtoken(user=user, pin=pin, serial=serial)
+
+        # ------------------------------------------------------------------ --
+
+        # pair the token
+
+        for i in range(0, retry_pairing):
+
+            user_token_id = self.pair_token(pairing_url, pin)
+
+        # ------------------------------------------------------------------ --
+
+        # activate the token
+
+        self.activate_token(user_token_id, data='',
+                                retry_activation=retry_activation)
+
 
         return user_token_id
 
 # -------------------------------------------------------------------------- --
 
-    def pair_until_challenge(self, pairing_url, pin='1234'):
+    def pair_token(self, pairing_url, pin='1234'):
 
         """
-        Executes a pairing for an existing token until the last
-        step in which the challenge response is sent.
+        Pair an enrolled token
+        - use the qr url to instantiate the test user token and
+        - call the /validate/pair to bind this to the LinOTP token
 
         :param pairing_url: the pairing url provided by the token
 
         :param pin: the pin of the token (default: '1234')
 
-        :returns the response dictionary received by the server. if all goes
-            right it will include the challenge url
+        :return: handle of the test user token
         """
 
         # save data extracted from pairing url to the 'user database'
@@ -366,13 +397,9 @@ class TestPushToken(TestController):
         status = result.get('status')
         self.assertTrue(status)
 
-        # ------------------------------------------------------------------ --
+        return user_token_id
 
-        # trigger challenge
 
-        challenge_url = self.trigger_challenge(user_token_id, data='')
-
-        return challenge_url
 
 # -------------------------------------------------------------------------- --
 
@@ -600,6 +627,11 @@ class TestPushToken(TestController):
     def test_correct_pairing(self):
         """ PushToken: Check if pairing works correctly """
         self.execute_correct_pairing()
+
+    def test_multiple_pairing_activations(self):
+        """ PushToken: Check if pairing works multiple times correctly """
+        self.execute_correct_pairing(retry_pairing=3, retry_activation=3)
+
 
 # -------------------------------------------------------------------------- --
 
