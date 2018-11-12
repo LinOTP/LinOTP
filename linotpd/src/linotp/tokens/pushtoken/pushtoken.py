@@ -311,6 +311,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             that is passed to the user, attributes being additional
             output data (unused in here)
         """
+        _ = context['translate']
 
         valid_states = ['active',
                         'pairing_response_received',
