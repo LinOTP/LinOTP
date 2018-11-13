@@ -663,7 +663,11 @@ class BaseController(WSGIController):
         request_context['Policies'] = parse_policies(linotp_config)
         request_context['translate'] = translate
         request_context['CacheManager'] = environment['beaker.cache']
-        request_context['Path'] = environment.get("PATH_INFO", "") or ""
+
+        routes = environment.get('pylons.routes_dict', {})
+        path = "/%s/%s" % (routes['controller'], routes['action'])
+        request_context['Path'] = path
+
         request_context['hsm'] = self.hsm
 
         initResolvers()

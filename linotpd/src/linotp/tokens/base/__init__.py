@@ -40,6 +40,7 @@ on linotp.lib.ImportOTP.vasco
 
 import binascii
 import datetime
+import json
 
 from hashlib import sha1
 import logging
@@ -922,13 +923,21 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         if otplen:
             self.setOtpLen(otplen)
 
+        if 'scope' in param:
+            scope = json.loads(param.get('scope', {}))
+            self.addToTokenInfo('scope', scope)
+
+        elif 'rollout' in param:
+            scope = {'path' : ['userservice']}
+            self.addToTokenInfo('scope', scope)
+
         self.resetTokenInfo()
 
         return
 
     def resetTokenInfo(self):
         """
-        TODO: to be implemented or to be removed!
+        base token api - could be overwritten per token
         """
         return
 

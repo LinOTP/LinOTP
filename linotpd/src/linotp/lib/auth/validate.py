@@ -184,6 +184,18 @@ def check_otp(token, otpval, options=None):
     counter = token.getOtpCount()
     window = token.getOtpCountWindow()
 
+    # ---------------------------------------------------------------------- --
+
+    # check for restricted path usage
+
+    path = context['Path'].strip('/').partition('/')[0]
+    token_path = token.getFromTokenInfo('scope', {}).get('path', [])
+
+    if token_path and path not in token_path:
+        return -1
+
+    # ---------------------------------------------------------------------- --
+
     res = token.checkOtp(otpval, counter, window, options=options)
     return res
 
