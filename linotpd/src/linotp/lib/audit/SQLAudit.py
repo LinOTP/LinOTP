@@ -359,7 +359,7 @@ class Audit(AuditBase):
         key.sign_init()
         key.sign_update(s_audit)
         signature = key.sign_final()
-        return hexlify(signature)
+        return u'' + hexlify(signature)
 
 
     def _verify(self, auditline, signature):
