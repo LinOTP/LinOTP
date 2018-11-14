@@ -150,7 +150,7 @@ class Challenges(object):
         while True:
             try:
                 if not challenge_id:
-                    transactionid = "%s%s" % (
+                    transactionid = u"%s%s" % (
                     Challenge.createTransactionId(length=id_length), id_postfix)
                 else:
                     transactionid = challenge_id

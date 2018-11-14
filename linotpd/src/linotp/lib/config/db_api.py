@@ -74,7 +74,10 @@ def _storeConfigDB(key, val, typ=None, desc=None):
     value = val
 
     if not key.startswith("linotp."):
-        key = "linotp." + key
+        key = u"linotp." + key
+
+    if isinstance(key, str):
+        key = u'' + key
 
     log.debug('Changing config entry %r in database: New value is %r',
               key, val)
@@ -138,7 +141,7 @@ def _delete_continous_entry_db(key):
     :param key: the key prefix of the chunks
     """
 
-    search_key = "%s__[%%:%%]" % (key)
+    search_key = u"%s__[%%:%%]" % (key)
     continous_entries = Session.query(Config).filter(
                                       Config.Key.like(search_key))
 
@@ -196,9 +199,9 @@ def _store_continous_entry_db(chunks, key, val, typ, desc):
 
     for i, cont_value in enumerate(chunks):
 
-        cont_typ = "C"
-        cont_desc = "%d:%d" % (i, number_of_chunks - 1)
-        cont_key = "%s__[%d:%d]" % (key, i, number_of_chunks - 1)
+        cont_typ = u"C"
+        cont_desc = u"%d:%d" % (i, number_of_chunks - 1)
+        cont_key = u"%s__[%d:%d]" % (key, i, number_of_chunks - 1)
 
         # first one will contain the correct key with type 'C' continuous
         if i == 0:
@@ -258,6 +261,9 @@ def _removeConfigDB(key):
         if not key.startswith('enclinotp.'):
             key = u"linotp." + key
 
+    if isinstance(key, str):
+        key = u'' + key
+
     confEntries = Session.query(Config).filter(
                                         Config.Key == unicode(key)).all()
 
@@ -270,9 +276,9 @@ def _removeConfigDB(key):
     to_be_deleted.append(theConf)
 
     # if entry is a contious type, delete all of this kind
-    if theConf.Type == 'C' and theConf.Description[:len('0:')] == '0:':
+    if theConf.Type == u'C' and theConf.Description[:len('0:')] == '0:':
         _start, end = theConf.Description.split(':')
-        search_key = "%s__[%%:%s]" % (key, end)
+        search_key = u"%s__[%%:%s]" % (key, end)
         cont_entries = Session.query(Config).filter(
                                      Config.Key.like(search_key)).all()
 
@@ -296,10 +302,13 @@ def _retrieveConfigDB(Key):
     key = Key
     if (not key.startswith("linotp.")):
         if (not key.startswith("enclinotp.")):
-            key = "linotp." + Key
+            key = u"linotp." + Key
+
+    if isinstance(key, str):
+        key = u'' + key
 
     myVal = None
-    key = u'' + key
+
     entries = Session.query(Config).filter(Config.Key == key).all()
 
     if not entries:
@@ -308,7 +317,7 @@ def _retrieveConfigDB(Key):
     theConf = entries[0]
 
     # other types than continous: we are done
-    if theConf.Type != 'C':
+    if theConf.Type != u'C':
         myVal = theConf.Value
         myVal = expand_here(myVal)
         return myVal
@@ -321,7 +330,7 @@ def _retrieveConfigDB(Key):
     value = theConf.Value
 
     for i in range(int(end)):
-        search_key = "%s__[%d:%d]" % (key, i, int(end))
+        search_key = u"%s__[%d:%d]" % (key, i, int(end))
         cont_entries = Session.query(Config).filter(
                                             Config.Key == search_key).all()
         if cont_entries:
@@ -377,7 +386,7 @@ def _retrieveAllConfigDB():
 
         for i in range(number + 1):
 
-            search_key = "%s__[%d:%d]" % (key, i, number)
+            search_key = u"%s__[%d:%d]" % (key, i, number)
 
             if search_key in conf_dict:
                 value = value + conf_dict[search_key]
@@ -385,7 +394,7 @@ def _retrieveAllConfigDB():
 
         conf_dict[key] = value
 
-        search_key = "%s__[%d:%d]" % (key, number, number)
+        search_key = u"%s__[%d:%d]" % (key, number, number)
         # allow the reading of none existing entries
         type_dict[key] = type_dict.get(search_key)
         desc_dict[key] = desc_dict.get(search_key)
@@ -397,7 +406,10 @@ def _retrieveAllConfigDB():
     for key, value in conf_dict.items():
 
         if key.startswith("linotp.") is False:
-            key = "linotp." + key
+            key = u"linotp." + key
+
+        if isinstance(key, str):
+            key = u'' + key
 
         nVal = expand_here(value)
         config[key] = nVal
