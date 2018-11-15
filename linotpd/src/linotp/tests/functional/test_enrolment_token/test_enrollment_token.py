@@ -445,3 +445,73 @@ class TestRolloutToken(TestController):
         self.assertTrue('KIPW0815' not in response, response)
 
         return
+
+    def test_selfservice_usertokenlist(self):
+        """
+        test token with both scopes defined
+        """
+        params = {
+            'name': 'mfa',
+            'scope': 'selfservice',
+            'action': 'mfa_login, mfa_3_fields',
+            'user': '*',
+            'realm': '*',
+            'active': True
+            }
+
+        response = self.make_system_request('setPolicy', params)
+        self.assertTrue('false' not in response, response)
+
+        user = 'passthru_user1@myDefRealm'
+        password = 'geheim1'
+        otp = 'verry_verry_secret'
+        pin = '1234567890'
+
+        params = {
+            "otpkey": otp,
+            "user": user,
+            "pin": pin,
+
+            "type": "pw",
+            "serial": "KIPW0815",
+            "description": "enrollment test token",
+            "rollout": "True"
+        }
+
+        response = self.make_admin_request('init', params=params)
+        self.assertTrue('"value": true' in response, response)
+
+        # enroll second token
+
+        params = {
+            "otpkey": 'second',
+            "user": user,
+            "pin": "Test123!",
+            "type": "pw",
+            "description": "second token",
+        }
+
+        response = self.make_admin_request('init', params=params)
+        self.assertTrue('"value": true' in response, response)
+
+        # ----------------------------------------------------------------- --
+
+        # now login into selfservice and query the users token list
+
+        auth_user = {
+            'login': 'passthru_user1@myDefRealm',
+            'password': 'geheim1',
+            'otp': otp
+            }
+
+        response= self.make_userselfservice_request(
+                        'usertokenlist', None, auth_user)
+
+        # verify that the rollout token is not in the list
+
+        self.assertTrue('KIPW0815' not in response, response)
+        self.assertTrue('LinOtp.TokenSerialnumber' in response, response)
+
+        return
+
+# eof
