@@ -245,6 +245,24 @@ class User(object):
 
         return userInfo
 
+    def getRealms(self):
+        """
+        return all realms in which the user is located
+
+        :return: list of realms
+        """
+
+        if not self.exists():
+            return [self.realm or getDefaultRealm()]
+
+        realms = set()
+
+        for realm, realm_definition in getRealms().items():
+            if self.resolver in realm_definition['useridresolver']:
+                realms.add(realm)
+
+        return realms
+
     def getResolvers(self):
         return self.resolverUid.keys()
 

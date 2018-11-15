@@ -307,6 +307,18 @@ class TestRolloutToken(TestController):
         response = self.make_system_request('setPolicy', params)
         self.assertTrue('false' not in response, response)
 
+        params = {
+            'name': 'purge',
+            'scope': 'enrollment',
+            'action': 'purge_rollout_token',
+            'user': '*',
+            'realm': 'myMixedRealm',
+            'active': True
+            }
+
+        response = self.make_system_request('setPolicy', params)
+        self.assertTrue('false' not in response, response)
+
         user = 'passthru_user1@myDefRealm'
         password = 'geheim1'
         otp = 'verry_verry_secret'
@@ -382,6 +394,18 @@ class TestRolloutToken(TestController):
         response = self.make_system_request('setPolicy', params)
         self.assertTrue('false' not in response, response)
 
+        params = {
+            'name': 'purge',
+            'scope': 'enrollment',
+            'action': 'purge_rollout_token',
+            'user': '*',
+            'realm': '*',
+            'active': True
+            }
+
+        response = self.make_system_request('setPolicy', params)
+        self.assertTrue('false' not in response, response)
+
         user = 'passthru_user1@myDefRealm'
         password = 'geheim1'
         otp = 'verry_verry_secret'
@@ -443,6 +467,86 @@ class TestRolloutToken(TestController):
 
         response = self.make_admin_request('show', params=params)
         self.assertTrue('KIPW0815' not in response, response)
+
+        return
+
+    def test_enrollment_janitor3(self):
+        """
+        test janitor - do not remove rollout token via selfservice login
+        """
+        params = {
+            'name': 'mfa',
+            'scope': 'selfservice',
+            'action': 'mfa_login, mfa_3_fields',
+            'user': '*',
+            'realm': '*',
+            'active': True
+            }
+
+        response = self.make_system_request('setPolicy', params)
+        self.assertTrue('false' not in response, response)
+
+        user = 'passthru_user1@myDefRealm'
+        password = 'geheim1'
+        otp = 'verry_verry_secret'
+        pin = '1234567890'
+
+        params = {
+            "otpkey": otp,
+            "user": user,
+            "pin": pin,
+
+            "type": "pw",
+            "serial": "KIPW0815",
+            "description": "enrollment test token",
+            "scope": json.dumps({
+                "path": ["userservice"]})
+        }
+
+        response = self.make_admin_request('init', params=params)
+        self.assertTrue('"value": true' in response, response)
+
+        # enroll second token
+
+        params = {
+            "otpkey": 'second',
+            "user": user,
+            "pin": "Test123!",
+            "type": "pw",
+            "description": "second token",
+        }
+
+        response = self.make_admin_request('init', params=params)
+        self.assertTrue('"value": true' in response, response)
+
+        # ------------------------------------------------------------------ --
+        # ensure that login with rollout token is only
+        # possible in the selfservice
+
+        response = self.validate_check(user, pin, otp)
+        self.assertTrue(' "value": false' in response, response)
+
+        response = self.user_service_login(user, password, otp)
+        self.assertTrue(' "value": true' in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # the valid authentication with the rollout token
+        # should make the rollout token not disappeared
+
+        response = self.make_admin_request('show', params=params)
+        self.assertTrue('KIPW0815' in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # after the valid authentication with the second token
+        # the rollout token should not disappeared as the policy is not set
+
+        response = self.user_service_login(user, password, otp='second')
+        self.assertTrue(' "value": true' in response, response)
+
+        response = self.make_admin_request('show', params=params)
+        self.assertTrue('KIPW0815' in response, response)
 
         return
 
