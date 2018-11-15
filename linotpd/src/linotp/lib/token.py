@@ -1998,4 +1998,32 @@ def _calculate_validity_end(validity):
 
     return end_date
 
+def remove_token(token):
+    """
+    remove a token and all related entries like challenges or realm reference
+
+    :param token: model.Token or TokenClass object
+    """
+
+    if issubclass(token.__class__, linotp.tokens.base.TokenClass):
+        token = token.token
+
+    #  we cleanup the challenges
+    serial = token.getSerial()
+    for chall in Challenges.lookup_challenges(serial=serial):
+        Session.delete(chall)
+
+    # cleanup of the realm references
+    token_id = token.LinOtpTokenId
+    Session.query(TokenRealm).filter(
+            TokenRealm.token_id == token_id).delete()
+
+    # as these references seems not to be marked in the cache, we have to
+    # update the cache manaualy
+
+    Session.commit()
+
+    # finally remove the token
+    Session.delete(token)
+
 # eof #########################################################################
