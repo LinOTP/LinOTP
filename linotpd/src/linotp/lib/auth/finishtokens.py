@@ -26,8 +26,10 @@
 from linotp.lib.challenges import Challenges
 from linotp.lib.context import request_context as context
 from linotp.lib.error import UserError
+
 from linotp.lib.policy import supports_offline
 from linotp.lib.policy import get_pin_policies
+from linotp.lib.policy import purge_enrollment_token
 
 from linotp.lib.token import get_token_owner
 from linotp.lib.token import getTokens4UserOrSerial
@@ -419,6 +421,11 @@ def janitor_to_remove_enrollment_token(valid_tokens):
     to_be_removed_tokens = []
 
     for owner in all_owners:
+
+        # should be purge the tokens of the user? <- defined by policy
+
+        if not purge_enrollment_token(user=owner):
+            continue
 
         user_tokens = getTokens4UserOrSerial(user=owner)
 

@@ -212,6 +212,10 @@ def getPolicyDefinitions(scope=""):
                 'desc': 'The length of the validity for the temporary '
                         'token as days or duration with "d"-days, "h"-hours,'
                         ' "m"-minutes, "s"-seconds.'},
+            'purge_rollout_token': {
+                'type': 'bool',
+                'desc' : ("After a successfull login with a second token, the"
+                          "rollout token is removed.")},
             },
         'authentication': {
             "delete_on_authentication_exceed": {
