@@ -1491,8 +1491,8 @@ def getNumTokenUsers(resolver=None, active=True):
 
     condition = and_(*conditions)
 
-    token_users = Session.query(Token).filter(
-                    condition).distinct(Token.LinOtpUserid).count()
+    token_users = Session.query(Token).filter(condition).distinct(
+                    Token.LinOtpUserid, Token.LinOtpIdResClass).count()
 
     return token_users
 
