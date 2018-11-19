@@ -1499,19 +1499,17 @@ def getNumTokenUsers(resolver=None, active=True):
 
 def getTokenNumResolver(resolver=None, active=True):
     '''
-    This returns the number of the (active) tokens
-    if no resolver is passed, the overall token number is returned,
-    if a resolver is passed, the token number within this resolver is returned
+    get the number of used tokens
 
-    if active is set to false, ALL tokens are returned
+    :param resolver: count only the token users per resolver
+    :param active: boolean - count base only on active tokens
+    :return: the number of token
     '''
-    if resolver is None:
-        if active:
-            sqlQuery = Session.query(Token).filter(Token.LinOtpIsactive == True).count()
-        else:
-            sqlQuery = Session.query(Token).count()
-        return sqlQuery
-    else:
+
+    conditions = ()
+
+    if resolver:
+
         # in the database could be tokens of ResolverClass:
         #    useridresolver. or useridresolveree.
         # so we have to make sure
@@ -1523,14 +1521,16 @@ def getTokenNumResolver(resolver=None, active=True):
         resolver = resolver.resplace('useridresolveree.', 'useridresolver.')
         resolver = resolver.resplace('useridresolver.', 'useridresolver%.')
 
-        if active:
-            sqlQuery = Session.query(Token).filter(
-                and_(Token.LinOtpIdResClass.like(resolver),
-                     Token.LinOtpIsactive == True)).count()
-        else:
-            sqlQuery = Session.query(Token).filter(
-                Token.LinOtpIdResClass.like(resolver)).count()
-        return sqlQuery
+        conditions += (and_Token.LinOtpIdResClass.like(resolver),)
+
+    if active:
+
+        conditions += (and_(Token.LinOtpIsactive == True),)
+
+    condition = and_(*conditions)
+
+    return Session.query(Token).filter(condition).count()
+
 
 def token_owner_iterator():
     '''
