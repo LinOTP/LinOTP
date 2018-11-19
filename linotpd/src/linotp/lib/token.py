@@ -1467,6 +1467,36 @@ def getTokenInRealm(realm, active=True):
     return sqlQuery
 
 
+def getNumTokenUsers(resolver=None, active=True):
+    '''
+    get the number of distinct the token users
+
+    :param resolver: count only the token users per resolver
+    :param active: boolean - count base only on active tokens
+    :return: the number of token users
+    '''
+
+    conditions = ()
+
+    if resolver:
+
+        resolver = resolver.resplace('useridresolveree.', 'useridresolver.')
+        resolver = resolver.resplace('useridresolver.', 'useridresolver%.')
+
+        conditions += (and_Token.LinOtpIdResClass.like(resolver),)
+
+    if active:
+
+        conditions += (and_(Token.LinOtpIsactive == True),)
+
+    condition = and_(*conditions)
+
+    token_users = Session.query(Token).filter(
+                    condition).distinct(Token.LinOtpUserid).count()
+
+    return token_users
+
+
 def getTokenNumResolver(resolver=None, active=True):
     '''
     This returns the number of the (active) tokens
