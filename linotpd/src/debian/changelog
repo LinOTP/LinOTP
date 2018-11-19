@@ -1,21 +1,52 @@
-linotp (2.10.1~rc1-1) jessie; urgency=low
+linotp (2.10.1.1-1) jessie; urgency=low
 
-  * Set new version 2.10.1~rc1-1
-  * merge TK patches from master
+  Bug Fixes:
+  * Server: validate/check_status query with user parameter now returns token serial
+  * Server: Use userid instead of user name to identify open challenges.
+            This mitigates the usage of capitals in user names with Active Directory
+            as UserIdResolver backend.
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 24 Aug 2018 12:51:05 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 02 Nov 2018 10:26:17 +0100
 
-linotp (2.10.1~rc0-1) jessie; urgency=low
+linotp (2.10.1-1) jessie; urgency=low
 
-  * Set new version 2.10.1~rc0-1
+  Enhancements:
+  * Server: LDAPUserIdResolver failover:
+            stay with working LDAP-Servers for an incrementing time
+            before retrying the first server
+  * Server: Add charset/collate clauses to database generation commands:
+            ensures compatibility with recent versions of MariaDB
+  * Server: New policy 'forward_on_no_token' to forward request
+            to server if user has no token
+  * Server: Allow configuration of the challenge prompt via
+            system/setConfig?SMS_CHALLENGE_PROMPT=MESSAGE
+  * Server: New policy 'enforce_smstext' to ignore request param data
+  * Server: Support to configure HTTP headers in Rest SMS Provider
+  * API: Show token enrollment status in userservice/usertokenlist
+  * API: Support check_status without user parameter
+  * Web UI: Add hint about timezones to manage tokeninfo
+  * Web UI: Update visuals for manage tokeninfo
+  * Selfservice Portal: Support optional landing page for selfservice portal
+  * Selfservice Portal: Show token details in selfservice portal
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 20 Aug 2018 10:55:30 +0200
 
-linotp (2.10.1~0dev1-1) jessie; urgency=low
+  Bug Fixes:
+  * Server: Fix LDAPUserIdResolver failover
+  * Server: Fix RADIUS Forward Token
+  * Server: Search token list with userPrincipalName
+  * Server: String 'ignore_pin' instead of '3' is now correctly processed
+            for 'otppin' policy action
+  * Server: LinOTP server now handles forward proxy definition correctly
+  * Server: Fix storing of timeout tuples within the DefaultPushProvider
+  * Server: Fix backend for setExpiration UI dialog which failed in some cases
+  * Server: Provide error message if the setup of a license fails
+  * Server: Set default time zone to make time-based tokens work in all setups
+  * Server: Support for SQLUserIdResolvers where the user id is defined as int.
+            This fixes actions in the selfservice portal.
+  * Web UI: Default for splitAtSign is now correctly displayed in the UI
 
-  * Set new version 2.10.1~0dev1-1
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 17 Jul 2018 15:32:43 +0200
+ --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 10 Oct 2018 15:33:39 +0200
 
 linotp (2.10.0.10-1) jessie; urgency=low
 
@@ -73,17 +104,15 @@ linotp (2.10.0.3-1) jessie; urgency=low
 
   Enhancements:
   * Move customisation files location (CSS, logos) to /etc/linotp2/custom-style
-   (35198d8f)
-  * Replace crypto/pbkdf2 with more uptodate version (aa765bc0)
-  * Add German translations (ead85071)
+  * Replace crypto/pbkdf2 with more uptodate version
+  * Add German translations
 
   Bug fixes:
-  * Fix /auth/pushtoken test page (bf5835f4, 9417d702)
+  * Fix /auth/pushtoken test page
 
   Build infrastructure:
-  * Add Docker enabled Jenkins Pipeline Script (f72773cc, cd21e3e3, 6a4736ec)
-  * Selenium: Updates and fixes to tests (750167fa, 6b526be3, cf7de4f8, 8cfdeecc,
-    eedd83a4, 29a92717)
+  * Add Docker enabled Jenkins Pipeline Script
+  * Selenium: Updates and fixes to tests
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 22 Feb 2018 10:28:26 +0100
 
@@ -97,7 +126,7 @@ linotp (2.10.0.2-1) jessie; urgency=low
 linotp (2.10.0.1-1) jessie; urgency=low
 
   Bug Fixes:
-  * Server: Restrict the userservice/context API (270527)
+  * Server: Restrict the userservice/context API
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 30 Jan 2018 10:24:36 +0100
 
@@ -107,91 +136,82 @@ linotp (2.10-1) jessie; urgency=low
   * Remove Debian dependency python-socksipy python-repoze.who
 
   Python packaging:
-  * Package: Remove unused smpplib dependency (a47a932)
+  * Package: Remove unused smpplib dependency
 
   Token changes:
-  * Introduce new token: Voice Token (65656ee2, 395dab25, 7d2124ba, 13fce4cc,
-    341de16c, 4c852ef9, 8925905a, 548d6b9d, 3ceab2cb, 6372fb90, 606b8a7d,
-    765c125b, ee0b53e6, 9ec1458c, 69b476c6, b6a611be, 8ae8bd4d, 16fafefd,
-    9bb47552, b04986a0, bfdbfc0a, 8da9de22)
-  * Enhance Push Token (incompatible with previous Push Token version) (1df19db)
+  * Introduce new token: Voice Token
+  * Enhance Push Token (incompatible with previous Push Token version)
 
   Server changes:
-    * Adjust default TransactionId length to 17 (64342d9)
-    * Implement explicit-deny for pushtoken (15ab7ab, 8b4d6a8)
-    * Add token type specific enrollment limits (8c32fc2)
-    * Support loading provider via configuartion in linotp.ini (e4f1ebc)
-    * Enable new policy engine by default (dc79830, ed8b5af)
-    * Moved tokens to new location in src tree (8c37e1d, 952f311)
+    * Adjust default TransactionId length to 17
+    * Implement explicit-deny for pushtoken
+    * Add token type specific enrollment limits
+    * Support loading provider via configuartion in linotp.ini
+    * Enable new policy engine by default
+    * Moved tokens to new location in src tree
     * Support shorter lost token duration (days, hours, and minutes added)
-      (b517af2)
     * Autoassign a token if a request arrives with only username (without
-      password) (4f25bcb)
-    * Document the otppin policy 3=ignore_pin in the policy UI (27969f0)
-    * Removed IE compatibility mode from templates (09d3e5a)
+      password)
+    * Document the otppin policy 3=ignore_pin in the policy UI
+    * Removed IE compatibility mode from templates
     * Take the already stored mobile number of a token owner (available from
       UserIdResolver) if it exists, otherwise take the number stored in the
-      token info (a18d46c)
-    * Autoassignment without password (4f25bcb)
+      token info
+    * Autoassignment without password
     * OATH csv import with sha256 + sha512
 
   Web UI changes:
   * Add Auth Demo pages for challenge-response and push token
       * /auth/challenge-response
       * /auth/pushtoken
-      (a5b50d3)
-  * Add expiration dialog for tokens (109925f)
-  * Refactor dialog button icon generation (f9a3179)
-  * Performance improvement by removing mouseover effects on Manage-UI (0a0c3d2)
-  * Extract custom form validators into seperate files (fe7ac11)
-  * Removed IE compatibility mode from templates (27a518f)
-  * Update favicon to follow company rename (61fc468)
-  * Add UI in manage and selfservice for "static password" token (7a37b52)
-  * Improved Selfservice login with MFA support (9c28919, 7ae1849, c116490,
-    7c61edc, 4dd8956, c2eb554, ac9589b, 3d4429, 65c04c, 05ec119, 086467,
-    e44f3be, 78f4d39)
+  * Add expiration dialog for tokens
+  * Refactor dialog button icon generation
+  * Performance improvement by removing mouseover effects on Manage-UI
+  * Extract custom form validators into seperate files
+  * Removed IE compatibility mode from templates
+  * Update favicon to follow company rename
+  * Add UI in manage and selfservice for "static password" token
+  * Improved Selfservice login with MFA support
 
   Other changes:
-  * SMSProvider: Moved the SMSProviders to become part of linotp (b50e5629)
-  * UserIdresolver: Moved UserIdresolvers into linotp package (13a3011)
-
+  * SMSProvider: Moved the SMSProviders to become part of linotp
+  * UserIdresolver: Moved UserIdresolvers into linotp package
 
   Bug Fixes:
   * Server: Fix evaluation of forward policy to match most specific
-    user definition (4d2dad)
-  * Server: Fix password comparison of password token (f87d36)
-  * Server: Adjust location of token makos for translation (32a003)
-  * Server: Fix typo in getUserFromRequest in case of basic auth (8595b4)
+    user definition
+  * Server: Fix password comparison of password token
+  * Server: Adjust location of token makos for translation
+  * Server: Fix typo in getUserFromRequest in case of basic auth
   * Server: Fix missing 'serial' for audit and policy check in
-            selfservice.enroll (8910dd)
-  * Server: Fix for loading active token modules (bf1abb)
-  * Server: On LDAP test connection always close dialog (d5f607cd)
+            selfservice.enroll
+  * Server: Fix for loading active token modules
+  * Server: On LDAP test connection always close dialog
   * Server: Fix encoding error that prevented Token View from being displayed
-            in the web interface. (75b52f)
+            in the web interface.
   * Server: Fix challenge validation to check only one request at a time.
             Prevent (positive) double authentication with the same transaction
             ID and OTP. This used to happen when a user submitted the OTP for a
             transaction ID more than once within a very short timeframe
-            (f150d9, d676de)
-  * Server: Fix for missing LDAP uft-8 conversion (1a3db9)
+  * Server: Fix for missing LDAP uft-8 conversion
   * Server: Fix default hash algorithm. This  was causing issues in the YubiKey
-            import (77ab04)
+            import
   * Server: Fix wrong audit log entries where "failcounter exceeded" was
-            incorrectly being replaced with "no token found" (e34a96)
-  * Server: Fix QRToken to use the tan length defined at enrollment (9ee93d)
-  * Server: Fix password and lost token password comparison (dd93fe)
-  * Server: Fix to show deactivated policies in Manage UI again. (1a2982)
-  * Server: Fix for better user/owner comparison (d65c41)
-  * Server: Fix to show inactive policies (0e0400)
-  * Server: Fix import of policies with empty realm (1d2c9e)
-  * Server: Verify that only active policies are used (0ab7eb)
-  * Server: Fix for policy export to export inactive too (a69ed6)
-  * Server: Fix for target realm handling on token import (3c44c8)
-  * Server: Fix select only active policies for admin policies (0e42454c)
-  * Server: Fix getResolverClassName (b5bd7de6)
+            incorrectly being replaced with "no token found"
+  * Server: Fix QRToken to use the tan length defined at enrollment
+  * Server: Fix password and lost token password comparison
+  * Server: Fix to show deactivated policies in Manage UI again.
+  * Server: Fix for better user/owner comparison
+  * Server: Fix to show inactive policies
+  * Server: Fix import of policies with empty realm
+  * Server: Verify that only active policies are used
+  * Server: Fix for policy export to export inactive too
+  * Server: Fix for target realm handling on token import
+  * Server: Fix select only active policies for admin policies
+  * Server: Fix getResolverClassName
   * Web UI: Fix UI crash check if backend response is array in ldap
-            testconnection (805526)
-  * Selfservice: Fix QR token enrollment and activation (57365e)
+            testconnection
+  * Selfservice: Fix QR token enrollment and activation
 
 
 
@@ -200,7 +220,7 @@ linotp (2.10-1) jessie; urgency=low
 linotp (2.9.3.3-1) jessie; urgency=low
 
   Bug Fixes:
-  * daca96 Server: Fix HMAC-based tokens:
+  * Server: Fix HMAC-based tokens:
                    - prevent (positive) double authentication with the same
                      OTP. This used to happen when a user submitted the OTP
                      more than once within a very short timeframe.
@@ -210,24 +230,24 @@ linotp (2.9.3.3-1) jessie; urgency=low
 linotp (2.9.3.2-1) jessie; urgency=low
 
   Bug Fixes:
-  * 77ab047 Server: Fix YubiKey import
-  * 9101282 Server: Give realm parameter priority over user@realm if not
-                    split@sign
+  * Server: Fix YubiKey import
+  * Server: Give realm parameter priority over user@realm if not
+            split@sign
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 07 Sep 2017 14:51:10 +0200
 
 linotp (2.9.3.1-1) jessie; urgency=low
 
   Enhancements:
-  * b31bd17 Server: Accept DB2 format database urls
+  * Server: Accept DB2 format database urls
 
   Bug Fixes:
-  * 175d54f Policy: Fix support for filtering on <UserIdResolver>: in user field
-  * 42c9e68 Web UI: Simplify user import dialog by removing realm section
-  * a5b6b81 Server: Fix OTP counter for email token
-  * 9fab468 Server: Remove user related data from logs:
-                    - 9fab468 Password hash from SQL resolver
-                    - 8862f6f User information from user.py
+  * Policy: Fix support for filtering on <UserIdResolver>: in user field
+  * Web UI: Simplify user import dialog by removing realm section
+  * Server: Fix OTP counter for email token
+  * Server: Remove user related data from logs:
+                    - Password hash from SQL resolver
+                    - User information from user.py
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 15 Aug 2017 15:31:53 +0200
 

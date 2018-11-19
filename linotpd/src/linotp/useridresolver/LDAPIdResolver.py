@@ -649,7 +649,7 @@ class IdResolver(UserIdResolver):
 
             except ldap.LDAPError as error:
                 resource_scheduler.block(uri, delay=30)
-                log.exception("[bind] LDAP error: %r", error)
+                log.exception("[bind] LDAP error")
 
         # We were not able to do a successful bind! :-(
         self.bind_not_possible = True

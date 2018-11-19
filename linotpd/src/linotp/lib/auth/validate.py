@@ -439,7 +439,7 @@ class ValidationHandler(object):
 
             # -------------------------------------------------------------- --
 
-            token_dict = {'serial': serial, 'type': token.type}
+            token_dict = {'serial': token.getSerial(), 'type': token.type}
 
             # 1. check if token supports offline at all
             supports_offline_at_all = token.supports_offline_mode
