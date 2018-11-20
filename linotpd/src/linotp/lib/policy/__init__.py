@@ -1894,6 +1894,27 @@ def autoassignment_forward(user):
 
     return ret
 
+def purge_enrollment_token(user, realm=None):
+    '''
+    lookup in the policies if the rollout token should be removed
+    after the successfull login with a second token
+
+    :param user: the token owner
+    :return: boolean
+    '''
+
+    policies = has_client_policy(
+        scope='enrollment',
+        action="purge_rollout_token",
+        client = _get_client(),
+        realm=realm,
+        userObj=user)
+
+    if policies:
+        return True
+
+    return False
+
 
 def ignore_autoassignment_pin(user):
     '''

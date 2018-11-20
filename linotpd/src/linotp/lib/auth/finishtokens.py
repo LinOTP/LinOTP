@@ -26,9 +26,15 @@
 from linotp.lib.challenges import Challenges
 from linotp.lib.context import request_context as context
 from linotp.lib.error import UserError
-from linotp.lib.policy import supports_offline
 
+from linotp.lib.policy import supports_offline
 from linotp.lib.policy import get_pin_policies
+from linotp.lib.policy import purge_enrollment_token
+
+from linotp.lib.token import get_token_owner
+from linotp.lib.token import getTokens4UserOrSerial
+from linotp.lib.token import remove_token
+
 
 import logging
 
@@ -199,6 +205,8 @@ class FinishTokens(object):
 
                 detail.update({'offline': offline})
 
+            janitor_to_remove_enrollment_token(valid_tokens=[token])
+
             return (True, detail, action_detail)
 
         else:
@@ -215,6 +223,8 @@ class FinishTokens(object):
                 # so we count them as well
                 if token.count_auth_max > 0:
                     token.inc_count_auth()
+
+            janitor_to_remove_enrollment_token(valid_tokens=valid_tokens)
 
             context['audit']['action_detail'] = "Multiple valid tokens found!"
             if user:
@@ -381,5 +391,61 @@ class FinishTokens(object):
         audit['token_type'] = ' '.join(list(types))[:39]
 
         return
+
+def janitor_to_remove_enrollment_token(valid_tokens):
+    """
+    remove all enrollment only tokens
+    """
+    # ------------------------------------------------------------------ --
+
+    # get all owners for the valid tokens
+
+    all_owners = set()
+
+    for token in valid_tokens:
+
+        # if the authenticated token is a rollout token, we dont count him
+
+        path = token.getFromTokenInfo('scope',{}).get('path',[])
+        if len(path) == 1 and path[0] == 'userservice':
+            continue
+
+        owner = get_token_owner(token)
+        if owner:
+            all_owners.add(owner)
+
+    # ------------------------------------------------------------------ --
+
+    # get all rollout only tokens per owner
+
+    to_be_removed_tokens = []
+
+    for owner in all_owners:
+
+        # should be purge the tokens of the user? <- defined by policy
+
+        if not purge_enrollment_token(user=owner):
+            continue
+
+        user_tokens = getTokens4UserOrSerial(user=owner)
+
+        # if there is only one token either
+        # - the user has still the rollout: do not delete
+        # - or the user has a new one: we dont delete either
+
+        if len(user_tokens) < 2:
+            continue
+
+        for token in user_tokens:
+            path = token.getFromTokenInfo('scope',{}).get('path',[])
+            if len(path) == 1 and path[0] == 'userservice':
+                to_be_removed_tokens.append(token)
+
+    # ------------------------------------------------------------------ --
+
+    # delete all rollout tokens
+
+    for token in to_be_removed_tokens:
+        remove_token(token)
 
 # eof###########################################################################

@@ -59,8 +59,8 @@ from linotp.lib.user import (
                               getRealmBox,
                              )
 
-
 from linotp.lib.token import getTokens4UserOrSerial
+
 from linotp.tokens import tokenclass_registry
 
 from linotp.lib.user import (getUserInfo,
@@ -110,6 +110,13 @@ def getTokenForUser(user, active=None):
         tok = token.token.get_vars()
         if tok.get('LinOtp.TokenInfo', None):
             token_info = json.loads(tok.get('LinOtp.TokenInfo'))
+
+            # skip the rollout tokens from the selfservice token list
+
+            path = token_info.get('scope',{}).get('path',[])
+            if len(path) == 1 and path[0] == 'userservice':
+                continue
+
             tok['LinOtp.TokenInfo'] = token_info
 
         tok['Enrollment'] = token.get_enrollment_status()
