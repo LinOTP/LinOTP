@@ -69,6 +69,8 @@ from linotp.lib.policy.util import digits
 from linotp.lib.crypto import urandom
 from linotp.lib.util import uniquify
 
+from linotp.lib.realm import getRealms
+
 
 from linotp.lib.context import request_context
 
@@ -598,7 +600,6 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                 raise PolicyException(_("You do not have the administrative "
                                         "right to init token %s of type %s.")
                                       % (serial, ttype))
-
 
         log.debug("checking tokens in realm for user %r", user)
         if user and not _check_token_count(user=user):
@@ -1483,92 +1484,108 @@ def getSelfserviceActions(user):
 
 def _check_token_count(user=None, realm=None, post_check=False):
     '''
-    This internal function checks if the number of the tokens is valid...
-    for a certain realm...
+    This internal function checks if the number of the tokens is valid
+    for a certain realm
 
-    Therefor it checks the policy
+    Therefore it checks the policy
         "scope = enrollment", action = "tokencount = <number>"
 
-    if there are more tokens assigned than in tokencount mentioned,
-    return will be false
+    if there are more tokens assigned than in tokencount of the policy
+    mentioned, return will be false
+
+        # 1. alle resolver aus dem Realm holen.
+        # 2. fuer jeden Resolver die tNum holen.
+        # 3. die Policy holen und gegen die tNum checken.
 
     :param user: the user in the realm
     :param realm: the relevant realm
-    :return: boolean - True if token number is allowed
+    :return: boolean - False if token count is violated
     '''
 
-    # If there is an empty user, we need to set it to None
-    if user:
-        if user.login == "":
-            user = None
+    # ---------------------------------------------------------------------- --
 
-    if user is None and realm is None:
-        # No user and realm given, so we check all the tokens
-        ret = True
-        tNum = linotp.lib.token.getTokenNumResolver()
+    # in case of the pre action (init, assign, ..) there must be at least
+    # one token available without hitting the tocken count limit
+    # - we use the to simplify the algorithm
 
-        log.debug("Number of tokens in DB: %i", int(tNum))
-        log.debug("result of checking the token number: %i", ret)
+    count_offset = 1
+    if post_check:
+        count_offset = 0
 
-        return ret
+    # ---------------------------------------------------------------------- --
+
+    # determin the realm in which the tokencount should be evaluated
+    # either derived from the user or directly specified or if none, we check
+    # that all realms are not violating the limit - does this make sense?
+
+    if user and user.login:
+        log.debug("checking token num in realm: %r, resolver: %r",
+                  user.realm, user.resolver_config_identifier)
+
+        lookup_realms = _getUserRealms(user)
+
+    elif user and user.realm:
+        log.debug("checking token num in realm: %r, resolver: %r",
+                  user.realm, user.resolver_config_identifier)
+
+        lookup_realms = getRealms(user.realm)
+
+    elif realm:
+        lookup_realms = getRealms(realm)
 
     else:
-        # allRealms = getRealms()
-        Realms = []
+        log.debug("no realm defined - skiping tokencount check")
+        return True
 
-        if user:
-            log.debug("checking token num in realm: %s, resolver: %s",
-                      user.realm, user.resolver_config_identifier)
+    log.debug("checking token count in realm: %r", lookup_realms)
 
-            # 1. alle resolver aus dem Realm holen.
-            # 2. fuer jeden Resolver die tNum holen.
-            # 3. die Policy holen und gegen die tNum checken.
-            Realms = _getUserRealms(user)
-        elif realm:
-            Realms = [realm]
+    token_count = 'tokencount'
+    policy_def = {
+        'scope': 'enrollment',
+        'action': token_count
+    }
 
-        log.debug("checking token num in realm: %r", Realms)
+    # Now we are checking the policy for every Realm
 
-        tokenInRealms = {}
-        for R in Realms:
-            tIR = linotp.lib.token.getTokenInRealm(R)
-            tokenInRealms[R] = tIR
-            log.debug("There are %i tokens in realm %r", tIR, R)
+    for lookup_realm in lookup_realms:
 
-        # Now we are checking the policy for every Realm! (if there are more)
-        policyFound = False
-        maxToken = 0
-        for R in Realms:
-            pol = getPolicy({'scope': 'enrollment', 'realm': R,
-                             'action': 'tokencount'})
+        # ------------------------------------------------------------------ --
 
-            polTNum = getPolicyActionValue(pol, 'tokencount')
+        # first check if there is a policy at all, if not, we can skip
+        # to the next realm
 
-            if polTNum > -1:
-                policyFound = True
+        policy_def['realm'] = lookup_realm
+        policy = getPolicy(policy_def)
+        if not policy:
+            continue
 
-                if int(polTNum) > int(maxToken):
-                    maxToken = int(polTNum)
+        policy_token_count = getPolicyActionValue(
+                                policy, token_count, is_string=False)
 
-            log.info("Realm: %r, max: %i, tokens in realm: %i",
-                     R, int(maxToken), int(tokenInRealms[R]))
-
-            if post_check:
-                if int(maxToken) >= int(tokenInRealms[R]):
-                    return True
-            else:
-                if int(maxToken) > int(tokenInRealms[R]):
-                    return True
-
-        if policyFound is False:
+        if policy_token_count < 0:
             log.debug("there is no scope=enrollment, action=tokencount policy "
-                      "for the realms %r", Realms)
-            return True
+                      "for the realm %r", lookup_realm)
+            continue
 
-        log.info("No policy available for realm %r, where enough managable "
-                 "tokens were defined.", Realms)
+        # ------------------------------------------------------------------ --
 
-    return False
+        # if there is a policy, we query the token amount of this realm
+
+        token_in_realm = linotp.lib.token.getTokenInRealm(lookup_realm)
+        log.debug("There are %r tokens in realm %r",
+                  token_in_realm, lookup_realm)
+
+        # ------------------------------------------------------------------ --
+
+        # now check if the limit is violated
+
+        log.info("Realm: %r, max: %r, tokens in realm: %r",
+                 lookup_realm, policy_token_count, token_in_realm)
+
+        if token_in_realm + count_offset > policy_token_count:
+            return False
+
+    return True
 
 
 def _checkTokenAssigned(user):
