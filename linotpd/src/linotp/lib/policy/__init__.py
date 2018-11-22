@@ -179,7 +179,7 @@ def _checkAdminPolicyPost(method, param=None, user=None):
         # ------------------------------------------------------------------ --
 
         if method == 'assign':
-            if not _checkTokenNum(realm=user.realm, post_check=True):
+            if not _check_token_count(realm=user.realm, post_check=True):
                 admin = context['AuthUser']
 
                 log.warning("the admin >%s< is not allowed to enroll any more "
@@ -199,7 +199,7 @@ def _checkAdminPolicyPost(method, param=None, user=None):
 
         tokenrealm = param.get('tokenrealm', user.realm)
 
-        if not _checkTokenNum(realm=tokenrealm, post_check=True):
+        if not _check_token_count(realm=tokenrealm, post_check=True):
             admin = context['AuthUser']
 
             log.warning("the maximum tokens for the realm "
@@ -412,7 +412,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                                     "right to enable token %s. Check the "
                                     "policies.") % serial)
 
-        if not _checkTokenNum():
+        if not _check_token_count():
             log.error("The maximum token number is reached!")
             raise PolicyException(_("You may not enable any more tokens. "
                                     "Your maximum token number is "
@@ -421,7 +421,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         # We need to check which realm the token will be in.
         realmList = linotp.lib.token.getTokenRealms(serial)
         for r in realmList:
-            if not _checkTokenNum(realm=r):
+            if not _check_token_count(realm=r):
 
                 log.warning("the maximum tokens for the realm %s is "
                             "exceeded.", r)
@@ -599,33 +599,9 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                                         "right to init token %s of type %s.")
                                       % (serial, ttype))
 
-        # Here we check, if the tokennum exceeded
-        log.debug("checking number of tokens")
-        if not _checkTokenNum():
-            log.error("The maximum token number is reached!")
-            raise PolicyException(_("You may not enroll any more tokens. "
-                                    "Your maximum token number is reached!"))
 
-        # if a policy restricts the tokennumber for a realm
-        log.debug("checking tokens in realms %s", policies['realms'])
-        for _realm in policies['realms']:
-
-            if not _checkTokenNum(realm=_realm):
-
-                log.warning("the admin >%s< is not allowed to enroll any more "
-                            "tokens for the realm %s",
-                            policies['admin'], _realm)
-
-                raise PolicyException(description=_("The maximum allowed number"
-                                      " of tokens for the realm %s was "
-                                      "reached. You can not init any more "
-                                      "tokens. Check the policies "
-                                      "scope=enrollment, "
-                                      "action=tokencount.") % _realm)
-
-        log.debug("checking tokens in realm for user %s", user)
-        if not _checkTokenNum(user=user):
-
+        log.debug("checking tokens in realm for user %r", user)
+        if user and not _check_token_count(user=user):
             log.warning("the admin >%s< is not allowed to enroll any more "
                         "tokens for the realm %s",
                         policies['admin'], user.realm)
@@ -862,7 +838,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                                         "right to add tokens to realm %s. "
                                         "Check the policies.") % r)
 
-            if not _checkTokenNum(realm=r):
+            if not _check_token_count(realm=r):
 
                 log.warning("the maximum tokens for the "
                             "realm %s is exceeded.", r)
@@ -926,7 +902,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                                         "right to import token files to realm %s"
                                         ". Check the policies.") % tokenrealm)
 
-        if not _checkTokenNum(realm=tokenrealm):
+        if not _check_token_count(realm=tokenrealm):
 
             log.warning("the maximum tokens for the realm "
                         "%s is exceeded.", tokenrealm)
@@ -1205,7 +1181,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
                                   'you to issue this request!'))
 
         # Here we check, if the tokennum exceeds the tokens
-        if not _checkTokenNum():
+        if not _check_token_count():
 
             log.error("The maximum token number is reached!")
 
@@ -1278,7 +1254,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
                                   'to issue this request!'))
 
         # Here we check, if the tokennum exceeds the allowed tokens
-        if not _checkTokenNum():
+        if not _check_token_count():
 
             log.error("The maximum token number is reached!")
 
@@ -1310,7 +1286,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
                                   'you to issue this request!'))
 
         # Here we check, if the tokennum exceeds the allowed tokens
-        if not _checkTokenNum():
+        if not _check_token_count():
 
             log.error("The maximum token number is reached!")
 
@@ -1505,7 +1481,7 @@ def getSelfserviceActions(user):
     return list(acts)
 
 
-def _checkTokenNum(user=None, realm=None, post_check=False):
+def _check_token_count(user=None, realm=None, post_check=False):
     '''
     This internal function checks if the number of the tokens is valid...
     for a certain realm...
