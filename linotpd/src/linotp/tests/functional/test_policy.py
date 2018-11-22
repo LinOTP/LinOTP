@@ -2849,7 +2849,6 @@ class TestPolicies(TestController):
         parameters = {'serial': 'enroll_003',
                       'type': 'spass',
                       'user': 'remoteuser@myDefRealm',
-                      'selftest_admin': 'admin_init'
                       }
         auth_user = 'admin_init'
         response = self.make_admin_request(action='init',
