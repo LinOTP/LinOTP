@@ -40,7 +40,7 @@ import traceback
 from freezegun import freeze_time
 
 from linotp.lib.crypto import geturandom
-from linotp.tests import TestController, url
+from linotp.tests import TestController
 
 try:
     import json
@@ -248,7 +248,7 @@ class TestTotpController(TestController):
 
     def delToken(self, serial):
         p = {"serial" : serial }
-        response = self.app.get(url(controller='admin', action='remove'), params=p)
+        response = self.make_admin_request('remove', params=p)
         return response
 
     def time2float(self, curTime):
@@ -297,7 +297,7 @@ class TestTotpController(TestController):
         if key is not None:
             param['otpkey'] = key
 
-        response = self.app.get(url(controller='admin', action='init'), params=param)
+        response = self.make_admin_request('init', params=param)
         assert '"status": true,' in response
 
         return serial
@@ -317,14 +317,14 @@ class TestTotpController(TestController):
                           "description" : "TOTP testtoken",
                           }
 
-        response = self.app.get(url(controller='admin', action='init'), params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         assert '"value": true' in response
         return
 
 
     def getTokenInfo(self, serial):
         param = { 'serial': serial}
-        response = self.app.get(url(controller='admin', action='show'), params=param)
+        response = self.make_admin_request('show', params=param)
         assert '"status": true,' in response
         return json.loads(response.body)
 
@@ -334,7 +334,7 @@ class TestTotpController(TestController):
             pin = user
 
         param = { 'user': user, 'pass':pin + otp }
-        response = self.app.get(url(controller='validate', action='check'), params=param)
+        response = self.make_validate_request('check', params=param)
         assert '"status": true,' in response
 
         return response
@@ -519,7 +519,7 @@ class TestTotpController(TestController):
                        'action' : 'max_count_dpw=10, max_count_hotp=10, max_count_totp=10',
                        'user' : 'admin'
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request('setPolicy', params=parameters)
 
 
         tFormat = "%Y-%m-%d %H:%M:%S"
@@ -550,7 +550,8 @@ class TestTotpController(TestController):
                               'curTime' : curTime,
                               'count' : "20",
                               'selftest_admin' : 'admin' }
-                response = self.app.get(url(controller='gettoken', action='getmultiotp'), params=parameters)
+                response = self.make_gettoken_request(
+                                'getmultiotp', params=parameters)
 
                 print response
                 resp = json.loads(response.body)

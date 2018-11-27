@@ -29,7 +29,7 @@
 """
 
 import json
-from linotp.tests import TestController, url
+from linotp.tests import TestController
 
 
 class TestYubikeyController(TestController):
@@ -118,15 +118,13 @@ class TestYubikeyController(TestController):
 
             for otp in self.valid_otps:
                 params = {'serial': serial, 'pass': otp}
-                response = self.app.get(url(controller='validate', action='check_s'),
-                                        params=params)
+                response = self.make_validate_request('check_s', params=params)
                 self.assertTrue('"value": true' in response, "Response: %r" % response)
 
             # Repeat an old (therefore invalid) OTP value
             invalid_otp = public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
             params = {'serial': serial, 'pass': invalid_otp}
-            response = self.app.get(url(controller='validate',
-                                        action='check_s'), params=params)
+            response = self.make_validate_request('check_s', params=params)
             self.assertTrue('"value": false' in response, "Response: %r"
                             % response)
 
@@ -150,10 +148,7 @@ class TestYubikeyController(TestController):
             'otp2': otp2,
             'session': self.session,
             }
-        response = self.app.get(
-            url(controller='admin', action='resync'),
-            params=params
-            )
+        response = self.make_admin_request('resync', params=params)
         self.assertTrue('"value": true' in response, "Response: %r" % response)
 
         params = {
@@ -162,10 +157,7 @@ class TestYubikeyController(TestController):
             'otp2': otp2,
             'session': self.session,
             }
-        response = self.app.get(
-            url(controller='admin', action='resync'),
-            params=params,
-            )
+        response = self.make_admin_request('resync', params=params)
         self.assertTrue('"value": false' in response, "Response: %r" % response)
 
         return

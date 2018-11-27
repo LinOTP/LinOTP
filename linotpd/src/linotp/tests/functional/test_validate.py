@@ -43,7 +43,6 @@ from mock import patch
 import pyrad
 
 from linotp.tests import TestController, url
-
 log = logging.getLogger(__name__)
 
 
@@ -193,8 +192,7 @@ class TestValidateController(TestController):
             "description": "TestToken1",
         }
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
     def createTOtpToken(self, hashlib_def):
@@ -236,8 +234,7 @@ class TestValidateController(TestController):
             "hashlib": hashlib_def,
         }
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         try:
@@ -326,8 +323,7 @@ class TestValidateController(TestController):
         }
         if realm is not None:
             parameters.update(realm)
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
     def createHMACToken(self, serial="F722362", user='root', pin="pin"):
@@ -340,8 +336,7 @@ class TestValidateController(TestController):
             "description": "TestToken1",
         }
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         return response
 
 
@@ -356,8 +351,7 @@ class TestValidateController(TestController):
             "description": "TestToken1",
         }
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         serials.add(parameters.get('serial'))
@@ -370,8 +364,7 @@ class TestValidateController(TestController):
             "description": "TestToken2",
         }
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         serials.add(parameters.get('serial'))
@@ -385,8 +378,7 @@ class TestValidateController(TestController):
             "description": "TestToken3",
         }
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         serials.add(parameters.get('serial'))
@@ -399,8 +391,7 @@ class TestValidateController(TestController):
             "description": "TestToken3",
         }
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         serials.add(parameters.get('serial'))
@@ -416,8 +407,7 @@ class TestValidateController(TestController):
             "description": "TestToken2",
         }
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
     def createToken3(self):
@@ -429,8 +419,7 @@ class TestValidateController(TestController):
             "description": "TestToken3",
         }
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
     def createTokenSMS(self):
@@ -443,8 +432,7 @@ class TestValidateController(TestController):
             "phone": "007"
         }
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
     def createSpassToken(self, serial="TSpass", user="root", pin="pin"):
@@ -621,8 +609,7 @@ class TestValidateController(TestController):
         parameters = {"user": "root", "pass": "pin870581"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"value": true' in response, response)
@@ -630,8 +617,7 @@ class TestValidateController(TestController):
         parameters = {"user": "postgres", "pass": "pin"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"value": false' in response, response)
@@ -639,8 +625,7 @@ class TestValidateController(TestController):
         parameters = {"user": "postgres"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"value": false' in response, response)
@@ -648,8 +633,7 @@ class TestValidateController(TestController):
         parameters = {"user": "UnKnownUser"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"value": false' in response, response)
@@ -659,8 +643,7 @@ class TestValidateController(TestController):
         parameters = {"user": "postgres"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n", response)
         # Test response...
         self.assertTrue('"value": true' in response, response)
@@ -668,8 +651,7 @@ class TestValidateController(TestController):
         parameters = {"user": "postgres", "pass": "pin"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"value": true' in response, response)
@@ -677,8 +659,7 @@ class TestValidateController(TestController):
         parameters = {"user": "UnKnownUser"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"value": false' in response, response)
@@ -686,8 +667,7 @@ class TestValidateController(TestController):
         parameters = {"user": "root", "pass": "pin088491"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"value": true' in response, response)
@@ -695,8 +675,7 @@ class TestValidateController(TestController):
         parameters = {"user": "root"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         return
@@ -706,8 +685,7 @@ class TestValidateController(TestController):
         parameters = {"user": "postgres"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"value": false' in response, response)
@@ -715,8 +693,7 @@ class TestValidateController(TestController):
         parameters = {"user": "postgres", "pass": "pin"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"value": false' in response, response)
@@ -724,8 +701,7 @@ class TestValidateController(TestController):
         parameters = {"user": "UnKnownUser"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"value": true' in response, response)
@@ -733,8 +709,7 @@ class TestValidateController(TestController):
         parameters = {"user": "root", "pass": "pin818771"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"value": true' in response, response)
@@ -742,16 +717,14 @@ class TestValidateController(TestController):
         parameters = {"user": "root"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
     def checkTrue(self, realm):
 
         parameters = {"user": "postgres", "pass": "pin"}
         parameters.update(realm)
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"value": true' in response, response)
@@ -759,8 +732,7 @@ class TestValidateController(TestController):
         parameters = {"user": "postgres"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"value": true' in response, response)
@@ -768,8 +740,7 @@ class TestValidateController(TestController):
         parameters = {"user": "UnKnownUser"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"value": true' in response, response)
@@ -777,8 +748,7 @@ class TestValidateController(TestController):
         parameters = {"user": "root", "pass": "pin217219"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"value": true' in response, response)
@@ -786,8 +756,7 @@ class TestValidateController(TestController):
         parameters = {"user": "root"}
         parameters.update(realm)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         #
@@ -826,51 +795,44 @@ class TestValidateController(TestController):
 
         self.createToken1()
 
-        self.app.get(url(controller='system', action='getRealms'))
+        self.make_system_request('getRealms')
         parameters = {"username": "*"}
-        self.app.get(url(controller='admin', action='userlist'),
-                     params=parameters)
+        self.make_admin_request('userlist', params=parameters)
         self.checkFalse(realm)
 
         parameters = {"PassOnUserNoToken": "True"}
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
         self.assertTrue('"setConfig PassOnUserNoToken:True": true' in response,
                         response)
 
         self.checkFalse2(realm)
 
         parameters = {"PassOnUserNoToken": "False"}
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
         self.assertTrue('"setConfig PassOnUserNoToken:False": true' in
                         response, response)
 
         parameters = {"PassOnUserNotFound": "True"}
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
         self.assertTrue('"setConfig PassOnUserNotFound:True": true' in
                         response, response)
 
         self.checkFalse3(realm)
 
         parameters = {"PassOnUserNoToken": "True"}
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
         self.assertTrue('"setConfig PassOnUserNoToken:True": true' in response,
                         response)
 
         self.checkTrue(realm)
 
         parameters = {"key": "PassOnUserNotFound"}
-        response = self.app.get(url(controller='system', action='delConfig'),
-                                params=parameters)
+        response = self.make_system_request('delConfig', params=parameters)
         self.assertTrue('"delConfig PassOnUserNotFound": true' in response,
                         response)
 
         parameters = {"key": "PassOnUserNoToken"}
-        response = self.app.get(url(controller='system', action='delConfig'),
-                                params=parameters)
+        response = self.make_system_request('delConfig', params=parameters)
         self.assertTrue('"delConfig PassOnUserNoToken": true' in response,
                         response)
 
@@ -1140,31 +1102,26 @@ class TestValidateController(TestController):
         self.createToken()
 
         parameters = {"user": "root", "pass": "pin123456"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         parameters = {"serial": "F722362"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         self.assertTrue('"LinOtp.FailCount": 1' in response, response)
         self.assertTrue('"LinOtp.FailCount": 0' not in response, response)
 
         # check all 3 tokens - the last one is it
         parameters = {"user": "root", "pass": "pin280395"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         parameters = {"serial": "F722364"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         self.assertTrue('"LinOtp.Count": 1' in response, response)
         self.assertTrue('"LinOtp.FailCount": 0' in response, response)
 
         parameters = {"serial": "F722362"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         # change with token counter fix:
         # if one token of a set of tokens is valid,
         # all others involved are resetted
@@ -1172,19 +1129,16 @@ class TestValidateController(TestController):
 
         # check all 3 tokens - the last one is it
         parameters = {"pin": "TPIN", "serial": "F722364"}
-        response = self.app.get(url(controller='admin', action='set'),
-                                params=parameters)
+        response = self.make_admin_request('set', params=parameters)
         self.assertTrue('"set pin": 1' in response, response)
 
         # check all 3 tokens - the last one is it
         parameters = {"user": "root", "pass": "TPIN552629"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         parameters = {"serial": "F722364"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         self.assertTrue('"LinOtp.Count": 4' in response, response)
         self.assertTrue('"LinOtp.FailCount": 0' in response, response)
 
@@ -1192,13 +1146,11 @@ class TestValidateController(TestController):
         for _i in range(1, 20):
             # check if otp could be reused
             parameters = {"user": "root", "pass": "TPIN552629"}
-            response = self.app.get(url(controller='validate', action='check'),
-                                    params=parameters)
+            response = self.make_validate_request('check', params=parameters)
             self.assertTrue('"value": false' in response, response)
 
         parameters = {"user": "root"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         jresp = json.loads(response.body)
         data = jresp.get('result', {}).get('value', {}).get('data', [])
 
@@ -1236,18 +1188,15 @@ class TestValidateController(TestController):
 
         # we change the pin of the 3. token to be different to the other ones
         parameters = {"serial": "F722364", 'pin': 'Pin3!'}
-        response = self.app.get(url(controller='admin', action='set'),
-                                params=parameters)
+        response = self.make_admin_request('set', params=parameters)
         self.assertTrue('"set pin": 1' in response, response)
 
         parameters = {"user": "root", "pass": "pin123456"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         parameters = {"user": "root"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
 
         # check all 3 tokens - the last one is it
         jresp = json.loads(response.body)
@@ -1263,13 +1212,11 @@ class TestValidateController(TestController):
 
         # check all 3 tokens - one of them matches an resets all fail counter
         parameters = {"user": "root", "pass": "Pin3!280395"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         parameters = {"user": "root"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
 
         jresp = json.loads(response.body)
         tokens = jresp.get('result', {}).get('value', {}).get('data', [])
@@ -1294,29 +1241,24 @@ class TestValidateController(TestController):
         self.createToken2()
 
         parameters = {"serial": "T2", "otp1": "719818", "otp2": "204809"}
-        response = self.app.get(url(controller='admin', action='resync'),
-                                params=parameters)
+        response = self.make_admin_request('resync', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         parameters = {"serial": "T2"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         self.assertTrue('"LinOtp.Count": 40' in response, response)
 
         parameters = {"user": "root", "pass": "T2PIN204809"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         # 957690
         parameters = {"user": "root", "pass": "T2PIN957690"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         parameters = {"serial": "T2"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         self.assertTrue('"LinOtp.Count": 41' in response, response)
 
         self.delete_token("T2")
@@ -1330,44 +1272,36 @@ class TestValidateController(TestController):
         self.createToken3()
 
         parameters = {"user": "root", "pass": "T2PIN204809"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         parameters = {"user": "root", "otp1": "719818", "otp2": "204809"}
-        response = self.app.get(url(controller='admin', action='resync'),
-                                params=parameters)
+        response = self.make_admin_request('resync', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         parameters = {"serial": "T2"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         self.assertTrue('"LinOtp.Count": 40' in response, response)
 
         parameters = {"serial": "T3"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         self.assertTrue('"LinOtp.Count": 40' in response, response)
 
         parameters = {"serial": "T3", "pin": "T3PIN"}
-        response = self.app.get(url(controller='admin', action='set'),
-                                params=parameters)
+        response = self.make_admin_request('set', params=parameters)
         self.assertTrue('"set pin": 1' in response, response)
 
         parameters = {"user": "root", "pass": "T2PIN204809"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         # 957690
         parameters = {"user": "root", "pass": "T2PIN957690"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         parameters = {"serial": "T2"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         self.assertTrue('"LinOtp.Count": 41' in response, response)
 
         self.delete_token("T2")
@@ -1397,31 +1331,26 @@ class TestValidateController(TestController):
 
         # test resync of token 2
         parameters = {"AutoResync": "true"}
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
         self.assertTrue('setConfig AutoResync:true": true' in response,
                         response)
 
         # 35
         parameters = {"user": "root", "pass": "T2PIN732866"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         # 36
         parameters = {"user": "root", "pass": "T2PIN920079"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         parameters = {"user": "root", "pass": "T2PIN732866"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         parameters = {"user": "root", "pass": "T2PIN957690"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         self.delete_token("T2")
@@ -1434,21 +1363,18 @@ class TestValidateController(TestController):
 
         # test resync of token 2
         parameters = {"AutoResync": "true"}
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
         self.assertTrue('setConfig AutoResync:true": true' in response,
                         response)
 
         # 35
         parameters = {"user": "root", "pass": "T2PIN732866"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         # 37
         parameters = {"user": "root", "pass": "T2PIN328973"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         self.delete_token("T2")
@@ -1461,21 +1387,18 @@ class TestValidateController(TestController):
 
         # test resync of token 2
         parameters = {"AutoResync": "false"}
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
         self.assertTrue('setConfig AutoResync:false": true' in response,
                         response)
 
         # 35
         parameters = {"user": "root", "pass": "T2PIN732866"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         # 36
         parameters = {"user": "root", "pass": "T2PIN920079"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         self.delete_token("T2")
@@ -1485,18 +1408,15 @@ class TestValidateController(TestController):
         self.createMOtpToken()
 
         parameters = {"serial": "M722362"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         self.assertTrue('"LinOtp.FailCount": 0' in response, response)
 
         parameters = {"user": "root", "pass": "pin7215e7"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         parameters = {"serial": "M722362"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         self.assertTrue('"LinOtp.FailCount": 1' in response, response)
 
         #
@@ -1505,8 +1425,7 @@ class TestValidateController(TestController):
         #
 
         parameters = {"user": "root", "pass": "pin7215e7", "init": "126753360"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
 
         if self.isSelfTest is True:
             self.assertTrue('"value": true' in response, response)
@@ -1615,22 +1534,19 @@ class TestValidateController(TestController):
         self.createTOtpToken("SHA1")
 
         parameters = {"serial": "TOTP"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"LinOtp.FailCount": 0' in response, response)
 
         parameters = {"user": "root", "pass": "pin12345678"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         self.assertTrue('"value": false' in response, response)
 
         parameters = {"serial": "TOTP"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         log.info("1 response /admin/hhow %s\n" % response)
         self.assertTrue('"LinOtp.FailCount": 1' in response, response)
 
@@ -1643,8 +1559,7 @@ class TestValidateController(TestController):
         #
 
         parameters = {"user": "root", "pass": "pin94287082", "init": "59"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
 
         if self.isSelfTest is True:
             self.assertTrue('"value": true' in response, response)
@@ -1660,8 +1575,7 @@ class TestValidateController(TestController):
 
         parameters = {"user": "root", "pass": "pin07081804",
                       "init": "1111111109"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
 
         if self.isSelfTest is True:
             self.assertTrue('"value": true' in response, response)
@@ -1674,8 +1588,7 @@ class TestValidateController(TestController):
 
         parameters = {"user": "root", "pass": "pin89005924",
                       "init": "1234567890"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
 
         if self.isSelfTest is True:
             self.assertTrue('"value": true' in response, response)
@@ -1694,11 +1607,11 @@ class TestValidateController(TestController):
         # |      59     |  1970-01-01  | 0000000000000001 | 90693936 | SHA512 |
         #
 
+        self.set_config_selftest()
         self.createTOtpToken("SHA256")
 
         parameters = {"user": "root", "pass": "pin46119246", "init": "59"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
 
         if self.isSelfTest is True:
             self.assertTrue('"value": true' in response, response)
@@ -1712,11 +1625,11 @@ please enable 'linotp.selfTest = True' in your *.ini
 
         self.delete_token("TOTP")
 
+        self.set_config_selftest()
         self.createTOtpToken("SHA512")
 
         parameters = {"user": "root", "pass": "pin90693936", "init": "59"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         log.error("response %s\n", response)
 
         if self.isSelfTest is True:
@@ -1739,29 +1652,24 @@ please enable 'linotp.selfTest = True' in your *.ini
         totp = self.createTOtpToken("SHA1")
 
         parameters = {"serial": "TOTP"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         self.assertTrue('"LinOtp.FailCount": 0' in response, response)
 
         parameters = {"DefaultSyncWindow": "200"}
-        response = self.app.get(url(controller='system', action='setDefault'),
-                                params=parameters)
+        response = self.make_system_request('setDefault', params=parameters)
         self.assertTrue('"set DefaultSyncWindow": true' in response, response)
 
         parameters = {"AutoResync": "true"}
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
         self.assertTrue('setConfig AutoResync:true": true' in response,
                         response)
 
         parameters = {"user": "root", "pass": "pin12345678"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         parameters = {"serial": "TOTP"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         # log.error("response %s\n", response)
         self.assertTrue('"LinOtp.FailCount": 1' in response, response)
 
@@ -1777,8 +1685,7 @@ please enable 'linotp.selfTest = True' in your *.ini
         otp2 = self.createTOtpValue(totp, myTime - 70)
 
         parameters = {"user": "root", "otp1": otp1, "otp2": otp2}
-        response = self.app.get(url(controller='admin', action='resync'),
-                                params=parameters)
+        response = self.make_admin_request('resync', params=parameters)
         # self.assertTrue('"value": true' in response
 
         #
@@ -1793,8 +1700,7 @@ please enable 'linotp.selfTest = True' in your *.ini
         otp2 = self.createTOtpValue(totp, myTime + 152)
 
         parameters = {"user": "root", "otp1": otp1, "otp2": otp2}
-        response = self.app.get(url(controller='admin', action='resync'),
-                                params=parameters)
+        response = self.make_admin_request('resync', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         self.delete_token("TOTP")
@@ -1805,13 +1711,11 @@ please enable 'linotp.selfTest = True' in your *.ini
         '''
 
         parameters = {"DefaultSyncWindow": "200"}
-        response = self.app.get(url(controller='system', action='setDefault'),
-                                params=parameters)
+        response = self.make_system_request('setDefault', params=parameters)
         self.assertTrue('"set DefaultSyncWindow": true' in response, response)
 
         parameters = {"AutoResync": "true"}
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
         self.assertTrue('setConfig AutoResync:true": true' in response,
                         response)
 
@@ -1828,12 +1732,10 @@ please enable 'linotp.selfTest = True' in your *.ini
         otp2 = self.createTOtpValue(totp, myTime + 286)
 
         parameters = {"user": "root", "pass": "pin" + otp1}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
 
         parameters = {"user": "root", "pass": "pin" + otp2}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
 
         self.delete_token("TOTP")
 
@@ -1846,44 +1748,37 @@ please enable 'linotp.selfTest = True' in your *.ini
         self.createToken1()
 
         parameters = {"serial": "F722362", "MaxFailCount": "15"}
-        response = self.app.get(url(controller='admin', action='set'),
-                                params=parameters)
+        response = self.make_admin_request('set', params=parameters)
         self.assertTrue('"set MaxFailCount": 1' in response, response)
 
         parameters = {"user": "root", "pass": "pin870581"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         parameters = {"serial": "F722362"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         self.assertTrue('"LinOtp.FailCount": 0' in response, response)
 
         # Test if FailCount increments and in case of a valid OTP is resetted
 
         for _i in range(0, 14):
             parameters = {"user": "root", "pass": "pin123456"}
-            response = self.app.get(url(controller='validate', action='check'),
-                                    params=parameters)
+            response = self.make_validate_request('check', params=parameters)
             self.assertTrue('"value": false' in response, response)
 
         parameters = {"serial": "F722362"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         self.assertTrue('"LinOtp.FailCount": 14' in response, response)
 
         # check all 3 tokens - the last one is it
         parameters = {"user": "root", "pass": "pin818771"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
 
         # Test response...
         self.assertTrue('"value": true' in response, response)
 
         parameters = {"serial": "F722362"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
 
         # Test response...
         self.assertTrue('"LinOtp.Count": 5' in response, response)
@@ -1894,13 +1789,11 @@ please enable 'linotp.selfTest = True' in your *.ini
 
         for _i in range(0, 15):
             parameters = {"user": "root", "pass": "pin123456"}
-            response = self.app.get(url(controller='validate', action='check'),
-                                    params=parameters)
+            response = self.make_validate_request('check', params=parameters)
             self.assertTrue('"value": false' in response, response)
 
         parameters = {"serial": "F722362"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
         self.assertTrue('"LinOtp.Count": 5' in response, response)
         self.assertTrue('"LinOtp.FailCount": 15' in response, response)
 
@@ -1908,26 +1801,22 @@ please enable 'linotp.selfTest = True' in your *.ini
         # the OTP Count must be incremented anyway
 
         parameters = {"user": "root", "pass": "pin250710"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         parameters = {"serial": "F722362"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
 
         # TODO: post merge: verify the real counts
         self.assertTrue('"LinOtp.Count": 5' in response, response)
         self.assertTrue('"LinOtp.FailCount": 16' in response, response)
 
         parameters = {"serial": "F722362"}
-        response = self.app.get(url(controller='admin', action='reset'),
-                                params=parameters)
+        response = self.make_admin_request('reset', params=parameters)
         self.assertTrue('"value": 1' in response, response)
 
         parameters = {"serial": "F722362"}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=parameters)
+        response = self.make_admin_request('show', params=parameters)
 
         # TODO: post merge: verify the real counts
         self.assertTrue('"LinOtp.Count": 5' in response, response)
@@ -1947,17 +1836,14 @@ please enable 'linotp.selfTest = True' in your *.ini
                       "type": "spass"
         }
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         parameters = {"allowSamlAttributes": "True"}
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
 
         parameters = {"user": "root", "pass": "test"}
-        response = self.app.get(url(controller='validate', action='samlcheck'),
-                                params=parameters)
+        response = self.make_validate_request('samlcheck', params=parameters)
         self.assertTrue('"auth": true' in response, response)
         self.assertTrue('"username": "root"' in response, response)
 
@@ -1970,8 +1856,13 @@ please enable 'linotp.selfTest = True' in your *.ini
         serials = self.createToken()
 
         parameters = {"user": "root", "pass": "\xC0"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+
+        # dont replace with self.make_validate_request as it throw
+        # the unicode exception without reaching the linotp server
+
+        response = self.app.get(
+                        url(controller='validate', action='check'),
+                        params=parameters)
 
         self.assertTrue('"value": false' in response or
                         '"status": false' in response, response)
@@ -1986,22 +1877,20 @@ please enable 'linotp.selfTest = True' in your *.ini
         Testing simplecheck
         '''
         serial = 'simple634'
-        response = self.app.get(url(controller='admin', action='init'),
+        response = self.make_admin_request('init',
                                 params={'type': 'spass',
                                         'user': 'root',
                                         'pin': 'topSecret',
                                         'serial': serial})
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='validate',
-                                    action='simplecheck'),
+        response = self.make_validate_request('simplecheck',
                                 params={'user': 'root',
                                         'pass': 'topSecret'})
 
         self.assertTrue(':-)' in response, response)
 
-        response = self.app.get(url(controller='validate',
-                                    action='simplecheck'),
+        response = self.make_validate_request('simplecheck',
                                 params={'user': 'root',
                                         'pass': 'wrongPW'})
         self.assertTrue(':-(' in response, response)

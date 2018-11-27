@@ -150,8 +150,7 @@ class TestU2FController(TestController):
         if pin is not None:
             parameters['pin'] = pin
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         return response
 
     def _registration2(self,
@@ -172,8 +171,7 @@ class TestU2FController(TestController):
         if pin is not None:
             parameters['pin'] = pin
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         return response
 
     def _authentication1(self, pin=None):
@@ -187,8 +185,7 @@ class TestU2FController(TestController):
         if pin is not None:
             parameters['pass'] = pin
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         return response
 
     def _authentication2(self,
@@ -212,8 +209,7 @@ class TestU2FController(TestController):
 
         parameters.update(additional_params)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
 
         return response
 

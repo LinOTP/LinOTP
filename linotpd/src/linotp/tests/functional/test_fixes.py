@@ -122,8 +122,7 @@ class TestFixesController(TestController):
         :return: the response object of admin/remove
         '''
         param = {"serial" : serial }
-        response = self.app.get(url(controller='admin', action='remove'),
-                                                            params=param)
+        response = self.make_admin_request('remove', params=param)
         return response
 
     def get_config(self):
@@ -133,8 +132,7 @@ class TestFixesController(TestController):
         :return: the response object of the system/getConfig
         '''
         param = {}
-        response = self.app.get(url(controller='system', action='getConfig'),
-                                                                params=param)
+        response = self.make_system_request('getConfig', params=param)
         return response
 
 
@@ -172,8 +170,7 @@ class TestFixesController(TestController):
         if key is not None:
             param['otpkey'] = key
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                                                params=param)
+        response = self.make_admin_request('init', params=param)
         assert '"status": true,' in response
 
         return (serial, response)
@@ -252,8 +249,7 @@ class TestFixesController(TestController):
         self.add_token('root', serial='troot', typ='spass', key='1234')
 
         param = {'serial':'troot', 'realms':'myDefRealm,myMixRealm'}
-        response = self.app.get(url(controller='admin', action='tokenrealm'),
-                                                                params=param)
+        response = self.make_admin_request('tokenrealm', params=param)
         if '"value": 1' not in response.body:
             assert '"value": 1' in response.body
 
@@ -261,8 +257,7 @@ class TestFixesController(TestController):
         ## the admin show returns slices of 10 token and our troot is not in
         ## the first slice :-( - so we now search directly for the token
         param['serial'] = 'troot'
-        response = self.app.get(url(controller='admin', action='show'),
-                                                            params=param)
+        response = self.make_admin_request('show', params=param)
         resp = json.loads(response.body)
         tok_data = resp.get('result').get('value').get('data')[0]
         realms = tok_data.get('LinOtp.RealmNames')
@@ -282,12 +277,11 @@ class TestFixesController(TestController):
                which could trigger an HTTP Error
         '''
         param = {'__HSMEXCEPTION__':'__ON__'}
-        response = self.app.get(url(controller='system',
-                                action='setupSecurityModule'), params=param)
+        response = self.make_system_request(
+                    'setupSecurityModule', params=param)
 
         param = {'key':'sec', 'value':'mySec', 'type':'password'}
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                                                params=param)
+        response = self.make_system_request('setConfig', params=param)
 
         assert '707' in response
         assert 'hsm not ready' in response
@@ -296,8 +290,7 @@ class TestFixesController(TestController):
         try:
             param = {'key':'sec', 'value':'mySec',
                  'type':'password', 'httperror':'503'}
-            response = self.app.get(url(controller='system',
-                                        action='setConfig'), params=param)
+            response = self.make_system_request('setConfig', params=param)
         except Exception as exx:
             log.info(response)
             res = type(exx).__name__
@@ -306,8 +299,8 @@ class TestFixesController(TestController):
 
         ## restore default
         param = {'__HSMEXCEPTION__':'__OFF__'}
-        response = self.app.get(url(controller='system',
-                                action='setupSecurityModule'), params=param)
+        response = self.make_system_request(
+                        'setupSecurityModule', params=param)
 
         return
 
@@ -321,8 +314,7 @@ class TestFixesController(TestController):
         assert serial == 'troot'
 
         param = {}
-        response = self.app.get(url(controller='admin', action='show'),
-                                                                params=param)
+        response = self.make_admin_request('show', params=param)
         #resp = json.loads(response.body)
         assert '"LinOtp.OtpLen": 12' in response
 

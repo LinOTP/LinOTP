@@ -52,7 +52,7 @@ from linotp.lib.crypto import createActivationCode
 from linotp.lib.crypto import check
 
 
-from linotp.tests import TestController, url
+from linotp.tests import TestController
 
 from nose.plugins.attrib import attr
 
@@ -420,8 +420,7 @@ class OcraTest(TestController):
                   'user': 'ocra_admin',
                   'scope': 'ocra',
                   'action': 'request, status, activationcode, calcOTP'}
-        response = self.make_system_request(action='setPolicy',
-                                            params=params)
+        response = self.make_system_request('setPolicy', params=params)
         self.assertTrue('"setPolicy ocra_allowance"' in response, response)
         self.assertTrue('"status": true' in response, response)
 
@@ -442,8 +441,7 @@ class OcraTest(TestController):
             % (unicode(check_url))
         )
 
-        response = self.app.get(
-            url(controller='system', action='setPolicy'), params=params)
+        response = self.make_system_request('setPolicy', params=params)
 
         self.assertTrue('"setPolicy CheckURLPolicy"' in response, response)
         self.assertTrue('"status": true' in response, response)
@@ -456,8 +454,7 @@ class OcraTest(TestController):
             parameters.update(params)
         parameters["transactionid"] = transid
         parameters["pass"] = '' + pin + otp
-        response = self.app.get(
-            url(controller='validate', action='check_t'), params=parameters)
+        response = self.make_validate_request('check_t', params=parameters)
         return response
 
     def gen_challenge_data(self):
@@ -650,7 +647,7 @@ class OcraTest(TestController):
         if realm:
             parameters['realm'] = realm
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         return response
 
@@ -695,7 +692,7 @@ class OcraTest(TestController):
         if ocrasuite is not None:
             parameters['ocrasuite'] = ocrasuite
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         return (response, activationkey)
 
@@ -756,15 +753,14 @@ class OcraTest(TestController):
                       'ocrasuite': ocrasuite
                       }
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         # -2- fetch the challenge
         p = {"serial": serial, "data": ""}
 
-        response = self.app.get(url(controller='validate', action='check_s'),
-                                params=p)
+        response = self.make_validate_request('check_s', params=p)
         self.assertTrue('"value": false' in response, response)
 
         # -3.a- calculate the otp response from the challenge
@@ -796,14 +792,12 @@ class OcraTest(TestController):
 
         # -3.b- verify the otp value
         parameters = {"transactionid": transid, "pass": 'pin' + otp, }
-        response = self.app.get(url(controller='validate', action='check_t'),
-                                params=parameters)
+        response = self.make_validate_request('check_t', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         # -1- create an ocra token
         parameters = {"serial": serial, }
-        response = self.make_admin_request(action='remove',
-                                           params=parameters)
+        response = self.make_admin_request('remove', params=parameters)
         self.assertTrue('"value": 1' in response, response)
 
     def removeTokens(self, user=None, serial=None):
@@ -811,20 +805,17 @@ class OcraTest(TestController):
 
         if user is not None:
             p = {"user": user}
-            response = self.make_admin_request(action='remove',
-                                               params=p)
+            response = self.make_admin_request('remove', params=p)
             self.assertTrue('"value": 1' in response, response)
 
         if serial is not None:
             p = {"serial": serial}
-            response = self.make_admin_request(action='remove',
-                                               params=p)
+            response = self.make_admin_request('remove', params=p)
             self.assertTrue('"value": 1' in response, response)
 
         if serial is None and user is None:
             parameters = {}
-            response = self.make_admin_request(action='show',
-                                               params=parameters)
+            response = self.make_admin_request('show', params=parameters)
             self.assertTrue('"status": true' in response, response)
 
             jresp = json.loads(response.body)
@@ -836,7 +827,7 @@ class OcraTest(TestController):
 
             for serial in serials:
                 p = {"serial": serial}
-                response = self.make_admin_request(action='remove',
+                response = self.make_admin_request('remove',
                                                    params=p)
                 self.assertTrue('"value": 1' in response, response)
 
@@ -876,7 +867,7 @@ class OcraTest(TestController):
                       'ocrapin': ocrapin,
         }
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"value": true' in response, response)
 
@@ -899,7 +890,7 @@ class OcraTest(TestController):
 
         aparm = {'activationcode': '12345678'}
         auth_user = 'ocra_admin'
-        response = self.make_ocra_request(action='getActivationCode',
+        response = self.make_ocra_request('getActivationCode',
                                           params=aparm, auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
         jresp = json.loads(response.body)
@@ -918,7 +909,7 @@ class OcraTest(TestController):
 
         parameters['activationcode'] = activationcode
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters,
                                            auth_user=auth_user)
         self.assertTrue('"value": true' in response, response)
@@ -948,7 +939,7 @@ class OcraTest(TestController):
              }
 
         # TODO!!!
-        response = self.make_ocra_request(action='calculateOtp',
+        response = self.make_ocra_request('calculateOtp',
                                           params=p, auth_user=auth_user)
         log.info("response %s\n", response)
         jresp = json.loads(response.body)
@@ -957,13 +948,12 @@ class OcraTest(TestController):
 
         p = {"transactionid": transid, "pass": 'pin' + otp}
 
-        response = self.app.get(url(controller='validate', action='check_t'),
-                                params=p)
+        response = self.make_validate_request('check_t', params=p)
         self.assertTrue('"value": true' in response, response)
 
         # -remove the ocra token
         parameters = {"serial": serial, }
-        response = self.make_admin_request(action='remove',
+        response = self.make_admin_request('remove',
                                            params=parameters)
         self.assertTrue('"value": 1' in response, response)
 
@@ -1005,7 +995,7 @@ class OcraTest(TestController):
                       'ocrapin': ocrapin,
         }
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"value": true' in response, response)
 
@@ -1037,7 +1027,7 @@ class OcraTest(TestController):
         }
 
         parameters['activationcode'] = activationcode
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"value": true' in response, response)
 
@@ -1094,16 +1084,14 @@ class OcraTest(TestController):
         p = {"transactionid": transid,
              "pass": 'pin' + otp}
 
-        response = self.app.get(url(controller='validate',
-                                    action='check_t'), params=p)
+        response = self.make_validate_request('check_t', params=p)
         self.assertTrue('"value": true' in response, response)
 
         for count in range(1, 20):
             # -2- fetch the challenge
             p = {"serial": serial, "data": ""}
 
-            response = self.app.get(url(controller='validate',
-                                        action='check_s'), params=p)
+            response = self.make_validate_request('check_s', params=p)
             self.assertTrue('"value": false' in response, response)
 
             # -3.a- calculate the otp response from the challenge
@@ -1137,14 +1125,12 @@ class OcraTest(TestController):
             # -3.b- verify the otp value
             parameters = {"transactionid": transid,
                           "pass": 'pin' + otp, }
-            response = self.app.get(url(controller='validate',
-                                        action='check_t'), params=parameters)
+            response = self.make_validate_request('check_t', params=parameters)
             self.assertTrue('"value": true' in response, response)
 
         # -remove the ocra token
         parameters = {"serial": serial, }
-        response = self.app.get(url(controller='admin',
-                                    action='remove'), params=parameters)
+        response = self.make_admin_request('remove', params=parameters)
         self.assertTrue('"value": 1' in response, response)
 
     def test_QR_token_4_Markus(self):
@@ -1175,8 +1161,7 @@ class OcraTest(TestController):
             'ocrapin': ocrapin,
         }
 
-        response = self.app.get(url(controller='admin',
-                                    action='init'), params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         # on the return we get the shared secret
@@ -1210,7 +1195,7 @@ class OcraTest(TestController):
         }
 
         parameters['activationcode'] = activationcode
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"value": true' in response, response)
 
@@ -1267,16 +1252,14 @@ class OcraTest(TestController):
         # -2- finalize enrollment
         p = {"transactionid": transid, "pass": 'pin' + otp}
 
-        response = self.app.get(url(controller='validate', action='check_t'),
-                                params=p)
+        response = self.make_validate_request('check_t', params=p)
         self.assertTrue('"value": true' in response, response)
 
         for count in range(1, 20):
             # -2- fetch the challenge
             p = {"serial": serial, "data": ""}
 
-            response = self.app.get(url(controller='validate',
-                                        action='check_s'), params=p)
+            response = self.make_validate_request('check_s', params=p)
             self.assertTrue('"value": false' in response, response)
 
             # -3.a- calculate the otp response from the challenge
@@ -1308,14 +1291,13 @@ class OcraTest(TestController):
 
             # -3.b- verify the otp value
             parameters = {"transactionid": transid, "pass": 'pin' + otp}
-            response = self.app.get(url(controller='validate',
-                                        action='check_t'), params=parameters)
+            response = self.make_validate_request('check_t', params=parameters)
             self.assertTrue('"value": true' in response, "Response 3.b\n%s"
                             % response)
 
         # -remove the ocra token
         parameters = {"serial": serial, }
-        response = self.make_admin_request(action='remove',
+        response = self.make_admin_request('remove',
                                            params=parameters)
         self.assertTrue('"value": 1' in response, response)
 
@@ -1356,7 +1338,7 @@ class OcraTest(TestController):
                       'ocrapin': ocrapin,
         }
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"value": true' in response, response)
 
@@ -1390,7 +1372,7 @@ class OcraTest(TestController):
 
         parameters['activationcode'] = activationcode
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"value": true' in response, response)
 
@@ -1457,8 +1439,7 @@ class OcraTest(TestController):
              "pass": 'pin' + otp_f
              }
 
-        response = self.app.get(url(controller='validate', action='check_t'),
-                                params=p)
+        response = self.make_validate_request('check_t', params=p)
         self.assertTrue('"value": false' in response, response)
 
         parameters = {
@@ -1472,7 +1453,7 @@ class OcraTest(TestController):
         }
 
         parameters['activationcode'] = activationcode
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"value": true' in response, response)
 
@@ -1530,14 +1511,12 @@ class OcraTest(TestController):
         # -2- finalize enrollment
         p = {"transactionid": transid, "pass": 'pin' + otp}
 
-        response = self.app.get(url(controller='validate', action='check_t'),
-                                params=p)
+        response = self.make_validate_request('check_t', params=p)
         self.assertTrue('"value": true' in response, response)
 
         # -1- create an ocra token
         parameters = {"serial": serial}
-        response = self.make_admin_request(action='remove',
-                                           params=parameters)
+        response = self.make_admin_request('remove', params=parameters)
         self.assertTrue('"value": 1' in response, response)
 
     def test_OCRA_token(self):
@@ -1585,7 +1564,7 @@ class OcraTest(TestController):
                 'ocrasuite': ocrasuite
             }
 
-            response = self.make_admin_request(action='init',
+            response = self.make_admin_request('init',
                                                params=parameters)
             self.assertTrue('"value": true' in response, response)
 
@@ -1595,8 +1574,7 @@ class OcraTest(TestController):
                      "data": "0105037311 Konto 50150850 BLZ 1752,03 Eur"
                      }
 
-                response = self.app.get(url(controller='validate',
-                                            action='check_s'), params=p)
+                response = self.make_validate_request('check_s', params=p)
                 self.assertTrue('"value": false' in response, response)
 
                 # -3.a- calculate the otp response from the challenge
@@ -1629,30 +1607,27 @@ class OcraTest(TestController):
                 parameters = {"transactionid": transid,
                               "pass": 'pin' + otp,
                               }
-                response = self.app.get(url(controller='validate',
-                                            action='check_t'),
-                                        params=parameters)
+                response = self.make_validate_request(
+                                'check_t', params=parameters)
                 # TB Fixed
                 if '"value": true' not in response:
                     log.info("response %s\n", response)
                     log.error('test: failed for otp context: %r ' % param)
                     log.error('datainput: %s' % binascii.hexlify(data))
 
-                    _response2 = self.app.get(url(controller='validate',
-                                                  action='check_t'),
-                                              params=parameters)
+                    _response2 = self.make_validate_request(
+                                    'check_t', params=parameters)
                     self.assertTrue('"value": true' in response, response)
 
                 # -4- check the transaction status
                 parameters = {"transactionid": transid}
-                response = self.app.get(url(controller='admin',
-                                            action='checkstatus'),
-                                        params=parameters)
+                response = self.make_admin_request(
+                            'checkstatus', params=parameters)
                 self.assertTrue('"status": true' in response, response)
 
             # delete the ocra token
             parameters = {"serial": serial, }
-            response = self.make_admin_request(action='remove',
+            response = self.make_admin_request('remove',
                                                params=parameters)
             self.assertTrue('"value": 1' in response, response)
 
@@ -1690,7 +1665,7 @@ class OcraTest(TestController):
                 'ocrasuite': ocrasuite
             }
 
-            response = self.make_admin_request(action='init',
+            response = self.make_admin_request('init',
                                                params=parameters)
             self.assertTrue('"value": true' in response, response)
 
@@ -1702,8 +1677,7 @@ class OcraTest(TestController):
                      "data": "0105037311 Konto 50150850 BLZ 1752,03 Eur"
                      }
 
-                response = self.app.get(url(controller='validate',
-                                            action='check_s'), params=p)
+                response = self.make_validate_request('check_s', params=p)
                 self.assertTrue('"value": false' in response, response)
 
                 # -3.a- calculate the otp response from the challenge
@@ -1738,8 +1712,8 @@ class OcraTest(TestController):
                     "user": 'root',
                     "pass": 'pin' + otp,
                 }
-                response = self.app.get(url(controller='validate',
-                                            action='check'), params=parameters)
+                response = self.make_validate_request(
+                                'check', params=parameters)
                 self.assertTrue('"value": true' in response, "%s %d \n %r" %
                                 (ocrasuite, count, response))
 
@@ -1751,45 +1725,38 @@ class OcraTest(TestController):
                 # https://linotpserver/ocra/checkstatus?user=BENUTZER
 
                 parameters = {"transactionid": transid + '1'}
-                response = self.app.get(url(controller='admin',
-                                            action='checkstatus'),
-                                        params=parameters)
+                response = self.make_admin_request(
+                                'checkstatus',params=parameters)
                 self.assertTrue('"status": true' in response, response)
 
                 parameters = {"transactionid": transid}
-                response = self.app.get(url(controller='admin',
-                                            action='checkstatus'),
-                                        params=parameters)
+                response = self.make_admin_request(
+                                'checkstatus', params=parameters)
                 self.assertTrue('"status": true' in response, response)
 
                 parameters = {"serial": serial}
-                response = self.app.get(url(controller='admin',
-                                            action='checkstatus'),
-                                        params=parameters)
+                response = self.make_admin_request(
+                                'checkstatus', params=parameters)
                 self.assertTrue('"status": true' in response, response)
 
                 parameters = {"serial": 'F' + serial}
-                response = self.app.get(url(controller='admin',
-                                            action='checkstatus'),
-                                        params=parameters)
+                response = self.make_admin_request(
+                                'checkstatus', params=parameters)
                 self.assertTrue('"status": true' in response, response)
 
                 parameters = {"user": 'roor', }
-                response = self.app.get(url(controller='admin',
-                                            action='checkstatus'),
-                                        params=parameters)
+                response = self.make_admin_request(
+                                'checkstatus', params=parameters)
                 self.assertTrue('"status": true' in response, response)
 
                 parameters = {"user": 'root'}
-                response = self.app.get(url(controller='admin',
-                                            action='checkstatus'),
-                                        params=parameters)
+                response = self.make_admin_request(
+                                'checkstatus', params=parameters)
                 self.assertTrue('"status": true' in response, response)
 
             # -1- create an ocra token
             parameters = {"serial": serial}
-            response = self.app.get(url(controller='admin',
-                                        action='remove'), params=parameters)
+            response = self.make_admin_request('remove', params=parameters)
             self.assertTrue('"value": 1' in response, response)
 
         return
@@ -1840,7 +1807,7 @@ class OcraTest(TestController):
                 'ocrasuite': ocrasuite
             }
 
-            response = self.make_admin_request(action='init',
+            response = self.make_admin_request('init',
                                                params=parameters)
             self.assertTrue('"value": true' in response, response)
 
@@ -1849,8 +1816,7 @@ class OcraTest(TestController):
                 p = {"serial": serial,
                      "data": "0105037311 Konto 50150850 BLZ 1752,03 Eur"
                      }
-                response = self.app.get(url(controller='validate',
-                                            action='check_s'), params=p)
+                response = self.make_validate_request('check_s', params=p)
                 self.assertTrue('"value": false' in response, response)
 
                 # -3.a- calculate the otp response from the challenge
@@ -1863,24 +1829,21 @@ class OcraTest(TestController):
                 parameters = {"transactionid": transid,
                               "pass": 'pinTest1234',
                               }
-                response = self.app.get(url(controller='validate',
-                                            action='check_t'),
-                                        params=parameters)
+                response = self.make_validate_request(
+                                'check_t', params=parameters)
                 self.assertTrue('"value": false' in response, response)
 
                 # -4- check the transaction status
                 parameters = {"transactionid": transid}
-                response = self.app.get(url(controller='admin',
-                                            action='checkstatus'),
-                                        params=parameters)
+                response = self.make_admin_request(
+                                'checkstatus', params=parameters)
                 self.assertTrue('"status": true' in response, response)
 
                 # -5- fetch a new challenge
                 p = {"serial": serial,
                      "data": "0105037311 Konto 50150850 BLZ 1752,03 Eur"
                      }
-                response = self.app.get(url(controller='validate',
-                                            action='check_s'), params=p)
+                response = self.make_validate_request('check_s', params=p)
                 self.assertTrue('"value": false' in response, response)
 
                 # -6.a- calculate the otp response from the challenge
@@ -1913,25 +1876,23 @@ class OcraTest(TestController):
                 parameters = {"transactionid": transid,
                               "pass": 'pin' + otp,
                               }
-                response = self.app.get(url(controller='validate',
-                                            action='check_t'),
-                                        params=parameters)
+                response = self.make_validate_request(
+                                'check_t', params=parameters)
                 self.assertTrue('"value": true' in response, response)
 
                 # -7- check the transaction status
                 parameters = {"transactionid": transid,
                               }
-                response = self.app.get(url(controller='admin',
-                                            action='checkstatus'),
-                                        params=parameters)
+                response = self.make_admin_request(
+                                'checkstatus', params=parameters)
                 log.info("response %s\n", response)
                 self.assertTrue('"status": true' in response, response)
                 self.assertTrue('"values": {}' in response, response)
 
             # -remove the ocra token
             parameters = {"serial": serial}
-            response = self.app.get(url(controller='admin',
-                                        action='remove'), params=parameters)
+            response = self.make_admin_request(
+                            'remove', params=parameters)
             self.assertTrue('"value": 1' in response, response)
 
         return
@@ -1972,7 +1933,7 @@ class OcraTest(TestController):
                 'ocrasuite': ocrasuite
             }
 
-            response = self.make_admin_request(action='init',
+            response = self.make_admin_request('init',
                                                params=parameters)
             self.assertTrue('"value": true' in response, response)
 
@@ -1982,8 +1943,7 @@ class OcraTest(TestController):
                 p = {"serial": serial,
                      "data": "0105037311 Konto 50150850 BLZ 1752,03 Eur"
                      }
-                response = self.app.get(url(controller='validate',
-                                            action='check_s'), params=p)
+                response = self.make_validate_request('check_s', params=p)
                 self.assertTrue('"value": false' in response, response)
 
                 # -3.a- from the response get the challenge
@@ -2000,9 +1960,8 @@ class OcraTest(TestController):
                 parameters = {"transactionid": transid,
                               "pass": ppin,
                               }
-                response = self.app.get(url(controller='validate',
-                                            action='check_t'),
-                                        params=parameters)
+                response = self.make_validate_request(
+                                'check_t', params=parameters)
                 self.assertTrue('"value": false' in response, response)
                 fcount += 1
 
@@ -2012,18 +1971,16 @@ class OcraTest(TestController):
                 parameters = {"transactionid": transid,
                               "pass": ppin,
                               }
-                response = self.app.get(url(controller='validate',
-                                            action='check_t'),
-                                        params=parameters)
+                response = self.make_validate_request(
+                            'check_t', params=parameters)
                 self.assertTrue('"value": false' in response, response)
                 fcount += 1
 
                 # -5- check if the failcounter has incremented
                 parameters = {"transactionid": transid,
                               }
-                response = self.app.get(url(controller='admin',
-                                            action='checkstatus'),
-                                        params=parameters)
+                response = self.make_admin_request(
+                                'checkstatus', params=parameters)
 
                 self.assertTrue('"status": true' in response, response)
                 assstring = '"LinOtp.FailCount": %d,' % (fcount)
@@ -2031,8 +1988,7 @@ class OcraTest(TestController):
 
             # -remove the ocra token
             parameters = {"serial": serial}
-            response = self.app.get(url(controller='admin',
-                                        action='remove'), params=parameters)
+            response = self.make_admin_request('remove', params=parameters)
             self.assertTrue('"value": 1' in response, response)
 
     def test_OCRA_token_multipleChallenges(self):
@@ -2068,7 +2024,7 @@ class OcraTest(TestController):
                 'ocrasuite': ocrasuite
             }
 
-            response = self.make_admin_request(action='init',
+            response = self.make_admin_request('init',
                                                params=parameters)
             self.assertTrue('"value": true' in response, response)
 
@@ -2077,8 +2033,7 @@ class OcraTest(TestController):
                 p = {"serial": serial,
                      "data": "0105037311 Konto 50150850 BLZ 1752,03 Eur"
                      }
-                response = self.app.get(url(controller='validate',
-                                            action='check_s'), params=p)
+                response = self.make_validate_request('check_s', params=p)
                 self.assertTrue('"value": false' in response, response)
 
                 # -2b- from the response get the challenge
@@ -2111,8 +2066,7 @@ class OcraTest(TestController):
                 p = {"serial": serial,
                      "data": "0105037311 Konto 50150850 BLZ 234,56 Eur"
                      }
-                response = self.app.get(url(controller='validate',
-                                            action='check_s'), params=p)
+                response = self.make_validate_request('check_s', params=p)
                 self.assertTrue('"value": false' in response, response)
 
                 # -3b- from the response get the challenge
@@ -2145,33 +2099,29 @@ class OcraTest(TestController):
                 parameters = {"transactionid": transid1,
                               "pass": 'pin' + otp1,
                               }
-                response = self.app.get(url(controller='validate',
-                                            action='check_t'),
-                                        params=parameters)
+                response = self.make_validate_request(
+                            'check_t', params=parameters)
                 self.assertTrue('"value": true' in response, response)
 
                 # -5- verify the second otp value
                 parameters = {"transactionid": transid2,
                               "pass": 'pin' + otp2,
                               }
-                response = self.app.get(url(controller='validate',
-                                            action='check_t'),
-                                        params=parameters)
+                response = self.make_validate_request(
+                            'check_t', params=parameters)
 
                 self.assertTrue('"value": true' in response, response)
 
                 # -5- check if the failcounter has incremented
                 parameters = {"serial": serial}
 
-                response = self.app.get(url(controller='admin',
-                                            action='checkstatus'),
-                                        params=parameters)
+                response = self.make_admin_request(
+                                'checkstatus', params=parameters)
                 self.assertTrue('"status": true' in response, response)
 
             # -remove the ocra token
             parameters = {"serial": serial}
-            response = self.app.get(url(controller='admin',
-                                        action='remove'), params=parameters)
+            response = self.make_admin_request('remove', params=parameters)
             self.assertTrue('"value": 1' in response, response)
 
     def test_OCRA_token_multipleChallenges2(self):
@@ -2207,7 +2157,7 @@ class OcraTest(TestController):
                 'ocrasuite': ocrasuite
             }
 
-            response = self.make_admin_request(action='init',
+            response = self.make_admin_request('init',
                                                params=parameters)
             self.assertTrue('"value": true' in response, response)
 
@@ -2217,8 +2167,7 @@ class OcraTest(TestController):
                 p = {"serial": serial,
                      "data": "0105037311 Konto 50150850 BLZ 1752,03 Eur"
                      }
-                response = self.app.get(url(controller='validate',
-                                            action='check_s'), params=p)
+                response = self.make_validate_request('check_s', params=p)
                 self.assertTrue('"value": false' in response, response)
 
                 # -2b- from the response get the challenge
@@ -2251,8 +2200,7 @@ class OcraTest(TestController):
                 p = {"serial": serial,
                      "data": "0105037311 Konto 50150850 BLZ 234,56 Eur"
                      }
-                response = self.app.get(url(controller='validate',
-                                            action='check_s'), params=p)
+                response = self.make_validate_request('check_s', params=p)
                 self.assertTrue('"value": false' in response, response)
 
                 # -3b- from the response get the challenge
@@ -2285,8 +2233,7 @@ class OcraTest(TestController):
                 parameters = {"transactionid": transid2,
                               "pass": 'pin' + otp2,
                               }
-                response = self.app.get(url(controller='validate',
-                                            action='check_t'),
+                response = self.make_validate_request('check_t',
                                         params=parameters)
                 self.assertTrue('"value": true' in response, response)
 
@@ -2296,22 +2243,20 @@ class OcraTest(TestController):
                 parameters = {"transactionid": transid1,
                               "pass": 'pin' + otp1,
                               }
-                response = self.app.get(url(controller='validate',
-                                            action='check_t'),
+                response = self.make_validate_request('check_t',
                                         params=parameters)
                 self.assertTrue('"value": false' in response, response)
 
                 # -5- check if the failcounter has incremented
                 parameters = {"serial": serial}
 
-                response = self.app.get(url(controller='admin',
-                                            action='checkstatus'),
+                response = self.make_admin_request('checkstatus',
                                         params=parameters)
                 self.assertTrue('"status": true' in response, response)
 
             # -remove the ocra token
             parameters = {"serial": serial}
-            response = self.make_admin_request(action='remove',
+            response = self.make_admin_request('remove',
                                                params=parameters)
 
             self.assertTrue('"value": 1' in response, response)
@@ -2327,8 +2272,7 @@ class OcraTest(TestController):
             p['data'] = data
 
         # we need to create a challenge with input challenge parameter
-        response = self.app.get(url(controller='validate',
-                                    action='check_s'), params=p)
+        response = self.make_validate_request('check_s', params=p)
 
         self.assertTrue('"value": false' in response, response)
 
@@ -2369,8 +2313,7 @@ class OcraTest(TestController):
         else:
             p["user"] = user
 
-        response = self.app.get(url(controller='validate', action='check_s'),
-                                params=p)
+        response = self.make_validate_request('check_s', params=p)
 
         return self.exctract_challenge(response)
 
@@ -2420,7 +2363,7 @@ class OcraTest(TestController):
             'ocrasuite': ocrasuite
         }
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"value": true' in response, response)
 
@@ -2431,8 +2374,7 @@ class OcraTest(TestController):
 
         # verify the token fail
         parameters = {'user': 'root', "pass": 'pin' + otp1}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
 
         self.assertTrue('"value": false' in response, response)
 
@@ -2447,7 +2389,7 @@ class OcraTest(TestController):
 
         # test resync of token 2
         parameters = {"user": "root", "otp1": otp1, "otp2": otp2}
-        response = self.make_admin_request(action='resync',
+        response = self.make_admin_request('resync',
                                            params=parameters)
 
         self.assertTrue('"value": true' in response, response)
@@ -2459,8 +2401,7 @@ class OcraTest(TestController):
 
         # verify the token works
         parameters = {"transactionid": transid1, "pass": 'pin' + otp1}
-        response = self.app.get(url(controller='validate', action='check_t'),
-                                params=parameters)
+        response = self.make_validate_request('check_t', params=parameters)
 
         self.assertTrue('"value": true' in response, response)
 
@@ -2472,14 +2413,14 @@ class OcraTest(TestController):
 
         # check if the failcounter has incremented
         parameters = {"serial": serial}
-        response = self.make_admin_request(action='checkstatus',
+        response = self.make_admin_request('checkstatus',
                                            params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
         # -remove the ocra token
         parameters = {"serial": serial}
-        response = self.make_admin_request(action='remove',
+        response = self.make_admin_request('remove',
                                            params=parameters)
 
         self.assertTrue('"value": 1' in response, response)
@@ -2517,14 +2458,13 @@ class OcraTest(TestController):
             'ocrasuite': ocrasuite
         }
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         # switch on autoresync
         parameters = {"AutoResync": "true"}
-        response = self.make_system_request(action='setConfig',
-                                            params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
 
         now = datetime.now()
         time1 = now + timedelta(minutes=20)
@@ -2536,8 +2476,7 @@ class OcraTest(TestController):
 
         # verify the token fail
         parameters = {'user': 'root', "pass": 'pin' + otp1}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
 
         self.assertTrue('"value": false' in response, response)
 
@@ -2550,22 +2489,20 @@ class OcraTest(TestController):
 
         # verify the token successfuly has synced
         parameters = {'user': 'root', "pass": 'pin' + otp2}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
 
         self.assertTrue('"value": true' in response, response)
 
         # -remove the ocra token
         parameters = {"serial": serial}
-        response = self.make_admin_request(action='remove',
+        response = self.make_admin_request('remove',
                                            params=parameters)
 
         self.assertTrue('"value": 1' in response, response)
 
         # switch off autoresync
         parameters = {"key": "AutoResync"}
-        response = self.make_system_request(action='delConfig',
-                                            params=parameters)
+        response = self.make_system_request('delConfig', params=parameters)
 
         return
 
@@ -2603,7 +2540,7 @@ class OcraTest(TestController):
             'ocrasuite': ocrasuite
         }
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"value": true' in response, response)
 
@@ -2615,8 +2552,7 @@ class OcraTest(TestController):
 
         # verify the token fail
         parameters = {'user': 'root', "pass": 'pin' + otp1}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
 
         self.assertTrue('"value": false' in response, response)
 
@@ -2633,7 +2569,7 @@ class OcraTest(TestController):
 
         # test resync of token 2
         parameters = {"user": "root", "otp1": otp1, "otp2": otp2}
-        response = self.make_admin_request(action='resync',
+        response = self.make_admin_request('resync',
                                            params=parameters)
 
         self.assertTrue('"value": true' in response, response)
@@ -2646,21 +2582,20 @@ class OcraTest(TestController):
 
         # verify the token works
         parameters = {"transactionid": transid1, "pass": 'pin' + otp1}
-        response = self.app.get(url(controller='validate', action='check_t'),
-                                params=parameters)
+        response = self.make_validate_request('check_t', params=parameters)
 
         self.assertTrue('"value": true' in response, response)
 
         # check if the failcounter has incremented
         parameters = {"serial": serial}
-        response = self.make_admin_request(action='checkstatus',
+        response = self.make_admin_request('checkstatus',
                                            params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
         # -remove the ocra token
         parameters = {"serial": serial}
-        response = self.make_admin_request(action='remove',
+        response = self.make_admin_request('remove',
                                            params=parameters)
 
         self.assertTrue('"value": 1' in response, response)
@@ -2720,7 +2655,7 @@ class OcraTest(TestController):
                       'sharedsecret': '1',
         }
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"value": true' in response, response)
 
@@ -2732,7 +2667,7 @@ class OcraTest(TestController):
             'activationcode': act,
         }
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"value": true' in response, response)
 
@@ -2744,7 +2679,7 @@ class OcraTest(TestController):
             'activationcode': act,
         }
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"value": true' in response, response)
 
@@ -2761,7 +2696,7 @@ class OcraTest(TestController):
                       'sharedsecret': '1',
         }
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"value": true' in response, response)
 
@@ -2788,7 +2723,7 @@ class OcraTest(TestController):
             'activationcode': act,
         }
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"message": "no token found for user:' in response,
                         response)
@@ -2801,7 +2736,7 @@ class OcraTest(TestController):
             'activationcode': act,
         }
 
-        response = self.make_admin_request(action='init',
+        response = self.make_admin_request('init',
                                            params=parameters)
         self.assertTrue('"value": true' in response, response)
 
@@ -2855,14 +2790,13 @@ class OcraTest(TestController):
         # -3.a- verify the otp value to finish the rollout
         parameters = {"transactionid": transid,
                       "pass": otp}
-        response = self.app.get(url(controller='validate', action='check_t'),
-                                params=parameters)
+        response = self.make_validate_request('check_t', params=parameters)
 
         self.assertTrue('"value": true' in response, response)
 
         #-remove the ocra token
         parameters = {"serial": serial, }
-        response = self.make_admin_request(action='remove',
+        response = self.make_admin_request('remove',
                                            params=parameters)
 
         self.assertTrue('"value": 1' in response, response)
@@ -3308,8 +3242,7 @@ class OcraTest(TestController):
 
         # support challenge retry
         parameters = {"ocra2.max_check_challenge_retry": 3}
-        response = self.make_system_request(action='setConfig',
-                                            params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
 
         for i in range(1, 3):
             (response, challenge, transid) = self.get_challenge(ocra.serial)
@@ -3502,8 +3435,7 @@ class OcraTest(TestController):
 
         # support challenge retry
         parameters = {"ocra2.max_check_challenge_retry": 3}
-        response = self.app.get(url(controller='system',
-                                    action='setConfig'), params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
 
         # get next challenge
         (response, challenge, transid) = \
@@ -3648,8 +3580,7 @@ class OcraTest(TestController):
 
         # no retry of a challenge
         parameters = {"ocra2.max_check_challenge_retry": 0}
-        response = self.make_system_request(action='setConfig',
-                                            params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
 
         # get next challenge
         (response, challenge, transid) = \
@@ -3692,8 +3623,7 @@ class OcraTest(TestController):
                       'challenge': challenge,
                       }
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         self.removeTokens(serial=ocra.serial)
@@ -3732,9 +3662,8 @@ class OcraTest(TestController):
                       'challenge': challenge,
                       }
 
-        response = self.app.get(url(controller='validate',
-                                    action='check_s'),
-                                params=parameters)
+        response = self.make_validate_request(
+                        'check_s', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         self.removeTokens(serial=ocra.serial)
@@ -3835,8 +3764,8 @@ class OcraTest(TestController):
                           'transactionid': transid,
                           }
 
-            response = self.app.get(url(controller='validate', action='check_t'),
-                                    params=parameters)
+            response = self.make_validate_request(
+                            'check_t', params=parameters)
 
             self.assertTrue('"value": true' in response, response)
 
@@ -3854,8 +3783,7 @@ class OcraTest(TestController):
             "type": "spass"
         }
 
-        response = self.make_admin_request(action='init',
-                                           params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         self.assertTrue('"value": true' in response, response)
         return serial
 
@@ -3881,8 +3809,7 @@ class OcraTest(TestController):
 
         # now run first spass token validate
         parameters = {"user": "root", "pass": spassPin}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         # ocra challenge/check
@@ -3893,14 +3820,12 @@ class OcraTest(TestController):
                       'user': 'root',
                       'challenge': challenge,
                       }
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         # spass fail test
         parameters = {"user": "root", "pass": spassPin + '!'}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": false' in response, response)
 
         # standard ocra test
@@ -3914,8 +3839,7 @@ class OcraTest(TestController):
 
         # spass test
         parameters = {"user": "root", "pass": spassPin}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         # standard ocra fail test
@@ -3936,8 +3860,7 @@ class OcraTest(TestController):
             otp = ocra.callcOtp(challenge)
 
         parameters = {"user": "root", "pass": 'pin' + otp}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         # no retry of a challenge
@@ -3946,8 +3869,7 @@ class OcraTest(TestController):
 
         # spass test
         parameters = {"user": "root", "pass": spassPin}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         self.removeTokens(serial=ocra.serial)
@@ -3985,9 +3907,7 @@ class OcraTest(TestController):
             parameters = {"user": "root", "pass": 'pin',
                           "challenge": 'challenge %d' % (i),
                           }
-            response2 = self.app.get(url(controller='validate',
-                                         action='check'),
-                                     params=parameters)
+            response2 = self.make_validate_request('check', params=parameters)
             # extract the stat(=transactionIs) + challenge(=message)
             # to calc the otp and refer to the next validation request
 
@@ -3998,14 +3918,12 @@ class OcraTest(TestController):
             otp = ocra.callcOtp(challenge,)
 
         parameters = {"user": "root", "pass": 'pin' + otp}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         self.assertTrue('"value": true' in response, response)
 
         # no retry of a challenge
         parameters = {"ocra2.max_check_challenge_retry": 0}
-        response = self.make_system_request(action='setConfig',
-                                            params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
 
         response = self.check_otp(transid, otp)
         self.assertTrue('"value": false' in response, response)
@@ -4014,8 +3932,7 @@ class OcraTest(TestController):
         parameters = {"user": "root", "pass": 'pin',
                       "challenge": 'challenge %d' % (99),
                       }
-        response2 = self.app.get(url(controller='validate', action='check'),
-                                 params=parameters)
+        response2 = self.make_validate_request('check', params=parameters)
         # extract the stat(=transactionIds) + challenge(=message)
         # to calc the otp and refer to the next validation request
 
@@ -4043,8 +3960,7 @@ class OcraTest(TestController):
             "qrtanurl_init.one=https://<user>:<password>/init/one/<serial>/, "
             "qrtanurl.one=https://<user>:<password>/one/<serial>/<transactionid>,"
         )
-        response = self.make_system_request(action='setPolicy',
-                                            params=params)
+        response = self.make_system_request('setPolicy', params=params)
 
         self.assertTrue('"setPolicy l_callback_one"' in response, response)
         self.assertTrue('"status": true' in response, response)
@@ -4058,8 +3974,7 @@ class OcraTest(TestController):
             "qrtanurl=https://<user>:<password>/callback/<serial>/<transactionid>,"
         )
 
-        response = self.make_system_request(action='setPolicy',
-                                            params=params)
+        response = self.make_system_request('setPolicy', params=params)
 
         self.assertTrue('"setPolicy l_callback"' in response, response)
         self.assertTrue('"status": true' in response, response)
@@ -4171,8 +4086,7 @@ class OcraTest(TestController):
                           'transactionid': transid,
                           }
 
-            response = self.app.get(url(controller='validate', action='check_t'),
-                                    params=parameters)
+            response = self.make_validate_request('check_t', params=parameters)
 
             self.assertTrue('"value": true' in response, response)
 
@@ -4297,7 +4211,7 @@ class OcraTest(TestController):
                           'transactionid': transid,
                           }
 
-            response = self.app.get(url(controller='validate', action='check_t'),
+            response = self.make_validate_request('check_t',
                                     params=parameters)
 
             self.assertTrue('"value": true' in response, response)

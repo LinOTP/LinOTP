@@ -32,7 +32,7 @@
 import sys
 import ConfigParser
 import logging
-from linotp.tests import TestController, url
+from linotp.tests import TestController
 import copy
 
 try:
@@ -349,7 +349,7 @@ class TestLDAP(TestController):
             'UIDTYPE'               : uidType,
             'NOREFERRALS'           : 'False'
         }
-        response = self.app.get(url(controller='system', action='setResolver'), params=ldapDef)
+        response = self.make_system_request('setResolver', params=ldapDef)
         assert '"status": true,' in response
 
         ldapConf = self.getConfig(name, bindpw=bindpw, binddn=binddn)
@@ -361,7 +361,7 @@ class TestLDAP(TestController):
         if username is not None:
             param['username'] = username
 
-        response = self.app.get(url(controller='admin', action='userlist'), params=param)
+        response = self.make_admin_request('userlist', params=param)
         if ("error") in response:
             body = json.loads(response.body)
             result = body.get('result')
@@ -382,7 +382,7 @@ class TestLDAP(TestController):
         if username is not None:
             param['username'] = username
 
-        response = self.app.get(url(controller='admin', action='userlist'), params=param)
+        response = self.make_admin_request('userlist', params=param)
         if ("error") in response:
             body = json.loads(response.body)
             result = body.get('result')
@@ -406,7 +406,7 @@ class TestLDAP(TestController):
 
         ret = {}
 
-        response = self.app.get(url(controller='system', action='getConfig'))
+        response = self.make_system_request('getConfig')
 
         resp = json.loads(response.body)
         config = resp.get('result').get('value')
@@ -433,7 +433,7 @@ class TestLDAP(TestController):
         if typ is None:
             typ = 'spass'
         param = { 'user': user, 'pin':pin, 'serial': serial, 'type':typ }
-        response = self.app.get(url(controller='admin', action='init'), params=param)
+        response = self.make_admin_request('init', params=param)
         assert '"status": true,' in response
 
         return serial
@@ -443,7 +443,7 @@ class TestLDAP(TestController):
         if passw is None:
             passw = user
         param = { 'user': user, 'pass':passw}
-        response = self.app.get(url(controller='validate', action='check'), params=param)
+        response = self.make_validate_request('check', params=param)
         return response
 
 
@@ -452,7 +452,7 @@ class TestLDAP(TestController):
         param = {}
         if serial is not None:
             param['serial'] = serial
-        response = self.app.get(url(controller='admin', action='show'), params=param)
+        response = self.make_admin_request('show', params=param)
         return response
 
     def delTokens(self, serial=None):
@@ -460,7 +460,7 @@ class TestLDAP(TestController):
         param = {}
         if serial is not None:
             param['serial'] = serial
-        response = self.app.get(url(controller='admin', action='remove'), params=param)
+        response = self.make_admin_request('remove', params=param)
         return response
 
 
@@ -514,13 +514,13 @@ class TestLDAP(TestController):
                          'time'     : '',
                          'client'   : '',
                          }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request('setPolicy', params=parameters)
         log.error(response)
 
     def delOtpPinPolicy(self, name='ldapOtpPin'):
         parameters = { 'name' : name,
                       'selftest_admin' : 'superadmin' }
-        response = self.app.get(url(controller='system', action='delPolicy'), params=parameters)
+        response = self.make_system_request('delPolicy', params=parameters)
         log.debug(response)
 
     def test_one(self):
@@ -539,7 +539,7 @@ class TestLDAP(TestController):
             self.skipTest(skip_reason)
 
         parameters = {'enableReplication' : 'true' }
-        resp = self.app.get(url(controller='system', action='setConfig'), params=parameters)
+        resp = self.make_system_request('setConfig', params=parameters)
         assert('"setConfig enableReplication:true": true' in resp)
 
         resolvers = []
@@ -622,10 +622,10 @@ class TestLDAP(TestController):
                 'realm'     : realmName,
                 'resolvers' : u'%s' % (unicode(','.join(realmresolvers)))
             }
-            resp = self.app.get(url(controller='system', action='setRealm'), params=parameters)
+            resp = self.make_system_request('setRealm', params=parameters)
             assert('"value": true' in resp)
 
-            resp = self.app.get(url(controller='system', action='getRealms'))
+            resp = self.make_system_request('getRealms')
             assert('"default": "true"' in resp)
 
             ''' lookup for the user1 in realm '''
@@ -692,12 +692,12 @@ class TestLDAP(TestController):
 
             ''' cleanup : undefine realm and resolvers '''
             parameters = {"realm":realmName}
-            resp = self.app.get(url(controller='system', action='delRealm'), params=parameters)
+            resp = self.make_system_request('delRealm', params=parameters)
             assert('"result": true' in resp)
 
             for resolver in resolvers:
                 parameters = {"resolver" : resolver}
-                resp = self.app.get(url(controller='system', action='delResolver'), params=parameters)
+                resp = self.make_system_request('delResolver', params=parameters)
                 assert('"status": true' in resp)
 
             ''' check that token is now an orphand one '''
@@ -721,7 +721,7 @@ class TestLDAP(TestController):
 
             ''' 5 - cleanup'''
             parameters = {'key':'enableReplication' }
-            resp = self.app.get(url(controller='system', action='delConfig'), params=parameters)
+            resp = self.make_system_request('delConfig', params=parameters)
             assert('"delConfig enableReplication": true' in resp)
 
             self.delOtpPinPolicy()

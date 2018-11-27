@@ -31,7 +31,7 @@
 import logging
 import json
 
-from linotp.tests import TestController, url
+from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class TestSelfserviceController(TestController):
         TestController.tearDown(self)
 
     def createPolicy(self, policy):
-        response = self.app.get(url(controller='system', action='setPolicy'),
+        response = self.make_system_request('setPolicy',
                                 params={'name' : 'self01',
                                         'scope' : 'selfservice',
                                         'realm' : 'myDefRealm',
@@ -63,7 +63,7 @@ class TestSelfserviceController(TestController):
         assert '"setPolicy self01": {' in response
 
     def deleteToken(self, serial):
-        response = self.app.get(url(controller='admin', action='remove'),
+        response = self.make_admin_request('remove',
                                 params={'serial': serial,
                                         'selftest_admin' : 'superadmin'})
 
@@ -111,7 +111,7 @@ class TestSelfserviceController(TestController):
         assert 'Missing parameter: ' in response
         assert '"code": 905' in response
 
-        response = self.app.get(url(controller='admin', action='init'),
+        response = self.make_admin_request('init',
                                 params={'serial':'reset01',
                                         'type': 'spass',
                                         'user': 'passthru_user1@myDefRealm',
@@ -121,7 +121,7 @@ class TestSelfserviceController(TestController):
         assert '"status": true' in response
 
         for i in "12345678901234567890":
-            response = self.app.get(url(controller='validate', action='check'),
+            response = self.make_validate_request('check',
                                     params={'user': 'passthru_user1@myDefRealm',
                                             'pass': 'wrongpass'})
             print response
@@ -134,7 +134,7 @@ class TestSelfserviceController(TestController):
         assert '"status": true' in response
         assert '"reset Failcounter": 1' in response
 
-        response = self.app.get(url(controller='validate', action='check'),
+        response = self.make_validate_request('check',
                                 params={'user': 'passthru_user1@myDefRealm',
                                         'pass': 'secret'})
         print response
@@ -167,7 +167,7 @@ class TestSelfserviceController(TestController):
         assert 'Missing parameter' in response
         assert '"code": 905' in response
 
-        response = self.app.get(url(controller='admin', action='init'),
+        response = self.make_admin_request('init',
                                 params={'serial':'token01',
                                         'type': 'hmac',
                                         'user': 'passthru_user1@myDefRealm',
@@ -227,7 +227,7 @@ class TestSelfserviceController(TestController):
         assert '"code": 905' in response
 
 
-        response = self.app.get(url(controller='admin', action='init'),
+        response = self.make_admin_request('init',
                                 params={'serial':'token01',
                                         'type': 'hmac',
                                         'user': 'passthru_user1@myDefRealm',
@@ -255,7 +255,7 @@ class TestSelfserviceController(TestController):
         '''
         Selfservice: testing setting PIN
         '''
-        response = self.app.get(url(controller='admin', action='init'),
+        response = self.make_admin_request('init',
                                 params={'serial':'spass01',
                                         'type': 'spass',
                                         'user': 'passthru_user1@myDefRealm',
@@ -291,7 +291,7 @@ class TestSelfserviceController(TestController):
         assert '"status": true' in response
         assert '"set userpin": 1' in response
 
-        response = self.app.get(url(controller='validate', action='check'),
+        response = self.make_validate_request('check',
                                 params={'user': 'passthru_user1@myDefRealm',
                                         'pass': 'secretPin'})
         print response
@@ -327,7 +327,7 @@ class TestSelfserviceController(TestController):
         assert '"status": false' in response
         assert '"message": "ERR410: The policy settings do not allow you to request a serial by OTP!",' in response
 
-        response = self.app.get(url(controller='admin', action='init'),
+        response = self.make_admin_request('init',
                                 params={'serial':'token01',
                                         'type': 'hmac',
                                         'otpkey': 'c4a3923c8d97e03af6a12fa40264c54b8429cf0d'
@@ -344,7 +344,7 @@ class TestSelfserviceController(TestController):
         # The token is not found, as it is not in the realm of the user
         assert '"serial": ""' in response
 
-        response = self.app.get(url(controller='admin', action='tokenrealm'),
+        response = self.make_admin_request('tokenrealm',
                                 params={'serial': 'token01',
                                         'realms': 'myDefRealm'})
         print response
@@ -365,7 +365,7 @@ class TestSelfserviceController(TestController):
         self.deleteToken('token01')
 
         # init token
-        response = self.app.get(url(controller='admin', action='init'),
+        response = self.make_admin_request('init',
                                 params={'serial':'token01',
                                         'type': 'hmac',
                                         'otpkey': 'c4a3923c8d97e03af6a12fa40264c54b8429cf0d'
@@ -374,7 +374,7 @@ class TestSelfserviceController(TestController):
         assert '"status": true' in response
 
         # put into realm
-        response = self.app.get(url(controller='admin', action='tokenrealm'),
+        response = self.make_admin_request('tokenrealm',
                                 params={'serial': 'token01',
                                         'realms': 'myDefRealm'})
         print response
@@ -431,7 +431,7 @@ class TestSelfserviceController(TestController):
         '''
         self.deleteToken('token01')
 
-        response = self.app.get(url(controller='admin', action='init'),
+        response = self.make_admin_request('init',
                                 params={'serial':'token01',
                                         'type': 'hmac',
                                         'otpkey': 'c4a3923c8d97e03af6a12fa40264c54b8429cf0d',
@@ -469,7 +469,7 @@ class TestSelfserviceController(TestController):
         '''
         self.deleteToken('token01')
 
-        response = self.app.get(url(controller='admin', action='init'),
+        response = self.make_admin_request('init',
                                 params={'serial':'token01',
                                         'type': 'hmac',
                                         'otpkey': 'c4a3923c8d97e03af6a12fa40264c54b8429cf0d',
@@ -497,7 +497,7 @@ class TestSelfserviceController(TestController):
         print response
         assert '"disable token": 1' in response
 
-        response = self.app.get(url(controller='admin', action='show'),
+        response = self.make_admin_request('show',
                                 params={'serial': 'token01'})
         print response
         assert '"LinOtp.TokenSerialnumber": "token01",' in response
@@ -518,8 +518,8 @@ class TestSelfserviceController(TestController):
         print response
         assert '"enable token": 1' in response
 
-        response = self.app.get(url(controller='admin', action='show'),
-                                params={'serial': 'token01'})
+        response = self.make_admin_request(
+                        'show', params={'serial': 'token01'})
         print response
         assert '"LinOtp.TokenSerialnumber": "token01",' in response
         assert '"LinOtp.Isactive": true' in response
@@ -565,8 +565,8 @@ class TestSelfserviceController(TestController):
         print response
         assert '"status": true' in response
 
-        response = self.app.get(url(controller='admin', action='show'),
-                                params={'serial': 'token01'})
+        response = self.make_admin_request(
+                        'show', params={'serial': 'token01'})
         print response
         assert '"LinOtp.TokenSerialnumber": "token01",' in response
         assert '"LinOtp.Isactive": true' in response
@@ -605,8 +605,8 @@ class TestSelfserviceController(TestController):
         print response
         assert '"status": true' in response
 
-        response = self.app.get(url(controller='admin', action='show'),
-                                params={'serial': 'token01'})
+        response = self.make_admin_request(
+                        'show', params={'serial': 'token01'})
         print response
         assert '"LinOtp.TokenSerialnumber": "token01",' in response
         assert '"LinOtp.Isactive": true' in response
@@ -616,12 +616,12 @@ class TestSelfserviceController(TestController):
                       "user"     : 'passthru_user1@myDefRealm',
                       "pass"     : '!token0secret!',
                       }
-        response = self.app.get(url(controller='validate', action='check'), params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         assert '"status": true' in response
         assert '"value": true'  in response
 
         ''' ... and exactly once '''
-        response = self.app.get(url(controller='validate', action='check'), params=parameters)
+        response = self.make_validate_request('check', params=parameters)
         assert '"status": true' in response
         assert '"value": false'  in response
 
@@ -661,8 +661,8 @@ class TestSelfserviceController(TestController):
                         response)
 
         # test
-        response = self.app.get(url(controller='admin', action='show'),
-                                params={'user': 'passthru_user1@myDefRealm'})
+        response = self.make_admin_request(
+                    'show', params={'user': 'passthru_user1@myDefRealm'})
         self.assertTrue('"LinOtp.TokenSerialnumber": "LSGO' in response,response)
         self.assertTrue('"LinOtp.Isactive": true' in response, response)
 

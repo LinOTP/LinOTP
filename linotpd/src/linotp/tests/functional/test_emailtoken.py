@@ -34,7 +34,7 @@ import smtplib
 import re
 import time
 
-from linotp.tests import TestController, url
+from linotp.tests import TestController
 
 
 class TestEmailtokenController(TestController):
@@ -103,7 +103,7 @@ class TestEmailtokenController(TestController):
         response, otp = self._trigger_challenge()
         self._assert_email_sent(response)
 
-        response = self.app.get(url(controller='validate', action='check'),
+        response = self.make_validate_request('check',
                                 params={'user': 'root',
                                         'pass': self.pin + otp})
         response_json = response.json
@@ -117,7 +117,7 @@ class TestEmailtokenController(TestController):
         response, otp = self._trigger_challenge()
         self._assert_email_sent(response)
 
-        response = self.app.get(url(controller='validate', action='check'),
+        response = self.make_validate_request('check',
                                 params={'user': 'root',
                                         'pass': "4321" + otp})
         response_json = response.json
@@ -129,7 +129,7 @@ class TestEmailtokenController(TestController):
         #
 
         time.sleep(5)
-        response = self.app.get(url(controller='validate', action='check'),
+        response = self.make_validate_request('check',
                                 params={'user': 'root',
                                         'pass': self.pin + otp})
         response_json = response.json
@@ -143,7 +143,7 @@ class TestEmailtokenController(TestController):
         response, otp = self._trigger_challenge()
         self._assert_email_sent(response)
 
-        response = self.app.get(url(controller='validate', action='check'),
+        response = self.make_validate_request('check',
                                 params={'user': 'root',
                                         'pass': self.pin + "123456"})
         response_json = response.json
@@ -157,7 +157,7 @@ class TestEmailtokenController(TestController):
         response, otp = self._trigger_challenge()
         self._assert_email_sent(response)
 
-        response = self.app.get(url(controller='validate', action='check'),
+        response = self.make_validate_request('check',
                                 params={'user': 'root',
                                         'pass': self.pin + otp})
         response_json = response.json
@@ -204,7 +204,7 @@ class TestEmailtokenController(TestController):
         params = {'user': 'root',
                   'pass': stored_otp,
                   'transactionid': transaction_id}
-        response = self.app.get(url(controller='validate', action='check'),
+        response = self.make_validate_request('check',
                                     params=params)
         response = response.json
         self.assertTrue(response['result']['status'])
@@ -217,7 +217,7 @@ class TestEmailtokenController(TestController):
         response, otp = self._trigger_challenge()
         self._assert_email_sent(response)
         time.sleep(int(self.challenge_validity * 1.2))  # we wait 120% of the challenge timeout
-        response = self.app.get(url(controller='validate', action='check'),
+        response = self.make_validate_request('check',
                                 params={'user': 'root', 'pass': self.pin + otp})
         response = response.json
         self.assertTrue(response['result']['status'])
@@ -258,7 +258,7 @@ class TestEmailtokenController(TestController):
         response, otp = self._trigger_challenge()
         self._assert_email_sent(response)
 
-        response = self.app.get(url(controller='validate', action='check'),
+        response = self.make_validate_request('check',
                                 params={'user': 'root', 'pass': self.pin + otp})
         response_json = response.json
         self.assertTrue(response_json['result']['status'])
@@ -292,7 +292,7 @@ class TestEmailtokenController(TestController):
                 }
             )
         self.mock_smtp_instance.sendmail.side_effect = exception_to_raise
-        response_string = self.app.get(url(controller='validate', action='check'),
+        response_string = self.make_validate_request('check',
                                        params={'user': 'root', 'pass': self.pin})
         # response = response_string.json
         # expected_error = "error sending e-mail %r" % exception_to_raise
@@ -316,7 +316,7 @@ class TestEmailtokenController(TestController):
         :return: tuple of the response and the otp value
         :rtype: (dict, string)
         """
-        response = self.app.get(url(controller='validate', action='check'),
+        response = self.make_validate_request('check',
                                 params={'user': 'root', 'pass': self.pin})
         self.assertTrue(self.mock_smtp_instance.sendmail.call_count >= 1,
                         "smtplib.SMTP.sendmail() should have been called at least once")
