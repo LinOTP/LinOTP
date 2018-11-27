@@ -275,4 +275,84 @@ class TestSupport(TestController):
             self.delete_all_realms()
             self.delete_all_resolvers()
 
+
+    def test_tokencount_user_license(self):
+        """
+        verify that the token user license check is working
+        """
+
+        self.create_common_resolvers()
+        self.create_common_realms()
+        self.delete_all_token()
+        
+        params={
+            'name': 'token_count_limit',
+            'scope': 'enrollment',
+            'realm': 'mydefrealm',
+            'user': '*',
+            'active': True,
+            'action': 'tokencount=4',
+            }
+
+        response = self.make_system_request('setPolicy', params=params)
+        self.assertTrue('false' not in response.body)
+
+        license_valid_date = datetime(year=2018, month=11, day=17)
+
+        with freeze_time(license_valid_date):
+
+            license_file = os.path.join(self.fixture_path,
+                                             "linotp2.token_user.pem")
+            with open(license_file, "r") as f:
+                license = f.read()
+
+            upload_files = [("license", "linotp2.token_user.pem", license)]
+            response = self.make_system_request("setSupport",
+                                                upload_files=upload_files)
+            self.assertTrue('"status": true' in response)
+            self.assertTrue('"value": true' in response)
+
+            response = self.make_system_request("getSupportInfo")
+            jresp = json.loads(response.body)
+            user_num = jresp.get(
+                            "result", {}).get(
+                                "value", {}).get(
+                                    "user-num")
+
+            assert user_num == "4"
+
+            for user in ['hans', 'rollo', 'susi', 'horst']:
+
+                params = {
+                    'type': 'pw',
+                    'user': user+ "@myDefRealm",
+                    'otpkey': 'geheim'
+                }
+
+                response = self.make_admin_request('init', params)
+                assert '"value": true' in response
+
+            response = self.make_system_request("isSupportValid")
+            assert '"value": true' in response
+
+            params = {
+                'type': 'pw',
+                'user': "root@myDefRealm",
+                'otpkey': 'geheim'
+            }
+
+            response = self.make_admin_request('init', params)
+
+            msg = "The maximum allowed number of tokens for the realm"
+            assert msg in response
+
+            response = self.make_system_request("isSupportValid")
+            assert '"value": true' in response
+
+
+            self.delete_all_token()
+            self.delete_all_realms()
+            self.delete_all_resolvers()
+
+
 # eof ########################################################################

@@ -1545,6 +1545,18 @@ def _check_token_count(user=None, realm=None, post_check=False):
         'action': token_count
     }
 
+    # ---------------------------------------------------------------------- --
+
+    # depending on the license, we use a different function pointer
+    # to check the tokens or token users per realm
+
+    token_count_function = linotp.lib.token.getTokenInRealm
+
+    lic_info, lic_sig = linotp.lib.support.getSupportLicenseInfo()
+
+    if 'user-num' in lic_info:
+        token_count_function = linotp.lib.token.getNumTokenUsers
+
     # Now we are checking the policy for every Realm
 
     for lookup_realm in lookup_realms:
@@ -1571,7 +1583,7 @@ def _check_token_count(user=None, realm=None, post_check=False):
 
         # if there is a policy, we query the token amount of this realm
 
-        token_in_realm = linotp.lib.token.getTokenInRealm(lookup_realm)
+        token_in_realm = token_count_function(realm=lookup_realm)
         log.debug("There are %r tokens in realm %r",
                   token_in_realm, lookup_realm)
 

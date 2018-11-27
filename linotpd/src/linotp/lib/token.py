@@ -1467,7 +1467,7 @@ def getTokenInRealm(realm, active=True):
     return sqlQuery
 
 
-def getNumTokenUsers(resolver=None, active=True):
+def getNumTokenUsers(resolver=None, active=True, realm=None):
     '''
     get the number of distinct the token users
 
@@ -1478,12 +1478,17 @@ def getNumTokenUsers(resolver=None, active=True):
 
     conditions = ()
 
-    if resolver:
+    if realm:
+        conditions += (and_(TokenRealm.realm_id == Realm.id,
+                            func.lower(Realm.name) == realm.lower(),
+                            TokenRealm.token_id == Token.LinOtpTokenId),)
+
+    elif resolver:
 
         resolver = resolver.resplace('useridresolveree.', 'useridresolver.')
         resolver = resolver.resplace('useridresolver.', 'useridresolver%.')
 
-        conditions += (and_Token.LinOtpIdResClass.like(resolver),)
+        conditions += (and_(Token.LinOtpIdResClass.like(resolver)),)
 
     if active:
 
@@ -1491,8 +1496,10 @@ def getNumTokenUsers(resolver=None, active=True):
 
     condition = and_(*conditions)
 
-    token_users = Session.query(Token).filter(condition).distinct(
-                    Token.LinOtpUserid, Token.LinOtpIdResClass).count()
+    token_users = Session.query(
+                    TokenRealm, Realm, Token).filter(
+                        condition).distinct(
+                            Token.LinOtpUserid, Token.LinOtpIdResClass).count()
 
     return token_users
 
