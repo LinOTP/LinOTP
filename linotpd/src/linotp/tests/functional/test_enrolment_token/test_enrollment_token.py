@@ -328,10 +328,8 @@ class TestRolloutToken(TestController):
             "otpkey": otp,
             "user": user,
             "pin": pin,
-
             "type": "pw",
             "serial": "KIPW0815",
-            "description": "enrollment test token",
             "scope": json.dumps({
                 "path": ["userservice"]})
         }
@@ -364,6 +362,22 @@ class TestRolloutToken(TestController):
 
         response = self.make_admin_request('show', params=params)
         self.assertTrue('KIPW0815' in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # verify that the default description of the token is 'rollout token'
+
+        tokens = json.loads(response.body).get(
+                    'result', {}).get(
+                        'value', {}).get(
+                            'data',[])
+
+        self.assertTrue(len(tokens) > 1)
+
+        for token in tokens:
+            if token["LinOtp.TokenSerialnumber"] == "KIPW0815":
+                self.assertTrue(token['LinOtp.TokenDesc'] == 'rollout token')
+                break
 
         # ------------------------------------------------------------------ --
 
