@@ -445,7 +445,18 @@ def janitor_to_remove_enrollment_token(valid_tokens):
 
     # delete all rollout tokens
 
+    serials = []
     for token in to_be_removed_tokens:
+        serials.append(token.getSerial())
         remove_token(token)
 
-# eof###########################################################################
+    # ------------------------------------------------------------------ --
+
+    # add info about the purging
+
+    audit = context['audit']
+
+    if serials:
+        audit['info'] += 'purged rollout tokens:' + ', '.join(serials)
+
+# eof #########################################################################

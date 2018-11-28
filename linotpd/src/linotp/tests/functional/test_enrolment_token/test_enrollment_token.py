@@ -390,6 +390,32 @@ class TestRolloutToken(TestController):
         response = self.make_admin_request('show', params=params)
         self.assertTrue('KIPW0815' not in response, response)
 
+        # ------------------------------------------------------------------ --
+
+        # verify that the audit log reflects the purge of the rollout tokens
+
+        found_in_audit_log = False
+
+        params = {
+            'rp': 20,
+            'page': 1,
+            'sortorder': 'desc',
+            'sortname': 'number',
+            'qtype': 'action',
+            'query':'validate/check',
+            }
+
+        response = self.make_audit_request('search', params=params)
+
+        entries = json.loads(response.body).get('rows', [])
+        for entry in entries:
+            data = entry['cell']
+            if 'purged rollout tokens:KIPW0815' in data[12]:
+                found_in_audit_log = True
+                break
+
+        self.assertTrue(found_in_audit_log, entries)
+
         return
 
     def test_enrollment_janitor2(self):
