@@ -1,4 +1,4 @@
-linotp (2.10.1.2rc1-1) UNRELEASED; urgency=low
+linotp (2.10.1.2-1) jessie; urgency=low
 
   Enhancements:
   * Server: make the pushtoken enrollment more robust for the case that
@@ -9,7 +9,7 @@ linotp (2.10.1.2rc1-1) UNRELEASED; urgency=low
   * Server: show up serial and token type in audit log for pushtoken enrollment
   * Server: fixes for the initial config handling
 
- --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 20 Nov 2018 15:43:39 +0200
+ --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 29 Nov 2018 13:52:39 +0200
 
 linotp (2.10.1.1-1) jessie; urgency=low
 
