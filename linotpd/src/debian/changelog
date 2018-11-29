@@ -1,11 +1,12 @@
-linotp (2.10.2.0rc0-1) UNRELEASED; urgency=low
+linotp (2.10.2.0rc1-1) UNRELEASED; urgency=low
 
   Enhancements:
   * Server: support for rollout token declaration, so that a token
-            can only be used for the selfservice login. According to
-            the declared policy, the rollout tokens will automatically
-            be removed after the first authentication with a different
-            token.
+            can only be used for the selfservice login - the token
+            will have the default description 'rollout token'.
+            According to the declared policy, the rollout tokens will
+            automatically be removed after the first authentication with
+            a different token, which will be annotated in the audit log.
 
   Bug Fixes:
   * Server: fix the sqlalchemy warnings about unicode conversion
