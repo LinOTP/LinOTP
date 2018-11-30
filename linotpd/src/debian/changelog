@@ -1,4 +1,4 @@
-linotp (2.10.2.0rc1-1) UNRELEASED; urgency=low
+linotp (2.10.2-1) jessie; urgency=low
 
   Enhancements:
   * Server: support for rollout token declaration, so that a token
