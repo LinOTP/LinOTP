@@ -253,6 +253,9 @@ def check_auth_cookie(cookie, user, client):
         log.info("session is expired")
         return False
 
+    if client is None and not cookie_client:
+        cookie_client = None
+
     return (user == cookie_user and cookie_client == client)
 
 
