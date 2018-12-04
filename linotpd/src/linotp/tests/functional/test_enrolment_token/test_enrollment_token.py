@@ -649,12 +649,18 @@ class TestRolloutToken(TestController):
             }
 
         response= self.make_userselfservice_request(
-                        'usertokenlist', None, auth_user)
+                        'usertokenlist', auth_user=auth_user)
 
         # verify that the rollout token is not in the list
 
-        self.assertTrue('KIPW0815' not in response, response)
+        self.assertTrue('KIPW0815' in response, response)
         self.assertTrue('LinOtp.TokenSerialnumber' in response, response)
+
+
+        response= self.make_selfservice_request(
+                        'usertokenlist', None, auth_user=auth_user)
+        self.assertTrue('KIPW0815' not in response.body, response)
+
 
         return
 
