@@ -1476,8 +1476,10 @@ def getNumTokenUsers(resolver=None, active=True, realm=None):
     :return: the number of token users
     '''
 
-    conditions = ()
     session = Session.query(Token)
+    # only count users and not the empty ones
+
+    conditions = (and_(Token.LinOtpUserid != ''),)
 
     if realm:
         conditions += (and_(TokenRealm.realm_id == Realm.id,
