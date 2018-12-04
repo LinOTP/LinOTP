@@ -1467,6 +1467,21 @@ def getTokenInRealm(realm, active=True):
     return sqlQuery
 
 
+def get_used_tokens_count(resolver=None, active=True, realm=None):
+    '''
+    get the number of used tokens
+
+    :param resolver: count only the token users per resolver
+    :param active: boolean - count base only on active tokens
+    :return: the number of token / token user
+    '''
+
+    if linotp.lib.support.get_license_type() == 'user-num':
+        return getNumTokenUsers(resolver=resolver, active=active)
+
+    return getTokenNumResolver(resolver=resolver, active=active)
+
+
 def getNumTokenUsers(resolver=None, active=True, realm=None):
     '''
     get the number of distinct the token users

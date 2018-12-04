@@ -85,7 +85,7 @@ from linotp.lib.policy import checkPolicyPost
 from linotp.lib.policy import PolicyException
 from linotp.lib.policy import getOTPPINEncrypt
 
-from linotp.lib.audit.base import logTokenNum
+from linotp.lib.audit.base import get_token_num_info
 
 # for loading XML file
 from linotp.lib.ImportOTP import parseSafeNetXML
@@ -165,9 +165,16 @@ class AdminController(BaseController):
             if serial:
                 c.audit['serial'] = serial
                 c.audit['token_type'] = getTokenType(serial)
+
+            # ------------------------------------------------------------- --
+
+            # show the token usage counter for the actions which change the
+            # numbers of tokens
+
             if action in ['assign', 'unassign', 'enable', 'disable', 'init',
                           'loadtokens', 'copyTokenUser', 'losttoken',
                           'remove', 'tokenrealm']:
+
                 event = 'token_' + action
 
                 if c.audit.get('source_realm'):
@@ -176,6 +183,10 @@ class AdminController(BaseController):
 
                 target_realms = c.audit.get('realm')
                 token_reporting(event, target_realms)
+
+                c.audit['action_detail'] += get_token_num_info()
+
+            # ------------------------------------------------------------- --
 
             audit.log(c.audit)
             Session.commit()
@@ -475,7 +486,6 @@ class AdminController(BaseController):
             log.info("[remove] removing token with serial %s for user %s", serial, user.login)
             ret = th.removeToken(user, serial)
 
-            logTokenNum(c.audit)
             c.audit['success'] = ret
 
             opt_result_dict = {}
@@ -538,7 +548,6 @@ class AdminController(BaseController):
 
             c.audit['success'] = ret
             c.audit['user'] = user.login
-            logTokenNum(c.audit)
 
             if user.is_empty:
                 c.audit['realm'] = getTokenRealms(serial)
@@ -937,7 +946,6 @@ class AdminController(BaseController):
             if c.audit['realm'] == "":
                 c.audit['realm'] = tokenrealm
 
-            logTokenNum(c.audit)
             c.audit['success'] = ret
             # --------------------------------------------------------------- --
 
@@ -1020,6 +1028,7 @@ class AdminController(BaseController):
             c.audit['success'] = ret
             c.audit['user'] = user.login
             c.audit['realm'] = user.realm
+
             if "" == c.audit['realm']:
                 c.audit['realm'] = getTokenRealms(serial)
 
@@ -2503,7 +2512,6 @@ class AdminController(BaseController):
 
             c.audit['info'] = "%s, %s (imported: %i)" % (fileType, tokenFile, len(TOKENS))
             c.audit['serial'] = ', '.join(TOKENS.keys())
-            logTokenNum(c.audit)
             c.audit['success'] = ret
             c.audit['realm'] = tokenrealm
 

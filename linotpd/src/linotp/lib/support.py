@@ -376,6 +376,23 @@ def do_nagging(lic_info, nag_days=7):
 
     return True
 
+def get_license_type():
+    """
+    get the type of the license - either user based or token based
+
+    :return: string, either 'user-num', 'token-num' or '' empty
+    """
+
+    lic_info, lic_sig = getSupportLicenseInfo()
+
+    if 'user-num' in lic_info:
+        return 'user-num'
+
+    elif 'token-num'  in lic_info:
+        return 'token-num'
+
+    return ''
+
 
 def getSupportLicenseInfo():
     """

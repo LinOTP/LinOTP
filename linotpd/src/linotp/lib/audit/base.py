@@ -29,8 +29,11 @@ import logging
 log = logging.getLogger(__name__)
 import socket
 
-from linotp.lib.token import getTokenNumResolver
+from linotp.lib.token import get_used_tokens_count
+from linotp.lib.support import get_license_type
+
 from linotp.lib.context import request_context as context
+
 
 
 def getAuditClass(packageName, className):
@@ -74,14 +77,20 @@ def getAudit(config):
     return audit
 
 
-def logTokenNum(audit):
+def get_token_num_info():
     """
-    add the current token count to the audit dict
+    get the current token / token user count
 
-    :param audit: audit dict
+    :return: literal about the number of used tokens / user tokens
     """
-    # log the number of the tokens
-    audit['action_detail'] = "tokennum = %s" % str(getTokenNumResolver())
+
+    tokens = get_used_tokens_count()
+    token_count_type = 'tokennum'
+
+    if get_license_type() == 'user-num' :
+        token_count_type = 'token users'
+
+    return "%s = %d" % (token_count_type, tokens)
 
 
 class AuditBase(object):

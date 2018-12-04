@@ -45,6 +45,7 @@ from linotp.lib.error import ParameterError
 # Our Token stuff
 from linotp.lib.tokeniterator import TokenIterator
 from linotp.lib.token import getTokenType
+
 from linotp.tokens import tokenclass_registry
 
 
@@ -72,7 +73,7 @@ from linotp.lib.policy.definitions import getPolicyDefinitions
 from linotp.lib.context import request_context
 
 from linotp.lib.ImportOTP import getKnownTypes, getImportText
-import linotp.model.meta
+import linotp
 
 Session = linotp.model.meta.Session
 
@@ -148,6 +149,7 @@ class ManageController(BaseController):
                 c.audit['serial'] = serial
                 c.audit['token_type'] = getTokenType(serial)
 
+            c.audit['action_detail'] += linotp.lib.audit.base.get_token_num_info()
             audit.log(c.audit)
 
     def index(self):

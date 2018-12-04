@@ -1551,10 +1551,7 @@ def _check_token_count(user=None, realm=None, post_check=False):
     # to check the tokens or token users per realm
 
     token_count_function = linotp.lib.token.getTokenInRealm
-
-    lic_info, lic_sig = linotp.lib.support.getSupportLicenseInfo()
-
-    if 'user-num' in lic_info:
+    if linotp.lib.support.get_license_type() == 'user-num':
         token_count_function = linotp.lib.token.getNumTokenUsers
 
     # Now we are checking the policy for every Realm

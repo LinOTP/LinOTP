@@ -120,7 +120,7 @@ from linotp.lib.apps import (create_google_authenticator,
 
 from pylons.i18n.translation import _
 
-from linotp.lib.audit.base import (logTokenNum,
+from linotp.lib.audit.base import (get_token_num_info,
                                    search as audit_search
                                    )
 
@@ -335,6 +335,10 @@ class UserserviceController(BaseController):
                     c.audit['serial'] = serial
                     c.audit['token_type'] = getTokenType(serial)
 
+                # --------------------------------------------------------- --
+
+                # actions which change the token amount do some reporting
+
                 if action in ['assign', 'unassign', 'enable', 'disable',
                               'enroll', 'delete', 'activateocratoken',
                               'finishocra2token', 'finishocratoken']:
@@ -346,6 +350,8 @@ class UserserviceController(BaseController):
 
                     target_realms = c.audit.get('realm')
                     token_reporting(event, target_realms)
+
+                    c.audit['action_detail'] += get_token_num_info()
 
                 audit.log(c.audit)
                 Session.commit()
@@ -1686,7 +1692,6 @@ class UserserviceController(BaseController):
             c.audit['user'] = self.authUser.login
             c.audit['realm'] = self.authUser.realm
 
-            logTokenNum(c.audit)
             c.audit['success'] = ret
 
             # -------------------------------------------------------------- --
@@ -1862,7 +1867,6 @@ class UserserviceController(BaseController):
                 "valid types are 'oathtoken' and 'googleauthenticator' and "
                 "'googleauthenticator_time'. You provided %s") % typ)
 
-            logTokenNum(c.audit)
             c.audit['serial'] = serial
             # the Google and OATH are always HMAC; sometimes (FUTURE) totp"
             c.audit['token_type'] = t_type
@@ -2102,8 +2106,6 @@ class UserserviceController(BaseController):
                 'serial'    : serial,
                 'transaction' : trans,
             }
-
-            logTokenNum(c.audit)
 
             c.audit['serial'] = serial
             c.audit['token_type'] = typ
