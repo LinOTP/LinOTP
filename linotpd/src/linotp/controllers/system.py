@@ -1920,8 +1920,11 @@ class SystemController(BaseController):
             if do_nagging(lic_info, nag_days=7):
                 info['download_licence_info'] = contact_hint
 
+            c.audit['action_detail'] = msg
             c.audit['success'] = res
+
             Session.commit()
+
             return sendResult(response, res, 1, opt=info)
 
         except Exception as exx:
