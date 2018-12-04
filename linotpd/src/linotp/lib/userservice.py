@@ -301,22 +301,21 @@ def check_session(request, user, client):
 
     :return: boolean
     """
-    ret = False
 
     # try to get (local) selfservice
     # if none is present fall back to possible
     # userauthcookie (cookie for remote self service)
 
-    cookie = request.cookies.get(
-        'user_selfservice', request.cookies.get(
-            'userauthcookie', 'no_auth_cookie'))
-
     session = get_request_param(request, 'session', 'no_session')
 
-    if session == cookie:
-        ret = check_auth_cookie(cookie, user, client)
+    for cookie_ref in ['user_selfservice', 'userauthcookie']:
 
-    return ret
+        cookie = request.cookies.get(cookie_ref, 'no_auth_cookie')
+
+        if session == cookie:
+            return check_auth_cookie(cookie, user, client)
+
+    return False
 
 
 def get_pre_context(client):
