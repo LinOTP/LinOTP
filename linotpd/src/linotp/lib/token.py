@@ -1510,6 +1510,14 @@ def getTokenNumResolver(resolver=None, active=True):
     '''
     get the number of used tokens
 
+     in the database could be tokens of ResolverClass:
+        useridresolver. or useridresolveree.
+     so we have to make sure
+     - there is no 'useridresolveree' in the searchterm and
+     - there is a wildcard search: second replace
+     Remark: when the token is loaded the response to the
+     resolver class is adjusted
+
     :param resolver: count only the token users per resolver
     :param active: boolean - count base only on active tokens
     :return: the number of token
@@ -1519,18 +1527,10 @@ def getTokenNumResolver(resolver=None, active=True):
 
     if resolver:
 
-        # in the database could be tokens of ResolverClass:
-        #    useridresolver. or useridresolveree.
-        # so we have to make sure
-        # - there is no 'useridresolveree' in the searchterm and
-        # - there is a wildcard search: second replace
-        # Remark: when the token is loaded the response to the
-        # resolver class is adjusted
-
         resolver = resolver.resplace('useridresolveree.', 'useridresolver.')
         resolver = resolver.resplace('useridresolver.', 'useridresolver%.')
 
-        conditions += (and_Token.LinOtpIdResClass.like(resolver),)
+        conditions += (and_(Token.LinOtpIdResClass.like(resolver)),)
 
     if active:
 
