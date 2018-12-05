@@ -39,7 +39,7 @@ import sys
 def aes_decrypt(value_bin, iv_bin, key_bin):
     import base64
     import binascii
-    import Crypto.Cipher.AES as AES
+    from Cryptodome.Cipher import AES
 
     aesObj = AES.new(key_bin, AES.MODE_CBC, iv_bin)
     output = aesObj.decrypt(value_bin)
@@ -100,7 +100,7 @@ def main():
         sys.exit(1)
 
     f = open(filename, 'r')
-    enckey = f.read()
+    enckey = f.read()[:32]
     f.close()
 
     result = aes_decrypt(binascii.unhexlify(otp), binascii.unhexlify(iv), enckey)
