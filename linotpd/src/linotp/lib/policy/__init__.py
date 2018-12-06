@@ -2960,13 +2960,16 @@ def check_token_reporting(realm):
         for act in action:
             if 'token_total' in act:
                 actions.append('total')
+            if 'token_user_total' in act:
+                actions.append('total users')
             if 'token_status' in act:
                 status = act.split('=')
                 actions.append(status[1])
-            if act is '*':
+            if act == '*':
                 status = ['active', 'inactive', 'assigned', 'unassigned',
                           'active&assigned', 'active&unassigned',
-                          'inactive&assigned', 'inactive&unassigned', 'total']
+                          'inactive&assigned', 'inactive&unassigned',
+                          'total', 'total users']
                 for stat in status:
                     actions.append(unicode(stat))
     return actions

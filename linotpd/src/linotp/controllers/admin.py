@@ -173,8 +173,7 @@ class AdminController(BaseController):
 
             if action in ['assign', 'unassign', 'enable', 'disable', 'init',
                           'loadtokens', 'copyTokenUser', 'losttoken',
-                          'remove', 'tokenrealm']:
-
+                          'remove', 'tokenrealm', 'loadtokens']:
                 event = 'token_' + action
 
                 if c.audit.get('source_realm'):

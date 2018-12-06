@@ -26,6 +26,9 @@
 
 import json
 import logging
+import os
+
+from freezegun import freeze_time
 
 from datetime import datetime
 from datetime import timedelta
@@ -504,3 +507,96 @@ class TestReportingController(TestController):
         self.assertTrue(line in response, response)
         resp = response.body.splitlines()
         self.assertTrue(len(resp) is pagesize_value + 1)
+
+    def test_00000_token_user_license(self):
+        """
+        verify that the token user license check is working
+        """
+
+        self.create_common_resolvers()
+        self.create_common_realms()
+        self.delete_all_token()
+
+        license_valid_date = datetime(year=2018, month=11, day=17)
+
+        with freeze_time(license_valid_date):
+
+            license_file = os.path.join(self.fixture_path,
+                                             "linotp2.token_user.pem")
+            with open(license_file, "r") as f:
+                license_data = f.read()
+
+            upload_files = [("license", "linotp2.token_user.pem", license_data)]
+            response = self.make_system_request("setSupport",
+                                                upload_files=upload_files)
+            self.assertTrue('"status": true' in response)
+            self.assertTrue('"value": true' in response)
+
+            response = self.make_system_request("getSupportInfo")
+            jresp = json.loads(response.body)
+            user_num = jresp.get(
+                            "result", {}).get(
+                                "value", {}).get(
+                                    "user-num")
+
+            assert user_num == "4"
+
+            # -------------------------------------------------------------- --
+
+            # activate the reporting
+
+            params = {
+                'name': 'reporting_test',
+                'scope': 'reporting',
+                'active': True,
+                'action': 'token_user_total,',
+                'user': '*',
+                'realm': '*',
+                }
+
+            response = self.make_system_request('setPolicy', params=params)
+            assert '"status": true' in response
+            assert 'false' not in response
+
+            # set reporting access policy:
+            params = {
+                'name': 'reporting_show',
+                'scope': 'reporting.access',
+                'active': True,
+                'action': 'show',
+                'user': '*',
+                'realm': '*',
+                }
+
+            response = self.make_system_request('setPolicy', params=params)
+            assert '"status": true' in response
+            assert 'false' not in response
+
+            # -------------------------------------------------------------- --
+
+            # now add the users
+
+            for user in ['hans', 'rollo', 'susi', 'horst']:
+
+                params = {
+                    'type': 'pw',
+                    'user': user+ "@myDefRealm",
+                    'otpkey': 'geheim'
+                }
+
+                response = self.make_admin_request('init', params)
+                assert '"value": true' in response
+
+            # -------------------------------------------------------------- --
+
+            # 
+            try:
+                response = self.make_reporting_request('show')
+            except Exception as exx:
+                raise
+
+            self.delete_all_token()
+            self.delete_all_realms()
+            self.delete_all_resolvers()
+
+        return

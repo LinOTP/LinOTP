@@ -101,14 +101,39 @@ class MonitorHandler(object):
         # realm condition:
         r_condition = or_(*cond)
 
+        if 'total' in status:
+
+            # count all tokens in an realm
+
+            token_query = Session.query(TokenRealm, Realm, Token)
+            token_query = token_query.filter(r_condition)
+            token_query = token_query.distinct(Token.LinOtpTokenId)
+
+            result['total'] = token_query.count()
+
+        if 'total users' in status:
+
+            # according to the token users license spec, we count only
+            # the distinct users of all assigned and active tokens of an realm
+
+            user_query = Session.query(TokenRealm, Realm, Token)
+            user_query = user_query.filter(r_condition)
+            user_query = user_query.filter(Token.LinOtpUserid != '')
+            user_query = user_query.filter(Token.LinOtpIsactive == True)
+            user_query = user_query.distinct(
+                    Token.LinOtpUserid, Token.LinOtpIdResClass)
+
+            result['total users'] = user_query.count()
+
         for stat in status:
-            if stat == 'total':
-                result['total'] = Session.query(Token).filter(r_condition).\
-                    distinct().count()
+
+            if stat in ['total users', 'total']:
                 continue
+
             conditions = (and_(r_condition),)
             # handle combinations like:
-            # status=unassigned&active,unassigned&inactive
+            # status=unassigned & active, unassigned & inactive
+
             if '&' in stat:
                 stati = stat.split('&')
                 if 'assigned' in stati:

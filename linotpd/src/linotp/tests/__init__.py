@@ -543,6 +543,26 @@ class TestController(unittest2.TestCase):
             content_type=content_type
         )
 
+    def make_reporting_request(self, action, params=None, method=None,
+                            auth_user='admin', client=None, upload_files=None,
+                            auth_type='Digest',
+                            content_type=None):
+        """
+        Makes an authenticated request to /admin/'action'
+        """
+        if not params:
+            params = {}
+        return self.make_authenticated_request(
+            'reporting',
+            action,
+            method=method,
+            params=params,
+            auth_user=auth_user,
+            upload_files=upload_files,
+            client=client,
+            auth_type=auth_type,
+            content_type=content_type
+        )
     def make_ocra_request(self, action, params=None, method=None,
                           auth_user='admin', client=None, upload_files=None):
         """

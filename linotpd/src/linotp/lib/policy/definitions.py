@@ -414,6 +414,9 @@ def getPolicyDefinitions(scope=""):
             'token_total': {
                 'type': 'bool',
                 'desc': 'Report total number of tokens'},
+            'token_user_total': {
+                'type': 'bool',
+                'desc': 'Report total number of token users'},
             'token_status': {
                 'type': 'str',
                 'desc': 'Report number of tokens which are in-/active,un-/assigned'
