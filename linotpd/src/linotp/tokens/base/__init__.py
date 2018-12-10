@@ -40,6 +40,7 @@ on linotp.lib.ImportOTP.vasco
 
 import binascii
 import datetime
+import json
 
 from hashlib import sha1
 import logging
@@ -867,10 +868,6 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
 
     def update(self, param, reset_failcount=True):
 
-        tdesc = param.get("description")
-        if tdesc is not None:
-            self.token.setDescription(tdesc)
-
         # key_size as parameter overrules a prevoiusly set
         # value e.g. in hashlib in the upper classes
         key_size = param.get("keysize")
@@ -922,13 +919,37 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         if otplen:
             self.setOtpLen(otplen)
 
+        # ----------------------------------------------------------------- --
+
+        # handle definition of usage scope
+
+        scope = None
+
+        if 'scope' in param:
+            scope = json.loads(param.get('scope', {}))
+
+        elif 'rollout' in param:
+            scope = {'path' : ['userservice']}
+
+        if scope:
+            self.addToTokenInfo('scope', scope)
+
+            if not param.get('description'):
+                if scope.get('path',[]) == ['userservice']:
+                    param['description'] = 'rollout token'
+
+        if param.get("description"):
+            self.token.setDescription(param.get("description"))
+
+        # ----------------------------------------------------------------- --
+
         self.resetTokenInfo()
 
         return
 
     def resetTokenInfo(self):
         """
-        TODO: to be implemented or to be removed!
+        base token api - could be overwritten per token
         """
         return
 

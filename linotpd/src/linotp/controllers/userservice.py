@@ -933,7 +933,8 @@ class UserserviceController(BaseController):
             else:
                 active = None
 
-            tokenArray = getTokenForUser(self.authUser, active=active)
+            tokenArray = getTokenForUser(self.authUser, active=active,
+                                         exclude_rollout=False)
 
             Session.commit()
             return sendResult(response, tokenArray, 0)

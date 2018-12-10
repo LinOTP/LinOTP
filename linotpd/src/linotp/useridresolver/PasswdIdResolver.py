@@ -183,6 +183,7 @@ class IdResolver (UserIdResolver):
         while line:
             line = line.strip()
             if len(line) == 0:
+                line = fileHandle.readline()
                 continue
 
             line = str2unicode(line)

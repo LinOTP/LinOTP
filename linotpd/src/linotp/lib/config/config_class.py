@@ -144,7 +144,7 @@ class LinOtpConfig(dict):
                 for con in conf:
                     if con != 'linotp.selfTest':
                         _storeConfigDB(con, conf.get(con))
-                _storeConfigDB('linotp.Config', datetime.now())
+                _storeConfigDB(u'linotp.Config', datetime.now())
 
             self.glo.setConfig(conf, replace=True)
 

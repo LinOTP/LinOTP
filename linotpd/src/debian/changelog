@@ -1,3 +1,20 @@
+linotp (2.10.2-1) jessie; urgency=low
+
+  Enhancements:
+  * Server: support for rollout token declaration, so that a token
+            can only be used for the selfservice login - the token
+            will have the default description 'rollout token'.
+            According to the declared policy, the rollout tokens will
+            automatically be removed after the first authentication with
+            a different token, which will be annotated in the audit log.
+
+  Bug Fixes:
+  * Server: fix the sqlalchemy warnings about unicode conversion
+  * Server: fix for missing translation function pointer in exception
+  * Server: fix for passwd files with empty lines
+
+ --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 21 Nov 2018 16:02:19 +0200
+
 linotp (2.10.1.2-1) jessie; urgency=low
 
   Enhancements:
