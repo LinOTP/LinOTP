@@ -200,10 +200,11 @@ builddeb:
 
 .PHONY: deb-install
 deb-install: builddeb
-	# deb-install: move the built .deb files into an archive directory and
-	# 			    generate Packages file
+	# deb-install: move the built .deb, .changes and related files into an archive directory and
+	# generate Packages file
 	mkdir -pv $(DESTDIR)
 	cp $(foreach dir,$(DEBPKG_PROJS),$(dir)/build/*.deb) $(DESTDIR)
+	find $(foreach dir,$(DEBPKG_PROJS),$(dir)) -type f -regex '.+\.changes' -o -regex '.+\.dsc' -o -regex '.+\.tar\..+' -o -regex '.+\.buildinfo' | xargs -iXXX -n1 cp XXX $(DESTDIR)
 	find $(DESTDIR)
 	cd $(DESTDIR) && dpkg-scanpackages -m . > Packages
 
