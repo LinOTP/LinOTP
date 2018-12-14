@@ -40,7 +40,7 @@ from linotp.lib.error import ParameterError
 
 YUBICO_LEN_ID = 12
 YUBICO_LEN_OTP = 44
-YUBICO_URL = "http://api.yubico.com/wsapi/2.0/verify"
+YUBICO_URL = "https://api.yubico.com/wsapi/2.0/verify"
 DEFAULT_CLIENT_ID = 11759
 DEFAULT_API_KEY = "P1QVTgnToQWQm0b6LREEhDIAbHU="
 
