@@ -53,8 +53,9 @@ ${_("Enroll YubiKey")}
 function yubico_get_config_val(){
 	var id_map = {};
 
-    id_map['yubico.id'] 		= 'sys_yubico_id';
+    id_map['yubico.id']     = 'sys_yubico_id';
     id_map['yubico.secret'] = 'sys_yubico_secret';
+    id_map['yubico.url']    = 'sys_yubico_url';
 
 	return id_map;
 
@@ -70,9 +71,9 @@ function yubico_get_config_val(){
 function yubico_get_config_params(){
 	var url_params ={};
 
-    url_params['yubico.id'] 	= $('#sys_yubico_id').val();
-    url_params['yubico.secret'] 	= $('#sys_yubico_secret').val();
-
+    url_params['yubico.id']      = $('#sys_yubico_id').val();
+    url_params['yubico.secret']  = $('#sys_yubico_secret').val();
+    url_params['yubico.url']     = $('#sys_yubico_url').val();
 	return url_params;
 }
 
@@ -102,6 +103,13 @@ function yubico_get_config_params(){
 	<td><input type="text" name="sys_yubico_secret" id="sys_yubico_secret"
 		class="required text ui-widget-content ui-corner-all"></td>
 	</tr>
+
+    <tr>
+    <td><label for="sys_yubico_url" title='${_("You need to enter a valid Yubico url")}'>
+        ${_("Yubico Url")}</label></td>
+    <td><input type="text" name="sys_yubico_url" id="sys_yubico_url"
+        class="required text ui-widget-content ui-corner-all"></td>
+    </tr>
 
 	</table>
 </fieldset>
