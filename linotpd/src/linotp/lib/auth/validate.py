@@ -812,6 +812,9 @@ class ValidationHandler(object):
                 reply = "%r" % exx
                 audit_entry['action_detail'] = ("checking token %r "
                                                 "failed: %r" % (token, exx))
+
+                audit_entry['info'] = audit_entry.get('info','') + "%r" % exx
+
                 continue
             finally:
                 validation_results[token.getSerial()] = (ret, reply)
