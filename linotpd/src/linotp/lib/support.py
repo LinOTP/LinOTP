@@ -41,6 +41,7 @@ from linotp.lib.config import storeConfig
 from linotp.lib.config import removeFromConfig
 
 from linotp.lib.token import getTokenNumResolver
+from linotp.lib.token import getNumTokenUsers
 
 
 from linotp.lib.context import request_context as context
@@ -744,6 +745,54 @@ def verify_expiration(lic_dic):
 
 
 def verify_volume(lic_dict):
+    """
+    check if the token or token user license has exceeded
+
+    :param lic_dict: dictionary with license attributes
+    :return: tuple with boolean and error detail if False
+    """
+
+    if 'token-num' in lic_dict:
+        return verify_token_volume(lic_dict)
+
+    elif 'user-num' in lic_dict:
+        return verify_user_volume(lic_dict)
+
+    raise InvalidLicenseException("licenses is neither token nor"
+                                  " user based!")
+
+
+def verify_user_volume(lic_dict):
+    """
+    check if the token users count is covered by the license
+
+    :param lic_dict: dictionary with license attributes
+    :return: tuple with boolean and error detail if False
+    """
+    _ = context['translate']
+
+    # get the current number of all active token users
+    num = getNumTokenUsers()
+
+    try:
+        user_volume = int(lic_dict.get('user-num', 0))
+    except TypeError as err:
+        log.exception("Failed to convert license. Number of token users: %r. "
+                      "Exception was:%r " % (lic_dict.get('user-num'), err))
+        return False, "max %d" % user_volume
+
+    if num > user_volume:
+        log.error("Licensed token user volume exceeded. Currently %r users "
+                  "present, but only %r allowed." % (num, user_volume))
+        used = _("token user used")
+        licnu = _("token users supported")
+        detail = " %s: %d > %s: %d" % (used, num, licnu, user_volume)
+        return False, detail
+
+    return True, ""
+
+
+def verify_token_volume(lic_dict):
 
     _ = context['translate']
 

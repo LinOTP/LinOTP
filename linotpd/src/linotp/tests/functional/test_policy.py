@@ -2849,7 +2849,6 @@ class TestPolicies(TestController):
         parameters = {'serial': 'enroll_003',
                       'type': 'spass',
                       'user': 'remoteuser@myDefRealm',
-                      'selftest_admin': 'admin_init'
                       }
         auth_user = 'admin_init'
         response = self.make_admin_request(action='init',
@@ -2876,7 +2875,7 @@ class TestPolicies(TestController):
 
     def test_705_tokencount(self):
         '''
-        Policy 705: create a new token enroll_tc_01 and try to assign this token to auser in the realm. Assigning will fail, since realm is full
+        Policy 705: create a new token enroll_tc_01 and try to assign this token to an user in the realm. Assigning will fail, since realm is full
         '''
         parameters = {"serial": "enroll_tc_01",
                       "otpkey": "e56eb2bcbafb2eea9bce9463f550f86d587d6c71",

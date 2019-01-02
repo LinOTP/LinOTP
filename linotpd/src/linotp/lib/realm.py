@@ -191,7 +191,6 @@ def getRealms(aRealmName=""):
                     entry': u'linotp.useridresolver.group.mymixrealm'}}
 
     '''
-    ret = {}
 
     config = context["Config"]
     realms = config.getRealms()
@@ -233,13 +232,17 @@ def getRealms(aRealmName=""):
                 _delete_from_realm_config_cache(realm_name)
                 _lookup_realm_config(realm_name, realm_resolvers)
 
+    # check if any realm is searched
+    if aRealmName is None or aRealmName.strip() in ["", "*"]:
+        return realms
+
     # check if only one realm is searched
-    if aRealmName != "":
-        if aRealmName in realms:
-            ret[aRealmName] = realms.get(aRealmName)
-    else:
-        ret.update(realms)
-    return ret
+    if aRealmName.lower() in realms:
+        ret = {}
+        ret[aRealmName.lower()] = realms.get(aRealmName.lower())
+        return ret
+
+    return {}
 
 
 def _lookup_realm_config(realm_name, realm_defintion=None):
