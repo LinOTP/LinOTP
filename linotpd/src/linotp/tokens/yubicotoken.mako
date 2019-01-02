@@ -56,6 +56,7 @@ function yubico_get_config_val(){
     id_map['yubico.id']     = 'sys_yubico_id';
     id_map['yubico.secret'] = 'sys_yubico_secret';
     id_map['yubico.url']    = 'sys_yubico_url';
+    id_map['yubico.timeout']    = 'sys_yubico_timeout';
 
 	return id_map;
 
@@ -74,6 +75,7 @@ function yubico_get_config_params(){
     url_params['yubico.id']      = $('#sys_yubico_id').val();
     url_params['yubico.secret']  = $('#sys_yubico_secret').val();
     url_params['yubico.url']     = $('#sys_yubico_url').val();
+    url_params['yubico.timeout']     = $('#sys_yubico_timeout').val();
 	return url_params;
 }
 
@@ -110,6 +112,14 @@ function yubico_get_config_params(){
     <td><input type="text" name="sys_yubico_url" id="sys_yubico_url"
         class="required text ui-widget-content ui-corner-all"
         value="https://api.yubico.com/wsapi/2.0/verify, https://api2.yubico.com/wsapi/2.0/verify, https://api3.yubico.com/wsapi/2.0/verify, https://api4.yubico.com/wsapi/2.0/verify, https://api5.yubico.com/wsapi/2.0/verify"></td>
+    </tr>
+
+    <tr>
+    <td><label for="sys_yubico_url" title='${_("Yubico connection and read timeout")}'>
+        ${_("Yubico Timeout")}</label></td>
+    <td><input type="text" name="sys_yubico_timeout" id="sys_yubico_timeout"
+        class="required text ui-widget-content ui-corner-all"
+        value="3.05, 15"></td>
     </tr>
 
     <tr>
