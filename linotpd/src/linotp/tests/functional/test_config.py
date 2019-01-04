@@ -220,6 +220,8 @@ class TestConfigController(TestController):
 
             self.assertEqual(config_data, data, 'error while comparing data')
 
+        self.delete_config(prefix='longBase64ConfigEntry')
+
         return
 
     def test_random_large_hexlify_config(self):
@@ -249,6 +251,8 @@ class TestConfigController(TestController):
             data = jresp.get('result', {}).get('value', {}).get(entry_name)
 
             self.assertEqual(config_data, data, 'error while comparing data')
+
+        self.delete_config(prefix='longHexConfigEntry')
 
         return
 
@@ -301,6 +305,8 @@ class TestConfigController(TestController):
                                   data[len(config_data):]))
 
             self.assertEqual(config_data, data, 'error while comparing data')
+
+        self.delete_config(prefix='longUnicodeConfigEntry')
 
         return
 
@@ -361,6 +367,8 @@ class TestConfigController(TestController):
 
             self.assertEqual(config_data, data, 'error while comparing data')
 
+        self.delete_config(prefix='longUnicodeConfigEntry')
+
         return
 
     def test_wrapping_large_utf8_config(self):
@@ -417,6 +425,8 @@ class TestConfigController(TestController):
                                   data[len(config_data):]))
 
             self.assertEqual(config_data, data, 'error while comparing data')
+
+        self.delete_config(prefix='longUtf8ConfigEntry')
 
         return
 
@@ -513,6 +523,8 @@ class TestConfigController(TestController):
 
             self.assertEqual(config_data, data, 'error while comparing data')
 
+        self.delete_config(prefix='longHexlifyConfigEntry')
+
         return
 
     def test_wrapping_large_base64_config(self):
@@ -562,6 +574,8 @@ class TestConfigController(TestController):
 
             self.assertEqual(config_data, data, 'error while comparing data')
 
+        self.delete_config(prefix='longB64ConfigEntry')
+
         return
 
     def test_delete_of_previous_continous(self):
@@ -583,22 +597,22 @@ class TestConfigController(TestController):
         """
 
         multiple_entries = [{
-            'PassOnUserNoToken': 'False',
-            'client.FORWARDED': 'False',
-            'AutoResync': 'False',
-            'splitAtSign': 'False',
+            'X.PassOnUserNoToken': 'False',
+            'X.client.FORWARDED': 'False',
+            'X.AutoResync': 'False',
+            'X.splitAtSign': 'False',
             }, {
-            'certificates.use_system_certificates': 'False',
-            'user_lookup_cache.enabled': 'True',
-            'selfservice.realmbox': 'False',
-            'resolver_lookup_cache.enabled': 'True',
+            'X.certificates.use_system_certificates': 'False',
+            'X.user_lookup_cache.enabled': 'True',
+            'X.selfservice.realmbox': 'False',
+            'X.resolver_lookup_cache.enabled': 'True',
             }, {
-            'allowSamlAttributes': 'False',
-            'FailCounterIncOnFalsePin': 'True',
-            'PassOnUserNotFound': 'False',
+            'X.allowSamlAttributes': 'False',
+            'X.FailCounterIncOnFalsePin': 'True',
+            'X.PassOnUserNotFound': 'False',
             }, {
-            'PrependPin': 'True',
-            'client.X_FORWARDED_FOR': 'False'}]
+            'X.PrependPin': 'True',
+            'X.client.X_FORWARDED_FOR': 'False'}]
 
         check_results = []
         numthreads = len(multiple_entries)
@@ -620,17 +634,22 @@ class TestConfigController(TestController):
             req.join()
 
         # now check in the config if all keys are there
-        msg = "Deadlock found when trying to get lock"
-        for check_result in check_results:
-            try:
-                jresp = json.loads(check_result.response)
-                error_message = jresp.get('result', {}).get(
-                                          'error', {}).get(
-                                          'message', '')
-                self.assertNotIn(msg, error_message, check_result.response)
+        try:
+            msg = "Deadlock found when trying to get lock"
+            for check_result in check_results:
+                try:
+                    jresp = json.loads(check_result.response)
+                    error_message = jresp.get('result', {}).get(
+                                              'error', {}).get(
+                                              'message', '')
+                    self.assertNotIn(msg, error_message, check_result.response)
 
-            except (ValueError, TypeError) as _exx:
-                log.info("Failed to set Config %r", check_result.response)
+                except (ValueError, TypeError) as _exx:
+                    log.info("Failed to set Config %r", check_result.response)
+
+        finally:
+
+            self.delete_config(prefix='X.')
 
         return
 

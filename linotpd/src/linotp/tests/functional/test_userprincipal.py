@@ -37,17 +37,28 @@ from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 
-
 class TestUserPrincipalController(TestController):
 
     def setUp(self):
+
         self.tokens = {}
+
+        params = {'splitAtSign': True}
+        response = self.make_system_request('setConfig', params=params)
+        assert 'false' not in response.body
+
         TestController.setUp(self)
         self.set_config_selftest()
         self.create_common_resolvers()
         self.create_common_realms()
 
+
     def tearDown(self):
+
+        params = {'splitAtSign': True}
+        response = self.make_system_request('setConfig', params=params)
+        assert 'false' not in response.body
+
         return TestController.tearDown(self)
 
     def test_userprincipal(self):
@@ -58,76 +69,60 @@ class TestUserPrincipalController(TestController):
         will try to verify the user in different situations.
 
         """
+
         params = {
-            "key": 'splitAtSign'
+            'splitAtSign': False
             }
-        response = self.make_system_request('getConfig', params=params)
-        jresp = json.loads(response.body)
-        splitAtSign = jresp.get('result', {}).get(
-                                'value').get(
-                                'getConfig splitAtSign', '')
-        try:
+        response = self.make_system_request('setConfig', params=params)
 
-            params = {
-                'splitAtSign': False
-                }
-            response = self.make_system_request('setConfig', params=params)
+        user = "pass@user"
+        pin = "1234"
+        realm = 'myDefRealm'
+        serial = "F722362"
+        # Initialize authorization (we need authorization in
+        # token creation/deletion)...
 
-            user = "pass@user"
-            pin = "1234"
-            realm = 'myDefRealm'
-            serial = "F722362"
-            # Initialize authorization (we need authorization in
-            # token creation/deletion)...
-
-            params = {
-                   "realm": realm,
-                   "serial": serial,
-                   'pin': pin,
-                   "otpkey": "AD8EABE235FC57C815B26CEF37090755",
-                   "type": 'spass'
-                    }
-
-            # Create test token...
-            response = self.make_admin_request('init', params=params)
-            self.assertTrue(serial in response, response)
-
-            # although not needed, we assign token...
-            params = {
-                'serial': serial,
-                'user': user,
-                'realm': realm
-                }
-            response = self.make_admin_request('assign', params=params)
-            self.assertTrue('"status": true' in response, response)
-
-            params = {
-                'serial': serial,
+        params = {
+               "realm": realm,
+               "serial": serial,
+               'pin': pin,
+               "otpkey": "AD8EABE235FC57C815B26CEF37090755",
+               "type": 'spass'
                 }
 
-            response = self.make_admin_request('enable', params=params)
-            self.assertTrue('"status": true' in response, response)
+        # Create test token...
+        response = self.make_admin_request('init', params=params)
+        self.assertTrue(serial in response, response)
 
-            # test user-principal authentication
-            params = {
-                'user': user,
-                'pass': pin,
-                'realm': realm
-                }
+        # although not needed, we assign token...
+        params = {
+            'serial': serial,
+            'user': user,
+            'realm': realm
+            }
+        response = self.make_admin_request('assign', params=params)
+        self.assertTrue('"status": true' in response, response)
 
-            response = self.make_validate_request('check', params=params)
+        params = {
+            'serial': serial,
+            }
 
-            params = {
-                'serial': serial,
-                }
+        response = self.make_admin_request('enable', params=params)
+        self.assertTrue('"status": true' in response, response)
 
-            response = self.make_admin_request('remove', params=params)
+        # test user-principal authentication
+        params = {
+            'user': user,
+            'pass': pin,
+            'realm': realm
+            }
 
-        finally:
+        response = self.make_validate_request('check', params=params)
 
-            # restore original state
+        params = {
+            'serial': serial,
+            }
 
-            params = {
-                'splitAtSign': splitAtSign
-                }
-            response = self.make_system_request('setConfig', params=params)
+        response = self.make_admin_request('remove', params=params)
+
+

@@ -229,6 +229,8 @@ class TestFixesController(TestController):
         assert counter == numkeys
         assert len(valdict) == 1
 
+        self.delete_config(prefix='key_')
+
         return
 
 

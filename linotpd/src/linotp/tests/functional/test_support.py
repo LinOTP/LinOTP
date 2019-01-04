@@ -53,17 +53,24 @@ log = logging.getLogger(__name__)
 class TestSupport(TestController):
 
     def setUp(self):
-        params = {'key': 'license'}
-        response = self.make_system_request('delConfig', params)
-        msg = '"delConfig license": true'
-        self.assertTrue(msg in response)
 
-        params = {'key': 'license_duration'}
-        response = self.make_system_request('delConfig', params)
-        msg = '"delConfig license_duration": true'
-        self.assertTrue(msg in response)
+        self.delete_license()
+        self.delete_all_token()
+
+        self.create_common_resolvers()
+        self.create_common_realms()
 
         return TestController.setUp(self)
+
+    def tearDown(self):
+
+        self.delete_license()
+        self.delete_all_token()
+
+        self.delete_all_realms()
+        self.delete_all_resolvers()
+
+        return TestController.tearDown(self)
 
     def test_demo_license_expiration(self):
         """
@@ -214,11 +221,7 @@ class TestSupport(TestController):
         verify that the token user license check is working
         """
 
-        self.create_common_resolvers()
-        self.create_common_realms()
-        self.delete_all_token()
-
-        license_valid_date = datetime(year=2018, month=11, day=17)
+        license_valid_date = datetime(year=2018, month=11, day=16)
 
         with freeze_time(license_valid_date):
 
@@ -254,7 +257,7 @@ class TestSupport(TestController):
                 assert '"value": true' in response
 
             response = self.make_system_request("isSupportValid")
-            assert '"value": true' in response
+            assert '"value": true' in response, response
 
             params = {
                 'type': 'pw',
@@ -266,14 +269,10 @@ class TestSupport(TestController):
             assert '"value": true' in response
 
             response = self.make_system_request("isSupportValid")
-            assert '"value": false' in response
+            assert '"value": false' in response, response
 
             msg = "token user used: 5 > token users supported: 4"
             assert msg in response
-
-            self.delete_all_token()
-            self.delete_all_realms()
-            self.delete_all_resolvers()
 
 
     def test_tokencount_user_license(self):
@@ -281,10 +280,6 @@ class TestSupport(TestController):
         verify that the token user license check is working
         """
 
-        self.create_common_resolvers()
-        self.create_common_realms()
-        self.delete_all_token()
-        
         params={
             'name': 'token_count_limit',
             'scope': 'enrollment',
@@ -297,7 +292,7 @@ class TestSupport(TestController):
         response = self.make_system_request('setPolicy', params=params)
         self.assertTrue('false' not in response.body)
 
-        license_valid_date = datetime(year=2018, month=11, day=17)
+        license_valid_date = datetime(year=2018, month=11, day=16)
 
         with freeze_time(license_valid_date):
 
@@ -347,12 +342,6 @@ class TestSupport(TestController):
             assert msg in response
 
             response = self.make_system_request("isSupportValid")
-            assert '"value": true' in response
-
-
-            self.delete_all_token()
-            self.delete_all_realms()
-            self.delete_all_resolvers()
-
+            assert '"value": true' in response, response
 
 # eof ########################################################################

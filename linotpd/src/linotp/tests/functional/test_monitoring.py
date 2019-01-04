@@ -50,6 +50,7 @@ log = logging.getLogger(__name__)
 class TestMonitoringController(TestController):
 
     def setUp(self):
+        self.delete_license()
         self.delete_all_policies()
         self.delete_all_token()
         self.delete_all_realms()

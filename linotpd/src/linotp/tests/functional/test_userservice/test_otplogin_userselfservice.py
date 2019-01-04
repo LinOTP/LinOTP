@@ -78,6 +78,11 @@ class TestUserserviceAuthController(TestController):
     '''
 
     def setUp(self):
+
+        response = self.make_system_request(
+                        'setConfig', params={'splitAtSign': 'true'})
+        assert 'false' not in response.body
+
         TestController.setUp(self)
         # clean setup
         self.delete_all_policies()

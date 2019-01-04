@@ -71,6 +71,8 @@ class TestProviderController(TestController):
 
     def setUp(self):
 
+        self.removeProviderConfig()
+
         super(TestProviderController, self).setUp()
         self.set_config_selftest()
         self.create_common_resolvers()
@@ -79,6 +81,7 @@ class TestProviderController(TestController):
     def tearDown(self):
 
         self.removeProviderConfig()
+
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
@@ -140,17 +143,17 @@ class TestProviderController(TestController):
         return response
 
     def removeProviderConfig(self):
-        entries = ["linotp.Provider.Default.sms_provider",
-                   'linotp.SMSProvider',
-                   "linotp.SMSProviderConfig",
-                   "linotp.SMSProvider.newone",
-                   "linotp.SMSProvider.newone.Config",
-                   "linotp.SMSProvider.newone.Timeout"
-                   ]
+
+        entries = [
+            'Provider.Default.',
+            'SMSProvider',
+            'EmailProvider',
+            'PushProvider',
+            'VoiceProvider',
+        ]
 
         for entry in entries:
-            params = {'key': entry}
-            _response = self.make_system_request('delConfig', params=params)
+            self.delete_config(prefix=entry)
         return
 
     def define_new_provider(self, provider_params=None):

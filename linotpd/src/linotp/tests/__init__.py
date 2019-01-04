@@ -768,6 +768,41 @@ class TestController(unittest2.TestCase):
         }
         self.assertDictEqual(expected_value, content['result']['value'])
 
+    def delete_license(self):
+        ''' delete the current installed license '''
+
+        params = {'key': 'license'}
+        response = self.make_system_request('delConfig', params)
+        msg = '"delConfig license": true'
+        self.assertTrue(msg in response)
+
+        params = {'key': 'license_duration'}
+        response = self.make_system_request('delConfig', params)
+        msg = '"delConfig license_duration": true'
+        self.assertTrue(msg in response)
+
+
+    def delete_config(self, prefix):
+        '''
+        delete config entry with prefix
+        '''
+
+        response = self.make_system_request('getConfig')
+
+        entries = json.loads(response.body)['result']['value']
+
+        for entry in entries:
+
+            if not entry.startswith(prefix):
+                continue
+
+            response = self.make_system_request(
+                'delConfig', params={'key': entry})
+
+            assert 'false' not in response
+
+        return
+
     def delete_policy(self, name, auth_user='admin'):
         """
         Delete the policy with the given name

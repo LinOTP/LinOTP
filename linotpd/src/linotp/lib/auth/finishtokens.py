@@ -410,7 +410,13 @@ def janitor_to_remove_enrollment_token(valid_tokens):
         if len(path) == 1 and path[0] == 'userservice':
             continue
 
-        owner = get_token_owner(token)
+        # TODO: get owner sadly throws a genric exception in case of 
+        # no intersection beteen token realms and user realms :(
+        try:
+            owner = get_token_owner(token)
+        except Exception:
+            continue
+
         if owner:
             all_owners.add(owner)
 

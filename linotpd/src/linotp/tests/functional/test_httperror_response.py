@@ -72,6 +72,10 @@ class TestHTTPError(TestController):
         # Delete 'errors' entry from Config, in case it is set
         self._del_errors_from_config()
 
+    def tearDown(self):
+        self._del_errors_from_config()
+        return TestController.tearDown(self)
+
     def test_no_httperror(self):
         """
         Default case: No httperror sent. Response is JSON 200 OK

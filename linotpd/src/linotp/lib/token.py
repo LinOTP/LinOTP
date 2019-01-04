@@ -1477,11 +1477,13 @@ def getNumTokenUsers(resolver=None, active=True, realm=None):
     '''
 
     conditions = ()
+    session = Session.query(Token)
 
     if realm:
         conditions += (and_(TokenRealm.realm_id == Realm.id,
                             func.lower(Realm.name) == realm.lower(),
                             TokenRealm.token_id == Token.LinOtpTokenId),)
+        session = Session.query(TokenRealm, Realm, Token)
 
     elif resolver:
 
@@ -1496,9 +1498,7 @@ def getNumTokenUsers(resolver=None, active=True, realm=None):
 
     condition = and_(*conditions)
 
-    token_users = Session.query(
-                    TokenRealm, Realm, Token).filter(
-                        condition).distinct(
+    token_users = session.filter(condition).distinct(
                             Token.LinOtpUserid, Token.LinOtpIdResClass).count()
 
     return token_users
