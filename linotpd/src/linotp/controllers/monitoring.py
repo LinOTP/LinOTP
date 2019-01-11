@@ -142,10 +142,14 @@ class MonitoringController(BaseController):
         """
         result = {}
         try:
-            status = self.request_params.get('status', ['total'])
-            if status != ['total']:
-                status = status.split(',')
-                status.append('total')
+            # extract the list of requested stati
+
+            status_set = set(self.request_params.get('status','').split(','))
+            status_set.add('total')
+            status_set.add('total users')
+
+            status = list(status_set)
+
             request_realms = self.request_params.get('realms', '').split(',')
 
             monit_handler = MonitorHandler()
