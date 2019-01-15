@@ -268,11 +268,6 @@ def check_license_restrictions():
     if not res:
         log.info("license check: %r", reason)
 
-    license_type = lic_dict.license_type or 'standard'
-    if license_type != 'download' and license_type != 'demo':
-        return False
-
-    # in case of a download license, we check hard limits
     import linotp.lib.token
     installed_tokens = int(linotp.lib.token.getTokenNumResolver())
     allowed_tokens = lic_dict.get('token-num', 'unlimited')
