@@ -280,6 +280,11 @@ class IdResolver(UserIdResolver):
 
         l_obj = ldap.initialize(uri, trace_level=trace_level)
 
+        l_obj.set_option(ldap.OPT_NETWORK_TIMEOUT, caller.network_timeout)
+
+        if caller.response_timeout > 0:
+            l_obj.set_option(ldap.OPT_TIMEOUT, caller.response_timeout)
+
         # Set LDAP protocol version used
         l_obj.protocol_version = ldap.VERSION3
 
@@ -350,6 +355,14 @@ class IdResolver(UserIdResolver):
                 # the ldap connection again
 
                 l_obj = ldap.initialize(uri, trace_level=trace_level)
+
+                # and dont forget to set the timeouts
+                l_obj.set_option(ldap.OPT_NETWORK_TIMEOUT,
+                                 caller.network_timeout)
+
+                if caller.response_timeout > 0:
+                    l_obj.set_option(ldap.OPT_TIMEOUT, caller.response_timeout)
+
 
         # handle local certificates
 
