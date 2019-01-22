@@ -1130,13 +1130,13 @@ class IdResolver(UserIdResolver):
         return IdResolver.getResolverClassDescriptor()
 
     @classmethod
-    def parse_timeout(cls, timeout):
+    def parse_timeout(cls, timeout, div=2.0):
         if ';' in timeout:
             network_timeout, response_timeout = timeout.split(';')
-            network_timeout = float(network_timeout)
-            response_timeout = float(response_timeout)
+            network_timeout = float(network_timeout) / div
+            response_timeout = float(response_timeout) / div
         else:
-            network_timeout = float(timeout)
+            network_timeout = float(timeout) / div
             response_timeout = TIMEOUT_NO_LIMIT
 
         return float(network_timeout), float(response_timeout)
