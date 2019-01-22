@@ -1365,7 +1365,7 @@ class IdResolver(UserIdResolver):
                   "servers: %r", urilist)
 
         last_error = None
-        resource_scheduler = ResourceScheduler(tries=2, uri_list=urilist)
+        resource_scheduler = ResourceScheduler(tries=1, uri_list=urilist)
 
         for uri in resource_scheduler.next():
             l_obj = None
