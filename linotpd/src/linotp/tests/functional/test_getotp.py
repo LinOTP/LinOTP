@@ -32,6 +32,7 @@ import datetime
 from simplejson import loads
 
 from linotp.tests import TestController
+from freezegun import freeze_time
 
 import logging
 log = logging.getLogger(__name__)
@@ -324,28 +325,29 @@ class TestGetOtpController(TestController):
         '''
         test for the correct otp value of the TOTP token
         '''
-        parameters = {'serial': 'totp1',
-                      'curTime': self.TOTPcurTime,
-                      'count': "20",
-                      'selftest_admin': 'admin'}
-        response = self.make_gettoken_request(action='getmultiotp',
-                                              params=parameters)
 
-        resp = loads(response.body)
-        otps = resp.get('result').get('value').get('otp')
+        self.delete_all_token()
 
-        assert otps is not None, response
+        curTime = datetime.datetime(2012, 5, 18, 0, 13, 52, 227413)
+        with freeze_time(curTime):
+            self.initToken()
 
-        otp1 = otps.get('44576668')
+            parameters = {'serial': 'totp1',
+                          'count': "20",
+                          'selftest_admin': 'admin'}
+            response = self.make_gettoken_request(action='getmultiotp',
+                                                  params=parameters)
 
-        assert otp1 is not None, response
+            resp = loads(response.body)
+            otps = resp.get('result').get('value').get('otp')
 
-        self.assertTrue(otp1.get('otpval') == '75301418', response)
-        self.assertTrue(otp1.get('time') == "2012-05-18 02:14:00", response)
+            otp1 = otps.get('44576668')
+            self.assertTrue(otp1.get('otpval') == '75301418', response)
+            self.assertTrue(otp1.get('time') == "2012-05-18 02:14:00", response)
 
-        otp2 = otps.get('44576669')
-        self.assertTrue(otp2.get('otpval') == '28155992', response)
-        self.assertTrue(otp2.get('time') == "2012-05-18 02:14:30", response)
+            otp2 = otps.get('44576669')
+            self.assertTrue(otp2.get('otpval') == '28155992', response)
+            self.assertTrue(otp2.get('time') == "2012-05-18 02:14:30", response)
 
         return
 
@@ -368,40 +370,41 @@ class TestGetOtpController(TestController):
         '''
         test for the correct OTP value for a users own token
         '''
-        parameters = {'name': 'usertoken',
-                      'scope': 'selfservice',
-                      'realm': 'mydefrealm',
-                      'action': ('max_count_dpw=10, max_count_hotp=10, '
-                                 'max_count_totp=10')
-                      }
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters)
+        self.delete_all_token()
 
-        self.assertTrue('"status": true' in response, response)
+        curTime = datetime.datetime(2012, 5, 18, 0, 13, 52, 227413)
+        with freeze_time(curTime):
+            self.initToken()
+            parameters = {'name': 'usertoken',
+                          'scope': 'selfservice',
+                          'realm': 'mydefrealm',
+                          'action': ('max_count_dpw=10, max_count_hotp=10, '
+                                     'max_count_totp=10')
+                          }
+            response = self.make_system_request(action='setPolicy',
+                                                params=parameters)
 
-        auth_user = ('passthru_user1@myDefRealm', 'geheim1')
-        parameters = {'serial': 'totp1',
-                      'curTime': self.TOTPcurTime,
-                      'count': "20",
-                      }
-        response = self.make_userservice_request(action='getmultiotp',
-                                                 params=parameters,
-                                                 auth_user=auth_user)
+            self.assertTrue('"status": true' in response, response)
 
-        resp = loads(response.body)
-        otps = resp.get('result').get('value').get('otp')
-        assert otps is not None, response
+            auth_user = ('passthru_user1@myDefRealm', 'geheim1')
+            parameters = {
+                'serial': 'totp1',
+                'count': "20",
+            }
+            response = self.make_userservice_request(action='getmultiotp',
+                                                     params=parameters,
+                                                     auth_user=auth_user)
 
-        otp1 = otps.get('44576668')
+            resp = loads(response.body)
+            otps = resp.get('result').get('value').get('otp')
 
-        assert otp1 is not None, response
+            otp1 = otps.get('44576668')
+            self.assertTrue(otp1.get('otpval') == '75301418', response)
+            self.assertTrue(otp1.get('time') == "2012-05-18 02:14:00", response)
 
-        self.assertTrue(otp1.get('otpval') == '75301418', response)
-        self.assertTrue(otp1.get('time') == "2012-05-18 02:14:00", response)
-
-        otp2 = otps.get('44576669')
-        self.assertTrue(otp2.get('otpval') == '28155992', response)
-        self.assertTrue(otp2.get('time') == "2012-05-18 02:14:30", response)
+            otp2 = otps.get('44576669')
+            self.assertTrue(otp2.get('otpval') == '28155992', response)
+            self.assertTrue(otp2.get('time') == "2012-05-18 02:14:30", response)
 
         return
 
