@@ -337,6 +337,9 @@ class TestGetOtpController(TestController):
         assert otps is not None, response
 
         otp1 = otps.get('44576668')
+
+        assert otp1 is not None, response
+
         self.assertTrue(otp1.get('otpval') == '75301418', response)
         self.assertTrue(otp1.get('time') == "2012-05-18 02:14:00", response)
 
@@ -390,6 +393,9 @@ class TestGetOtpController(TestController):
         assert otps is not None, response
 
         otp1 = otps.get('44576668')
+
+        assert otp1 is not None, response
+
         self.assertTrue(otp1.get('otpval') == '75301418', response)
         self.assertTrue(otp1.get('time') == "2012-05-18 02:14:00", response)
 
