@@ -101,7 +101,7 @@ def set_config(key, value, typ, description=None, update=False):
     '''
 
     count = Session.query(linotp.model.Config).filter(
-                          linotp.model.Config.Key == u"linotp." + key).count()
+        linotp.model.Config.Key == u"linotp." + key).count()
 
     if count == 0:
         config_entry = linotp.model.Config(key, value,
@@ -110,7 +110,7 @@ def set_config(key, value, typ, description=None, update=False):
 
     elif update:
         config_entry = Session.query(linotp.model.Config).filter(
-                    linotp.model.Config.Key == u"linotp." + key).first()
+            linotp.model.Config.Key == u"linotp." + key).first()
 
         if not key.startswith('linotp.'):
             key = u'linotp.' + key
@@ -151,13 +151,17 @@ def get_config(key):
     if not key.startswith('linotp.'):
         key = u"linotp." + key
 
+    if isinstance(key, str):
+        key = u'' + key
+
     entry = Session.query(linotp.model.Config).filter(
-                          linotp.model.Config.Key == u'' + key).first()
+        linotp.model.Config.Key == u'' + key).first()
 
     if entry:
         return entry.Value
 
     return None
+
 
 def set_defaults():
     '''
@@ -167,7 +171,7 @@ def set_defaults():
     '''
 
     is_upgrade = 0 != Session.query(linotp.model.Config).filter(
-                          linotp.model.Config.Key == u"linotp.Config").count()
+        linotp.model.Config.Key == u"linotp.Config").count()
 
     if is_upgrade:
         # if it is an upgrade and no welcome screen was shown before,
@@ -401,27 +405,7 @@ def setup_app(conf, conf_global=None, unitTest=False):
     # - called by paster setup-app or on the first request to linotp
     #
 
-    # define the most recent target version
-    sql_data_model_version = "2.10.1.0"
-
-    # get the actual version - should be None or should be the same
-    # if migration is finished
-    current_data_model_version = get_config('sql_data_model_version')
-
-    #
-    # in case of unitTest the database has been erased and recreated - thus
-    # the db model update is not require - so we have already the most recent
-    # target version
-
-    if unitTest:
-        current_data_model_version = sql_data_model_version
-        set_config('sql_data_model_version',
-                   sql_data_model_version, typ='text')
-
-    if current_data_model_version != sql_data_model_version:
-        run_data_model_migration(meta, target_version=sql_data_model_version)
-        set_config('sql_data_model_version',
-                   sql_data_model_version, typ='text', update=True)
+    run_data_model_migration(meta)
 
     #
     # create the secret key file if it does not exist
@@ -543,7 +527,8 @@ class BaseController(WSGIController):
                         request_context['translate'] = translate
 
                         import linotp.lib.support
-                        res, msg = linotp.lib.support.setSupportLicense(license_str)
+                        res, msg = linotp.lib.support.setSupportLicense(
+                            license_str)
                         if res is False:
                             log.error("failed to load license: %s: %s",
                                       license_str, msg)
@@ -702,7 +687,6 @@ class BaseController(WSGIController):
             log.error("Failed to decode request parameters %r" % exx)
         request_context['RequestUser'] = requestUser
 
-
         defaultRealm = ""
         try:
             defaultRealm = getDefaultRealm(linotp_config)
@@ -731,8 +715,8 @@ class BaseController(WSGIController):
 
         # copy some system entries from pylons
         syskeys = {
-                   "radius.nas_identifier": "LinOTP",
-                   "radius.dictfile": "/etc/linotp2/dictionary"
+            "radius.nas_identifier": "LinOTP",
+            "radius.dictfile": "/etc/linotp2/dictionary"
         }
 
         sysconfig = {}
@@ -740,7 +724,6 @@ class BaseController(WSGIController):
             sysconfig[key] = config.get(key, default)
 
         request_context['SystemConfig'] = sysconfig
-
 
 
 # eof ########################################################################

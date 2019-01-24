@@ -207,7 +207,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         realms = []
 
         if hasattr(self, 'realms'):
-            return self.realms # pylint: disable=E0203
+            return self.realms  # pylint: disable=E0203
 
         tokenrealms = self.token.getRealms()
         for realm in tokenrealms:
@@ -868,10 +868,6 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
 
     def update(self, param, reset_failcount=True):
 
-        tdesc = param.get("description")
-        if tdesc is not None:
-            self.token.setDescription(tdesc)
-
         # key_size as parameter overrules a prevoiusly set
         # value e.g. in hashlib in the upper classes
         key_size = param.get("keysize")
@@ -923,13 +919,29 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         if otplen:
             self.setOtpLen(otplen)
 
+        # ----------------------------------------------------------------- --
+
+        # handle definition of usage scope
+
+        scope = None
+
         if 'scope' in param:
             scope = json.loads(param.get('scope', {}))
-            self.addToTokenInfo('scope', scope)
 
         elif 'rollout' in param:
-            scope = {'path' : ['userservice']}
+            scope = {'path': ['userservice']}
+
+        if scope:
             self.addToTokenInfo('scope', scope)
+
+            if not param.get('description'):
+                if scope.get('path', []) == ['userservice']:
+                    param['description'] = 'rollout token'
+
+        if param.get("description"):
+            self.token.setDescription(param.get("description"))
+
+        # ----------------------------------------------------------------- --
 
         self.resetTokenInfo()
 

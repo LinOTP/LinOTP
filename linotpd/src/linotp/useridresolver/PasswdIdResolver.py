@@ -61,9 +61,9 @@ def str2unicode(input_str):
 
     output_str = input_str
     conversions = [{},
-                   {'encoding':'utf-8'},
-                   {'encoding':'iso-8859-1'},
-                   {'encoding':'iso-8859-15'}
+                   {'encoding': 'utf-8'},
+                   {'encoding': 'iso-8859-1'},
+                   {'encoding': 'iso-8859-15'}
                    ]
     for param in conversions:
         try:
@@ -84,8 +84,8 @@ def tokenise(r):
         m = re.match("^" + r, st)
         if m:
             ret = (st[:m.end()].strip(), st[m.end():].strip())
-            #ret[0].strip()      ## remove ws
-            #ret[1].strip()
+            # ret[0].strip()      ## remove ws
+            # ret[1].strip()
         return ret
     return _
 
@@ -105,19 +105,19 @@ class IdResolver (UserIdResolver):
               }
 
     searchFields = {
-          "username": "text",
-          "userid": "numeric",
-          "description": "text",
-          "email": "text"
+        "username": "text",
+        "userid": "numeric",
+        "description": "text",
+        "email": "text"
     }
 
     sF = {
-          "username": 0,
-          "cryptpass": 1,
-          "userid": 2,
-          "description": 4,
-          "email": 4,
-          }
+        "username": 0,
+        "cryptpass": 1,
+        "userid": 2,
+        "description": 4,
+        "email": 4,
+    }
 
     resolver_parameters = {
         "fileName": (True, None, text),
@@ -162,7 +162,6 @@ class IdResolver (UserIdResolver):
         return
 
     def loadFile(self):
-
         """
           init loads the /etc/passwd
             user and uid as a dict for /
@@ -193,16 +192,16 @@ class IdResolver (UserIdResolver):
             fields = line.split(":", 7)
             self.nameDict["%s" % fields[NAME]] = fields[ID]
 
-            ## for speed reason - build a revers lookup
+            # for speed reason - build a revers lookup
             self.reversDict[fields[ID]] = "%s" % fields[NAME]
 
-            ## for full info store the line
+            # for full info store the line
             self.descDict[fields[ID]] = fields
 
-            ## store the crypted password
+            # store the crypted password
             self.passDict[fields[ID]] = fields[PASS]
 
-            ## store surname, givenname and phones
+            # store surname, givenname and phones
             descriptions = fields[DESCRIPTION].split(",")
             name = descriptions[0]
             names = name.split(' ', 1)
@@ -243,10 +242,10 @@ class IdResolver (UserIdResolver):
         log.info("[checkPass] checking password for user uid %s" % uid)
         cryptedpasswd = self.passDict[uid]
         log.debug("[checkPass] We found the crypted pass %s for uid %s"
-                                                    % (cryptedpasswd, uid))
+                  % (cryptedpasswd, uid))
         if not cryptedpasswd:
             log.warning("[checkPass] Failed to verify password. "
-                                        "No crypted password found in file")
+                        "No crypted password found in file")
             return False
 
         if cryptedpasswd == 'x' or cryptedpasswd == '*':
@@ -262,7 +261,6 @@ class IdResolver (UserIdResolver):
             log.warning("[checkPass] user uid %s failed to authenticate"
                         % uid)
             return False
-
 
     @staticmethod
     def _verify_password(password, hashed_password):
@@ -291,7 +289,6 @@ class IdResolver (UserIdResolver):
                 return crypt_method.verify(password, hashed_password)
 
         return False  # pragma: no cover
-
 
     def getUserInfo(self, userId, no_passwd=False):
         """
@@ -367,7 +364,7 @@ class IdResolver (UserIdResolver):
         """
         ret = []
 
-        ##  first check if the searches are in the searchDict
+        # first check if the searches are in the searchDict
         for l in self.descDict:
             line = self.descDict[l]
             ok = True
@@ -573,6 +570,7 @@ class IdResolver (UserIdResolver):
 
         return self
 
+
 if __name__ == "__main__":
 
     print " PasswdIdResolver - IdResolver class test "
@@ -600,14 +598,14 @@ if __name__ == "__main__":
     print "result %r" % ret
 
     ret = y.getSearchFields()
-    #ret["username"]="^bea*"
+    # ret["username"]="^bea*"
     search = {
-               "userid": " between 1000, 1005",
-#              "username":"^bea*",
-              #"description":"*Audio*",
-#              "descriptio":"*Winkler*",
-#              "userid":" <=1003",
-              }
+        "userid": " between 1000, 1005",
+        #              "username":"^bea*",
+        # "description":"*Audio*",
+        #              "descriptio":"*Winkler*",
+        #              "userid":" <=1003",
+    }
     #
 
     ret = y.getUserList(search)

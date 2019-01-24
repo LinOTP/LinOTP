@@ -35,7 +35,11 @@ from sqlalchemy.exc import OperationalError
 
 from sqlalchemy import inspect
 
+import linotp.model
+
 import logging
+
+
 
 log = logging.getLogger(__name__)
 
@@ -88,7 +92,7 @@ def add_column(engine, table_name, column):
                    (table_name, column_name, column_type))
 
 
-def add_index(engine, index, table_name, column):
+def add_index(engine,table_name, index, column):
     """
     create an index based on the column index definition
 
@@ -132,65 +136,204 @@ def drop_column(engine, table_name, column):
                    (table_name, column_name))
 
 
-def run_data_model_migration(meta, target_version=None):
+def run_data_model_migration(meta):
     """
     hook for database schema upgrade
+     - called by paster setup-app or on the first request to linotp
     """
 
-    if not target_version:
-        return
+    # define the most recent target version
+    target_version = "2.10.1.0"
 
-    if target_version == "2.9.1.0":
-        try:
+    migration = Migration(meta)
 
-            # add new bigger sized challenge column
-            column = sa.Column('lchallenge', sa.types.Unicode(2000))
+    # start with the current version, which is retreived from the db
+    current_version = migration.get_current_version()
 
-            if not has_column(meta, 'challenges', column):
-                add_column(meta.engine, 'challenges', column)
+    # run the steps in the migration chain
+    migration.migrate(from_version=current_version, to_version=target_version)
 
-            # add column to refer to the parent transaction
-            column = sa.Column('ptransid', sa.types.Unicode(64), index=True)
+    # finally set the target version we reached
+    migration.set_version(target_version)
 
-            if not has_column(meta, 'challenges', column):
-                add_column(meta.engine, 'challenges', column)
-                add_index(meta.engine, 'ptransid', 'challenges', column)
+    return target_version
 
-        except ProgrammingError as exx:
-            log.exception('Failed to upgrade database! %r', exx)
+class Migration():
+    """
+    Migration class
 
-        except OperationalError as exx:
-            log.exception('Failed to upgrade database! %r', exx)
+    - support the the db migration with a chain of db migration steps
+      where each step is defined as class method according to the requested
+      target version
 
-        except Exception as exx:
-            log.exception('Failed to upgrade database! %r', exx)
-            raise exx
+    """
+
+    # model version key in the config table
+
+    db_model_key = u'linotp.sql_data_model_version'
+
+    # define the chain of migration steps starting with the not existing one
+
+    migration_steps = [
+        None,
+        "2.9.1.0",
+        "2.10.1.0"
+        ]
+
+    def __init__(self, meta):
+        """
+        class init
+        - preserve the database handle
+        """
+        self.meta = meta
+        self.current_version = None
+
+    def _query_version(self):
+
+        config_query= self.meta.Session.query(linotp.model.Config)
+        config_query = config_query.filter(
+                            linotp.model.Config.Key == self.db_model_key)
+
+        return config_query.first()
 
 
-    elif target_version == "2.10.1.0":
-        try:
+    def get_current_version(self):
+        """
+        get the db model version number
 
-            # add new bigger sized challenge column
-            bchallenges = sa.Column('bchallenge', sa.types.Binary())
+        :return: current db version or None
+        """
 
-            if not has_column(meta, 'challenges', bchallenges):
-                add_column(meta.engine, 'challenges', bchallenges)
+        if self.current_version:
+            return self.current_version
 
-           # add new bigger sized challenge column
-            bdata = sa.Column('bdata', sa.types.Binary())
+        config_entry = self._query_version()
 
-            if not has_column(meta, 'challenges', bdata):
-                add_column(meta.engine, 'challenges', bdata)
+        if config_entry:
 
-        except ProgrammingError as exx:
-            log.exception('Failed to upgrade database! %r', exx)
+            # preserve the version, to not retrieve the version multiple times
+            self.current_version = config_entry.Value
 
-        except OperationalError as exx:
-            log.exception('Failed to upgrade database! %r', exx)
+        return self.current_version
 
-        except Exception as exx:
-            log.exception('Failed to upgrade database! %r', exx)
-            raise exx
+    def set_version(self, version):
+        """
+        set the version new db model number
+
+        - on update: update the entry
+        - on new: create new db entry
+
+        :param version: set the new db model version
+        """
+
+        if version == self.current_version:
+            return
+
+        config_entry = self._query_version()
+
+        if config_entry:
+            config_entry.Value = version
+
+        else:
+            config_entry = linotp.model.Config(
+                                        Key=self.db_model_key,
+                                        Value=version)
+
+        self.meta.Session.add(config_entry)
 
 
-    return
+    def migrate(self, from_version, to_version):
+        """
+        run all migration steps between the versions, which
+        are listed in the migration_steps
+
+        :param from_version: the version to start in the migration chain
+        :param to_version: the target version in the migration chain
+        """
+
+        active = False
+
+        for next_version in self.migration_steps:
+
+            if active:
+                # --------------------------------------------------------- --
+
+                # get the function pointer to the set version
+
+                exec_version = next_version.replace('.', '_')
+                function_name = 'migrate_%s' % exec_version
+
+                if not hasattr(self, function_name):
+                    log.error("unknown migration function %r",  function_name)
+                    raise Exception('unknown migration to %r' % next_version)
+
+                migration_step = getattr(self, function_name)
+
+                # --------------------------------------------------------- --
+
+                # execute the migration step
+
+                try:
+                    _success = migration_step()
+
+                except Exception as exx:
+                    log.exception('Failed to upgrade database! %r', exx)
+                    self.meta.Session.rollback()
+                    raise exx
+
+            if next_version == from_version:
+                active = True
+
+            if next_version == to_version:
+                break
+
+
+    # --------------------------------------------------------------------- --
+
+    # migration towards 2.9.1
+
+    def migrate_2_9_1_0(self):
+        """
+        run the migration for bigger sized challenge column
+        """
+
+        challenge_table = "challenges"
+
+        # add new bigger challenge column
+        column = sa.Column('lchallenge', sa.types.Unicode(2000))
+
+        if not has_column(self.meta, challenge_table, column):
+            add_column(self.meta.engine, challenge_table, column)
+
+        # add column to refer to the parent transaction
+        column = sa.Column('ptransid', sa.types.Unicode(64), index=True)
+
+        if not has_column(self.meta, challenge_table, column):
+            add_column(self.meta.engine, challenge_table, column)
+            add_index(self.meta.engine, challenge_table, 'ptransid', column)
+
+    # --------------------------------------------------------------------- --
+
+    # migration towards 2.10.1
+
+    def migrate_2_10_1_0(self):
+        """
+        run the migration to blob challenge and data column
+        """
+
+        challenge_table = "challenges"
+
+        # add new blob challenge column
+        bchallenges = sa.Column('bchallenge', sa.types.Binary())
+
+        if not has_column(self.meta, challenge_table, bchallenges):
+            add_column(self.meta.engine, challenge_table, bchallenges)
+
+        # add new blob data column
+        bdata = sa.Column('bdata', sa.types.Binary())
+
+        if not has_column(self.meta, challenge_table, bdata):
+            add_column(self.meta.engine, challenge_table, bdata)
+
+
+# eof
