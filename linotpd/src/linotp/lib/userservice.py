@@ -116,12 +116,7 @@ def getTokenForUser(user, active=None, exclude_rollout=True):
 
             path = token_info.get('scope', {}).get('path', [])
 
-
-<< << << < HEAD
-            if len(path) == 1 and path[0] == 'userservice':
-== == == =
             if len(path) == 1 and path[0] == 'userservice' and exclude_rollout:
->>>>>> > branch-v2.10
                 continue
 
             tok['LinOtp.TokenInfo'] = token_info
