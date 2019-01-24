@@ -55,9 +55,9 @@ class TestRolloutToken(TestController):
         """
         """
         response, auth_cookie = self._user_service_login(
-                                 auth_user=user,
-                                 password=password,
-                                 otp=otp)
+            auth_user=user,
+            password=password,
+            otp=otp)
 
         return response
 
@@ -83,11 +83,10 @@ class TestRolloutToken(TestController):
             'user': '*',
             'realm': '*',
             'active': True
-            }
+        }
 
         response = self.make_system_request('setPolicy', params)
         self.assertTrue('false' not in response, response)
-
 
         user = 'passthru_user1@myDefRealm'
         password = 'geheim1'
@@ -128,11 +127,10 @@ class TestRolloutToken(TestController):
             'user': '*',
             'realm': '*',
             'active': True
-            }
+        }
 
         response = self.make_system_request('setPolicy', params)
         self.assertTrue('false' not in response, response)
-
 
         user = 'passthru_user1@myDefRealm'
         password = 'geheim1'
@@ -171,7 +169,7 @@ class TestRolloutToken(TestController):
             'user': '*',
             'realm': '*',
             'active': True
-            }
+        }
 
         response = self.make_system_request('setPolicy', params)
         self.assertTrue('false' not in response, response)
@@ -215,7 +213,7 @@ class TestRolloutToken(TestController):
             'user': '*',
             'realm': '*',
             'active': True
-            }
+        }
 
         response = self.make_system_request('setPolicy', params)
         self.assertTrue('false' not in response, response)
@@ -258,7 +256,7 @@ class TestRolloutToken(TestController):
             'user': '*',
             'realm': '*',
             'active': True
-            }
+        }
 
         response = self.make_system_request('setPolicy', params)
         self.assertTrue('false' not in response, response)
@@ -302,7 +300,7 @@ class TestRolloutToken(TestController):
             'user': '*',
             'realm': '*',
             'active': True
-            }
+        }
 
         response = self.make_system_request('setPolicy', params)
         self.assertTrue('false' not in response, response)
@@ -314,7 +312,7 @@ class TestRolloutToken(TestController):
             'user': '*',
             'realm': 'myMixedRealm',
             'active': True
-            }
+        }
 
         response = self.make_system_request('setPolicy', params)
         self.assertTrue('false' not in response, response)
@@ -328,10 +326,8 @@ class TestRolloutToken(TestController):
             "otpkey": otp,
             "user": user,
             "pin": pin,
-
             "type": "pw",
             "serial": "KIPW0815",
-            "description": "enrollment test token",
             "scope": json.dumps({
                 "path": ["userservice"]})
         }
@@ -367,6 +363,22 @@ class TestRolloutToken(TestController):
 
         # ------------------------------------------------------------------ --
 
+        # verify that the default description of the token is 'rollout token'
+
+        tokens = json.loads(response.body).get(
+            'result', {}).get(
+            'value', {}).get(
+            'data', [])
+
+        self.assertTrue(len(tokens) > 1)
+
+        for token in tokens:
+            if token["LinOtp.TokenSerialnumber"] == "KIPW0815":
+                self.assertTrue(token['LinOtp.TokenDesc'] == 'rollout token')
+                break
+
+        # ------------------------------------------------------------------ --
+
         # after the valid authentication with the second token
         # the rollout token should have disappeared
 
@@ -375,6 +387,32 @@ class TestRolloutToken(TestController):
 
         response = self.make_admin_request('show', params=params)
         self.assertTrue('KIPW0815' not in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # verify that the audit log reflects the purge of the rollout tokens
+
+        found_in_audit_log = False
+
+        params = {
+            'rp': 20,
+            'page': 1,
+            'sortorder': 'desc',
+            'sortname': 'number',
+            'qtype': 'action',
+            'query': 'validate/check',
+        }
+
+        response = self.make_audit_request('search', params=params)
+
+        entries = json.loads(response.body).get('rows', [])
+        for entry in entries:
+            data = entry['cell']
+            if 'purged rollout tokens:KIPW0815' in data[12]:
+                found_in_audit_log = True
+                break
+
+        self.assertTrue(found_in_audit_log, entries)
 
         return
 
@@ -389,7 +427,7 @@ class TestRolloutToken(TestController):
             'user': '*',
             'realm': '*',
             'active': True
-            }
+        }
 
         response = self.make_system_request('setPolicy', params)
         self.assertTrue('false' not in response, response)
@@ -401,7 +439,7 @@ class TestRolloutToken(TestController):
             'user': '*',
             'realm': '*',
             'active': True
-            }
+        }
 
         response = self.make_system_request('setPolicy', params)
         self.assertTrue('false' not in response, response)
@@ -481,7 +519,7 @@ class TestRolloutToken(TestController):
             'user': '*',
             'realm': '*',
             'active': True
-            }
+        }
 
         response = self.make_system_request('setPolicy', params)
         self.assertTrue('false' not in response, response)
@@ -561,7 +599,7 @@ class TestRolloutToken(TestController):
             'user': '*',
             'realm': '*',
             'active': True
-            }
+        }
 
         response = self.make_system_request('setPolicy', params)
         self.assertTrue('false' not in response, response)
@@ -606,15 +644,19 @@ class TestRolloutToken(TestController):
             'login': 'passthru_user1@myDefRealm',
             'password': 'geheim1',
             'otp': otp
-            }
+        }
 
-        response= self.make_userselfservice_request(
-                        'usertokenlist', None, auth_user)
+        response = self.make_userselfservice_request(
+            'usertokenlist', auth_user=auth_user)
 
         # verify that the rollout token is not in the list
 
-        self.assertTrue('KIPW0815' not in response, response)
+        self.assertTrue('KIPW0815' in response, response)
         self.assertTrue('LinOtp.TokenSerialnumber' in response, response)
+
+        response = self.make_selfservice_request(
+            'usertokenlist', None, auth_user=auth_user)
+        self.assertTrue('KIPW0815' not in response.body, response)
 
         return
 

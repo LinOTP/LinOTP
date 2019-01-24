@@ -354,8 +354,7 @@ class FinishTokens(object):
         for token in all_tokens:
             token.incOtpFailCounter()
 
-    @staticmethod
-    def create_audit_entry(action_detail="no token found!", tokens=None):
+    def create_audit_entry(self, action_detail="no token found!", tokens=None):
         """
         setting global audit entry
 
@@ -365,6 +364,8 @@ class FinishTokens(object):
 
         # get the audit dict from the context
         audit = context['audit']
+
+        audit.update(self.audit_entry)
 
         audit['action_detail'] = action_detail
 
@@ -392,6 +393,7 @@ class FinishTokens(object):
 
         return
 
+
 def janitor_to_remove_enrollment_token(valid_tokens):
     """
     remove all enrollment only tokens
@@ -406,11 +408,11 @@ def janitor_to_remove_enrollment_token(valid_tokens):
 
         # if the authenticated token is a rollout token, we dont count him
 
-        path = token.getFromTokenInfo('scope',{}).get('path',[])
+        path = token.getFromTokenInfo('scope', {}).get('path', [])
         if len(path) == 1 and path[0] == 'userservice':
             continue
 
-        # TODO: get owner sadly throws a genric exception in case of 
+        # TODO: get owner sadly throws a genric exception in case of
         # no intersection beteen token realms and user realms :(
         try:
             owner = get_token_owner(token)
@@ -443,7 +445,7 @@ def janitor_to_remove_enrollment_token(valid_tokens):
             continue
 
         for token in user_tokens:
-            path = token.getFromTokenInfo('scope',{}).get('path',[])
+            path = token.getFromTokenInfo('scope', {}).get('path', [])
             if len(path) == 1 and path[0] == 'userservice':
                 to_be_removed_tokens.append(token)
 
@@ -451,7 +453,18 @@ def janitor_to_remove_enrollment_token(valid_tokens):
 
     # delete all rollout tokens
 
+    serials = []
     for token in to_be_removed_tokens:
+        serials.append(token.getSerial())
         remove_token(token)
 
-# eof###########################################################################
+    # ------------------------------------------------------------------ --
+
+    # add info about the purging
+
+    audit = context['audit']
+
+    if serials:
+        audit['info'] += 'purged rollout tokens:' + ', '.join(serials)
+
+# eof #########################################################################

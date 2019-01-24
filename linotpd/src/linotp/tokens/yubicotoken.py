@@ -34,13 +34,36 @@ import re
 import os
 import binascii
 
+import datetime
+
+import requests
+
+from requests.exceptions import Timeout
+from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectTimeout
+from requests.exceptions import ReadTimeout
+from requests.exceptions import TooManyRedirects
+
 from linotp.tokens.base import TokenClass
 from linotp.tokens import tokenclass_registry
 from linotp.lib.error import ParameterError
 
+from linotp.lib.resources import ResourceScheduler
+from linotp.lib.resources import AllResourcesUnavailable
+
 YUBICO_LEN_ID = 12
 YUBICO_LEN_OTP = 44
-YUBICO_URL = "http://api.yubico.com/wsapi/2.0/verify"
+
+DEPRECATED_YUBICO_URL = "http://api.yubico.com/wsapi/2.0/verify"
+
+FALLBACK_YUBICO_URL = ", ".join([
+    "https://api.yubico.com/wsapi/2.0/verify",
+    "https://api2.yubico.com/wsapi/2.0/verify",
+    "https://api3.yubico.com/wsapi/2.0/verify",
+    "https://api4.yubico.com/wsapi/2.0/verify",
+    "https://api5.yubico.com/wsapi/2.0/verify"
+    ])
+
 DEFAULT_CLIENT_ID = 11759
 DEFAULT_API_KEY = "P1QVTgnToQWQm0b6LREEhDIAbHU="
 
@@ -154,7 +177,21 @@ class YubicoTokenClass(TokenClass):
         '''
         Here we contact the Yubico Cloud server to validate the OtpVal.
         '''
-        res = -1
+
+        yubico_url = getFromConfig("yubico.url", FALLBACK_YUBICO_URL)
+
+        if yubico_url == DEPRECATED_YUBICO_URL:
+
+            log.warning("Usage of YUBICO_URL %r is deprecated!! ",
+                        DEPRECATED_YUBICO_URL)
+
+            # setups with old YUBICO URLS will be broken on yubico side
+            # after 3th of February 2019
+            third_feb_2019 = datetime.datetime(year=2019, month=2, day=3)
+
+            if datetime.datetime.now() >= third_feb_2019:
+                raise Exception("Usage of YUBICO_URL %r is deprecated!! " %
+                                DEPRECATED_YUBICO_URL)
 
         apiId = getFromConfig("yubico.id", DEFAULT_CLIENT_ID)
         apiKey = getFromConfig("yubico.secret", DEFAULT_API_KEY)
@@ -169,59 +206,137 @@ class YubicoTokenClass(TokenClass):
         tokenid = self.getFromTokenInfo("yubico.tokenid")
         if len(anOtpVal) < 12:
             log.warning("[checkOtp] The otpval is too short: %r" % anOtpVal)
+            return -1
 
-        elif anOtpVal[:12] != tokenid:
-            log.warning("[checkOtp] the tokenid in the OTP value does not match the assigned token!")
+        if anOtpVal[:12] != tokenid:
+            log.warning("[checkOtp] the tokenid in the OTP value does "
+                        "not match the assigned token!")
+            return -1
 
-        else:
-            nonce = binascii.hexlify(os.urandom(20))
-            p = urllib.urlencode({'nonce': nonce,
-                                    'otp':anOtpVal,
-                                    'id':apiId})
-            URL = "%s?%s" % (YUBICO_URL, p)
+        nonce = binascii.hexlify(os.urandom(20))
+
+        p = urllib.urlencode({
+            'nonce': nonce,
+            'otp':anOtpVal,
+            'id':apiId
+        })
+
+        yubico_urls = [x.strip() for x in yubico_url.split(',')]
+
+        res_scheduler = ResourceScheduler(
+                        tries=2, uri_list=yubico_urls)
+
+
+        for uri in res_scheduler.next():
+
             try:
-                f = urllib2.urlopen(urllib2.Request(URL))
-                rv = f.read()
-                m = re.search('\nstatus=(\w+)\r', rv)
-                result = m.group(1)
+                URL = "%s?%s" % (uri, p)
 
-                m = re.search('nonce=(\w+)\r', rv)
-                return_nonce = m.group(1)
+                response = requests.get(URL)
 
-                m = re.search('h=(.+)\r', rv)
-                return_hash = m.group(1)
+                if response.ok:
+                    return self._check_yubico_response(
+                                nonce, apiKey, response.content)
 
-                # check signature:
-                elements = rv.split('\r')
-                hash_elements = []
-                for elem in elements:
-                    elem = elem.strip('\n')
-                    if elem and elem[:2] != "h=":
-                        hash_elements.append(elem)
+                log.info("Failed to validate yubico request %r", response)
 
-                hash_input = '&'.join(sorted(hash_elements))
+                return -1
 
-                sec_obj = self._get_secret_object()
 
-                h_digest = sec_obj.hmac_digest(data_input=hash_input,
-                                               bkey=binascii.a2b_base64(apiKey),
-                                               hash_algo=sha1)
+            except (Timeout, ConnectTimeout, ReadTimeout,
+                    ConnectionError, TooManyRedirects) as exx:
 
-                hashed_data = binascii.b2a_base64(h_digest)[:-1]
+                log.exception('resource %r not available!', uri)
 
-                if hashed_data != return_hash:
-                    log.error("[checkOtp] The hash of the return from the Yubico Cloud server does not match the data!")
+                # mark the url as blocked
 
-                if nonce != return_nonce:
-                    log.error("[checkOtp] The returned nonce does not match the sent nonce!")
+                res_scheduler.block(uri, delay=30)
 
-                if result == "OK" and nonce == return_nonce and hashed_data == return_hash:
-                    res = 1
-                else:
-                    # possible results are listed here:
-                    # https://github.com/Yubico/yubikey-val/wiki/ValidationProtocolV20
-                    log.warning("[checkOtp] failed with %r" % result)
-            except Exception as ex:
-                log.exception("[checkOtp] Error getting response from Yubico Cloud Server (%r): %r" % (URL, ex))
+                log.error("[checkOtp] Error getting response from "
+                          "Yubico Cloud Server (%r)" % uri)
 
-        return res
+
+            except Exception as exx:
+
+                log.exception('unknown exception for uri %r!', uri)
+
+                raise exx
+
+        # ------------------------------------------------------------------ --
+
+        # if we reach here, no resource has been availabel
+
+        log.error('non of the resources %r available!', yubico_urls)
+
+        raise AllResourcesUnavailable('non of the resources %r available!' %
+                                      yubico_urls)
+
+
+    def _check_yubico_response(self, nonce, apiKey, rv):
+        """
+        parse and validate the yubico response
+
+        :param nonce: validate against given nonce
+        :param apikey: validate against our apiKey
+        :param rv: yukico response
+
+        :return: -1 or 1
+        """
+
+        m = re.search('\nstatus=(\w+)\r', rv)
+        if not m:
+            return -1
+
+        result = m.group(1)
+        if result != "OK":
+            # possible results are listed here:
+            # https://github.com/Yubico/yubikey-val/wiki/ValidationProtocolV20
+            log.warning("[checkOtp] failed with %r" % result)
+            return -1
+
+        m = re.search('nonce=(\w+)\r', rv)
+        if not m:
+            return -1
+
+        return_nonce = m.group(1)
+
+        m = re.search('h=(.+)\r', rv)
+        if not m:
+            return -1
+
+        return_hash = m.group(1)
+
+        # check signature:
+        elements = rv.split('\r')
+        hash_elements = []
+        for elem in elements:
+            elem = elem.strip('\n')
+            if elem and elem[:2] != "h=":
+                hash_elements.append(elem)
+
+        hash_input = '&'.join(sorted(hash_elements))
+
+        sec_obj = self._get_secret_object()
+
+        h_digest = sec_obj.hmac_digest(data_input=hash_input,
+                                       bkey=binascii.a2b_base64(apiKey),
+                                       hash_algo=sha1)
+
+        hashed_data = binascii.b2a_base64(h_digest)[:-1]
+
+        if hashed_data != return_hash:
+            log.error("[checkOtp] The hash of the return from the Yubico Cloud"
+                      " server does not match the data!")
+            return -1
+
+        if nonce != return_nonce:
+            log.error("[checkOtp] The returned nonce does not match"
+                      " the sent nonce!")
+            return -1
+
+        if result == "OK":
+            return 1
+
+        return -1
+
+# eof
