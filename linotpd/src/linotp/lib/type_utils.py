@@ -149,6 +149,42 @@ def encrypted_data(value):
 
     return EncryptedData.from_unencrypted(value)
 
+def get_timeout(timeout, seperator=','):
+    """
+    get the timeout or timeout tuple from timeout input
+    """
+    if isinstance(timeout, tuple):
+        return timeout
+
+    if isinstance(timeout, (float, int) ):
+        return timeout
+
+    if not isinstance(timeout, (str, unicode)):
+        raise ValueError("Unsupported timeout input type %r", timeout)
+
+    try:
+        if seperator not in timeout:
+                return float(timeout)
+
+    except ValueError:
+        raise ValueError('Failed to convert timeout %r values!' % timeout)
+
+    try:
+        timeouts= tuple(float(x.strip())
+                   for x in timeout.strip().strip(seperator).split(seperator))
+
+    except ValueError:
+        raise ValueError('Failed to convert timeout %r values!' % timeout)
+
+    if len(timeouts) == 1:
+        return timeouts[0]
+
+    if len(timeouts) == 2:
+        return timeouts
+
+    raise Exception("Unsupported timeout format %r", timeout)
+
+
 
 def boolean(value):
     """
