@@ -264,6 +264,7 @@ class TestRestSmsController(TestSpecialController):
         '''
         if enforce_smstext policy is set, the request parameter 'data' is ignored
         '''
+        global REQUEST_BODY
 
         # ------------------------------------------------------------------ --
 
@@ -349,7 +350,7 @@ class TestRestSmsController(TestSpecialController):
             'pass': '1234',
             'data': 'this is your otp <otp>'
         }
-        global REQUEST_BODY
+
         REQUEST_BODY = {}
 
         response = self.make_validate_request('check', params=params)
@@ -380,11 +381,9 @@ class TestRestSmsController(TestSpecialController):
             'pass': '1234',
             'data': 'this is your otp <otp>'
         }
-        global REQUEST_BODY
+
         REQUEST_BODY = {}
 
-
-        
         with freeze_time(datetime.now()+timedelta(seconds=120)):
 
             response = self.make_validate_request('check', params=params)
