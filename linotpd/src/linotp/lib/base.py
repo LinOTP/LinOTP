@@ -404,27 +404,8 @@ def setup_app(conf, conf_global=None, unitTest=False):
     # - called by paster setup-app or on the first request to linotp
     #
 
-    # define the most recent target version
-    sql_data_model_version = "2.10.1.0"
+    run_data_model_migration(meta)
 
-    # get the actual version - should be None or should be the same
-    # if migration is finished
-    current_data_model_version = get_config('sql_data_model_version')
-
-    #
-    # in case of unitTest the database has been erased and recreated - thus
-    # the db model update is not require - so we have already the most recent
-    # target version
-
-    if unitTest:
-        current_data_model_version = sql_data_model_version
-        set_config('sql_data_model_version',
-                   sql_data_model_version, typ='text')
-
-    if current_data_model_version != sql_data_model_version:
-        run_data_model_migration(meta, target_version=sql_data_model_version)
-        set_config('sql_data_model_version',
-                   sql_data_model_version, typ='text', update=True)
 
     #
     # create the secret key file if it does not exist
