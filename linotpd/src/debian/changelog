@@ -1,3 +1,18 @@
+linotp (2.10.3rc0-1) jessie; urgency=low
+
+  Enhancement:
+    * Server: support db schema migration of elder versions
+
+  Bug Fixes:
+    * Server: fix for handling the ldap timeouts
+    * Server: show validation errors in audit log
+    * Server: adjust the yubico token urls to https
+    * Server: selfservice cookie authentication fixes
+    * Server: support mfa selfservice authentication with
+              pushtoken.
+
+ --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 25 Jan 2018 19:40:21 +0200
+
 linotp (2.10.2-1) jessie; urgency=low
 
   Enhancements:
