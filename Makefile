@@ -406,7 +406,7 @@ DOCKERFY_SHA256=813d47ebf2e63c966655dd5349a29600ba94deac7a57c132bf624c56ba210445
 $(BUILDDIR)/dockerfy:
 	mkdir -pv $(BUILDDIR)/dockerfy-tmp
 	wget --directory-prefix=$(BUILDDIR)/dockerfy-tmp $(DOCKERFY_URL)
-	echo "${DOCKERFY_SHA256}" $(BUILDDIR)/dockerfy-tmp/dockerfy-linux-amd64*gz \
+	echo "${DOCKERFY_SHA256} " $(BUILDDIR)/dockerfy-tmp/dockerfy-linux-amd64*gz \
 	| sha256sum -c -
 	tar -C $(BUILDDIR) -xvf $(BUILDDIR)/dockerfy-tmp/dockerfy-linux-amd64*.gz
 	rm -r $(BUILDDIR)/dockerfy-tmp
