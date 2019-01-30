@@ -168,7 +168,7 @@ function yubico_clear_input_fields() {
 <tr>
 	<td><label for="yubico_token_id" title='${_("You need to enter the YubiKey token ID")}'>
 		${_("Token ID")}</label></td>
-	<td><input type="text" name="yubico_token_id" id="yubico_token_id" min=12
+	<td><input type="text" name="yubico_token_id" id="yubico_token_id" minlength=12
 		class="required text ui-widget-content ui-corner-all"></td>
 </tr>
 <tr>
