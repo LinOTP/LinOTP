@@ -186,16 +186,6 @@ def check_otp(token, otpval, options=None):
 
     # ---------------------------------------------------------------------- --
 
-    # check for restricted path usage
-
-    path = context['Path'].strip('/').partition('/')[0]
-    token_path = token.getFromTokenInfo('scope', {}).get('path', [])
-
-    if token_path and path not in token_path:
-        return -1
-
-    # ---------------------------------------------------------------------- --
-
     res = token.checkOtp(otpval, counter, window, options=options)
     return res
 
@@ -729,6 +719,16 @@ class ValidationHandler(object):
             if token.getFailCount() >= token.getMaxFailCount():
                 audit_entry['action_detail'] = "Failcounter exceeded"
                 token.incOtpFailCounter()
+                continue
+
+            # ---------------------------------------------------------------------- --
+
+            # check for restricted path usage
+
+            path = context['Path'].strip('/').partition('/')[0]
+            token_path = token.getFromTokenInfo('scope', {}).get('path', [])
+
+            if token_path and path not in token_path:
                 continue
 
             # -------------------------------------------------------------- --
