@@ -42,6 +42,7 @@ connection = serial
 from linotp.provider.smsprovider import getSMSProviderClass
 from linotp.provider.smsprovider import ISMSProvider
 from linotp.provider import provider_registry
+from linotp.provider import ProviderNotAvailable
 
 import subprocess
 import string
@@ -96,7 +97,9 @@ class DeviceSMSProvider(ISMSProvider):
         log.error("[submitMessage] output: %s" % smsout)
         log.error("[submitMessage] SMS sending failed, return code: %s" % proc.returncode)
 
-        return False
+        raise ProviderNotAvailable("DeviceSMSProvider failed to send message:"
+                                   " %r" % proc)
+
 
     def loadConfig(self, configDict):
         self.config = configDict
