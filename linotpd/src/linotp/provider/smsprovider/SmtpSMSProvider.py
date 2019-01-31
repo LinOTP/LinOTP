@@ -35,6 +35,8 @@ import logging
 
 from linotp.provider.smsprovider import ISMSProvider
 from linotp.provider import provider_registry
+from linotp.provider import ProviderNotAvailable
+
 from linotp.lib.type_utils import boolean
 
 log = logging.getLogger(__name__)
@@ -224,6 +226,10 @@ class SmtpSMSProvider(ISMSProvider):
             (code, response) = serv.quit()
             log.debug("quit: (%r) %r", code, response)
             ret = True
+
+        except smtplib.socket.error as exc:
+            log.exception('Error: could not connect to server')
+            raise ProviderNotAvailable('Error: could not connect to server')
 
         except Exception as exx:
             log.exception("[submitMessage] %s", exx)
