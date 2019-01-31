@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -354,8 +354,7 @@ class FinishTokens(object):
         for token in all_tokens:
             token.incOtpFailCounter()
 
-    @staticmethod
-    def create_audit_entry(action_detail="no token found!", tokens=None):
+    def create_audit_entry(self, action_detail="no token found!", tokens=None):
         """
         setting global audit entry
 
@@ -365,6 +364,8 @@ class FinishTokens(object):
 
         # get the audit dict from the context
         audit = context['audit']
+
+        audit.update(self.audit_entry)
 
         audit['action_detail'] = action_detail
 

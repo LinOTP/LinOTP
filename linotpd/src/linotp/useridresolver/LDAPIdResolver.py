@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #   LinOTP - the open source solution for two factor authentication
-#   Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#   Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #   This file is part of LinOTP userid resolvers.
 #
@@ -280,6 +280,11 @@ class IdResolver(UserIdResolver):
 
         l_obj = ldap.initialize(uri, trace_level=trace_level)
 
+        l_obj.set_option(ldap.OPT_NETWORK_TIMEOUT, caller.network_timeout)
+
+        if caller.response_timeout > 0:
+            l_obj.set_option(ldap.OPT_TIMEOUT, caller.response_timeout)
+
         # Set LDAP protocol version used
         l_obj.protocol_version = ldap.VERSION3
 
@@ -350,6 +355,14 @@ class IdResolver(UserIdResolver):
                 # the ldap connection again
 
                 l_obj = ldap.initialize(uri, trace_level=trace_level)
+
+                # and dont forget to set the timeouts
+                l_obj.set_option(ldap.OPT_NETWORK_TIMEOUT,
+                                 caller.network_timeout)
+
+                if caller.response_timeout > 0:
+                    l_obj.set_option(ldap.OPT_TIMEOUT, caller.response_timeout)
+
 
         # handle local certificates
 
@@ -1117,13 +1130,13 @@ class IdResolver(UserIdResolver):
         return IdResolver.getResolverClassDescriptor()
 
     @classmethod
-    def parse_timeout(cls, timeout):
+    def parse_timeout(cls, timeout, div=2.0):
         if ';' in timeout:
             network_timeout, response_timeout = timeout.split(';')
-            network_timeout = float(network_timeout)
-            response_timeout = float(response_timeout)
+            network_timeout = float(network_timeout) / div
+            response_timeout = float(response_timeout) / div
         else:
-            network_timeout = float(timeout)
+            network_timeout = float(timeout) / div
             response_timeout = TIMEOUT_NO_LIMIT
 
         return float(network_timeout), float(response_timeout)
@@ -1352,7 +1365,7 @@ class IdResolver(UserIdResolver):
                   "servers: %r", urilist)
 
         last_error = None
-        resource_scheduler = ResourceScheduler(tries=2, uri_list=urilist)
+        resource_scheduler = ResourceScheduler(tries=1, uri_list=urilist)
 
         for uri in resource_scheduler.next():
             l_obj = None

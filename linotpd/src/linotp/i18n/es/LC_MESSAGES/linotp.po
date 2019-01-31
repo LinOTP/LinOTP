@@ -1,7 +1,7 @@
 # Spanish translations for LinOTP package - Spanish messages for LinOTP.
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP admin clients.
 #
@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2017-02-14 13:38+0100\n"
+"PO-Revision-Date: 2019-02-14 13:38+0100\n"
 "Last-Translator: linotp@keyidentity.com\n"
 "Language-Team: Spanish <>\n"
 "Language: es\n"
@@ -2000,8 +2000,8 @@ msgid "LinOTP - the open source solution for two factor authentication."
 msgstr ""
 "LinOTP, la solución de código abierto para la autenticación de dos factores."
 
-msgid "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
-msgstr "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
+msgid "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
+msgstr "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Bajo licencia AGPLv3"
@@ -4336,8 +4336,8 @@ msgstr ""
 #~ "enviar una dirección IP distinta a la propia para las directrices de "
 #~ "autorización."
 
-#~ msgid "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
-#~ msgstr "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
+#~ msgid "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
+#~ msgstr "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
 
 #~ msgid "No valid authentication session %r"
 #~ msgstr "No es una sesión de autenticación válida %r"

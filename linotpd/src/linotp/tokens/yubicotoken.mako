@@ -2,7 +2,7 @@
 <%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
- *   Copyright (C) 2010 - 2018 KeyIdentity GmbH
+ *   Copyright (C) 2010 - 2019 KeyIdentity GmbH
  *
  *   This file is part of LinOTP server.
  *
@@ -53,8 +53,9 @@ ${_("Enroll YubiKey")}
 function yubico_get_config_val(){
 	var id_map = {};
 
-    id_map['yubico.id'] 		= 'sys_yubico_id';
+    id_map['yubico.id']     = 'sys_yubico_id';
     id_map['yubico.secret'] = 'sys_yubico_secret';
+    id_map['yubico.url']    = 'sys_yubico_url';
 
 	return id_map;
 
@@ -70,9 +71,9 @@ function yubico_get_config_val(){
 function yubico_get_config_params(){
 	var url_params ={};
 
-    url_params['yubico.id'] 	= $('#sys_yubico_id').val();
-    url_params['yubico.secret'] 	= $('#sys_yubico_secret').val();
-
+    url_params['yubico.id']      = $('#sys_yubico_id').val();
+    url_params['yubico.secret']  = $('#sys_yubico_secret').val();
+    url_params['yubico.url']     = $('#sys_yubico_url').val();
 	return url_params;
 }
 
@@ -102,6 +103,22 @@ function yubico_get_config_params(){
 	<td><input type="text" name="sys_yubico_secret" id="sys_yubico_secret"
 		class="required text ui-widget-content ui-corner-all"></td>
 	</tr>
+
+    <tr>
+    <td><label for="sys_yubico_url" title='${_("You need to enter a valid Yubico url")}'>
+        ${_("Yubico Url")}</label></td>
+    <td><input type="text" name="sys_yubico_url" id="sys_yubico_url"
+        class="required text ui-widget-content ui-corner-all"
+        value="https://api.yubico.com/wsapi/2.0/verify, https://api2.yubico.com/wsapi/2.0/verify, https://api3.yubico.com/wsapi/2.0/verify, https://api4.yubico.com/wsapi/2.0/verify, https://api5.yubico.com/wsapi/2.0/verify"></td>
+    </tr>
+
+    <tr>
+    <td><label for="sys_yubico_url" title='${_("Yubico connection and read timeout")}'>
+        ${_("Yubico Timeout")}</label></td>
+    <td><input type="text" name="sys_yubico_timeout" id="sys_yubico_timeout"
+        class="required text ui-widget-content ui-corner-all"
+        value="3.05, 15"></td>
+    </tr>
 
 	</table>
 </fieldset>
@@ -168,7 +185,7 @@ function yubico_clear_input_fields() {
 <tr>
 	<td><label for="yubico_token_id" title='${_("You need to enter the YubiKey token ID")}'>
 		${_("Token ID")}</label></td>
-	<td><input type="text" name="yubico_token_id" id="yubico_token_id" min=12
+	<td><input type="text" name="yubico_token_id" id="yubico_token_id" minlength=12
 		class="required text ui-widget-content ui-corner-all"></td>
 </tr>
 <tr>
