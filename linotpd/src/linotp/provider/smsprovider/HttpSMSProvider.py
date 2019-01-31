@@ -27,6 +27,9 @@
 
 from linotp.provider.smsprovider import ISMSProvider
 from linotp.provider import provider_registry
+from linotp.provider import ProviderNotAvailable
+
+import socket
 
 import base64
 import re
@@ -317,9 +320,14 @@ class HttpSMSProvider(ISMSProvider):
             log.debug("HttpSMSProvider >>%s...%s<<", reply[:20], reply[-20:])
             ret = self._check_success(reply)
 
+
+        except requests.exceptions.Timeout as exc:
+            log.exception("RestSMSProvider timed out %r" % exc)
+            raise ProviderNotAvailable("RestSMSProvider timed out %r" % exc)
+
         except Exception as exc:
             log.error("HttpSMSProvider %r" % exc)
-            raise Exception("Failed to send SMS. %s" % str(exc))
+            raise Exception("Failed to send SMS. %r" % exc)
 
         return ret
 
@@ -424,9 +432,13 @@ class HttpSMSProvider(ISMSProvider):
             log.debug("HttpSMSProvider >>%s...%s<<", reply[:20], reply[-20:])
             ret = self._check_success(reply)
 
+        except (httplib2.HttpLib2Error, socket.error) as exc:
+            raise ProviderNotAvailable(
+                        "HttpSMSProvider timed out %r" % exc)
+
         except Exception as exc:
             log.exception("HttpSMSProvider %r" % exc)
-            raise Exception("Failed to send SMS. %s" % str(exc))
+            raise ProviderNotAvailable("Failed to send SMS. %r" % exc)
 
         return ret
 
@@ -489,9 +501,13 @@ class HttpSMSProvider(ISMSProvider):
             log.debug("HttpSMSProvider >>%s...%s<<", reply[:20], reply[-20:])
             ret = self._check_success(reply)
 
+        except (urllib2.URLError, socket.timeout) as exc:
+            log.exception("HttpSMSProvider urllib timeout exception")
+            raise ProviderNotAvailable("Failed to send SMS: %r" % exc)
+
         except Exception as exc:
-            log.exception("HttpSMSProvider %r" % exc)
-            raise Exception("Failed to send SMS. %s" % str(exc))
+            log.exception("HttpSMSProvider urllib")
+            raise Exception("Failed to send SMS. %r" % exc)
 
         return ret
 
