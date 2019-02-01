@@ -726,7 +726,13 @@ def get_provider_from_policy(provider_type, realm=None, user=None):
                                  user=user.login)
 
     if not policies:
-        return [_get_default_provider_name(provider_type)]
+
+        default_provider = _get_default_provider_name(provider_type)
+
+        if default_provider:
+            return [default_provider]
+
+        return []
 
     provider_names = getPolicyActionValue(policies,
                                          provider_action_name,
@@ -799,16 +805,15 @@ def _get_default_provider_name(provider_type):
     """
     if no provider is given, we try to lookup the default
     """
-    provider_info = {}
-    config = getLinotpConfig()
 
-    default_provider_key = Default_Provider_Key[provider_type]
+    providers = request_context['Provider'][provider_type]
 
+    for provider_name, provider in providers.items():
+        if provider.get('Default'):
+            return provider_name
 
-    if default_provider_key in config:
-        provider_name = config[default_provider_key]
+    return
 
-    return provider_name
 
 def loadProvider(provider_type, provider_name=None):
     """
