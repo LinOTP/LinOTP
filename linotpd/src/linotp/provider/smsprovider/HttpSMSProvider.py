@@ -320,10 +320,9 @@ class HttpSMSProvider(ISMSProvider):
             log.debug("HttpSMSProvider >>%s...%s<<", reply[:20], reply[-20:])
             ret = self._check_success(reply)
 
-
         except requests.exceptions.Timeout as exc:
-            log.exception("RestSMSProvider timed out %r" % exc)
-            raise ProviderNotAvailable("RestSMSProvider timed out %r" % exc)
+            log.exception("HttpSMSProvider timed out")
+            raise ProviderNotAvailable("Failed to send SMS - timed out %r" % exc)
 
         except Exception as exc:
             log.error("HttpSMSProvider %r" % exc)
@@ -434,10 +433,10 @@ class HttpSMSProvider(ISMSProvider):
 
         except (httplib2.HttpLib2Error, socket.error) as exc:
             raise ProviderNotAvailable(
-                        "HttpSMSProvider timed out %r" % exc)
+                        "Failed to send SMS - timed out %r" % exc)
 
         except Exception as exc:
-            log.exception("HttpSMSProvider %r" % exc)
+            log.exception("Failed to send SMS")
             raise ProviderNotAvailable("Failed to send SMS. %r" % exc)
 
         return ret
@@ -503,7 +502,7 @@ class HttpSMSProvider(ISMSProvider):
 
         except (urllib2.URLError, socket.timeout) as exc:
             log.exception("HttpSMSProvider urllib timeout exception")
-            raise ProviderNotAvailable("Failed to send SMS: %r" % exc)
+            raise ProviderNotAvailable("Failed to send SMS -timed out %r" % exc)
 
         except Exception as exc:
             log.exception("HttpSMSProvider urllib")

@@ -31,7 +31,7 @@ import smtpd
 import asyncore
 
 from linotp.provider.smsprovider import getSMSProviderClass
-
+from linotp.provider import ProviderNotAvailable
 
 class CustomSMTPServer(smtpd.SMTPServer):
 
@@ -80,7 +80,7 @@ class TestSMS(TestCase):
         sms = getSMSProviderClass("SmtpSMSProvider", "SmtpSMSProvider")()
         sms.loadConfig(smtp_config)
 
-        with self.assertRaisesRegexp(Exception, "not known"):
+        with self.assertRaises(ProviderNotAvailable):
             sms.submitMessage(phone, message)
 
         smtp_config = {'mailserver': 'localhost:1025',
