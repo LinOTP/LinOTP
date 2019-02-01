@@ -704,6 +704,18 @@ class BaseController(WSGIController):
         request_context['Realms'] = realms
 
         # ------------------------------------------------------------------ --
+        # load the providers
+
+        from linotp.provider import Provider_types
+        from linotp.provider import getProvider
+
+        provider = {}
+        for provider_type in Provider_types.keys():
+            provider[provider_type] = getProvider(provider_type)
+
+        request_context['Provider'] = provider
+
+        # ------------------------------------------------------------------ --
 
         # for the setup of encrypted data, we require the hsm is instatiated
         # and available in the request context
