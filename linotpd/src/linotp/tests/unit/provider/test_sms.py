@@ -80,7 +80,7 @@ class TestSMS(TestCase):
         sms = getSMSProviderClass("SmtpSMSProvider", "SmtpSMSProvider")()
         sms.loadConfig(smtp_config)
 
-        with self.assertRaisesRegexp(Exception, "Name or service not known"):
+        with self.assertRaisesRegexp(Exception, "not known"):
             sms.submitMessage(phone, message)
 
         smtp_config = {'mailserver': 'localhost:1025',
