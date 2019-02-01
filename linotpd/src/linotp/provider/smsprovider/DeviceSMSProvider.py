@@ -97,8 +97,7 @@ class DeviceSMSProvider(ISMSProvider):
         log.error("[submitMessage] output: %s" % smsout)
         log.error("[submitMessage] SMS sending failed, return code: %s" % proc.returncode)
 
-        raise ProviderNotAvailable("DeviceSMSProvider failed to send message:"
-                                   " %r" % proc)
+        return False
 
 
     def loadConfig(self, configDict):
