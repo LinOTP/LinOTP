@@ -320,7 +320,11 @@ class HttpSMSProvider(ISMSProvider):
             log.debug("HttpSMSProvider >>%s...%s<<", reply[:20], reply[-20:])
             ret = self._check_success(reply)
 
-        except requests.exceptions.Timeout as exc:
+        except (requests.exceptions.ConnectTimeout,
+                requests.exceptions.ConnectionError,
+                requests.exceptions.Timeout,
+                requests.exceptions.ReadTimeout,
+                requests.exceptions.TooManyRedirects) as exc:
             log.exception("HttpSMSProvider timed out")
             raise ProviderNotAvailable("Failed to send SMS - timed out %r" % exc)
 
