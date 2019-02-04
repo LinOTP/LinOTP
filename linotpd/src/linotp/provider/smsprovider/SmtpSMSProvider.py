@@ -229,7 +229,7 @@ class SmtpSMSProvider(ISMSProvider):
 
         except smtplib.socket.error as exc:
             log.exception('Error: could not connect to server')
-            if boolean(self.config.get('raise_exception', False)):
+            if boolean(self.config.get('raise_exception', True)):
                 raise ProviderNotAvailable('Error: could not connect '
                                            'to server: %r' % exc)
             ret = False
