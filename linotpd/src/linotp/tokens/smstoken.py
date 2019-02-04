@@ -952,7 +952,7 @@ class SmsTokenClass(HmacTokenClass):
         # remember if at least one provider could be accessed
         available = False
 
-        res_scheduler = ResourceScheduler(tries=2, uri_list=providers)
+        res_scheduler = ResourceScheduler(tries=1, uri_list=providers)
         for provider_name in res_scheduler.next():
 
             sms_provider = loadProvider('sms', provider_name=provider_name)
