@@ -1,16 +1,10 @@
-linotp (2.10.3.1rc0-1) jessie; urgency=low
-
-  Enhancement:
-  * Server: Yubikey token configuration now supports setting the Yubico
-            callback URIs and timeouts
+linotp (2.10.3.1-1) jessie; urgency=low
 
   Bug Fixes:
   * Server: using the rollout token outside of the selfservice scope
             should not increment the failcounter
-  * Server: fix for Yubico token enrollment UI dialog, to not blame wrong
-            token id if other characters than digits are entered
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 31 Jan 2019 15:15:13 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 13 Feb 2019 11:10:13 +0200
 
 linotp (2.10.3-1) jessie; urgency=low
 
