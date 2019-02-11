@@ -108,16 +108,7 @@ function yubico_get_config_params(){
     <td><label for="sys_yubico_url" title='${_("You need to enter a valid Yubico url")}'>
         ${_("Yubico Url")}</label></td>
     <td><input type="text" name="sys_yubico_url" id="sys_yubico_url"
-        class="required text ui-widget-content ui-corner-all"
-        value="https://api.yubico.com/wsapi/2.0/verify, https://api2.yubico.com/wsapi/2.0/verify, https://api3.yubico.com/wsapi/2.0/verify, https://api4.yubico.com/wsapi/2.0/verify, https://api5.yubico.com/wsapi/2.0/verify"></td>
-    </tr>
-
-    <tr>
-    <td><label for="sys_yubico_url" title='${_("Yubico connection and read timeout")}'>
-        ${_("Yubico Timeout")}</label></td>
-    <td><input type="text" name="sys_yubico_timeout" id="sys_yubico_timeout"
-        class="required text ui-widget-content ui-corner-all"
-        value="3.05, 15"></td>
+        class="required text ui-widget-content ui-corner-all"></td>
     </tr>
 
 	</table>
