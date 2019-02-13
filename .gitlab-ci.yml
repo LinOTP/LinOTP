@@ -1,154 +1,389 @@
 variables:
   LANG: C.UTF-8
-  IMAGE_NAME: linotp-build-environment_stretch
+  IMAGE_NAME: linotp-build-test-environment_stretch
   BUILD_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_COMMIT_REF_NAME
-  LATEST_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:latest
-  DOCKERFY_URL: $INTERNAL_REPOSITORY/jenkins/dockerfy/dockerfy
+  LATEST_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_PIPELINE_ID
+  DOCKERFY_URL: http://avocado.corp.lsexperts.de/jenkins/dockerfy/dockerfy
   DEBIAN_MIRROR: ftp.de.debian.org
-  DOCKER_DISTRO_BASE: stretch 
-  LINOTP_MIRROR: $INTERNAL_REPOSITORY/deb-repo
-  DOCKER_TAGS: 2.10.1-dev-stretch
+  DOCKER_DISTRO_BASE: stretch
+  DEPENDENCY_SOURCE: http://avocado.corp.lsexperts.de/deb-repo
+  DEPENDENCY_SOURCE_COMPONENT: kideps
+  DEPENDENCY_GPG_KEYID: 47868600E7533829
+  DEPENDENCY_GPG_KEYID_URL: ""
+  DOCKER_TAGS: $CI_PIPELINE_ID
   MAKE_PARAMS: DOCKER_DISTRO_BASE=$DOCKER_DISTRO_BASE LINOTP_MIRROR=$LINOTP_MIRROR DOCKER_TAGS=$DOCKER_TAGS
 
+  CI_IMAGE_PREFIX: $REGISTRY_URL/$CI_PROJECT_NAME/ci
+  BUILD_ENV_IMAGE: $REGISTRY_URL/$CI_PROJECT_NAME/$DOCKER_DISTRO_BASE/build-env:$CI_PIPELINE_ID
+  LINOTP_IMAGE: $REGISTRY_URL/$CI_PROJECT_NAME/ci/$DOCKER_DISTRO_BASE/linotp:$CI_PIPELINE_ID
+
+  INTEGRATION_TEST_CHROME: $REGISTRY_URL/$CI_PROJECT_NAME/ci/$DOCKER_DISTRO_BASE/tests/integration/chrome:$CI_PIPELINE_ID
+  INTEGRATION_TEST_SCRIPT_EXECUTOR: $REGISTRY_URL/$CI_PROJECT_NAME/ci/$DOCKER_DISTRO_BASE/tests/integration/script-executor:$CI_PIPELINE_ID
+  INTEGRATION_TEST_LINOTP: $REGISTRY_URL/$CI_PROJECT_NAME/ci/$DOCKER_DISTRO_BASE/tests/integration/linotp:$CI_PIPELINE_ID
+  NOSE_COVER_PACKAGE: linotp
+
 stages:
-  - unit_test
-  - functional_test
-  - docker_test
-  - prepare_environment
-  - build
-  - deploy
-  - builder
-  - debs
+  - build-test-environment
+  - test
+  - coverage-report
+  - build-debian-packages
+  - build-linotp-docker-image
+  - selenium-test
+  - upload-debian-packages
 
-wip_linotp_builder:
-  stage: builder
-  image: docker:latest
-  services:
-    - name: $KI_REPO/ki-dind
-  script:
-    - apk add --no-cache make
-    - make docker-build-linotp-builder $MAKE_PARAMS
-
-wip_linotp_deb_build:
-  stage: debs
-  image: linotp-builder:latest
-  variables:
-  script:
-    - rm -f build/apt/Packages
-    - make deb-install $MAKE_PARAMS
-  artifacts:
-    paths:
-    - build/apt
-    expire_in: 1 week
-
-
-wip_docker_test:
-  stage: docker_test
-  image: docker:latest 
-  when: manual
-  services:
-    - name: $KI_REPO/ki-dind
-  script:
-    - apk add --no-cache make
-    - make -d docker-functional DOCKER_DISTRO_BASE=stretch LINOTP_MIRROR=$INTERNAL_REPOSITORY/deb-repo DOCKER_TAGS=2.10.1-dev-stretch
-    - make -d docker-linotp DOCKER_DISTRO_BASE=$DOCKER_DISTRO_BASE LINOTP_MIRROR=$LINOTP_MIRROR DOCKER_TAGS=$DOCKER_TAGS
-    - make -d docker-functional DOCKER_DISTRO_BASE=$DOCKER_DISTRO_BASE LINOTP_MIRROR=$LINOTP_MIRROR DOCKER_TAGS=$DOCKER_TAGS
-
-unit-test:
-  stage: unit_test
-  when: manual
-  image: $KI_REPO/linotp-build-stretch
+.docker-registry: &docker-registry
   before_script:
-    - apt-get update && apt-get install --yes --no-install-recommends librrd-dev pkg-config libsystemd-dev python-pip 
+    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+
+.build-test-environment-debian:
+  stage: build-test-environment
+  image: docker:latest
+  <<: *docker-registry
+  script:
+    # pull the old image to speedup the build process, the hope is
+    # that the modified time will always be the same unless the file
+    # has actually been changed
+    - DOCKERFILE_CACHE_KEY=$(sha256sum ci/Dockerfile.debian-base | cut -d ' ' -f1)
+    - docker pull "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}" || true
+    # update the base image, if there was no change this is a noop. If there was a change we will start
+    # rebuilding the image. Worst case we downloaded an older image
+    # that was based on an outdated image and rebuild it from
+    # scratch. This should happen at most once a day.
+    - docker pull debian:${DEBIAN_RELEASE_NAME} || true
+    - mkdir -p /var/lib/empty
+    - >
+      docker build
+      --cache-from="$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
+      --build-arg=BASE_IMAGE="debian:${DEBIAN_RELEASE_NAME}"
+      --build-arg="DEBIAN_RELEASE_NAME=${DEBIAN_RELEASE_NAME}"
+      --build-arg="DEPENDENCY_SOURCE=${DEPENDENCY_SOURCE}"
+      --build-arg="DEPENDENCY_COMPONENT=${DEPENDENCY_COMPONENT}"
+      --build-arg="DEPENDENCY_GPG_KEYID=${DEPENDENCY_GPG_KEYID}"
+      --build-arg="DEPENDENCY_GPG_KEY_URL=${DEPENDENCY_GPG_KEY_URL}"
+      --tag="$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
+      --tag="$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
+      -f ci/Dockerfile.debian-base /var/lib/empty
+    - docker push "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
+    - docker push "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
+    - docker images
+
+build-test-environment:debian-stretch:
+  extends: .build-test-environment-debian
+  variables:
+    DEPENDENCY_SOURCE: http://avocado.corp.lsexperts.de/deb-repo
+    DEPENDENCY_COMPONENT: kideps
+    DEPENDENCY_GPG_KEYID: ""
+    DEPENDENCY_GPG_KEY_URL: http://avocado.corp.lsexperts.de/deb-repo/archive-key.asc
+    DEBIAN_RELEASE_NAME: stretch
+
+build-test-environment:debian-jessie:
+  extends: .build-test-environment-debian
+  variables:
+    DEPENDENCY_SOURCE: http://www.linotp.org/apt/debian
+    DEPENDENCY_COMPONENT: linotp
+    DEPENDENCY_GPG_KEYID: 913DFF12F86258E5
+    DEBIAN_RELEASE_NAME: jessie
+
+build-test-environment:debian-buster:
+  extends: .build-test-environment-debian
+  allow_failure: true
+  variables:
+    DEPENDENCY_SOURCE: ""
+    DEPENDENCY_GPG_KEYID: ""
+    DEBIAN_RELEASE_NAME: buster
+
+.test-debian:
+  image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
+  before_script:
     - cd linotpd/src
-    - pip install -e .[tests]
+    - python --version
+    - pip install --upgrade setuptools
+    - pip install wheel
+    - pip install freezegun
+    - pip install mock
+    - pip install -U cffi
+    - pip install coverage
+    - pip freeze
+    - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
+    #- pip install -e .[tests]
+    - python setup.py develop
     - python tools/linotp-create-enckey -f test.ini
     - python tools/linotp-create-auditkeys -f test.ini
+    - export NOSE_WITH_COVERAGE=1
+    - export NOSE_COVER_INCLUSIVE=1
+    - export NOSE_COVER_DIR=${CI_PROJECT_DIR}/coverage/${DEBIAN_RELEASE_NAME}/
+    - export COVERAGE_FILE=${NOSE_COVER_DIR}/unit
+    - mkdir -p ${NOSE_COVER_DIR}
+  artifacts:
+    paths:
+      - coverage/${DEBIAN_RELEASE_NAME}
+
+unit-test:debian-jessie:
+  extends: .test-debian
+  stage: test
+  variables:
+    DEBIAN_RELEASE_NAME: jessie
+  script:
+    - nosetests -v linotp/tests/unit/
+
+unit-test:debian-stretch:
+  extends: .test-debian
+  stage: test
+  variables:
+    DEBIAN_RELEASE_NAME: stretch
   script:
     - nosetests --with-pylons=test.ini -v linotp/tests/unit/
 
-wip_functional_test:
-  stage: functional_test
-  image: $KI_REPO/linotp-build-stretch
-  when: manual
+unit-test:debian-buster:
+  extends: .test-debian
+  stage: test
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+  script:
+    - nosetests --with-pylons=test.ini -v linotp/tests/unit/
+
+.functional-test:
+  stage: test
+  image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
   services:
-    - name: mysql:5
-      alias: mysql
+    - name: mysql:5.5
+      alias: db
   variables:
     MYSQL_DATABASE: linotp_db
     MYSQL_ROOT_PASSWORD: linotppass
     MYSQL_USER: linotpuser
     MYSQL_PASSWORD: linotppass
     MYSQL_HOST: mysql
-    NIGHTLY: "no"
-    COVERAGE_ENABLED: "no"
+    SHELL: /bin/bash
   before_script:
-    - apt-get update && apt-get install --yes --no-install-recommends parallel librrd-dev pkg-config libsystemd-dev python-pip mysql-client python-mysqldb
-    - pip install -U pip
-    - pip install unittest2 nose-testconfig
+    - test "${DEBIAN_RELEASE_NAME}" != "buster" && apt-get install --yes --no-install-recommends parallel mysql-client python-mysqldb python-imaging || apt-get install --yes --no-install-recommends python-pil default-mysql-client python-mysqldb
+    - test "${DEBIAN_RELEASE_NAME}" == "jessie" && apt-get install --yes --no-install-recommends libmysqlclient-dev || apt-get install  --yes --no-install-recommends default-libmysqlclient-dev
     - cd linotpd/src
-    - pip install mysql pillow freezegun
-    - pip install -e .[tests]
-  script:
-    - cp linotp/tests/functional/docker_func_cfg.ini gitlab_test.ini
-    - python tools/linotp-create-enckey -f gitlab_test.ini
-    - python tools/linotp-create-auditkeys -f gitlab_test.ini
+    - pip install --upgrade setuptools
+    - pip install wheel
+    - pip install freezegun
+    - pip install mock
+    - pip install mysql
+    - pip install unittest2
+    - pip install nose nose-testconfig
+    - pip install pyrad
+    - pip install -U cffi
+    - pip install coverage
+    - pip freeze
     - python setup.py develop
-    - bash run_gitlab_tests.sh
-
-
-test_deb_build_environment:
-  stage: prepare_environment
-  when: manual
-  image: docker:latest
-  services:
-    - name: $KI_REPO/ki-dind
+    - python tools/linotp-create-enckey -f test.ini
+    - python tools/linotp-create-auditkeys -f test.ini
+    - cp encKey public.pem private.pem /tmp/
+    - mkdir /tmp/config
+    - cp config/dictionary /tmp/config
+    - rm test.ini
+    - export NOSE_WITH_COVERAGE=1
+    - test "$CI_PIPELINE_SOURCE" -ne "schedule" && export NOSE_ATTRS='!nightly'
+    - export NOSE_COVER_DIR=${CI_PROJECT_DIR}/coverage/${DEBIAN_RELEASE_NAME}/
+    - mkdir -p ${NOSE_COVER_DIR}
   script:
-    - docker build --rm --tag="$CI_COMMIT_SHA" -f Dockerfile-build-environment .
-    - docker rmi "$CI_COMMIT_SHA"
+    - bash -c "find linotp/tests/functional -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
+  artifacts:
+    paths:
+      - coverage/${DEBIAN_RELEASE_NAME}/
 
-
-deb_build_environment:
-  stage: prepare_environment
-  when: manual
-  image: docker:latest
-  services:
-    - name: $KI_REPO/ki-dind
+.functional-special-test:
+  extends: .functional-test
+  stage: test
+  allow_failure: true
+  variables:
+    COVERAGE_PREFIX: func-special
   script:
-    - echo "latest_code image - $LATEST_CODE_IMAGE"
-    - echo "build_code image - $BUILD_CODE_IMAGE"
-    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
-    - docker build --tag="$LATEST_CODE_IMAGE" -f Dockerfile-build-environment .
-    - docker push $LATEST_CODE_IMAGE
-    # - docker push $BUILD_CODE_IMAGE
+    - bash -c "find linotp/tests/functional_special -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
 
+functional-test:jessie:
+  extends: .functional-test
+  variables:
+    DEBIAN_RELEASE_NAME: jessie
 
-build-debs:
-  stage: build
-  image: $KI_REPO/linotp-build-environment_stretch
-  when: manual
+functional-test:stretch:
+  extends: .functional-test
+  variables:
+    DEBIAN_RELEASE_NAME: stretch
+
+functional-test:buster:
+  extends: .functional-test
+  allow_failure: true
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+
+functional-special-test:jessie:
+  extends: .functional-special-test
+  variables:
+    DEBIAN_RELEASE_NAME: jessie
+
+functional-special-test:stretch:
+  extends: .functional-special-test
+  variables:
+    DEBIAN_RELEASE_NAME: stretch
+
+functional-special-test:buster:
+  extends: .functional-special-test
+  allow_failure: true
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+
+.coverage-report:
+  stage: coverage-report
+  image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
+  script:
+    - pip install coverage
+    - cd coverage/${DEBIAN_RELEASE_NAME}
+    - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
+    - coverage combine *
+    - coverage report | tee coverage.txt
+    - coverage html
+  artifacts:
+    paths:
+      - coverage/${DEBIAN_RELEASE_NAME}
+
+coverage-report:jessie:
+  extends: .coverage-report
+  variables:
+    DEBIAN_RELEASE_NAME: jessie
+
+coverage-report:stretch:
+  extends: .coverage-report
+  variables:
+    DEBIAN_RELEASE_NAME: stretch
+
+coverage-report:buster:
+  extends: .coverage-report
+  variables:
+    DEBIAN_RELEASE_NAME: buster     
+
+.build-debs:
+  stage: build-debian-packages
+  image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
   before_script:
+    - apt-get install -y --no-install-recommends wget
     - CURR_PWD=$PWD
     - cd linotpd/src
-    - apt-get update
     - mk-build-deps --install --remove --tool "apt-get --yes --no-install-recommends"
     - cd $CURR_PWD
   script:
-    - make deb-install DESTDIR=pkg/apt
+    - make deb-install DESTDIR=pkg/apt/${DEBIAN_RELEASE_NAME}
+    - mkdir -p build
   artifacts:
     paths:
-    - pkg/apt/
+      - pkg/apt/${DEBIAN_RELEASE_NAME}
     expire_in: 1 week
 
+build:jessie:
+  extends: .build-debs
+  variables:
+    DEBIAN_RELEASE_NAME: jessie
 
-upload-debs:
-  stage: deploy
-  when: manual
-  image: $KI_REPO/linotp-build-environment_stretch
-  dependencies:
-    - build-debs
+build:stretch:
+  extends: .build-debs
+  variables:
+    DEBIAN_RELEASE_NAME: stretch
+
+build:buster:
+  extends: .build-debs
+  allow_failure: true
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+
+.build-linotp-docker-image:
+  stage: build-linotp-docker-image
+  image: docker:latest
+  allow_failure: true # allow failure until we fixed the integration tests
   before_script:
-    - 'which ssh-agent || ( apt-get update --yes && apt-get install openssh-client --yes )'
+    - apk add --no-cache py-pip make
+    - pip install docker-compose
+    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+  script:
+    - export BUILDDIR=build
+    - mkdir -p ${BUILDDIR}
+    - make ${BUILDDIR}/dockerfy BUILDDIR=${BUILDDIR}
+    - cp -r pkg/apt/${DEBIAN_RELEASE_NAME} ${BUILDDIR}/apt
+    - cp ci/Dockerfile.linotp linotpd/src/linotp/tests/integration/testdata/se_mypasswd linotpd/src/config/*.tmpl linotpd/src/tools/linotp-create-htdigest $BUILDDIR
+    - >
+      docker build
+      --build-arg=DEBIAN_MIRROR=$DEBIAN_MIRROR
+      --build-arg=LINOTP_MIRROR=$LINOTP_MIRROR
+      --build-arg=BASE_IMAGE="debian:${DEBIAN_RELEASE_NAME}"
+      --build-arg="DEBIAN_RELEASE_NAME=${DEBIAN_RELEASE_NAME}"
+      --build-arg="DEPENDENCY_SOURCE=${DEPENDENCY_SOURCE}"
+      --build-arg="DEPENDENCY_COMPONENT=${DEPENDENCY_COMPONENT}"
+      --build-arg="DEPENDENCY_GPG_KEYID=${DEPENDENCY_GPG_KEYID}"
+      --build-arg="DEPENDENCY_GPG_KEY_URL=${DEPENDENCY_GPG_KEY_URL}"
+      --tag="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}" -f $BUILDDIR/Dockerfile.linotp $BUILDDIR
+    - docker push $LINOTP_IMAGE
+
+
+build-linotp-docker-image:jessie:
+  extends: .build-linotp-docker-image
+  variables:
+    DEPENDENCY_SOURCE: http://www.linotp.org/apt/debian
+    DEPENDENCY_COMPONENT: linotp
+    DEPENDENCY_GPG_KEYID: 913DFF12F86258E5
+    DEBIAN_RELEASE_NAME: jessie
+
+build-linotp-docker-image:stretch:
+  extends: .build-linotp-docker-image
+  variables:
+    DEPENDENCY_SOURCE: http://avocado.corp.lsexperts.de/deb-repo
+    DEPENDENCY_COMPONENT: kideps
+    DEPENDENCY_GPG_KEYID: ""
+    DEPENDENCY_GPG_KEY_URL: http://avocado.corp.lsexperts.de/deb-repo/archive-key.asc
+    DEBIAN_RELEASE_NAME: stretch
+
+build-linotp-docker-image:buster:
+  extends: .build-linotp-docker-image
+  allow_failure: true
+  variables:
+    DEPENDENCY_SOURCE: ""
+    DEPENDENCY_GPG_KEYID: ""
+    DEBIAN_RELEASE_NAME: buster
+
+.selenium-test:
+  stage: selenium-test
+  image: docker:latest
+  allow_failure: true
+  before_script:
+    - apk add --no-cache py-pip
+    - pip install docker-compose
+    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+    - export LINOTP_IMAGE="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
+  script:
+    - cd linotpd/src/linotp/tests/integration
+    - docker-compose -f docker-compose-gitlab.yml config
+    - docker-compose -f docker-compose-gitlab.yml build
+    - docker-compose -f docker-compose-gitlab.yml run --rm test-script-executor
+  after_script:
+    - cd linotpd/src/linotp/tests/integration
+    - docker-compose -f docker-compose-gitlab.yml down --rmi all
+
+selenium-test:jessie:
+  extends: .selenium-test
+  variables:
+    DEBIAN_RELEASE_NAME: jessie
+
+selenium-test:stretch:
+  extends: .selenium-test
+  variables:
+    DEBIAN_RELEASE_NAME: stretch
+
+selenium-test:buster:
+  extends: .selenium-test
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+
+.upload-debs:
+  stage: upload-debian-packages
+  image: debian:latest
+  before_script:
+    - test -z "${DEV_REPO_HOST}" && exit 1 # abort early if variable isn't set
+    - test -z "${DEV_REPO_KNOWN_HOSTS}" && exit 1 # abort early if variable isn't set
+    - test -z "${DEV_REPO_SSH_SUBMIT_KEY}" && exit 1 # abort early if variable isn't set
+    - apt-get update && apt-get install -y --no-install-recommends dput openssh-client curl # install dependencies
     - eval $(ssh-agent -s)
     - echo "$DEV_REPO_SSH_SUBMIT_KEY" | tr -d '\r' | ssh-add - >/dev/null
     - mkdir -p ~/.ssh
@@ -156,7 +391,77 @@ upload-debs:
     - echo "CheckHostIP no" >>~/.ssh/config
     - echo "$DEV_REPO_KNOWN_HOSTS" >~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
-
   script:
+    - cp ./ci/dput.cf /etc/dput.cf
     - sed -i -e "s/@DEV_REPO_HOST@/$DEV_REPO_HOST/" /etc/dput.cf
-    - deb-upload-check -c kideps dput /pkg/apt/*.changes
+    - >
+      for file in pkg/apt/${DEBIAN_RELEASE_NAME}/*.changes; do
+        ./ci/deb-upload-check -r http://${DEV_REPO_HOST}/deb-repo -d ${DEBIAN_RELEASE_NAME} -A pkg/apt/${DEBIAN_RELEASE_NAME} dput ${file};
+      done
+
+.upload-debs:manual:
+  extends: .upload-debs
+  when: manual
+  except:
+    - schedules
+
+.upload-debs:tags:
+  extends: .upload-debs
+  only:
+    - tags
+  except:
+    - schedules
+
+.upload-debs:stable-branch:
+  extends: .upload-debs
+  only:
+    variables:
+      - $CI_BRANCH =~ /^branch\//
+  except:
+    - tags
+    - schedules
+
+upload-debs:jessie:manual:
+  extends: .upload-debs:manual
+  variables:
+    DEBIAN_RELEASE_NAME: jessie
+
+upload-debs:stretch:manual:
+  extends: .upload-debs:manual
+  variables:
+    DEBIAN_RELEASE_NAME: stretch
+
+upload-debs:buster:manual:
+  extends: .upload-debs:manual
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+
+upload-debs:jessie:tag:
+  extends: .upload-debs:tags
+  variables:
+    DEBIAN_RELEASE_NAME: jessie
+
+upload-debs:stretch:tag:
+  extends: .upload-debs:tags
+  variables:
+    DEBIAN_RELEASE_NAME: stretch
+
+upload-debs:buster:tag:
+  extends: .upload-debs:tags
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+
+upload-debs:jessie:stable-branch:
+  extends: .upload-debs:stable-branch
+  variables:
+    DEBIAN_RELEASE_NAME: jessie
+
+upload-debs:stretch:stable-branch:
+  extends: .upload-debs:stable-branch
+  variables:
+    DEBIAN_RELEASE_NAME: stretch
+
+upload-debs:buster:stable-branch:
+  extends: .upload-debs:stable-branch
+  variables:
+    DEBIAN_RELEASE_NAME: buster
