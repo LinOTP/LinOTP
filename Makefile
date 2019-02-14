@@ -200,10 +200,11 @@ builddeb:
 
 .PHONY: deb-install
 deb-install: builddeb
-	# deb-install: move the built .deb files into an archive directory and
-	# 			    generate Packages file
+	# deb-install: move the built .deb, .changes and related files into an archive directory and
+	# generate Packages file
 	mkdir -pv $(DESTDIR)
 	cp $(foreach dir,$(DEBPKG_PROJS),$(dir)/build/*.deb) $(DESTDIR)
+	find $(foreach dir,$(DEBPKG_PROJS),$(dir)) -type f -regex '.+\.changes' -o -regex '.+\.dsc' -o -regex '.+\.tar\..+' -o -regex '.+\.buildinfo' | xargs -iXXX -n1 cp XXX $(DESTDIR)
 	find $(DESTDIR)
 	cd $(DESTDIR) && dpkg-scanpackages -m . > Packages
 
@@ -405,7 +406,7 @@ DOCKERFY_SHA256=813d47ebf2e63c966655dd5349a29600ba94deac7a57c132bf624c56ba210445
 $(BUILDDIR)/dockerfy:
 	mkdir -pv $(BUILDDIR)/dockerfy-tmp
 	wget --directory-prefix=$(BUILDDIR)/dockerfy-tmp $(DOCKERFY_URL)
-	echo "${DOCKERFY_SHA256}" $(BUILDDIR)/dockerfy-tmp/dockerfy-linux-amd64*gz \
+	echo "${DOCKERFY_SHA256} " $(BUILDDIR)/dockerfy-tmp/dockerfy-linux-amd64*gz \
 	| sha256sum -c -
 	tar -C $(BUILDDIR) -xvf $(BUILDDIR)/dockerfy-tmp/dockerfy-linux-amd64*.gz
 	rm -r $(BUILDDIR)/dockerfy-tmp
