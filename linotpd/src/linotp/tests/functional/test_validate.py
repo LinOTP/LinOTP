@@ -39,6 +39,9 @@ import sys
 import json
 from mock import patch
 
+import freezegun
+from datetime import datetime
+
 # we need this for the radius token
 import pyrad
 
@@ -1419,22 +1422,16 @@ class TestValidateController(TestController):
         response = self.make_admin_request('show', params=parameters)
         self.assertTrue('"LinOtp.FailCount": 1' in response, response)
 
-        #
-        #    only in selfTest mode, it's allowed to set
-        #    the start time for the mobile otp
-        #
+        # we use a fixed date to check if the otp calc is still okay
+        old_day = datetime(year=2018, month=12, day=12,
+                           hour=12, minute=12)
 
-        parameters = {"user": "root", "pass": "pin7215e7", "init": "126753360"}
-        response = self.make_validate_request('check', params=parameters)
+        with freezegun.freeze_time(old_day):
 
-        if self.isSelfTest is True:
+            parameters = {"user": "root", "pass": "pin488ccf"}
+            response = self.make_validate_request('check', params=parameters)
+
             self.assertTrue('"value": true' in response, response)
-        else:
-            log.error("-------------------------\n"
-                      "motp not tested for correctness \n"
-                      " please enable 'linotp.selfTest = True' in your *.ini")
-
-            self.assertTrue('"value": false' in response, response)
 
         self.delete_token("M722362")
 
@@ -1557,90 +1554,83 @@ class TestValidateController(TestController):
         # |      59     |  1970-01-01  | 0000000000000001 | 94287082 |  SHA1  |
         #     ..
         #
+        old_day = datetime(year=1970, month=1, day=1)
+        with freezegun.freeze_time(old_day):
 
-        parameters = {"user": "root", "pass": "pin94287082", "init": "59"}
-        response = self.make_validate_request('check', params=parameters)
+            parameters = {"user": "root", "pass": "pin94287082"}
+            response = self.make_validate_request('check', params=parameters)
 
-        if self.isSelfTest is True:
             self.assertTrue('"value": true' in response, response)
-        else:
-            log.error("-------------------------\n"
-                      "motp not tested for correctness \n"
-                      " please enable 'linotp.selfTest = True' in your *.ini")
-            self.assertTrue('"value": false' in response, response)
+
 
         # second test value
         # |  1111111109 |  2005-03-18  | 00000000023523EC | 07081804 |  SHA1  |
-        #
+        #                  01:58:29
 
-        parameters = {"user": "root", "pass": "pin07081804",
-                      "init": "1111111109"}
-        response = self.make_validate_request('check', params=parameters)
+        old_day = datetime(year=2005, month=3, day=18,
+                           hour=1, minute=58, second=29)
+        with freezegun.freeze_time(old_day):
 
-        if self.isSelfTest is True:
+            parameters = {"user": "root", "pass": "pin07081804",
+                          "init": "1111111109"}
+            response = self.make_validate_request('check', params=parameters)
+
             self.assertTrue('"value": true' in response, response)
-        else:
-            log.error("-------------------------\n"
-                      "totp not tested for correctness \n"
-                      " please enable 'linotp.selfTest = True' in your *.ini")
 
-            self.assertTrue('"value": false' in response, response)
+        # one more test value
+        # 1234567890 |  2009-02-13  | 000000000273EF07 | 89005924 |  SHA1  |
+        #            |   23:31:30
+        old_day = datetime(year=2009, month=2, day=13,
+                           hour=23, minute=31, second=30)
+        with freezegun.freeze_time(old_day):
 
-        parameters = {"user": "root", "pass": "pin89005924",
-                      "init": "1234567890"}
-        response = self.make_validate_request('check', params=parameters)
+            parameters = {"user": "root", "pass": "pin89005924"}
+            response = self.make_validate_request(
+                                    'check', params=parameters)
 
-        if self.isSelfTest is True:
             self.assertTrue('"value": true' in response, response)
-        else:
-            log.error("-------------------------\n"
-                      "totp not tested for correctness \n"
-                      "please enable 'linotp.selfTest = True' in your *.ini")
-
-            self.assertTrue('"value": false' in response, response)
 
         self.delete_token("TOTP")
 
-        #
+        # ----------------------------------------------------------------- --
+
+        # test totp with SHA256 hash
+
         # |      59     |  1970-01-01  | 0000000000000001 | 46119246 | SHA256 |
         # |             |   00:00:59   |                  |          |        |
-        # |      59     |  1970-01-01  | 0000000000000001 | 90693936 | SHA512 |
-        #
+
 
         self.set_config_selftest()
         self.createTOtpToken("SHA256")
 
-        parameters = {"user": "root", "pass": "pin46119246", "init": "59"}
-        response = self.make_validate_request('check', params=parameters)
+        old_day = datetime(year=1970, month=1, day=1)
+        with freezegun.freeze_time(old_day):
+            parameters = {"user": "root", "pass": "pin46119246", "init": "59"}
+            response = self.make_validate_request('check', params=parameters)
 
-        if self.isSelfTest is True:
             self.assertTrue('"value": true' in response, response)
-        else:
-            log.error("""
--------------------------
-totp not tested for correctness
-please enable 'linotp.selfTest = True' in your *.ini
-""")
-            self.assertTrue('"value": false' in response, response)
 
         self.delete_token("TOTP")
 
-        self.set_config_selftest()
+        # ----------------------------------------------------------------- --
+
+        # test totp with SHA512 hash
+
+        # |      59     |  1970-01-01  | 0000000000000001 | 90693936 | SHA512 |
+        #                  00:00:59
+
         self.createTOtpToken("SHA512")
 
-        parameters = {"user": "root", "pass": "pin90693936", "init": "59"}
-        response = self.make_validate_request('check', params=parameters)
-        log.error("response %s\n", response)
+        old_day = datetime(year=1970, month=1, day=1)
+        with freezegun.freeze_time(old_day):
 
-        if self.isSelfTest is True:
+            parameters = {"user": "root", "pass": "pin90693936", "init": "59"}
+            response = self.make_validate_request('check', params=parameters)
             self.assertTrue('"value": true' in response, response)
-        else:
-            log.error("-------------------------\n"
-                      "totp not tested for correctness \n"
-                      "please enable 'linotp.selfTest = True' in your *.ini")
-            self.assertTrue('"value": false' in response, response)
 
         self.delete_token("TOTP")
+
+        return
 
     def test_totp_resync(self):
 
