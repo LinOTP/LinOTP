@@ -301,7 +301,7 @@ class TestMonitoringController(TestController):
         # which should show 2 tokens in each realm but only 3 tokens in sum
 
         parameters = {
-            'realms': ',mydefrealm,myotherrealm'
+            'realms': 'mydefrealm,myotherrealm'
         }
 
         response = self.make_authenticated_request(
@@ -311,7 +311,7 @@ class TestMonitoringController(TestController):
 
         assert values.get('Realms').get('mydefrealm').get('total') == 2
         assert values.get('Realms').get('myotherrealm').get('total') == 2
-        assert values.get('Summary').get('total') == 3, response.body
+        assert values.get('Summary').get('total') == 4, response.body
 
         return
 
