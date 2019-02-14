@@ -50,11 +50,11 @@ log = logging.getLogger(__name__)
 class TestMonitoringController(TestController):
 
     def setUp(self):
-        self.delete_license()
         self.delete_all_policies()
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
+        self.delete_license()
 
         super(TestMonitoringController, self).setUp()
         self.create_common_resolvers()
@@ -197,22 +197,39 @@ class TestMonitoringController(TestController):
         self.create_token(serial='0012', user='root', active=True)
         self.create_token(serial='0013', realm='mydefrealm', active=True)
         self.create_token(serial='0014', realm='myotherrealm', active=False)
-        parameters = {'realms': ',mydefrealm,myotherrealm', 'status': 'active'}
+
+        parameters = {
+            'realms': ',mydefrealm,myotherrealm',
+            'status': 'active'
+        }
         response = self.make_authenticated_request(
             controller='monitoring', action='tokens', params=parameters)
+
         resp = json.loads(response.body)
         r_values = resp.get('result').get('value').get('Realms', {})
-        self.assertEqual(r_values.get('mydefrealm', {}).get('total', -1),
-                         2, response)
-        self.assertEqual(r_values.get('mydefrealm', {}).get('active', -1),
-                         2, response)
-        self.assertEqual(r_values.get('myotherrealm', {}).get('total', -1),
-                         1, response)
-        self.assertEqual(r_values.get('myotherrealm', {}).get('active', -1),
-                         0, response)
+
+        # in the mydefrealm we have 2 active tokens, one belongs to an user
+
+        mydefrealm = r_values.get('mydefrealm', {})
+        self.assertEqual(mydefrealm.get('total', -1), 2, response)
+        self.assertEqual(mydefrealm.get('total users', -1), 1, response)
+        self.assertEqual(mydefrealm.get('active', -1), 2, response)
+
+        # in the myotherrealm we have 1 inactive tokens, belongs to no one
+
+        myotherrealm = r_values.get('myotherrealm', {})
+        self.assertEqual(myotherrealm.get('total', -1), 1, response)
+        self.assertEqual(myotherrealm.get('total users', -1), 0, response)
+        self.assertEqual(myotherrealm.get('active', -1), 0, response)
+
+        # in summary for myotherrealm and mydefrealm we have:
+        #  2 inactive tokens, 1 token belongs to an user and 3 tokens
+
         s_values = resp.get('result').get('value').get('Summary', {})
         self.assertEqual(s_values.get('total', -1), 3, response)
+        self.assertEqual(s_values.get('total users', -1), 1, response)
         self.assertEqual(s_values.get('active', -1), 2, response)
+
         return
 
     def test_token_status_combi(self):
@@ -231,6 +248,7 @@ class TestMonitoringController(TestController):
             controller='monitoring', action='tokens', params=parameters)
         resp = json.loads(response.body)
         values = resp.get('result').get('value').get('Realms')
+
         self.assertEqual(values.get('mydefrealm').get('total', -1),
                          2, response)
         self.assertEqual(values.get('myotherrealm').get('total', -1),
@@ -245,28 +263,43 @@ class TestMonitoringController(TestController):
         return
 
     def test_token_in_multiple_realms(self):
+        """
+        test the handling of token in multiple realms
+        """
+        # create some tokens
+
         self.create_token(serial='0041')
         self.create_token(serial='0042', user='root', realm='mydefrealm')
+
         # set multiple realms for this token
+
         newrealms = {'realms': 'myotherrealm,mydefrealm', 'serial': '0042'}
         response = self.make_authenticated_request(controller='admin',
                                                    action='tokenrealm',
                                                    params=newrealms)
         self.assertTrue('"value": 1' in response, response)
 
+        # create some tokens but only in dedicated realms
+
         self.create_token(serial='0043', realm='mydefrealm')
         self.create_token(serial='0044', realm='myotherrealm')
 
-        parameters = {'realms': ',mydefrealm,myotherrealm'}
+        # now get the numbers by look at the monitoring
+        # which should show 2 tokens in each realm but only 3 tokens in sum
+
+        parameters = {
+            'realms': ',mydefrealm,myotherrealm'
+        }
+
         response = self.make_authenticated_request(
             controller='monitoring', action='tokens', params=parameters)
-        resp = json.loads(response.body)
-        values = resp.get('result').get('value')
-        self.assertEqual(values.get('Realms').get('mydefrealm').get('total'),
-                         2, response)
-        self.assertEqual(values.get('Realms').get('myotherrealm').get('total'),
-                         2, response)
-        self.assertEqual(values.get('Summary').get('total'), 3, response)
+
+        values = json.loads(response.body).get('result').get('value')
+
+        assert values.get('Realms').get('mydefrealm').get('total') == 2
+        assert values.get('Realms').get('myotherrealm').get('total') == 2
+        assert values.get('Summary').get('total') == 3
+
         return
 
     def test_nolicense(self):
@@ -412,8 +445,10 @@ class TestMonitoringController(TestController):
         # myotherrealm = myotherresolver
         self.create_token(serial='0058', user='max1@myotherrealm')
         self.create_token(serial='0059', user='max2', realm='myotherrealm')
-        self.create_token(serial='0060', user='other_user', realm='myotherrealm')
-        self.create_token(serial='0061', user='other_user', realm='myotherrealm')
+        self.create_token(serial='0060', user='other_user',
+                          realm='myotherrealm')
+        self.create_token(serial='0061', user='other_user',
+                          realm='myotherrealm')
         self.create_token(serial='0062', user='root', realm='myotherrealm')
         # mymixrealm = both resolvers
         self.create_token(serial='0063', user='root', realm='mymixrealm')
