@@ -241,25 +241,38 @@ class TestMonitoringController(TestController):
         self.create_token(serial='0026', realm='myotherrealm', user='max2',
                           active=False)
         parameters = {
-            'realms': '*',
+            'realms': 'mydefrealm,myotherrealm',
             'status': 'unassigned&inactive'
         }
         response = self.make_authenticated_request(
             controller='monitoring', action='tokens', params=parameters)
+
         resp = json.loads(response.body)
         values = resp.get('result').get('value').get('Realms')
 
-        self.assertEqual(values.get('mydefrealm').get('total', -1),
-                         2, response)
-        self.assertEqual(values.get('myotherrealm').get('total', -1),
-                         3, response)
         self.assertEqual(
-            values.get('myotherrealm').get('unassigned&inactive', -1),
-            1, response)
-        self.assertEqual(values.get('/:no realm:/').get('total', -1),
-                         1, response)
+            values.get(
+                'mydefrealm').get(
+                    'total', -1), 2, response)
+
+        self.assertEqual(
+            values.get(
+                'myotherrealm').get(
+                    'total', -1), 3, response)
+
+        self.assertEqual(
+            values.get(
+                'myotherrealm').get(
+                    'unassigned&inactive', -1), 1, response)
+
+        self.assertEqual(
+            values.get(
+                'mydefrealm').get(
+                    'unassigned&inactive', -1), 0, response)
+
         s_values = resp.get('result').get('value').get('Summary')
-        self.assertEqual(s_values.get('total', -1), 6, response)
+        self.assertEqual(s_values.get('total', -1), 5, response)
+
         return
 
     def test_token_in_multiple_realms(self):
@@ -298,7 +311,7 @@ class TestMonitoringController(TestController):
 
         assert values.get('Realms').get('mydefrealm').get('total') == 2
         assert values.get('Realms').get('myotherrealm').get('total') == 2
-        assert values.get('Summary').get('total') == 3
+        assert values.get('Summary').get('total') == 3, response.body
 
         return
 
