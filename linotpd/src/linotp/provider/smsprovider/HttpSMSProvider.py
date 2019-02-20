@@ -129,39 +129,22 @@ class HttpSMSProvider(ISMSProvider):
             https = True
 
         preferred_lib = self.config.get(
-            'PREFERRED_HTTPLIB', '').strip().lower()
+            'PREFERRED_HTTPLIB', 'requests').strip().lower()
 
         if preferred_lib and preferred_lib in ['requests', 'urllib', 'httplib']:
             lib = preferred_lib
         else:
-            # try to use the request lib, which makes our live easier ;-)
-            try:
-                import requests
-                # we need at least the requests version 1.x.x
-                version = requests.__version__
-                version = version.split('.')
-                if int(version[0]) < 1:
-                    raise ImportError()
-                lib = 'requests'
-            except ImportError:
-                log.info(
-                    "No 'requests' found: falling back to urllib / httplib")
-                lib = 'urllib'
+            lib = 'requests'
 
-            if lib == 'urllib':
-                if basic_auth == True and https == True:
-                    lib = 'httplib'
+        if lib == 'urllib':
+            if basic_auth == True and https == True:
+                lib = 'httplib'
 
-        if lib == 'requests':
-            fallback = 'httplib'
-        elif lib == 'httplib':
-            fallback = 'urllib'
-        else:
-            fallback = 'httplib'
+        # ------------------------------------------------------------------ --
 
-        # setup
+        # setup method call for http request
+
         http_lib = getattr(self, lib + '_request')
-        http_fallback_lib = getattr(self, fallback + '_request')
 
         try:
             ret = http_lib(url, parameter, username, password, method)
@@ -169,17 +152,10 @@ class HttpSMSProvider(ISMSProvider):
         except Exception as exx:
             log.warning("Failed to access the HTTP SMS Service with %s: %r"
                         % (lib, exx))
-            try:
-                http_fallback_lib(url, parameter, username, password, method)
-                return ret
-            except Exception as new_exx:
-                # if we as well get an error, we raise the first exception
-                # to be more authentic ;-)
-                log.warning("Failed again to access the HTTP SMS Service: %r"
-                            % new_exx)
-                raise exx
+            raise exx
 
         return False
+
 
     def getParameters(self, message, phone):
 
