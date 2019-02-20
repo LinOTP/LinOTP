@@ -243,18 +243,18 @@ class HttpSMSProvider(ISMSProvider):
                           "definition")
         return True
 
-    def get_proxy_info(self, proxy):
+    def http2lib_get_proxy_info(self, proxy_url):
         """
         helper to parse the proxyurl and to create the proxy_info object
 
-        :param proxy: proxy url string
+        :param proxy_url: proxy url string
         :return: ProxyInfo object
         """
         proxy_params = {}
         proxy_host = None
         proxy_port = 8888
 
-        parts = urlparse(proxy)
+        parts = urlparse(proxy_url)
         net_loc = parts[1]
 
         if "@" in net_loc:
@@ -361,11 +361,33 @@ class HttpSMSProvider(ISMSProvider):
         log.debug("Do the request to %s with %s" % (url, parameter))
 
         if 'PROXY' in self.config:
-            # prepare proxy from urls like
-            # "http://username:password@your-proxy:8080"
-            proxy = str(self.config['PROXY'])
-            proxy_info = self.get_proxy_info(proxy)
-            http_params["proxy_info"] = proxy_info
+            proxy_url = None
+
+            proxy = self.config['PROXY']
+
+            if isinstance(proxy, dict):
+                if url.startswith('https') and 'https' in proxy:
+                    proxy_url = proxy['https']
+                elif url.startswith('http') and 'http' in proxy:
+                    proxy_url = proxy['http']
+
+            elif isinstance(proxy, (str, unicode)):
+                proxy_url = proxy
+
+            if proxy_url:
+                http_params['proxy_info'] = self.http2lib_get_proxy_info(
+                                                                    proxy_url)
+
+        if 'timeout' in self.config:
+
+            parsed_timeout = parse_timeout(self.config['timeout'])
+
+            if isinstance(parsed_timeout, tuple):
+                timeout = int(parsed_timeout[0])
+            else:
+                timeout = int(parsed_timeout)
+
+            http_params['timeout'] = timeout
 
         http_params["disable_ssl_certificate_validation"] = True
 
@@ -374,6 +396,7 @@ class HttpSMSProvider(ISMSProvider):
             # TypeError: __init__() got an unexpected keyword argument
             # 'disable_ssl_certificate_validation'
             http = httplib2.Http(**http_params)
+
         except TypeError as exx:
             log.warning("httplib2 'disable_ssl_certificate_validation' "
                         "attribute error: %r" % exx)
