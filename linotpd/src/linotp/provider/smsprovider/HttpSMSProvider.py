@@ -60,6 +60,47 @@ except ImportError:
     import socks as socks
     log.info('Using socksipy socks')
 
+
+def http2lib_get_proxy_info(proxy_url):
+    """
+    helper to parse the proxyurl and to create the proxy_info object
+
+    :param proxy_url: proxy url string
+    :return: ProxyInfo object
+    """
+    proxy_params = {}
+    proxy_host = None
+    proxy_port = 8888
+
+    parts = urlparse(proxy_url)
+    net_loc = parts[1]
+
+    if "@" in net_loc:
+        puser, server = net_loc.split('@')
+        if ':' in puser:
+            proxy_user, proxy_pass = puser.split(':')
+            proxy_params["proxy_user"] = proxy_user
+            proxy_params["proxy_pass"] = proxy_pass
+    else:
+        server = net_loc
+
+    if ':' in server:
+        proxy_host, port = server.split(':')
+        proxy_port = int(port)
+    else:
+        proxy_host = server
+
+    # using httplib2:
+    # the proxy spec and url + enc. parameters must be of
+    # type string str() - otherwise the following error will occur:
+    # : GeneralProxyError: (5, 'bad input') :
+
+    proxy_info = httplib2.ProxyInfo(proxy_type=socks.PROXY_TYPE_HTTP,
+                                    proxy_host=proxy_host,
+                                    proxy_port=proxy_port,
+                                    **proxy_params)
+    return proxy_info
+
 @provider_registry.class_entry('HttpSMSProvider')
 @provider_registry.class_entry('linotp.provider.smsprovider.HttpSMSProvider')
 @provider_registry.class_entry('smsprovider.HttpSMSProvider.HttpSMSProvider')
@@ -242,45 +283,6 @@ class HttpSMSProvider(ISMSProvider):
                           "definition")
         return True
 
-    def http2lib_get_proxy_info(self, proxy_url):
-        """
-        helper to parse the proxyurl and to create the proxy_info object
-
-        :param proxy_url: proxy url string
-        :return: ProxyInfo object
-        """
-        proxy_params = {}
-        proxy_host = None
-        proxy_port = 8888
-
-        parts = urlparse(proxy_url)
-        net_loc = parts[1]
-
-        if "@" in net_loc:
-            puser, server = net_loc.split('@')
-            if ':' in puser:
-                proxy_user, proxy_pass = puser.split(':')
-                proxy_params["proxy_user"] = proxy_user
-                proxy_params["proxy_pass"] = proxy_pass
-        else:
-            server = net_loc
-
-        if ':' in server:
-            proxy_host, port = server.split(':')
-            proxy_port = int(port)
-        else:
-            proxy_host = server
-
-        # using httplib2:
-        # the proxy spec and url + enc. parameters must be of
-        # type string str() - otherwise the following error will occur:
-        # : GeneralProxyError: (5, 'bad input') :
-
-        proxy_info = httplib2.ProxyInfo(proxy_type=socks.PROXY_TYPE_HTTP,
-                                        proxy_host=proxy_host,
-                                        proxy_port=proxy_port,
-                                        **proxy_params)
-        return proxy_info
 
     def requests_request(self, url, parameter,
                          username=None, password=None, method='GET'):
@@ -374,8 +376,7 @@ class HttpSMSProvider(ISMSProvider):
                 proxy_url = proxy
 
             if proxy_url:
-                http_params['proxy_info'] = self.http2lib_get_proxy_info(
-                                                                    proxy_url)
+                http_params['proxy_info'] = http2lib_get_proxy_info(proxy_url)
 
         if 'timeout' in self.config:
 
