@@ -119,7 +119,7 @@ class HttpSMSProvider(ISMSProvider):
         if password is None and username is None:
             parsed_url = urlparse(url)
             if "@" in parsed_url[1]:
-                puser, server = parsed_url[1].split('@')
+                puser, _server = parsed_url[1].split('@')
                 username, password = puser.split(':')
 
         if username and password is not None:
