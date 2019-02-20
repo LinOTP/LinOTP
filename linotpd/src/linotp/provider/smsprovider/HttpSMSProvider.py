@@ -60,7 +60,6 @@ except ImportError:
     import socks as socks
     log.info('Using socksipy socks')
 
-
 @provider_registry.class_entry('HttpSMSProvider')
 @provider_registry.class_entry('linotp.provider.smsprovider.HttpSMSProvider')
 @provider_registry.class_entry('smsprovider.HttpSMSProvider.HttpSMSProvider')
@@ -486,18 +485,36 @@ class HttpSMSProvider(ISMSProvider):
         try:
             headers = {}
             handlers = []
+            pparams = {}
+
             if 'PROXY' in self.config and self.config['PROXY']:
-                # for simplicity we set both protocols
-                proxy_handler = urllib2.ProxyHandler({"http": self.config['PROXY'],
-                                                      "https": self.config['PROXY']})
-                handlers.append(proxy_handler)
-                print "using Proxy: %r" % self.config['PROXY']
+
+                proxy_handler = None
+
+                if isinstance(self.config['PROXY'], (str, unicode)):
+                    # for simplicity we set both protocols
+                    proxy_handler = urllib2.ProxyHandler({
+                        "http": self.config['PROXY'],
+                        "https": self.config['PROXY']}
+                    )
+
+                elif isinstance(self.config['PROXY'], dict):
+                    proxy_defintion = self.config['PROXY']
+                    proxy_handler = urllib2.ProxyHandler(proxy_defintion)
+
+                if proxy_handler:
+                    handlers.append(proxy_handler)
+                    log.debug("using Proxy: %r" % self.config['PROXY'])
 
             if username and password is not None:
+
                 password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
                 password_mgr.add_password(None, url, username, password)
                 auth_handler = urllib2.HTTPBasicAuthHandler(password_mgr)
                 handlers.append(auth_handler)
+
+            if 'timeout' in self.config and self.config['timeout']:
+                pparams['timeout'] = parse_timeout(self.config['timeout'])
 
             opener = urllib2.build_opener(*handlers)
             urllib2.install_opener(opener)
@@ -522,7 +539,7 @@ class HttpSMSProvider(ISMSProvider):
                     '%s:%s' % (username, password)).replace('\n', '')
                 requ.add_header("Authorization", "Basic %s" % base64string)
 
-            response = urllib2.urlopen(requ)
+            response = urllib2.urlopen(requ, *pparams)
             reply = response.read()
 
             # some providers like clickatell have no response.status!
