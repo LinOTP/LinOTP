@@ -540,9 +540,10 @@ class HttpSMSProvider(ISMSProvider):
         return str(encoded_params)
 
     def loadConfig(self, configDict):
-        if configDict:
-            self.config = configDict
-        else:
+
+        if not configDict:
             raise Exception('missing configuration')
+
+        self.config = configDict
 
 ##eof##########################################################################
