@@ -28,6 +28,7 @@
 from linotp.provider.smsprovider import ISMSProvider
 from linotp.provider import provider_registry
 from linotp.provider import ProviderNotAvailable
+from linotp.lib.type_utils import parse_timeout
 
 import socket
 
@@ -37,6 +38,10 @@ import re
 import urllib
 import httplib2
 import urllib2
+
+import requests
+from requests.auth import HTTPBasicAuth
+
 from urlparse import urlparse
 
 
@@ -282,15 +287,37 @@ class HttpSMSProvider(ISMSProvider):
                          username=None, password=None, method='GET'):
 
         try:
-            import requests
+            pparams = {}
+
+            if 'timeout' in self.config and self.config['timeout']:
+                pparams['timeout'] = parse_timeout(self.config['timeout'])
+
+            if 'PROXY' in self.config and self.config['PROXY']:
+
+                if isinstance(self.config['PROXY'], (str, unicode)):
+                    proxy_defintion = {
+                        "http": self.config['PROXY'],
+                        "https": self.config['PROXY']
+                        }
+
+                elif isinstance(self.config['PROXY'], dict):
+                    proxy_defintion = self.config['PROXY']
+
+                pparams['proxies'] = proxy_defintion
+
+            if username and password is not None:
+                auth = HTTPBasicAuth(username, password)
+                pparams['auth'] = auth
+
+            # -------------------------------------------------------------- --
+
+            # fianly execute the request
+
             if method == 'GET':
-                response = requests.get(url,
-                                        auth=(username, password),
-                                        params=parameter)
+                response = requests.get(url, params=parameter, *pparams)
             else:
-                response = requests.post(url,
-                                         auth=(username, password),
-                                         data=parameter)
+                response = requests.post(url, data=parameter, *pparams)
+
             reply = response.text
             # some providers like clickatell have no response.status!
             log.debug("HttpSMSProvider >>%s...%s<<", reply[:20], reply[-20:])
@@ -301,6 +328,7 @@ class HttpSMSProvider(ISMSProvider):
                 requests.exceptions.Timeout,
                 requests.exceptions.ReadTimeout,
                 requests.exceptions.TooManyRedirects) as exc:
+
             log.exception("HttpSMSProvider timed out")
             raise ProviderNotAvailable("Failed to send SMS - timed out %r" % exc)
 
@@ -314,8 +342,6 @@ class HttpSMSProvider(ISMSProvider):
                         username=None, password=None, method='GET'):
         """
         build the urllib request and check the response for success or fail
-
-
 
         :param url: target url
         :param parameter: additonal parameter to append to the url request
