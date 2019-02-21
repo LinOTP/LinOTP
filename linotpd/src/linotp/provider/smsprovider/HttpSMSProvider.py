@@ -41,6 +41,7 @@ import urllib2
 
 import requests
 from requests.auth import HTTPBasicAuth
+from requests.auth import HTTPDigestAuth
 
 from urlparse import urlparse
 
@@ -307,8 +308,18 @@ class HttpSMSProvider(ISMSProvider):
                 pparams['proxies'] = proxy_defintion
 
             if username and password is not None:
-                auth = HTTPBasicAuth(username, password)
-                pparams['auth'] = auth
+                auth = None
+                auth_type = self.config.get(
+                    'AUTH_TYPE', 'basic').lower().strip()
+
+                if auth_type == 'basic':
+                    auth = HTTPBasicAuth(username, password)
+
+                if auth_type == 'digest':
+                    auth = HTTPDigestAuth(username, password)
+
+                if auth:
+                    pparams['auth'] = auth
 
             # -------------------------------------------------------------- --
 
