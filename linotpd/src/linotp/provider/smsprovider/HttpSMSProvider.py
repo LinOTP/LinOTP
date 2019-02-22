@@ -326,9 +326,9 @@ class HttpSMSProvider(ISMSProvider):
             # fianly execute the request
 
             if method == 'GET':
-                response = requests.get(url, params=parameter, *pparams)
+                response = requests.get(url, params=parameter, **pparams)
             else:
-                response = requests.post(url, data=parameter, *pparams)
+                response = requests.post(url, data=parameter, **pparams)
 
             reply = response.text
             # some providers like clickatell have no response.status!
@@ -525,8 +525,9 @@ class HttpSMSProvider(ISMSProvider):
                 auth_handler = urllib2.HTTPBasicAuthHandler(password_mgr)
                 handlers.append(auth_handler)
 
+            timeout = None
             if 'timeout' in self.config and self.config['timeout']:
-                pparams['timeout'] = parse_timeout(self.config['timeout'])
+                timeout = parse_timeout(self.config['timeout'])
 
             opener = urllib2.build_opener(*handlers)
             urllib2.install_opener(opener)
@@ -551,7 +552,7 @@ class HttpSMSProvider(ISMSProvider):
                     '%s:%s' % (username, password)).replace('\n', '')
                 requ.add_header("Authorization", "Basic %s" % base64string)
 
-            response = urllib2.urlopen(requ, *pparams)
+            response = urllib2.urlopen(requ, timeout=timeout)
             reply = response.read()
 
             # some providers like clickatell have no response.status!
