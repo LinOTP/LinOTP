@@ -197,8 +197,8 @@ class YubicoTokenClass(TokenClass):
                 raise Exception("Usage of YUBICO_URL %r is deprecated!! " %
                                 DEPRECATED_YUBICO_URL)
 
-        apiId = getFromConfig("yubico.id", DEFAULT_CLIENT_ID)
-        apiKey = getFromConfig("yubico.secret", DEFAULT_API_KEY)
+        apiId = getFromConfig("yubico.id") or DEFAULT_CLIENT_ID
+        apiKey = getFromConfig("yubico.secret") or DEFAULT_API_KEY
 
         if apiKey == DEFAULT_API_KEY or apiId == DEFAULT_CLIENT_ID:
             log.warning("Usage of default apiKey or apiId not recomended!!")
