@@ -51,6 +51,8 @@ from linotp.lib.error import ParameterError
 from linotp.lib.resources import ResourceScheduler
 from linotp.lib.resources import AllResourcesUnavailable
 
+from linotp.lib.type_utils import parse_timeout
+
 YUBICO_LEN_ID = 12
 YUBICO_LEN_OTP = 44
 
@@ -178,6 +180,8 @@ class YubicoTokenClass(TokenClass):
         Here we contact the Yubico Cloud server to validate the OtpVal.
         '''
 
+        pparams = {}
+
         yubico_url = getFromConfig("yubico.url", FALLBACK_YUBICO_URL)
 
         if yubico_url == DEPRECATED_YUBICO_URL:
@@ -213,6 +217,10 @@ class YubicoTokenClass(TokenClass):
                         "not match the assigned token!")
             return -1
 
+        timeout = getFromConfig("yubico.timeout")
+        if timeout:
+            pparams['timeout']= parse_timeout(timeout)
+
         nonce = binascii.hexlify(os.urandom(20))
 
         p = urllib.urlencode({
@@ -232,7 +240,7 @@ class YubicoTokenClass(TokenClass):
             try:
                 URL = "%s?%s" % (uri, p)
 
-                response = requests.get(URL)
+                response = requests.get(URL, **pparams)
 
                 if response.ok:
                     return self._check_yubico_response(
