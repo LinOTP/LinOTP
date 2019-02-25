@@ -96,14 +96,14 @@ function yubico_get_config_params(){
 	<td><label for="sys_yubico_id" title='${_("You need to enter a valid API id")}'>
 		${_("Yubico ID")}</label></td>
 	<td><input type="text" name="sys_yubico_id" id="sys_yubico_id"
-		class="required text ui-widget-content ui-corner-all"></td>
+		class="text ui-widget-content ui-corner-all"></td>
 	</tr>
 
 	<tr>
 	<td><label for="sys_yubico_secret" title='${_("You need to enter a valid API key")}'>
 		${_("Yubico API key")}</label></td>
 	<td><input type="text" name="sys_yubico_secret" id="sys_yubico_secret"
-		class="required text ui-widget-content ui-corner-all"></td>
+		class="text ui-widget-content ui-corner-all"></td>
 	</tr>
 
     <tr>
@@ -118,15 +118,7 @@ function yubico_get_config_params(){
     <td><label for="sys_yubico_url" title='${_("Yubico connection and read timeout")}'>
         ${_("Yubico Timeout")}</label></td>
     <td><input type="text" name="sys_yubico_timeout" id="sys_yubico_timeout"
-        class="required text ui-widget-content ui-corner-all"
-        value="3.05, 15"></td>
-    </tr>
-
-    <tr>
-    <td><label for="sys_yubico_url" title='${_("Yubico connection and read timeout")}'>
-        ${_("Yubico Timeout")}</label></td>
-    <td><input type="text" name="sys_yubico_timeout" id="sys_yubico_timeout"
-        class="required text ui-widget-content ui-corner-all"
+        class="text ui-widget-content ui-corner-all"
         value="3.05, 15"></td>
     </tr>
 
