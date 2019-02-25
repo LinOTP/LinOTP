@@ -28,6 +28,7 @@
 from linotp.provider.smsprovider import ISMSProvider
 from linotp.provider import provider_registry
 from linotp.provider import ProviderNotAvailable
+from linotp.lib.type_utils import parse_timeout
 
 import socket
 
@@ -37,6 +38,11 @@ import re
 import urllib
 import httplib2
 import urllib2
+
+import requests
+from requests.auth import HTTPBasicAuth
+from requests.auth import HTTPDigestAuth
+
 from urlparse import urlparse
 
 
@@ -55,6 +61,46 @@ except ImportError:
     import socks as socks
     log.info('Using socksipy socks')
 
+
+def http2lib_get_proxy_info(proxy_url):
+    """
+    helper to parse the proxyurl and to create the proxy_info object
+
+    :param proxy_url: proxy url string
+    :return: ProxyInfo object
+    """
+    proxy_params = {}
+    proxy_host = None
+    proxy_port = 8888
+
+    parts = urlparse(proxy_url)
+    net_loc = parts[1]
+
+    if "@" in net_loc:
+        puser, server = net_loc.split('@')
+        if ':' in puser:
+            proxy_user, proxy_pass = puser.split(':')
+            proxy_params["proxy_user"] = proxy_user
+            proxy_params["proxy_pass"] = proxy_pass
+    else:
+        server = net_loc
+
+    if ':' in server:
+        proxy_host, port = server.split(':')
+        proxy_port = int(port)
+    else:
+        proxy_host = server
+
+    # using httplib2:
+    # the proxy spec and url + enc. parameters must be of
+    # type string str() - otherwise the following error will occur:
+    # : GeneralProxyError: (5, 'bad input') :
+
+    proxy_info = httplib2.ProxyInfo(proxy_type=socks.PROXY_TYPE_HTTP,
+                                    proxy_host=proxy_host,
+                                    proxy_port=proxy_port,
+                                    **proxy_params)
+    return proxy_info
 
 @provider_registry.class_entry('HttpSMSProvider')
 @provider_registry.class_entry('linotp.provider.smsprovider.HttpSMSProvider')
@@ -119,7 +165,7 @@ class HttpSMSProvider(ISMSProvider):
         if password is None and username is None:
             parsed_url = urlparse(url)
             if "@" in parsed_url[1]:
-                puser, server = parsed_url[1].split('@')
+                puser, _server = parsed_url[1].split('@')
                 username, password = puser.split(':')
 
         if username and password is not None:
@@ -129,39 +175,22 @@ class HttpSMSProvider(ISMSProvider):
             https = True
 
         preferred_lib = self.config.get(
-            'PREFERRED_HTTPLIB', '').strip().lower()
+            'PREFERRED_HTTPLIB', 'requests').strip().lower()
 
         if preferred_lib and preferred_lib in ['requests', 'urllib', 'httplib']:
             lib = preferred_lib
         else:
-            # try to use the request lib, which makes our live easier ;-)
-            try:
-                import requests
-                # we need at least the requests version 1.x.x
-                version = requests.__version__
-                version = version.split('.')
-                if int(version[0]) < 1:
-                    raise ImportError()
-                lib = 'requests'
-            except ImportError:
-                log.info(
-                    "No 'requests' found: falling back to urllib / httplib")
-                lib = 'urllib'
+            lib = 'requests'
 
-            if lib == 'urllib':
-                if basic_auth == True and https == True:
-                    lib = 'httplib'
+        if lib == 'urllib':
+            if basic_auth == True and https == True:
+                lib = 'httplib'
 
-        if lib == 'requests':
-            fallback = 'httplib'
-        elif lib == 'httplib':
-            fallback = 'urllib'
-        else:
-            fallback = 'httplib'
+        # ------------------------------------------------------------------ --
 
-        # setup
+        # setup method call for http request
+
         http_lib = getattr(self, lib + '_request')
-        http_fallback_lib = getattr(self, fallback + '_request')
 
         try:
             ret = http_lib(url, parameter, username, password, method)
@@ -169,17 +198,10 @@ class HttpSMSProvider(ISMSProvider):
         except Exception as exx:
             log.warning("Failed to access the HTTP SMS Service with %s: %r"
                         % (lib, exx))
-            try:
-                http_fallback_lib(url, parameter, username, password, method)
-                return ret
-            except Exception as new_exx:
-                # if we as well get an error, we raise the first exception
-                # to be more authentic ;-)
-                log.warning("Failed again to access the HTTP SMS Service: %r"
-                            % new_exx)
-                raise exx
+            raise exx
 
         return False
+
 
     def getParameters(self, message, phone):
 
@@ -262,59 +284,52 @@ class HttpSMSProvider(ISMSProvider):
                           "definition")
         return True
 
-    def get_proxy_info(self, proxy):
-        """
-        helper to parse the proxyurl and to create the proxy_info object
-
-        :param proxy: proxy url string
-        :return: ProxyInfo object
-        """
-        proxy_params = {}
-        proxy_host = None
-        proxy_port = 8888
-
-        parts = urlparse(proxy)
-        net_loc = parts[1]
-
-        if "@" in net_loc:
-            puser, server = net_loc.split('@')
-            if ':' in puser:
-                proxy_user, proxy_pass = puser.split(':')
-                proxy_params["proxy_user"] = proxy_user
-                proxy_params["proxy_pass"] = proxy_pass
-        else:
-            server = net_loc
-
-        if ':' in server:
-            proxy_host, port = server.split(':')
-            proxy_port = int(port)
-        else:
-            proxy_host = server
-
-        # using httplib2:
-        # the proxy spec and url + enc. parameters must be of
-        # type string str() - otherwise the following error will occur:
-        # : GeneralProxyError: (5, 'bad input') :
-
-        proxy_info = httplib2.ProxyInfo(proxy_type=socks.PROXY_TYPE_HTTP,
-                                        proxy_host=proxy_host,
-                                        proxy_port=proxy_port,
-                                        **proxy_params)
-        return proxy_info
 
     def requests_request(self, url, parameter,
                          username=None, password=None, method='GET'):
 
         try:
-            import requests
+            pparams = {}
+
+            if 'timeout' in self.config and self.config['timeout']:
+                pparams['timeout'] = parse_timeout(self.config['timeout'])
+
+            if 'PROXY' in self.config and self.config['PROXY']:
+
+                if isinstance(self.config['PROXY'], (str, unicode)):
+                    proxy_defintion = {
+                        "http": self.config['PROXY'],
+                        "https": self.config['PROXY']
+                        }
+
+                elif isinstance(self.config['PROXY'], dict):
+                    proxy_defintion = self.config['PROXY']
+
+                pparams['proxies'] = proxy_defintion
+
+            if username and password is not None:
+                auth = None
+                auth_type = self.config.get(
+                    'AUTH_TYPE', 'basic').lower().strip()
+
+                if auth_type == 'basic':
+                    auth = HTTPBasicAuth(username, password)
+
+                if auth_type == 'digest':
+                    auth = HTTPDigestAuth(username, password)
+
+                if auth:
+                    pparams['auth'] = auth
+
+            # -------------------------------------------------------------- --
+
+            # fianly execute the request
+
             if method == 'GET':
-                response = requests.get(url,
-                                        auth=(username, password),
-                                        params=parameter)
+                response = requests.get(url, params=parameter, **pparams)
             else:
-                response = requests.post(url,
-                                         auth=(username, password),
-                                         data=parameter)
+                response = requests.post(url, data=parameter, **pparams)
+
             reply = response.text
             # some providers like clickatell have no response.status!
             log.debug("HttpSMSProvider >>%s...%s<<", reply[:20], reply[-20:])
@@ -325,6 +340,7 @@ class HttpSMSProvider(ISMSProvider):
                 requests.exceptions.Timeout,
                 requests.exceptions.ReadTimeout,
                 requests.exceptions.TooManyRedirects) as exc:
+
             log.exception("HttpSMSProvider timed out")
             raise ProviderNotAvailable("Failed to send SMS - timed out %r" % exc)
 
@@ -338,8 +354,6 @@ class HttpSMSProvider(ISMSProvider):
                         username=None, password=None, method='GET'):
         """
         build the urllib request and check the response for success or fail
-
-
 
         :param url: target url
         :param parameter: additonal parameter to append to the url request
@@ -359,11 +373,32 @@ class HttpSMSProvider(ISMSProvider):
         log.debug("Do the request to %s with %s" % (url, parameter))
 
         if 'PROXY' in self.config:
-            # prepare proxy from urls like
-            # "http://username:password@your-proxy:8080"
-            proxy = str(self.config['PROXY'])
-            proxy_info = self.get_proxy_info(proxy)
-            http_params["proxy_info"] = proxy_info
+            proxy_url = None
+
+            proxy = self.config['PROXY']
+
+            if isinstance(proxy, dict):
+                if url.startswith('https') and 'https' in proxy:
+                    proxy_url = proxy['https']
+                elif url.startswith('http') and 'http' in proxy:
+                    proxy_url = proxy['http']
+
+            elif isinstance(proxy, (str, unicode)):
+                proxy_url = proxy
+
+            if proxy_url:
+                http_params['proxy_info'] = http2lib_get_proxy_info(proxy_url)
+
+        if 'timeout' in self.config:
+
+            parsed_timeout = parse_timeout(self.config['timeout'])
+
+            if isinstance(parsed_timeout, tuple):
+                timeout = int(parsed_timeout[0])
+            else:
+                timeout = int(parsed_timeout)
+
+            http_params['timeout'] = timeout
 
         http_params["disable_ssl_certificate_validation"] = True
 
@@ -372,6 +407,7 @@ class HttpSMSProvider(ISMSProvider):
             # TypeError: __init__() got an unexpected keyword argument
             # 'disable_ssl_certificate_validation'
             http = httplib2.Http(**http_params)
+
         except TypeError as exx:
             log.warning("httplib2 'disable_ssl_certificate_validation' "
                         "attribute error: %r" % exx)
@@ -461,18 +497,37 @@ class HttpSMSProvider(ISMSProvider):
         try:
             headers = {}
             handlers = []
+            pparams = {}
+
             if 'PROXY' in self.config and self.config['PROXY']:
-                # for simplicity we set both protocols
-                proxy_handler = urllib2.ProxyHandler({"http": self.config['PROXY'],
-                                                      "https": self.config['PROXY']})
-                handlers.append(proxy_handler)
-                print "using Proxy: %r" % self.config['PROXY']
+
+                proxy_handler = None
+
+                if isinstance(self.config['PROXY'], (str, unicode)):
+                    # for simplicity we set both protocols
+                    proxy_handler = urllib2.ProxyHandler({
+                        "http": self.config['PROXY'],
+                        "https": self.config['PROXY']}
+                    )
+
+                elif isinstance(self.config['PROXY'], dict):
+                    proxy_defintion = self.config['PROXY']
+                    proxy_handler = urllib2.ProxyHandler(proxy_defintion)
+
+                if proxy_handler:
+                    handlers.append(proxy_handler)
+                    log.debug("using Proxy: %r" % self.config['PROXY'])
 
             if username and password is not None:
+
                 password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
                 password_mgr.add_password(None, url, username, password)
                 auth_handler = urllib2.HTTPBasicAuthHandler(password_mgr)
                 handlers.append(auth_handler)
+
+            timeout = None
+            if 'timeout' in self.config and self.config['timeout']:
+                timeout = parse_timeout(self.config['timeout'])
 
             opener = urllib2.build_opener(*handlers)
             urllib2.install_opener(opener)
@@ -497,7 +552,7 @@ class HttpSMSProvider(ISMSProvider):
                     '%s:%s' % (username, password)).replace('\n', '')
                 requ.add_header("Authorization", "Basic %s" % base64string)
 
-            response = urllib2.urlopen(requ)
+            response = urllib2.urlopen(requ, timeout=timeout)
             reply = response.read()
 
             # some providers like clickatell have no response.status!
@@ -540,9 +595,10 @@ class HttpSMSProvider(ISMSProvider):
         return str(encoded_params)
 
     def loadConfig(self, configDict):
-        if configDict:
-            self.config = configDict
-        else:
+
+        if not configDict:
             raise Exception('missing configuration')
+
+        self.config = configDict
 
 ##eof##########################################################################
