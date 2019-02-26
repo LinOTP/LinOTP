@@ -48,7 +48,7 @@ services:
     restart: always
 
   test-db:
-    image: mariadb:10.1
+    image: "${DB}"
     environment:
       MYSQL_ROOT_PASSWORD: "Test123!"
       MYSQL_DATABASE: "linotp_db"
