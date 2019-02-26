@@ -5,21 +5,12 @@ variables:
   LATEST_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_PIPELINE_ID
   DOCKERFY_URL: http://avocado.corp.lsexperts.de/jenkins/dockerfy/dockerfy
   DEBIAN_MIRROR: ftp.de.debian.org
-  DOCKER_DISTRO_BASE: stretch
   DEPENDENCY_SOURCE: http://avocado.corp.lsexperts.de/deb-repo
   DEPENDENCY_SOURCE_COMPONENT: kideps
   DEPENDENCY_GPG_KEYID: 47868600E7533829
   DEPENDENCY_GPG_KEYID_URL: ""
   DOCKER_TAGS: $CI_PIPELINE_ID
-  MAKE_PARAMS: DOCKER_DISTRO_BASE=$DOCKER_DISTRO_BASE LINOTP_MIRROR=$LINOTP_MIRROR DOCKER_TAGS=$DOCKER_TAGS
-
   CI_IMAGE_PREFIX: $REGISTRY_URL/$CI_PROJECT_NAME/ci
-  BUILD_ENV_IMAGE: $REGISTRY_URL/$CI_PROJECT_NAME/$DOCKER_DISTRO_BASE/build-env:$CI_PIPELINE_ID
-  LINOTP_IMAGE: $REGISTRY_URL/$CI_PROJECT_NAME/ci/$DOCKER_DISTRO_BASE/linotp:$CI_PIPELINE_ID
-
-  INTEGRATION_TEST_CHROME: $REGISTRY_URL/$CI_PROJECT_NAME/ci/$DOCKER_DISTRO_BASE/tests/integration/chrome:$CI_PIPELINE_ID
-  INTEGRATION_TEST_SCRIPT_EXECUTOR: $REGISTRY_URL/$CI_PROJECT_NAME/ci/$DOCKER_DISTRO_BASE/tests/integration/script-executor:$CI_PIPELINE_ID
-  INTEGRATION_TEST_LINOTP: $REGISTRY_URL/$CI_PROJECT_NAME/ci/$DOCKER_DISTRO_BASE/tests/integration/linotp:$CI_PIPELINE_ID
   NOSE_COVER_PACKAGE: linotp
 
 stages:
@@ -136,6 +127,7 @@ unit-test:debian-stretch:
 
 unit-test:debian-buster:
   extends: .test-debian
+  allow_failure: true
   stage: test
   variables:
     DEBIAN_RELEASE_NAME: buster
@@ -178,9 +170,21 @@ unit-test:debian-buster:
     - cp config/dictionary /tmp/config
     - rm test.ini
     - export NOSE_WITH_COVERAGE=1
-    - test "$CI_PIPELINE_SOURCE" -ne "schedule" && export NOSE_ATTRS='!nightly'
+    - test "$CI_PIPELINE_SOURCE" != "schedule" && export NOSE_ATTRS='!nightly'
     - export NOSE_COVER_DIR=${CI_PROJECT_DIR}/coverage/${DEBIAN_RELEASE_NAME}/
     - mkdir -p ${NOSE_COVER_DIR}
+    - find linotp/tests/functional -type f -iname 'test_*.py' >func-tests.txt
+    - num_tests=`cat func-tests.txt | wc -l`
+    - echo $num_tests
+    # ocra2 test irrelevant and a damn long execution duration
+    # So remove for commit triggered pipeline - only executed during nightly scheduled pipeline
+    - test "$CI_PIPELINE_SOURCE" != "schedule" && sed -i '/test_ocra2/d' func-tests.txt
+    - split --numeric-suffixes=1 -n r/5 func-tests.txt func_chunk_
+    - cat func_chunk_01
+    - cat func_chunk_02
+    - cat func_chunk_03
+    - cat func_chunk_04
+    - cat func_chunk_05
   script:
     - bash -c "find linotp/tests/functional -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
   artifacts:
@@ -190,22 +194,31 @@ unit-test:debian-buster:
 .functional-special-test:
   extends: .functional-test
   stage: test
-  allow_failure: true
   variables:
     COVERAGE_PREFIX: func-special
   script:
     - bash -c "find linotp/tests/functional_special -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
 
-functional-test:jessie:
+func:jessie:
   extends: .functional-test
+  stage: test
+  parallel: 5
+  script:
+    - echo $CI_NODE_INDEX
+    - bash -c "cat func_chunk_0$CI_NODE_INDEX | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
   variables:
     DEBIAN_RELEASE_NAME: jessie
-
-functional-test:stretch:
+  
+func:stretch:
   extends: .functional-test
+  stage: test
+  parallel: 5
+  script:
+    - echo $CI_NODE_INDEX
+    - bash -c "cat func_chunk_0$CI_NODE_INDEX | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
   variables:
     DEBIAN_RELEASE_NAME: stretch
-
+  
 functional-test:buster:
   extends: .functional-test
   allow_failure: true
@@ -254,8 +267,9 @@ coverage-report:stretch:
 
 coverage-report:buster:
   extends: .coverage-report
+  allow_failure: true
   variables:
-    DEBIAN_RELEASE_NAME: buster     
+    DEBIAN_RELEASE_NAME: buster
 
 .build-debs:
   stage: build-debian-packages
@@ -293,7 +307,8 @@ build:buster:
 .build-linotp-docker-image:
   stage: build-linotp-docker-image
   image: docker:latest
-  allow_failure: true # allow failure until we fixed the integration tests
+  retry:
+    max: 2
   before_script:
     - apk add --no-cache py-pip make
     - pip install docker-compose
@@ -315,7 +330,7 @@ build:buster:
       --build-arg="DEPENDENCY_GPG_KEYID=${DEPENDENCY_GPG_KEYID}"
       --build-arg="DEPENDENCY_GPG_KEY_URL=${DEPENDENCY_GPG_KEY_URL}"
       --tag="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}" -f $BUILDDIR/Dockerfile.linotp $BUILDDIR
-    - docker push $LINOTP_IMAGE
+    - docker push "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
 
 
 build-linotp-docker-image:jessie:
@@ -343,38 +358,102 @@ build-linotp-docker-image:buster:
     DEPENDENCY_GPG_KEYID: ""
     DEBIAN_RELEASE_NAME: buster
 
-.selenium-test:
+.e2e-test:
   stage: selenium-test
   image: docker:latest
-  allow_failure: true
+  variables:
+    INTEGRATION_TEST_CHROME: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/tests/integration/chrome:${CI_PIPELINE_ID}"
+    DELETE_OLD_SCRIPT_EXECUTORS: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/tests/integration/script-executor"
+    INTEGRATION_TEST_SCRIPT_EXECUTOR: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/tests/integration/script-executor:${CI_PIPELINE_ID}"
+    DELETE_OLD_INTEGRATION_LINOTPS: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/tests/integration/linotp"
+    INTEGRATION_TEST_LINOTP: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/tests/integration/linotp:${CI_PIPELINE_ID}"
+    DELETE_OLD_LINOTPS: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/linotp"
+    LINOTP_IMAGE: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
   before_script:
     - apk add --no-cache py-pip
     - pip install docker-compose
     - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
-    - export LINOTP_IMAGE="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
-  script:
+    - cp -r pkg/apt/${DEBIAN_RELEASE_NAME} linotpd/src/linotp/tests/integration/apt
     - cd linotpd/src/linotp/tests/integration
+    - docker-compose -f docker-compose-gitlab.yml down --rmi all --remove-orphans
+    - echo $INTEGRATION_TEST_LINOTP
+    - echo $INTEGRATION_TEST_SCRIPT_EXECUTOR
+    - echo $INTEGRATION_TEST_CHROME
+    - echo $LINOTP_IMAGE
+    - echo $DELETE_OLD_SCRIPT_EXECUTORS
+    - echo $DELETE_OLD_INTEGRATION_LINOTPS
+    - echo $DELETE_OLD_LINOTPS
+    - docker images -a |  grep "$DELETE_OLD_LINOTPS" | awk '{print $3}' | xargs docker rmi -f || true
+    - docker images -a |  grep "$DELETE_OLD_INTEGRATION_LINOTPS" | awk '{print $3}' | xargs docker rmi -f || true
+    - docker images -a |  grep "$DELETE_OLD_SCRIPT_EXECUTORS" | awk '{print $3}' | xargs docker rmi -f || true
     - docker-compose -f docker-compose-gitlab.yml config
-    - docker-compose -f docker-compose-gitlab.yml build
+    - docker-compose -f docker-compose-gitlab.yml build --force-rm --no-cache
+    - docker-compose -f docker-compose-gitlab.yml push --ignore-push-failures test-script-executor
+    - docker-compose -f docker-compose-gitlab.yml push --ignore-push-failures test-chrome
+    - docker-compose -f docker-compose-gitlab.yml push --ignore-push-failures test-linotp
+  script:
     - docker-compose -f docker-compose-gitlab.yml run --rm test-script-executor
   after_script:
     - cd linotpd/src/linotp/tests/integration
-    - docker-compose -f docker-compose-gitlab.yml down --rmi all
+    - docker-compose -f docker-compose-gitlab.yml down --rmi all --remove-orphans
 
-selenium-test:jessie:
-  extends: .selenium-test
+e2e-1:jessie:mysql-5.5:
+  retry:
+    max: 1
+  extends: .e2e-test
+  script:
+    - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch1 --rm test-script-executor
   variables:
     DEBIAN_RELEASE_NAME: jessie
+    DB: mysql:5.5
 
-selenium-test:stretch:
-  extends: .selenium-test
+e2e-2:jessie:mysql-5.5:
+  retry:
+    max: 1
+  extends: .e2e-test
+  script:
+    - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch2 --rm test-script-executor
+  variables:
+    DEBIAN_RELEASE_NAME: jessie
+    DB: mysql:5.5
+
+e2e-1:jessie:mariadb:10.1:
+  allow_failure: true
+  extends: .e2e-test
+  script:
+    - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch1 --rm test-script-executor
+  variables:
+    DEBIAN_RELEASE_NAME: jessie
+    DB: mariadb:10.1
+
+e2e-2:jessie:mariadb-10.1:
+  allow_failure: true
+  extends: .e2e-test
+  script:
+    - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch2 --rm test-script-executor
+  variables:
+    DEBIAN_RELEASE_NAME: jessie
+    DB: mariadb:10.1
+
+e2e-1:stretch:mariadb-10.1:
+  retry:
+    max: 1
+  extends: .e2e-test
+  script:
+    - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch1 --rm test-script-executor
   variables:
     DEBIAN_RELEASE_NAME: stretch
+    DB: mariadb:10.1
 
-selenium-test:buster:
-  extends: .selenium-test
+e2e-2:stretch:mariadb-10.1:
+  retry:
+    max: 1
+  extends: .e2e-test
+  script:
+    - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch2 --rm test-script-executor
   variables:
-    DEBIAN_RELEASE_NAME: buster
+    DEBIAN_RELEASE_NAME: stretch
+    DB: mariadb:10.1
 
 .upload-debs:
   stage: upload-debian-packages
@@ -432,6 +511,7 @@ upload-debs:stretch:manual:
     DEBIAN_RELEASE_NAME: stretch
 
 upload-debs:buster:manual:
+  allow_failure: true
   extends: .upload-debs:manual
   variables:
     DEBIAN_RELEASE_NAME: buster
@@ -447,6 +527,7 @@ upload-debs:stretch:tag:
     DEBIAN_RELEASE_NAME: stretch
 
 upload-debs:buster:tag:
+  allow_failure: true
   extends: .upload-debs:tags
   variables:
     DEBIAN_RELEASE_NAME: buster
@@ -462,6 +543,7 @@ upload-debs:stretch:stable-branch:
     DEBIAN_RELEASE_NAME: stretch
 
 upload-debs:buster:stable-branch:
+  allow_failure: true
   extends: .upload-debs:stable-branch
   variables:
     DEBIAN_RELEASE_NAME: buster
