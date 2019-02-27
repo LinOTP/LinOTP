@@ -21,7 +21,7 @@ function run_functional_test() {
   nohup paster serve /tmp/worker_${WORKER_NUM}.ini &
   PASTER_PID=$!
 
-  export COVERAGE_FILE=${NOSE_COVER_DIR}/${COVERAGE_PREFIX:-func}-${WORKER_NUM}.coverage
+  export COVERAGE_FILE=${NOSE_COVER_DIR}/${CI_NODE_INDEX:-00}-${COVERAGE_PREFIX:-func}-${WORKER_NUM}.coverage
   nosetests -v \
      --tc=paster.port:${PASTER_PORT} \
      --with-pylons=/tmp/worker_${WORKER_NUM}.ini \
