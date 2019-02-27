@@ -30,7 +30,6 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
     	python-dev \
         python-m2crypto \
         python-openssl \
-        python-pip \
 	python-pip \
         python-pysodium \
         rename \

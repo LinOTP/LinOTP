@@ -25,8 +25,8 @@
 #
 #
 # LinOTP Docker build script
-
-FROM debian:jessie
+ARG BASE_IMAGE
+FROM $BASE_IMAGE
 
 ARG DEBIAN_MIRROR=deb.debian.org
 ARG DEBIAN_RELEASE_NAME

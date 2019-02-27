@@ -113,71 +113,22 @@ class TestScenario01(TestCase):
 
         self._announce_test("3. eToken.xml ueber das Webinterface importieren")
 
-        seed_oath137332 = "ff06df50017d3b981cfbc4ec4d374040164d8d19"
-        seed_oath137332_bin = binascii.unhexlify(seed_oath137332)
-        file_content = """<Tokens>
-<Token serial="00040008CFA5">
-<CaseModel>5</CaseModel>
-<Model>101</Model>
-<ProductionDate>02/19/2009</ProductionDate>
-<ProductName>Safeword Alpine</ProductName>
-<Applications>
-<Application ConnectorID="{ab1397d2-ddb6-4705-b66e-9f83f322deb9}">
-<Seed>123412354</Seed>
-<MovingFactor>1</MovingFactor>
-</Application>
-</Applications>
-</Token>
-<Token serial="00040008CFA52">
-<CaseModel>5</CaseModel>
-<Model>101</Model>
-<ProductionDate>02/19/2009</ProductionDate>
-<ProductName>Safeword Alpine</ProductName>
-<Applications>
-<Application ConnectorID="{ab1397d2-ddb6-4705-b66e-9f83f322deb9}">
-<Seed>123456</Seed>
-<MovingFactor>1</MovingFactor>
-</Application>
-</Applications>
-</Token>
-<Token serial="oath137332">
-<CaseModel>5</CaseModel>
-<Model>101</Model>
-<ProductionDate>02/19/2009</ProductionDate>
-<ProductName>Safeword Alpine</ProductName>
-<Applications>
-<Application ConnectorID="{ab1397d2-ddb6-4705-b66e-9f83f322deb1}">
-<Seed>""" + seed_oath137332 + """</Seed>
-<MovingFactor>1</MovingFactor>
-</Application>
-</Applications>
-</Token>
-<Token serial="oath12482B">
-<CaseModel>5</CaseModel>
-<Model>101</Model>
-<ProductionDate>02/19/2009</ProductionDate>
-<ProductName>Safeword Alpine</ProductName>
-<Applications>
-<Application ConnectorID="{ab1397d2-ddb6-4705-b66e-9f83f322deb2}">
-<Seed>6ec1d0e9915a2bebf84745b318e39e481249c1eb</Seed>
-<MovingFactor>1</MovingFactor>
-</Application>
-</Applications>
-</Token>
-</Tokens>"""
-
         token_import_aladdin = TokenImportAladdin(self.manage_ui)
-        error_raised = token_import_aladdin.do_import(file_content)
+
+        aladdin_xml_path = os.path.join(self.manage_ui.test_data_dir,
+                                        'aladdin.xml')
+        err_import = token_import_aladdin.do_import(file_content=None,
+                                                    file_path=aladdin_xml_path)
         # There shouldn't raise an error
-        self.assertFalse(error_raised,
+        self.assertFalse(err_import,
                          "Error during Aladdin token import!")
 
         token_import_aladdin = TokenImportAladdin(self.manage_ui)
-        error_raised = token_import_aladdin.do_import(
+        err_import = token_import_aladdin.do_import(
             file_path=os.path.join(self.manage_ui.test_data_dir,
                                    'wrong_token.xml'))
         # There shouldn't raise an error
-        self.assertTrue(error_raised,
+        self.assertTrue(err_import,
                         "Successful import of wrong Aladdin token file!")
 
         serial_token_bach = "oath137332"
@@ -278,6 +229,10 @@ class TestScenario01(TestCase):
                             self.http_port,
                             self.http_username,
                             self.http_password)
+
+        # seed is also set in testdata/aladdin.xml
+        seed_oath137332 = "ff06df50017d3b981cfbc4ec4d374040164d8d19"
+        seed_oath137332_bin = binascii.unhexlify(seed_oath137332)
 
         # Validate HOTP Token - bach
         hotp = HmacOtp()
