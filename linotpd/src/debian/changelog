@@ -1,9 +1,9 @@
-linotp (2.10.4rc0-1) jessie; urgency=low
+linotp (2.10.4-1) jessie; urgency=low
 
   Enhancement:
   * Server: sms provider failover
 
- --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 18 Feb 2019 16:10:22 +0200
+ --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 26 Feb 2019 17:57:22 +0200
 
 linotp (2.10.3.1-1) jessie; urgency=low
 
