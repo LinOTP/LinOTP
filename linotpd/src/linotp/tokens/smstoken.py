@@ -123,7 +123,15 @@ from linotp.lib.policy import get_auth_AutoSMSPolicy
 from linotp.lib.policy import trigger_sms
 
 from linotp.lib.context import request_context as context
+
+from linotp.provider import get_provider_from_policy
+from linotp.provider import loadProvider
 from linotp.provider import loadProviderFromPolicy
+from linotp.provider import ProviderNotAvailable
+
+from linotp.lib.resources import ResourceScheduler
+from linotp.lib.resources import AllResourcesUnavailable
+
 from linotp.lib.error import ParameterError
 
 from linotp.tokens.hmactoken import HmacTokenClass
@@ -892,7 +900,7 @@ class SmsTokenClass(HmacTokenClass):
 
         '''
 
-        ret = None
+        success = None
 
         if not message:
             message = "<otp>"
@@ -935,24 +943,45 @@ class SmsTokenClass(HmacTokenClass):
         if not owner or not owner.login:
             log.warning("[sendSMS] Missing required token owner")
 
-        sms_provider = loadProviderFromPolicy(provider_type='sms',
-                                              realm=realm,
-                                              user=owner)
+        # ------------------------------------------------------------------ --
 
-        if not sms_provider:
-            raise Exception('unable to load provider')
+        # load providers for the user
 
-        ret = sms_provider.submitMessage(phone, message)
+        providers = get_provider_from_policy('sms', realm=realm, user=owner)
 
-        if not ret:
-            raise Exception("Failed to submit message")
+        # remember if at least one provider could be accessed
+        available = False
+
+        res_scheduler = ResourceScheduler(tries=1, uri_list=providers)
+        for provider_name in res_scheduler.next():
+
+            sms_provider = loadProvider('sms', provider_name=provider_name)
+
+            if not sms_provider:
+                raise Exception('unable to load provider')
+
+            try:
+
+                success = sms_provider.submitMessage(phone, message)
+
+                available = True
+                break
+
+            except ProviderNotAvailable as exx:
+                log.error('Provider not available %r', provider_name)
+                res_scheduler.block(provider_name, delay=30)
+
+        if not available:
+            raise AllResourcesUnavailable("unable to connect to any "
+                                          "SMSProvider %r" % providers)
+
         log.debug("[sendSMS] message submitted")
 
         # # after submit set validity time
         self.setValidUntil()
 
         # return OTP for selftest purposes
-        return ret, message
+        return success, message
 
     def loadLinOtpSMSValidTime(self):
         '''
