@@ -39,6 +39,7 @@ except ImportError:
 
 from sqlalchemy import or_, and_
 from sqlalchemy import func
+from sqlalchemy.exc import ResourceClosedError
 
 from linotp.lib.challenges import Challenges
 
@@ -1623,7 +1624,14 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
         # for the validation we require an read for update lock
 
         if read_for_update:
-            sqlQuery = sqlQuery.with_lockmode('update').all()
+            try:
+
+                sqlQuery = sqlQuery.with_lockmode('update').all()
+
+            except ResourceClosedError as exx:
+                log.warning("Token already locked for update: %r", exx)
+                raise Exception("Token already locked for update: (%r)"
+                                % exx)
 
         for token in sqlQuery:
             tokenList.append(token)
@@ -1662,9 +1670,21 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                 # ---------------------------------------------------------- --
 
                 # for the validation we require an read for update lock
+                # which could raise a ResourceClosedError to show that the
+                # resource is already allocated in an other request
 
                 if read_for_update:
-                    sqlQuery = sqlQuery.with_lockmode('update').all()
+
+                    try:
+
+                        sqlQuery = sqlQuery.with_lockmode('update').all()
+
+                    except ResourceClosedError as exx:
+                        log.warning("Token already locked for update: %r", exx)
+                        raise Exception("Token already locked for update: (%r)"
+                                        % exx)
+
+                # ---------------------------------------------------------- --
 
                 for token in sqlQuery:
                     # we have to check that the token is in the same realm as the user

@@ -31,6 +31,7 @@ import smtpd
 import asyncore
 
 from linotp.provider.smsprovider import getSMSProviderClass
+from linotp.provider import ProviderNotAvailable
 
 
 class CustomSMTPServer(smtpd.SMTPServer):
@@ -41,7 +42,6 @@ class CustomSMTPServer(smtpd.SMTPServer):
         print 'Message addressed to  :', rcpttos
         print 'Message length        :', len(data)
         return
-
 
 
 class TestSMS(TestCase):
@@ -57,9 +57,10 @@ class TestSMS(TestCase):
 
         self.assertEquals(res,'0')
     '''
+
     def setUp(self):
         #server = CustomSMTPServer(('127.0.0.1', 1025), None)
-        #asyncore.loop()
+        # asyncore.loop()
         print "EHLO"
 
     def test_01_smtp(self):
@@ -80,7 +81,7 @@ class TestSMS(TestCase):
         sms = getSMSProviderClass("SmtpSMSProvider", "SmtpSMSProvider")()
         sms.loadConfig(smtp_config)
 
-        with self.assertRaisesRegexp(Exception, "not known"):
+        with self.assertRaises(ProviderNotAvailable):
             sms.submitMessage(phone, message)
 
         smtp_config = {'mailserver': 'localhost:1025',
@@ -110,31 +111,31 @@ class TestSMS(TestCase):
         message = "123456"
         ret = False
 
-        clickatell_config = { 'URL' : 'http://api.clickatell.com/http/sendmsg',
-        'PARAMETER' : {
-            'user':'notme',
-            'password':'askme',
-            'api_id':'askme',
+        clickatell_config = {'URL': 'http://api.clickatell.com/http/sendmsg',
+                             'PARAMETER': {
+                                 'user': 'notme',
+                                 'password': 'askme',
+                                 'api_id': 'askme',
 
-        },
-        'SMS_TEXT_KEY':'text',
-        'SMS_PHONENUMBER_KEY':'to',
-        'HTTP_Method':'GET',
-        "RETURN_SUCCESS":"ID"
-        }
+                             },
+                             'SMS_TEXT_KEY': 'text',
+                             'SMS_PHONENUMBER_KEY': 'to',
+                             'HTTP_Method': 'GET',
+                             "RETURN_SUCCESS": "ID"
+                             }
 
-        config = {'URL':'http://localhost/cgi-perl/prepaid/private/smsversand.cgi',
-              'PARAMETER': {
-                          'von':'OWN_NUMBER',
-                          'passwort':'PASSWORD',
-                          'absender':'TYPE',
-                          'konto':'1'
-               },
-               'SMS_TEXT_KEY':'text',
-               'SMS_PHONENUMBER_KEY':'ziel',
-               'HTTP_Method':'GET',
-               "RETURN_SUCCESS":"ID"
-              }
+        config = {'URL': 'http://localhost/cgi-perl/prepaid/private/smsversand.cgi',
+                  'PARAMETER': {
+                      'von': 'OWN_NUMBER',
+                      'passwort': 'PASSWORD',
+                      'absender': 'TYPE',
+                      'konto': '1'
+                  },
+                  'SMS_TEXT_KEY': 'text',
+                  'SMS_PHONENUMBER_KEY': 'ziel',
+                  'HTTP_Method': 'GET',
+                  "RETURN_SUCCESS": "ID"
+                  }
 
         sms = getSMSProviderClass("HttpSMSProvider", "HttpSMSProvider")()
 
@@ -166,6 +167,7 @@ class TestSMS(TestCase):
 
 def main():
     unittest.main()
+
 
 if __name__ == '__main__':
     main()

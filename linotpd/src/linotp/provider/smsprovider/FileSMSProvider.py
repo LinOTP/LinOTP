@@ -28,6 +28,7 @@
 
 from linotp.provider.smsprovider import ISMSProvider
 from linotp.provider import provider_registry
+from linotp.provider import ProviderNotAvailable
 
 import os
 import logging
@@ -77,11 +78,13 @@ class FileSMSProvider(ISMSProvider):
                 msg = u"%s:%s" % (str2unicode(phone), str2unicode(message))
                 f.write(msg.encode('utf-8'))
             ret = True
+
         except Exception as exx:
-            log.exception(exx)
-            ret = False
-        finally:
-            return ret
+            log.exception("Failed to open file %r", filename)
+            raise ProviderNotAvailable("Failed to open file %r" % filename)
+
+
+        return ret
 
     def loadConfig(self, configDict):
         self.config = configDict
