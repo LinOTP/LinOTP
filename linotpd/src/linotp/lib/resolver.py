@@ -44,6 +44,7 @@ from linotp.lib.config.parsing import ConfigNotRecognized
 from linotp.lib.type_utils import get_duration
 from linotp.lib.type_utils import boolean
 from linotp.useridresolver import resolver_registry
+from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
 from linotp.lib.crypto import encryptPassword
 
@@ -541,7 +542,13 @@ def getResolverObject(resolver_spec, config=None, load_config=True):
         if load_config:
 
             try:
+
                 resolver.loadConfig(config, config_identifier)
+
+            except ResolverNotAvailable:
+                log.error('Unable to connect to resolver %r', resolver_spec)
+                return None
+
             except Exception as exx:
                 # FIXME: Except clause is too general. resolver
                 # should be ResolverLoadConfigError
