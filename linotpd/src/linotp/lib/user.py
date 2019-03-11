@@ -860,17 +860,26 @@ def getResolversOfUser(user):
     realm = realm.lower()
 
     # calling the worker which stores resolver in the cache
-    resolvers = get_resolvers_of_user(login, realm)
+
+    resolvers = []
+
+    realm_def = getRealms(realm)
+
+    if realm_def and realm in realm_def:
+        resolvers = realm_def[realm]['useridresolver']
 
     # -- ------------------------------------------------------------------ --
     # below we adjust the legacy stuff and put the resolver info into the user
     # -- ------------------------------------------------------------------ --
+    resolver_match = []
 
     for resolver_spec in resolvers:
+
         # this is redundant but cached
-        login, uid, _user_info = lookup_user_in_resolver(login, None,
-                                                         resolver_spec)
-        if not uid:
+        try:
+            login, uid, _user_info = lookup_user_in_resolver(
+                                                login, None, resolver_spec)
+        except NoResolverFound as exx:
             continue
 
         try:
@@ -887,8 +896,9 @@ def getResolversOfUser(user):
         __, config_identifier = parse_resolver_spec(resolver_spec)
         user.addResolverUId(resolver_spec, uid, config_identifier,
                             resId, resCId)
+        resolver_match.append(resolver_spec)
 
-    return resolvers
+    return resolver_match
 
 
 def get_resolvers_of_user(login, realm):
