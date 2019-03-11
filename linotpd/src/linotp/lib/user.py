@@ -64,6 +64,8 @@ ENCODING = 'utf-8'
 
 log = logging.getLogger(__name__)
 
+class NoResolverFound(Exception):
+    pass
 
 class User(object):
 
@@ -1027,13 +1029,14 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
         if not y:
             log.error('[resolver with spec %r not found!]', resolver_spec)
-            raise Exception("Failed to access Resolver: %r" % resolver_spec)
+            raise NoResolverFound("Failed to access Resolver: %r" % resolver_spec)
 
         if login:
             user_id = y.getUserId(login)
             if not user_id:
                 log.error("Failed get user info for login %r", login)
-                raise Exception("Failed get user info for login %r" % login)
+                raise NoResolverFound("Failed get user info for "
+                                           "login %r" % login)
 
             user_info = y.getUserInfo(user_id)
             return login, user_id, user_info
@@ -1044,7 +1047,8 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
             if not user_info:
                 log.error("Failed get user info for user_id %r" % user_id)
-                raise Exception("Failed get user info for user_id %r" % user_id)
+                raise NoResolverFound("Failed get user info "
+                                           "for user_id %r" % user_id)
 
             login = user_info.get('username')
             return login, user_id, user_info
@@ -1052,7 +1056,8 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
         else:
 
             log.error("neither user_id nor login id provided!")
-            raise Exception("neither user_id nor login id provided!")
+            raise NoResolverFound("neither user_id nor login "
+                                       "id provided!")
 
     # ---------------------------------------------------------------------- --
 
@@ -1103,12 +1108,17 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
             log.error("unable to access the resolver")
             raise exx
 
+    # ---------------------------------------------------------------------- --
+
+    # care for the request local cache
+
     request_context['UserLookup'][p_key] = result
 
-    # in addition, we can fill the additional info as separate entries
+    # finally we can fill the additional info as separate entries
     # if both, the login and the uid is available
 
     if result:
+
         r_login, r_user_id, _user_info = result
 
         if r_login and r_user_id:
