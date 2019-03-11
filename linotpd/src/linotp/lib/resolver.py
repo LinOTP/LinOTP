@@ -268,7 +268,7 @@ def get_cls_identifier(config_identifier):
 
 
 # external system/getResolvers
-def getResolverList(filter_resolver_type=None):
+def getResolverList(filter_resolver_type=None, config=None):
     '''
     Gets the list of configured resolvers
 
@@ -279,8 +279,11 @@ def getResolverList(filter_resolver_type=None):
     Resolvers = {}
     resolvertypes = get_resolver_types()
 
-    conf = context.get('Config')
-    # conf = getLinotpConfig()
+    if not config:
+        conf = context.get('Config')
+    else:
+        conf = config
+
     for entry in conf:
 
         for typ in resolvertypes:
