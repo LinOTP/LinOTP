@@ -52,6 +52,8 @@ log = logging.getLogger(__name__)
 class ResolverLoadConfigError(Exception):
     pass
 
+class ResolverNotAvailable(Exception):
+    pass
 
 class UserIdResolver(object):
 
