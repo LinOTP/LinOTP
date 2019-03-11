@@ -45,6 +45,8 @@ from linotp.lib.resolver import getResolverList
 
 from linotp.lib.user import getUserFromRequest
 from linotp.lib.user import getUserFromParam
+from linotp.lib.user import NoResolverFound
+
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.realm import getRealms
 
@@ -724,7 +726,7 @@ class BaseController(WSGIController):
             requestUser = getUserFromParam(self.request_params)
         except UnicodeDecodeError as exx:
             log.error("Failed to decode request parameters %r", exx)
-        except ResolverNotAvailable as exx:
+        except (ResolverNotAvailable, NoResolverFound) as exx:
             log.error("Failed to connect to server %r", exx)
 
         request_context['RequestUser'] = requestUser
