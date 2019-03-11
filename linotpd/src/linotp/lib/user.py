@@ -50,6 +50,8 @@ from linotp.lib.selftest import isSelfTest
 from linotp.lib.resolver import getResolverClassName
 from linotp.lib.resolver import getResolverList
 
+from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
+
 from linotp.lib.type_utils import get_duration
 
 from linotp.lib.util import get_request_param
@@ -930,8 +932,6 @@ def get_resolvers_of_user(login, realm):
     key = {'login': login, 'realm': realm}
     p_key = json.dumps(key)
 
-    resolvers_lookup_cache = _get_resolver_lookup_cache(realm)
-
     Resolvers = resolvers_lookup_cache.get_value(key=p_key,
                                   createfunc=p_get_resolvers_of_user,
                                   )
@@ -992,9 +992,9 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
     :param login: login name
     :param user_id: the users uiniq identifier
     :param resolver_spec: the resolver specifier
-    :paran  user_info: optional parameter, required to fill the cache
+    :paran user_info: optional parameter, required to fill the cache
 
-    :return: login, uid
+    :return: login, uid, user info
 
     """
 
@@ -1002,43 +1002,62 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
              login, user_id, resolver_spec)
 
     def _lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
+        """
+        this is the cache feeder function - it is called if an item is not
+        found in the cache
 
-        # if we already have an user_info, all is defined
-        # - this is used to fill up the cache, eg. from getUserList
+        :param login: login name
+        :param user_id: the users uiniq identifier
+        :param resolver_spec: the resolver specifier
+        :paran user_info: optional parameter, required to fill the cache
+
+        :return: login, uid, user info
+        """
+
         if user_info:
-            if not login:
-                login = user_info['username']
-            if not user_id:
-                user_id = user_info['userid']
+            login = user_info['username']
+            user_id = user_info['userid']
             return login, user_id, user_info
 
-        log.info("cache miss %r::%r", login, resolver_spec)
+        if not resolver_spec:
+            log.error('missing resolver spec %r', resolver_spec)
+            raise Exception('missing resolver spec %r' % resolver_spec)
+
         y = getResolverObject(resolver_spec)
+
         if not y:
             log.error('[resolver with spec %r not found!]', resolver_spec)
-            # raise Exception("Failed to access Resolver: %r" % resolver_spec)
-            return None, None, None
+            raise Exception("Failed to access Resolver: %r" % resolver_spec)
 
         if login:
             user_id = y.getUserId(login)
-            if user_id:
-                user_info = y.getUserInfo(user_id)
-            else:
-                user_info = None
+            if not user_id:
+                log.error("Failed get user info for login %r", login)
+                raise Exception("Failed get user info for login %r" % login)
 
-            return login, user_id, user_info
-
-        if user_id:
             user_info = y.getUserInfo(user_id)
-            if user_info:
-                login = user_info.get('username')
-            else:
-                login = None
             return login, user_id, user_info
 
-        return None, None, None
 
-    # create entry for the request local users
+        elif user_id:
+            user_info = y.getUserInfo(user_id)
+
+            if not user_info:
+                log.error("Failed get user info for user_id %r" % user_id)
+                raise Exception("Failed get user info for user_id %r" % user_id)
+
+            login = user_info.get('username')
+            return login, user_id, user_info
+
+        else:
+
+            log.error("neither user_id nor login id provided!")
+            raise Exception("neither user_id nor login id provided!")
+
+    # ---------------------------------------------------------------------- --
+
+    # besides the cache, we use the request context as request local cache
+
     key = {'login': login,
            'user_id': user_id,
            'resolver_spec': resolver_spec}
@@ -1049,23 +1068,43 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
         result = request_context['UserLookup'][p_key]
         return result
 
+    # --------------------------------------------------------------------- --
+
+    # use the cache feeder or the direct call if no cache is defined
+
     user_lookup_cache = _get_user_lookup_cache(resolver_spec)
+
     if not user_lookup_cache:
-            result = _lookup_user_in_resolver(login, user_id,
-                                              resolver_spec,
-                                              user_info)
+
+        log.debug("lookup user without user lookup cache")
+
+        try:
+
+            result = _lookup_user_in_resolver(
+                    login, user_id, resolver_spec, user_info)
+
+        except ResolverNotAvailable as exx:
+            log.error("unable to access the resolver")
+            raise exx
 
     else:
-        p_lookup_user_in_resolver = partial(_lookup_user_in_resolver,
-                                            login, user_id, resolver_spec,
-                                            user_info)
 
-        result = user_lookup_cache.get_value(key=p_key,
-                                        createfunc=p_lookup_user_in_resolver)
+        log.debug("lookup user using the user lookup cache")
+
+        p_lookup_user_in_resolver = partial(
+                        _lookup_user_in_resolver,
+                        login, user_id, resolver_spec,
+                        user_info)
+        try:
+            result = user_lookup_cache.get_value(
+                        key=p_key, createfunc=p_lookup_user_in_resolver)
+
+        except ResolverNotAvailable as exx:
+            log.error("unable to access the resolver")
+            raise exx
 
     request_context['UserLookup'][p_key] = result
 
-    #
     # in addition, we can fill the additional info as separate entries
     # if both, the login and the uid is available
 
@@ -1144,21 +1183,34 @@ def getUserId(user, check_existance=False):
     uid = None
     resId = ''
 
+    audit = request_context['audit']
+
     uids = set()
     resolvers = getResolversOfUser(user)
 
     for resolver_spec in resolvers:
 
-        y = getResolverObject(resolver_spec)
-        resId = y.getResolverId()
+        try:
+            y = getResolverObject(resolver_spec)
+            resId = y.getResolverId()
+
+        except ResolverNotAvailable as exx:
+
+            if not audit['action_detail']:
+                audit['action_detail'] = "Failed to connect to:"
+
+            audit['action_detail'] += "%s, " % resolver_spec
+
+            log.error('unable to connect to %r', resolver_spec)
+
+            continue
 
         if check_existance:
             uid = y.getUserId(user.login)
 
         else:
-            _login, uid, _user_info = lookup_user_in_resolver(user.login,
-                                                              None,
-                                                              resolver_spec)
+            _login, uid, _user_info = lookup_user_in_resolver(
+                                            user.login, None, resolver_spec)
 
         if not uid:
             continue
@@ -1167,14 +1219,16 @@ def getUserId(user, check_existance=False):
         user.resolverUid[resolver_spec] = uid
 
     if not uid:
+
         log.warning("No uid found for the user >%r< in realm %r"
                     % (user.login, user.realm))
+
         raise UserError("getUserId failed: no user >%s< found!"
                         % user.login, id=1205)
 
     if len(uids) > 1:
-        log.warning("multiple uid s found for the user >%r< in realm %r"
-                    % (user.login, user.realm))
+        log.warning("multiple uid s found for the user >%r< in realm %r",
+                    user.login, user.realm)
         raise UserError("getUserId failed: multiple uids for user >%s< found!"
                         % user.login, id=1205)
 
@@ -1212,6 +1266,8 @@ def getSearchFields(user):
 
 
 def getUserList(param, search_user):
+
+    audit = request_context['audit']
 
     users = []
 
@@ -1271,6 +1327,7 @@ def getUserList(param, search_user):
                 # we are done: all users are fetched or
                 # page size limit reached
                 pass
+
             except Exception as exc:
                 log.info("Getting userlist using iterator not possible. "
                          "Falling back to fetching userlist without iterator. "
@@ -1295,6 +1352,17 @@ def getUserList(param, search_user):
                           cls_identifier, exx)
             raise exx
 
+        except ResolverNotAvailable as exx:
+
+            if not audit['action_detail']:
+                audit['action_detail'] = "Failed to connect to:"
+
+            audit['action_detail'] += "%s, " % config_identifier
+
+            log.error('unable to connect to %r', cls_identifier)
+
+            continue
+
         except Exception as exx:
             log.exception('[getUserList][ resolver class identifier %s:%r ]',
                           cls_identifier, exx)
@@ -1312,6 +1380,8 @@ def getUserListIterators(param, search_user):
     """
     user_iters = []
     searchDict = {}
+
+    audit = request_context['audit']
 
     log.debug("Entering function getUserListIterator")
 
@@ -1347,6 +1417,17 @@ def getUserListIterators(param, search_user):
         except KeyError as exx:
             log.exception('[ resolver class %r:%r ]', cls_identifier, exx)
             raise exx
+
+        except ResolverNotAvailable as exx:
+
+            if not audit['action_detail']:
+                audit['action_detail'] = "Failed to connect to:"
+
+            audit['action_detail'] += "%s, " % config_identifier
+
+            log.error('unable to connect to %r', cls_identifier)
+
+            continue
 
         except Exception as exx:
             log.exception('[ resolver class %r:%r ]', cls_identifier, exx)
