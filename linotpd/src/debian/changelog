@@ -1,3 +1,11 @@
+linotp (2.10.5rc0-1) jessie; urgency=low
+
+  Fix:
+  * Server: prevent dirty cache if resolver is
+            is not available
+
+ --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 12 Mar 2019 16:02:12 +0200
+
 linotp (2.10.4-1) jessie; urgency=low
 
   Enhancement:
