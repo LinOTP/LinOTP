@@ -1091,7 +1091,7 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
     if not user_lookup_cache:
 
-        log.debug("lookup user without user lookup cache")
+        log.info("lookup user without user lookup cache")
 
         try:
 
@@ -1104,7 +1104,7 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
     else:
 
-        log.debug("lookup user using the user lookup cache")
+        log.info("lookup user using the user lookup cache")
 
         p_lookup_user_in_resolver = partial(
                         _lookup_user_in_resolver,
