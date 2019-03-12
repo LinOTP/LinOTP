@@ -66,6 +66,11 @@ class LdapResolverTest(TestController):
 
     """
 
+    def tearDown(self):
+        self.delete_all_realms()
+        self.delete_all_resolvers()
+        return TestController.tearDown(self)
+
     def setup_ldap_resolver(self):
 
         params = {
