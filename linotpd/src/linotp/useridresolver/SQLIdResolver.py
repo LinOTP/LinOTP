@@ -249,11 +249,12 @@ class dbObject():
         log.debug('[dbObject::connect] %s' % sqlConnect)
 
         args = {'echo': False, 'echo_pool': True}
+
         if 'sqlite' not in sqlConnect:
             args['pool_timeout'] = 30
+            args['connect_args'] = { 'connect_timeout': timeout}
 
-        self.engine = create_engine(
-            sqlConnect, connect_args={'connect_timeout': timeout}, **args)
+        self.engine = create_engine(sqlConnect, **args)
 
         self.meta = MetaData()
 
