@@ -162,6 +162,28 @@ class User(object):
                     uid = None
                     continue
 
+                # now we verify that the cache is in sync by doing a reverse
+                # lookup by the user id and verify that the login name is the
+                # same
+
+                (_login2, _uid2, _user_info2) = lookup_user_in_resolver(
+                                                    None, uid, resolver_spec)
+
+                if _login != _login2:
+
+                    # there is an inconsitancy between the
+                    # login+resolver and the userid+resolver cache
+                    # so we adjust all entries
+
+                    delete_from_resolver_user_cache(
+                                                None, uid, resolver_spec)
+
+                    delete_from_resolver_user_cache(
+                                                _login2, None, resolver_spec)
+
+                    delete_from_resolver_user_cache(
+                                                _login2, uid, resolver_spec)
+
                 # we add the gathered resolver info to our self for later usage
 
                 # 1. to the resolver uid list
@@ -1071,17 +1093,11 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
     # ---------------------------------------------------------------------- --
 
-    # besides the cache, we use the request context as request local cache
-
     key = {'login': login,
            'user_id': user_id,
            'resolver_spec': resolver_spec}
 
     p_key = json.dumps(key)
-
-    if p_key in request_context['UserLookup']:
-        result = request_context['UserLookup'][p_key]
-        return result
 
     # --------------------------------------------------------------------- --
 
@@ -1118,38 +1134,9 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
             log.error("unable to access the resolver")
             raise exx
 
-    # ---------------------------------------------------------------------- --
-
-    # care for the request local cache
-
-    request_context['UserLookup'][p_key] = result
-
-    # finally we can fill the additional info as separate entries
-    # if both, the login and the uid is available
-
-    if result:
-
-        r_login, r_user_id, _user_info = result
-
-        if r_login and r_user_id:
-            key = {'login': r_login,
-                   'user_id': None,
-                   'resolver_spec': resolver_spec}
-            login_key = json.dumps(key)
-
-            request_context['UserLookup'][login_key] = result
-
-            key = {'login': None,
-                   'user_id': r_user_id,
-                   'resolver_spec': resolver_spec}
-            id_key = json.dumps(key)
-
-            request_context['UserLookup'][id_key] = result
-
     log.info("lookup done %r", p_key)
 
     return result
-
 
 def _get_user_lookup_cache(resolver_spec):
     """
@@ -1190,6 +1177,20 @@ def delete_resolver_user_cache(resolver_spec):
 
     if user_lookup_cache:
         user_lookup_cache.clear()
+
+
+def delete_from_resolver_user_cache(login, user_id, resolver_spec):
+
+    user_lookup_cache = _get_user_lookup_cache(resolver_spec)
+
+    if user_lookup_cache:
+        key = {'login': login,
+           'user_id': user_id,
+           'resolver_spec': resolver_spec}
+
+        p_key = json.dumps(key)
+
+        user_lookup_cache.remove_value(key=p_key)
 
 
 def getUserId(user, check_existance=False):
@@ -1464,9 +1465,8 @@ def getUserInfo(userid, resolver, resolver_spec):
     if not(userid):
         return userInfo
 
-    _login, _user_id, userInfo = lookup_user_in_resolver(None,
-                                                         userid,
-                                                         resolver_spec)
+    _login, _user_id, userInfo = lookup_user_in_resolver(
+                                                None, userid, resolver_spec)
 
     return userInfo
 
