@@ -2,7 +2,7 @@ linotp (2.10.5rc1-1) jessie; urgency=low
 
   Fix:
   * Server: prevent dirty cache if resolver is
-            is not available
+            not available
   * Server: token assignment to multiple users with same name
             in realm
 
