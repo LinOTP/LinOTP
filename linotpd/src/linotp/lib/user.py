@@ -169,7 +169,7 @@ class User(object):
                 (_login2, _uid2, _user_info2) = lookup_user_in_resolver(
                                                     None, uid, resolver_spec)
 
-                if _login != _login2:
+                if _login2 and _login != _login2:
 
                     # there is an inconsitancy between the
                     # login+resolver and the userid+resolver cache

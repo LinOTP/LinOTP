@@ -66,9 +66,32 @@ class LdapResolverTest(TestController):
 
     """
 
+    def setUp(self):
+        res = TestController.setUp(self)
+
+        params = {
+            "user_lookup_cache.enabled": True,
+            "resolver_lookup_cache.enabled": True,
+            }
+
+        response = self.make_system_request('setConfig', params)
+        self.assertTrue('"status": true' in response.body, response)
+
+        return res
+
     def tearDown(self):
+
         self.delete_all_realms()
         self.delete_all_resolvers()
+
+        params = {
+            "user_lookup_cache.enabled": False,
+            "resolver_lookup_cache.enabled": False,
+            }
+
+        response = self.make_system_request('setConfig', params)
+        self.assertTrue('"status": true' in response.body, response)
+
         return TestController.tearDown(self)
 
     def setup_ldap_resolver(self):
@@ -140,11 +163,11 @@ class LdapResolverTest(TestController):
 
                 self.make_validate_request('check', params=params)
 
-                assert mocked_getUserInfo.call_count == 1
+                assert mocked_getUserInfo.call_count == 2
 
                 self.make_validate_request('check', params=params)
 
-                assert mocked_getUserInfo.call_count == 1
+                assert mocked_getUserInfo.call_count == 2
 
         return
 
@@ -197,19 +220,19 @@ class LdapResolverTest(TestController):
                 self.make_validate_request('check', params=params)
 
                 # the cache feeder was called => user info added to cache :)
+                # one call for the direct lookup with username->uinfo and
+                # second call for the reverse lookup in get_uid_resolver
 
-                assert mocked_getUserInfo.call_count == 1
+                assert mocked_getUserInfo.call_count == 2
 
                 self.make_validate_request('check', params=params)
 
                 # no more additional call => user info taken from cache :)
 
-                assert mocked_getUserInfo.call_count == 1
+                assert mocked_getUserInfo.call_count == 2
 
         return
 
-    def test_resolver_cache(self):
 
-        return
 
 # eof

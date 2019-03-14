@@ -409,7 +409,7 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
             }
 
         response = self.make_system_request('setConfig', params)
-
+        self.assertTrue('"status": true' in response.body, response)
 
         resolverName = 'MySQLResolver'
         realmName = 'sqlrealm'.lower()
