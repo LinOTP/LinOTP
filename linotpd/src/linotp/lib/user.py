@@ -887,6 +887,9 @@ def getResolversOfUser(user):
     # calling the worker which stores resolver in the cache
     resolvers = get_resolvers_of_user(login, realm)
 
+    if not resolvers and '*' in login:
+        return getResolvers(user)
+
     # -- ------------------------------------------------------------------ --
     # below we adjust the legacy stuff and put the resolver info into the user
     # -- ------------------------------------------------------------------ --
