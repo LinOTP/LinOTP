@@ -220,8 +220,6 @@ class LdapResolverTest(TestController):
                 self.make_validate_request('check', params=params)
 
                 # the cache feeder was called => user info added to cache :)
-                # one call for the direct lookup with username->uinfo and
-                # second call for the reverse lookup in get_uid_resolver
 
                 assert mocked_getUserInfo.call_count == 1
 
