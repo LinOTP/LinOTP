@@ -1186,9 +1186,6 @@ def getUserId(user, check_existance=False):
     :return: (uid,resId,resIdC)
     """
 
-    uid = None
-    resId = ''
-
     audit = request_context['audit']
 
     uids = set()
@@ -1197,34 +1194,29 @@ def getUserId(user, check_existance=False):
     for resolver_spec in resolvers:
 
         try:
-            y = getResolverObject(resolver_spec)
-            resId = y.getResolverId()
 
-        except ResolverNotAvailable as exx:
+            _login, uid, _user_info = lookup_user_in_resolver(
+                                            user.login, None, resolver_spec)
+
+            if check_existance:
+
+                y = getResolverObject(resolver_spec)
+                uid = y.getUserId(user.login)
+
+        except ResolverNotAvailable, NoResolverFound:
 
             if not audit['action_detail']:
                 audit['action_detail'] = "Failed to connect to:"
 
             audit['action_detail'] += "%s, " % resolver_spec
-
             log.error('unable to connect to %r', resolver_spec)
 
-            continue
-
-        if check_existance:
-            uid = y.getUserId(user.login)
-
-        else:
-            _login, uid, _user_info = lookup_user_in_resolver(
-                                            user.login, None, resolver_spec)
-
-        if not uid:
             continue
 
         uids.add(uid)
         user.resolverUid[resolver_spec] = uid
 
-    if not uid:
+    if not uids:
 
         log.warning("No uid found for the user >%r< in realm %r"
                     % (user.login, user.realm))
