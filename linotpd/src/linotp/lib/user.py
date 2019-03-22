@@ -1231,7 +1231,7 @@ def getUserId(user, check_existance=False):
                         % user.login, id=1205)
 
     log.debug("we are done!")
-    return (uid, resId, resolver_spec)
+    return (uid, None, resolver_spec)
 
 
 def getSearchFields(user):
