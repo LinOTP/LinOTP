@@ -927,15 +927,19 @@ def get_resolvers_of_user(login, realm):
         log.debug("check if user %r is in resolver %r",
                   login, resolvers_of_realm)
 
-        # Search for user in each resolver in the realm_
+        # Search for user in each resolver in the realm
+
         for resolver_spec in resolvers_of_realm:
             log.debug("checking in %r", resolver_spec)
 
-            login_, uid, _user_info = lookup_user_in_resolver(login,
-                                                              None,
-                                                              resolver_spec)
-            if login_ and uid:
-                Resolvers.append(resolver_spec)
+            try:
+                _login_, _uid, _user_info = lookup_user_in_resolver(
+                                                login, None, resolver_spec)
+            except NoResolverFound:
+                log.debug('user %r not in resolver %r', login, resolver_spec)
+                continue
+
+            Resolvers.append(resolver_spec)
 
         return Resolvers
 
