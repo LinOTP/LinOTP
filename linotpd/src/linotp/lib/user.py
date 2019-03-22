@@ -179,10 +179,10 @@ class User(object):
                                                 None, uid, resolver_spec)
 
                     delete_from_resolver_user_cache(
-                                                _login2, None, resolver_spec)
+                                                rev_login2, None, resolver_spec)
 
                     delete_from_resolver_user_cache(
-                                                _login2, uid, resolver_spec)
+                                                rev_login2, uid, resolver_spec)
 
                 # we add the gathered resolver info to our self for later usage
 
