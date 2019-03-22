@@ -695,7 +695,7 @@ def setRealm(realm, resolvers):
     realm = realm.lower().strip()
     realm = realm.replace(" ", "-")
 
-    nameExp = "^[A-Za-z0-9_\-\.]*$"
+    nameExp = r"^[A-Za-z0-9_\-\.]*$"
     res = re.match(nameExp, realm)
     if res is None:
         e = Exception("non conformant characters in realm name:"
@@ -1205,7 +1205,7 @@ def getUserId(user, check_existance=False):
                 y = getResolverObject(resolver_spec)
                 uid = y.getUserId(user.login)
 
-        except ResolverNotAvailable, NoResolverFound:
+        except (ResolverNotAvailable, NoResolverFound):
 
             if not audit['action_detail']:
                 audit['action_detail'] = "Failed to connect to:"
