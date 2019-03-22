@@ -223,13 +223,13 @@ class LdapResolverTest(TestController):
                 # one call for the direct lookup with username->uinfo and
                 # second call for the reverse lookup in get_uid_resolver
 
-                assert mocked_getUserInfo.call_count == 2
+                assert mocked_getUserInfo.call_count == 1
 
                 self.make_validate_request('check', params=params)
 
                 # no more additional call => user info taken from cache :)
 
-                assert mocked_getUserInfo.call_count == 2
+                assert mocked_getUserInfo.call_count == 1
 
         return
 

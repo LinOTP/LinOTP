@@ -882,13 +882,7 @@ def getResolversOfUser(user):
     realm = realm.lower()
 
     # calling the worker which stores resolver in the cache
-
-    resolvers = []
-
-    realm_def = getRealms(realm)
-
-    if realm_def and realm in realm_def:
-        resolvers = realm_def[realm]['useridresolver']
+    resolvers = get_resolvers_of_user(login, realm)
 
     # -- ------------------------------------------------------------------ --
     # below we adjust the legacy stuff and put the resolver info into the user
@@ -900,24 +894,15 @@ def getResolversOfUser(user):
         # this is redundant but cached
         try:
             login, uid, _user_info = lookup_user_in_resolver(
-                                                login, None, resolver_spec)
-        except NoResolverFound as exx:
+                                                    login, None, resolver_spec)
+
+        except NoResolverFound:
+            log.debug('user %r not in resolver %r', login, resolver_spec)
             continue
 
-        try:
-            # we require the resId
-            y = getResolverObject(resolver_spec)
-            resId = y.getResolverId()
-            resCId = resolver_spec
-
-        except Exception as exx:
-            log.exception("Failed to establish resolver %r: %r",
-                          resolver_spec, exx)
-            continue
-
-        __, config_identifier = parse_resolver_spec(resolver_spec)
-        user.addResolverUId(resolver_spec, uid, config_identifier,
-                            resId, resCId)
+        config_identifier = resolver_spec.rpartition('.')[-1]
+        user.addResolverUId(
+            resolver_spec, uid, config_identifier, None, resolver_spec)
         resolver_match.append(resolver_spec)
 
     return resolver_match
