@@ -831,36 +831,28 @@ def getResolvers(user):
                                                 user.resolver_config_identifier)
         if resolver_spec is not None:
             Resolver.append(resolver_spec)
-    else:
-        if user.realm != "":
-            if user.realm.lower() in realms:
-                Resolver = realms[user.realm.lower()]["useridresolver"]
-            else:
-                resDict = {}
-                if user.realm.endswith('*') and len(user.realm) > 1:
-                    pattern = user.realm[:-1]
-                    for r in realms:
-                        if r.startswith(pattern):
-                            for idres in realms[r]["useridresolver"]:
-                                resDict[idres] = idres
-                    for k in resDict:
-                        Resolver.append(k)
+        return Resolver
 
-                elif user.realm.endswith('*') and len(user.realm) == 1:
-                    for r in realms:
-                        for idres in realms[r]["useridresolver"]:
-                            resDict[idres] = idres
-                    for k in resDict:
-                        Resolver.append(k)
+    if user.realm and user.realm.lower() in realms:
+        return realms[user.realm.lower()]["useridresolver"]
 
-        else:
-            for k in realms:
-                r = realms[k]
-                if "default" in r:
-                    Resolver = r["useridresolver"]
+    if user.realm.strip().endswith('*'):
+        pattern = user.realm.strip()[:-1]
+        for r in realms:
+            if r.startswith(pattern):
+                Resolver.extend(realms[r]["useridresolver"])
+        return Resolver
 
-    return Resolver
+    if user.realm.strip() == '*':
+        for r in realms:
+            Resolver.extend(realms[r]["useridresolver"])
+        return Resolver
 
+    for _realm_name, realm_def in realms.items():
+        if "default" in realm_def:
+            return realm_def["useridresolver"]
+
+    return []
 
 def getResolversOfUser(user):
     '''
