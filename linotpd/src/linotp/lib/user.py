@@ -154,22 +154,25 @@ class User(object):
                 # we can use the user in resolver lookup cache
                 # instead of asking the resolver
 
-                (_login, uid,
-                 _user_info) = lookup_user_in_resolver(self.login, None,
-                                                       resolver_spec)
+                try:
+                    _login, uid, _user_info = lookup_user_in_resolver(
+                                            self.login, None, resolver_spec)
 
-                if not uid:
-                    uid = None
+                except NoResolverFound:
                     continue
 
                 # now we verify that the cache is in sync by doing a reverse
                 # lookup by the user id and verify that the login name is the
                 # same
 
-                (_login2, _uid2, _user_info2) = lookup_user_in_resolver(
+                try:
+                    rev_login2, _uid2, _user_info2 = lookup_user_in_resolver(
                                                     None, uid, resolver_spec)
 
-                if _login2 and _login != _login2:
+                except NoResolverFound:
+                    rev_login2 = None
+
+                if rev_login2 and _login != rev_login2:
 
                     # there is an inconsitancy between the
                     # login+resolver and the userid+resolver cache
@@ -1562,10 +1565,13 @@ def get_authenticated_user(username, realm, password=None,
         realm = user.realm
 
         for resolver_spec in getResolversOfUser(user):
-            login, uid, _user_info = lookup_user_in_resolver(user.login,
-                                                             None,
-                                                             resolver_spec)
-            if not uid:
+
+            try:
+
+                login, uid, _user_info = lookup_user_in_resolver(
+                                            user.login, None, resolver_spec)
+
+            except NoResolverFound:
                 continue
 
             if found_uid and uid != found_uid:
