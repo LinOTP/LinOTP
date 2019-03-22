@@ -490,8 +490,8 @@ class ValidationHandler(object):
         if user is not None and not user.is_empty:
             # the upper layer will catch / at least should
             try:
-                (uid, _resolver, resolverClass) = getUserId(user,
-                                                            check_existance=True)
+                (uid, _resolver, resolverClass) = getUserId(
+                                                    user, check_existance=True)
                 user_exists = True
             except Exception as _exx:
                 pass_on = context.get('Config').get(
