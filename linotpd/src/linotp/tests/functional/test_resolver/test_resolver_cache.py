@@ -221,13 +221,13 @@ class LdapResolverTest(TestController):
 
                 # the cache feeder was called => user info added to cache :)
 
-                assert mocked_getUserInfo.call_count == 1
+                assert mocked_getUserInfo.call_count == 2
 
                 self.make_validate_request('check', params=params)
 
                 # no more additional call => user info taken from cache :)
 
-                assert mocked_getUserInfo.call_count == 1
+                assert mocked_getUserInfo.call_count == 2
 
         return
 
