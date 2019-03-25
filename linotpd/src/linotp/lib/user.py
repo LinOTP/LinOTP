@@ -894,13 +894,16 @@ def getResolversOfUser(user):
             login, uid, _user_info = lookup_user_in_resolver(
                                                     login, None, resolver_spec)
 
+            y = getResolverObject(resolver_spec)
+            resId = y.getResolverId()
+
         except NoResolverFound:
             log.debug('user %r not in resolver %r', login, resolver_spec)
             continue
 
         config_identifier = resolver_spec.rpartition('.')[-1]
         user.addResolverUId(
-            resolver_spec, uid, config_identifier, None, resolver_spec)
+            resolver_spec, uid, config_identifier, resId, resolver_spec)
         resolver_match.append(resolver_spec)
 
     return resolver_match
@@ -1191,6 +1194,7 @@ def getUserId(user, check_existance=False):
     audit = request_context['audit']
 
     uids = set()
+    resId = None
     resolvers = getResolversOfUser(user)
 
     for resolver_spec in resolvers:
@@ -1200,9 +1204,11 @@ def getUserId(user, check_existance=False):
             _login, uid, _user_info = lookup_user_in_resolver(
                                             user.login, None, resolver_spec)
 
+            y = getResolverObject(resolver_spec)
+            resId = y.getResolverId()
+
             if check_existance:
 
-                y = getResolverObject(resolver_spec)
                 uid = y.getUserId(user.login)
 
         except (ResolverNotAvailable, NoResolverFound):
@@ -1233,7 +1239,7 @@ def getUserId(user, check_existance=False):
                         % user.login, id=1205)
 
     log.debug("we are done!")
-    return (uid, None, resolver_spec)
+    return (uid, resId, resolver_spec)
 
 
 def getSearchFields(user):
