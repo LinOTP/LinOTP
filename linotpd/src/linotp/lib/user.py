@@ -824,37 +824,52 @@ def getResolvers(user):
     :param user: User with realm or resolver conf
     :type  user: User object
     '''
-    Resolver = []
 
     realms = getRealms()
+    default_realm = getDefaultRealm()
 
-    if user.resolver_config_identifier != "":
-        resolver_spec = find_resolver_spec_for_config_identifier(realms,
-                                                user.resolver_config_identifier)
+    if user.resolver_config_identifier:
+        resolver_spec = find_resolver_spec_for_config_identifier(
+            realms, user.resolver_config_identifier)
+
         if resolver_spec is not None:
-            Resolver.append(resolver_spec)
-        return Resolver
+            return [resolver_spec]
 
-    if user.realm and user.realm.lower() in realms:
-        return realms[user.realm.lower()]["useridresolver"]
+    user_realm = user.realm.strip()
+    lookup_realms = set()
 
-    if user.realm.strip().endswith('*'):
+    if user_realm and user_realm in realms:
+        lookup_realms.add(user_realm)
+
+    elif user_realm.endswith('*'):
         pattern = user.realm.strip()[:-1]
         for r in realms:
             if r.startswith(pattern):
-                Resolver.extend(realms[r]["useridresolver"])
-        return Resolver
+                lookup_realms.add(r)
 
-    if user.realm.strip() == '*':
+    elif user_realm == '*':
         for r in realms:
-            Resolver.extend(realms[r]["useridresolver"])
-        return Resolver
+            lookup_realms.add(r)
 
-    for _realm_name, realm_def in realms.items():
-        if "default" in realm_def:
-            return realm_def["useridresolver"]
+    elif default_realm:
+        lookup_realms.add(default_realm)
 
-    return []
+    # finally try to get the reolvers for the user
+
+    resolver_set = set()
+
+    user_login = user.login.strip()
+
+    for lookup_realm in lookup_realms:
+
+        if user_login and '*' not in user_login:
+            user_resolvers = get_resolvers_of_user(user.login, lookup_realm)
+        else:
+            user_resolvers = realms[lookup_realm]['useridresolver']
+
+        resolver_set.update(user_resolvers)
+
+    return list(resolver_set)
 
 def getResolversOfUser(user):
     '''
