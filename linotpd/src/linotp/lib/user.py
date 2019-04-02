@@ -133,9 +133,11 @@ class User(object):
         if not resolvers:
             if self.realm:
                 realms = getRealms()
+
                 if self.realm.lower() in realms:
-                    resolvers_list = realms.get(self.realm.lower(), {}).\
-                                       get('useridresolver', [])
+                    resolvers_list = get_resolvers_of_user(
+                        self.login, self.realm.lower())
+
         else:
             resolvers_list = []
             for search_resolver in resolvers:
