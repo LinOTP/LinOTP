@@ -835,7 +835,7 @@ def getResolvers(user):
         if resolver_spec is not None:
             return [resolver_spec]
 
-    user_realm = user.realm.strip()
+    user_realm = user.realm.strip().lower()
     lookup_realms = set()
 
     if user_realm and user_realm in realms:
@@ -850,6 +850,9 @@ def getResolvers(user):
     elif user_realm == '*':
         for r in realms:
             lookup_realms.add(r)
+
+    elif user_realm and user_realm not in realms:
+        pass
 
     elif default_realm:
         lookup_realms.add(default_realm)
