@@ -310,8 +310,7 @@ build:buster:
   retry:
     max: 2
   before_script:
-    - apk add --no-cache py-pip make
-    - pip install docker-compose
+    - apk add --no-cache make
     - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
   script:
     - export BUILDDIR=build
