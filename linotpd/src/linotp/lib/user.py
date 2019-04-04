@@ -135,8 +135,12 @@ class User(object):
                 realms = getRealms()
 
                 if self.realm.lower() in realms:
-                    resolvers_list = get_resolvers_of_user(
-                        self.login, self.realm.lower())
+                    try:
+                        resolvers_list = get_resolvers_of_user(
+                            self.login, self.realm.lower())
+                    except NoResolverFound:
+                        log.info("user %r not found in realm %r",
+                                 self.login, self.realm)
 
         else:
             resolvers_list = []
@@ -866,7 +870,14 @@ def getResolvers(user):
     for lookup_realm in lookup_realms:
 
         if user_login and '*' not in user_login:
-            user_resolvers = get_resolvers_of_user(user.login, lookup_realm)
+
+            try:
+                user_resolvers = get_resolvers_of_user(
+                                                user.login, lookup_realm)
+            except NoResolverFound:
+                log.info("no user %r found in realm %r",
+                                                user.login, lookup_realm)
+
         else:
             user_resolvers = realms[lookup_realm]['useridresolver']
 
@@ -897,7 +908,13 @@ def getResolversOfUser(user):
     realm = realm.lower()
 
     # calling the worker which stores resolver in the cache
-    resolvers = get_resolvers_of_user(login, realm)
+    # but only if a resolver was found
+
+    try:
+        resolvers = get_resolvers_of_user(login, realm)
+    except NoResolverFound:
+        log.info("user %r not found in realm %r", login, realm)
+        return []
 
     if not resolvers and '*' in login:
         return getResolvers(user)
@@ -961,6 +978,10 @@ def get_resolvers_of_user(login, realm):
                 continue
 
             Resolvers.append(resolver_spec)
+
+        if not Resolvers:
+            raise NoResolverFound("no user %r found in realm %r" %
+                                      (login, realm))
 
         return Resolvers
 
