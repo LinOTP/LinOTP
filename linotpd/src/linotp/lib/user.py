@@ -164,7 +164,7 @@ class User(object):
                     _login, uid, _user_info = lookup_user_in_resolver(
                                             self.login, None, resolver_spec)
 
-                except NoResolverFound:
+                except (NoResolverFound, ResolverNotAvailable):
                     continue
 
                 # now we verify that the cache is in sync by doing a reverse
@@ -175,7 +175,7 @@ class User(object):
                     rev_login2, _uid2, _user_info2 = lookup_user_in_resolver(
                                                     None, uid, resolver_spec)
 
-                except NoResolverFound:
+                except (NoResolverFound, ResolverNotAvailable):
                     rev_login2 = None
 
                 if rev_login2 and _login != rev_login2:
@@ -938,6 +938,10 @@ def getResolversOfUser(user):
             log.debug('user %r not in resolver %r', login, resolver_spec)
             continue
 
+        except ResolverNotAvailable:
+            log.debug('resolver not available %r', resolver_spec)
+            continue
+
         config_identifier = resolver_spec.rpartition('.')[-1]
         user.addResolverUId(
             resolver_spec, uid, config_identifier, resId, resolver_spec)
@@ -975,6 +979,10 @@ def get_resolvers_of_user(login, realm):
                                                 login, None, resolver_spec)
             except NoResolverFound:
                 log.debug('user %r not in resolver %r', login, resolver_spec)
+                continue
+
+            except ResolverNotAvailable:
+                log.debug('resolver not available %r', resolver_spec)
                 continue
 
             Resolvers.append(resolver_spec)
@@ -1252,7 +1260,7 @@ def getUserId(user, check_existance=False):
 
                 uid = y.getUserId(user.login)
 
-        except (ResolverNotAvailable, NoResolverFound):
+        except ResolverNotAvailable:
 
             if not audit['action_detail']:
                 audit['action_detail'] = "Failed to connect to:"
@@ -1260,6 +1268,10 @@ def getUserId(user, check_existance=False):
             audit['action_detail'] += "%s, " % resolver_spec
             log.error('unable to connect to %r', resolver_spec)
 
+            continue
+
+        except NoResolverFound:
+            log.info('user not found in resolver %r', resolver_spec)
             continue
 
         uids.add(uid)
@@ -1613,7 +1625,7 @@ def get_authenticated_user(username, realm, password=None,
                 login, uid, _user_info = lookup_user_in_resolver(
                                             user.login, None, resolver_spec)
 
-            except NoResolverFound:
+            except (NoResolverFound, ResolverNotAvailable):
                 continue
 
             if found_uid and uid != found_uid:
