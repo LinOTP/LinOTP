@@ -64,8 +64,10 @@ ENCODING = 'utf-8'
 
 log = logging.getLogger(__name__)
 
+
 class NoResolverFound(Exception):
     pass
+
 
 class User(object):
 
@@ -185,13 +187,13 @@ class User(object):
                     # so we adjust all entries
 
                     delete_from_resolver_user_cache(
-                                                None, uid, resolver_spec)
+                                            None, uid, resolver_spec)
 
                     delete_from_resolver_user_cache(
-                                                rev_login2, None, resolver_spec)
+                                            rev_login2, None, resolver_spec)
 
                     delete_from_resolver_user_cache(
-                                                rev_login2, uid, resolver_spec)
+                                            rev_login2, uid, resolver_spec)
 
                 # we add the gathered resolver info to our self for later usage
 
@@ -376,11 +378,13 @@ class User(object):
             return False
 
         res = False
+
         try:
             y = getResolverObject(self.resolver)
             res = y.checkPass(self.uid, password)
-        except:
-            pass
+
+        except Exception:
+            log.error("Failed to check user password")
 
         return res
 
@@ -476,13 +480,15 @@ def _get_resolver_from_param(param):
     return resolver_config_id.strip()
 
 
-def get_user_from_options(options_dict, fallback_user=None, fallback_realm=None):
+def get_user_from_options(
+        options_dict, fallback_user=None, fallback_realm=None):
     """
     return a tuple of user login and realm considering the options contexts
 
-    in the token implementation we often require to make a policy lookup. As the policies
-    are user and realm dependend we require to define for whitch user or realm this lookup
-    should be made. The input can be taken from:
+    in the token implementation we often require to make a policy lookup.
+    As the policies are user and realm dependend we require to define for
+    witch user or realm this lookup should be made. The input can be taken
+    from:
     - the token owner or
     - options, the request addtional parameters which might contain a user
       object or a login name or
@@ -885,6 +891,7 @@ def getResolvers(user):
 
     return list(resolver_set)
 
+
 def getResolversOfUser(user):
     '''
     getResolversOfUser returns the list of the Resolvers of a user
@@ -962,9 +969,10 @@ def get_resolvers_of_user(login, realm):
 
         log.info("cache miss %r@%r", login, realm)
         Resolvers = []
-        resolvers_of_realm = getRealms(realm).\
-                                       get(realm, {}).\
-                                       get('useridresolver', [])
+        resolvers_of_realm = getRealms(
+                                    realm).get(
+                                        realm, {}).get(
+                                            'useridresolver', [])
 
         log.debug("check if user %r is in resolver %r",
                   login, resolvers_of_realm)
@@ -988,8 +996,8 @@ def get_resolvers_of_user(login, realm):
             Resolvers.append(resolver_spec)
 
         if not Resolvers:
-            raise NoResolverFound("no user %r found in realm %r" %
-                                      (login, realm))
+            raise NoResolverFound("no user %r found in realm "
+                                  "%r" % (login, realm))
 
         return Resolvers
 
@@ -1074,7 +1082,8 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
     log.info("lookup the user %r or uid %r for resolver %r",
              login, user_id, resolver_spec)
 
-    def _lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
+    def _lookup_user_in_resolver(
+            login, user_id, resolver_spec, user_info=None):
         """
         this is the cache feeder function - it is called if an item is not
         found in the cache
@@ -1100,18 +1109,18 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
         if not y:
             log.error('[resolver with spec %r not found!]', resolver_spec)
-            raise NoResolverFound("Failed to access Resolver: %r" % resolver_spec)
+            raise NoResolverFound("Failed to access Resolver:"
+                                  " %r" % resolver_spec)
 
         if login:
             user_id = y.getUserId(login)
             if not user_id:
                 log.error("Failed get user info for login %r", login)
                 raise NoResolverFound("Failed get user info for "
-                                           "login %r" % login)
+                                      "login %r" % login)
 
             user_info = y.getUserInfo(user_id)
             return login, user_id, user_info
-
 
         elif user_id:
             user_info = y.getUserInfo(user_id)
@@ -1119,7 +1128,7 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
             if not user_info:
                 log.error("Failed get user info for user_id %r" % user_id)
                 raise NoResolverFound("Failed get user info "
-                                           "for user_id %r" % user_id)
+                                      "for user_id %r" % user_id)
 
             login = user_info.get('username')
             return login, user_id, user_info
@@ -1128,7 +1137,7 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
             log.error("neither user_id nor login id provided!")
             raise NoResolverFound("neither user_id nor login "
-                                       "id provided!")
+                                  "id provided!")
 
     # ---------------------------------------------------------------------- --
 
@@ -1184,19 +1193,24 @@ def _get_user_lookup_cache(resolver_spec):
     :param resolver_spec: resolver description
     :return: the user lookup cache
     """
+
     config = request_context['Config']
 
     enabled = config.get('linotp.user_lookup_cache.enabled',
                          'True') == 'True'
+
     if not enabled:
         return None
 
     try:
+
         expiration_conf = config.get(
                             'linotp.user_lookup_cache.expiration', 36 * 3600)
         expiration = get_duration(expiration_conf)
+
     except ValueError:
-        log.info("user caching is disabled due to a value error in user_lookup_cache.expiration config")
+        log.info("user caching is disabled due to a value error in "
+                 "user_lookup_cache.expiration config")
         return None
 
     cache_manager = request_context['CacheManager']
@@ -1223,9 +1237,10 @@ def delete_from_resolver_user_cache(login, user_id, resolver_spec):
     user_lookup_cache = _get_user_lookup_cache(resolver_spec)
 
     if user_lookup_cache:
-        key = {'login': login,
-           'user_id': user_id,
-           'resolver_spec': resolver_spec}
+        key = {
+            'login': login,
+            'user_id': user_id,
+            'resolver_spec': resolver_spec}
 
         p_key = json.dumps(key)
 
