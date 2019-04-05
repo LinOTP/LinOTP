@@ -1186,6 +1186,10 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
         return None, None, None
 
+    except NoResolverFound:
+        log.info('user %r/%r not found in %r', login, user_id, resolver_spec)
+        return None, None, None
+
 
 def _get_user_lookup_cache(resolver_spec):
     """
