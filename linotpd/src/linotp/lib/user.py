@@ -1335,7 +1335,7 @@ def getUserId(user, check_existance=False):
         raise UserError("getUserId failed: multiple uids for user >%s< found!"
                         % user.login, id=1205)
 
-    return (uids[0], resId, resolver_spec)
+    return list(uids)[0], resId, resolver_spec
 
 
 def getSearchFields(user):
