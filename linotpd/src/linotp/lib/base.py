@@ -764,8 +764,8 @@ class BaseController(WSGIController):
 
         # copy some system entries from pylons
         syskeys = {
-                   "radius.nas_identifier": "LinOTP",
-                   "radius.dictfile": "/etc/linotp2/dictionary"
+           "radius.nas_identifier": "LinOTP",
+           "radius.dictfile": "/etc/linotp2/dictionary"
         }
 
         sysconfig = {}
@@ -773,7 +773,5 @@ class BaseController(WSGIController):
             sysconfig[key] = config.get(key, default)
 
         request_context['SystemConfig'] = sysconfig
-
-
 
 # eof ########################################################################
