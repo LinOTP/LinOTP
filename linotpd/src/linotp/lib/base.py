@@ -650,6 +650,15 @@ class BaseController(WSGIController):
 
         linotp_config = getLinotpConfig()
 
+        # make the request id available in the request context
+        request_context['RequestId'] = environment['REQUEST_ID']
+
+        # a request local cache to get the user info from the resolver
+        request_context['UserLookup'] = {}
+
+        # a request local cache to get the resolver from user and realm
+        request_context['UserRealmLookup'] = {}
+
         request_context['Config'] = linotp_config
         request_context['Policies'] = parse_policies(linotp_config)
         request_context['translate'] = translate
