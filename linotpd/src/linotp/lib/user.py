@@ -168,31 +168,6 @@ class User(object):
                 if not any((_login, uid, _user_info)):
                     continue
 
-                # now we verify that the cache is in sync by doing a reverse
-                # lookup by the user id and verify that the login name is the
-                # same
-
-                rev_login2, _uid2, _user_info2 = lookup_user_in_resolver(
-                                                None, uid, resolver_spec)
-
-                if not any((rev_login2, _uid2, _user_info2)):
-                    rev_login2 = None
-
-                if rev_login2 and _login != rev_login2:
-
-                    # there is an inconsitancy between the
-                    # login+resolver and the userid+resolver cache
-                    # so we adjust all entries
-
-                    delete_from_resolver_user_cache(
-                                            None, uid, resolver_spec)
-
-                    delete_from_resolver_user_cache(
-                                            rev_login2, None, resolver_spec)
-
-                    delete_from_resolver_user_cache(
-                                            rev_login2, uid, resolver_spec)
-
                 # we add the gathered resolver info to our self for later usage
 
                 # 1. to the resolver uid list
@@ -1104,6 +1079,26 @@ def delete_realm_resolver_cache(realmname):
     if resolvers_lookup_cache:
         resolvers_lookup_cache.clear()
 
+def delete_from_realm_resolver_cache(login, realmname):
+    """ helper for realm cache cleanup """
+
+    resolvers_lookup_cache = _get_resolver_lookup_cache(realmname)
+
+    if resolvers_lookup_cache:
+        key = {'login': login, 'realm': realmname}
+        p_key = json.dumps(key)
+
+        resolvers_lookup_cache.remove_value(key=p_key)
+
+def delete_from_realm_resolver_local_cache(login, realmname):
+    """ helper for local realm cache cleanup """
+
+    key = {'login': login, 'realm': realmname}
+    p_key = json.dumps(key)
+
+    if p_key in request_context['UserRealmLookup']:
+        del request_context['UserRealmLookup'][p_key]
+
 
 def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
     """
@@ -1226,8 +1221,36 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
             result = user_lookup_cache.get_value(
                         key=p_key, createfunc=p_lookup_user_in_resolver)
 
-            log.info("lookup done %r", p_key)
-            return result
+            # -------------------------------------------------------------- --
+
+            # now check for cache consitancy:
+            # if resolver + uid but different name, we delete the old entries
+
+            if user_id is not None and resolver_spec:
+
+                key2 = {'login': None,
+                       'user_id': user_id,
+                       'resolver_spec': resolver_spec}
+
+                p_key2 = json.dumps(key2)
+
+                p_lookup_user_in_resolver = partial(
+                                _lookup_user_in_resolver,
+                                None, user_id, resolver_spec,
+                                user_info)
+
+                older_result= user_lookup_cache.get_value(
+                            key=p_key2, createfunc=p_lookup_user_in_resolver)
+
+                old_user_name =  older_result[0]
+                user_name = result[0]
+
+                if old_user_name != user_name:
+
+                    delete_from_user_cache(
+                        old_user_name, user_id, resolver_spec)
+
+                    log.info('outdated entry deleted')
 
     except ResolverNotAvailable:
 
@@ -1310,11 +1333,27 @@ def delete_resolver_user_cache(resolver_spec):
         user_lookup_cache.clear()
 
 
+def delete_from_local_cache(login, user_id, resolver_spec):
+    """ remove info from the request local cache """
+
+    key = {
+        'login': login,
+        'user_id': user_id,
+        'resolver_spec': resolver_spec}
+
+    p_key = json.dumps(key)
+
+    if p_key in request_context['UserLookup']:
+        del request_context['UserLookup'][p_key]
+
+
 def delete_from_resolver_user_cache(login, user_id, resolver_spec):
+    """ clean up the resolver cache """
 
     user_lookup_cache = _get_user_lookup_cache(resolver_spec)
 
     if user_lookup_cache:
+
         key = {
             'login': login,
             'user_id': user_id,
@@ -1323,6 +1362,29 @@ def delete_from_resolver_user_cache(login, user_id, resolver_spec):
         p_key = json.dumps(key)
 
         user_lookup_cache.remove_value(key=p_key)
+
+def delete_from_user_cache(user_name, user_id, resolver_spec):
+    """ helper to remove permutation of user entry """
+
+    delete_from_resolver_user_cache(
+        user_name, None, resolver_spec)
+
+    delete_from_resolver_user_cache(
+        None, user_id, resolver_spec)
+
+    delete_from_resolver_user_cache(
+        user_name, user_id, resolver_spec)
+
+    # now cleanup the request local cache as well
+
+    delete_from_local_cache(
+        user_name, None, resolver_spec)
+
+    delete_from_local_cache(
+        None, user_id, resolver_spec)
+
+    delete_from_local_cache(
+        user_name, user_id, resolver_spec)
 
 
 def getUserId(user, check_existance=False):
@@ -1349,10 +1411,53 @@ def getUserId(user, check_existance=False):
         y = getResolverObject(resolver_spec)
         resId = y.getResolverId()
 
+        # ------------------------------------------------------------------ --
+
+        # the existance check makes a call to the resolver wo cache and checks
+        # for the user info
+
         if check_existance:
-            uid = y.getUserId(user.login)
-            if not uid:
+
+            try:
+
+                user_info = y.getUserInfo(uid)
+
+            except ResolverNotAvailable:
                 continue
+
+            if not user_info:
+                continue
+
+            # -------------------------------------------------------------- --
+
+            # if the username / login from the user info is not the same
+            # as the requesting one, the user has been renamed and we have
+            # to do some cache cleanup, especialy the user+realm -> resolver
+            # cache
+
+            if user_info['username'] != user.login:
+
+                realm = user.realm or getDefaultRealm()
+                realm = realm.lower()
+
+                delete_from_realm_resolver_cache(user.login, realm)
+                delete_from_realm_resolver_local_cache(user.login, realm)
+
+                delete_from_resolver_user_cache(user.login, None, resolver_spec)
+                delete_from_resolver_user_cache(user.login, uid, resolver_spec)
+
+                delete_from_local_cache(user.login, None, resolver_spec)
+                delete_from_local_cache(user.login, uid, resolver_spec)
+
+                # and feed the correct info back into the cache
+
+                lookup_user_in_resolver(
+                    user_info['username'], uid, resolver_spec, user_info)
+
+                lookup_user_in_resolver(
+                    user_info['username'], None, resolver_spec, user_info)
+
+            # -------------------------------------------------------------- --
 
         uids.add(uid)
         user.resolverUid[resolver_spec] = uid
