@@ -1013,28 +1013,35 @@ def get_resolvers_of_user(login, realm):
 
     resolvers_lookup_cache = _get_resolver_lookup_cache(realm)
 
+    # ---------------------------------------------------------------------- --
+
+    # we use a request local cache
+    # - which is usefull especially if no persistant cache is enabled
+
+    key = {'login': login, 'realm': realm}
+    p_key = json.dumps(key)
+
+    if p_key in request_context['UserRealmLookup']:
+        return request_context['UserRealmLookup'][p_key]
+
+    # ---------------------------------------------------------------------- --
+
+    # if no caching is enabled, we just return the result of the inner func
+    # otherwise we have to provide the partial function to the beaker cache
+
     try:
 
-        # if no caching is enabled, we just return the result of the inner func
         if not resolvers_lookup_cache:
 
             Resolvers = _get_resolvers_of_user(login=login, realm=realm)
-            log.debug("Found the user %r in %r", login, Resolvers)
-            return Resolvers
 
         else:
 
             p_get_resolvers_of_user = partial(
                 _get_resolvers_of_user, login=login, realm=realm)
 
-            key = {'login': login, 'realm': realm}
-            p_key = json.dumps(key)
-
             Resolvers = resolvers_lookup_cache.get_value(
                             key=p_key, createfunc=p_get_resolvers_of_user)
-
-            log.debug("Found the user %r in %r", login, Resolvers)
-            return Resolvers
 
     except NoResolverFound:
         log.info('No resolver found for user %r in realm %r',
@@ -1045,6 +1052,16 @@ def get_resolvers_of_user(login, realm):
         log.error('unknown exception during resolver lookup')
         raise exx
 
+    # ---------------------------------------------------------------------- --
+
+    # fill in the result into the request local cache
+
+    request_context['UserRealmLookup'][p_key] = Resolvers
+
+    # ---------------------------------------------------------------------- --
+
+    log.debug("Found the user %r in %r", login, Resolvers)
+    return Resolvers
 
 def _get_resolver_lookup_cache(realm):
     """
@@ -1176,6 +1193,14 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
     # --------------------------------------------------------------------- --
 
+    # we use a request local cache
+    # - which is especially usefull if no persistant cache is enabled
+
+    if p_key in request_context['UserLookup']:
+        return request_context['UserLookup'][p_key]
+
+    # --------------------------------------------------------------------- --
+
     # use the cache feeder or the direct call if no cache is defined
 
     user_lookup_cache = _get_user_lookup_cache(resolver_spec)
@@ -1186,7 +1211,7 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
             log.info("lookup user without user lookup cache")
 
-            return _lookup_user_in_resolver(
+            result = _lookup_user_in_resolver(
                     login, user_id, resolver_spec, user_info)
 
         else:
@@ -1224,6 +1249,19 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
     except Exception as exx:
         log.error('unknown exception during user lookup')
         raise exx
+
+    # --------------------------------------------------------------------- --
+
+    # preserve the user lookup result in the request local cache
+
+    request_context['UserLookup'][p_key] = result
+
+    # --------------------------------------------------------------------- --
+
+    # we end up here if everything was okay
+
+    log.debug("lookup done for %r: %r", p_key, result)
+    return result
 
 
 def _get_user_lookup_cache(resolver_spec):
