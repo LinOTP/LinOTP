@@ -232,19 +232,20 @@ class LdapResolverTest(TestController):
 
                 self.make_validate_request('check', params=params)
 
-                assert mocked_getUserInfo.call_count == 1
+                # one for the lookup, one for the existance check
+                assert mocked_getUserInfo.call_count == 2
 
-                # for each resolver once + one for the check existance
-                assert mocked_getUserId.call_count > 2
-                old_getUserId_count = mocked_getUserId.call_count
+                # for each resolver once
+                assert mocked_getUserId.call_count == 2
 
                 getUserId_call_count = 0
 
                 self.make_validate_request('check', params=params)
 
-                assert mocked_getUserInfo.call_count == 1
-                assert mocked_getUserId.call_count > 2
-                assert mocked_getUserId.call_count == old_getUserId_count + 1
+                # one more for the existance check
+                assert mocked_getUserInfo.call_count == 3
+
+                assert mocked_getUserId.call_count == 2
 
         return
 
@@ -318,11 +319,10 @@ class LdapResolverTest(TestController):
                 self.make_validate_request('check', params=params)
 
                 # getUserId is called for each resolver
-                # + the one which verifies the existance
-                assert mocked_getUserId.call_count == 3
+                assert mocked_getUserId.call_count == 2
 
-                # not calling the getUserInfo
-                assert mocked_getUserInfo.call_count == 1
+                # the one which verifies the existance
+                assert mocked_getUserInfo.call_count == 2
 
                 # second call
 
@@ -334,10 +334,10 @@ class LdapResolverTest(TestController):
                 # cache |(user, realm) -> resolver|
                 # only the existance check is done which does one more call
 
-                assert mocked_getUserId.call_count == 4
+                assert mocked_getUserId.call_count == 2
 
                 # and the getUserInfo is fully in the cache
-                assert mocked_getUserInfo.call_count == 1
+                assert mocked_getUserInfo.call_count == 3
 
         return
 
@@ -371,11 +371,10 @@ class LdapResolverTest(TestController):
                 self.make_validate_request('check', params=params)
 
                 # getUserId is called for each resolver
-                # + the one which verifies the existance
-                assert mocked_getUserId.call_count == 3
+                assert mocked_getUserId.call_count == 2
 
-                # not calling the getUserInfo
-                assert mocked_getUserInfo.call_count == 1
+                # + the one which verifies the existance
+                assert mocked_getUserInfo.call_count == 2
 
                 # second call
 
@@ -385,12 +384,10 @@ class LdapResolverTest(TestController):
 
                 # the resolvers ar not called anymore as the info is in the
                 # cache |(user, realm) -> resolver|
+                assert mocked_getUserId.call_count == 2
+
                 # only the existance check is done which does one more call
-
-                assert mocked_getUserId.call_count == 4
-
-                # and the getUserInfo is fully in the cache
-                assert mocked_getUserInfo.call_count == 1
+                assert mocked_getUserInfo.call_count == 3
 
         raise_exception = False
 
