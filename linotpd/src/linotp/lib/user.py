@@ -1283,7 +1283,7 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
     # we end up here if everything was okay
 
-    log.debug("lookup done for %r: %r", p_key, result)
+    log.info("lookup done for %r: %r", p_key, result)
     return result
 
 
