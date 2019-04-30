@@ -1,8 +1,8 @@
-linotp-adminclient-cli (2.10.5.1rc0-1) jessie; urgency=low
+linotp-adminclient-cli (2.10.5.1-1) jessie; urgency=low
 
-  * Set new version 2.10.5.1rc0
+  * Set new version 2.10.5.1
 
- --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 30 Apr 2019 12:40:13 +0200
+ --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 30 Apr 2019 19:05:13 +0200
 
 linotp-adminclient-cli (2.10.4-1) jessie; urgency=low
 

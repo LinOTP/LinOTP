@@ -1,10 +1,10 @@
-linotp (2.10.5.1rc0-1) jessie; urgency=low
+linotp (2.10.5.1-1) jessie; urgency=low
 
   Fix:
   * Server: prevent dirty cache if resolver is not available
   * Server: resolver and realm cache is wiped when the cache is switched off
 
- --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 30 Apr 2019 12:40:13 +0200
+ --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 30 Apr 2019 19:05:13 +0200
 
 linotp (2.10.4-1) jessie; urgency=low
 
