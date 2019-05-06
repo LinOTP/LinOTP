@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -401,7 +401,8 @@ class TestTotpController(TestController):
                     resInfo = self.getTokenInfo(tserial)
                     tInfo = json.loads(resInfo.get('result').get('value').get('data')[0].get('LinOtp.TokenInfo'))
                     tShift = tInfo.get('timeShift')
-                    assert tShift <= offset and tShift >= offset - step
+                    assert int(tShift) <= offset + step
+                    assert int(tShift) >= offset - step
                 else:
                     assert '"value": false' in res.body
 
@@ -451,7 +452,7 @@ class TestTotpController(TestController):
                     resInfo = self.getTokenInfo(tserial)
                     tInfo = json.loads(resInfo.get('result').get('value').get('data')[0].get('LinOtp.TokenInfo'))
                     tShift = tInfo.get('timeShift')
-                    assert tShift <= offset and tShift >= offset - step
+                    assert tShift <= offset + step and tShift >= offset - step
                 else:
                     assert '"value": false' in res.body
 

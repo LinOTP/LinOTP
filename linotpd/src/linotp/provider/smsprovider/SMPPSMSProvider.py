@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP smsprovider.
 #
@@ -28,6 +28,7 @@
 """ the SMS Provider Interface """
 from linotp.provider.smsprovider import ISMSProvider
 from linotp.provider import provider_registry
+from linotp.provider import ProviderNotAvailable
 
 try:
     import smpplib
@@ -98,9 +99,14 @@ class SMPPSMSProvider(ISMSProvider):
         if not self.config:
             raise Exception("missing configuration!")
 
-        client = smpplib.client.Client(self.server, self.port)
-        client.connect()
-        log.debug("connected to %r:%r", self.server, self.port)
+        try:
+            client = smpplib.client.Client(self.server, self.port)
+            client.connect()
+            log.debug("connected to %r:%r", self.server, self.port)
+
+        except Exception as exx:
+            log.exception("Failed to connect to server")
+            raise ProviderNotAvailable("Failed to connect to server %r" % exc)
 
         try:
             log.debug("binding to system_id %r (system_type %r)",
@@ -132,8 +138,8 @@ class SMPPSMSProvider(ISMSProvider):
                 # messages longer than 160 chars should be
                 # split down into small chunks of 153 chars
                 max_msg_len = 153
-		for i in range(0, len(short_message), max_message_len):
-    		    msg = short_message[i : i + max_message_len]
+                for i in range(0, len(short_message), max_msg_len):
+                    msg = short_message[i : i + max_msg_len]
                     if not msg:
                         continue
                     self._send(client, source_addr, destination_addr, msg)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP smsprovider.
 #
@@ -35,6 +35,8 @@ import logging
 
 from linotp.provider.smsprovider import ISMSProvider
 from linotp.provider import provider_registry
+from linotp.provider import ProviderNotAvailable
+
 from linotp.lib.type_utils import boolean
 
 log = logging.getLogger(__name__)
@@ -224,6 +226,13 @@ class SmtpSMSProvider(ISMSProvider):
             (code, response) = serv.quit()
             log.debug("quit: (%r) %r", code, response)
             ret = True
+
+        except smtplib.socket.error as exc:
+            log.exception('Error: could not connect to server')
+            if boolean(self.config.get('raise_exception', True)):
+                raise ProviderNotAvailable('Error: could not connect '
+                                           'to server: %r' % exc)
+            ret = False
 
         except Exception as exx:
             log.exception("[submitMessage] %s", exx)

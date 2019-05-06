@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -39,6 +39,7 @@ except ImportError:
 
 from sqlalchemy import or_, and_
 from sqlalchemy import func
+from sqlalchemy.exc import ResourceClosedError
 
 from linotp.lib.challenges import Challenges
 
@@ -1490,10 +1491,10 @@ def token_owner_iterator():
         resolver = token.LinOtpIdResolver
         resolverC = token.LinOtpIdResClass
 
-        if len(userId) > 0 and len(resolver) > 0:
+        if userId and resolverC:
             userInfo = getUserInfo(userId, resolver, resolverC)
 
-        if len(userId) > 0 and len(userInfo) == 0:
+        if userId and not userInfo:
             userInfo['username'] = u'/:no user info:/'
 
         yield serial, userInfo['username']
@@ -1541,7 +1542,14 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
         # for the validation we require an read for update lock
 
         if read_for_update:
-            sqlQuery = sqlQuery.with_lockmode('update').all()
+            try:
+
+                sqlQuery = sqlQuery.with_lockmode('update').all()
+
+            except ResourceClosedError as exx:
+                log.warning("Token already locked for update: %r", exx)
+                raise Exception("Token already locked for update: (%r)"
+                                % exx)
 
         for token in sqlQuery:
             tokenList.append(token)
@@ -1580,9 +1588,21 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                 # ---------------------------------------------------------- --
 
                 # for the validation we require an read for update lock
+                # which could raise a ResourceClosedError to show that the
+                # resource is already allocated in an other request
 
                 if read_for_update:
-                    sqlQuery = sqlQuery.with_lockmode('update').all()
+
+                    try:
+
+                        sqlQuery = sqlQuery.with_lockmode('update').all()
+
+                    except ResourceClosedError as exx:
+                        log.warning("Token already locked for update: %r", exx)
+                        raise Exception("Token already locked for update: (%r)"
+                                        % exx)
+
+                # ---------------------------------------------------------- --
 
                 for token in sqlQuery:
                     # we have to check that the token is in the same realm as the user

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -32,7 +32,7 @@ import json
 
 from collections import defaultdict
 
-# ------------------------------------------------------------------------------
+# -------------------------------------------------------------------------- --
 
 
 class ConfigNotRecognized(Exception):
@@ -53,7 +53,7 @@ class ConfigNotRecognized(Exception):
         self.key = key
 
 
-# ------------------------------------------------------------------------------
+# -------------------------------------------------------------------------- --
 
 def parse_system_config(composite_key, value):
 
@@ -69,7 +69,7 @@ def parse_system_config(composite_key, value):
 
     return 'system_config', {composite_key: value}
 
-# ------------------------------------------------------------------------------
+# -------------------------------------------------------------------------- --
 
 
 def parse_deprecated_enc(composite_key, value):
@@ -88,7 +88,7 @@ def parse_deprecated_enc(composite_key, value):
 
     return 'deprecated_enc', {composite_key: value}
 
-# ------------------------------------------------------------------------------
+# -------------------------------------------------------------------------- --
 
 
 class ConfigTree(dict):
@@ -210,7 +210,7 @@ class ConfigTree(dict):
         return json.dumps(self, indent=4)
 
 
-# ------------------------------------------------------------------------------
+# -------------------------------------------------------------------------- --
 
 
 def parse_config(config_dict):
@@ -226,7 +226,7 @@ def parse_config(config_dict):
 
     tree = ConfigTree()
 
-    # --------------------------------------------------------------------------
+    # ---------------------------------------------------------------------- --
 
     for composite_key, value in config_dict.items():
         tree.consume_entry(composite_key, value)

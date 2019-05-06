@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -285,3 +285,29 @@ def is_ip_address(address):
     :return: boolean - true if it is an IPAddress
     """
     return get_ip_address(address) is not None
+
+def parse_timeout(timeout_val, seperator=','):
+    """
+    parse a timeout value which migth be a single value or a tuple of
+    connection and response timeouts
+
+    :params timeout_val: timeout value which could be either string, tuple
+                         or float/int
+
+    :return: timeout tuple of float or float/int timeout value
+    """
+
+    if isinstance(timeout_val, tuple):
+        return timeout_val
+
+    if isinstance(timeout_val, (str, unicode)):
+        if seperator in timeout_val:
+            connection_time, response_time = timeout_val.split(seperator)
+            return (float(connection_time), float(response_time))
+        else:
+            return float(timeout_val)
+
+    if isinstance(timeout_val, (float, int)):
+        return timeout_val
+
+    raise ValueError('unsupported timeout format')

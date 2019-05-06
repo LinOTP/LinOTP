@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP smsprovider.
 #
@@ -28,6 +28,7 @@
 
 from linotp.provider.smsprovider import ISMSProvider
 from linotp.provider import provider_registry
+from linotp.provider import ProviderNotAvailable
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -292,6 +293,9 @@ class RestSMSProvider(ISMSProvider):
             except requests.exceptions.Timeout as exc:
                 log.exception("RestSMSProvider timed out %r" % exc)
                 retry -= 1
+                if retry <= 0:
+                    raise ProviderNotAvailable(
+                        "RestSMSProvider timed out %r" % exc)
 
             except Exception as exc:
                 log.exception("RestSMSProvider %r" % exc)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP smsprovider.
 #
@@ -31,7 +31,7 @@ import smtpd
 import asyncore
 
 from linotp.provider.smsprovider import getSMSProviderClass
-
+from linotp.provider import ProviderNotAvailable
 
 class CustomSMTPServer(smtpd.SMTPServer):
 
@@ -80,7 +80,7 @@ class TestSMS(TestCase):
         sms = getSMSProviderClass("SmtpSMSProvider", "SmtpSMSProvider")()
         sms.loadConfig(smtp_config)
 
-        with self.assertRaisesRegexp(Exception, "Name or service not known"):
+        with self.assertRaises(ProviderNotAvailable):
             sms.submitMessage(phone, message)
 
         smtp_config = {'mailserver': 'localhost:1025',

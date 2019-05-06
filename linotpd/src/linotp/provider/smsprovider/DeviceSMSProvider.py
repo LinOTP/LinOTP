@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP smsprovider.
 #
@@ -42,6 +42,7 @@ connection = serial
 from linotp.provider.smsprovider import getSMSProviderClass
 from linotp.provider.smsprovider import ISMSProvider
 from linotp.provider import provider_registry
+from linotp.provider import ProviderNotAvailable
 
 import subprocess
 import string
@@ -97,6 +98,7 @@ class DeviceSMSProvider(ISMSProvider):
         log.error("[submitMessage] SMS sending failed, return code: %s" % proc.returncode)
 
         return False
+
 
     def loadConfig(self, configDict):
         self.config = configDict

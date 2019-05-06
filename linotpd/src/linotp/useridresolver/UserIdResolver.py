@@ -2,7 +2,7 @@
 
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP userid resolvers.
 #
@@ -52,6 +52,8 @@ log = logging.getLogger(__name__)
 class ResolverLoadConfigError(Exception):
     pass
 
+class ResolverNotAvailable(Exception):
+    pass
 
 class UserIdResolver(object):
 

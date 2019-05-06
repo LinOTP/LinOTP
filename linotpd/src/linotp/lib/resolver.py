@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -44,6 +44,7 @@ from linotp.lib.config.parsing import ConfigNotRecognized
 from linotp.lib.type_utils import get_duration
 from linotp.lib.type_utils import boolean
 from linotp.useridresolver import resolver_registry
+from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
 from linotp.lib.crypto import encryptPassword
 
@@ -268,7 +269,7 @@ def get_cls_identifier(config_identifier):
 
 
 # external system/getResolvers
-def getResolverList(filter_resolver_type=None):
+def getResolverList(filter_resolver_type=None, config=None):
     '''
     Gets the list of configured resolvers
 
@@ -279,8 +280,11 @@ def getResolverList(filter_resolver_type=None):
     Resolvers = {}
     resolvertypes = get_resolver_types()
 
-    conf = context.get('Config')
-    # conf = getLinotpConfig()
+    if not config:
+        conf = context.get('Config')
+    else:
+        conf = config
+
     for entry in conf:
 
         for typ in resolvertypes:
@@ -538,7 +542,13 @@ def getResolverObject(resolver_spec, config=None, load_config=True):
         if load_config:
 
             try:
+
                 resolver.loadConfig(config, config_identifier)
+
+            except ResolverNotAvailable:
+                log.error('Unable to connect to resolver %r', resolver_spec)
+                return None
+
             except Exception as exx:
                 # FIXME: Except clause is too general. resolver
                 # should be ResolverLoadConfigError

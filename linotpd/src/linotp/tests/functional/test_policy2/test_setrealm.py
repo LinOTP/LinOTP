@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -27,7 +27,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -76,7 +76,7 @@ class TestPolicySetrealm(TestController):
         TestController.tearDown(self)
 
     def define_setrealm_policies(self):
-        """ define setrealm policy with resolver selctor """
+        """ define setrealm policy with resolver selector """
 
         # ------------------------------------------------------------------ --
 
@@ -103,7 +103,7 @@ class TestPolicySetrealm(TestController):
         self.assertTrue('"active": true,' in response, response)
 
     def test_setrealm_policy_negative(self):
-        """ test setrealm with resolver selctor """
+        """ test setrealm with resolver selector """
 
         self.define_setrealm_policies()
 
@@ -140,7 +140,7 @@ class TestPolicySetrealm(TestController):
         return
 
     def test_setrealm_policy_positiv(self):
-        """ test setrealm with resolver selctor """
+        """ test setrealm with resolver selector """
 
         self.define_setrealm_policies()
 

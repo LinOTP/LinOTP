@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #   LinOTP - the open source solution for two factor authentication
-#   Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#   Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #   This file is part of LinOTP userid resolvers.
 #
@@ -56,6 +56,7 @@ from linotp.lib.resources import string_to_list
 
 from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 from linotp.useridresolver.UserIdResolver import UserIdResolver
+from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
 from linotp.useridresolver import resolver_registry
 
@@ -623,22 +624,6 @@ class IdResolver(UserIdResolver):
         if self.l_obj is not None:
             return self.l_obj
 
-        if self.bind_not_possible:
-            t2 = datetime.now()
-            tdelta = t2 - self.bind_not_possible_time
-            # If we try a bind within 30 seconds, we will
-            # bail out!
-            if tdelta.seconds > BIND_NOT_POSSIBLE_TIMEOUT or tdelta.days > 1:
-                log.info("[bind] Resetting the bind_not_possible timeout.")
-                self.bind_not_possible = False
-            else:
-                log.error("[bind] LDAP bind timed out the last time. "
-                          "So we do not try to bind again at this moment. "
-                          "Skipping for performance sake! "
-                          "Trying a real bind again in %r seconds",
-                          (BIND_NOT_POSSIBLE_TIMEOUT - tdelta.seconds))
-                return False
-
         # iterate through the ldap uris
 
         urilist = string_to_list(self.ldapuri)
@@ -664,15 +649,12 @@ class IdResolver(UserIdResolver):
                 resource_scheduler.block(uri, delay=30)
                 log.exception("[bind] LDAP error")
 
-        # We were not able to do a successful bind! :-(
-        self.bind_not_possible = True
-        self.bind_not_possible_time = datetime.now()
-
-        self.l_obj = None
+        # if we reach this point, we were not able to do a successful bind! :-(
 
         log.error('Failed to bind to any resource %r', urilist)
 
-        return None
+        raise ResolverNotAvailable("Unable to bind to servers %r" % urilist)
+
 
     def unbind(self, lobj):
         """
@@ -1396,7 +1378,8 @@ class IdResolver(UserIdResolver):
         if last_error:
             log.error("[checkPass] access to resource failed: %r", last_error)
 
-        return False
+        raise ResolverNotAvailable("unable to bind to servers %r" % urilist)
+
 
     def guid2str(self, guid):
         '''

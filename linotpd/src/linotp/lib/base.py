@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -41,8 +41,12 @@ from linotp.lib.config import getLinotpConfig
 from linotp.lib.resolver import initResolvers
 from linotp.lib.resolver import setupResolvers
 from linotp.lib.resolver import closeResolvers
+from linotp.lib.resolver import getResolverList
+
 from linotp.lib.user import getUserFromRequest
 from linotp.lib.user import getUserFromParam
+from linotp.lib.user import NoResolverFound
+
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.realm import getRealms
 
@@ -646,6 +650,15 @@ class BaseController(WSGIController):
 
         linotp_config = getLinotpConfig()
 
+        # make the request id available in the request context
+        request_context['RequestId'] = environment['REQUEST_ID']
+
+        # a request local cache to get the user info from the resolver
+        request_context['UserLookup'] = {}
+
+        # a request local cache to get the resolver from user and realm
+        request_context['UserRealmLookup'] = {}
+
         request_context['Config'] = linotp_config
         request_context['Policies'] = parse_policies(linotp_config)
         request_context['translate'] = translate
@@ -679,13 +692,29 @@ class BaseController(WSGIController):
         request_context['AuthUser'] = authUser
         request_context['UserLookup'] = {}
 
-        requestUser = None
+        # ------------------------------------------------------------------ --
+        # get the current resolvers
+
+        resolvers = []
         try:
-            requestUser = getUserFromParam(self.request_params)
+            resolvers = getResolverList(config=linotp_config)
         except UnicodeDecodeError as exx:
             log.error("Failed to decode request parameters %r" % exx)
-        request_context['RequestUser'] = requestUser
 
+        request_context['Resolvers'] = resolvers
+
+        # ------------------------------------------------------------------ --
+        # get the current realms
+
+        realms = {}
+        try:
+            realms = getRealms()
+        except UnicodeDecodeError as exx:
+            log.error("Failed to decode request parameters %r" % exx)
+
+        request_context['Realms'] = realms
+
+        # ------------------------------------------------------------------ --
 
         defaultRealm = ""
         try:
@@ -695,13 +724,33 @@ class BaseController(WSGIController):
 
         request_context['defaultRealm'] = defaultRealm
 
-        realms = None
-        try:
-            realms = getRealms()
-        except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
+        # ------------------------------------------------------------------ --
+        # load the requesting user
 
-        request_context['Realms'] = realms
+        from linotp.useridresolver.UserIdResolver import (
+            ResolverNotAvailable)
+
+        requestUser = None
+        try:
+            requestUser = getUserFromParam(self.request_params)
+        except UnicodeDecodeError as exx:
+            log.error("Failed to decode request parameters %r", exx)
+        except (ResolverNotAvailable, NoResolverFound) as exx:
+            log.error("Failed to connect to server %r", exx)
+
+        request_context['RequestUser'] = requestUser
+
+        # ------------------------------------------------------------------ --
+        # load the providers
+
+        from linotp.provider import Provider_types
+        from linotp.provider import getProvider
+
+        provider = {}
+        for provider_type in Provider_types.keys():
+            provider[provider_type] = getProvider(provider_type)
+
+        request_context['Provider'] = provider
 
         # ------------------------------------------------------------------ --
 
@@ -715,8 +764,8 @@ class BaseController(WSGIController):
 
         # copy some system entries from pylons
         syskeys = {
-                   "radius.nas_identifier": "LinOTP",
-                   "radius.dictfile": "/etc/linotp2/dictionary"
+           "radius.nas_identifier": "LinOTP",
+           "radius.dictfile": "/etc/linotp2/dictionary"
         }
 
         sysconfig = {}
@@ -724,7 +773,5 @@ class BaseController(WSGIController):
             sysconfig[key] = config.get(key, default)
 
         request_context['SystemConfig'] = sysconfig
-
-
 
 # eof ########################################################################

@@ -1,7 +1,7 @@
 # French translations for LinOTP package - French messages for LinOTP.
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP admin clients.
 #
@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2017-02-14 15:01+0100\n"
+"PO-Revision-Date: 2019-02-14 15:01+0100\n"
 "Last-Translator: linotp@keyidentity.com\n"
 "Language-Team: French <>\n"
 "Language: fr\n"
@@ -2013,8 +2013,8 @@ msgid "LinOTP - the open source solution for two factor authentication."
 msgstr ""
 "LinOTP - la solution Open Source pour l'authentification à deux facteurs."
 
-msgid "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
-msgstr "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
+msgid "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
+msgstr "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Distribué sous licence AGPLv3"
@@ -4370,8 +4370,8 @@ msgstr ""
 #~ "autorisées à envoyer une adresse IP différente de la leur pour les "
 #~ "directives d'autorisation."
 
-#~ msgid "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
-#~ msgstr "Copyright (C) 2010-2017 KeyIdentity GmbH"
+#~ msgid "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
+#~ msgstr "Copyright (C) 2010-2019 KeyIdentity GmbH"
 
 #~ msgid "No valid authentication session %r"
 #~ msgstr "Aucune session d'identification valide %r"
