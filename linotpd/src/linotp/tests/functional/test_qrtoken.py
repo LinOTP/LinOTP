@@ -2131,6 +2131,60 @@ class TestQRToken(TestController):
         public_key = offline_info.get('public_key')
         self.assertEqual(public_key, b64encode(self.public_key))
 
+        # we run the test until one of the tans start with a '0'
+
+        leading_zero_test = False
+        while not leading_zero_test:
+
+            # -------------------------------------------------------------- --
+
+            params = {'user': 'molière', 'pass': 'molière',
+                      'data': '2000 dollars to that nigerian prince'}
+            response = self.make_validate_request('check', params)
+            response_dict = json.loads(response.body)
+
+            self.assertIn('detail', response_dict)
+            detail = response_dict.get('detail')
+
+            # -------------------------------------------------------------- --
+
+            self.assertIn('transactionid', detail)
+            self.assertIn('message', detail)
+
+            challenge_url = detail.get('message')
+
+            self.assertTrue(challenge_url.startswith(self.uri + '://'))
+
+            challenge, sig, tan = self.decrypt_and_verify_challenge(
+                                        challenge_url)
+
+            # -------------------------------------------------------------- --
+
+            if tan.startswith('0'):
+                leading_zero_test = True
+
+            transaction_id = challenge["transaction_id"]
+
+            params = {'user': 'molière',
+                      'transactionid': transaction_id,
+                      'pass': tan,
+                      }
+
+            response = self.make_validate_request('check', params)
+            response_dict = json.loads(response.body)
+
+            # -------------------------------------------------------------- --
+
+            self.assertIn('result', response_dict)
+            result = response_dict.get('result')
+
+            self.assertIn('value', result)
+            value = result.get('value')
+
+        assert leading_zero_test
+
+        return
+
     # ----------------------------------------------------------------------- --
 
     def test_unpairing(self):
