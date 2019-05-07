@@ -995,8 +995,10 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         :param user: a User() object, consisting of loginname and realm
         :param report: tbdf.
         '''
-        (uuserid, uidResolver, uidResolverClass) = getUserResolverId(user,
-                                                                     report)
+        (uuserid,
+         uidResolver,
+         uidResolverClass) = getUserResolverId(user, report)
+
         self.token.LinOtpIdResolver = uidResolver
         self.token.LinOtpIdResClass = uidResolverClass
         self.token.LinOtpUserid = uuserid

@@ -1573,10 +1573,10 @@ def token_owner_iterator():
         resolver = token.LinOtpIdResolver
         resolverC = token.LinOtpIdResClass
 
-        if len(userId) > 0 and len(resolver) > 0:
+        if userId and resolverC:
             userInfo = getUserInfo(userId, resolver, resolverC)
 
-        if len(userId) > 0 and len(userInfo) == 0:
+        if userId and not userInfo:
             userInfo['username'] = u'/:no user info:/'
 
         yield serial, userInfo['username']

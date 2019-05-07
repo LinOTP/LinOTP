@@ -49,6 +49,8 @@ from linotp.lib.user import getUserId, getUserInfo
 from linotp.lib.user import User
 from linotp.lib.realm import getRealms
 
+from linotp.lib.user import NoResolverFound
+
 from linotp.model import Token
 from linotp.model import Realm, TokenRealm
 from linotp.model.meta import Session
@@ -563,7 +565,18 @@ class TokenIterator(object):
             userInfo["User.userid"] = u'/:no user info:/'
             userInfo["User.username"] = u'/:no user info:/'
 
-            uInfo = getUserInfo(tok.LinOtpUserid, tok.LinOtpIdResolver, tok.LinOtpIdResClass)
+            uInfo = None
+
+            try:
+
+                uInfo = getUserInfo(
+                                tok.LinOtpUserid,
+                                tok.LinOtpIdResolver,
+                                tok.LinOtpIdResClass)
+
+            except NoResolverFound:
+                log.error("no user info found!")
+
             if uInfo is not None and len(uInfo) > 0:
                 if uInfo.has_key("description"):
                     description = uInfo.get("description")

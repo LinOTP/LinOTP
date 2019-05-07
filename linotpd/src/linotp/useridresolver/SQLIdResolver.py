@@ -61,6 +61,7 @@ from sqlalchemy.exc import NoSuchColumnError
 from . import resolver_registry
 from linotp.useridresolver.UserIdResolver import UserIdResolver
 from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
+from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
 from linotp.lib.type_utils import encrypted_data
 from linotp.lib.type_utils import text
@@ -239,7 +240,7 @@ class dbObject():
 
         return None
 
-    def connect(self, sqlConnect):
+    def connect(self, sqlConnect, timeout=5, verify=True):
         """
         create a db session with the sqlConnect string
 
@@ -248,8 +249,10 @@ class dbObject():
         log.debug('[dbObject::connect] %s' % sqlConnect)
 
         args = {'echo': False, 'echo_pool': True}
+
         if 'sqlite' not in sqlConnect:
             args['pool_timeout'] = 30
+            args['connect_args'] = { 'connect_timeout': timeout}
 
         self.engine = create_engine(sqlConnect, **args)
 
@@ -259,7 +262,31 @@ class dbObject():
                                autocommit=True, expire_on_commit=True)
         self.sess = Session()
 
-        return
+        #if not verify:
+        #    return
+
+        # ------------------------------------------------------------------ --
+
+        # verify that it's possible to connect
+
+        try:
+
+            self.engine.connect()
+            return
+
+        except Exception as exx:
+
+            log.error("Connection error: %r", exx)
+
+            msg = ''
+            if not hasattr(exx, 'message'):
+                msg = exx.message
+
+            if "timeout expired" in msg or "can't connect to" in msg:
+
+                raise ResolverNotAvailable(msg)
+
+            raise
 
     def getTable(self, tableName):
         log.debug('[dbObject::getTable] %s' % tableName)
@@ -449,7 +476,7 @@ class IdResolver(UserIdResolver):
             log.debug("[testconnection] testing connection with "
                       "connect str: %r", connect_str)
 
-            dbObj.connect(connect_str)
+            dbObj.connect(connect_str, verify=False)
             table = dbObj.getTable(params.get("Table"))
             num = dbObj.count(table, params.get("Where", ""))
 
@@ -490,14 +517,17 @@ class IdResolver(UserIdResolver):
     def connect(self, sqlConnect=None):
         """
         create a db connection and preserve session in self.dbObj
+
+        :param sqlConnect: the sql connection string
         """
+
         if self.dbObj is not None:
             return self.dbObj
 
-        self.dbObj = dbObject()
         if sqlConnect is None:
             sqlConnect = self.sqlConnect
 
+        self.dbObj = dbObject()
         self.dbObj.connect(sqlConnect)
 
         return self.dbObj
