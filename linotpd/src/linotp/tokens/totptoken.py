@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -313,19 +313,12 @@ class TimeHmacTokenClass(HmacTokenClass):
         return res
 
     def _time2counter_(self, T0, timeStepping=60):
-        rnd = 0.5
-        counter = int((T0 / timeStepping) + rnd)
+        counter = int(T0 / timeStepping)
         return counter
 
     def _counter2time_(self, counter, timeStepping=60):
-        rnd = 0.5
-        T0 = (float(counter) - rnd) * timeStepping
+        T0 = float(counter)  * timeStepping
         return T0
-
-    def _getTimeFromCounter(self, counter, timeStepping=30, rnd=1):
-        idate = int(counter - rnd) * timeStepping
-        ddate = datetime.datetime.fromtimestamp(idate / 1.0)
-        return ddate
 
     def time2float(self, curTime):
         '''
@@ -413,12 +406,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         T0 = time.time() + shift
         if initTime != -1: T0 = int(initTime)
 
-
         counter = self._time2counter_(T0, timeStepping=timeStepping)
-
-
-        otime = self._getTimeFromCounter(oCount, timeStepping=timeStepping)
-        ttime = self._getTimeFromCounter(counter, timeStepping=timeStepping)
 
         hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(self.hashlibStr))
         res = hmac2Otp.checkOtp(anOtpVal, int (window / timeStepping), symetric=True)
@@ -447,6 +435,9 @@ class TimeHmacTokenClass(HmacTokenClass):
 
             nowDt = datetime.datetime.fromtimestamp(inow / 1.0)
 
+            # reverse time mapping:
+            # from time to counter to timeStepping mapped timeslot
+
             lastauth = self._counter2time_(oCount, timeStepping)
             lastauthDt = datetime.datetime.fromtimestamp(lastauth / 1.0)
 
@@ -455,9 +446,14 @@ class TimeHmacTokenClass(HmacTokenClass):
             log.debug("[checkOTP] now       : %r" % (nowDt))
             log.debug("[checkOTP] delta     : %r" % (tokentime - inow))
 
-            new_shift = (tokentime - inow)
+            inow_counter = self._time2counter_(inow, timeStepping)
+            inow_token_time = self._counter2time_(inow_counter, timeStepping)
+
+            new_shift = (tokentime - inow_token_time)
+
             log.debug("[checkOTP] the counter %r matched. New shift: %r" %
                       (res, new_shift))
+
             self.addToTokenInfo('timeShift', new_shift)
 
         log.debug("[checkOtp] end. otp verification result was: res %r" % (res))

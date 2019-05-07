@@ -2,7 +2,7 @@
 
 #
 #   LinOTP - the open source solution for two factor authentication
-#   Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#   Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #   This file is part of LinOTP userid resolvers.
 #
@@ -36,6 +36,7 @@ from ldap import INVALID_CREDENTIALS
 from linotp.lib.resources import ResourceScheduler, DictResourceRegistry
 
 from linotp.useridresolver.LDAPIdResolver import IdResolver as LDAPResolver
+from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
 from freezegun import freeze_time
 
@@ -227,7 +228,8 @@ class TestLDAPResolverFailover(unittest.TestCase):
         # run the bin test
         with freeze_time("2012-01-14 12:00:00"):
 
-            myldap.bind()
+            with self.assertRaises(ResolverNotAvailable):
+                myldap.bind()
 
             # -------------------------------------------------------------- --
 
@@ -263,7 +265,8 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
             # and re-run the bind
 
-            myldap.bind()
+            with self.assertRaises(ResolverNotAvailable):
+                myldap.bind()
 
             # -------------------------------------------------------------- --
 

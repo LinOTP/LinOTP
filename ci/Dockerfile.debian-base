@@ -1,0 +1,37 @@
+ARG BASE_IMAGE
+
+FROM $BASE_IMAGE
+ARG DEBIAN_RELEASE_NAME
+ARG DEPENDENCY_SOURCE
+ARG DEPENDENCY_GPG_KEYID
+ARG DEPENDENCY_COMPONENT
+ARG DEPENDENCY_GPG_KEY_URL
+
+ENV DEBIAN_FRONTEND noninteractive
+ENV TZ Europe/Berlin
+
+RUN apt-get update && apt-get install --no-install-recommends --yes curl gnupg2 dirmngr
+RUN test -z "$DEPENDENCY_SOURCE" || echo "deb $DEPENDENCY_SOURCE $DEBIAN_RELEASE_NAME $DEPENDENCY_COMPONENT" > /etc/apt/sources.list.d/kideps.list
+RUN test -z "$DEPENDENCY_GPG_KEYID" || apt-key adv --keyserver hkp://hkps.pool.sks-keyservers.net --recv-keys $DEPENDENCY_GPG_KEYID
+RUN test -z "$DEPENDENCY_GPG_KEY_URL" || curl $DEPENDENCY_GPG_KEY_URL | apt-key adv --import
+
+RUN apt-get update && apt-get install --no-install-recommends --yes \
+        build-essential \
+        devscripts \
+        equivs \
+	librrd-dev \
+	libffi-dev \
+        libfile-fcntllock-perl \
+        libldap2-dev \
+        libsasl2-dev \
+	libsystemd-dev \
+        openssl \
+	pkg-config \
+    	python-dev \
+        python-m2crypto \
+        python-openssl \
+	python-pip \
+        python-pysodium \
+        rename \
+        swig && \
+        apt-get clean

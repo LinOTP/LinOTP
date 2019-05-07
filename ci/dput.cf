@@ -1,0 +1,14 @@
+# For Gitlab CI/CD only.
+
+[DEFAULT]
+fqdn = nowhere2.locally
+host = none
+default_host_main = staging
+method = local
+
+[staging]
+fqdn = @DEV_REPO_HOST@
+login = dists
+method = scp
+incoming = deb-repo/incoming
+allow_unsigned_uploads = True

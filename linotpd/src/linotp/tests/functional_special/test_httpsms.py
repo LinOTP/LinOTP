@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -42,8 +42,6 @@ import logging
 import tempfile
 import urlparse
 
-import httplib2
-from mock import patch
 
 from linotp.lib.util import str2unicode
 from linotp.tests.functional_special import TestSpecialController
@@ -96,6 +94,78 @@ except ImportError:
     import simplejson as json
 
 log = logging.getLogger(__name__)
+
+#
+class DefaultProvider():
+
+    def __init__(self, test, config):
+        # get the old default provider and remember
+        # check that legacy provider is not the default one
+
+        self.old_default = None
+
+        self.test = test
+        self.config = config
+        self.provider_type = config['type']
+
+        params = {'type': self.provider_type}
+
+        response = test.make_system_request('getProvider', params=params)
+
+        jresp = json.loads(response.body)
+        providers = jresp.get('result').get('value', {})
+
+        for provider_name, provider_def in providers.items():
+            if 'default' in provider_def:
+                self.old_default = provider_name
+
+        return
+
+
+    def __enter__(self):
+        """
+        define the new provider via setProvider
+        """
+
+        response = self.test.make_system_request(
+                            'setProvider', params=self.config)
+        assert '"value": true' in response
+
+        response = self.test.make_system_request(
+                        'setDefaultProvider', params={
+                            'name': self.config.get('name'),
+                            'type': self.provider_type
+                            })
+        assert '"value": true' in response
+        return self
+
+    def __exit__(self, *args):
+        """ on exit restore the old default provider """
+
+        if self.old_default:
+            response = self.test.make_system_request(
+                            'setDefaultProvider', params={
+                                'name': self.old_default,
+                                'type': self.provider_type
+                                })
+            assert '"value": true' in response
+
+        params = {
+            'type': self.provider_type,
+            'name': self.config.get('name')}
+
+        response = self.test.make_system_request('getProvider', params=params)
+
+        jresp = json.loads(response.body)
+        providers = jresp.get('result').get('value', {})
+
+        for provider_name, provider_def in providers.items():
+            if 'Default' not in provider_def:
+                response = self.test.make_system_request(
+                                'delProvider', params={
+                                    'name': provider_name
+                                    })
+                assert '"value": true' in response
 
 
 class TestHttpSmsController(TestSpecialController):
@@ -227,114 +297,115 @@ class TestHttpSmsController(TestSpecialController):
             "RETURN_SUCCESS": "ID",
         }
 
-        parameters = {
-            'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
-            'SMSProviderConfig': json.dumps(sms_conf),
-        }
-        response = self.make_system_request('setConfig', params=parameters,
-                                            auth_user='superadmin')
+        params = {'name': 'test_missing_param',
+                  'config': json.dumps(sms_conf),
+                  'timeout': '100',
+                  'type': 'sms',
+                  'class': 'smsprovider.HttpSMSProvider.HttpSMSProvider'
+                  }
 
-        self.assertTrue('"status": true' in response, response)
+        with DefaultProvider(self, params):
 
-        # check the saved configuration:
-        # getConfig will return only the crypted string
+            # check the saved configuration:
+            # getConfig will return only the crypted string
 
-        response = self.make_system_request(action='getConfig',
-                                            params={
-                                                'key': 'SMSProviderConfig'},
-                                            auth_user='superadmin')
+            response = self.make_system_request(
+                                    action='getConfig',
+                                    params={'key': 'SMSProviderConfig'},
+                                    auth_user='superadmin')
 
-        self.assertNotIn(self.sms_url, response, response)
+            self.assertNotIn(self.sms_url, response, response)
 
-        # check the saved configuration:
-        # getProvider will show the decrypted configuration
+            # check the saved configuration:
+            # getProvider will show the decrypted configuration
 
-        response = self.make_system_request(action='getProvider',
-                                            params={'name': 'imported_default',
-                                                    'type': 'sms'
-                                                    },
-                                            auth_user='superadmin')
+            response = self.make_system_request(
+                            action='getProvider',
+                            params={'name': 'test_missing_param', 'type': 'sms'},
+                            auth_user='superadmin')
 
-        self.assertIn(self.sms_url, response, response)
+            self.assertIn(self.sms_url, response, response)
 
-        response = self.make_validate_request('smspin',
-                                              params={'user': 'user1',
-                                                      'pass': '1234'})
-        # due to security fix to prevent information leakage the response
-        # of validate/check will be only true or false
-        # but wont contain the following message anymore
-        #    'Failed to send SMS. We received a'
-        #                'Failed to send SMS.'
-        self.assertTrue('"value": false' in response, response)
+            response = self.make_validate_request(
+                    'smspin', params={'user': 'user1', 'pass': '1234'})
 
-        # check last audit entry
-        response = self.last_audit()
+            # due to security fix to prevent information leakage the response
+            # of validate/check will be only true or false
+            # but wont contain the following message anymore
+            #    'Failed to send SMS. We received a'
+            #                'Failed to send SMS.'
+            self.assertTrue('"value": false' in response, response)
 
-        val = "-1"
-        if '"total": null,' not in response:
-            resp = json.loads(response.body)
-            rows = resp.get("rows", [])
-            for row in rows:
-                cell = row.get('cell', {})
-                if "validate/smspin" in cell:
-                    idx = cell.index('validate/smspin')
-                    val = cell[idx + 1]
-                    break
+            # check last audit entry
+            response = self.last_audit()
 
-        self.assertTrue(val == "0", response)
+            val = "-1"
+            if '"total": null,' not in response:
+                resp = json.loads(response.body)
+                rows = resp.get("rows", [])
+                for row in rows:
+                    cell = row.get('cell', {})
+                    if "validate/smspin" in cell:
+                        idx = cell.index('validate/smspin')
+                        val = cell[idx + 1]
+                        break
+
+            self.assertTrue(val == "0", response)
 
         return
 
-    def test_succesful_auth(self):
-        '''
-        Successful SMS sending (via smspin) and authentication
-        '''
-        sms_conf = {"URL": self.sms_url,
-                    "PARAMETER": {"account": "clickatel",
-                                  "username": "legit"},
-                    "SMS_TEXT_KEY": "text",
-                    "SMS_PHONENUMBER_KEY": "destination",
-                    "HTTP_Method": "GET",
-                    "RETURN_SUCCESS": "ID"
-                    }
+    def test_succesfull_auth(self):
+        ''' Successful SMS sending (via smspin) and authentication '''
 
-        parameters = {
-            'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
-            'SMSProviderConfig': json.dumps(sms_conf),
+        sms_conf = {
+            "URL": self.sms_url,
+            "PARAMETER": {
+                "account": "clickatel",
+                "username": "legit"},
+            "SMS_TEXT_KEY": "text",
+            "SMS_PHONENUMBER_KEY": "destination",
+            "HTTP_Method": "GET",
+            "RETURN_SUCCESS": "ID"
         }
-        response = self.make_system_request('setConfig', params=parameters,
-                                            auth_user='superadmin')
 
-        self.assertTrue('"status": true' in response, response)
+        params = {
+            'name': 'test_succesfull_auth',
+            'config': json.dumps(sms_conf),
+            'timeout': '100',
+            'type': 'sms',
+            'class': 'smsprovider.HttpSMSProvider.HttpSMSProvider'
+        }
 
-        response = self.make_validate_request('smspin',
-                                              params={'user': 'user1',
-                                                      'pass': '1234'})
-        self.assertTrue('"state":' in response,
-                        "Expecting 'state' as challenge inidcator %r"
-                        % response)
+        with DefaultProvider(self, params):
 
-        # check last audit entry
-        response2 = self.last_audit()
-        # must be success == 1
-        val = "-1"
-        if '"total": null' not in response2:
-            resp = json.loads(response2.body)
-            rows = resp.get("rows", [])
-            for row in rows:
-                cell = row.get('cell', {})
-                if "validate/smspin" in cell:
-                    idx = cell.index('validate/smspin')
-                    val = cell[idx + 1]
-                    break
+            response = self.make_validate_request(
+                'smspin', params={'user': 'user1', 'pass': '1234'})
 
-        self.assertTrue(val == "1", response2)
+            self.assertTrue('"state":' in response,
+                            "Expecting 'state' as challenge inidcator %r"
+                            % response)
 
-        # test authentication
-        response = self.make_validate_request('check',
-                                              params={'user': 'user1',
-                                                      'pass': '1234973532'})
-        self.assertTrue('"value": true' in response, response)
+            # check last audit entry
+            response2 = self.last_audit()
+            # must be success == 1
+            val = "-1"
+            if '"total": null' not in response2:
+                resp = json.loads(response2.body)
+                rows = resp.get("rows", [])
+                for row in rows:
+                    cell = row.get('cell', {})
+                    if "validate/smspin" in cell:
+                        idx = cell.index('validate/smspin')
+                        val = cell[idx + 1]
+                        break
+
+            self.assertTrue(val == "1", response2)
+
+            # test authentication
+            response = self.make_validate_request(
+                'check', params={'user': 'user1', 'pass': '1234973532'})
+
+            self.assertTrue('"value": true' in response, response)
 
         return
 
@@ -350,34 +421,32 @@ class TestHttpSmsController(TestSpecialController):
             "HTTP_Method": "GET",
             "RETURN_SUCCESS": "ID"
         }
-        parameters = {
-            'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
-            'SMSProviderConfig': json.dumps(sms_conf),
-        }
-        response = self.make_system_request('setConfig', params=parameters,
-                                            auth_user='superadmin')
 
-        self.assertTrue('"status": true' in response, response)
+        params = {'name': 'test_succesful_auth2',
+                  'config': json.dumps(sms_conf),
+                  'timeout': '100',
+                  'type': 'sms',
+                  'class': 'smsprovider.HttpSMSProvider.HttpSMSProvider'
+                  }
+        with DefaultProvider(self, params):
 
-        response = self.make_validate_request('check',
-                                              params={'user': 'user1',
-                                                      'pass': '1234'})
+            response = self.make_validate_request(
+                        'check', params={'user': 'user1', 'pass': '1234'})
 
-        # authentication fails but sms is sent
-        self.assertTrue('"value": false' in response, response)
+            # authentication fails but sms is sent
+            self.assertTrue('"value": false' in response, response)
 
-        # check last audit entry
-        response2 = self.last_audit()
-        # must be success == 1
-        if '"total": null' not in response2:
-            self.assertTrue('''challenge created''' in response2, response2)
+            # check last audit entry
+            response2 = self.last_audit()
+            # must be success == 1
+            if '"total": null' not in response2:
+                self.assertTrue('''challenge created''' in response2, response2)
 
-        # test authentication
-        response = self.make_validate_request('check',
-                                              params={'user': 'user1',
-                                                      'pass': '1234973532'})
+            # test authentication
+            response = self.make_validate_request(
+                'check', params={'user': 'user1', 'pass': '1234973532'})
 
-        self.assertTrue('"value": true' in response, response)
+            self.assertTrue('"value": true' in response, response)
 
     def test_successful_SMS(self):
         '''
@@ -419,44 +488,47 @@ class TestHttpSmsController(TestSpecialController):
         f = tempfile.NamedTemporaryFile(delete=False, dir=here)
         filename = f.name
         sms_conf = {"file": filename}
-        parameters = {
-            'SMSProvider': 'smsprovider.FileSMSProvider.FileSMSProvider',
-            'SMSProviderConfig': json.dumps(sms_conf),
-        }
-        response = self.make_system_request('setConfig', params=parameters,
-                                            auth_user='superadmin')
 
-        self.assertTrue('"status": true' in response, response)
+        params = {'name': 'test_successful_File_SMS',
+                  'config': json.dumps(sms_conf),
+                  'timeout': '100',
+                  'type': 'sms',
+                  'class': 'smsprovider.FileSMSProvider.FileSMSProvider',
+                  }
 
-        response = self.make_validate_request('check',
-                                              params={'user': 'user1',
-                                                      'pass': '1234',
-                                                      'message': 'Täst<otp>'})
+        with DefaultProvider(self, params):
 
-        self.assertTrue('"message": "sms submitted"' in response, response)
-        self.assertTrue('"state"' in response, response)
+            response = self.make_validate_request('check',
+                        params={'user': 'user1',
+                                'pass': '1234',
+                                'message': 'Täst<otp>'})
 
-        with open(filename, 'r') as f:
-            line = f.read()
+            self.assertTrue('"message": "sms submitted"' in response, response)
+            self.assertTrue('"state"' in response, response)
 
-        line = str2unicode(line)
-        self.assertTrue(u'Täst' in line, u"'Täst' not found in line")
+            with open(filename, 'r') as f:
+                line = f.read()
 
-        _left, otp = line.split(u'Täst')
-        response = self.make_validate_request('check',
-                                              params={'user': 'user1',
-                                                      'pass': '1234%s' % otp})
+            line = str2unicode(line)
+            self.assertTrue(u'Täst' in line, u"'Täst' not found in line")
 
-        self.assertTrue('"value": true' in response, response)
+            _left, otp = line.split(u'Täst')
+            response = self.make_validate_request('check',
+                                                  params={'user': 'user1',
+                                                          'pass': '1234%s' % otp})
 
-        import os
-        os.remove(filename)
+            self.assertTrue('"value": true' in response, response)
+
+            import os
+            os.remove(filename)
+
         return
 
     def test_failed_SMS(self):
         '''
         Failed SMS sending with RETURN_FAIL
         '''
+
         sms_conf = {"URL": self.sms_url,
                     "PARAMETER": {"account": "clickatel", "username": "anotherone"},
                     "SMS_TEXT_KEY": "text",
@@ -467,28 +539,50 @@ class TestHttpSmsController(TestSpecialController):
                     "SUPPRESS_PREFIX": '+',
                     }
 
-        parameters = {
-            'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
-            'SMSProviderConfig': json.dumps(sms_conf),
-        }
-        response = self.make_system_request('setConfig', params=parameters,
-                                            auth_user='superadmin')
+        params = {'name': 'test_failed_SMS',
+                  'config': json.dumps(sms_conf),
+                  'timeout': '301',
+                  'type': 'sms',
+                  'class': 'smsprovider.HttpSMSProvider.HttpSMSProvider'
+                  }
 
-        self.assertTrue('"status": true' in response, response)
 
-        response = self.make_validate_request('smspin',
-                                              params={'user': 'user1',
-                                                      'pass': '1234'})
+        with DefaultProvider(self, params):
 
-        # due to security fix to prevent information leakage the response
-        # of validate/check will be only true or false
-        # but wont contain the following message anymore
-        #    'Failed to send SMS. We received a'
-        #                ' predefined error from the SMS Gateway.
-        self.assertTrue('"value": false' in response, response)
+            response = self.make_validate_request('smspin',
+                                                  params={'user': 'user1',
+                                                          'pass': '1234'})
+
+            self.assertTrue('"value": false' in response, response)
+
+            # due to security fix to prevent information leakage the response
+            # of validate/check will be only true or false
+            # but wont contain the following message anymore
+            #    'Failed to send SMS. We received a'
+            #                ' predefined error from the SMS Gateway.
+
+            params = {'sortorder': 'desc', 'rp': 3, 'page': 1}
+            response = self.make_audit_request(action="search",
+                                               params=params)
+
+            found = False
+            jresp = json.loads(response.body)
+
+            for row in jresp.get('rows',[]):
+                entry = row.get('cell',[])
+                for info in entry:
+                    if type(info) in [str, unicode]:
+                        if 'SMS could not be sent' in info:
+                            found = True
+                            break
+                if found:
+                    break
+
+            self.assertTrue(found, "no entry 'SMS could not be sent' found")
+
         return
 
-    def setSMSProvider(self, preferred_httplib=None, method='GET',
+    def setSMSProvider(self, name='test', preferred_httplib=None, method='GET',
                        return_check=None, PARAMETERS=None):
         """
         use the internal testing server for
@@ -512,57 +606,73 @@ class TestHttpSmsController(TestSpecialController):
         if preferred_httplib:
             sms_conf["PREFERRED_HTTPLIB"] = preferred_httplib
 
-        parameters = {
-            'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
-            'SMSProviderConfig': json.dumps(sms_conf),
-        }
+        params = {'name': name,
+                  'config': json.dumps(sms_conf),
+                  'timeout': '100',
+                  'type': 'sms',
+                  'class': 'smsprovider.HttpSMSProvider.HttpSMSProvider'
+                  }
 
-        response = self.make_system_request('setConfig', params=parameters,
-                                            auth_user='superadmin')
-
-        self.assertTrue('"status": true' in response, response)
-        return
+        return params
 
     def test_httpsmsprovider_httplib(self):
         '''
         Test SMSProvider httplibs for working with GET and POST
         '''
-        self.setSMSProvider(preferred_httplib='httplib', method='POST')
+        provider_conf = self.setSMSProvider(
+            preferred_httplib='httplib', method='POST')
 
-        # check if its possible to trigger challenge with empty pin
-        params = {'serial': self.serials[2], 'pass': ''}
-        response = self.make_validate_request('check_s', params=params)
-        self.assertTrue('"state":' in response,
-                        "Expecting 'state' as challenge inidcator %r"
-                        % response)
+        provider_conf['name'] = 'test_httpsmsprovider_httplib'
 
-        self.setSMSProvider(preferred_httplib='httplib', method='GET')
-        params = {'serial': self.serials[3], 'pass': ''}
-        response = self.make_validate_request('check_s', params=params)
-        self.assertTrue('"state":' in response,
-                        "Expecting 'state' as challenge inidcator %r"
-                        % response)
+        with DefaultProvider(self, provider_conf):
+            # check if its possible to trigger challenge with empty pin
+            params = {'serial': self.serials[2], 'pass': ''}
+            response = self.make_validate_request('check_s', params=params)
+
+            self.assertTrue('"state":' in response,
+                            "Expecting 'state' as challenge inidcator %r"
+                            % response)
+
+
+        provider_conf = self.setSMSProvider(
+            preferred_httplib='httplib', method='GET')
+
+        provider_conf['name'] = 'test_httpsmsprovider_httplib'
+
+        with DefaultProvider(self, provider_conf):
+
+            params = {'serial': self.serials[3], 'pass': ''}
+            response = self.make_validate_request('check_s', params=params)
+            self.assertTrue('"state":' in response,
+                            "Expecting 'state' as challenge inidcator %r"
+                            % response)
 
     def test_httpsmsprovider_urllib(self):
         '''
         Test SMSProvider urllib for working with GET and POST
         '''
 
-        self.setSMSProvider(preferred_httplib='urllib', method='POST')
+        provider_config = self.setSMSProvider(
+            preferred_httplib='urllib', method='POST')
 
-        params = {'serial': self.serials[4], 'pass': ''}
-        response = self.make_validate_request('check_s', params=params)
-        self.assertTrue('"state":' in response,
-                        "Expecting 'state' as challenge inidcator %r"
-                        % response)
+        with DefaultProvider(self, provider_config):
 
-        self.setSMSProvider(preferred_httplib='urllib', method='GET')
+            params = {'serial': self.serials[4], 'pass': ''}
+            response = self.make_validate_request('check_s', params=params)
+            self.assertTrue('"state":' in response,
+                            "Expecting 'state' as challenge inidcator %r"
+                            % response)
 
-        params = {'serial': self.serials[5], 'pass': ''}
-        response = self.make_validate_request('check_s', params=params)
-        self.assertTrue('"state":' in response,
-                        "Expecting 'state' as challenge inidcator %r"
-                        % response)
+        provider_config = self.setSMSProvider(
+            preferred_httplib='urllib', method='GET')
+
+        with DefaultProvider(self, provider_config):
+
+            params = {'serial': self.serials[5], 'pass': ''}
+            response = self.make_validate_request('check_s', params=params)
+            self.assertTrue('"state":' in response,
+                            "Expecting 'state' as challenge inidcator %r"
+                            % response)
 
         return
 
@@ -586,21 +696,27 @@ class TestHttpSmsController(TestSpecialController):
                 log.error(skip_reason)
                 return
 
-        self.setSMSProvider(preferred_httplib='requests', method='POST')
+        provider_config = self.setSMSProvider(
+            preferred_httplib='requests', method='POST')
 
-        params = {'serial': self.serials[6], 'pass': ''}
-        response = self.make_validate_request('check_s', params=params)
-        self.assertTrue('"state":' in response,
-                        "Expecting 'state' as challenge inidcator %r"
-                        % response)
+        with DefaultProvider(self, config=provider_config):
 
-        self.setSMSProvider(preferred_httplib='requests', method='GET')
+            params = {'serial': self.serials[6], 'pass': ''}
+            response = self.make_validate_request('check_s', params=params)
+            self.assertTrue('"state":' in response,
+                            "Expecting 'state' as challenge inidcator %r"
+                            % response)
 
-        params = {'serial': self.serials[7], 'pass': ''}
-        response = self.make_validate_request('check_s', params=params)
-        self.assertTrue('"state":' in response,
-                        "Expecting 'state' as challenge inidcator %r"
-                        % response)
+        provider_config = self.setSMSProvider(
+            preferred_httplib='requests', method='GET')
+
+        with DefaultProvider(self, config=provider_config):
+
+            params = {'serial': self.serials[7], 'pass': ''}
+            response = self.make_validate_request('check_s', params=params)
+            self.assertTrue('"state":' in response,
+                            "Expecting 'state' as challenge inidcator %r"
+                            % response)
 
         return
 

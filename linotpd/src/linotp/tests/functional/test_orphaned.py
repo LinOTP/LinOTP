@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -402,6 +402,14 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
 
         self.delete_all_realms()
         self.delete_all_resolvers()
+
+        params = {
+            "user_lookup_cache.enabled": False,
+            "resolver_lookup_cache.enabled": False,
+            }
+
+        response = self.make_system_request('setConfig', params)
+        self.assertTrue('"status": true' in response.body, response)
 
         resolverName = 'MySQLResolver'
         realmName = 'sqlrealm'.lower()

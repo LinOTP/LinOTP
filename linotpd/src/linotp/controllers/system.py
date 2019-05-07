@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -77,6 +77,9 @@ from linotp.lib.realm import deleteRealm
 
 from linotp.lib.user import setRealm
 from linotp.lib.user import getUserFromRequest
+from linotp.lib.user import delete_resolver_user_cache
+from linotp.lib.user import delete_realm_resolver_cache
+
 
 from linotp.tokens import tokenclass_registry
 
@@ -335,6 +338,13 @@ class SystemController(BaseController):
                 string = "setConfig %s" % key
                 res[string] = ret
 
+                # --------------------------------------------------------- --
+                # after successfully storing run the direct config callback
+
+                self._config_callback(key, val)
+
+                # --------------------------------------------------------- --
+
                 c.audit['success'] = True
                 c.audit['info'] = "%s=%s" % (key, val)
 
@@ -359,7 +369,18 @@ class SystemController(BaseController):
                     c.audit['success'] = True
                     c.audit['info'] += "%s=%s, " % (key, val)
 
+
                 updateConfig(conf)
+
+                # --------------------------------------------------------- --
+                # after successfully storing run the direct config callback
+
+                for key, val in conf.items():
+
+                    self._config_callback(key, val)
+
+                # --------------------------------------------------------- --
+
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -376,6 +397,40 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
+
+# config callback helper
+
+    def _config_callback(self, key, val):
+        """ helper to run a direct config change action """
+
+        f_name = "_" + key.replace('.','_')
+
+        if hasattr(self, f_name):
+            config_action = getattr(self, f_name)
+            config_action(val)
+
+# config callback methods
+
+    def _linotp_user_lookup_cache_enabled(self, state):
+        " helper to flush the user lookup cache "
+
+        if boolean(state) is False:
+
+            resolvers = request_context['Resolvers']
+
+            for resolver in resolvers:
+                delete_resolver_user_cache(resolver)
+
+    def _linotp_resolver_lookup_cache_enabled(self, state):
+        " helper to flush the resolver lookup cache "
+
+        if boolean(state) is False:
+
+            realms = request_context['Realms']
+
+            for realm in realms:
+                delete_realm_resolver_cache(realm)
+
 
 ########################################################
 

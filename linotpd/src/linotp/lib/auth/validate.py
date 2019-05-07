@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -183,16 +183,6 @@ def check_otp(token, otpval, options=None):
 
     counter = token.getOtpCount()
     window = token.getOtpCountWindow()
-
-    # ---------------------------------------------------------------------- --
-
-    # check for restricted path usage
-
-    path = context['Path'].strip('/').partition('/')[0]
-    token_path = token.getFromTokenInfo('scope', {}).get('path', [])
-
-    if token_path and path not in token_path:
-        return -1
 
     # ---------------------------------------------------------------------- --
 
@@ -500,8 +490,8 @@ class ValidationHandler(object):
         if user is not None and not user.is_empty:
             # the upper layer will catch / at least should
             try:
-                (uid, _resolver, resolverClass) = getUserId(user,
-                                                            check_existance=True)
+                (uid, _resolver, resolverClass) = getUserId(
+                                                    user, check_existance=True)
                 user_exists = True
             except Exception as _exx:
                 pass_on = context.get('Config').get(
@@ -729,6 +719,16 @@ class ValidationHandler(object):
             if token.getFailCount() >= token.getMaxFailCount():
                 audit_entry['action_detail'] = "Failcounter exceeded"
                 token.incOtpFailCounter()
+                continue
+
+            # ---------------------------------------------------------------------- --
+
+            # check for restricted path usage
+
+            path = context['Path'].strip('/').partition('/')[0]
+            token_path = token.getFromTokenInfo('scope', {}).get('path', [])
+
+            if token_path and path not in token_path:
                 continue
 
             # -------------------------------------------------------------- --

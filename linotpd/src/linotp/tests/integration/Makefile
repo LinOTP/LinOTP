@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2016 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2016 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -63,5 +63,14 @@ test: integrationtests
 integrationtests:
 	# integrationtests - selenium integration tests
 	nosetests $(NOSETESTS_ARGS) --with-flaky --tc-file=$(TCFILE) $(LOGFILTER_ARGS) $(SELENIUMTESTS_ARGS) $(DEBUG_ARGS) $(TEST_CASE)
+
+integrationtests-bunch1:
+	# integrationtests - selenium integration tests
+	nosetests $(NOSETESTS_ARGS) --with-flaky --tc-file=$(TCFILE) $(LOGFILTER_ARGS) $(SELENIUMTESTS_ARGS) $(DEBUG_ARGS) test_create_useridresolvers.py test_selfservice.py test_token_view.py test_policies.py test_manage.py test_emailtoken.py
+
+integrationtests-bunch2:
+	# integrationtests - selenium integration tests
+	nosetests $(NOSETESTS_ARGS) --with-flaky --tc-file=$(TCFILE) $(LOGFILTER_ARGS) $(SELENIUMTESTS_ARGS) $(DEBUG_ARGS) test_scenario01.py test_yubikey.py test_user_view.py test_system_config.py test_smstoken.py test_auth.py test_realm_dialog.py
+
 
 .PHONY: test integrationtests

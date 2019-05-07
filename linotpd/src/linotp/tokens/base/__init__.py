@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -995,8 +995,10 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         :param user: a User() object, consisting of loginname and realm
         :param report: tbdf.
         '''
-        (uuserid, uidResolver, uidResolverClass) = getUserResolverId(user,
-                                                                     report)
+        (uuserid,
+         uidResolver,
+         uidResolverClass) = getUserResolverId(user, report)
+
         self.token.LinOtpIdResolver = uidResolver
         self.token.LinOtpIdResClass = uidResolverClass
         self.token.LinOtpUserid = uuserid

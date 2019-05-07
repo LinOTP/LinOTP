@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -41,6 +41,11 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 import binascii
 from mock import patch
 import smtplib
+import freezegun
+
+from datetime import datetime
+from datetime import timedelta
+
 import re
 import time
 import json
@@ -673,8 +678,9 @@ class TestChallengeResponseController(TestSpecialController):
         self.assertTrue('"value": false' in response, response)
 
         (sms_messag, sms_otp) = SMS_MESSAGE_OTP
-        if sms_otp in otps:
-            otp = sms_otp
+        otp = sms_otp
+
+        assert sms_otp in otps
 
         params = {"user": "passthru_user1", "pass": "shortpin" + otp}
         response = self.make_validate_request(action='check',
@@ -1636,12 +1642,19 @@ class TestChallengeResponseController(TestSpecialController):
         serial = self.createToken(pin="shortpin", typ=typ, phone="123456",
                                   otpkey=otpkey, user='passthru_user1')
 
-        # as the config contains an error, the result message should contain
-        # a error message and not the otppin
+        # as the config contains an error, the authetication should fail
+        # and audit should contain a the reason
 
-        params = {"user": "passthru_user1", "pass": "shortpin"}
-        response = self.make_validate_request(action='check',
-                                              params=params)
+        # Remark:
+        # due to unsing the ResourceScheduler, the resouce will be blocked for
+        # a delay of several seconds. to prevent this, we travel through
+        # the time
+
+        with freezegun.freeze_time(datetime.now() - timedelta(minutes=10)):
+
+            params = {"user": "passthru_user1", "pass": "shortpin"}
+            response = self.make_validate_request(action='check',
+                                                  params=params)
 
         found = False
         # self.assertTrue('SMS could not be sent' in response, response)
@@ -1658,6 +1671,7 @@ class TestChallengeResponseController(TestSpecialController):
         self.assertTrue(found, "no entry 'SMS could not be sent' found")
 
         self.delete_token(serial)
+
         return
 
     def test_72_exception_in_challenge(self):

@@ -1,7 +1,7 @@
 # German translations for LinOTP package - German messages for LinOTP.
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP admin clients.
 #
@@ -22,14 +22,14 @@
 #    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
-# linotp@keyidentity.com <>, 2015, 2017.
-# Fabian Vallon <fabian.vallon@keyidentity.com>, 2018.
+# linotp@keyidentity.com <>, 2015, 2019.
+# Fabian Vallon <fabian.vallon@keyidentity.com>, 2019.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2018-01-25 17:18+0100\n"
+"PO-Revision-Date: 2019-01-25 17:18+0100\n"
 "Language-Team: German <>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
@@ -1971,8 +1971,8 @@ msgstr "Neues Passwort bestätigen"
 msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP - die Open Source Lösung für zwei Faktor Authentisierung."
 
-msgid "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
-msgstr "Copyright (C) 2010 - 2018 KeyIdentity GmbH"
+msgid "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
+msgstr "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Lizensiert unter AGPLv3"
@@ -4316,8 +4316,8 @@ msgstr ""
 "Falls gesetzt, wird die Handynummer aus den Benutzer Daten statt aus der "
 "Token Information verwendet."
 
-#~ msgid "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
-#~ msgstr "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
+#~ msgid "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
+#~ msgstr "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
 
 #~ msgid "No valid authentication session %r"
 #~ msgstr "Keine gültige Authentisierungs-Session %r"

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2018 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -47,6 +47,18 @@ from linotp.lib.registry import ClassRegistry
 from linotp.lib.module_loader import import_submodules
 
 log = logging.getLogger(__name__)
+
+
+# -------------------------------------------------------------------------- --
+# base exception to communicate with the tokens
+
+class ProviderNotAvailable(Exception):
+    """
+    to be thrown when a provider is unavailable, eg. on a connection
+    or response timeout error
+    """
+    pass
+
 
 # -------------------------------------------------------------------------- --
 # establish the global provider module registry
@@ -682,6 +694,58 @@ def loadProviderFromPolicy(provider_type, realm=None, user=None):
 
     return loadProvider(provider_type, provider_name)
 
+def get_provider_from_policy(provider_type, realm=None, user=None):
+    """
+    interface for the provider user like email token or sms token
+
+    :param provider_type: 'push', 'email' or 'sms
+    :param user: the user, who should receive the message, used for
+                 the policy lookup
+    :return: the list of all identified providers by name
+    """
+
+    # check if the provider is defined in a policy
+    provider_name = None
+
+    # lookup the policy action name
+    provider_action_name = Policy_action_name.get(provider_type)
+    if not provider_action_name:
+        raise Exception('unknown provider_type for policy lookup! %r'
+                        % provider_type)
+
+    if user is None:
+        raise Exception('unknown user for policy lookup! %r'
+                        % user)
+
+    if user and user.login:
+        realm = user.realm
+
+    policies = get_client_policy(request_context['Client'],
+                                 scope='authentication',
+                                 action=provider_action_name, realm=realm,
+                                 user=user.login)
+
+    if not policies:
+
+        default_provider = _get_default_provider_name(provider_type)
+
+        if default_provider:
+            return [default_provider]
+
+        return []
+
+    provider_names = getPolicyActionValue(policies,
+                                         provider_action_name,
+                                         is_string=True)
+
+    providers = []
+
+    for entry in [x.strip() for x in provider_names.split(' ')]:
+        if entry:
+            providers.append(entry)
+
+    return providers
+
 
 def _lookup_provider_policies(provider_type):
     """
@@ -734,6 +798,19 @@ def load_provider_ini(ini_file):
         provider_config['type'] = provider_type
         provider_config['name'] = provider_name
         setProvider(provider_config)
+
+    return
+
+def _get_default_provider_name(provider_type):
+    """
+    if no provider is given, we try to lookup the default
+    """
+
+    providers = request_context['Provider'][provider_type]
+
+    for provider_name, provider in providers.items():
+        if provider.get('Default'):
+            return provider_name
 
     return
 
