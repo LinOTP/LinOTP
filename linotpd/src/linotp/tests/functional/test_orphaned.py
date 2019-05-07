@@ -403,6 +403,14 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         self.delete_all_realms()
         self.delete_all_resolvers()
 
+        params = {
+            "user_lookup_cache.enabled": False,
+            "resolver_lookup_cache.enabled": False,
+            }
+
+        response = self.make_system_request('setConfig', params)
+        self.assertTrue('"status": true' in response.body, response)
+
         resolverName = 'MySQLResolver'
         realmName = 'sqlrealm'.lower()
 
