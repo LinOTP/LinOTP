@@ -1048,13 +1048,19 @@ def extract_tan(signature, digits):
     :param signature: the signature used as a source for the TAN
     :param digits: number of digits the should be long
 
-    :returns TAN (as integer)
+    :returns TAN (as string)
     """
 
     offset = ord(signature[-1:]) & 0xf
-    tan = struct.unpack('>I', signature[offset:offset+4])[0] & 0x7fffffff
-    tan = tan % 10**digits
-    return tan
+    itan = struct.unpack('>I', signature[offset:offset+4])[0] & 0x7fffffff
+
+    # convert the binaries of the signature to an integer based string
+    tan = "%d" % (itan % 10**digits)
+
+    # fill up the tan with leading zeros
+    stan = u"%s%s" % ('0'* (digits - len(tan)), tan)
+
+    return stan
 
 # #############################################################################
 
