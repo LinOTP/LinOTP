@@ -778,15 +778,11 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                 tan_length = self.getOtpLen()
                 correct_tan = extract_tan(correct_passwd_as_bytes, tan_length)
 
-                # TODO PYLONS-HACK pylons silently converts integers in
-                # incoming json to unicode. since extract_tan returns
-                # an integer, we have to convert it here
-                correct_tan = unicode(correct_tan)
-
                 if compare_digest(correct_tan, passwd):
                     return 1
 
-        return -1  # TODO: ??? semantics of this ret val?
+        # return the token counter which is at least 0, -1 indicates an error
+        return -1
 
 # --------------------------------------------------------------------------- --
 
