@@ -1,3 +1,11 @@
+linotp (2.10.5.2-1) jessie; urgency=low
+
+  Fix:
+  * Server: preserve leading zeros of qrtoken offline tan
+  * Server: minor syntax error in setup.py
+
+ --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 13 May 2019 10:13:21 +0200
+
 linotp (2.10.5.1-1) jessie; urgency=low
 
   Fix:

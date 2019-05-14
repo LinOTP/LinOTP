@@ -23,6 +23,10 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+
+import os
+import sys
+
 try:
     from setuptools import setup, find_packages
 except ImportError:
@@ -30,9 +34,6 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
-
-import os
-import sys
 
 from linotp import __version__
 
@@ -42,7 +43,9 @@ package_directory = os.path.realpath(os.path.dirname(__file__))
 
 # Inspired by http://www.mattlayman.com/2015/i18n.html
 class Build(build_py):
-    """Custom ``build_py`` command to ensure that mo files are always created."""
+    """
+    Custom ``build_py`` command to ensure that mo files are always created.
+    """
 
     def run(self):
         self.run_command('compile_catalog')
@@ -56,7 +59,8 @@ def get_file_contents(file_path):
     try:
         full_path = os.path.join(package_directory, file_path)
         content = open(full_path, 'r').read()
-    except:
+    except Exception as exx:
+        print >> sys.stderr, "### exception happend %r" % exx
         print >> sys.stderr, "### could not open file: %r" % file_path
     return content
 
@@ -71,7 +75,7 @@ setup(
     url='https://www.linotp.org',
     install_requires=[
         "Pylons>=0.9.7",
-        "PasteScript<=1.7.5"
+        "PasteScript<=1.7.5",
         "WebOb",
         "SQLAlchemy>=0.6,<=1.2.15",
         "docutils>=0.4",
