@@ -197,8 +197,8 @@ class ValidateController(BaseController):
            * user:    The username or loginname
            * pass:    The password that consist of a possible fixed password component and the OTP value
            * realm (optional): An optional realm to match the user to a useridresolver
-           * challenge (optional): optional challenge + otp verification for challenge response token. This indicates, that tis request is a challenge request.
-           * data (optional): optional challenge + otp verification for challenge response token.  This indicates, that tis request is a challenge request.
+           * challenge (optional): optional challenge + otp verification for challenge response token. This indicates, that this request is a challenge request.
+           * data (optional): optional challenge + otp verification for challenge response token.  This indicates, that this request is a challenge request.
            * state (optional): The optional id to respond to a previous challenge.
            * transactionid (optional): The optional id to respond to a previous challenge.
 
