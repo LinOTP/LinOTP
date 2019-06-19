@@ -491,6 +491,177 @@ class TestTotpController(TestController):
 
         return
 
+    def test_resync_no_replay(self):
+        '''
+            totp test: verify that auto resync does not succeed with reused (sync) OTPs
+
+            We will use the same OTP twice. Once for starting the sync
+            and then to complete it. Both of those should not yield a
+            valid authentication. The user must provide two consecutive
+            OTPs to finish the sync. The second OTP must be within a
+            small timeframe after the first.
+        '''
+        user = 'root'
+        step = 30
+
+        params = {
+            'AutoResyncTimeout': '240',
+            'AutoResync': True
+        }
+
+        response = self.make_system_request('setConfig', params=params)
+        assert 'false' not in response.body
+
+        for offset in range(10*step, 20*step, step/2):
+            # Freeze time to the current system time
+            with freeze_time(datetime.datetime.now()) as frozen_time:
+                t1 = TotpToken(timestep=step)
+                key = t1.getKey().encode('hex')
+                step = t1.getTimeStep()
+
+                tserial = self.addToken(user=user, otplen=t1.digits,
+                                        typ='totp', key=key, timeStep=step)
+
+                self.serials.append(tserial)
+
+                (otp, counter) = t1.getOtp()
+                _tt1 = t1.getTimeFromCounter(counter)
+
+                res = self.checkOtp(user, otp)
+                assert '"value": true' in res.body
+
+                # replay doesn't work
+                res = self.checkOtp(user, otp)
+                assert '"value": false' in res.body
+
+                # advance to a future time where the old otp is no longer valid
+                frozen_time.tick(delta=datetime.timedelta(seconds=offset))
+
+                # start resync
+                res = self.checkOtp(user, otp)
+                assert '"value": false' in res.body, "%s: %s" %(offset,res.body)
+
+                # finish resync
+                res = self.checkOtp(user, otp)
+                assert '"value": true' not in res.body, offset
+
+    def test_resync_non_consecutive(self):
+        '''
+            totp test: verify that auto resync does not succeed with non-consecutive OTPs
+        '''
+        user = 'root'
+        timeWindow = 180
+        params = {
+            'AutoResyncTimeout': '240',
+            'AutoResync': True
+        }
+
+        response = self.make_system_request('setConfig', params=params)
+        assert 'false' not in response.body
+
+        # Freeze time to the current system time
+        with freeze_time(datetime.datetime.now()) as frozen_time:
+            t1 = TotpToken()
+            key = t1.getKey().encode('hex')
+            step = t1.getTimeStep()
+
+            tserial = self.addToken(user=user, otplen=t1.digits,
+                                    typ='totp', key=key, timeStep=step)
+
+            self.serials.append(tserial)
+
+            (otp, counter) = t1.getOtp()
+
+            res = self.checkOtp(user, otp)
+            assert '"value": true' in res.body
+
+            # advance to a future time where the old otp is no longer valid
+            frozen_time.tick(delta=datetime.timedelta(seconds=timeWindow))
+            res = self.checkOtp(user, otp)
+            assert '"value": false' in res.body
+
+            # skip enough OTPs to leave the current window
+            counter += 2 * timeWindow
+
+            # get the first token
+            (first_otp, _) = t1.getOtp(counter=counter)
+            # get the second token
+            (second_otp, counter) = t1.getOtp(counter=counter+step)
+
+            # start resync with 2nd otp
+            res = self.checkOtp(user, second_otp)
+            assert '"value": false' in res.body
+
+            # provide the first OTP for the resync, it should fail
+            res = self.checkOtp(user, first_otp)
+            assert '"value": true' not in res.body
+
+    def test_resync_consecutive(self):
+        '''
+            totp test: verify that auto resync does succeed with consecutive OTPs and fails if they are outside of the range
+        '''
+        user = 'root'
+        timeWindow = 180
+        syncTimeout = 240
+        step = 30
+        params = {
+            'AutoResyncTimeout': '%s' % syncTimeout,
+            'AutoResync': True
+        }
+
+        response = self.make_system_request('setConfig', params=params)
+        assert 'false' not in response.body
+
+        for offset in range(1, 5):
+            # Freeze time to the current system time
+            with freeze_time(datetime.datetime.now()) as frozen_time:
+                t1 = TotpToken(timestep=step)
+                key = t1.getKey().encode('hex')
+
+                tserial = self.addToken(user=user, otplen=t1.digits,
+                                        typ='totp', key=key, timeStep=step)
+
+                self.serials.append(tserial)
+
+                (otp, counter) = t1.getOtp()
+                res = self.checkOtp(user, otp)
+                assert '"value": true' in res.body
+
+                log.info("Successful counter: %s", counter)
+
+                # advance to a future time where the old otp is no longer valid
+                frozen_time.tick(delta=datetime.timedelta(seconds=timeWindow))
+                res = self.checkOtp(user, otp)
+                assert '"value": false' in res.body
+
+                counter_advance = (40 * timeWindow)
+                log.info("Advancing counter by %s", counter_advance)
+                # skip enough OTPs to leave the current window
+                counter = (counter * step) + counter_advance
+
+                # get the first token
+                (first_otp, first_counter) = t1.getOtp(counter=counter)
+
+                # get the second token that is offset by a few but within range
+                (second_otp, second_counter) = t1.getOtp(counter=counter+step*offset)
+
+                log.info("First OTP: %s (%s), Second OTP: %s (%s)",
+                        first_otp, first_counter,
+                        second_otp, second_counter)
+
+                # start resync with a valid OTP
+                res = self.checkOtp(user, first_otp)
+                assert '"value": false' in res.body
+
+                # provide the second otp that follows the previous one
+                res = self.checkOtp(user, second_otp)
+
+                if offset <= 3:
+                    # as long as the OTP is not out of the sync range it should be good
+                    assert '"value": true' in res.body, offset
+                else:
+                    # if we are out of the sync range the OTP should be rejected
+                    assert '"value": false' in res.body, offset
 
     def test_getotp(self):
         '''
