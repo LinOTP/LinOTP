@@ -1,3 +1,9 @@
+linotp (2.10.7~0dev0-1) jessie; urgency=low
+
+  * Fix for TOTP replay using auto-resync [CVE-2019-12887]
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 24 Jun 2019 16:11:41 +0200
+
 linotp (2.10.5.2-1) jessie; urgency=low
 
   Fix:
