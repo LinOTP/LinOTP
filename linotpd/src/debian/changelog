@@ -1,3 +1,9 @@
+linotp (2.9.3.5-1) jessie; urgency=high
+
+  * Fix for TOTP replay using auto-resync
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 24 Jun 2019 11:15:26 +0200
+
 linotp (2.9.3.4-1) jessie; urgency=low
 
   Bug Fixes:
