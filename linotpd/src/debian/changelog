@@ -1,9 +1,15 @@
-linotp (2.9.3.5-1) jessie; urgency=low
+linotp (2.9.3.6~0dev0-1) jessie; urgency=low
 
   Bug Fixes:
   * Server: Restrict the userservice/context API (3af9f6)
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 30 Jan 2018 10:27:05 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 24 Jun 2019 15:29:46 +0200
+
+linotp (2.9.3.5-1) jessie; urgency=high
+
+  * Fix for TOTP replay using auto-resync
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 24 Jun 2019 11:15:26 +0200
 
 linotp (2.9.3.4-1) jessie; urgency=low
 
