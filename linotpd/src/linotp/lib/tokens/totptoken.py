@@ -507,6 +507,20 @@ class TimeHmacTokenClass(HmacTokenClass):
         #check if the otpval is valid in the sync scope
         res = hmac2Otp.checkOtp(anOtpVal, syncWindow, symetric=True)
 
+        # ------------------------------------------------------------------ --
+
+        # protect against a replay
+
+        # if the counter belonging to the provided otp is lower than the one
+        # we have last seen (which is the stored otp counter), then we deny
+        # the resync as it might be replay or an error
+
+        if res != -1 and res < self.getOtpCount():
+            log.info('otp below the last seen!')
+            return -1
+
+        # ------------------------------------------------------------------ --
+
         #if yes:
         if res != -1:
             # if former is defined
