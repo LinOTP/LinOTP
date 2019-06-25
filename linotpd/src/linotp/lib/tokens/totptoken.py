@@ -535,6 +535,20 @@ class TimeHmacTokenClass(HmacTokenClass):
         log.debug("[autosync] found otpval %r in syncwindow (%r): %r" %
                   (anOtpVal, syncWindow, res))
 
+        # ------------------------------------------------------------------ --
+
+        # protect against a replay
+
+        # if the counter belonging to the provided otp is lower than the one
+        # we have last seen (which is the stored otp counter), then we deny
+        # the resync as it might be replay or an error
+
+        if res != -1 and res < self.getOtpCount():
+            log.info('otp below the last seen!')
+            return -1
+
+        # ------------------------------------------------------------------ --
+
         #if yes:
         if res != -1:
             # if former is defined
