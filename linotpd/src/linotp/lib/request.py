@@ -209,7 +209,7 @@ class RadiusRequest(RemoteRequest):
     Radius request forwarding handler
     """
 
-    def do_request(self, user, password, options=None, unquote=True):
+    def do_request(self, user, password, options=None):
         """
         run the radius request against the remote host
 
@@ -232,8 +232,6 @@ class RadiusRequest(RemoteRequest):
         # Read the secret - from the parameter list :-)
         query_params = server_config.get("query_params", {})
         secret = query_params.get("secret", '')
-        if unquote:
-            secret = urllib.unquote(secret)
         radiusSecret = secret
 
         # here we also need to check for radius.user

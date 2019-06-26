@@ -1,12 +1,3 @@
-linotp (2.10.6rc0-1) jessie; urgency=low
-
-  Feature:
-  * Server: tls support for EMail provider
-  Fix:
-  * Server: url decode special characters in radius forwarding
-
- --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 27 May 2019 19:31:14 +0200
-
 linotp (2.10.5.2-1) jessie; urgency=low
 
   Fix:
