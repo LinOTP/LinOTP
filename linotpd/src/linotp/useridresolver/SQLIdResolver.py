@@ -43,6 +43,8 @@ try:
 except ImportError:
     _bcrypt_hashpw = None
 
+from passlib.hash import atlassian_pbkdf2_sha1
+
 import json
 
 import traceback
@@ -380,6 +382,30 @@ def _check_hash_type(password, hash_type, hash_value, salt=None):
         except ValueError:
             log.exception("[_check_hash_type] Unsupported Hash type: %r",
                           hash_type)
+
+    elif hash_type == 'PKCS5S2':
+        # ------------------------------------------------------------------ --
+
+        # support the atlasion pkdf sha1 password hashes
+        # s. https://passlib.readthedocs.io/en/stable/lib/\
+        #                    passlib.hash.atlassian_pbkdf2_sha1.html
+
+        try:
+
+            pw_hash = "{%s}%s" % (hash_type, hash_value)
+            return atlassian_pbkdf2_sha1.verify(password, pw_hash)
+
+        except TypeError as exx:
+
+            # raised for example if the padding of the hash of the
+            # sql entry is broken
+
+            log.exception("problem checking atlassian_pbkdf2_sha1")
+            return False
+
+        except Exception as exx:
+            log.exception("unknown problem checking atlassian_pbkdf2_sha1")
+            raise exx
 
     return res
 

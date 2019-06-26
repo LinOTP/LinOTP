@@ -70,6 +70,31 @@ class SQLTestController(TestController):
             log.error(" create user table error: %r " % e)
             userAdd.delUsers()
 
+    def addUser(
+            self, login, uid, password, givenname, surname,
+            mobile, telephonenumber, mail):
+        """
+        add a user to the user db
+        """
+
+        userAdd = SqlUserDB(connect=self.sqlconnect)
+        user = {
+            'user': login,
+            'uid': uid,
+            'telephonenumber': telephonenumber or '',
+            'mobile': mobile or '',
+            'sn': surname or '',
+            'givenname': givenname or '',
+            'password': password or '',
+            'mail': mail or ''
+        }
+        userAdd.addUser(**user)
+
+        resolverDefinition = userAdd.getResolverDefinition()
+        userAdd.close()
+
+        return resolverDefinition
+
     def addUsers(self, usercount=10):
         """
         generator to create users in the user db
