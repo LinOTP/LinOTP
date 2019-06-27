@@ -3087,7 +3087,10 @@ def get_single_auth_policy(policy_name, user=None, realms=None):
         if login:
             params['user'] = login
 
-        policy = getPolicy(params)
+        policy = get_client_policy(
+            client=_get_client(), scope="authentication",
+            action=policy_name, realm=realm, user=login, userObj=user)
+
         action_value = getPolicyActionValue(policy, policy_name,
                                             is_string=True)
         if action_value:
