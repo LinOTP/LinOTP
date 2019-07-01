@@ -95,6 +95,7 @@ build-test-environment:debian-buster:
     - pip install mock
     - pip install -U cffi
     - pip install coverage
+    - pip install bcrypt
     - pip freeze
     - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
     #- pip install -e .[tests]
@@ -162,6 +163,7 @@ unit-test:debian-buster:
     - pip install pyrad
     - pip install -U cffi
     - pip install coverage
+    - pip install bcrypt
     - pip freeze
     - python setup.py develop
     - python tools/linotp-create-enckey -f test.ini
@@ -209,7 +211,7 @@ func:jessie:
     - bash -c "cat func_chunk_0$CI_NODE_INDEX | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
   variables:
     DEBIAN_RELEASE_NAME: jessie
-  
+
 func:stretch:
   extends: .functional-test
   stage: test
