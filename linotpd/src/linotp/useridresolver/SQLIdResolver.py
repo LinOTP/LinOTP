@@ -35,21 +35,16 @@ import re
 import base64
 import hashlib
 import urllib
-
-import crypt
-try:
-    import bcrypt
-    _bcrypt_hashpw = bcrypt.hashpw
-except ImportError:
-    _bcrypt_hashpw = None
-
-from passlib.hash import atlassian_pbkdf2_sha1
-
 import json
 
 import traceback
 import logging
 
+import crypt
+
+from passlib.hash import atlassian_pbkdf2_sha1
+from passlib.hash import bcrypt as passlib_bcrypt
+from passlib.hash import phpass as passlib_phpass
 
 # from sqlalchemy.event import listen
 
@@ -68,10 +63,24 @@ from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 from linotp.lib.type_utils import encrypted_data
 from linotp.lib.type_utils import text
 
+bcrypt_regex = re.compile(r"^\$2(a|b|x|y)?\$(.*)")
+php_regex = re.compile(r"^\$P\$(.*)")
+
+
+DEFAULT_ENCODING = "utf-8"
 
 log = logging.getLogger(__name__)
 
-DEFAULT_ENCODING = "utf-8"
+def check_bcypt_password(password, stored_hash):
+    """
+    check bcrypt passwords, which starts with $2$, $2a$, $2b$, $2x$ or $2y$
+
+    :param password: the new, to be verified password
+    :param stored_hash: the previously used password in a hashed form
+    :return: boolean
+    """
+
+    return passlib_bcrypt.verify(password, stored_hash)
 
 
 def check_php_password(password, stored_hash):
@@ -82,22 +91,8 @@ def check_php_password(password, stored_hash):
     :param stored_hash: the previously used password in a hashed form
     :return: boolean
     """
-    result = False
 
-    if stored_hash.startswith('$2a$'):
-        # bcrypt
-        if _bcrypt_hashpw is None:
-            raise NotImplementedError('The bcrypt module is required')
-        hashed_password = _bcrypt_hashpw(password, stored_hash)
-        result = hashed_password == stored_hash
-    elif stored_hash.startswith('_'):
-        # ext-des
-        hashed_password = crypt.crypt(password, stored_hash)
-        result = hashed_password == stored_hash
-    else:
-        log.info("Hashed password type not recognised!")
-
-    return result
+    return passlib_phpass.verify(password, stored_hash)
 
 
 def make_connect(driver, user, pass_, server, port, db, conParams=""):
@@ -618,8 +613,17 @@ class IdResolver(UserIdResolver):
 
         # check if we have the PHP Password Framework like it is
         # used in Wordpress
+        # example is $P$8ohUJ.1sdFw09/bMaAQPTGDNi2BIUt1 for password
 
-        m_php = re.match("^\$P\$(.*)", userInfo["password"])
+        m_php = re.match(php_regex, userInfo["password"])
+
+        # regex for bcrypt:
+        # password starts with $2$, $2a$, $2b$, $2b$, $2x$ or $2y$
+        #
+        # https://passlib.readthedocs.io/en/stable\
+        #              /lib/passlib.hash.bcrypt.html#passlib.hash.bcrypt
+
+        m_bcrpyt = re.match(bcrypt_regex, userInfo["password"])
 
         if m:
             # The password field contains something like
@@ -638,15 +642,20 @@ class IdResolver(UserIdResolver):
             # '$P$BPC00gOTHbTWl6RH6ZyfYVGWkX3Wec.'
             return check_php_password(password, userInfo["password"])
 
-        # ------------------------------------------------------------------ --
 
-        # check the Modular Crypt Format (MCF):
-        #
-        #  $<id>[$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
-        #
-        # s. https://en.wikipedia.org/wiki/Crypt_%28C%29
+        elif m_bcrpyt:
+            # password starts with $2$, $2a$, $2b$, $2b$, $2x$ or $2y$
+            return check_bcypt_password(password, userInfo["password"])
 
         elif userInfo["password"][0] == '$':
+
+            # ----------------------------------------------------------- --
+
+            # check the Modular Crypt Format (MCF):
+            #
+            #  $<id>[$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
+            #
+            # s. https://en.wikipedia.org/wiki/Crypt_%28C%29
 
             if crypt.crypt(password, userInfo["password"]) == userInfo["password"]:
 

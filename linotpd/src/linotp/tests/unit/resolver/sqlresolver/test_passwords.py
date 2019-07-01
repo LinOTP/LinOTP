@@ -25,7 +25,7 @@
 #   Support: www.keyidentity.com
 
 """
-SQL Resolver unit test - test atlasian passwords
+SQL Resolver unit test - test passwords formats
 """
 
 import unittest
@@ -33,9 +33,11 @@ import unittest
 from passlib.hash import atlassian_pbkdf2_sha1
 
 from linotp.useridresolver.SQLIdResolver import _check_hash_type
+from linotp.useridresolver.SQLIdResolver import check_php_password
+from linotp.useridresolver.SQLIdResolver import check_bcypt_password
 
 
-class TestSQLResolver_PKCS5S2_Password(unittest.TestCase):
+class TestSQLResolver_Password(unittest.TestCase):
 
     def test_pbkdf2_password(self):
 
@@ -63,4 +65,42 @@ class TestSQLResolver_PKCS5S2_Password(unittest.TestCase):
 
         wrong_hash_value = hash_value.replace('G','Q')
         res =_check_hash_type(brahms_pw, hash_type, wrong_hash_value)
+        assert res == False
+
+    def test_bcypt_password(self):
+        """ check the bcypt password verification method """
+
+        password = 'password'
+        password_hash = ('$2a$12$NT0I31Sa7ihGEWpka9ASYrEFk'
+                         'huTNeBQ2xfZskIiiJeyFXhRgS.Sy')
+        res = check_bcypt_password(password, password_hash)
+        assert res == True
+
+        wrong_password_hash = password_hash.replace('h','t')
+
+        res = check_bcypt_password(password, wrong_password_hash)
+        assert res == False
+
+        wrong_password = password + '!'
+
+        res = check_bcypt_password(wrong_password, password_hash)
+        assert res == False
+
+    def test_php_passwords(self):
+        """ check the php password verification method """
+
+        password = 'password'
+        password_hash ='$P$8ohUJ.1sdFw09/bMaAQPTGDNi2BIUt1'
+
+        res = check_php_password(password, password_hash)
+        assert res == True
+
+        wrong_password_hash = password_hash.replace('U','Z')
+
+        res = check_php_password(password, wrong_password_hash)
+        assert res == False
+
+        wrong_password = password + '!'
+
+        res = check_php_password(wrong_password, password_hash)
         assert res == False
