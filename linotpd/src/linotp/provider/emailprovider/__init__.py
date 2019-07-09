@@ -28,9 +28,12 @@
 
 import logging
 import smtplib
+
+from hashlib import sha256
+
 from email.mime.text import MIMEText
 from linotp.provider import provider_registry
-
+from linotp.lib.type_utils import boolean
 
 LOG = logging.getLogger(__name__)
 
@@ -108,6 +111,10 @@ class SMTPEmailProvider(IEmailProvider):
         self.email_from = None
         self.email_subject = None
 
+        self.start_tls = False
+        self.start_tls_params_keyfile = None
+        self.start_tls_params_certfile = None
+
     def loadConfig(self, configDict):
         """
         Loads the configuration for this e-mail e-mail provider
@@ -117,12 +124,35 @@ class SMTPEmailProvider(IEmailProvider):
         :type configDict: dict
 
         """
+
+        default_port = 25
+
+        self.config = configDict
+
         self.smtp_server = configDict.get('SMTP_SERVER')
-        self.smtp_port = configDict.get('SMTP_PORT', 0)
+
+        if not self.smtp_server:
+            raise Exception("Invalid EmailProviderConfig. SMTP_SERVER is "
+                            "required")
+
+        self.start_tls = boolean(self.config.get("START_TLS", False))
+        if self.start_tls:
+            default_port = 587
+            self.start_tls_params_keyfile = self.config.get("KEYFILE")
+            self.start_tls_params_certfile = self.config.get("CERTFILE")
+
+        self.use_ssl = boolean(self.config.get("USE_SSL", False))
+        if self.use_ssl:
+            default_port = 465
+
+        self.smtp_port = int(configDict.get('SMTP_PORT', default_port))
+
         self.smtp_user = configDict.get('SMTP_USER')
         self.smtp_password = configDict.get('SMTP_PASSWORD')
-        self.email_from = configDict.get('EMAIL_FROM')
-        self.email_subject = configDict.get('EMAIL_SUBJECT')
+        self.email_from = configDict.get(
+            'EMAIL_FROM', self.DEFAULT_EMAIL_FROM)
+        self.email_subject = configDict.get(
+            'EMAIL_SUBJECT', self.DEFAULT_EMAIL_SUBJECT)
 
     def submitMessage(self, email_to, message, subject=None):
         """
@@ -144,42 +174,93 @@ class SMTPEmailProvider(IEmailProvider):
         if not self.smtp_server:
             raise Exception("Invalid EmailProviderConfig. SMTP_SERVER is "
                             "required")
-        if not self.email_from:
-            self.email_from = self.DEFAULT_EMAIL_FROM
 
-        email_subject = self.DEFAULT_EMAIL_SUBJECT
+        # ------------------------------------------------------------------ --
 
-        if subject:
-            email_subject = subject
-        elif self.email_subject:
-            email_subject = self.email_subject
+        # setup message
 
-        status_message = "e-mail sent successfully"
-        success = True
+        email_subject = subject or self.email_subject
 
-        # Create a text/plain message
+        # create a text/plain MIME message
+
         msg = MIMEText(message)
         msg['Subject'] = email_subject
         msg['From'] = self.email_from
         msg['To'] = email_to
 
-        smtp_connection = smtplib.SMTP(self.smtp_server, self.smtp_port)
+        # ------------------------------------------------------------------ --
+
+        # now build up the connection
+
+        # if SSL is defined, we require a different connector class
+
+        smtp_connector = smtplib.SMTP
+
+        if self.use_ssl:
+            smtp_connector = smtplib.SMTP_SSL
+
+        smtp_connection = smtp_connector(self.smtp_server, self.smtp_port)
+
+        # ------------------------------------------------------------------ --
+
+        # handle the secure connection build up
+
+        # uncomment the following line for debug purpose
+        # smtp_connection.set_debuglevel(1)
+
+        smtp_connection.ehlo()
+
+        if self.start_tls and not self.use_ssl:
+            if not smtp_connection.has_extn('STARTTLS'):
+                LOG.error("Start_TLS not supported:")
+                raise Exception("Start_TLS requested but not supported"
+                                " by server %r" % self.smtp_server)
+
+            smtp_connection.starttls(self.start_tls_params_keyfile,
+                                     self.start_tls_params_certfile)
+            smtp_connection.ehlo()
+
+        # ------------------------------------------------------------------ --
+
+        # authenticate on smtp server
+
         if self.smtp_user:
+            if not smtp_connection.has_extn('AUTH'):
+                LOG.error("AUTH not supported:")
+                raise Exception("AUTH not supported"
+                                " by server %r" % self.smtp_server)
+
+            LOG.debug("authenticating to mailserver, user: %r", self.smtp_user)
             smtp_connection.login(self.smtp_user, self.smtp_password)
+
+        # ------------------------------------------------------------------ --
+
+        # submit message
+
         try:
             errors = smtp_connection.sendmail(self.email_from,
                                               email_to, msg.as_string())
             if len(errors) > 0:
                 LOG.error("error(s) sending e-mail %r", errors)
-                success, status_message = False, ("error sending e-mail %s"
-                                                  % errors)
+                return False, ("error sending e-mail %r" % errors)
 
-        except (smtplib.SMTPHeloError, smtplib.SMTPRecipientsRefused,
-                smtplib.SMTPSenderRefused, smtplib.SMTPDataError
-               ) as smtplib_exception:
+            return True, "e-mail sent successfully"
+
+        except (
+            smtplib.SMTPHeloError,
+            smtplib.SMTPRecipientsRefused,
+            smtplib.SMTPSenderRefused,
+            smtplib.SMTPDataError
+        ) as smtplib_exception:
+
             LOG.error("error(s) sending e-mail. Caught exception: %r",
                       smtplib_exception)
-            success, status_message = False, ("error sending e-mail %r"
-                                              % smtplib_exception)
-        smtp_connection.quit()
-        return success, status_message
+
+            return False, ("error sending e-mail %r" % smtplib_exception)
+
+        finally:
+            if smtp_connection:
+                smtp_connection.quit()
+
+
+# eof
