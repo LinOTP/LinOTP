@@ -1,3 +1,9 @@
+linotp (2.10.7~0dev0-1) jessie; urgency=low
+
+  * Set new version 2.10.7~0dev0-1
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 09 Jul 2019 16:52:12 +0200
+
 linotp (2.10.6rc0-1) jessie; urgency=low
 
   * Set new version 2.10.6rc0
