@@ -63,9 +63,6 @@ from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 from linotp.lib.type_utils import encrypted_data
 from linotp.lib.type_utils import text
 
-bcrypt_regex = re.compile(r"^\$2(a|b|x|y)?\$(.*)")
-php_regex = re.compile(r"^\$P\$(.*)")
-
 
 DEFAULT_ENCODING = "utf-8"
 
@@ -611,20 +608,6 @@ class IdResolver(UserIdResolver):
 
         m = re.match("^\{(.*)\}(.*)", userInfo["password"])
 
-        # check if we have the PHP Password Framework like it is
-        # used in Wordpress
-        # example is $P$8ohUJ.1sdFw09/bMaAQPTGDNi2BIUt1 for password
-
-        m_php = re.match(php_regex, userInfo["password"])
-
-        # regex for bcrypt:
-        # password starts with $2$, $2a$, $2b$, $2b$, $2x$ or $2y$
-        #
-        # https://passlib.readthedocs.io/en/stable\
-        #              /lib/passlib.hash.bcrypt.html#passlib.hash.bcrypt
-
-        m_bcrpyt = re.match(bcrypt_regex, userInfo["password"])
-
         if m:
             # The password field contains something like
             # {SHA256}abcdfef123456
@@ -637,13 +620,12 @@ class IdResolver(UserIdResolver):
                 salt = userInfo['salt']
             return _check_hash_type(password, hash_type, hash_value, salt=salt)
 
-        elif m_php:
+        elif passlib_phpass.identify(userInfo["password"]):
             # The Password field contains something like
             # '$P$BPC00gOTHbTWl6RH6ZyfYVGWkX3Wec.'
             return check_php_password(password, userInfo["password"])
 
-
-        elif m_bcrpyt:
+        elif passlib_bcrypt.identify(userInfo["password"]):
             # password starts with $2$, $2a$, $2b$, $2b$, $2x$ or $2y$
             return check_bcypt_password(password, userInfo["password"])
 
