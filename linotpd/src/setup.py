@@ -87,10 +87,11 @@ setup(
         "configobj>=4.6.0",
         "httplib2",
         "requests",
+        "passlib",
         "pysodium>=0.6.8",
         "python-ldap",
-        # We also need M2Crypto. But this package is so problematic on many
-        # distributions, that we do not require it here!
+        # We also need bcrypt and M2Crypto. But these packages are so
+        # problematic on many distributions, that we do not require it here!
     ],
     scripts=[
         'tools/linotp-convert-token',
