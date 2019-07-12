@@ -35,6 +35,9 @@ from netaddr.ip import IPNetwork
 
 from linotp.lib.crypto.encrypted_data import EncryptedData
 
+class DurationParsingException(Exception):
+    pass
+
 duration_regex = re.compile(r'((?P<weeks>\d+?)(w|week|weeks))?'
                             '((?P<days>\d+?)(d|day|days))?'
                             '((?P<hours>\d+?)(h|hour|hours))?'
@@ -42,7 +45,15 @@ duration_regex = re.compile(r'((?P<weeks>\d+?)(w|week|weeks))?'
                             '((?P<seconds>\d+?)(s|second|seconds))?$')
 
 
-def parse_duration(duration_str):
+iso8601_duration_regex = re.compile(r'P((?P<years>\d+)Y)?'
+                                    '((?P<months>\d+)M)?'
+                                    '((?P<weeks>\d+)W)?'
+                                    '((?P<days>\d+)D)?'
+                                    '(T((?P<hours>\d+)H)?'
+                                    '((?P<minutes>\d+)M)?'
+                                    '((?P<seconds>\d+)S)?)?')
+
+def parse_duration(duration_str, time_delta_compliant=False):
     """
     transform a duration string into a time delta object
 
@@ -50,20 +61,52 @@ def parse_duration(duration_str):
         http://stackoverflow.com/questions/35626812/how-to-parse-timedelta-from-strings
 
     :param duration_str:  duration string like '1h' '3h 20m 10s' '10s'
+                          or iso8601 durations like 'P23DT23H'
     :return: timedelta
     """
 
     # remove all white spaces for easier parsing
     duration_str = ''.join(duration_str.split())
 
-    parts = duration_regex.match(duration_str.lower())
+    if duration_str.upper().startswith('P'):
+        parts = iso8601_duration_regex.match(duration_str.upper())
+    else:
+        parts = duration_regex.match(duration_str.lower())
+
     if not parts:
-        return
+        raise DurationParsingException(
+            'no valid duration expression: %r' % duration_str)
+
     parts = parts.groupdict()
+
+    if time_delta_compliant:
+        if 'months' in parts or 'weeks' in parts or 'years' in parts:
+            # iso8601 defines month, weeks and years, while the python
+            # timedelta does not support it for good reasons
+            raise DurationParsingException(
+                'defintion %s not pthon timedelta supported!' % duration_str)
+
     time_params = {}
+
     for (name, param) in parts.iteritems():
-        if param:
-            time_params[name] = int(param)
+
+        if not param:
+            continue
+
+        if name == 'months':
+            name = 'days'
+            param = 30 * float(param)
+        elif name == 'weeks':
+            name = 'days'
+            param = 7 * float(param)
+        elif name == "years":
+            name = 'days'
+            param = 365 * float(param)
+
+        if name in time_params:
+            time_params[name] = float(time_params.get(name)) + float(param)
+        else:
+            time_params[name] = float(param)
 
     return timedelta(**time_params)
 
