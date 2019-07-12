@@ -36,7 +36,8 @@ import json
 from datetime import datetime
 from datetime import timedelta
 
-from linotp.tokens.totptoken import TimeHmacTokenClass
+from linotp.tokens.totptoken import time2counter
+from linotp.tokens.totptoken import counter2time
 
 from mock import MagicMock, patch
 
@@ -103,19 +104,14 @@ def range_tvector():
 class TotpTestCase(unittest.TestCase):
     """
 
-    unit test for the following token methods
+    unit test for the following functions
 
-    * _time2counter_(self, T0, timeStepping=60):
-    * _counter2time_(self, counter, timeStepping=60):
+    * time2counter( T0, timeStepping):
+    * counter2time(counter, timeStepping):
 
     """
 
-    @patch('linotp.tokens.smstoken.context', new=fake_context)
-    @patch('linotp.tokens.totptoken.TimeHmacTokenClass.__init__')
-    def test_counter2time(self, mock__init__):
-
-        mock__init__.return_value = None
-        totp_token = TimeHmacTokenClass()
+    def test_counter2time(self):
 
 
         for t_step in (60, 30):
@@ -126,26 +122,22 @@ class TotpTestCase(unittest.TestCase):
                 h_seconds = timedelta(
                     seconds=counter * t_step).total_seconds()
 
-                t_seconds = totp_token._counter2time_(counter, timeStepping=t_step)
+                t_seconds = counter2time(counter, timeStepping=t_step)
 
                 # we have to be in the range of seconds
-                assert l_seconds <= t_seconds <= h_seconds, ( l_seconds, t_seconds, h_seconds)
+                assert l_seconds <= t_seconds <= h_seconds, \
+                        ( l_seconds, t_seconds, h_seconds)
 
         return
 
-    @patch('linotp.tokens.smstoken.context', new=fake_context)
-    @patch('linotp.tokens.totptoken.TimeHmacTokenClass.__init__')
-    def test_time2counter(self, mock__init__):
 
-        mock__init__.return_value = None
-        totp_token = TimeHmacTokenClass()
+    def test_time2counter(self):
 
         for t_step in (60,30):
             for seconds in range(0, 600, t_step):
 
                 # calculate the counter from the seconds
-                counter = totp_token._time2counter_(
-                    seconds, timeStepping=t_step)
+                counter = time2counter(seconds, timeStepping=t_step)
 
                 # create the seconds back from counter
                 v_seconds = counter * t_step
@@ -155,22 +147,16 @@ class TotpTestCase(unittest.TestCase):
 
         return
 
-    @patch('linotp.tokens.smstoken.context', new=fake_context)
-    @patch('linotp.tokens.totptoken.TimeHmacTokenClass.__init__')
-    def test_counter_time(self, mock__init__):
-
-        mock__init__.return_value = None
-        totp_token = TimeHmacTokenClass()
+    def test_counter_time(self):
 
         for vector in range_tvector():
 
             (seconds, token_time, counter, totp, hash_algo) = vector
 
-            t_seconds = totp_token._counter2time_(counter, timeStepping=30)
+            t_seconds = counter2time(counter, timeStepping=30)
             t_time = unix_start_time + timedelta(seconds=t_seconds)
-            ccounter = totp_token._time2counter_(t_seconds, timeStepping=30)
+            ccounter = time2counter(t_seconds, timeStepping=30)
 
-            if ccounter != counter:
-                pass
+            assert ccounter == counter
 
         return
