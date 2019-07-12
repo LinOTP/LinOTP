@@ -1,8 +1,21 @@
 linotp (2.10.7~0dev0-1) jessie; urgency=low
 
+  * Set new version 2.10.7~0dev0-1
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 09 Jul 2019 16:52:12 +0200
+
+linotp (2.10.6rc0-1) jessie; urgency=low
+
+  * Set new version 2.10.6rc0
+  * feature: support ssl/tls and start_tls with emailprovider
+
+ --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 2 Jul 2019 17:55:28 +0200
+
+linotp (2.10.5.3-1) jessie; urgency=high
+
   * Fix for TOTP replay using auto-resync [CVE-2019-12887]
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 24 Jun 2019 16:11:41 +0200
+ --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 19 Jun 2019 17:02:31 +0200
 
 linotp (2.10.5.2-1) jessie; urgency=low
 
