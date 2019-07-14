@@ -1921,7 +1921,7 @@ class AdminController(BaseController):
             c.audit['source_realm'] = getTokenRealms(serial)
             log.info("[tokenrealm] setting realms for token %s to %s",
                      serial, realms)
-            realmList = realms.split(',')
+            realmList = [r.strip() for r in realms.split(',')]
             ret = setRealms(serial, realmList)
 
             c.audit['success'] = ret
