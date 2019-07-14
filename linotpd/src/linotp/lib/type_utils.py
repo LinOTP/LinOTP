@@ -75,7 +75,7 @@ def parse_duration(duration_str, time_delta_compliant=False):
 
     if not parts:
         raise DurationParsingException(
-            'no valid duration expression: %r' % duration_str)
+            "must be of type 'duration': %r" % duration_str)
 
     parts = parts.groupdict()
 
@@ -84,7 +84,8 @@ def parse_duration(duration_str, time_delta_compliant=False):
             # iso8601 defines month, weeks and years, while the python
             # timedelta does not support it for good reasons
             raise DurationParsingException(
-                'defintion %s not pthon timedelta supported!' % duration_str)
+                'definition %s is not python timedelta supported!'
+                % duration_str)
 
     time_params = {}
 
