@@ -772,7 +772,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         secObj = self._get_secret_object()
         hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(hashlibStr))
         matching_counter = hmac2Otp.checkOtp(
-                                otp, int(window / time_step), symetric=True)
+                                otp, int(window / time_step), symetric=False)
 
 
         # ------------------------------------------------------------------ --
@@ -802,10 +802,11 @@ class TimeHmacTokenClass(HmacTokenClass):
         time_info = datetime.datetime.utcfromtimestamp(time_stamp)
 
         return True, {
+            'serial' : self.getSerial(),
             'otp': otp,
             'counter': matching_counter,
-            'time_sec': time_stamp,
-            'time': time_info.strftime("%Y-%m-%d %H:%M:%S"),
-            'time_span': time_stamp / time_step,
+            'time': time_info.isoformat(),
+            'seconds': int(time_stamp),
+            'span': time_step,
         }
 
