@@ -165,7 +165,7 @@ class TestTotpLookupController(TestController):
 
                 response = self.make_admin_request(
                     'totp_lookup', params=params)
-                assert '"value": true' in response, response
+                assert '"value": true' in response.body, response
 
                 # ---------------------------------------------------------- --
 
@@ -305,8 +305,8 @@ class TestTotpLookupController(TestController):
 
         response = self.make_admin_request(
             'totp_lookup', params=params, auth_user='admin')
-        assert '"status": false' in response, response
-        assert '"value": false' not in response, response
+        assert '"status": false' in response.body, response
+        assert '"value": false' not in response.body, response
 
         # verify: no access to token2
 
@@ -317,8 +317,8 @@ class TestTotpLookupController(TestController):
 
         response = self.make_admin_request(
             'totp_lookup', params=params, auth_user='admin')
-        assert '"status": false' in response, response
-        assert '"value": false' not in response, response
+        assert '"status": false' in response.body, response
+        assert '"value": false' not in response.body, response
 
         # verify: access to token3
 
@@ -329,7 +329,7 @@ class TestTotpLookupController(TestController):
 
         response = self.make_admin_request(
             'totp_lookup', params=params, auth_user='admin')
-        assert '"status": true' in response, response        
-        assert '"value": false' in response, response
+        assert '"status": true' in response.body, response
+        assert '"value": false' in response.body, response
 
         return
