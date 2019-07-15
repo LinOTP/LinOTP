@@ -276,20 +276,20 @@ coverage-report:buster:
 
 .build-debs:
   stage: build-debian-packages
-  image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
-  before_script:
-    - apt-get install -y --no-install-recommends wget
-    - CURR_PWD=$PWD
-    - cd linotpd/src
-    - mk-build-deps --install --remove --tool "apt-get --yes --no-install-recommends"
-    - cd $CURR_PWD
+  image: debian:${DEBIAN_RELEASE_NAME}
   script:
+    - apt-get update
+    - apt-get install --yes --no-install-recommends equivs git-buildpackage lsb-release
+    # Generate snapshot entries for debian changelogs
+    - ci/update-debian-changelog adminclient/LinOTPAdminClientCLI/src
+    - ci/update-debian-changelog linotpd/src
+    - (cd linotpd/src && mk-build-deps --install --remove --tool "apt-get --yes --no-install-recommends")
     - make deb-install DESTDIR=pkg/apt/${DEBIAN_RELEASE_NAME}
-    - mkdir -p build
   artifacts:
     paths:
       - pkg/apt/${DEBIAN_RELEASE_NAME}
     expire_in: 1 week
+
 
 build:jessie:
   extends: .build-debs
