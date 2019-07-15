@@ -465,6 +465,36 @@ class TestTotpController(TestController):
 
         return
 
+    def test_use_consecutive(self):
+        '''
+            totp test: test if we can use consecutive OTPs without errors
+        '''
+
+        user = 'root'
+        step = 30
+
+        # Freeze time to the current system time
+        with freeze_time(datetime.datetime.now()) as frozen_time:
+            t1 = TotpToken(timestep=step)
+            key = t1.getKey().encode('hex')
+            step = t1.getTimeStep()
+
+            tserial = self.addToken(user=user, otplen=t1.digits,
+                                    typ='totp', key=key, timeStep=step)
+
+            self.serials.append(tserial)
+
+            (otp, counter) = t1.getOtp()
+            res = self.checkOtp(user, otp)
+            assert '"value": true' in res.body
+
+            for i in range(10):
+                frozen_time.tick(delta=datetime.timedelta(seconds=step))
+                (otp, new_counter) = t1.getOtp()
+                assert new_counter - 1 == counter
+                assert '"value": true' in res.body
+                counter = new_counter
+
     def test_use_token_twice(self):
         '''
             totp test: test if an otp could be used twice

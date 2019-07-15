@@ -27,7 +27,6 @@
 
 import logging
 import time
-import math
 import datetime
 
 
@@ -35,16 +34,18 @@ from linotp.lib.HMAC import HmacOtp
 from linotp.lib.util import generate_otpkey
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import ParameterError
+from linotp.lib.type_utils import boolean
 
 
 from linotp.tokens.base import TokenClass
 from linotp.tokens.hmactoken import HmacTokenClass
 from linotp.tokens import tokenclass_registry
 
-keylen = {'sha1': 20,
-          'sha256': 32,
-          'sha512': 64
-          }
+keylen = {
+    'sha1': 20,
+    'sha256': 32,
+    'sha512': 64
+    }
 
 log = logging.getLogger(__name__)
 
@@ -90,6 +91,14 @@ Internet-Draft                HOTPTimeBased               September 2010
 
 """
 
+def time2counter(T0, timeStepping):
+    counter = int(T0 / timeStepping)
+    return counter
+
+def counter2time(counter, timeStepping):
+    T0 = float(counter)  * timeStepping
+    return T0
+
 ###############################################
 
 @tokenclass_registry.class_entry('totp')
@@ -111,27 +120,49 @@ class TimeHmacTokenClass(HmacTokenClass):
         self.setType(u"TOTP")
         self.hKeyRequired = True
 
-        ''' timeStep defines the granularity: '''
+        # timeStep defines the granularity:
         self.timeStep = getFromConfig("totp.timeStep", 30) or 30
 
-        ''' window size in seconds:
-            30 seconds with as step width of 30 seconds results
-            in a window of 1  which is one attempt
-        '''
+        #  window size in seconds:
+        #    30 seconds with as step width of 30 seconds results
+        #    in a window of 1  which is one attempt
+
         self.timeWindow = getFromConfig("totp.timeWindow", 180) or 180
 
 
-        '''the time shift is specified in seconds  - and could be
-        positive and negative
-        '''
+        # the time shift is specified in seconds  - and could be
+        # positive and negative
+
         self.timeShift = getFromConfig("totp.timeShift", 0)
 
-        '''we support various hashlib methods, but only on create
-        which is effectively set in the update
-        '''
+        # we support various hashlib methods, but only on create
+        # which is effectively set in the update
+
         self.hashlibStr = getFromConfig("totp.hashlib", u'sha1') or 'sha1'
 
+        self.otplen = int(self.token.LinOtpOtpLen)
+
+        # ------------------------------------------------------------------ --
+
+        # load token settings from the token info if available
+
+        info = self.getTokenInfo()
+
+        if info:
+
+            self.hashlibStr = info.get("hashlib", self.hashlibStr) or 'sha1'
+
+            self.timeStepping = int(info.get("timeStep", self.timeStep) or 30)
+
+            self.window = int(info.get("timeWindow", self.timeWindow) or 180)
+
+            self.shift = int(info.get("timeShift", self.timeShift) or 0)
+
+            log.debug("[checkOTP] timestep: %i, timeWindow: %i, timeShift: %i",
+                      self.timeStepping, self.window, self.shift)
+
         return
+
     @classmethod
     def getClassType(cls):
         '''
@@ -210,7 +241,6 @@ class TimeHmacTokenClass(HmacTokenClass):
             if ret == 'all':
                 ret = res
         return ret
-
 
 
     def update(self, param):
@@ -312,13 +342,6 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         return res
 
-    def _time2counter_(self, T0, timeStepping=60):
-        counter = int(T0 / timeStepping)
-        return counter
-
-    def _counter2time_(self, counter, timeStepping=60):
-        T0 = float(counter)  * timeStepping
-        return T0
 
     def time2float(self, curTime):
         '''
@@ -356,7 +379,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         return tCounter
 
 
-
     def checkOtp(self, anOtpVal, counter, window, options=None):
         '''
         checkOtp - validate the token otp against a given otpvalue
@@ -378,87 +400,77 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         '''
 
+        # convert the window counter into seconds
+        totp_window = window * self.timeStepping
 
-        try:
-            otplen = int(self.token.LinOtpOtpLen)
-        except ValueError as e:
-            raise e
+        T0 = time.time() + self.shift
+
+        # for legacy selftest
+        if options and 'initTime' in options:
+            T0 = int(options['initTime'])
+
+        counter = time2counter(T0, timeStepping=self.timeStepping)
+
+        # ------------------------------------------------------------------ --
+
+        # setup the hmac object, which encapsulates the secret context
 
         secObj = self._get_secret_object()
-        self.hashlibStr = self.getFromTokenInfo("hashlib", self.hashlibStr) or 'sha1'
+        hmac2Otp = HmacOtp(
+            secObj, counter, self.otplen, self.getHashlib(self.hashlibStr))
 
-        timeStepping = int(self.getFromTokenInfo("timeStep", self.timeStep) or 30)
-        window = int(self.getFromTokenInfo("timeWindow", self.timeWindow) or 180)
-        shift = int(self.getFromTokenInfo("timeShift", self.timeShift) or 0)
+        # ------------------------------------------------------------------ --
 
-        ## oldCounter we have to remove one, as the normal otp handling will increment
-        oCount = self.getOtpCount() - 1
+        otp_match_counter = hmac2Otp.checkOtp(
+            anOtpVal, int(totp_window / self.timeStepping), symetric=True)
 
-        initTime = -1
-        if options is not None and type(options) == dict:
-            initTime = int(options.get('initTime', -1))
+        # ------------------------------------------------------------------ --
 
-        if oCount < 0: oCount = 0
-        log.debug("[checkOTP] timestep: %i, timeWindow: %i, timeShift: %i" %
-                  (timeStepping, window, shift))
-        inow = int(time.time())
+        # protect against a replay
 
-        T0 = time.time() + shift
-        if initTime != -1: T0 = int(initTime)
+        # if the counter belonging to the provided otp is lower than the
+        # stored counter (which is the next expected counter), then we deny
+        # as it might be replay
 
-        counter = self._time2counter_(T0, timeStepping=timeStepping)
+        if otp_match_counter != -1 and otp_match_counter < self.getOtpCount():
+            log.warning("a previous OTP value was used again!")
+            return -1
 
-        hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(self.hashlibStr))
-        res = hmac2Otp.checkOtp(anOtpVal, int (window / timeStepping), symetric=True)
+        # ------------------------------------------------------------------ --
 
-        if res != -1 and oCount != 0 and res <= oCount:
-            if initTime == -1:
-                log.warning("[checkOTP] a previous OTP value was used again!\n former tokencounter: %i, presented counter %i" %
-                        (oCount, res))
-                res = -1
-                return res
+        # the otp might be out of the test window so we try to autosync:
+        # look if two consecutive otps has been provided
 
-        if -1 == res :
-            ## autosync: test if two consecutive otps have been provided
-            res = self.autosync(hmac2Otp, anOtpVal)
+        if otp_match_counter == -1:
+            otp_match_counter = self.autosync(hmac2Otp, anOtpVal)
+
+        if otp_match_counter == -1:
+            log.debug("otp verification failed!")
+            return -1
+
+        # ------------------------------------------------------------------ --
+
+        # on success, we have to save the timeshift and matching otp counter
+        self.set_new_timeshift(otp_match_counter)
+
+        # and the matching otp counter
+        self.setOtpCount(otp_match_counter)
+
+        log.debug("otp verification result was: res %r", otp_match_counter)
+        return otp_match_counter
 
 
-        if res != -1:
-            ## on success, we have to save the last attempt
-            self.setOtpCount(counter)
+    def set_new_timeshift(self, otp_match_counter):
+        """
+        calculate and set the new timeshift
 
-            #
-            # here we calculate the new drift/shift between the server time and the tokentime
-            #
-            tokentime = self._counter2time_(res, timeStepping)
-            tokenDt = datetime.datetime.fromtimestamp(tokentime / 1.0)
+        :param otp_match_counter: the counter that matches the given otp
+        """
 
-            nowDt = datetime.datetime.fromtimestamp(inow / 1.0)
+        new_shift = self._calculate_new_timeshift(
+            otp_match_counter, self.getOtpCount(), self.timeStepping)
 
-            # reverse time mapping:
-            # from time to counter to timeStepping mapped timeslot
-
-            lastauth = self._counter2time_(oCount, timeStepping)
-            lastauthDt = datetime.datetime.fromtimestamp(lastauth / 1.0)
-
-            log.debug("[checkOTP] last auth : %r" % (lastauthDt))
-            log.debug("[checkOTP] tokentime : %r" % (tokenDt))
-            log.debug("[checkOTP] now       : %r" % (nowDt))
-            log.debug("[checkOTP] delta     : %r" % (tokentime - inow))
-
-            inow_counter = self._time2counter_(inow, timeStepping)
-            inow_token_time = self._counter2time_(inow_counter, timeStepping)
-
-            new_shift = (tokentime - inow_token_time)
-
-            log.debug("[checkOTP] the counter %r matched. New shift: %r" %
-                      (res, new_shift))
-
-            self.addToTokenInfo('timeShift', new_shift)
-
-        log.debug("[checkOtp] end. otp verification result was: res %r" % (res))
-        return res
-
+        self.addToTokenInfo('timeShift', new_shift)
 
     def autosync(self, hmac2Otp, anOtpVal):
         '''
@@ -477,81 +489,121 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         '''
 
-        res = -1
-        autosync = False
+        if not boolean(getFromConfig("AutoResync", False)):
+            log.info('autosync is not enabled')
+            return -1
 
-        try:
-            async = getFromConfig("AutoResync")
-            if async is None:
-                autosync = False
-            elif "true" == async.lower():
-                autosync = True
-            elif "false" == async.lower():
-                autosync = False
-        except Exception as e:
-            log.exception('autosync check failed %r' % e)
-            return res
-
-        ' if autosync is not enabled: do nothing '
-        if False == autosync:
-            return res
-
-        info = self.getTokenInfo();
+        info = self.getTokenInfo()
         syncWindow = self.getSyncWindow()
 
-        #check if the otpval is valid in the sync scope
-        res = hmac2Otp.checkOtp(anOtpVal, syncWindow, symetric=True)
+        # check if the otpval is valid in the sync scope
+        otp_counter = hmac2Otp.checkOtp(anOtpVal, syncWindow, symetric=True)
+
+        if otp_counter == -1:
+            log.info('no valid otp in auto resync window')
+            return -1
 
         # ------------------------------------------------------------------ --
 
         # protect against a replay
 
-        # if the counter belonging to the provided otp is lower than the one
-        # we have last seen (which is the stored otp counter), then we deny
-        # the resync as it might be replay or an error
+        # if the counter belonging to the provided otp is lower than the
+        # stored counter (which is the next expected counter), then we deny
+        # the resync as it might be replay
 
-        if res != -1 and res < self.getOtpCount():
-            log.info('otp below the last seen!')
+        if otp_counter < self.getOtpCount():
+            log.info('otp before the last verified valid otp!')
             return -1
 
         # ------------------------------------------------------------------ --
 
-        #if yes:
-        if res != -1:
-            # if former is defined
-            if (info.has_key("otp1c")):
-                #check if this is consecutive
-                otp1c = info.get("otp1c");
-                otp2c = res
-                diff = math.fabs(otp2c - otp1c)
-                if (diff > self.resyncDiffLimit):
-                    res = -1
-                else:
-                    T0 = time.time()
-                    timeStepping = int(self.getFromTokenInfo("timeStep"))
-                    counter = int((T0 / timeStepping) + 0.5)
+        # taken from the tokeninfo:
+        # check if we have the first otp for the auto resync
 
-                    shift = otp2c - counter
-                    info["timeShift"] = shift
-                    self.setTokenInfo(info)
+        if "otp1c" not in info:
+
+            info["otp1c"] = otp_counter
+            self.setTokenInfo(info)
+
+            log.info('preserved the first otp counter for resync')
+            return -1
+
+        # ------------------------------------------------------------------ --
+
+        # now we have 2 otps - the first from the former request,
+        # the second otp from the current auto sync request
+
+        otp1c = info["otp1c"]
+        otp2c = otp_counter
+
+        if otp2c <= otp1c:
+            # the otps are not in right order
+            log.info('OTP values are not in the right order!')
+            return -1
+
+        if (otp2c - otp1c) > self.resyncDiffLimit:
+            # assert that the otps are not too far apart
+            log.info('the otps are too far apart for resync!')
+            return -1
+
+        # reset the resync info
+        self.removeFromTokenInfo("otp1c")
+
+        return otp_counter
 
 
-                ## now clean the resync data
-                del info["otp1c"]
-                self.setTokenInfo(info)
+    @staticmethod
+    def _calculate_new_timeshift(new_counter, old_counter, timeStepping):
+        '''
+        Calculate the time offset between token and server time
 
-            else:
-                info["otp1c"] = res
-                self.setTokenInfo(info)
-                res = -1
+        Over time, the token's internal clock can drift away
+        from the time it is supposed to represent. If the
+        difference gets too big, the user may be locked out.
 
-        if res == -1:
-            msg = "autosync was not successful"
-        else:
-            msg = "autosync was successful"
-        log.debug(msg)
+        In order to counteract this, we keep track of the
+        difference between the token time and the server time.
 
-        return res
+        Well, we can't read that directly from the token, so
+        we actually calculate the offset based on the time that
+        we received the last otp value from the user, and
+        compare that to the server time.
+
+        Note that this works reasonably well as long as the
+        server time is kept accurate by the sysadmin.
+
+        :param new_counter: the new matching counter
+        :param old_counter: the previous counter
+        :patam timeStepping: the token timestep
+
+        :return: the calculated difference in time shift
+        '''
+
+        tokentime = counter2time(new_counter, timeStepping)
+        tokenDt = datetime.datetime.fromtimestamp(float(tokentime))
+
+        inow = int(time.time())
+        nowDt = datetime.datetime.fromtimestamp(float(inow))
+
+        # reverse time mapping:
+        # from time to counter to timeStepping mapped timeslot
+
+        lastauth = counter2time(old_counter, timeStepping)
+        lastauthDt = datetime.datetime.fromtimestamp(float(lastauth))
+
+        log.debug("[checkOTP] last auth : %r" % (lastauthDt))
+        log.debug("[checkOTP] tokentime : %r" % (tokenDt))
+        log.debug("[checkOTP] now       : %r" % (nowDt))
+        log.debug("[checkOTP] delta     : %r" % (tokentime - inow))
+
+        inow_counter = time2counter(inow, timeStepping)
+        inow_token_time = counter2time(inow_counter, timeStepping)
+
+        new_shift = (tokentime - inow_token_time)
+
+        log.debug("New shift for counter %r: %r", new_counter, new_shift)
+
+        return new_shift
 
 
     def resync(self, otp1, otp2, options=None):

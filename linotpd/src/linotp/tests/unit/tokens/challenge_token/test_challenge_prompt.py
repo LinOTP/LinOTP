@@ -38,7 +38,7 @@ from linotp.tokens.smstoken import SmsTokenClass
 class FakeTokenModel(object):
 
     def __init__(self):
-        pass
+        self.LinOtpOtpLen = 8
 
     def setType(self, typ):
         self.type = typ
@@ -46,6 +46,8 @@ class FakeTokenModel(object):
     def getSerial(self):
         return "FakeToken1"
 
+    def getInfo(self):
+        return ''
 
 Config_dict = {
     'TOTP_CHALLENGE_PROMPT': "Hello TOTP Prompt",
