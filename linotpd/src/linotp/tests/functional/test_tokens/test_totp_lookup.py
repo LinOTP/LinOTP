@@ -112,7 +112,7 @@ class TestTotpLookupController(TestController):
         self.delete_all_token()
         return TestController.tearDown(self)
 
-    def mest_verify_otp(self):
+    def test_verify_lookup_otp_and_response_format(self):
         """ verify that the otp and the totp_lookup response is correct """
 
         serial = 'totp_lookup'
@@ -160,7 +160,8 @@ class TestTotpLookupController(TestController):
 
                 params = {
                     'serial': serial,
-                    'otp': otp
+                    'otp': otp,
+                    'window': '24h',
                 }
 
                 response = self.make_admin_request(
@@ -296,40 +297,162 @@ class TestTotpLookupController(TestController):
 
         # ------------------------------------------------------------------ --
 
+        # get a valid otp of the past
+
+        test_time = datetime.utcnow() - timedelta(hours=1)
+
+        seconds = time2seconds(test_time)
+        counter = int(seconds/30)
+        otp = get_otp(key=seed, counter=counter)
+
+        # ------------------------------------------------------------------ --
+
         # verify: access to token1
+
+        err_msg = 'You do not have the administrative right'
 
         params = {
             'serial': 'token1',
-            'otp': '12345678'
+            'otp': otp
         }
 
         response = self.make_admin_request(
             'totp_lookup', params=params, auth_user='admin')
         assert '"status": false' in response.body, response
-        assert '"value": false' not in response.body, response
+        assert err_msg in response.body, response
 
         # verify: no access to token2
 
         params = {
             'serial': 'token2',
-            'otp': '12345678'
+            'otp': otp
         }
 
         response = self.make_admin_request(
             'totp_lookup', params=params, auth_user='admin')
         assert '"status": false' in response.body, response
-        assert '"value": false' not in response.body, response
+        assert err_msg in response.body, response
 
         # verify: access to token3
 
         params = {
             'serial': 'token3',
-            'otp': '12345678'
+            'otp': otp
         }
 
         response = self.make_admin_request(
             'totp_lookup', params=params, auth_user='admin')
         assert '"status": true' in response.body, response
-        assert '"value": false' in response.body, response
+        assert '"value": true' in response.body, response
 
         return
+
+
+    def test_verify_window(self):
+        """ verify that the totp_lookup window is working
+
+        * create an otp for now
+        * step into the future by 23 hours
+        * lookup window backward for 5 hours fails
+        * lookup window backward for one day + 5 hours: success
+        """
+
+        serial = 'totp_lookup'
+        step = 30
+
+        # ------------------------------------------------------------------ --
+
+        # create token with a well known seed
+
+        params = {
+            'serial': serial,
+            'type': 'totp',
+            'otpkey': seed,
+            'otplen': 8
+            }
+
+        response = self.make_admin_request('init', params=params)
+        assert '"value": false' not in response.body, response.body
+
+        # ------------------------------------------------------------------ --
+
+        # we look back in time for 23 hours
+
+        test_time = datetime.utcnow()
+        with freeze_time(test_time + timedelta(hours=23)):
+
+            # get a valid otp
+
+            seconds = time2seconds(test_time)
+            counter = int(seconds/step)
+            otp = get_otp(key=seed, counter=counter)
+
+            # lookup for 5 hours back
+
+            params = {
+                'serial': serial,
+                'otp': otp,
+                'window': "PT5H",
+            }
+
+            response = self.make_admin_request(
+                'totp_lookup', params=params)
+            assert '"value": false' in response.body, response
+
+            # extend the lookup window to one day and 5 hours
+
+            params = {
+                'serial': serial,
+                'otp': otp,
+                'window': "P1DT5H",
+            }
+
+            response = self.make_admin_request(
+                'totp_lookup', params=params)
+            assert '"value": true' in response.body, response
+
+
+    def test_no_future_otp(self):
+        """ verify that the totp_lookup does not respond for future otps """
+
+        serial = 'totp_lookup'
+        step = 30
+
+        # ------------------------------------------------------------------ --
+
+        # create token with a well known seed
+
+        params = {
+            'serial': serial,
+            'type': 'totp',
+            'otpkey': seed,
+            'otplen': 8
+            }
+
+        response = self.make_admin_request('init', params=params)
+        assert '"value": false' not in response.body, response.body
+
+        # ------------------------------------------------------------------ --
+
+        # we look back in time for 23 hours
+
+        test_time = datetime.utcnow()
+        with freeze_time(test_time - timedelta(hours=2)):
+
+            # get a valid otp
+
+            seconds = time2seconds(test_time)
+            counter = int(seconds/step)
+            otp = get_otp(key=seed, counter=counter)
+
+            # lookup for 5 hours back
+
+            params = {
+                'serial': serial,
+                'otp': otp,
+                'window': "24h",
+            }
+
+            response = self.make_admin_request(
+                'totp_lookup', params=params)
+            assert '"value": false' in response.body, response
