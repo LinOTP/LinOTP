@@ -772,7 +772,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         secObj = self._get_secret_object()
         hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(hashlibStr))
         matching_counter = hmac2Otp.checkOtp(
-                                otp, int(window / time_step), symetric=False)
+                                otp, int(window / time_step), symetric=True)
 
 
         # ------------------------------------------------------------------ --
@@ -787,7 +787,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         # do not provide information of otps in the future
 
-        if matching_counter > counter:
+        if matching_counter >= counter:
             log.info('otp is in future - no info for future otps')
             return False, None
 
