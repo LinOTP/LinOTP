@@ -288,7 +288,7 @@ coverage-report:buster:
   artifacts:
     paths:
       - pkg/apt/${DEBIAN_RELEASE_NAME}
-    expire_in: 1 week
+    expire_in: 2 weeks
 
 
 build:jessie:
