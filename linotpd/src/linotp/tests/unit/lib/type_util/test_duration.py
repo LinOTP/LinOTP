@@ -34,9 +34,9 @@ from linotp.lib.type_utils import parse_duration
 from linotp.lib.type_utils import DurationParsingException
 
 
-class DuartionTestCase(unittest.TestCase):
+class DurationTestCase(unittest.TestCase):
     """
-    unit test duartion parsing
+    unit test duration parsing
     """
 
     def test_ISO8601_duration(self):
