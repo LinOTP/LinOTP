@@ -139,7 +139,7 @@ class TestTotpLookupController(TestController):
 
         time_fmt = '%Y-%m-%d %H:%M:%S'
 
-        test_times = [
+        otp_times = [
             datetime.strptime('2005-03-18 01:58:29', time_fmt), # 1111111109
             datetime.strptime('2005-03-18 01:58:39', time_fmt),
             datetime.strptime('2005-03-18 01:58:59', time_fmt),
@@ -147,14 +147,14 @@ class TestTotpLookupController(TestController):
             datetime.now()
             ]
 
-        for test_time in test_times:
+        for otp_time in otp_times:
 
             # we look back in time for 23 hours
-            with freeze_time(test_time + timedelta(hours=23)):
+            with freeze_time(otp_time + timedelta(hours=23)):
 
                 # get a valid otp
 
-                seconds = time2seconds(test_time)
+                seconds = time2seconds(otp_time)
                 counter = int(seconds/step)
                 otp = get_otp(key=seed, counter=counter)
 
@@ -183,29 +183,29 @@ class TestTotpLookupController(TestController):
                 # ---------------------------------------------------------- --
 
                 # now verify against the returned time string
-                time_str = test_time.strftime(time_fmt)
+                otp_time_str = otp_time.strftime(time_fmt)
 
                 # verify otp value from known test set
-                if time_str == '2005-03-18 01:58:29':
+                if otp_time_str == '2005-03-18 01:58:29':
                     assert detail['otp'] == '07081804'
 
                 # ---------------------------------------------------------- --
 
                 # verify that the returned time is in iso8601 format
-                if time_str == '2005-03-18 01:58:29':
+                if otp_time_str == '2005-03-18 01:58:29':
                     assert detail['time'] == '2005-03-18T01:58:00'
 
                 # ---------------------------------------------------------- --
 
                 # verify that the time base is the same - all but the seconds
 
-                assert time_str[:10] == detail['time'][:10]
-                assert time_str[-8:-2] == detail['time'][-8:-2]
+                assert otp_time_str[:10] == detail['time'][:10]
+                assert otp_time_str[-8:-2] == detail['time'][-8:-2]
 
                 # ---------------------------------------------------------- --
 
                 # verify that the validity span matches the time slices
-                input_seconds = int(time_str[-2:]) # 29 seconds
+                input_seconds = int(otp_time_str[-2:]) # 29 seconds
 
                 otp_start = int(detail['time'][-2:])
                 assert otp_start in (0, 30)
@@ -223,7 +223,7 @@ class TestTotpLookupController(TestController):
                 # verify that the returned seconds match the given time
                 # with the token step offset
 
-                start_time = test_time.replace(second=otp_start)
+                start_time = otp_time.replace(second=otp_start)
                 utc_seconds = time2seconds(start_time)
 
                 assert utc_seconds == detail['seconds']
@@ -434,14 +434,14 @@ class TestTotpLookupController(TestController):
 
         # ------------------------------------------------------------------ --
 
-        # we look back in time for 23 hours
+        # we are in the past, while the otp is 2 hours ahead
 
-        test_time = datetime.utcnow()
-        with freeze_time(test_time - timedelta(hours=2)):
+        otp_time = datetime.utcnow()
+        with freeze_time(otp_time - timedelta(hours=2)):
 
             # get a valid otp
 
-            seconds = time2seconds(test_time)
+            seconds = time2seconds(otp_time)
             counter = int(seconds/step)
             otp = get_otp(key=seed, counter=counter)
 
