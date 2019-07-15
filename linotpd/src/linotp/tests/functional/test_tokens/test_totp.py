@@ -28,29 +28,19 @@
 """ """
 
 import binascii
+import json
+
 from datetime import datetime
 from datetime import timedelta
 
-from hashlib import sha1, sha256, sha512
-import hmac
-import logging
-import random
-import struct
-import time
-import traceback
-
+from hashlib import sha1
 from freezegun import freeze_time
-
-from linotp.lib.crypto import geturandom
-from linotp.tests import TestController, url
 
 from linotp.lib.HMAC import HmacOtp
 
-import json
+from linotp.tests import TestController
 
 
-
-log = logging.getLogger(__name__)
 
 
 '''
@@ -103,30 +93,6 @@ log = logging.getLogger(__name__)
 seed = "3132333435363738393031323334353637383930"
 seed32 = "3132333435363738393031323334353637383930313233343536373839303132"
 seed64 = "31323334353637383930313233343536373839303132333435363738393031323334353637383930313233343536373839303132333435363738393031323334"
-
-testvector = [
-     { 'key'   : seed, 'timeStep' : 30,
-       'hash'  : sha1, 'shash': 'sha1',
-       'otps'  : [ 
-           (59, '94287082', '1970-01-01 00:00:59'), 
-           (1111111109, '07081804', '2005-03-18 01:58:29'),
-           (1111111111, '14050471', '2005-03-18 01:58:31'), 
-           (1234567890, '89005924', '2009-02-13 23:31:30'),
-           (2000000000, '69279037', '2033-05-18 03:33:20'),
-           (20000000000, '65353130', '2603-10-11 11:33:20'), ] },
-
-     { 'key'   : seed32, 'timeStep' : 30,
-       'hash'  : sha256, 'shash': 'sha256',
-       'otps'  : [ (59, '46119246', '1970-01-01 00:00:59'), (1111111109, '68084774' , '2005-03-18 01:58:29'),
-                   (1111111111, '67062674', '2005-03-18 01:58:31'), (1234567890, '91819424' , '2009-02-13 23:31:30'),
-                   (2000000000, '90698825', '2033-05-18 03:33:20'), (20000000000, '77737706', '2603-10-11 11:33:20'), ] },
-
-     { 'key'   : seed64, 'timeStep' : 30,
-       'hash'  : sha512, 'shash': 'sha512',
-       'otps'  : [(59, '90693936', '1970-01-01 00:00:59'), (1111111109, '25091201', '2005-03-18 01:58:29'),
-                  (1111111111, '99943326', '2005-03-18 01:58:31'), (1234567890, '93441116', '2009-02-13 23:31:30'),
-                  (2000000000, '38618901', '2033-05-18 03:33:20'), (20000000000, '47863826', '2603-10-11 11:33:20'), ] }
-]
 
 unix_start_time = datetime(year=1970, month=1, day=1)
 
