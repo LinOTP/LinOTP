@@ -745,12 +745,11 @@ class TimeHmacTokenClass(HmacTokenClass):
         provide information belonging to one otp
 
         :param otp: the otp for which the timestamp is searched
-        :param window:
+        :param window: string, in human readable '2h' or iso8601 format 'PT2H'
         """
 
-        if isinstance(window, (str, unicode)):
-            from linotp.lib.type_utils import parse_duration
-            window = parse_duration(window).total_seconds()
+        from linotp.lib.type_utils import parse_duration
+        window = parse_duration(window).total_seconds()
 
         # ------------------------------------------------------------------ --
 
