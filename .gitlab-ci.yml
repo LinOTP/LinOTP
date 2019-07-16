@@ -276,20 +276,20 @@ coverage-report:buster:
 
 .build-debs:
   stage: build-debian-packages
-  image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
-  before_script:
-    - apt-get install -y --no-install-recommends wget
-    - CURR_PWD=$PWD
-    - cd linotpd/src
-    - mk-build-deps --install --remove --tool "apt-get --yes --no-install-recommends"
-    - cd $CURR_PWD
+  image: debian:${DEBIAN_RELEASE_NAME}
   script:
+    - apt-get update
+    - apt-get install --yes --no-install-recommends equivs git-buildpackage lsb-release
+    # Generate snapshot entries for debian changelogs
+    - ci/update-debian-changelog adminclient/LinOTPAdminClientCLI/src
+    - ci/update-debian-changelog linotpd/src
+    - (cd linotpd/src && mk-build-deps --install --remove --tool "apt-get --yes --no-install-recommends")
     - make deb-install DESTDIR=pkg/apt/${DEBIAN_RELEASE_NAME}
-    - mkdir -p build
   artifacts:
     paths:
       - pkg/apt/${DEBIAN_RELEASE_NAME}
-    expire_in: 1 week
+    expire_in: 2 weeks
+
 
 build:jessie:
   extends: .build-debs
@@ -457,14 +457,19 @@ e2e-2:stretch:mariadb-10.1:
     DEBIAN_RELEASE_NAME: stretch
     DB: mariadb:10.1
 
+# Base rule for uploading deb packages to development repository.
+# We use scp to upload all the files to an incoming directory.
 .upload-debs:
   stage: upload-debian-packages
   image: debian:latest
   before_script:
-    - test -z "${DEV_REPO_HOST}" && exit 1 # abort early if variable isn't set
-    - test -z "${DEV_REPO_KNOWN_HOSTS}" && exit 1 # abort early if variable isn't set
-    - test -z "${DEV_REPO_SSH_SUBMIT_KEY}" && exit 1 # abort early if variable isn't set
-    - apt-get update && apt-get install -y --no-install-recommends dput openssh-client curl # install dependencies
+    # Ensure required variables have been set
+    - test -n "${DEV_REPO_HOST}"
+    - test -n "${DEV_REPO_KNOWN_HOSTS}"
+    - test -n "${DEV_REPO_SSH_SUBMIT_KEY}"
+    # Install dependencies
+    - apt-get update && apt-get install -y --no-install-recommends devscripts openssh-client
+    # Configure ssh
     - eval $(ssh-agent -s)
     - echo "$DEV_REPO_SSH_SUBMIT_KEY" | tr -d '\r' | ssh-add - >/dev/null
     - mkdir -p ~/.ssh
@@ -473,27 +478,28 @@ e2e-2:stretch:mariadb-10.1:
     - echo "$DEV_REPO_KNOWN_HOSTS" >~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
-    - cp ./ci/dput.cf /etc/dput.cf
-    - sed -i -e "s/@DEV_REPO_HOST@/$DEV_REPO_HOST/" /etc/dput.cf
-    - >
-      for file in pkg/apt/${DEBIAN_RELEASE_NAME}/*.changes; do
-        ./ci/deb-upload-check -r http://${DEV_REPO_HOST}/deb-repo -d ${DEBIAN_RELEASE_NAME} -A pkg/apt/${DEBIAN_RELEASE_NAME} dput ${file};
-      done
+    - find artifacts -ls
+    # scp all files referenced by the changes files to the repository
+    - dcmd scp artifacts/*.changes dists@$DEV_REPO_HOST:deb-repo/incoming
 
-.upload-debs:manual:
+# Allow a manual step to upload packages directly from a pipeline
+# for testing
+upload-debs:manual:
   extends: .upload-debs
   when: manual
   except:
     - schedules
 
-.upload-debs:tags:
+# Upload packages automatically when tagged
+upload-debs:tags:
   extends: .upload-debs
   only:
     - tags
   except:
     - schedules
 
-.upload-debs:stable-branch:
+# Upload packages automatically when merged to stable branch
+upload-debs:stable-branch:
   extends: .upload-debs
   only:
     variables:
@@ -501,51 +507,3 @@ e2e-2:stretch:mariadb-10.1:
   except:
     - tags
     - schedules
-
-upload-debs:jessie:manual:
-  extends: .upload-debs:manual
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
-
-upload-debs:stretch:manual:
-  extends: .upload-debs:manual
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
-
-upload-debs:buster:manual:
-  allow_failure: true
-  extends: .upload-debs:manual
-  variables:
-    DEBIAN_RELEASE_NAME: buster
-
-upload-debs:jessie:tag:
-  extends: .upload-debs:tags
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
-
-upload-debs:stretch:tag:
-  extends: .upload-debs:tags
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
-
-upload-debs:buster:tag:
-  allow_failure: true
-  extends: .upload-debs:tags
-  variables:
-    DEBIAN_RELEASE_NAME: buster
-
-upload-debs:jessie:stable-branch:
-  extends: .upload-debs:stable-branch
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
-
-upload-debs:stretch:stable-branch:
-  extends: .upload-debs:stable-branch
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
-
-upload-debs:buster:stable-branch:
-  allow_failure: true
-  extends: .upload-debs:stable-branch
-  variables:
-    DEBIAN_RELEASE_NAME: buster
