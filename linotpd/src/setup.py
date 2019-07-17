@@ -87,6 +87,7 @@ setup(
         "configobj>=4.6.0",
         "httplib2",
         "requests",
+        "passlib",
         "pysodium>=0.6.8",
         "python-ldap",
         "passlib",
@@ -116,11 +117,11 @@ setup(
         'tools/linotp-convert-gemalto',
         'tools/linotp-restore',
         'tools/linotp-enroll-smstoken',
-        ],
+    ],
     setup_requires=[
         'PasteScript>=1.6.3',
         'Babel'
-        ],
+    ],
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
     package_data={'linotp': ['linotp/i18n/*/LC_MESSAGES/*.mo']},
@@ -135,8 +136,8 @@ setup(
                 'config/who.ini',
                 'config/dictionary',
                 'config/keyidentity-push-ca-bundle.crt'
-                ]
-            ),
+            ]
+        ),
         (
             'etc/linotp2/apache2.2-example/',
             [
@@ -144,26 +145,26 @@ setup(
                 'config/apache2.2-example/linotp2-radius',
                 'config/apache2.2-example/linotp2-certs',
                 'config/apache2.2-example/linotp2-ldap',
-                ]
-            ),
+            ]
+        ),
         (
             'etc/linotp2/apache2.4-example/',
             [
                 'config/apache2.4-example/linotp2.conf',
-                ]
-            ),
+            ]
+        ),
         (
             'etc/init.d/',
             [
                 'config/linotp2-paster'
-                ]
-            ),
+            ]
+        ),
         (
             'share/doc/linotp/',
             [
                 "tools/README-migrate.txt"
-                ]
-            ),
+            ]
+        ),
         (
             'share/man/man1',
             [
@@ -186,15 +187,15 @@ setup(
                 "tools/linotp-decrypt-otpkey.1",
                 "tools/linotp-convert-gemalto.1",
                 "tools/linotp-restore.1"
-                ]
-            ),
+            ]
+        ),
         (
             'share/linotp',
             [
                 'tools/LinotpLDAPProxy.pm'
-                ]
-            ),
-        ],
+            ]
+        ),
+    ],
     classifiers=[
         "Framework :: Pylons",
         "License :: OSI Approved :: GNU Affero General Public License v3",
@@ -209,56 +210,56 @@ setup(
                 '**.py',
                 'python',
                 None
-                ),
+            ),
             (
                 'templates/**.mako',
                 'mako',
                 {
                     'input_encoding': 'utf-8'
-                    }
-                ),
+                }
+            ),
             (
                 'tokens/**.mako',
                 'mako',
                 {
                     'input_encoding': 'utf-8'
-                    }
-                ),
+                }
+            ),
             (
                 'public/js/manage.js',
                 'javascript',
                 {
                     'input_encoding': 'utf-8'
-                    }
-                ),
+                }
+            ),
             (
                 'public/js/tools.js',
                 'javascript',
                 {
                     'input_encoding': 'utf-8'
-                    }
-                ),
+                }
+            ),
             (
                 'public/js/selfservice.js',
                 'javascript',
                 {
                     'input_encoding': 'utf-8'
-                    }
-                ),
+                }
+            ),
             (
                 'public/js/linotp_utils.js',
                 'javascript',
                 {
                     'input_encoding': 'utf-8'
-                    }
-                ),
+                }
+            ),
             (
                 'public/**',
                 'ignore',
                 None
-                )
-            ]
-        },
+            )
+        ]
+    },
     zip_safe=False,
     paster_plugins=['PasteScript', 'Pylons'],
     # The entry point for nose.plugins is required because otherwise nosetests

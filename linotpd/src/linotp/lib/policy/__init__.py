@@ -361,6 +361,20 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         return {'realms': policies['realms'], 'admin': policies['admin'],
                 "active": policies['active']}
 
+    elif method == 'totp_lookup':
+
+        policies = getAdminPolicies("totp_lookup")
+
+        if (policies['active'] and not
+                checkAdminAuthorization(policies, serial, user)):
+
+            log.warning("the admin >%s< is not allowed to get token info for "
+                        " realm %r", policies['admin'], user.realm)
+
+            raise PolicyException(_("You do not have the administrative "
+                                    "right to get token info in "
+                                    "this realm!"))
+
     elif method == 'token_method':
 
         log.debug("[checkPolicyPre] entering method %s", method)

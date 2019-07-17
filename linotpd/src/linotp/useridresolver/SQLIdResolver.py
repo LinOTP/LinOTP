@@ -35,19 +35,16 @@ import re
 import base64
 import hashlib
 import urllib
-
-import crypt
-try:
-    import bcrypt
-    _bcrypt_hashpw = bcrypt.hashpw
-except ImportError:
-    _bcrypt_hashpw = None
-
 import json
 
 import traceback
 import logging
 
+import crypt
+
+from passlib.hash import atlassian_pbkdf2_sha1
+from passlib.hash import bcrypt as passlib_bcrypt
+from passlib.hash import phpass as passlib_phpass
 
 # from sqlalchemy.event import listen
 
@@ -67,9 +64,20 @@ from linotp.lib.type_utils import encrypted_data
 from linotp.lib.type_utils import text
 
 
+DEFAULT_ENCODING = "utf-8"
+
 log = logging.getLogger(__name__)
 
-DEFAULT_ENCODING = "utf-8"
+def check_bcypt_password(password, stored_hash):
+    """
+    check bcrypt passwords, which starts with $2$, $2a$, $2b$, $2x$ or $2y$
+
+    :param password: the new, to be verified password
+    :param stored_hash: the previously used password in a hashed form
+    :return: boolean
+    """
+
+    return passlib_bcrypt.verify(password, stored_hash)
 
 
 def check_php_password(password, stored_hash):
@@ -80,22 +88,8 @@ def check_php_password(password, stored_hash):
     :param stored_hash: the previously used password in a hashed form
     :return: boolean
     """
-    result = False
 
-    if stored_hash.startswith('$2a$'):
-        # bcrypt
-        if _bcrypt_hashpw is None:
-            raise NotImplementedError('The bcrypt module is required')
-        hashed_password = _bcrypt_hashpw(password, stored_hash)
-        result = hashed_password == stored_hash
-    elif stored_hash.startswith('_'):
-        # ext-des
-        hashed_password = crypt.crypt(password, stored_hash)
-        result = hashed_password == stored_hash
-    else:
-        log.info("Hashed password type not recognised!")
-
-    return result
+    return passlib_phpass.verify(password, stored_hash)
 
 
 def make_connect(driver, user, pass_, server, port, db, conParams=""):
@@ -381,6 +375,30 @@ def _check_hash_type(password, hash_type, hash_value, salt=None):
             log.exception("[_check_hash_type] Unsupported Hash type: %r",
                           hash_type)
 
+    elif hash_type == 'PKCS5S2':
+        # ------------------------------------------------------------------ --
+
+        # support the atlasion pkdf sha1 password hashes
+        # s. https://passlib.readthedocs.io/en/stable/lib/\
+        #                    passlib.hash.atlassian_pbkdf2_sha1.html
+
+        try:
+
+            pw_hash = "{%s}%s" % (hash_type, hash_value)
+            return atlassian_pbkdf2_sha1.verify(password, pw_hash)
+
+        except TypeError as exx:
+
+            # raised for example if the padding of the hash of the
+            # sql entry is broken
+
+            log.exception("problem checking atlassian_pbkdf2_sha1")
+            return False
+
+        except Exception as exx:
+            log.exception("unknown problem checking atlassian_pbkdf2_sha1")
+            raise exx
+
     return res
 
 
@@ -590,11 +608,6 @@ class IdResolver(UserIdResolver):
 
         m = re.match("^\{(.*)\}(.*)", userInfo["password"])
 
-        # check if we have the PHP Password Framework like it is
-        # used in Wordpress
-
-        m_php = re.match("^\$P\$(.*)", userInfo["password"])
-
         if m:
             # The password field contains something like
             # {SHA256}abcdfef123456
@@ -607,20 +620,24 @@ class IdResolver(UserIdResolver):
                 salt = userInfo['salt']
             return _check_hash_type(password, hash_type, hash_value, salt=salt)
 
-        elif m_php:
+        elif passlib_phpass.identify(userInfo["password"]):
             # The Password field contains something like
             # '$P$BPC00gOTHbTWl6RH6ZyfYVGWkX3Wec.'
             return check_php_password(password, userInfo["password"])
 
-        # ------------------------------------------------------------------ --
-
-        # check the Modular Crypt Format (MCF):
-        #
-        #  $<id>[$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
-        #
-        # s. https://en.wikipedia.org/wiki/Crypt_%28C%29
+        elif passlib_bcrypt.identify(userInfo["password"]):
+            # password starts with $2$, $2a$, $2b$, $2b$, $2x$ or $2y$
+            return check_bcypt_password(password, userInfo["password"])
 
         elif userInfo["password"][0] == '$':
+
+            # ----------------------------------------------------------- --
+
+            # check the Modular Crypt Format (MCF):
+            #
+            #  $<id>[$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
+            #
+            # s. https://en.wikipedia.org/wiki/Crypt_%28C%29
 
             if crypt.crypt(password, userInfo["password"]) == userInfo["password"]:
 

@@ -88,6 +88,7 @@ def getPolicyDefinitions(scope=""):
             'copytokenpin': {'type': 'bool'},
             'copytokenuser': {'type': 'bool'},
             'losttoken': {'type': 'bool'},
+            'totp_lookup': {'type': 'bool'},
             'getotp': {
                 'type': 'bool',
                 'desc': 'allow the administrator to retrieve '

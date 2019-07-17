@@ -1929,7 +1929,7 @@ class AdminController(BaseController):
             c.audit['source_realm'] = getTokenRealms(serial)
             log.info("[tokenrealm] setting realms for token %s to %s",
                      serial, realms)
-            realmList = realms.split(',')
+            realmList = [r.strip() for r in realms.split(',')]
             ret = setRealms(serial, realmList)
 
             c.audit['success'] = ret
@@ -2685,6 +2685,80 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
+
+    def totp_lookup(self):
+        '''
+        method:
+            admin/totp_lookup - get otp iformation from a totp token
+
+        arguments:
+            * serial    - required -  serialnumber of the token
+            * otp       - optional - to return status to the token
+        '''
+
+        param = self.request_params
+        try:
+
+            serial = param.get("serial")
+            if not serial:
+                raise ParameterError("Missing parameter: 'serial'")
+
+            c.audit['serial'] = serial
+
+            otp = param.get("otp")
+            if not otp:
+                raise ParameterError("Missing parameter: 'otp'")
+
+            window = param.get("window", "24h")
+
+            # -------------------------------------------------------------- --
+
+            # we require access to at least one token realm
+
+            checkPolicyPre('admin', 'totp_lookup', param=param)
+
+            # -------------------------------------------------------------- --
+
+            # lookup of serial and type totp
+
+            tokens = getTokens4UserOrSerial(serial=serial, token_type='totp')
+
+            if not tokens:
+                c.audit['success'] = False
+                c.audit['info'] = "no token found"
+                return sendResult(response, False)
+
+            token = tokens[0]
+
+            # -------------------------------------------------------------- --
+
+            # now gather the otp info from the token
+
+            res, opt = token.get_otp_detail(otp=otp, window=window)
+            c.audit['success'] = res
+
+            if not res:
+                c.audit['info'] = ("no otp %r found in window %r"
+                                   % (otp, window))
+
+            Session.commit()
+            return sendResult(response, res, opt=opt)
+
+            # -------------------------------------------------------------- --
+
+        except PolicyException as pe:
+            log.exception("[totp_lookup] policy failed: %r" % pe)
+            Session.rollback()
+            return sendError(response, unicode(pe))
+
+        except Exception as exx:
+            log.exception("[totp_lookup] failed: %r" % exx)
+            Session.rollback()
+            return sendResult(response, unicode(exx), 0)
+
+        finally:
+            Session.close()
+
 
     def checkstatus(self):
         """
