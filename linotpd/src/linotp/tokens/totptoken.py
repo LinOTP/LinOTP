@@ -842,7 +842,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         # all fine - now return the time stamp and the utc time format
 
-        time_stamp = self._counter2time_(
+        time_stamp = counter2time(
             matching_counter, timeStepping=time_step)
 
         time_info = datetime.datetime.utcfromtimestamp(time_stamp)
