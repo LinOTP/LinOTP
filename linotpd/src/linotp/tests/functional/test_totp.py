@@ -182,7 +182,7 @@ class TotpToken(object):
 
         return
 
-    def getOtp(self, counter= -1, offset=0, jitter=0):
+    def getOtp(self, counter= -1, offset=0, jitter=0, seconds=None):
         '''
             @note: we require the ability to set the counter directly
                 to validate the hmac token against the defined test vectors
@@ -199,6 +199,9 @@ class TotpToken(object):
             counter = int((T0 / self.timestep) + 0.5)
         else:
             counter = int((counter / self.timestep) + 0.5)
+
+        if seconds:
+            counter = int(seconds / self.timestep)
 
         otp = self.hmacOtp.generate(counter=counter)
 
@@ -219,6 +222,12 @@ class TotpToken(object):
             print "%r" % e
         return ddate
 
+
+unix_start_time = datetime.datetime(year=1970, month=1, day=1)
+
+def time2seconds(t_time, seconds=0):
+    t_delta = datetime.timedelta(seconds=seconds)
+    return int((t_time - unix_start_time + t_delta).total_seconds())
 
 
 class TestTotpController(TestController):
@@ -246,6 +255,19 @@ class TestTotpController(TestController):
         p = {"serial" : serial }
         response = self.make_admin_request('remove', params=p)
         return response
+
+    def get_token_info(self, serial):
+        params = {
+            'serial': serial
+            }
+
+        response = self.make_admin_request('show', params=params)
+        jresp = json.loads(response.body)
+        t_info = json.loads(
+            jresp['result']['value']['data'][0]['LinOtp.TokenInfo'])
+
+        return t_info
+
 
     def time2float(self, curTime):
         '''
