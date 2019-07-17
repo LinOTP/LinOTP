@@ -805,23 +805,18 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         # ------------------------------------------------------------------ --
 
-        # retrieve all token infos which are required for the otp calculation
+        time_step = self.timeStepping
 
-        otplen = int(self.token.LinOtpOtpLen)
-        hashlibStr = self.getFromTokenInfo("hashlib", self.hashlibStr) or 'sha1'
-
-        time_step= int(self.getFromTokenInfo("timeStep", self.timeStep) or 30)
-        shift = int(self.getFromTokenInfo("timeShift", self.timeShift) or 0)
-
-        T0 = time.time() + shift
-        counter = self._time2counter_(T0, timeStepping=time_step)
+        T0 = time.time() + self.shift
+        counter = time2counter(T0, timeStepping=time_step)
 
         # ------------------------------------------------------------------ --
 
         # prepare the hmac operation
 
         secObj = self._get_secret_object()
-        hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(hashlibStr))
+        hmac2Otp = HmacOtp(
+            secObj, counter, self.otplen, self.getHashlib(self.hashlibStr))
         matching_counter = hmac2Otp.checkOtp(
                                 otp, int(window / time_step), symetric=True)
 
