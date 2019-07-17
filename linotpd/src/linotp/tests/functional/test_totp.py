@@ -26,7 +26,7 @@
 
 
 """ """
-
+import json
 import binascii
 import datetime
 from hashlib import sha1, sha256, sha512
@@ -35,17 +35,13 @@ import logging
 import random
 import struct
 import time
-import traceback
+
 
 from freezegun import freeze_time
 
 from linotp.lib.crypto import geturandom
 from linotp.tests import TestController
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
 
 log = logging.getLogger(__name__)
