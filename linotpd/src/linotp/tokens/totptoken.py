@@ -792,3 +792,67 @@ class TimeHmacTokenClass(HmacTokenClass):
         return (ret, error, otp_dict)
 
 
+    def get_otp_detail(self, otp, window='24h'):
+        """
+        provide information belonging to one otp
+
+        :param otp: the otp for which the timestamp is searched
+        :param window: string, in human readable '2h' or iso8601 format 'PT2H'
+        """
+
+        from linotp.lib.type_utils import parse_duration
+        window = parse_duration(window).total_seconds()
+
+        # ------------------------------------------------------------------ --
+
+        time_step = self.timeStepping
+
+        T0 = time.time() + self.shift
+        counter = time2counter(T0, timeStepping=time_step)
+
+        # ------------------------------------------------------------------ --
+
+        # prepare the hmac operation
+
+        secObj = self._get_secret_object()
+        hmac2Otp = HmacOtp(
+            secObj, counter, self.otplen, self.getHashlib(self.hashlibStr))
+        matching_counter = hmac2Otp.checkOtp(
+                                otp, int(window / time_step), symetric=True)
+
+
+        # ------------------------------------------------------------------ --
+
+        # matching_counter =-1 : no otp found in the current time frame
+
+        if matching_counter == -1:
+            log.info('no matching otp found in window: %r', window)
+            return False, None
+
+        # ------------------------------------------------------------------ --
+
+        # do not provide information of otps in the future
+
+        if matching_counter >= counter:
+            log.info('otp is in future - no info for future otps')
+            return False, None
+
+
+        # ------------------------------------------------------------------ --
+
+        # all fine - now return the time stamp and the utc time format
+
+        time_stamp = counter2time(
+            matching_counter, timeStepping=time_step)
+
+        time_info = datetime.datetime.utcfromtimestamp(time_stamp)
+
+        return True, {
+            'serial' : self.getSerial(),
+            'otp': otp,
+            'counter': matching_counter,
+            'time': time_info.isoformat(),
+            'seconds': int(time_stamp),
+            'span': time_step,
+        }
+
