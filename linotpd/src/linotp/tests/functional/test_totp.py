@@ -26,7 +26,7 @@
 
 
 """ """
-
+import json
 import binascii
 import datetime
 from hashlib import sha1, sha256, sha512
@@ -35,17 +35,13 @@ import logging
 import random
 import struct
 import time
-import traceback
+
 
 from freezegun import freeze_time
 
 from linotp.lib.crypto import geturandom
 from linotp.tests import TestController
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
 
 log = logging.getLogger(__name__)
@@ -186,7 +182,7 @@ class TotpToken(object):
 
         return
 
-    def getOtp(self, counter= -1, offset=0, jitter=0):
+    def getOtp(self, counter= -1, offset=0, jitter=0, seconds=None):
         '''
             @note: we require the ability to set the counter directly
                 to validate the hmac token against the defined test vectors
@@ -203,6 +199,9 @@ class TotpToken(object):
             counter = int((T0 / self.timestep) + 0.5)
         else:
             counter = int((counter / self.timestep) + 0.5)
+
+        if seconds:
+            counter = int(seconds / self.timestep)
 
         otp = self.hmacOtp.generate(counter=counter)
 
@@ -223,6 +222,12 @@ class TotpToken(object):
             print "%r" % e
         return ddate
 
+
+unix_start_time = datetime.datetime(year=1970, month=1, day=1)
+
+def time2seconds(t_time, seconds=0):
+    t_delta = datetime.timedelta(seconds=seconds)
+    return int((t_time - unix_start_time + t_delta).total_seconds())
 
 
 class TestTotpController(TestController):
@@ -250,6 +255,19 @@ class TestTotpController(TestController):
         p = {"serial" : serial }
         response = self.make_admin_request('remove', params=p)
         return response
+
+    def get_token_info(self, serial):
+        params = {
+            'serial': serial
+            }
+
+        response = self.make_admin_request('show', params=params)
+        jresp = json.loads(response.body)
+        t_info = json.loads(
+            jresp['result']['value']['data'][0]['LinOtp.TokenInfo'])
+
+        return t_info
+
 
     def time2float(self, curTime):
         '''
@@ -464,6 +482,118 @@ class TestTotpController(TestController):
                 log.debug('res')
 
         return
+
+    def test_autoync_restart(self):
+        '''
+        totp test: verify that auto resync will could be restarted
+
+        * setup auto sync
+        * enroll a token and verify that it is working
+        * skip ahead out of the validation window (300 sec)
+        * trigger an auto sync
+        * leave the autosync and skip ahead again
+        * try to initate the autosync again
+        * verify with a second otp that the otp was successfull
+        (* verify that the timeshift reflects the new sync time)
+        '''
+
+        timeWindow = 300
+        step = 30
+        user = 'root'
+
+        # ------------------------------------------------------------------ --
+
+        # enable auto sync
+
+        params = {
+            'AutoResync': True
+        }
+
+        response = self.make_system_request('setConfig', params=params)
+        assert 'false' not in response.body
+
+        # ------------------------------------------------------------------ --
+
+        # Freeze time to the current system time
+
+        start_time = datetime.datetime.utcnow()
+
+        with freeze_time(start_time) as _frozen_time:
+
+            # -------------------------------------------------------------- --
+
+            # enroll the token with seed and local
+            # TotpToken class to calculate the otps
+
+            t1 = TotpToken(timestep=step)
+            key = t1.getKey().encode('hex')
+
+            tserial = self.addToken(user=user, otplen=t1.digits, typ='totp',
+                                    key=key, timeStep=step)
+
+            self.serials.append(tserial)
+
+            # -------------------------------------------------------------- --
+
+            # verify that the token is working
+
+            start_seconds = time2seconds(start_time)
+            (otp, _) = t1.getOtp(seconds=start_seconds)
+
+            res = self.checkOtp(user, otp)
+            assert '"value": true' in res.body
+
+            # -------------------------------------------------------------- --
+
+            # advance to the future: aut of the check window (300 sec)
+            # so that we enter the autosync
+
+            autosync_start = time2seconds(start_time, seconds=timeWindow + step)
+            (next_otp, _) = t1.getOtp(seconds=autosync_start)
+
+            res = self.checkOtp(user, next_otp)
+            assert '"value": false' in res.body
+
+            # verify that the autosync was started
+            # with the otp1c in the token info
+
+            t_info = self.get_token_info(serial=tserial)
+            assert 'otp1c' in t_info
+
+            # -------------------------------------------------------------- --
+
+            # now we step ahead to a new auto sync start by shifting beyond the
+            # resyncDiffLimit (3)
+
+            seconds10 = autosync_start + 10 * step
+            (otp10, _c10) = t1.getOtp(seconds=seconds10)
+
+            # the auto sync is pending but we try to start a new one
+
+            res = self.checkOtp(user, otp10)
+            assert '"value": false' in res.body
+
+            # verify that the autosync was started with the otp1c
+            t_info = self.get_token_info(serial=tserial)
+            assert 'otp1c' in t_info
+
+            # verify that the auto sync start has been adjusted to the new start
+            assert t_info['otp1c'] == int(seconds10 / step)
+
+            # second step of the auto sync
+
+            seconds11 = autosync_start + 11 * step
+            (otp11, _c11) = t1.getOtp(seconds=seconds11)
+
+            res = self.checkOtp(user, otp11)
+            assert '"value": true' in res.body
+
+            # verfy that otp1c in token info is gone on a successfull auto sync
+            t_info = self.get_token_info(serial=tserial)
+            assert 'otp1c' not in t_info
+
+            # verify that the time shift was calculated correctly
+            assert int(t_info['timeShift']) == (seconds11 - start_seconds)
 
     def test_use_consecutive(self):
         '''

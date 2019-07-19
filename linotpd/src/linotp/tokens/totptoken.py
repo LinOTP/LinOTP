@@ -544,6 +544,10 @@ class TimeHmacTokenClass(HmacTokenClass):
         if (otp2c - otp1c) > self.resyncDiffLimit:
             # assert that the otps are not too far apart
             log.info('the otps are too far apart for resync!')
+
+            # if so, we take the new one as the auto sync base
+            info["otp1c"] = otp2c
+            self.setTokenInfo(info)
             return -1
 
         # reset the resync info
