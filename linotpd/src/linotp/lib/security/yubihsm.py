@@ -214,7 +214,7 @@ class YubiSecurityModule(SecurityModule):
             self.hsm.key_storage_unlock(password)
             log.debug("[login] key store unlocked")
             self.is_ready = True
-        except pyhsm.exception.YHSM_Error as  e:
+        except pyhsm.exception.YHSM_Error as e:
             log.exception("[login] Failed to unlock key store: %s" % e)
 
     def logout(self):
@@ -272,7 +272,7 @@ class YubiSecurityModule(SecurityModule):
         s = ""
         try:
             s = self.hsm.aes_ecb_decrypt(handle, data)
-        except pyhsm.exception.YHSM_Error as  e:
+        except pyhsm.exception.YHSM_Error as e:
             log.exception("[decrypt] Failed to decrypt data: %s" % e)
 
         s = self.unpad(s)
@@ -294,7 +294,7 @@ class YubiSecurityModule(SecurityModule):
 
         try:
             encrypted_data = self.hsm.aes_ecb_encrypt(handle, data)
-        except pyhsm.exception.YHSM_Error as  e:
+        except pyhsm.exception.YHSM_Error as e:
             log.exception("[encrypt] Failed to encrypt data: %s" % str(e))
 
         return encrypted_data
@@ -426,7 +426,7 @@ def main():
     '''
     try:
         opts, args = getopt(sys.argv[1:], "hp:s:n:f:",
-                ["help", "password=", "slot=", "name=", "find="])
+                            ["help", "password=", "slot=", "name=", "find="])
 
     except GetoptError:
         print "There is an error in your parameter syntax:"

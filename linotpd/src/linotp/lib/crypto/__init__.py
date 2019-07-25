@@ -69,7 +69,7 @@ from Cryptodome.Cipher import AES
 from linotp.lib.error import HSMException, ProgrammingError
 from linotp.lib.error import ConfigAdminError
 
-from linotp.lib.ext.pbkdf2  import PBKDF2
+from linotp.lib.ext.pbkdf2 import PBKDF2
 from linotp.lib.context import request_context as context
 from linotp.lib.error import ValidateError
 
@@ -78,9 +78,9 @@ pver = float(int(ma) + int(mi) * 0.1)
 
 
 c_hash = {
-         'sha1': SHA1,
-         'sha256': SHA256,
-         }
+    'sha1': SHA1,
+    'sha256': SHA256,
+}
 
 log = logging.getLogger(__name__)
 
@@ -383,8 +383,8 @@ def getSecret(id=0):
         if secret == "":
             # secret = setupKeyFile(secFile, id+1)
             raise Exception("No secret key defined for index: %s !\n"
-                             "Please extend your %s !"
-                             % (unicode(id), secFile))
+                            "Please extend your %s !"
+                            % (unicode(id), secFile))
     except Exception as exx:
         raise Exception("Exception: %r" % exx)
 
@@ -598,6 +598,7 @@ def _get_hsm_obj_from_context(hsm=None):
         raise HSMException('hsm not ready!')
     return hsm_obj
 
+
 def decryptPassword(cryptPass):
     """
     Restore the encrypted password
@@ -667,7 +668,7 @@ def uencode(value):
     ret = value
 
     if ("linotp.uencode_data" in env
-        and env["linotp.uencode_data"].lower() == 'true'):
+            and env["linotp.uencode_data"].lower() == 'true'):
         try:
             ret = json.dumps(value)[1:-1]
         except Exception as exx:
@@ -746,7 +747,7 @@ def udecode(value):
 
     ret = value
     if ("linotp.uencode_data" in env
-        and env["linotp.uencode_data"].lower() == 'true'):
+            and env["linotp.uencode_data"].lower() == 'true'):
         try:
             # add surrounding "" for correct decoding
             ret = json.loads('"%s"' % value)
@@ -774,6 +775,7 @@ def geturandom(len=20):
         return os.urandom(len)
 
 ### some random functions based on geturandom #################################
+
 
 class urandom(object):
 
@@ -915,14 +917,13 @@ def zerome(bufferObject):
     data = ctypes.POINTER(ctypes.c_char)()
     size = ctypes.c_int()  # Note, int only valid for python 2.5
     ctypes.pythonapi.PyObject_AsCharBuffer(ctypes.py_object(bufferObject),
-                                    ctypes.pointer(data), ctypes.pointer(size))
+                                           ctypes.pointer(data), ctypes.pointer(size))
     ctypes.memset(data, 0, size.value)
     # print repr(bufferObject)
     return
 
 
 def init_key_partition(config, partition, key_type='ed25519'):
-
     """
     create an elliptic curve secret + public key pair and
     store it in the linotp config
@@ -948,7 +949,6 @@ def init_key_partition(config, partition, key_type='ed25519'):
 
 
 def get_secret_key(partition):
-
     """
     reads the password config entry 'linotp.SecretKey.Partition.<partition>',
     extracts and decodes the secret key and returns it as a 32 bytes.
@@ -976,7 +976,6 @@ def get_secret_key(partition):
 
 
 def get_public_key(partition):
-
     """
     reads the password config entry 'linotp.PublicKey.Partition.<partition>',
     extracts and decodes the public key and returns it as a 32 bytes.
@@ -1022,7 +1021,6 @@ def dsa_to_dh_public(dsa_public_key):
 
 
 def get_dh_secret_key(partition):
-
     """ transforms the ed25519 secret key (which is used for DSA) into
     a Diffie-Hellman secret key """
 
@@ -1031,7 +1029,6 @@ def get_dh_secret_key(partition):
 
 
 def get_dh_public_key(partition):
-
     """ transforms the ed25519 public key (which is used for DSA) into
     a Diffie-Hellman public key """
 
@@ -1040,7 +1037,6 @@ def get_dh_public_key(partition):
 
 
 def extract_tan(signature, digits):
-
     """
     Calculates a TAN from a signature using a procedure
     similar to HOTP
@@ -1058,7 +1054,7 @@ def extract_tan(signature, digits):
     tan = "%d" % (itan % 10**digits)
 
     # fill up the tan with leading zeros
-    stan = u"%s%s" % ('0'* (digits - len(tan)), tan)
+    stan = u"%s%s" % ('0' * (digits - len(tan)), tan)
 
     return stan
 
