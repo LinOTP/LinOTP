@@ -377,7 +377,7 @@ def getSecret(id=0):
 
     try:
         f = open(secFile)
-        for _i in range(0, id + 1):
+        for _ in range(0, id + 1):
             secret = f.read(32)
         f.close()
         if secret == "":
@@ -395,7 +395,7 @@ def setupKeyFile(secFile, maxId):
     secret = ''
     for index in range(0, maxId):
         f = open(secFile)
-        for _c in range(0, index + 1):
+        for _ in range(0, index + 1):
             secret = f.read(32)
         f.close()
 
