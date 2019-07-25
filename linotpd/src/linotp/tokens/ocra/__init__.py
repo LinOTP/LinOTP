@@ -209,8 +209,8 @@ from datetime import datetime
 
 import hmac
 import re
-from linotp.lib.crypto import urandom
-from linotp.lib.crypto import get_hashalgo_from_description
+from linotp.lib.crypto.utils import urandom
+from linotp.lib.crypto.utils import get_hashalgo_from_description
 
 
 log = logging.getLogger(__name__)

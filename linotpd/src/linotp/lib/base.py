@@ -54,7 +54,7 @@ from linotp.lib.type_utils import boolean
 
 from linotp.lib.config.db_api import _retrieveAllConfigDB
 from linotp.lib.config.global_api import getGlobalObject
-from linotp.lib.crypto import init_key_partition
+from linotp.lib.crypto.utils import init_key_partition
 
 
 from linotp.model import meta

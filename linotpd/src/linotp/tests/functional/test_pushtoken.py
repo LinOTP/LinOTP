@@ -33,10 +33,10 @@ from nose.tools import raises
 from tempfile import NamedTemporaryFile
 from collections import defaultdict
 from linotp.tests import TestController
-from linotp.lib.crypto import dsa_to_dh_public
-from linotp.lib.crypto import dsa_to_dh_secret
-from linotp.lib.crypto import encode_base64_urlsafe
-from linotp.lib.crypto import decode_base64_urlsafe
+from linotp.lib.crypto.utils import dsa_to_dh_public
+from linotp.lib.crypto.utils import dsa_to_dh_secret
+from linotp.lib.crypto.utils import encode_base64_urlsafe
+from linotp.lib.crypto.utils import decode_base64_urlsafe
 from linotp.lib.util import int_from_bytes
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base

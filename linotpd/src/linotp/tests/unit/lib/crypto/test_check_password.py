@@ -29,7 +29,8 @@
 import unittest
 
 from linotp.lib.crypto import SecretObj
-from linotp.lib.crypto import libcrypt_password
+from linotp.lib.crypto.utils import libcrypt_password
+
 
 class TestComparePassword(unittest.TestCase):
     """

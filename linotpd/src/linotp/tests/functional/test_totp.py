@@ -39,7 +39,7 @@ import time
 
 from freezegun import freeze_time
 
-from linotp.lib.crypto import geturandom
+from linotp.lib.crypto.utils import geturandom
 from linotp.tests import TestController
 
 

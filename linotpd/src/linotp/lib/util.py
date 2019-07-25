@@ -36,9 +36,8 @@ import logging
 from pylons import config
 from pylons.controllers.util import abort
 
-from linotp.lib.crypto import (urandom,
-                              geturandom
-                              )
+from linotp.lib.crypto.utils import urandom
+from linotp.lib.crypto.utils import geturandom
 
 from linotp.lib.selftest import isSelfTest
 from linotp.lib.error import ParameterError

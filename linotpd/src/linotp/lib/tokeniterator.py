@@ -283,7 +283,7 @@ class TokenIterator(object):
             condition = and_(Token.LinOtpIsactive is False)
         else:
             # search in other colums
-            filter = linotp.lib.crypto.uencode(filter)
+            filter = linotp.lib.crypto.utils.uencode(filter)
             condition = or_(Token.LinOtpTokenDesc.contains(filter),
                             Token.LinOtpIdResClass.contains(filter),
                             Token.LinOtpTokenSerialnumber.contains(filter),
@@ -441,7 +441,7 @@ class TokenIterator(object):
         else:
             for realm in realms:
                 if realm in filterRealm:
-                    realm = linotp.lib.crypto.uencode(realm)
+                    realm = linotp.lib.crypto.utils.uencode(realm)
                     valid_realms.append(realm)
 
         scondition = self._get_serial_condition(serial, filterRealm)

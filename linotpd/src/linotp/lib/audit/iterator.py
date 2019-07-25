@@ -90,21 +90,21 @@ class AuditQuery(object):
                     ## unicode escape search parameter to match
                     ## encoding in db, which stores audit
                     ## entries in escaped format
-                    value = linotp.lib.crypto.uencode(value)
+                    value = linotp.lib.crypto.utils.uencode(value)
                     self._search_dict[key] = value
             else:
                 ## unicode escape search parameter to match
                 ## encoding in db, which stores audit
                 ## entries in escaped format
                 value = param["query"]
-                value = linotp.lib.crypto.uencode(value)
+                value = linotp.lib.crypto.utils.uencode(value)
                 self._search_dict[param['qtype']] = value
         else:
             for key, value in param.items():
                 ## unicode escape search parameter to match
                 ## encoding in db, which stores audit
                 ## entries in escaped format
-                value = linotp.lib.crypto.uencode(value)
+                value = linotp.lib.crypto.utils.uencode(value)
                 self._search_dict[key] = value
 
         if 'page' in param:

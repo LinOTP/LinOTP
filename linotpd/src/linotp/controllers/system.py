@@ -113,7 +113,7 @@ from linotp.provider import setDefaultProvider
 
 from linotp.lib.type_utils import boolean
 
-from linotp.lib.crypto import libcrypt_password
+from linotp.lib.crypto.utils import libcrypt_password
 
 from paste.fileapp import FileApp
 from cgi import escape

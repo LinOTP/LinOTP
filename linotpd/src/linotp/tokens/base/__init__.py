@@ -50,7 +50,7 @@ import linotp
 from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
 from linotp.lib.crypto import SecretObj
-from linotp.lib.crypto import get_hashalgo_from_description
+from linotp.lib.crypto.utils import get_hashalgo_from_description
 
 from linotp.lib.error import ParameterError
 from linotp.lib.error import TokenAdminError

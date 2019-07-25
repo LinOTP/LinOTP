@@ -37,7 +37,7 @@ from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy.exc import ProgrammingError
 
-from linotp.lib.crypto import libcrypt_password
+from linotp.lib.crypto.utils import libcrypt_password
 from linotp.lib.tools.set_password import SetPasswordHandler
 from linotp.lib.tools.set_password import DataBaseContext
 

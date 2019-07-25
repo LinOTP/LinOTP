@@ -54,11 +54,11 @@ from sqlalchemy import asc, desc
 import linotp
 
 from linotp.lib.config import getFromConfig
-from linotp.lib.crypto import createNonce
-from linotp.lib.crypto import decryptPin
-from linotp.lib.crypto import encryptPin
-from linotp.lib.crypto import kdf2
-from linotp.lib.crypto import urandom
+from linotp.lib.crypto.utils import createNonce
+from linotp.lib.crypto.utils import decryptPin
+from linotp.lib.crypto.utils import encryptPin
+from linotp.lib.crypto.utils import kdf2
+from linotp.lib.crypto.utils import urandom
 from linotp.lib.crypto import SecretObj
 
 from linotp.lib.policy import get_qrtan_url

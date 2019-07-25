@@ -32,7 +32,7 @@ import time
 
 from hashlib import md5
 
-from linotp.lib.crypto import zerome
+from linotp.lib.crypto.utils import zerome
 
 
 

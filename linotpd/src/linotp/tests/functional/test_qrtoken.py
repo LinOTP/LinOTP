@@ -31,10 +31,10 @@ import logging
 import os
 from collections import defaultdict
 from linotp.tests import TestController
-from linotp.lib.crypto import encode_base64_urlsafe
-from linotp.lib.crypto import decode_base64_urlsafe
-from linotp.lib.crypto import extract_tan
-from linotp.lib.crypto import dsa_to_dh_public
+from linotp.lib.crypto.utils import encode_base64_urlsafe
+from linotp.lib.crypto.utils import decode_base64_urlsafe
+from linotp.lib.crypto.utils import extract_tan
+from linotp.lib.crypto.utils import dsa_to_dh_public
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from Cryptodome.Hash import SHA256

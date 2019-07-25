@@ -32,7 +32,7 @@ set password handler -
 import logging
 
 from linotp.lib.tools import ToolsHandler
-from linotp.lib.crypto import libcrypt_password
+from linotp.lib.crypto.utils import libcrypt_password
 
 from sqlalchemy import schema, types
 from sqlalchemy.engine import create_engine

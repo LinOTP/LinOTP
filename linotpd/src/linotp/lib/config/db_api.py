@@ -30,8 +30,8 @@
 
 import logging
 
-from linotp.lib.crypto import decryptPassword
-from linotp.lib.crypto import encryptPassword
+from linotp.lib.crypto.utils import decryptPassword
+from linotp.lib.crypto.utils import encryptPassword
 from linotp.lib.error import ConfigAdminError
 from linotp.model import Config
 
