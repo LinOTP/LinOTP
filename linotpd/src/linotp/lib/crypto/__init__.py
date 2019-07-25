@@ -73,6 +73,7 @@ from linotp.lib.ext.pbkdf2 import PBKDF2
 from linotp.lib.context import request_context as context
 from linotp.lib.error import ValidateError
 
+
 (ma, mi, _, _, _,) = sys.version_info
 pver = float(int(ma) + int(mi) * 0.1)
 
@@ -105,8 +106,9 @@ except:
 
 
 Hashlib_map = {'md5': md5, 'sha1': sha1,
-               'sha224': sha224, 'sha256': sha256,
-               'sha384': sha384, 'sha512': sha512}
+                'sha224': sha224, 'sha256': sha256,
+                'sha384': sha384, 'sha512': sha512}
+
 
 # constant - later taken from the env?
 CONFIG_KEY = 1
@@ -360,77 +362,6 @@ def get_hashalgo_from_description(description, fallback='sha1'):
     return hash_func
 
 
-def getSecretDummy():
-    return "no secret file defined: linotpSecretFile!"
-
-
-def getSecret(id=0):
-
-    if not env.has_key("linotpSecretFile"):
-        log.error("No secret file defined. The parameter linotpSecretFile is "
-                  "missing in your linotp.ini")
-        raise Exception("No secret file defined")
-
-    secFile = env["linotpSecretFile"]
-
-    secret = ''
-
-    try:
-        f = open(secFile)
-        for _ in range(0, id + 1):
-            secret = f.read(32)
-        f.close()
-        if secret == "":
-            # secret = setupKeyFile(secFile, id+1)
-            raise Exception("No secret key defined for index: %s !\n"
-                            "Please extend your %s !"
-                            % (unicode(id), secFile))
-    except Exception as exx:
-        raise Exception("Exception: %r" % exx)
-
-    return secret
-
-
-def setupKeyFile(secFile, maxId):
-    secret = ''
-    for index in range(0, maxId):
-        f = open(secFile)
-        for _ in range(0, index + 1):
-            secret = f.read(32)
-        f.close()
-
-        # if no secret: fill in a new one
-        if secret == "":
-            f = open(secFile, 'ab+')
-            secret = geturandom(32)
-            f.write(secret)
-            f.close()
-
-    return secret
-
-
-def isWorldAccessible(filepath):
-    st = os.stat(filepath)
-    u_w = bool(st.st_mode & stat.S_IWUSR)
-    g_r = bool(st.st_mode & stat.S_IRGRP)
-    g_w = bool(st.st_mode & stat.S_IWGRP)
-    o_r = bool(st.st_mode & stat.S_IROTH)
-    o_w = bool(st.st_mode & stat.S_IWOTH)
-    return g_r or g_w or o_r or o_w or u_w
-
-
-def _getCrypto(description):
-    '''
-       Convert the name of a hash algorithm as described in the OATH
-       specifications, to a python object handling the digest algorithm
-       interface
-    '''
-    algo = getattr(CryptoHash, description.upper(), None)
-    # if not callable(algo):
-    #    raise ValueError, ('Unknown hash algorithm', s[1])
-    return algo
-
-
 def check(st):
     """
     calculate the checksum of st
@@ -676,65 +607,6 @@ def uencode(value):
                           % (value, exx))
 
     return ret
-
-
-# encrypted cookie data
-def aes_encrypt_data(data, key, iv=None):
-    """
-    encypt data for the cookie handling -
-    other than the std linotp key slots, here the key might change per server
-    startup, which is not in scope of std linotp encrypt
-
-    :param key: the encryption key
-    :param data: the data, which should be encrypted
-    :param iv: the salt value
-    :return: the encrypted data
-    """
-    if iv is None:
-        iv = key
-
-    padding = (16 - len(iv) % 16) % 16
-    iv += padding * "\0"
-    iv = iv[:16]
-
-    # convert data from binary to hex as it might contain unicode++
-    input_data = binascii.b2a_hex(data)
-    input_data += '\x01\x02'
-    padding = (16 - len(input_data) % 16) % 16
-    input_data += padding * "\0"
-    aes = AES.new(key, AES.MODE_CBC, iv)
-    res = aes.encrypt(input_data)
-    return res
-
-
-def aes_decrypt_data(data, key, iv=None):
-    """
-    decrypt the given data
-    other than the linotp std decrypt this method takes a key not a keyslot,
-    which is required, as for every server startup the encryption key might
-    change
-
-    :param data: the to be decrypted data
-    :param key: the encryption key
-    :param iv: the random initialization vector
-    :return: the decrypted value
-    """
-    if iv is None:
-        iv = key
-
-    padding = (16 - len(iv) % 16) % 16
-    iv += padding * "\0"
-    iv = iv[:16]
-
-    aes = AES.new(key, AES.MODE_CBC, iv)
-    output = aes.decrypt(data)
-    eof = output.rfind('\x01\x02')
-    if eof >= 0:
-        output = output[:eof]
-
-    # convert output from ascii, back to bin data, which might be unicode++
-    res = binascii.a2b_hex(output)
-    return res
 
 
 def udecode(value):
@@ -1026,14 +898,6 @@ def get_dh_secret_key(partition):
 
     dsa_secret_key = get_secret_key(partition)
     return dsa_to_dh_secret(dsa_secret_key)
-
-
-def get_dh_public_key(partition):
-    """ transforms the ed25519 public key (which is used for DSA) into
-    a Diffie-Hellman public key """
-
-    dsa_public_key = get_public_key(partition)
-    return dsa_to_dh_public(dsa_public_key)
 
 
 def extract_tan(signature, digits):
