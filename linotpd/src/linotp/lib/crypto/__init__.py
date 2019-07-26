@@ -45,8 +45,6 @@ from pysodium import crypto_scalarmult_curve25519 as calc_dh
 
 from Cryptodome.Cipher import AES
 
-# for the hmac algo, we have to check the python version
-
 from linotp.lib.crypto.utils import libcrypt_password
 from linotp.lib.crypto.utils import get_hashalgo_from_description
 from linotp.lib.crypto.utils import hash_digest
@@ -60,8 +58,8 @@ from linotp.lib.crypto.utils import geturandom
 from linotp.lib.crypto.utils import get_dh_secret_key
 
 
-(ma, mi, _, _, _,) = sys.version_info
-pver = float(int(ma) + int(mi) * 0.1)
+# for the hmac algo, we have to check the python version
+(python_major, python_minor, _, _, _,) = sys.version_info
 
 log = logging.getLogger(__name__)
 
@@ -150,7 +148,7 @@ class SecretObj(object):
             self._setupKey_()
             b_key = self.bkey
 
-        if pver > 2.6:
+        if (python_major, python_minor) > (2, 6):
             data = data_input
         else:
             data = str(data_input)
