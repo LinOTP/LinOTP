@@ -76,12 +76,6 @@ Hashlib_map = {'md5': md5, 'sha1': sha1,
                 'sha224': sha224, 'sha256': sha256,
                 'sha384': sha384, 'sha512': sha512}
 
-# constant - later taken from the env?
-CONFIG_KEY = 1
-TOKEN_KEY = 2
-VALUE_KEY = 3
-
-
 class SecretObj(object):
     def __init__(self, val, iv, preserve=True, hsm=None):
         self.val = val
