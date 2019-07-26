@@ -49,19 +49,12 @@ from hashlib import sha384
 from hashlib import sha512
 
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
-from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from pysodium import crypto_sign_keypair as gen_dsa_keypair
 from pysodium import sodium as c_libsodium
 from pysodium import __check as __libsodium_check
 
 from pylons.configuration import config as env
-from pylons import tmpl_context as c
 
-import Cryptodome.Hash as CryptoHash
-from Cryptodome.Hash import HMAC
-from Cryptodome.Hash import SHA as SHA1
-from Cryptodome.Hash import SHA256
-from Cryptodome.Hash import SHA512
 from Cryptodome.Cipher import AES
 
 # for the hmac algo, we have to check the python version
@@ -77,38 +70,11 @@ from linotp.lib.error import ValidateError
 (ma, mi, _, _, _,) = sys.version_info
 pver = float(int(ma) + int(mi) * 0.1)
 
-
-c_hash = {
-    'sha1': SHA1,
-    'sha256': SHA256,
-}
-
 log = logging.getLogger(__name__)
-
-
-try:
-    from Cryptodome.Hash import SHA224
-    c_hash['sha224'] = SHA224
-except:
-    log.warning('Your system does not support Crypto SHA224 hash algorithm')
-
-try:
-    from Cryptodome.Hash import SHA384
-    c_hash['sha384'] = SHA384
-except:
-    log.warning('Your system does not support Crypto SHA384 hash algorithm')
-
-try:
-    from Cryptodome.Hash import SHA512
-    c_hash['sha512'] = SHA512
-except:
-    log.warning('Your system does not support Crypto SHA512 hash algorithm')
-
 
 Hashlib_map = {'md5': md5, 'sha1': sha1,
                 'sha224': sha224, 'sha256': sha256,
                 'sha384': sha384, 'sha512': sha512}
-
 
 # constant - later taken from the env?
 CONFIG_KEY = 1
