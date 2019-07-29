@@ -93,9 +93,6 @@ class SecretObj(object):
 
         return hmac_secret
 
-    def getPin(self):
-        return decrypt(self.val, self.iv, hsm=self.hsm)
-
     def compare(self, key):
         bhOtpKey = binascii.unhexlify(key)
         enc_otp_key = encrypt(bhOtpKey, self.iv, hsm=self.hsm)
