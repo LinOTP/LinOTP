@@ -948,7 +948,7 @@ class TokenHandler(object):
             #  we cleanup the challenges
             challenges = set()
             for serial in serials:
-                serial = linotp.lib.crypto.uencode(serial)
+                serial = linotp.lib.crypto.utils.uencode(serial)
                 challenges.update(Challenges.lookup_challenges(serial=serial))
 
             for chall in challenges:
@@ -1606,7 +1606,7 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
         log.debug("[getTokens4UserOrSerial] getting"
                   " token object with serial: %r" % serial)
         #  SAWarning of non unicode type
-        serial = linotp.lib.crypto.uencode(serial)
+        serial = linotp.lib.crypto.utils.uencode(serial)
 
         if '*' in serial:
             serial = serial.replace('*', '%')

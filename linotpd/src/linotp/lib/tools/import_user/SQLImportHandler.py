@@ -45,7 +45,7 @@ from linotp.useridresolver.SQLIdResolver import IdResolver as sql_resolver
 from linotp.lib.resolver import defineResolver
 
 from linotp.lib.tools.import_user.ImportHandler import ImportHandler
-from linotp.lib.crypto import libcrypt_password
+from linotp.lib.crypto.utils import libcrypt_password
 
 log = logging.getLogger(__name__)
 

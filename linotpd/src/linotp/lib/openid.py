@@ -43,7 +43,7 @@ import time
 import urlparse
 import urllib
 
-from linotp.lib.crypto import urandom
+from linotp.lib.crypto.utils import urandom
 
 from linotp.lib.user import User
 from linotp.lib.user import getUserId

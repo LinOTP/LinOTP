@@ -32,7 +32,7 @@ from linotp.tokens.base import TokenClass
 from linotp.tokens.hmactoken import HmacTokenClass
 from linotp.tokens import tokenclass_registry
 from linotp.lib.error import ParameterError
-from linotp.lib.crypto import libcrypt_password
+from linotp.lib.crypto.utils import libcrypt_password
 
 log = logging.getLogger(__name__)
 

@@ -47,9 +47,9 @@ from linotp.lib.ext.pbkdf2 import PBKDF2
 from linotp.lib.reply import create_img
 
 from linotp.tokens.ocra import OcraSuite
-from linotp.lib.crypto import kdf2
-from linotp.lib.crypto import createActivationCode
-from linotp.lib.crypto import check
+from linotp.lib.crypto.utils import kdf2
+from linotp.lib.crypto.utils import createActivationCode
+from linotp.lib.crypto.utils import check
 
 
 from linotp.tests import TestController

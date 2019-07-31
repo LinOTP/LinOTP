@@ -39,7 +39,7 @@ from linotp.lib.reply import sendResult, sendError
 from linotp.lib.selftest import isSelfTest
 from linotp.lib.policy import get_auth_AutoSMSPolicy
 
-from linotp.lib.crypto import urandom
+from linotp.lib.crypto.utils import urandom
 
 import linotp.model
 

@@ -33,7 +33,7 @@ from datetime import datetime
 from datetime import timedelta
 from binascii import hexlify
 
-from linotp.lib.crypto import zerome
+from linotp.lib.crypto.utils import zerome
 from linotp.tokens.base import TokenClass
 from linotp.lib.context import request_context
 

@@ -30,8 +30,8 @@ import logging
 import urlparse
 import urllib
 
-from linotp.lib.crypto import encryptPin
-from linotp.lib.crypto import decryptPin
+from linotp.lib.crypto.utils import encryptPin
+from linotp.lib.crypto.utils import decryptPin
 
 from linotp.lib.request import HttpRequest
 from linotp.lib.request import RadiusRequest

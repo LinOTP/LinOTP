@@ -26,11 +26,11 @@
 
 import struct
 from collections import namedtuple
-from linotp.lib.crypto import encode_base64_urlsafe
-from linotp.lib.crypto import decode_base64_urlsafe
-from linotp.lib.crypto import get_secret_key
-from linotp.lib.crypto import get_dh_secret_key
-from linotp.lib.crypto import get_public_key
+from linotp.lib.crypto.utils import encode_base64_urlsafe
+from linotp.lib.crypto.utils import decode_base64_urlsafe
+from linotp.lib.crypto.utils import get_secret_key
+from linotp.lib.crypto.utils import get_dh_secret_key
+from linotp.lib.crypto.utils import get_public_key
 from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.error import ParameterError
 from linotp.lib.error import ProgrammingError
@@ -39,7 +39,7 @@ from pysodium import crypto_sign_detached
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from Cryptodome.Cipher import AES
 from Cryptodome.Hash import SHA256
-from linotp.lib.crypto import zerome
+from linotp.lib.crypto.utils import zerome
 from linotp.tokens.qrtoken import parse_qrtoken_pairing_data
 from linotp.tokens.pushtoken import parse_and_verify_pushtoken_pairing_data
 

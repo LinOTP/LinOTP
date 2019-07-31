@@ -44,40 +44,41 @@ class SecurityModule(object):
     def isReady(self):
         fname = 'isReady'
         raise NotImplementedError("Should have been implemented %s"
-                                   % fname)
+                                  % fname)
 
     def setup_module(self, params):
         fname = 'setup_module'
         raise NotImplementedError("Should have been implemented %s"
-                                   % fname)
+                                  % fname)
 
-    ''' base methods '''
+    ### base methods ###
+
     def random(self, len):
         fname = 'random'
         raise NotImplementedError("Should have been implemented %s"
-                                   % fname)
+                                  % fname)
 
     def encrypt(self, value, iv=None, id=0):
         fname = 'encrypt'
         raise NotImplementedError("Should have been implemented %s"
-                                   % fname)
+                                  % fname)
 
     def decrypt(self, value, iv=None, id=0):
         fname = 'decrypt'
         raise NotImplementedError("Should have been implemented %s"
-                                   % fname)
+                                  % fname)
 
+    ### higer level methods ###
 
-    ''' higer level methods '''
     def encryptPassword(self, cryptPass):
         fname = 'decrypt'
         raise NotImplementedError("Should have been implemented %s"
-                                   % fname)
+                                  % fname)
 
     def encryptPin(self, cryptPin, iv=None):
         fname = 'decrypt'
         raise NotImplementedError("Should have been implemented %s"
-                                   % fname)
+                                  % fname)
 
     def decryptPassword(self, cryptPass):
         fname = 'decrypt'
@@ -100,5 +101,3 @@ class SecurityModule(object):
         fname = 'verfiyMessageSignature'
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)
-
-# eof ########################################################################

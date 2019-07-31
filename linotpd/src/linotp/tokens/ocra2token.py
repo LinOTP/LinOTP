@@ -110,9 +110,10 @@ import logging
 import time
 
 from linotp.lib.config import getFromConfig
-from linotp.lib.crypto import createNonce
-from linotp.lib.crypto import decryptPin, encryptPin
-from linotp.lib.crypto import kdf2
+from linotp.lib.crypto.utils import createNonce
+from linotp.lib.crypto.utils import decryptPin
+from linotp.lib.crypto.utils import encryptPin
+from linotp.lib.crypto.utils import kdf2
 from linotp.lib.crypto import SecretObj
 
 from linotp.lib.policy import getPolicy

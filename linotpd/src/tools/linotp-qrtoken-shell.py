@@ -123,16 +123,8 @@ from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from Crypto.Hash import SHA256
 from Crypto.Hash import HMAC
 from Crypto.Cipher import AES
-
-#-------------------------------------------------------------------------------
-
-def encode_base64_urlsafe(data):
-    """ encodes a string with urlsafe base64 and removes its padding """
-    return base64.urlsafe_b64encode(data).decode('utf8').rstrip('=')
-
-def decode_base64_urlsafe(data):
-    """ decodes a string encoded with :func encode_base64_urlsafe """
-    return base64.urlsafe_b64decode(data.encode() + (-len(data) % 4)*b'=')
+from linotp.lib.crypto.utils import encode_base64_urlsafe
+from linotp.lib.crypto.utils import decode_base64_urlsafe
 
 # ------------------------------------------------------------------------------
 

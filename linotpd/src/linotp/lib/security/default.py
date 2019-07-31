@@ -35,7 +35,7 @@ from Cryptodome.Cipher import AES
 import hmac
 from hashlib import sha256
 
-from linotp.lib.crypto import zerome
+from linotp.lib.crypto.utils import zerome
 from linotp.lib.security import SecurityModule
 
 
@@ -117,15 +117,15 @@ class DefaultSecurityModule(SecurityModule):
 
         secret = ''
         try:
-                f = open(self.secFile)
-                for _i in range(0, id + 1):
-                    secret = f.read(32)
-                f.close()
-                if not secret:
-                    # secret = setupKeyFile(secFile, id+1)
-                    raise Exception("No secret key defined for index: %r !\n"
-                                    "Please extend your %s"" !",
-                                    id, self.secFile)
+            f = open(self.secFile)
+            for _i in range(0, id + 1):
+                secret = f.read(32)
+            f.close()
+            if not secret:
+                # secret = setupKeyFile(secFile, id+1)
+                raise Exception("No secret key defined for index: %r !\n"
+                                "Please extend your %s"" !",
+                                id, self.secFile)
         except Exception as exx:
             raise Exception("Exception: %r" % exx)
 
@@ -193,7 +193,6 @@ class DefaultSecurityModule(SecurityModule):
         :rtype:  byte string
         '''
 
-
         if self.is_ready is False:
             raise Exception('setup of security module incomplete')
 
@@ -228,7 +227,6 @@ class DefaultSecurityModule(SecurityModule):
         :return: decrypted data
         :rtype:  byte string
         '''
-
 
         if self.is_ready is False:
             raise Exception('setup of security module incomplete')
@@ -428,7 +426,8 @@ class DefaultSecurityModule(SecurityModule):
             log.exception("Signature check: Mac Comparison failed! %r", err)
 
         except Exception as exx:
-            log.exception("Signature check: Unknown exception happened %r", exx)
+            log.exception(
+                "Signature check: Unknown exception happened %r", exx)
 
         finally:
             if sign_key:
@@ -468,10 +467,7 @@ class DefaultSecurityModule(SecurityModule):
 
 class ErrSecurityModule(DefaultSecurityModule):
 
-        def setup_module(self, params):
-            ret = DefaultSecurityModule.setup_module(self, params)
-            self.is_ready = False
-            return ret
-
-
-#eof###########################################################################
+    def setup_module(self, params):
+        ret = DefaultSecurityModule.setup_module(self, params)
+        self.is_ready = False
+        return ret

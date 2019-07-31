@@ -66,7 +66,7 @@ from linotp.lib.policy.util import letters
 from linotp.lib.policy.util import digits
 
 # for generating random passwords
-from linotp.lib.crypto import urandom
+from linotp.lib.crypto.utils import urandom
 from linotp.lib.util import uniquify
 
 from linotp.lib.realm import getRealms

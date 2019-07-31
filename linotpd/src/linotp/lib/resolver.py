@@ -46,7 +46,7 @@ from linotp.lib.type_utils import boolean
 from linotp.useridresolver import resolver_registry
 from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
-from linotp.lib.crypto import encryptPassword
+from linotp.lib.crypto.utils import encryptPassword
 
 # -------------------------------------------------------------------------- --
 

@@ -34,11 +34,11 @@ from linotp.lib.challenges import transaction_id_to_u64
 from linotp.lib.challenges import Challenges
 from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.policy import get_partition
-from linotp.lib.crypto import zerome
-from linotp.lib.crypto import get_secret_key
-from linotp.lib.crypto import encode_base64_urlsafe
-from linotp.lib.crypto import decode_base64_urlsafe
-from linotp.lib.crypto import dsa_to_dh_public
+from linotp.lib.crypto.utils import zerome
+from linotp.lib.crypto.utils import get_secret_key
+from linotp.lib.crypto.utils import encode_base64_urlsafe
+from linotp.lib.crypto.utils import decode_base64_urlsafe
+from linotp.lib.crypto.utils import dsa_to_dh_public
 from linotp.lib.util import int_from_bytes
 from linotp.lib.token import get_token_owner
 from linotp.tokens import tokenclass_registry

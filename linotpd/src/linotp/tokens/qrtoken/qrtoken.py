@@ -47,10 +47,10 @@ from linotp.tokens.base.stateful_mixin import StatefulTokenMixin
 from linotp.lib.token import get_token_owner
 from linotp.tokens import tokenclass_registry
 
-from linotp.lib.crypto import zerome
-from linotp.lib.crypto import extract_tan
-from linotp.lib.crypto import encode_base64_urlsafe
-from linotp.lib.crypto import decode_base64_urlsafe
+from linotp.lib.crypto.utils import zerome
+from linotp.lib.crypto.utils import extract_tan
+from linotp.lib.crypto.utils import encode_base64_urlsafe
+from linotp.lib.crypto.utils import decode_base64_urlsafe
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.error import ParameterError
