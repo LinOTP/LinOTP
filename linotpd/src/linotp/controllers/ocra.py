@@ -29,9 +29,8 @@ ocra controller - Interface for the Challenge Response Token (OCRA)
 import logging
 from urllib import urlencode
 
-import webob
-from pylons import request, response, config, tmpl_context as c
-
+from linotp import flap
+from linotp.flap import request, response, config, tmpl_context as c
 
 from linotp.lib.auth.validate import ValidationHandler
 from linotp.lib.base import BaseController
@@ -93,7 +92,7 @@ class OcraController(BaseController):
             request_context['Audit'] = audit
             return response
 
-        except webob.exc.HTTPUnauthorized as acc:
+        except flap.HTTPUnauthorized as acc:
 
             # the exception, when an abort() is called if forwarded
 

@@ -30,7 +30,7 @@
 import logging
 import copy
 
-from pylons import tmpl_context as c
+from linotp.flap import tmpl_context as c
 
 from linotp.lib.config.parsing import parse_config
 from linotp.lib.config.config_class import LinOtpConfig

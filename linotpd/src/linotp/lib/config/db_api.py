@@ -35,8 +35,6 @@ from linotp.lib.crypto.utils import encryptPassword
 from linotp.lib.error import ConfigAdminError
 from linotp.model import Config
 
-from pylons import tmpl_context as c
-
 from linotp.lib.text_utils import UTF8_MAX_BYTES
 from linotp.lib.text_utils import simple_slice
 from linotp.lib.text_utils import utf8_slice

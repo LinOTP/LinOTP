@@ -29,7 +29,7 @@
 import json
 import logging
 
-from pylons import config
+from linotp.flap import config
 
 from linotp.tests import TestController
 

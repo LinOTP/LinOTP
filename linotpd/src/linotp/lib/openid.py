@@ -54,7 +54,7 @@ from linotp.lib.realm import getDefaultRealm
 from hashlib import sha1
 
 from sqlalchemy import create_engine
-from pylons import config
+from linotp.flap import config
 
 import logging
 log = logging.getLogger(__name__)
@@ -791,4 +791,3 @@ def create_association(storage, expires_in=3600, **params):
 
     res = ['%s:%s' % (key, value) for key, value in res.items()]
     return '\n'.join(res) + "\n"
-

@@ -29,7 +29,7 @@ import json
 from hashlib import sha256
 from datetime import datetime
 
-from pylons.configuration import config as env
+from linotp.flap import config as env
 
 from linotp.lib.auth.finishtokens import FinishTokens
 

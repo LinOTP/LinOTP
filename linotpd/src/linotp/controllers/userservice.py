@@ -56,15 +56,11 @@ try:
 except ImportError:
     import simplejson as json
 
-from pylons import request
-from pylons import response
-from pylons import config
-from pylons import tmpl_context as c
+from linotp.flap import (
+    request, response, config, tmpl_context as c, abort,
+    render_mako as render, _,
+)
 
-
-from pylons.controllers.util import abort
-
-from pylons.templating import render_mako as render
 from mako.exceptions import CompileException
 
 from linotp.lib.base import BaseController
@@ -117,8 +113,6 @@ from linotp.tokens.ocra.ocratoken import OcraTokenClass
 from linotp.lib.apps import (create_google_authenticator,
                              create_oathtoken_url
                              )
-
-from pylons.i18n.translation import _
 
 from linotp.lib.audit.base import (get_token_num_info,
                                    search as audit_search

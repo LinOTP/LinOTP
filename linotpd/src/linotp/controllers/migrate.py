@@ -37,7 +37,7 @@ import binascii
 import hashlib
 import logging
 
-from pylons import request, response
+from linotp.flap import request, response
 
 import linotp.model.meta
 

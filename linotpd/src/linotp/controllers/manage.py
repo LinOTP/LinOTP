@@ -32,9 +32,10 @@ import os
 import logging
 import json
 
-from pylons import request, response, config, tmpl_context as c
-from pylons.templating import render_mako as render
-from pylons.i18n.translation import _
+from linotp.flap import (
+    config, render_mako as render, request, response, tmpl_context as c, _,
+)
+
 from paste.deploy.converters import asbool
 
 from mako.exceptions import CompileException
@@ -622,7 +623,7 @@ class ManageController(BaseController):
         '''
         redirect logout
         '''
-        from pylons.controllers.util import redirect
+        from linotp.flap import redirect
         http_host = request.environ.get("HTTP_HOST")
         url_scheme = request.environ.get("wsgi.url_scheme", "https")
         redirect("%s://%s/manage/" % (url_scheme, http_host))

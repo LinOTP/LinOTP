@@ -32,13 +32,12 @@ import unittest
 from mock import mock
 
 from linotp.lib.base import BaseController
-from webob.multidict import NestedMultiDict
-from webob.multidict import MultiDict
+from linotp.flap import MultiDict, NestedMultiDict
 
 
 def create_multidict(*args):
     """
-    Create a pylons NestedMultiDict object from tuple lists
+    Create a NestedMultiDict object from tuple lists
         args = [[('k', '1'), ('k', '2'), ('k', '3')], [('l', 'Z')]]
     :params args: list of list of tuples
     :returns: NestedMultiDict object

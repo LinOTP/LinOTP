@@ -48,7 +48,7 @@ from linotp.lib.pairing import generate_pairing_url
 from linotp.lib.config import getFromConfig
 from linotp.lib.policy import get_single_auth_policy
 from linotp.provider import loadProviderFromPolicy
-from pylons import config
+from linotp.flap import config
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from pysodium import crypto_sign_detached

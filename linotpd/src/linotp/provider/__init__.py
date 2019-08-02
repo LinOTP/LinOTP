@@ -31,7 +31,7 @@ import json
 import logging
 from functools import partial
 
-from pylons.i18n.translation import _
+from linotp.flap import _
 
 from linotp.lib.config import storeConfig
 from linotp.lib.config import getLinotpConfig

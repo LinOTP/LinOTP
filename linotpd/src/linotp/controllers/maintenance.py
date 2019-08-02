@@ -27,10 +27,7 @@
 import logging
 import os
 
-from pylons import request
-from pylons import response
-
-from pylons.controllers.util import abort
+from linotp.flap import request, response, abort
 
 from linotp.lib.context import request_context
 

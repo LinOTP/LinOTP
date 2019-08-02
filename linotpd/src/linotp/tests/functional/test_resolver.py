@@ -28,7 +28,7 @@
 """ """
 
 import logging
-from pylons import config
+from linotp.flap import config
 
 import json
 import os

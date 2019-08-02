@@ -30,11 +30,11 @@ validate controller - to check the authentication request
 
 import logging
 
-import webob
-from pylons import request, response, config
-from pylons import tmpl_context as c
-from pylons.controllers.util import abort
-from pylons.i18n.translation import _
+from linotp import flap
+from linotp.flap import (
+    _, request, response, config,
+    tmpl_context as c, abort
+)
 
 from linotp.lib.auth.validate import ValidationHandler
 from linotp.lib.base import BaseController
@@ -405,7 +405,7 @@ class ValidateController(BaseController):
             else:
                 return "Preshared Key Todo"
 
-        except webob.exc.HTTPUnauthorized as acc:
+        except flap.HTTPUnauthorized as acc:
             ## the exception, when an abort() is called if forwarded
             log.exception("[__before__::%r] webob.exception %r" % acc)
             Session.rollback()

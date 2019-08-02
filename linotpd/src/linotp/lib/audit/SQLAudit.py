@@ -43,7 +43,7 @@ from binascii import hexlify
 from binascii import unhexlify
 from sqlalchemy import create_engine
 from linotp.lib.audit.base import AuditBase
-from pylons import config
+from linotp.flap import config
 
 import logging.config
 import traceback

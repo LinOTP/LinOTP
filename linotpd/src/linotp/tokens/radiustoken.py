@@ -41,7 +41,7 @@ from linotp.lib.error import ParameterError
 import pyrad.packet
 from pyrad.client import Client
 from pyrad.dictionary import Dictionary
-from pylons.configuration import config as env
+from linotp.flap import config as env
 
 
 log = logging.getLogger(__name__)

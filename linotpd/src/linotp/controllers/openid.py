@@ -28,7 +28,6 @@ openid controller - This is the controller for the openid service
 """
 
 import logging
-import webob
 from urllib import urlencode
 
 import linotp.model
@@ -36,11 +35,10 @@ import linotp.model
 from linotp.lib.base import BaseController
 from linotp.lib.auth.validate import ValidationHandler
 
-from pylons import tmpl_context as c
-from pylons import request, response
-from pylons.controllers.util import redirect
-from pylons import config
-from pylons import url as url
+from linotp.flap import (
+    tmpl_context as c, request, response, redirect, config, url,
+    render_mako as render,
+)
 
 from linotp.lib.error import ParameterError
 
@@ -52,8 +50,6 @@ from linotp.lib.util import get_version
 from linotp.lib.util import get_copyright_info
 
 from linotp.lib.policy import PolicyException
-from pylons.templating import render_mako as render
-from webob.exc import HTTPBadRequest
 
 from linotp.lib.reply import sendError
 
@@ -135,7 +131,7 @@ class OpenidController(BaseController):
             log.exception("[__before__::%r] policy exception %r" % (action, pex))
             return sendError(response, pex, context='before')
 
-        except webob.exc.HTTPUnauthorized as acc:
+        except flap.HTTPUnauthorized as acc:
             ## the exception, when an abort() is called if forwarded
             log.exception("[__before__::%r] webob.exception %r" % (action, acc))
             raise acc

@@ -30,7 +30,7 @@ import zlib
 from os import urandom
 from base64 import b64encode
 from base64 import b64decode
-from pylons import config
+from linotp.flap import config
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from Cryptodome.Cipher import AES

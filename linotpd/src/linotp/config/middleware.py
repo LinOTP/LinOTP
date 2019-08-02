@@ -25,14 +25,18 @@
 #
 """Pylons middleware initialization"""
 
+import os
+import tempfile
+
 from beaker.middleware import CacheMiddleware, SessionMiddleware
 from paste.cascade import Cascade
 from paste.registry import RegistryManager
 from paste.urlparser import StaticURLParser
 from paste.deploy.converters import asbool
-from pylons import config
-from pylons.middleware import ErrorHandler, StatusCodeRedirect
-from pylons.wsgiapp import PylonsApp
+from linotp.flap import (
+    ErrorHandler, StatusCodeRedirect, App as PylonsApp,
+    __version__ as framework_version
+)
 from routes.middleware import RoutesMiddleware
 from linotp.config.environment import load_environment
 from contextlib import contextmanager
@@ -48,21 +52,14 @@ from distutils.version import LooseVersion
 # pragma pylint: enable=import-error
 # pragma pylint: enable=no-name-in-module
 
-from pylons import __version__ as pylons_version
-
 # for pylons versions lower or equesl to 0.9.8
 # we have to use a dummy class based on dict
-if LooseVersion(pylons_version) > LooseVersion('0.9.7'):
-    from pylons.configuration import PylonsConfig as PyConf
+if LooseVersion(framework_version) > LooseVersion('0.9.7'):
+    from linotp.flap import Config as PyConf
 else:
     class PyConf(dict):
         pass
 
-
-import binascii
-import re
-import os
-import tempfile
 
 def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
     """

@@ -31,7 +31,7 @@ import base64
 from contextlib import nested
 from pysodium import crypto_sign_keypair
 
-from pylons import config
+from linotp.flap import config
 
 from mock import patch
 

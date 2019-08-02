@@ -74,7 +74,7 @@ from linotp.lib.crypto.utils import hash_digest
 from linotp.lib.crypto.utils import get_rand_digit_str
 
 
-from pylons import config
+from linotp.flap import config
 log = logging.getLogger(__name__)
 
 implicit_returning = config.get('linotpSQL.implicit_returning', True)
@@ -985,7 +985,7 @@ class Challenge(object):
         """
         set the session state information like open or closed
         - contains in addition the mac of the whole challenge entry
-        
+
         :param session: dictionary of the session info
         """
         self.session = unicode(session)

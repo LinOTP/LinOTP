@@ -31,9 +31,9 @@ error controller - to display errors
 
 import cgi
 
-from pylons import request
-from pylons.middleware  import error_document_template
-from pylons.controllers.util import forward
+from linotp.flap import (
+    request, error_document_template, forward,
+)
 
 from paste.urlparser import PkgResourcesParser
 
@@ -86,4 +86,3 @@ class ErrorController(BaseController):
 
 
 #eof###########################################################################
-

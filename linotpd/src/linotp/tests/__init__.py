@@ -52,8 +52,7 @@ from paste.deploy import appconfig
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
 
-from pylons import url
-from pylons.configuration import config as env
+from linotp.flap import config as env, url
 from routes.util import URLGenerator
 import webtest
 

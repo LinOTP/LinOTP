@@ -27,15 +27,11 @@
 import os
 import re
 
-from pylons.i18n.translation import _ as translate
-from pylons.i18n.translation import set_lang
-from pylons.i18n import LanguageError
-
-from pylons.controllers import WSGIController
-
-from pylons import tmpl_context as c
-from pylons import config
-from pylons import request
+from linotp.flap import (
+    _ as translate, set_lang, LanguageError,
+    WSGIController, tmpl_context as c,
+    config, request,
+)
 
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.resolver import initResolvers

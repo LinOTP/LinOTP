@@ -35,7 +35,7 @@ import hmac
 import json
 import logging
 import os
-from pylons.configuration import config as env
+from linotp.flap import config as env
 from pysodium import sodium as c_libsodium
 from pysodium import __check as __libsodium_check
 from pysodium import crypto_sign_keypair as gen_dsa_keypair

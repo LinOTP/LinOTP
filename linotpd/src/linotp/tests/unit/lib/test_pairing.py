@@ -26,7 +26,7 @@
 
 import unittest
 
-from pylons import config
+from linotp.flap import config
 from linotp.lib.pairing import generate_pairing_url
 from mock import patch
 
