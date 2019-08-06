@@ -161,4 +161,3 @@ def upgrade_databases(local_conf, global_conf):
 
     return
 ###eof#########################################################################
-

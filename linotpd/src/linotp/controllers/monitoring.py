@@ -29,7 +29,7 @@ monitoring controller - interfaces to monitor LinOTP
 
 import logging
 
-from pylons import request, response, config, tmpl_context as c
+from linotp.flap import request, response, config, tmpl_context as c
 
 from linotp.lib.base import BaseController
 from linotp.lib.error import HSMException
@@ -434,7 +434,3 @@ class MonitoringController(BaseController):
 
         finally:
             Session.close()
-
-
-
-

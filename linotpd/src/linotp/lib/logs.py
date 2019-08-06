@@ -5,7 +5,7 @@ from datetime import datetime
 from linotp.model.meta import Session
 from linotp.model import LoggingConfig
 
-from pylons import request
+from linotp.flap import request
 
 # ------------------------------------------------------------------------------
 

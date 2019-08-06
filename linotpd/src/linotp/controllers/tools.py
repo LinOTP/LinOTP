@@ -30,8 +30,7 @@ tools controller
 import json
 from cgi import FieldStorage
 
-from pylons import request, response
-from pylons import tmpl_context as c
+from linotp.flap import request, response, tmpl_context as c
 
 from linotp.lib.base import BaseController
 from linotp.lib.reply import sendError

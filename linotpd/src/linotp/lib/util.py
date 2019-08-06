@@ -33,8 +33,7 @@ import netaddr
 
 import logging
 
-from pylons import config
-from pylons.controllers.util import abort
+from linotp.flap import config, abort
 
 from linotp.lib.crypto.utils import urandom
 from linotp.lib.crypto.utils import geturandom

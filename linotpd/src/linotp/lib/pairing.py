@@ -34,7 +34,7 @@ from linotp.lib.crypto.utils import get_public_key
 from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.error import ParameterError
 from linotp.lib.error import ProgrammingError
-from pylons import config
+from linotp.flap import config
 from pysodium import crypto_sign_detached
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from Cryptodome.Cipher import AES

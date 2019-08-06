@@ -34,8 +34,7 @@ try:
 except ImportError:
     import simplejson as json
 
-from pylons import request
-from pylons import tmpl_context as c
+from linotp.flap import request, tmpl_context as c
 
 from linotp.lib.error import LinotpError
 from linotp.lib.util import get_version
@@ -734,4 +733,3 @@ def sendCSVIterator(obj, headers=True):
         raise exx
 
 #eof#######################################################
-

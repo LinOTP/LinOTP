@@ -34,11 +34,10 @@ import base64
 import json
 
 # for the temporary rendering context, we use 'c'
-from pylons import (tmpl_context as c
-                    )
-
-from pylons.templating import render_mako as render
-
+from linotp.flap import (
+    tmpl_context as c,
+    render_mako as render,
+)
 
 from linotp.lib.policy import (get_client_policy,
                                getSelfserviceActions,
@@ -520,4 +519,3 @@ def add_dynamic_selfservice_policies(config, actions):
 def add_local_policies():
 
     return
-

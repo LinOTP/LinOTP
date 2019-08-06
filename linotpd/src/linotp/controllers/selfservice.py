@@ -34,20 +34,14 @@ selfservice controller - This is the controller for the self service interface,
 """
 import os
 import json
-import webob
 
 from paste.httpexceptions import HTTPFound
 
-from pylons import request
-from pylons import response
-from pylons import config
-from pylons import tmpl_context as c
-from pylons import url
-
-from pylons.controllers.util import abort
-from pylons.controllers.util import redirect
-from pylons.templating import render_mako as render
-from pylons.i18n.translation import _
+from linotp import flap
+from linotp.flap import (
+    request, response, config, tmpl_context as c, url,
+    abort, redirect, _, render_mako as render
+)
 
 from mako.exceptions import CompileException
 
@@ -197,7 +191,6 @@ class SelfserviceController(BaseController):
                 self.redirect = True
                 redirect(url(controller='selfservice', action='login'))
 
-
             # futher processing with the authenticated user
 
             if auth_state != 'authenticated':
@@ -273,7 +266,7 @@ class SelfserviceController(BaseController):
 
             return response
 
-        except (webob.exc.HTTPUnauthorized, webob.exc.HTTPForbidden) as acc:
+        except (flap.HTTPUnauthorized, flap.HTTPForbidden) as acc:
             # the exception, when an abort() is called if forwarded
             log.info("[__before__::%r] webob.exception %r" % (action, acc))
             Session.rollback()
@@ -329,7 +322,7 @@ class SelfserviceController(BaseController):
 
             return response
 
-        except webob.exc.HTTPUnauthorized as acc:
+        except flap.HTTPUnauthorized as acc:
             # the exception, when an abort() is called if forwarded
             log.exception("[__after__::%r] webob.exception %r" % (action, acc))
             Session.rollback()

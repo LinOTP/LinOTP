@@ -31,14 +31,13 @@ auth controller - to do authentication tests
 import logging
 
 
-from pylons             import tmpl_context as c
+from linotp.flap import render_mako as render, response, tmpl_context as c
+
 from linotp.lib.base    import BaseController
-from pylons.templating  import render_mako as render
 from linotp.lib.util    import get_version
 from linotp.lib.util    import get_copyright_info
 from linotp.lib.reply import sendError
 
-from pylons import response
 from linotp.model.meta import Session
 
 from linotp.lib.config import getLinotpConfig

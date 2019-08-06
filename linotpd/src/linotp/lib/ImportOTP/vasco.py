@@ -46,7 +46,7 @@ from ctypes import c_byte
 from tempfile import NamedTemporaryFile
 
 
-from pylons import config
+from linotp.flap import config
 
 
 __all__ = ["parseVASCOdata", "vasco_otp_check"]

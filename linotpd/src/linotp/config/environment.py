@@ -28,8 +28,7 @@
 import os
 
 from mako.lookup import TemplateLookup
-from pylons import config
-from pylons.error import handle_mako_error
+from linotp.flap import config, handle_mako_error
 from sqlalchemy import engine_from_config
 
 import linotp.lib.app_globals as app_globals

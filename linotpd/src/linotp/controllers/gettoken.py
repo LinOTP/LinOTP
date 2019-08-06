@@ -29,10 +29,10 @@ gettoken controller - to retrieve OTP values
 
 import logging
 
-from pylons import tmpl_context as c
-from pylons import request, response
-from pylons import config
-from pylons.templating import render_mako as render
+from linotp.flap import (
+    config, render_mako as render, request, response,
+    tmpl_context as c,
+)
 
 import linotp.model
 from linotp.lib.base import BaseController

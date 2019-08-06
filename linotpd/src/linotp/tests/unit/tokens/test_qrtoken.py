@@ -32,7 +32,7 @@ from linotp.lib.context import request_context_safety
 from linotp.lib.context import request_context
 from linotp.tokens.qrtoken.qrtoken import QrTokenClass
 from mock import patch
-from pylons import config
+from linotp.flap import config
 
 
 class FakeHSM(object):

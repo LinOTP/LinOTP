@@ -33,10 +33,10 @@ from datetime import datetime
 
 import json
 
-from pylons import request
-from pylons import response
-from pylons import config
-from pylons import tmpl_context as c
+from linotp.flap import (
+    config, request, response, tmpl_context as c, _,
+    HTTPUnauthorized,
+)
 
 from linotp.lib.base import BaseController
 from linotp.lib.tokeniterator import TokenIterator
@@ -96,13 +96,9 @@ from linotp.lib.ImportOTP import parseYubicoCSV
 from linotp.lib.useriterator import iterate_users
 from linotp.lib.context import request_context
 from linotp.lib.reporting import token_reporting
-from pylons.i18n.translation import _
 
 from linotp.lib.resolver import get_resolver_class
 from linotp.lib.resolver import prepare_resolver_parameter
-
-# For logout
-from webob.exc import HTTPUnauthorized
 
 # this is a hack for the static code analyser, which
 # would otherwise show session.close() as error

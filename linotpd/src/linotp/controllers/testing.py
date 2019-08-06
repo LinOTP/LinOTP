@@ -29,7 +29,7 @@ testing controller - for testing purposes
 
 import logging
 
-from pylons import request, response
+from linotp.flap import request, response
 from linotp.lib.base import BaseController
 
 from linotp.lib.error import ParameterError

@@ -29,8 +29,8 @@ audit controller - to search the audit trail
 
 import logging
 
-from pylons import tmpl_context as c
-from pylons import request, response, config
+from linotp.flap import tmpl_context as c, request, response, config
+
 from linotp.lib.base import BaseController
 
 

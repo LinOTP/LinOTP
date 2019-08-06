@@ -32,7 +32,7 @@ from freezegun import freeze_time
 
 from datetime import datetime
 from datetime import timedelta
-from pylons import config
+from linotp.flap import config
 from sqlalchemy import engine_from_config
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -579,7 +579,7 @@ class TestReportingController(TestController):
 
             # -------------------------------------------------------------- --
 
-            # 
+            #
             try:
                 response = self.make_reporting_request('show')
             except Exception as exx:

@@ -29,11 +29,11 @@ system controller - to configure the system
 import os
 
 import json
-import webob
 import binascii
 from configobj import ConfigObj
 
-from pylons import request, response, config, tmpl_context as c
+from linotp import flap
+from linotp.flap import config, request, response, tmpl_context as c, _
 
 from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 
@@ -117,7 +117,6 @@ from linotp.lib.crypto.utils import libcrypt_password
 
 from paste.fileapp import FileApp
 from cgi import escape
-from pylons.i18n.translation import _
 
 from linotp.lib.context import request_context
 
@@ -179,7 +178,7 @@ class SystemController(BaseController):
             Session.close()
             return sendError(response, pex, context='before')
 
-        except webob.exc.HTTPUnauthorized as acc:
+        except flap.HTTPUnauthorized as acc:
             # the exception, when an abort() is called if forwarded
             log.exception("[__before__::%r] webob.exception %r", action, acc)
             Session.rollback()
