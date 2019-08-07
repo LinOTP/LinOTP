@@ -22,12 +22,14 @@ from __future__ import print_function
 
 from logging.config import dictConfig as logging_dictConfig
 import os
+import time
 
-from flask import Flask
+from flask import Flask, jsonify
 
 from . import __version__
 from .settings import configs
 
+start_time = time.time()
 this_dir = os.path.dirname(os.path.abspath(__file__))
 
 CONFIG_FILE_ENVVAR = "LINOTP_CONFIG_FILE"  # DRY
@@ -93,4 +95,11 @@ def create_app(config_name='default'):
 
     init_logging(app)
 
+    app.add_url_rule('/healthcheck', 'healthcheck', healthcheck)
+
     return app
+
+
+def healthcheck():
+    uptime = time.time() - start_time
+    return jsonify(status="alive", version=__version__, uptime=uptime)
