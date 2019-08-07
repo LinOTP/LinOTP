@@ -66,7 +66,7 @@ def init_logging(app):
                 },
             },
             'loggers': {
-                'flask.app': {
+                'linotp.app': {
                     'handlers': ['file', 'console'],
                     'level': app.config["LOGGING_LEVEL"],
                     'propagate': False,
