@@ -12,7 +12,8 @@ class Config:
     # You can specify a different URL prefix by listing the controller
     # as `FOO:/bar`, which will register it on `/bar` instead.
 
-    CONTROLLERS = "admin manage system validate"
+    # CONTROLLERS = "admin manage system validate"
+    CONTROLLERS = "test"
 
     # We're using a `RotatingFileHandler` to manage log files. The
     # main log file is written to `LOGFILE_DIR/LOGFILE_NAME`, with one

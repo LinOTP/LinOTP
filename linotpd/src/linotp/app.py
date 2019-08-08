@@ -20,6 +20,7 @@
 
 from __future__ import print_function
 
+import importlib
 from logging.config import dictConfig as logging_dictConfig
 import os
 import time
@@ -36,6 +37,10 @@ CONFIG_FILE_ENVVAR = "LINOTP_CONFIG_FILE"  # DRY
 CONFIG_FILE_NAME = os.path.join(os.path.dirname(this_dir), "linotp.cfg")
 if os.getenv(CONFIG_FILE_ENVVAR) is None:
     os.environ[CONFIG_FILE_ENVVAR] = CONFIG_FILE_NAME
+
+
+class ConfigurationError(Exception):
+    pass
 
 
 def init_logging(app):
@@ -91,11 +96,46 @@ def create_app(config_name='default'):
 
     app.config.from_envvar(CONFIG_FILE_ENVVAR, silent=True)
 
-    print("app.config = {}".format(app.config))
-
     init_logging(app)
 
     app.add_url_rule('/healthcheck', 'healthcheck', healthcheck)
+
+    # `CONTROLLERS` is a string that contains a space-separated list
+    # of controllers that should be made available. If an entry in
+    # this list is `foo`, this means that the Python module
+    # `linotp.controllers.foo` should be loaded and its
+    # `FooController` class be made available as a Flask blueprint at
+    # the `/foo` URL prefix. Our dispatch mechanism then ensures that
+    # a request to `/foo/bar` will be dispatched to the
+    # `FooController.bar()` view method.
+    #
+    # In general, controllers may be specified as
+    # `module:url_prefix:class_prefix` (where `url_prefix` and
+    # `class_prefix` are optional and will be constructed from
+    # `module` as above if needed).
+
+    for ctrl_name in app.config["CONTROLLERS"].split():
+        bits = ctrl_name.split(':', 2)
+        while len(bits) < 3:
+            bits.append('')
+        if not bits[0]:
+            raise ConfigurationError(
+                "no controller module specified: {}".format(ctrl_name))
+        if not bits[1]:
+            bits[1] = '/' + bits[0]    # "foobar" => "/foobar"
+        if not bits[2]:
+            # "foobar" => "FoobarController"
+            bits[2] = bits[0].title() + 'Controller'
+        ctrl_name, url_prefix, ctrl_class_name = bits
+        mod = importlib.import_module('.' + ctrl_name, "linotp.controllers")
+        cls = getattr(mod, ctrl_class_name, None)
+        if cls is None:
+            raise ConfigurationError(
+                "{} does not define the '{}' class".format(ctrl_name,
+                                                           ctrl_class_name))
+        app.logger.debug(
+            "Registering {0} class at {1}".format(ctrl_class_name, url_prefix))
+        app.register_blueprint(cls(ctrl_name), url_prefix=url_prefix)
 
     return app
 
