@@ -74,6 +74,7 @@ setup(
     author_email='linotp@keyidentity.com',
     url='https://www.linotp.org',
     install_requires=[
+        "Flask",
         "Pylons>=0.9.7",
         "PasteScript<=1.7.5",
         "WebOb",

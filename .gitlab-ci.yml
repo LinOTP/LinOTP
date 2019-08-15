@@ -96,6 +96,9 @@ build-test-environment:debian-buster:
     - pip install -U cffi
     - pip install coverage
     - pip install bcrypt
+    - pip install flask
+    - pip install pytest
+    - pip install pytest-flask
     - pip freeze
     - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
     #- pip install -e .[tests]
@@ -164,6 +167,9 @@ unit-test:debian-buster:
     - pip install -U cffi
     - pip install coverage
     - pip install bcrypt
+    - pip install flask
+    - pip install pytest
+    - pip install pytest-flask
     - pip freeze
     - python setup.py develop
     - python tools/linotp-create-enckey -f test.ini
