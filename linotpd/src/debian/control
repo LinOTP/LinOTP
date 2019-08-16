@@ -11,6 +11,7 @@ Build-Depends: cdbs,
                python-pastescript,
                python-pylons (>=0.9.7),
                python-flask,
+               flask-testing,
                python-setuptools,
                dh-python
 Standards-Version: 3.9.8
