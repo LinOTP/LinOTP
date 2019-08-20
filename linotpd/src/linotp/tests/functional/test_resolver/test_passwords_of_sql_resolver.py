@@ -36,7 +36,7 @@ from passlib.hash import bcrypt as passlib_bcrypt
 from passlib.hash import phpass as passlib_phpass
 
 
-from .sql_test_controller import SQLTestController
+from sql_test_controller import SQLTestController
 
 log = logging.getLogger(__name__)
 

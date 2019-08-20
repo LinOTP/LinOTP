@@ -31,7 +31,7 @@ sql resolver tests
 import logging
 import json
 
-from .sql_test_controller import SQLTestController
+from sql_test_controller import SQLTestController
 
 log = logging.getLogger(__name__)
 
