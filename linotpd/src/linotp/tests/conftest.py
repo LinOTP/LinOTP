@@ -15,7 +15,6 @@ pylonsapp = None
 def pytest_addoption(parser):
     parser.addoption('--with-pylons', default='test.ini', help='Pylons support: configuration file')
 
-@pytest.fixture(scope="session", autouse=True)
 def pylons_app(request):
     config_file = request.config.getoption('--with-pylons')
 
