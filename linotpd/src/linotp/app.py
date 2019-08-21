@@ -98,7 +98,7 @@ def create_app(config_name='default'):
 
     init_logging(app)
 
-    app.add_url_rule('/healthcheck', 'healthcheck', healthcheck)
+    app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
 
     # `CONTROLLERS` is a string that contains a space-separated list
     # of controllers that should be made available. If an entry in
