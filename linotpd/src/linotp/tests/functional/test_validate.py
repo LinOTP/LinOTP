@@ -43,14 +43,15 @@ import freezegun
 from datetime import datetime
 
 # we need this for the radius token
-import pyrad
+from pyrad.client import Client
+from pyrad.packet import AccessAccept
 
 from linotp.tests import TestController, url
 log = logging.getLogger(__name__)
 
 
 class Response(object):
-    code = pyrad.packet.AccessAccept
+    code = AccessAccept
 
 
 def mocked_radius_SendPacket(Client, *argparams, **kwparams):
@@ -2113,7 +2114,7 @@ class TestValidateController(TestController):
 
         return
 
-    @patch.object(pyrad.client.Client, 'SendPacket', mocked_radius_SendPacket)
+    @patch.object(Client, 'SendPacket', mocked_radius_SendPacket)
     def test_auth_info_detail_radiotoken(self):
         """
         check for additional auth_info from validate check for radiotoken

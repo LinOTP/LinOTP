@@ -38,7 +38,7 @@ import logging
 import urlparse
 
 # we need this for the radius token
-import pyrad
+from pyrad.client import Client
 import pyrad.packet as packet
 from pyrad.packet import AccessAccept, AccessReject, AccessChallenge
 
@@ -57,11 +57,11 @@ class RadiusResponse(object):
 
     def __init__(self, auth, reply=None):
         if auth is True:
-            self.code = pyrad.packet.AccessAccept
+            self.code = AccessAccept
         elif auth is False:
-            self.code = pyrad.packet.AccessReject
+            self.code = AccessReject
         else:
-            self.code = pyrad.packet.AccessChallenge
+            self.code = AccessChallenge
 
         if not reply:
             self.reply = {}
@@ -205,7 +205,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
 
         return serials
 
-    @patch.object(pyrad.client.Client, 'SendPacket', mocked_radius_SendPacket)
+    @patch.object(Client, 'SendPacket', mocked_radius_SendPacket)
     def test_radiustoken_remote_pin(self):
         """
         Challenge Response Test: radius token with remote PIN
@@ -274,7 +274,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
 
         return
 
-    @patch.object(pyrad.client.Client, 'SendPacket', mocked_radius_SendPacket)
+    @patch.object(Client, 'SendPacket', mocked_radius_SendPacket)
     def test_radiustoken_local_pin(self):
         """
         Challenge Response Test: radius token with local PIN
