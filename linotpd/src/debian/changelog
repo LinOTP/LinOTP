@@ -1,9 +1,9 @@
-linotp (2.10.6rc0-1) jessie; urgency=low
+linotp (2.10.6-1) jessie; urgency=low
 
-  * Set new version 2.10.6rc0
-  * feature: support ssl/tls and start_tls with emailprovider
+  Feature:
+  * Server: support ssl/tls and start_tls with emailprovider
 
- --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 2 Jul 2019 17:55:28 +0200
+ --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 21 Aug 2019 10:43:02 +0200
 
 linotp (2.10.5.3-1) jessie; urgency=high
 
