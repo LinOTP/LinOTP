@@ -111,8 +111,15 @@ def xfail_if_unported(controller, action):
         pytest.xfail("Controller %s not yet available (action=%s)" % (controller, action))
 
 def url(controller, action):
+    """
+    Generate URL for a given controller and action
+    """
+    if controller.endswith("/"):
+        warnings.warn("Controller name should not end with trailing slash")
+        controller = controller.strip("/")
+
     xfail_if_unported(controller, action)
-    return "/".join([controller.strip("/"), action or ""])
+    return "/".join([controller, action or ""])
 
 class CompatibleTestResponse(Response):
     """
