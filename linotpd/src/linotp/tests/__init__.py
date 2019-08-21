@@ -57,7 +57,7 @@ from flask import Flask
 from flask import Response
 from flask_testing import TestCase
 import pkg_resources
-import unittest2
+import pytest
 
 from linotp.app import create_app
 
@@ -79,8 +79,39 @@ __all__ = ["environ", "url", "TestController"]
 
 environ = {}
 
+def xfail_if_unported(controller, action):
+    """
+    If a controller is not yet ported, we automatically
+    xfail the test if a URL belonging to the controller is
+    called. This allows us to see which tests are really
+    failing, as opposed to those that use unported URLs
+    """
+    unported_controllers = [
+        'account',
+        'admin',
+        'custom',
+        'error',
+        'gettoken',
+        'maintenance',
+        'migrate',
+        'monitoring',
+        'ocra',
+        'openid',
+        'reporting',
+        'selfservice',
+        'system',
+        'testing',
+        'tools',
+        'u2f',
+        'userservice',
+        'validate',
+    ]
+
+    if controller in unported_controllers:
+        pytest.xfail("Controller %s not yet available (action=%s)" % (controller, action))
 
 def url(controller, action):
+    xfail_if_unported(controller, action)
     return "/".join([controller.strip("/"), action or ""])
 
 class CompatibleTestResponse(Response):
