@@ -27,22 +27,16 @@
 #
 
 #####################
-# Functional test configuration
-#
+# Functional tests
+
 # Overrides can be specified on the make command line
 # For example:
-#   make funcationaltests PYTESTARGS=-v
-
-# Additional test arguments can be specified in PYTESTARGS
+#   make functionaltests PYTESTARGS=-v
 PYTESTARGS=
-
-#####################
-# Functional test targets
-#
 
 test: functionaltests
 
 functionaltests:
-	pytest
+	pytest $(PYTESTARGS)
 
-.PHONY: test functionaltests $(PYTESTARGS)
+.PHONY: test functionaltests
