@@ -115,7 +115,7 @@ def url(controller, action):
     Generate URL for a given controller and action
     """
     if controller.endswith("/"):
-        warnings.warn("Controller name should not end with trailing slash")
+        warnings.warn("Controller name should not have a trailing slash")
         controller = controller.strip("/")
 
     xfail_if_unported(controller, action)
