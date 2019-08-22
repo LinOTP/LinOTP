@@ -27,39 +27,22 @@
 #
 
 #####################
-# Unit test configuration
+# Functional test configuration
 #
 # Overrides can be specified on the make command line
 # For example:
-#   make integrationtests TCFILE=my_cfg.ini LOGGINGFILTER=
+#   make funcationaltests PYTESTARGS=-v
 
-LINOTPDIR := $(realpath $(PWD)/../../..)
-
-# The test settings ini file to use. Override to use a different file.
-TCFILE=$(LINOTPDIR)/functional_tc.ini
-
-# Nosetests arguments
-NOSETESTS_ARGS=-v --with-pylons=$(LINOTPDIR)/test.ini
-
-# Additional test arguments can be specified in FUNCTIONALTESTS_ARGS
-FUNCTIONALTESTS_ARGS=
-
-# The default log filter does not show debug messages from urllib connections.
-# Override this to include them.
-LOGGINGFILTER=-requests.packages.urllib3.connectionpool
+# Additional test arguments can be specified in PYTESTARGS
+PYTESTARGS=
 
 #####################
 # Functional test targets
 #
 
-ifdef LOGGINGFILTER
-LOGFILTER_ARGS=--logging-filter=${LOGGINGFILTER}
-endif
-
 test: functionaltests
 
 functionaltests:
-	# functionaltests
-	cd $(LINOTPDIR) && nosetests $(NOSETESTS_ARGS) --tc-file=$(TCFILE) $(LOGFILTER_ARGS) $(FUNCTIONALTESTS_ARGS)
+	pytest
 
-.PHONY: test functionaltests
+.PHONY: test functionaltests $(PYTESTARGS)
