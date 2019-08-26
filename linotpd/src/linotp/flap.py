@@ -17,6 +17,28 @@ from pylons.middleware import (
 from pylons.templating import render_mako
 from pylons.wsgiapp import PylonsApp as App
 
+import flask
+
+
+class ConfigProxy(object):
+    """
+    Flask configuration object
+    """
+    def __contains__(self, name):  # Make "... in config" work
+        return name in flask.g.request_context['config']
+    def __getitem__(self, name):
+        return flask.g.request_context['config'].__getitem__(name)
+    def get(self, name, default=None):
+        return flask.g.request_context['config'].get(name, default)
+config = ConfigProxy()
+
+def set_config():
+    """
+    Set up config from flask request object
+    """
+    flask.g.request_context = {
+        'config': {},
+    }
 
 def _(s):
     """Mickey Mouse translation utility."""

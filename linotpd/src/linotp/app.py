@@ -20,6 +20,7 @@
 
 from __future__ import print_function
 
+import flask
 import importlib
 from logging.config import dictConfig as logging_dictConfig
 import os
@@ -28,6 +29,8 @@ import time
 from flask import Flask, jsonify
 
 from . import __version__
+from . import flap
+from .config.environment import load_environment
 from .settings import configs
 
 start_time = time.time()
@@ -97,6 +100,12 @@ def create_app(config_name='default'):
     app.config.from_envvar(CONFIG_FILE_ENVVAR, silent=True)
 
     init_logging(app)
+
+    app.before_request(flap.set_config)
+
+    @app.before_request
+    def load_environment_for_request():
+        load_environment(flask.g, app.config)
 
     app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
 

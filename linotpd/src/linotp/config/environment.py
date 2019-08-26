@@ -27,6 +27,8 @@
 
 import os
 
+import flask
+
 from mako.lookup import TemplateLookup
 from linotp.flap import config, handle_mako_error
 from sqlalchemy import create_engine
@@ -80,8 +82,9 @@ def load_environment(global_conf, app_conf):
     """
     Configure the Pylons environment via the ``pylons.config``
     object
-    """
 
+    @param app_conf Flask configuration
+    """
     # Pylons paths
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     paths = dict(root=root,
@@ -91,11 +94,12 @@ def load_environment(global_conf, app_conf):
                                          os.path.join(root, 'templates')),
                             os.path.join(root, 'templates')])
 
-    # Initialize config with the basic options
-    config.init_app(global_conf, app_conf, package='linotp', paths=paths)
-
+    config = flask.g.request_context['config']
     config['linotp.root'] = root
-    config['routes.map'] = make_map(global_conf, app_conf)
+
+    # Copy Flask config into global config
+    config.update(app_conf)
+
     config['pylons.app_globals'] = app_globals.Globals()
     config['pylons.h'] = linotp.lib.helpers
 
@@ -173,7 +177,7 @@ def get_activated_token_modules():
     the list of modules defined there as a list. if the key is not
     present this will return None.
     """
-
+    config = flask.g.request_context['config']
     if 'linotpTokenModules' not in config:
         return None
 
