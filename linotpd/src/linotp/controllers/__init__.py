@@ -49,6 +49,7 @@ from types import FunctionType
 
 from flask import Blueprint
 
+from linotp.lib.base import BaseController as bc
 
 class ControllerMetaClass(type):
 
@@ -63,7 +64,7 @@ class ControllerMetaClass(type):
         return cls
 
 
-class BaseController(Blueprint):
+class BaseController(bc):
     __metaclass__ = ControllerMetaClass
 
     def __init__(self, name, install_name='', **kwargs):
