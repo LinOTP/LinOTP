@@ -3,9 +3,10 @@
 import webob
 from webob.multidict import MultiDict, NestedMultiDict
 
+from flask import request
+
 from pylons import (
-    config, request, response, tmpl_context, url,
-    __version__,
+    response, url, __version__,
 )
 from pylons.configuration import PylonsConfig as Config
 from pylons.controllers import WSGIController
@@ -31,6 +32,21 @@ class ConfigProxy(object):
     def get(self, name, default=None):
         return flask.g.request_context['config'].get(name, default)
 config = ConfigProxy()
+
+class RequestProxy(object):
+    """
+    Flask request object plus params -> args
+    """
+    def __init__(self, proxy):
+        self.proxy = proxy
+
+    def __getattribute__(self, name):
+        if name == 'params':
+            return self.proxy.args
+        elif name == 'proxy':
+            return super(RequestProxy, self).__getattribute__('proxy')
+        return getattr(self.proxy, name)
+request = RequestProxy(flask.request)
 
 class RequestContextProxy(object):
     def __getattr__(self, name):
