@@ -29,7 +29,7 @@ import os
 
 from mako.lookup import TemplateLookup
 from linotp.flap import config, handle_mako_error
-from sqlalchemy import engine_from_config
+from sqlalchemy import create_engine
 
 import linotp.lib.app_globals as app_globals
 import linotp.lib.helpers
@@ -132,7 +132,7 @@ def load_environment(global_conf, app_conf):
     # the entries from the config file. if it is loaded at the top of the file,
     # the pylons.config does not contain the config file, yet.
     from linotp.model import init_model
-    engine = engine_from_config(config, 'sqlalchemy.')
+    engine = create_engine(config['SQLALCHEMY_DATABASE_URI'])
     init_model(engine)
 
     # CONFIGURATION OPTIONS HERE (note: all config options will override
