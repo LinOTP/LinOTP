@@ -33,7 +33,7 @@ from linotp import flap
 from linotp.flap import request, response, config, tmpl_context as c
 
 from linotp.lib.auth.validate import ValidationHandler
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.error import ParameterError
 
 from linotp.lib.policy import PolicyException

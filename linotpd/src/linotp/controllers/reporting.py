@@ -34,7 +34,7 @@ import logging
 from datetime import datetime
 
 from linotp.flap import request, response, config, tmpl_context as c
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.context import request_context
 
 from linotp.lib.policy import (checkAuthorisation,

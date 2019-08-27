@@ -38,7 +38,7 @@ from linotp.flap import (
     HTTPUnauthorized,
 )
 
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.tokeniterator import TokenIterator
 from linotp.lib.token import TokenHandler
 

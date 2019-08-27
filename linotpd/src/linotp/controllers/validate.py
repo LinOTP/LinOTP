@@ -37,7 +37,7 @@ from linotp.flap import (
 )
 
 from linotp.lib.auth.validate import ValidationHandler
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import ParameterError
 

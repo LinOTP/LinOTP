@@ -32,7 +32,7 @@ from urllib import urlencode
 
 import linotp.model
 
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.auth.validate import ValidationHandler
 
 from linotp.flap import (

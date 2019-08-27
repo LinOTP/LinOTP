@@ -63,7 +63,7 @@ from linotp.flap import (
 
 from mako.exceptions import CompileException
 
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.auth.validate import ValidationHandler
 
 from linotp.lib.policy import (checkPolicyPre,

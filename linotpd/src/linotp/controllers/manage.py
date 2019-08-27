@@ -40,7 +40,7 @@ from paste.deploy.converters import asbool
 
 from mako.exceptions import CompileException
 
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.error import ParameterError
 
 # Our Token stuff

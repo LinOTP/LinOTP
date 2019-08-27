@@ -31,7 +31,7 @@ import logging
 
 from linotp.flap import request, response, config, tmpl_context as c
 
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.error import HSMException
 
 from linotp.lib.util import check_session

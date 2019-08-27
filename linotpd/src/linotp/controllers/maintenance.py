@@ -33,7 +33,7 @@ from linotp.lib.context import request_context
 
 from linotp.lib.reply import sendResult
 from linotp.lib.reply import sendError
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.logs import set_logging_level
 
 from linotp.model import Config

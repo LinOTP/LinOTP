@@ -46,7 +46,7 @@ from linotp.flap import (
 from mako.exceptions import CompileException
 
 import linotp.model
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.error import ParameterError
 
 from linotp.lib.token import getTokenType
