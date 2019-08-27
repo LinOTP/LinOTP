@@ -661,8 +661,7 @@ class BaseController(WSGIController):
         request_context['CacheManager'] = environment['beaker.cache']
 
         routes = environment.get('pylons.routes_dict', {})
-        path = "/%s/%s" % (routes['controller'], routes['action'])
-        request_context['Path'] = path
+        request_context['Path'] = request.path
 
         request_context['hsm'] = self.hsm
 
