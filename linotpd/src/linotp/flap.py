@@ -32,6 +32,22 @@ class ConfigProxy(object):
         return flask.g.request_context['config'].get(name, default)
 config = ConfigProxy()
 
+class RequestContextProxy(object):
+    def __getattr__(self, name):
+        return flask.g.request_context.__getitem__(name)
+    def get(self, name, default=None):
+        return flask.g.request_context.get(name, default)
+        #return flask.g.request_context.__getattribute__(name)
+    def __setattr__(self, name, value):
+        #flask.g.request_context.__setattr__(name, value)
+        flask.g.request_context.__setitem__(name, value)
+    def __getitem__(self, key):
+        return flask.g.request_context.__getitem__(key)
+    def __setitem__(self, key, value):
+        flask.g.request_context.__setitem__(key, value)
+
+tmpl_context = RequestContextProxy()
+
 def set_config():
     """
     Set up config from flask request object
