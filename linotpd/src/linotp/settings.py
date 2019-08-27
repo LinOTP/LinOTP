@@ -2,7 +2,7 @@
 import logging
 import os
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 
 class Config:
@@ -50,6 +50,8 @@ class Config:
     LOGGING = None
 
     ROOT_DIR = basedir
+
+    SECRET_FILE = os.path.join(basedir, "encKey")
 
     @staticmethod
     def init_app(app):
