@@ -450,7 +450,8 @@ class BaseController(Blueprint):
         config = flask.g.request_context['config']
 
         self.sep = None
-        self.set_language(request.headers)
+        # TODO - language
+        #self.set_language(request.headers)
         self.base_auth_user = ''
 
         # make the OpenID SQL Instance globally available
