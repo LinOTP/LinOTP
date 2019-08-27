@@ -81,6 +81,13 @@ class BaseController(bc):
                     url += '/<' + arg + '>'
             self.add_url_rule(url, method_name, view_func=method)
 
+        # Add pre/post handlers
+        self.before_request(self.first_run_setup)
+        self.before_request(self.start_session)
+        self.before_request(self.before_handler)
+        if hasattr(self, '__after__'):
+            self.after_request(self.__after__)
+        self.teardown_request(self.finalise_request)
 
 def methods(mm=['GET']):
     """

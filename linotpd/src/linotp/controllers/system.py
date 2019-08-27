@@ -192,7 +192,8 @@ class SystemController(BaseController):
             return sendError(response, exx, context='before')
 
 
-    def __after__(self):
+    @staticmethod
+    def __after__(response):
         '''
         __after is called after every action
 

@@ -27,6 +27,10 @@
 import os
 import re
 
+import flask
+
+from flask import Blueprint
+
 from linotp.flap import (
     _ as translate, set_lang, LanguageError,
     WSGIController, tmpl_context as c,
@@ -57,7 +61,6 @@ from linotp.model import meta
 from linotp.lib.openid import SQLStorage
 
 from linotp.lib.context import request_context
-from linotp.lib.context import request_context_safety
 from linotp.lib.logs import init_logging_config
 from linotp.lib.logs import log_request_timedelta
 
@@ -433,26 +436,22 @@ def setup_app(conf, conf_global=None, unitTest=False):
     log.info("Successfully set up.")
 
 
-class BaseController(WSGIController):
+class BaseController(Blueprint):
     """
     BaseController class - will be called with every request
     """
 
-    def __init__(self, *args, **kw):
+    def first_run_setup(self):
         """
-        base controller constructor
-
-        :param *args: generic argument array
-        :param **kw: generic argument dict
-        :return: None
-
+        Set up the app and database. This only needs to be called once per application
+        TODO: Move out of base controller
         """
+
+        config = flask.g.request_context['config']
+
         self.sep = None
         self.set_language(request.headers)
         self.base_auth_user = ''
-
-        self.parent = super(WSGIController, self)
-        self.parent.__init__(*args, **kw)
 
         # make the OpenID SQL Instance globally available
         openid_sql = config.get('openid_sql', None)
@@ -522,76 +521,62 @@ class BaseController(WSGIController):
                 if not license_str:
                     log.error("empty license file: %s", filename)
                 else:
-                    with request_context_safety():
-                        request_context['translate'] = translate
+                    request_context['translate'] = translate
 
-                        import linotp.lib.support
-                        res, msg = linotp.lib.support.setSupportLicense(
-                            license_str)
-                        if res is False:
-                            log.error("failed to load license: %s: %s",
-                                      license_str, msg)
+                    import linotp.lib.support
+                    res, msg = linotp.lib.support.setSupportLicense(
+                        license_str)
+                    if res is False:
+                        log.error("failed to load license: %s: %s",
+                                    license_str, msg)
 
-                        else:
-                            log.info("license successfully loaded")
+                    else:
+                        log.info("license successfully loaded")
             if 'provider.config_file' in config:
                 from linotp.provider import load_provider_ini
 
                 load_provider_ini(config['provider.config_file'])
 
-    def __call__(self, environ, start_response):
-        '''Invoke the Controller'''
-        # WSGIController.__call__ dispatches to the Controller method
-        # the request is routed to. This routing information is
-        # available in environ['pylons.routes_dict']
-
+    def start_session(self):
         # we add a unique request id to the request enviroment
         # so we can trace individual requests in the logging
 
-        environ['REQUEST_ID'] = str(uuid4())
-        environ['REQUEST_START_TIMESTAMP'] = datetime.now()
+        request.environ['REQUEST_ID'] = str(uuid4())
+        request.environ['REQUEST_START_TIMESTAMP'] = datetime.now()
 
-        with request_context_safety():
+        try:
+            self._parse_request_params(request)
+        except UnicodeDecodeError as exx:
+            # we supress Exception here as it will be handled in the
+            # controller which will return corresponding response
+            log.warning('Failed to access request parameters: %r' % exx)
 
-            try:
-                self._parse_request_params(request)
-            except UnicodeDecodeError as exx:
-                # we supress Exception here as it will be handled in the
-                # controller which will return corresponding response
-                log.warning('Failed to access request parameters: %r' % exx)
+        self.create_context(request, request.environ)
 
-            self.create_context(request, environ)
+        try:
+            user_desc = getUserFromRequest(request)
+            self.base_auth_user = user_desc.get('login', '')
+        except UnicodeDecodeError as exx:
+            # we supress Exception here as it will be handled in the
+            # controller which will return corresponding response
+            log.warning('Failed to identify user due to %r' % exx)
 
-            try:
-                try:
-                    user_desc = getUserFromRequest(request)
-                    self.base_auth_user = user_desc.get('login', '')
-                except UnicodeDecodeError as exx:
-                    # we supress Exception here as it will be handled in the
-                    # controller which will return corresponding response
-                    log.warning('Failed to identify user due to %r' % exx)
+    def finalise_request(self, exc):
+        meta.Session.remove()
+        # free the lock on the scurityPovider if any
+        if self.sep:
+            self.sep.dropSecurityModule()
+        closeResolvers()
 
-                ret = WSGIController.__call__(self, environ, start_response)
-                log.debug("Request reply: %r", ret)
+        # hint for the garbage collector to make the dishes
+        data_objects = ["resolvers_loaded",
+                        "resolver_clazzes", "linotpConfig", "audit", "hsm"]
+        for data_obj in data_objects:
+            if hasattr(c, data_obj):
+                data = getattr(c, data_obj)
+                del data
 
-            finally:
-                meta.Session.remove()
-                # free the lock on the scurityPovider if any
-                if self.sep:
-                    self.sep.dropSecurityModule()
-                closeResolvers()
-
-                # hint for the garbage collector to make the dishes
-                data_objects = ["resolvers_loaded",
-                                "resolver_clazzes", "linotpConfig", "audit", "hsm"]
-                for data_obj in data_objects:
-                    if hasattr(c, data_obj):
-                        data = getattr(c, data_obj)
-                        del data
-
-                log_request_timedelta(log)
-
-            return ret
+        log_request_timedelta(log)
 
     def _parse_request_params(self, _request):
         """
@@ -646,6 +631,8 @@ class BaseController(WSGIController):
 
         linotp_config = getLinotpConfig()
 
+        request_context = flask.g.request_context
+
         # make the request id available in the request context
         request_context['RequestId'] = environment['REQUEST_ID']
 
@@ -660,7 +647,6 @@ class BaseController(WSGIController):
         request_context['translate'] = translate
         request_context['CacheManager'] = environment['beaker.cache']
 
-        routes = environment.get('pylons.routes_dict', {})
         request_context['Path'] = request.path
 
         request_context['hsm'] = self.hsm
@@ -769,5 +755,12 @@ class BaseController(WSGIController):
             sysconfig[key] = config.get(key, default)
 
         request_context['SystemConfig'] = sysconfig
+
+    def before_handler(self):
+        params = {}
+        if hasattr(self, '__before__'):
+            action = "TODOACTION"
+            self.__before__(action, **params)
+
 
 # eof ########################################################################
