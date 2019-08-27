@@ -77,14 +77,18 @@ from linotp.lib.crypto.utils import get_rand_digit_str
 from linotp.flap import config
 log = logging.getLogger(__name__)
 
-implicit_returning = config.get('linotpSQL.implicit_returning', True)
+implicit_returning = True
+# TODO: Implicit returning from config
+# implicit_returning = config.get('linotpSQL.implicit_returning', True)
 
 # # for oracle we need a mapping of columns
 # # due to reserved keywords 'session' and 'timestamp'
 COL_PREFIX = ""
-SQLU = config.get("sqlalchemy.url", "")
-if SQLU.startswith("oracle:"):
-    COL_PREFIX = config.get("oracle.sql.column_prefix", "lino")
+
+# TODO: Get from app config
+# SQLU = config.get("sqlalchemy.url", "")
+# if SQLU.startswith("oracle:"):
+#     COL_PREFIX = config.get("oracle.sql.column_prefix", "lino")
 
 
 session_column = "%ssession" % COL_PREFIX

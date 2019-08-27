@@ -68,7 +68,7 @@ def now():
     return u_now
 
 ######################## MODEL ################################################
-table_prefix = config.get("linotpAudit.sql.table_prefix", "")
+table_prefix = ""
 
 audit_table_name = '%saudit' % table_prefix
 
