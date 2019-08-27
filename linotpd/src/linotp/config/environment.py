@@ -152,7 +152,9 @@ def load_environment(global_conf, app_conf):
     # get the help url
     url = config.get("linotpHelp.url", None)
     if url is None:
-        version = pkg_resources.get_distribution("linotp").version
+        # version = pkg_resources.get_distribution("linotp").version
+        # TODO
+        version = 3
         # First try to get the help for this specific version
         url = "https://linotp.org/doc/%s/index.html" % version
     config['help_url'] = url
