@@ -139,7 +139,6 @@ from linotp.lib.context import request_context
 from linotp.lib.reporting import token_reporting
 
 log = logging.getLogger(__name__)
-audit = config.get('audit')
 
 ENCODING = "utf-8"
 

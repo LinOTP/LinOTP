@@ -65,8 +65,6 @@ import linotp.model.meta
 Session = linotp.model.meta.Session
 
 
-audit = config.get('audit')
-
 log = logging.getLogger(__name__)
 
 
@@ -89,6 +87,7 @@ class OcraController(BaseController):
             if action != "check_t":
                 check_session(request)
 
+            audit = config.get('audit')
             request_context['Audit'] = audit
             return response
 

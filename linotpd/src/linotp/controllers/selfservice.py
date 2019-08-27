@@ -90,8 +90,6 @@ Session = linotp.model.Session
 
 ENCODING = "utf-8"
 log = logging.getLogger(__name__)
-audit = config.get('audit')
-
 
 class SelfserviceController(BaseController):
 
@@ -138,6 +136,7 @@ class SelfserviceController(BaseController):
             self.client = get_client(request)
             c.audit['client'] = self.client
 
+            audit = config.get('audit')
             request_context['Audit'] = audit
 
             # -------------------------------------------------------------- --

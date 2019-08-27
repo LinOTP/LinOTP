@@ -125,7 +125,6 @@ import linotp.model.meta
 
 Session = linotp.model.meta.Session
 
-audit = config.get('audit')
 log = logging.getLogger(__name__)
 
 
@@ -160,6 +159,7 @@ class SystemController(BaseController):
 
             # check session might raise an abort()
             check_session(request)
+            audit = config.get('audit')
             request_context['Audit'] = audit
 
             # check authorization
@@ -200,6 +200,7 @@ class SystemController(BaseController):
         :rtype:  pylons response
         '''
         try:
+            audit = config.get('audit')
             c.audit['administrator'] = getUserFromRequest(request).get("login")
             audit.log(c.audit)
             # default return for the __before__ and __after__

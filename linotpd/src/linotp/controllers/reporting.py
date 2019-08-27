@@ -56,8 +56,6 @@ from linotp.lib.util import get_client
 
 from linotp.model.meta import Session
 
-audit = config.get('audit')
-
 log = logging.getLogger(__name__)
 
 
@@ -79,6 +77,7 @@ class ReportingController(BaseController):
             # Session handling
             check_session(request)
 
+            audit = config.get('audit')
             request_context['Audit'] = audit
             checkAuthorisation(scope='reporting.access', method=action)
 

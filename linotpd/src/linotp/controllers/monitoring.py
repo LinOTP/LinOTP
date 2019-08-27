@@ -58,7 +58,6 @@ from linotp.lib.monitoring import MonitorHandler
 
 from linotp.lib.context import request_context
 
-audit = config.get('audit')
 
 log = logging.getLogger(__name__)
 
@@ -81,6 +80,7 @@ class MonitoringController(BaseController):
             # Session handling
             check_session(request)
 
+            audit = config.get('audit')
             request_context['Audit'] = audit
             checkAuthorisation(scope='monitoring', method=action)
 

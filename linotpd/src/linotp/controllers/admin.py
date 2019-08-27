@@ -105,7 +105,6 @@ from linotp.lib.resolver import prepare_resolver_parameter
 import linotp.model
 Session = linotp.model.Session
 
-audit = config.get('audit')
 
 
 log = logging.getLogger(__name__)
@@ -137,6 +136,7 @@ class AdminController(BaseController):
             # Session handling
             check_session(request)
 
+            audit = config.get('audit')
             request_context['Audit'] = audit
             return request
 

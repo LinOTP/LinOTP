@@ -66,8 +66,6 @@ Session = linotp.model.Session
 ASSOC_EXPIRES_IN = 3600
 COOKIE_NAME = "linotp_openid"
 
-audit = config.get('audit')
-
 log = logging.getLogger(__name__)
 
 
@@ -89,6 +87,7 @@ class OpenidController(BaseController):
 
             c.audit = request_context[audit]
             c.audit['client'] = get_client(request)
+            audit = config.get('audit')
             request_context['Audit'] = audit
 
             self.storage = config.get('openid_sql')

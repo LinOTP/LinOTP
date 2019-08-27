@@ -73,8 +73,6 @@ Session = linotp.model.Session
 
 CONTENT_TYPE_PAIRING = 1
 
-audit = config.get('audit')
-
 log = logging.getLogger(__name__)
 
 
@@ -96,6 +94,7 @@ class ValidateController(BaseController):
         try:
             c.audit = request_context['audit']
             c.audit['client'] = get_client(request)
+            audit = config.get('audit')
             request_context['Audit'] = audit
             return response
 

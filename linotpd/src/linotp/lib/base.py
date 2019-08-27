@@ -82,7 +82,6 @@ log = logging.getLogger(__name__)
 
 Session = linotp.model.meta.Session
 
-Audit = config.get('audit')
 
 # HTTP-ACCEPT-LANGUAGE strings are in the form of i.e.
 # de-DE, de; q=0.7, en; q=0.3
@@ -677,6 +676,7 @@ class BaseController(WSGIController):
 
         request_context['Client'] = client
 
+        Audit = config['audit']
         request_context['Audit'] = Audit
         request_context['audit'] = Audit.initialize(request, client=client)
 

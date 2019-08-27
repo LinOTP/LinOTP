@@ -114,4 +114,3 @@ def load_module(mod_rel):
 
     return False
 
-reload_classes()

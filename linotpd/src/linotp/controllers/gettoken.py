@@ -56,7 +56,6 @@ from linotp.lib.context import request_context
 
 Session = linotp.model.Session
 
-audit = config.get('audit')
 
 optional = True
 required = False

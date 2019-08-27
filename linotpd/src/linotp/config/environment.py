@@ -111,6 +111,7 @@ def load_environment(global_conf, app_conf):
 
     import linotp.tokens as token_package
 
+    token_package.reload_classes()
     token_package_path = os.path.dirname(token_package.__file__)
     directories.append(token_package_path)
 
