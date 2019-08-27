@@ -646,7 +646,10 @@ class BaseController(Blueprint):
         request_context['Config'] = linotp_config
         request_context['Policies'] = parse_policies(linotp_config)
         request_context['translate'] = translate
-        request_context['CacheManager'] = environment['beaker.cache']
+
+        # TODO: Port beaker.cache Middleware functionality
+        # request_context['CacheManager'] = environment['beaker.cache']
+        request_context['CacheManager'] = None
 
         request_context['Path'] = request.path
 
