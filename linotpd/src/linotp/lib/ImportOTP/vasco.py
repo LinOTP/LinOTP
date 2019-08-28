@@ -57,23 +57,30 @@ log = logging.getLogger(__name__)
 vasco_dll = None
 vasco_libs = []
 
-# get the Vacman Controller lib
-fallbacks = ["/opt/vasco/Vacman_Controller/lib/libaal2sdk.so"]
+def init_vasco():
+    """
+    Vasco library initialiser
+    """
+    global vasco_dll
+    global vasco_libs
 
-vasco_lib = config.get("linotpImport.vasco_dll")
-if not vasco_lib:
-    log.info("Missing linotpImport.vasco_dll in config file")
-else:
-    vasco_libs.append(vasco_lib)
+    # get the Vacman Controller lib
+    fallbacks = ["/opt/vasco/Vacman_Controller/lib/libaal2sdk.so"]
 
-vasco_libs.extend(fallbacks)
-for vasco_lib in vasco_libs:
-    try:
-        log.debug("loading vasco lib %r", vasco_lib)
-        vasco_dll = CDLL(vasco_lib)
-        break
-    except Exception as exx:
-        log.info("cannot load vasco library: %r", exx)
+    vasco_lib = config.get("linotpImport.vasco_dll")
+    if not vasco_lib:
+        log.info("Missing linotpImport.vasco_dll in config file")
+    else:
+        vasco_libs.append(vasco_lib)
+
+    vasco_libs.extend(fallbacks)
+    for vasco_lib in vasco_libs:
+        try:
+            log.debug("loading vasco lib %r", vasco_lib)
+            vasco_dll = CDLL(vasco_lib)
+            break
+        except Exception as exx:
+            log.info("cannot load vasco library: %r", exx)
 
 
 # decorator: check_vasco

@@ -32,6 +32,7 @@ from . import __version__
 from . import flap
 from .config.environment import load_environment
 from .settings import configs
+from .lib.ImportOTP.vasco import init_vasco
 
 start_time = time.time()
 this_dir = os.path.dirname(os.path.abspath(__file__))
@@ -102,6 +103,7 @@ def create_app(config_name='default'):
     init_logging(app)
 
     app.before_request(flap.set_config)
+    app.before_request(init_vasco)
 
     @app.before_request
     def load_environment_for_request():
