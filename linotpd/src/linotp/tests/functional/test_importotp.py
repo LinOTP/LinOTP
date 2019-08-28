@@ -31,7 +31,7 @@ import json
 
 from linotp.tests import TestController
 
-import linotp.lib.ImportOTP
+from linotp.lib.ImportOTP import eTokenDat, PSKC, parseYubicoCSV, parseSafeNetXML
 
 import os
 
@@ -107,8 +107,7 @@ class TestImportOTP(TestController):
 
         data = self._read_data("safework_tokens.dat")
 
-        TOKENS = linotp.lib.ImportOTP.eTokenDat.parse_dat_data(data,
-                                                               '1.1.2000')
+        TOKENS = eTokenDat.parse_dat_data(data, '1.1.2000')
 
         self.assertTrue(len(TOKENS) == 2, TOKENS)
         self.assertTrue(TOKENS.get("RAINER02") is not None, TOKENS)
@@ -209,8 +208,7 @@ class TestImportOTP(TestController):
 
         xml = self._read_data("ocra_pskc_tokens.xml")
 
-        from linotp.lib.ImportOTP.PSKC import parsePSKCdata
-        TOKENS = parsePSKCdata(xml,
+        TOKENS = PSKC.parsePSKCdata(xml,
                  preshared_key_hex="4A057F6AB6FCB57AB5408E46A9835E68",
                  do_checkserial=False)
 
@@ -228,7 +226,7 @@ class TestImportOTP(TestController):
 
         pskc_xml = self._read_data("pskc_tokens.xml")
 
-        TOKENS = linotp.lib.ImportOTP.PSKC.parsePSKCdata(
+        TOKENS = PSKC.parsePSKCdata(
                                                     pskc_xml,
                                                     do_checkserial=False)
 
@@ -243,7 +241,7 @@ class TestImportOTP(TestController):
 
         csv = self._read_data("yubi_tokens.csv")
 
-        TOKENS = linotp.lib.ImportOTP.parseYubicoCSV(csv)
+        TOKENS = parseYubicoCSV(csv)
         self.assertTrue(len(TOKENS) == 5, TOKENS)
 
         return
@@ -254,7 +252,7 @@ class TestImportOTP(TestController):
         '''
         xml = self._read_data("safenet_tokens.xml")
 
-        TOKENS = linotp.lib.ImportOTP.parseSafeNetXML(xml)
+        TOKENS = parseSafeNetXML(xml)
         self.assertTrue(len(TOKENS) == 2, TOKENS)
 
         return

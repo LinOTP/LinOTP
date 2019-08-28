@@ -59,23 +59,6 @@ stages:
     - docker push "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
     - docker images
 
-build-test-environment:debian-stretch:
-  extends: .build-test-environment-debian
-  variables:
-    DEPENDENCY_SOURCE: http://avocado.corp.lsexperts.de/deb-repo
-    DEPENDENCY_COMPONENT: kideps
-    DEPENDENCY_GPG_KEYID: ""
-    DEPENDENCY_GPG_KEY_URL: http://avocado.corp.lsexperts.de/deb-repo/archive-key.asc
-    DEBIAN_RELEASE_NAME: stretch
-
-build-test-environment:debian-jessie:
-  extends: .build-test-environment-debian
-  variables:
-    DEPENDENCY_SOURCE: http://www.linotp.org/apt/debian
-    DEPENDENCY_COMPONENT: linotp
-    DEPENDENCY_GPG_KEYID: 913DFF12F86258E5
-    DEBIAN_RELEASE_NAME: jessie
-
 build-test-environment:debian-buster:
   extends: .build-test-environment-debian
   allow_failure: true
@@ -89,46 +72,16 @@ build-test-environment:debian-buster:
   before_script:
     - cd linotpd/src
     - python --version
-    - pip install --upgrade setuptools
-    - pip install wheel
-    - pip install freezegun
-    - pip install mock
-    - pip install -U cffi
-    - pip install coverage
-    - pip install bcrypt
-    - pip install flask
-    - pip install pytest
-    - pip install pytest-flask
-    - pip freeze
+    - pip install -e ".[test]"
     - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
-    #- pip install -e .[tests]
-    - python setup.py develop
     - python tools/linotp-create-enckey -f test.ini
     - python tools/linotp-create-auditkeys -f test.ini
-    - export NOSE_WITH_COVERAGE=1
-    - export NOSE_COVER_INCLUSIVE=1
-    - export NOSE_COVER_DIR=${CI_PROJECT_DIR}/coverage/${DEBIAN_RELEASE_NAME}/
-    - export COVERAGE_FILE=${NOSE_COVER_DIR}/unit
-    - mkdir -p ${NOSE_COVER_DIR}
-  artifacts:
-    paths:
-      - coverage/${DEBIAN_RELEASE_NAME}
-
-unit-test:debian-jessie:
-  extends: .test-debian
-  stage: test
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
-  script:
-    - nosetests -v linotp/tests/unit/
-
-unit-test:debian-stretch:
-  extends: .test-debian
-  stage: test
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
-  script:
-    - nosetests --with-pylons=test.ini -v linotp/tests/unit/
+#    - export PYTEST_COVER_DIR=${CI_PROJECT_DIR}/coverage/${DEBIAN_RELEASE_NAME}/
+#    - export COVERAGE_FILE=${PYTEST_COVER_DIR}/unit
+#    - mkdir -p ${PYTEST_COVER_DIR}
+#  artifacts:
+#    paths:
+#      - coverage/${DEBIAN_RELEASE_NAME}
 
 unit-test:debian-buster:
   extends: .test-debian
@@ -137,7 +90,7 @@ unit-test:debian-buster:
   variables:
     DEBIAN_RELEASE_NAME: buster
   script:
-    - nosetests --with-pylons=test.ini -v linotp/tests/unit/
+    - make -C $CI_PROJECT_DIR unittests
 
 .functional-test:
   stage: test
@@ -153,14 +106,12 @@ unit-test:debian-buster:
     MYSQL_HOST: mysql
     SHELL: /bin/bash
   before_script:
-    - test "${DEBIAN_RELEASE_NAME}" != "buster" && apt-get install --yes --no-install-recommends parallel mysql-client python-mysqldb python-imaging || apt-get install --yes --no-install-recommends python-pil default-mysql-client python-mysqldb
-    - test "${DEBIAN_RELEASE_NAME}" == "jessie" && apt-get install --yes --no-install-recommends libmysqlclient-dev || apt-get install  --yes --no-install-recommends default-libmysqlclient-dev
     - cd linotpd/src
     - pip install --upgrade setuptools
     - pip install wheel
     - pip install freezegun
     - pip install mock
-    - pip install mysql
+    - pip install mysqlclient
     - pip install unittest2
     - pip install nose nose-testconfig
     - pip install pyrad
@@ -170,6 +121,7 @@ unit-test:debian-buster:
     - pip install flask
     - pip install pytest
     - pip install pytest-flask
+    - pip install mysqlclient
     - pip freeze
     - python setup.py develop
     - python tools/linotp-create-enckey -f test.ini
@@ -178,107 +130,67 @@ unit-test:debian-buster:
     - mkdir /tmp/config
     - cp config/dictionary /tmp/config
     - rm test.ini
-    - export NOSE_WITH_COVERAGE=1
-    - test "$CI_PIPELINE_SOURCE" != "schedule" && export NOSE_ATTRS='!nightly'
-    - export NOSE_COVER_DIR=${CI_PROJECT_DIR}/coverage/${DEBIAN_RELEASE_NAME}/
-    - mkdir -p ${NOSE_COVER_DIR}
-    - find linotp/tests/functional -type f -iname 'test_*.py' >func-tests.txt
-    - num_tests=`cat func-tests.txt | wc -l`
-    - echo $num_tests
+#    - test "$CI_PIPELINE_SOURCE" != "schedule" && export NOSE_ATTRS='!nightly'
+#    - export PYTEST_COVER_DIR=${CI_PROJECT_DIR}/coverage/${DEBIAN_RELEASE_NAME}/
+#    - mkdir -p ${PYTEST_COVER_DIR}
+#    - find linotp/tests/functional -type f -iname 'test_*.py' >func-tests.txt
+#    - num_tests=`cat func-tests.txt | wc -l`
+#    - echo $num_tests
     # ocra2 test irrelevant and a damn long execution duration
     # So remove for commit triggered pipeline - only executed during nightly scheduled pipeline
-    - test "$CI_PIPELINE_SOURCE" != "schedule" && sed -i '/test_ocra2/d' func-tests.txt
-    - split --numeric-suffixes=1 -n r/5 func-tests.txt func_chunk_
-    - cat func_chunk_01
-    - cat func_chunk_02
-    - cat func_chunk_03
-    - cat func_chunk_04
-    - cat func_chunk_05
+#    - test "$CI_PIPELINE_SOURCE" != "schedule" && sed -i '/test_ocra2/d' func-tests.txt
+#    - split --numeric-suffixes=1 -n r/5 func-tests.txt func_chunk_
+#    - cat func_chunk_01
+#    - cat func_chunk_02
+#    - cat func_chunk_03
+#    - cat func_chunk_04
+#    - cat func_chunk_05
   script:
-    - bash -c "find linotp/tests/functional -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
-  artifacts:
-    paths:
-      - coverage/${DEBIAN_RELEASE_NAME}/
+#    - bash -c "find linotp/tests/functional -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
+    - make -C $CI_PROJECT_DIR functionaltests
+#  artifacts:
+#    paths:
+#      - coverage/${DEBIAN_RELEASE_NAME}/
 
-.functional-special-test:
-  extends: .functional-test
-  stage: test
-  variables:
-    COVERAGE_PREFIX: func-special
-  script:
-    - bash -c "find linotp/tests/functional_special -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
+# .functional-special-test:
+#   extends: .functional-test
+#   stage: test
+#   variables:
+#     COVERAGE_PREFIX: func-special
+#   script:
+#     - bash -c "find linotp/tests/functional_special -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
 
-func:jessie:
-  extends: .functional-test
-  stage: test
-  parallel: 5
-  script:
-    - echo $CI_NODE_INDEX
-    - bash -c "cat func_chunk_0$CI_NODE_INDEX | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
-
-func:stretch:
-  extends: .functional-test
-  stage: test
-  parallel: 5
-  script:
-    - echo $CI_NODE_INDEX
-    - bash -c "cat func_chunk_0$CI_NODE_INDEX | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
-  
 functional-test:buster:
   extends: .functional-test
   allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
-functional-special-test:jessie:
-  extends: .functional-special-test
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
+# functional-special-test:buster:
+#   extends: .functional-special-test
+#   allow_failure: true
+#   variables:
+#     DEBIAN_RELEASE_NAME: buster
 
-functional-special-test:stretch:
-  extends: .functional-special-test
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
+# .coverage-report:
+#   stage: coverage-report
+#   image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
+#   script:
+#     - pip install coverage
+#     - cd coverage/${DEBIAN_RELEASE_NAME}
+#     - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
+#     - coverage combine *
+#     - coverage report | tee coverage.txt
+#     - coverage html
+#   artifacts:
+#     paths:
+#       - coverage/${DEBIAN_RELEASE_NAME}
 
-functional-special-test:buster:
-  extends: .functional-special-test
-  allow_failure: true
-  variables:
-    DEBIAN_RELEASE_NAME: buster
-
-.coverage-report:
-  stage: coverage-report
-  image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
-  script:
-    - pip install coverage
-    - cd coverage/${DEBIAN_RELEASE_NAME}
-    - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
-    - coverage combine *
-    - coverage report | tee coverage.txt
-    - coverage html
-  artifacts:
-    paths:
-      - coverage/${DEBIAN_RELEASE_NAME}
-
-coverage-report:jessie:
-  extends: .coverage-report
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
-
-coverage-report:stretch:
-  extends: .coverage-report
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
-
-coverage-report:buster:
-  extends: .coverage-report
-  allow_failure: true
-  variables:
-    DEBIAN_RELEASE_NAME: buster
+# coverage-report:buster:
+#   extends: .coverage-report
+#   allow_failure: true
+#   variables:
+#     DEBIAN_RELEASE_NAME: buster
 
 .build-debs:
   stage: build-debian-packages
@@ -295,17 +207,6 @@ coverage-report:buster:
     paths:
       - pkg/apt/${DEBIAN_RELEASE_NAME}
     expire_in: 2 weeks
-
-
-build:jessie:
-  extends: .build-debs
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
-
-build:stretch:
-  extends: .build-debs
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
 
 build:buster:
   extends: .build-debs
@@ -339,24 +240,6 @@ build:buster:
       --build-arg="DEPENDENCY_GPG_KEY_URL=${DEPENDENCY_GPG_KEY_URL}"
       --tag="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}" -f $BUILDDIR/Dockerfile.linotp $BUILDDIR
     - docker push "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
-
-
-build-linotp-docker-image:jessie:
-  extends: .build-linotp-docker-image
-  variables:
-    DEPENDENCY_SOURCE: http://www.linotp.org/apt/debian
-    DEPENDENCY_COMPONENT: linotp
-    DEPENDENCY_GPG_KEYID: 913DFF12F86258E5
-    DEBIAN_RELEASE_NAME: jessie
-
-build-linotp-docker-image:stretch:
-  extends: .build-linotp-docker-image
-  variables:
-    DEPENDENCY_SOURCE: http://avocado.corp.lsexperts.de/deb-repo
-    DEPENDENCY_COMPONENT: kideps
-    DEPENDENCY_GPG_KEYID: ""
-    DEPENDENCY_GPG_KEY_URL: http://avocado.corp.lsexperts.de/deb-repo/archive-key.asc
-    DEBIAN_RELEASE_NAME: stretch
 
 build-linotp-docker-image:buster:
   extends: .build-linotp-docker-image
@@ -405,63 +288,6 @@ build-linotp-docker-image:buster:
     - cd linotpd/src/linotp/tests/integration
     - docker-compose -f docker-compose-gitlab.yml down --rmi all --remove-orphans
 
-e2e-1:jessie:mysql-5.5:
-  retry:
-    max: 1
-  extends: .e2e-test
-  script:
-    - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch1 --rm test-script-executor
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
-    DB: mysql:5.5
-
-e2e-2:jessie:mysql-5.5:
-  retry:
-    max: 1
-  extends: .e2e-test
-  script:
-    - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch2 --rm test-script-executor
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
-    DB: mysql:5.5
-
-e2e-1:jessie:mariadb:10.1:
-  allow_failure: true
-  extends: .e2e-test
-  script:
-    - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch1 --rm test-script-executor
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
-    DB: mariadb:10.1
-
-e2e-2:jessie:mariadb-10.1:
-  allow_failure: true
-  extends: .e2e-test
-  script:
-    - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch2 --rm test-script-executor
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
-    DB: mariadb:10.1
-
-e2e-1:stretch:mariadb-10.1:
-  retry:
-    max: 1
-  extends: .e2e-test
-  script:
-    - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch1 --rm test-script-executor
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
-    DB: mariadb:10.1
-
-e2e-2:stretch:mariadb-10.1:
-  retry:
-    max: 1
-  extends: .e2e-test
-  script:
-    - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch2 --rm test-script-executor
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
-    DB: mariadb:10.1
 
 # Base rule for uploading deb packages to development repository.
 # We use scp to upload all the files to an incoming directory.

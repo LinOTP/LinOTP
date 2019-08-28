@@ -43,6 +43,7 @@ from urlparse import urlsplit
 
 from Cryptodome.Hash import SHA256 as SHA256
 
+import linotp.lib.crypto
 from linotp.lib.ext.pbkdf2 import PBKDF2
 from linotp.lib.reply import create_img
 
