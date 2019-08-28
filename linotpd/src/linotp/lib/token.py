@@ -51,6 +51,7 @@ from linotp.lib.user import User, getUserRealms
 from linotp.lib.user import get_authenticated_user
 
 from linotp.lib.util import generate_password
+from linotp.lib.type_utils import boolean
 
 from linotp.lib.realm import realm2Objects
 
@@ -82,6 +83,7 @@ optional = True
 required = False
 
 ENCODING = "utf-8"
+
 
 ###############################################
 
@@ -1804,20 +1806,50 @@ def getTokenType(serial):
 def add_last_accessed_info(list_of_tokenlist):
     """
     if token_last_access is defined in the config, add this to the token info
+
+    we receive a list of tokens, coming from the validation with e.g.
+    pin-match and challenge match token list
+
+    :param list_of_tokenlists: list of token lists
+    :return: - nothing -
     """
 
     token_last_access = getFromConfig('token.last_access', None)
+
     if not token_last_access:
         return
 
-    stampTokens = []
-    for token_list in list_of_tokenlist:
-        stampTokens.extend(token_list)
+    # ---------------------------------------------------------------------- --
 
-    now = datetime.datetime.now()
-    acces_info = now.strftime(token_last_access)
-    for token in stampTokens:
-        token.addToTokenInfo('last_access', acces_info)
+    # we support a default fallback if in the config the last access format was
+    # was misused as boolean - so we fallback to ISO format
+
+    try:
+        if not boolean(token_last_access):
+            return
+
+        token_last_access = True
+        log.debug('last_access defined as True - falling back to iso format')
+
+    except:
+        log.debug('using token.last_access format: %r', token_last_access)
+
+
+    now = datetime.datetime.utcnow()
+
+    if token_last_access is True:
+        access_info = now.isoformat()
+    else:
+        access_info = now.strftime(token_last_access)
+
+    # ---------------------------------------------------------------------- --
+
+    # we receive a list of tokens, coming from the validation with e.g.
+    # pin-match and challenge match token list
+
+    for token_list in list_of_tokenlist:
+        for token in token_list:
+            token.addToTokenInfo('last_access', access_info)
 
     return
 

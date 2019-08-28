@@ -28,6 +28,7 @@
 
 from linotp.lib.utils import config_get, INI_FILE
 from sqlalchemy import *
+from sqlalchemy.sql import text as sql_text
 from getopt import getopt, GetoptError
 import sys, datetime
 import logging, logging.config
@@ -63,12 +64,12 @@ def token_usage(SQL_URL, AUDIT_URL, AUDIT_PREFIX):
     overall_number = int(row[id_pos])
 
     # not assigned tokens
-    rows = token.count().where("LinOtpUserid=''").execute()
+    rows = token.count().where(sql_text("LinOtpUserid=''")).execute()
     row = rows.fetchone()
     not_assigned = int(row[id_pos])
 
     # disabled tokens
-    rows = token.count().where("LinOtpIsactive=0").execute()
+    rows = token.count().where(sql_text("LinOtpIsactive=0")).execute()
     row = rows.fetchone()
     not_active = int(row[id_pos])
 
@@ -88,7 +89,8 @@ def token_usage(SQL_URL, AUDIT_URL, AUDIT_PREFIX):
     # The audit table already exists, so no need to redefine it. Just
     # load it from the database using the "autoload" feature.
     audit = Table('%saudit' % AUDIT_PREFIX, metadata, autoload=True)
-    rows = audit.select("action_detail like '%tokennum%'", order_by=column("id").desc()).execute()
+    rows = audit.select(sql_text("action_detail like '%tokennum%'"),
+                        order_by=column("id").desc()).execute()
 
     current_month = None
     min_token = None
