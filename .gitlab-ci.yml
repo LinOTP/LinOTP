@@ -107,23 +107,7 @@ unit-test:debian-buster:
     SHELL: /bin/bash
   before_script:
     - cd linotpd/src
-    - pip install --upgrade setuptools
-    - pip install wheel
-    - pip install freezegun
-    - pip install mock
-    - pip install mysqlclient
-    - pip install unittest2
-    - pip install nose nose-testconfig
-    - pip install pyrad
-    - pip install -U cffi
-    - pip install coverage
-    - pip install bcrypt
-    - pip install flask
-    - pip install pytest
-    - pip install pytest-flask
-    - pip install mysqlclient
-    - pip freeze
-    - python setup.py develop
+    - pip install -e ".[test]"
     - python tools/linotp-create-enckey -f test.ini
     - python tools/linotp-create-auditkeys -f test.ini
     - cp encKey public.pem private.pem /tmp/
