@@ -7,7 +7,6 @@ from pylons import (
     response, url, __version__,
 )
 from pylons.configuration import PylonsConfig as Config
-from pylons.controllers import WSGIController
 from pylons.controllers.util import abort, forward, redirect
 from pylons.error import handle_mako_error
 from pylons.middleware import (

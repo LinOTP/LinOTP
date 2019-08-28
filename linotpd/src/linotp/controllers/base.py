@@ -34,7 +34,7 @@ from flask import Blueprint, g as flask_g, Response
 
 from linotp.flap import (
     _ as translate, set_lang, LanguageError,
-    WSGIController, tmpl_context as c,
+    tmpl_context as c,
     config, request,
 )
 
