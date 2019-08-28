@@ -126,7 +126,7 @@ class TestLastAccess(TestController):
             'type': 'pw',
             'otpkey': 'geheim',
             'pin': '123!'
-            }
+        }
 
         response = self.make_admin_request('init', params=params)
         assert '<img' in response, response.body
@@ -139,21 +139,21 @@ class TestLastAccess(TestController):
 
         params = {
             'token.last_access': time_fmt
-            }
+        }
         response = self.make_system_request('setConfig', params=params)
         assert 'token.last_access' in response, response.body
 
         params = {
             'serial': serial,
             'pass': '123!geheimXXX'
-            }
+        }
         response = self.make_validate_request('check_s', params=params)
         assert '"status": true' in response, response.body
-        assert '"value": false'  in response, response.body
+        assert '"value": false' in response, response.body
 
         params = {
             'serial': serial
-            }
+        }
         response = self.make_admin_request('show', params)
         assert '"status": true' in response, response.body
 
@@ -166,18 +166,17 @@ class TestLastAccess(TestController):
         invalid_access = token_info['last_access']
         _invalid_access_date = datetime.strptime(invalid_access, time_fmt)
 
-
         params = {
             'serial': serial,
             'pass': '123!geheim'
-            }
+        }
         response = self.make_validate_request('check_s', params=params)
         assert '"status": true' in response, response.body
-        assert '"value": true'  in response, response.body
+        assert '"value": true' in response, response.body
 
         params = {
             'serial': serial
-            }
+        }
         response = self.make_admin_request('show', params)
         assert '"status": true' in response, response.body
 

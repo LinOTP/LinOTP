@@ -51,6 +51,7 @@ from passlib.hash import phpass as passlib_phpass
 from sqlalchemy import create_engine
 from sqlalchemy import types
 from sqlalchemy.sql import expression
+from sqlalchemy.sql import text as sql_text
 from sqlalchemy import Table, MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import NoSuchColumnError
@@ -291,7 +292,7 @@ class dbObject():
         log.debug('[dbObject::count] %s:%s' % (table, where))
         num = 0
         if where != "":
-            num = self.sess.query(table).filter(where).count()
+            num = self.sess.query(table).filter(sql_text(where)).count()
         else:
             num = self.sess.query(table).count()
         return num
