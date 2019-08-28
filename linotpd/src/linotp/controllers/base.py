@@ -24,15 +24,13 @@
 #    Support: www.keyidentity.com
 #
 '''The Controller's Base class '''
+
 from inspect import getargspec
 import os
 from types import FunctionType
 import re
 
-import flask
-
-from flask import Blueprint
-from flask import Response
+from flask import Blueprint, g as flask_g, Response
 
 from linotp.flap import (
     _ as translate, set_lang, LanguageError,
@@ -525,7 +523,7 @@ class BaseController(Blueprint):
         TODO: Move out of base controller
         """
 
-        config = flask.g.request_context['config']
+        config = flask_g.request_context['config']
 
         self.sep = None
         # TODO - language
@@ -600,7 +598,7 @@ class BaseController(Blueprint):
                 if not license_str:
                     log.error("empty license file: %s", filename)
                 else:
-                    request_context['translate'] = translate
+                    flask_g.request_context['translate'] = translate
 
                     import linotp.lib.support
                     res, msg = linotp.lib.support.setSupportLicense(
@@ -710,7 +708,7 @@ class BaseController(Blueprint):
 
         linotp_config = getLinotpConfig()
 
-        request_context = flask.g.request_context
+        request_context = flask_g.request_context
 
         # make the request id available in the request context
         request_context['RequestId'] = environment['REQUEST_ID']
@@ -881,7 +879,6 @@ def methods(mm=['GET']):
         func.methods = mm[:]
         return func
     return inner
-
 
 # eof ########################################################################
 

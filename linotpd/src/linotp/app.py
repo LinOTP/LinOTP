@@ -20,13 +20,12 @@
 
 from __future__ import print_function
 
-import flask
 import importlib
 from logging.config import dictConfig as logging_dictConfig
 import os
 import time
 
-from flask import Flask, jsonify
+from flask import Flask, g as flask_g, jsonify
 
 from . import __version__
 from . import flap
@@ -107,7 +106,7 @@ def create_app(config_name='default'):
 
     @app.before_request
     def load_environment_for_request():
-        load_environment(flask.g, app.config)
+        load_environment(flask_g, app.config)
 
     app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
 

@@ -3,8 +3,6 @@
 import webob
 from webob.multidict import MultiDict, NestedMultiDict
 
-from flask import request
-
 from pylons import (
     response, url, __version__,
 )
@@ -32,11 +30,11 @@ class RequestProxy(object):
     def __init__(self, proxy):
         self.proxy = proxy
 
-    def __getattribute__(self, name):
-        if name == 'params':
-            return self.proxy.args
-        elif name == 'proxy':
-            return super(RequestProxy, self).__getattribute__('proxy')
+    @property
+    def params(self):
+        return self.proxy.args
+
+    def __getattr__(self, name):
         return getattr(self.proxy, name)
 request = RequestProxy(flask.request)
 
