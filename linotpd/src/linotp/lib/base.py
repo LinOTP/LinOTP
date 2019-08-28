@@ -654,6 +654,23 @@ class BaseController(Blueprint):
 
         request_context['Path'] = request.path
 
+        # ------------------------------------------------------------------------
+
+        # setup the knowlege where we are
+
+        request_context['action'] = None
+        request_context['controller'] = None
+
+        path = request.path.strip().strip('/').split('/')
+
+        if path[0]:
+            request_context['controller'] = path[0]
+
+        if path[1]:
+            request_context['action'] = path[1]
+
+        # ------------------------------------------------------------------------
+
         request_context['hsm'] = self.hsm
 
         initResolvers()
