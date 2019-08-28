@@ -24,7 +24,9 @@
 #    Support: www.keyidentity.com
 #
 '''The Controller's Base class '''
+from inspect import getargspec
 import os
+from types import FunctionType
 import re
 
 import flask
@@ -437,10 +439,72 @@ def setup_app(conf, conf_global=None, unitTest=False):
     log.info("Successfully set up.")
 
 
+class ControllerMetaClass(type):
+    """This is used to determine the list of methods of a new
+    controller that should be made available as API endpoints.
+    Basically every method whose name does not start with an
+    underscore has a Flask route to it added in the blueprint
+    when a controller class is instantiated.
+    """
+
+    def __new__(meta, name, bases, dct):
+        """When creating the new class, put a list of all its methods
+        whose names do not start with `_` into the `_url_methods` class
+        attribute. To support inheritance, we also add the content of
+        the `_url_methods` attributes of any base classes.
+
+        Note that we don't do this for the `BaseController` class. This
+        is (a) because the `BaseController` does not actually contain
+        routable API-endpoint methods, and (b) it contains so many
+        utility methods that are not API endpoints that it would be
+        a hassle to prefix all of their names with `_`.
+        """
+
+        cls = super(ControllerMetaClass, meta).__new__(meta, name, bases, dct)
+
+        if name == 'BaseController':
+            cls._url_methods = set()
+        else:
+            cls._url_methods = {
+                m for b in bases for m in getattr(b, '_url_methods', [])
+            }
+            for key, value in dct.items():
+                if key[0] != '_' and isinstance(value, FunctionType):
+                    cls._url_methods.add(key)
+        return cls
+
+
 class BaseController(Blueprint):
     """
     BaseController class - will be called with every request
     """
+    __metaclass__ = ControllerMetaClass
+
+    def __init__(self, name, install_name='', **kwargs):
+        super(BaseController, self).__init__(name, __name__, **kwargs)
+
+        # Add routes for all the routeable endpoints in this "controller",
+        # as well as base classes.
+
+        for method_name in self._url_methods:
+            url = '/' + method_name
+            method = getattr(self, method_name)
+            # We can't set attributes on instancemethod objects but we
+            # can set attributes on the underlying function objects.
+            if not hasattr(method.__func__, 'methods'):
+                method.__func.__methods = ('GET', 'POST')
+            for arg in getargspec(method)[0]:
+                if arg != 'self':
+                    url += '/<' + arg + '>'
+            self.add_url_rule(url, method_name, view_func=method)
+
+        # Add pre/post handlers
+        self.before_request(self.first_run_setup)
+        self.before_request(self.start_session)
+        self.before_request(self.before_handler)
+        if hasattr(self, '__after__'):
+            self.after_request(self.__after__)
+        self.teardown_request(self.finalise_request)
 
     def first_run_setup(self):
         """
@@ -790,6 +854,21 @@ class BaseController(Blueprint):
 
             if isinstance(response, Response) and hasattr(response, '_exception'):
                 return response
+
+def methods(mm=['GET']):
+    """
+    Decorator to specify the allowable HTTP methods for a
+    controller/blueprint method. It turns out that `Flask.add_url_rule`
+    looks at a function object's `methods` property when figuring out
+    what HTTP methods should be allowed on a view, so that's where we're
+    putting the methods list.
+    """
+
+    def inner(func):
+        func.methods = mm[:]
+        return func
+    return inner
+
 
 # eof ########################################################################
 

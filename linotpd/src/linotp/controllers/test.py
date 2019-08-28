@@ -2,7 +2,7 @@
 
 from flask import request
 
-from . import BaseController, methods
+from .base import BaseController, methods
 
 
 class TestController(BaseController):
