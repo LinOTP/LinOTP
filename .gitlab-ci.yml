@@ -61,7 +61,6 @@ stages:
 
 build-test-environment:debian-buster:
   extends: .build-test-environment-debian
-  allow_failure: true
   variables:
     DEPENDENCY_SOURCE: ""
     DEPENDENCY_GPG_KEYID: ""
@@ -85,7 +84,6 @@ build-test-environment:debian-buster:
 
 unit-test:debian-buster:
   extends: .test-debian
-  allow_failure: true
   stage: test
   variables:
     DEBIAN_RELEASE_NAME: buster
@@ -146,7 +144,6 @@ unit-test:debian-buster:
 
 functional-test:buster:
   extends: .functional-test
-  allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
@@ -194,7 +191,6 @@ functional-test:buster:
 
 build:buster:
   extends: .build-debs
-  allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
