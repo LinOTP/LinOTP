@@ -158,7 +158,10 @@ class SystemController(BaseController):
             c.audit['client'] = get_client(request)
 
             # check session might raise an abort()
-            check_session(request)
+
+            # TODO: re-enable the session check
+            # check_session(request)
+
             audit = config.get('audit')
             request_context['Audit'] = audit
 
