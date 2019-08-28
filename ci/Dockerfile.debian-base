@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
         python-openssl \
 	python-pip \
         python-pysodium \
+        python-setuptools \
         rename \
         swig && \
         apt-get clean

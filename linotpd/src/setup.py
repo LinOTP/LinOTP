@@ -54,6 +54,7 @@ install_requirements = [
     'pysodium>=0.6.8',
     'python-ldap',
     'passlib',
+    'bcrypt',
     # We also need M2Crypto. But this package is so problematic on many
     # distributions, that we do not require it here!
 ]
