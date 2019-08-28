@@ -61,7 +61,6 @@ stages:
 
 build-test-environment:debian-buster:
   extends: .build-test-environment-debian
-  allow_failure: true
   variables:
     DEPENDENCY_SOURCE: ""
     DEPENDENCY_GPG_KEYID: ""
@@ -85,7 +84,6 @@ build-test-environment:debian-buster:
 
 unit-test:debian-buster:
   extends: .test-debian
-  allow_failure: true
   stage: test
   variables:
     DEBIAN_RELEASE_NAME: buster
@@ -107,23 +105,7 @@ unit-test:debian-buster:
     SHELL: /bin/bash
   before_script:
     - cd linotpd/src
-    - pip install --upgrade setuptools
-    - pip install wheel
-    - pip install freezegun
-    - pip install mock
-    - pip install mysqlclient
-    - pip install unittest2
-    - pip install nose nose-testconfig
-    - pip install pyrad
-    - pip install -U cffi
-    - pip install coverage
-    - pip install bcrypt
-    - pip install flask
-    - pip install pytest
-    - pip install pytest-flask
-    - pip install mysqlclient
-    - pip freeze
-    - python setup.py develop
+    - pip install -e ".[test]"
     - python tools/linotp-create-enckey -f test.ini
     - python tools/linotp-create-auditkeys -f test.ini
     - cp encKey public.pem private.pem /tmp/
@@ -162,7 +144,6 @@ unit-test:debian-buster:
 
 functional-test:buster:
   extends: .functional-test
-  allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
@@ -197,7 +178,7 @@ functional-test:buster:
   image: debian:${DEBIAN_RELEASE_NAME}
   script:
     - apt-get update
-    - apt-get install --yes --no-install-recommends equivs git-buildpackage lsb-release
+    - apt-get install --yes --no-install-recommends equivs git-buildpackage lsb-release rename
     # Generate snapshot entries for debian changelogs
     - ci/update-debian-changelog adminclient/LinOTPAdminClientCLI/src
     - ci/update-debian-changelog linotpd/src
@@ -210,7 +191,6 @@ functional-test:buster:
 
 build:buster:
   extends: .build-debs
-  allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
