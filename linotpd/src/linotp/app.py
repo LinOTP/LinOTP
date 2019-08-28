@@ -33,6 +33,10 @@ from .config.environment import load_environment
 from .settings import configs
 from .lib.ImportOTP.vasco import init_vasco
 
+from sqlalchemy import create_engine
+from .model import init_model, meta         # FIXME: Flask-SQLAlchemy
+from .model.migrate import run_data_model_migration
+
 start_time = time.time()
 this_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -91,6 +95,50 @@ def init_logging(app):
     app.logger.info("LinOTP {} starting ...".format(__version__))
 
 
+def setup_db(app):
+    """Set up the database for LinOTP. This used to be part of the
+    `lib.base.setup_app()` function.
+
+    FIXME: This is not how we would do this in Flask. We want to
+    rewrite it once we get Flask-SQLAlchemy and Flask-Migrate
+    working properly."""
+
+    # Initialise the SQLAlchemy engine (this used to be in
+    # linotp.config.environment and done once per request (barf)).
+
+    engine = create_engine(app.config.get("SQLALCHEMY_DATABASE_URI"))
+    init_model(engine)
+
+    if app.config.get("TESTING_DROP_TABLES", False):
+        app.logger.debug("Deleting previous tables ...")
+        meta.metadata.drop_all(bind=meta.engine)
+
+    # Create database tables if they don't already exist
+
+    app.logger.info("Creating tables ...")
+    meta.metadata.create_all(bind=meta.engine)
+
+    # For the cloud mode, we require the `admin_user` table to
+    # manage the admin users to allow password setting
+
+    admin_username = app.config.get('ADMIN_USERNAME', None)
+    admin_password = app.config.get('ADMIN_PASSWORD', None)
+
+    if admin_username is not None and admin_password is not None:
+        from .lib.tools.set_password import (
+            SetPasswordHandler, DataBaseContext
+        )
+        db_context = DataBaseContext(sql_url=meta.engine.url)
+        SetPasswordHandler.create_table(db_context)
+        SetPasswordHandler.create_admin_user(
+            db_context,
+            username=admin_username, crypted_password=admin_password)
+
+    # Hook for schema upgrade (Don't bother with this for the time being).
+
+    # run_data_model_migration(meta)
+
+
 def create_app(config_name='default'):
     app = Flask(__name__)
 
@@ -100,6 +148,9 @@ def create_app(config_name='default'):
     app.config.from_envvar(CONFIG_FILE_ENVVAR, silent=True)
 
     init_logging(app)
+
+    with app.app_context():
+        setup_db(app)
 
     app.before_request(flap.set_config)
     app.before_request(init_vasco)

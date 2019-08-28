@@ -61,7 +61,7 @@ from linotp.lib.crypto.utils import init_key_partition
 from linotp.model import meta
 from linotp.lib.openid import SQLStorage
 
-from linotp.lib.context import request_context
+# from linotp.lib.context import request_context
 from linotp.lib.logs import init_logging_config
 from linotp.lib.logs import log_request_timedelta
 
@@ -369,46 +369,6 @@ def setup_app(conf, conf_global=None, unitTest=False):
 
     :return: - nothing -
     '''
-
-    if unitTest is True:
-        log.debug("Deleting previous tables...")
-        meta.metadata.drop_all(bind=meta.engine)
-
-    # Create the tables if they don't already exist
-    log.info("Creating tables...")
-    meta.metadata.create_all(bind=meta.engine)
-
-    # ---------------------------------------------------------------------- --
-
-    # for the cloud mode we require the admin_user table to
-    # manage the admin users to allow password setting
-
-    if 'linotpadmin.username' in conf and 'linotpadmin.password' in conf:
-
-        from linotp.lib.tools.set_password import SetPasswordHandler
-        from linotp.lib.tools.set_password import DataBaseContext
-
-        db_context = DataBaseContext(sql_url=meta.engine.url)
-
-        SetPasswordHandler.create_table(db_context)
-
-        # create the initial admin
-        admin_user = conf.get('linotpadmin.username', '')
-        admin_pw = conf.get('linotpadmin.password', '')
-
-        if admin_user and admin_pw:
-            SetPasswordHandler.create_admin_user(db_context,
-                                                 username=admin_user,
-                                                 crypted_password=admin_pw)
-
-    # ---------------------------------------------------------------------- --
-
-    #
-    # hook for schema upgrade -
-    # - called by paster setup-app or on the first request to linotp
-    #
-
-    run_data_model_migration(meta)
 
     #
     # create the secret key file if it does not exist
