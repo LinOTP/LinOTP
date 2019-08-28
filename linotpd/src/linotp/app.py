@@ -139,6 +139,28 @@ def setup_db(app):
     # run_data_model_migration(meta)
 
 
+def generate_secret_key_file(app):
+    """Generate a secret-key file if it doesn't exist."""
+
+    filename = app.config.get("SECRET_FILE", None)
+    if filename is not None:
+        try:
+            open(filename)
+        except IOError:
+            app.logger.warning(
+                "The Linotp Secret File could not be found. "
+                "Creating a new one at {}".format(filename))
+            with open(filename, "ab+") as f:
+                # We're protecting the file before we're writing the
+                # secret key material to it in order to avoid a
+                # possible race condition.
+
+                os.fchmod(f.fileno(), 0o400)
+                secret = os.urandom(32 * 5)
+                f.write(secret)
+        app.logger.debug("SECRET_FILE: {}".format(filename))
+
+
 def create_app(config_name='default'):
     app = Flask(__name__)
 
@@ -151,6 +173,8 @@ def create_app(config_name='default'):
 
     with app.app_context():
         setup_db(app)
+
+    generate_secret_key_file(app)
 
     app.before_request(flap.set_config)
     app.before_request(init_vasco)

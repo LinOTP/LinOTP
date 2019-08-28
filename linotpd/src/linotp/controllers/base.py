@@ -370,24 +370,6 @@ def setup_app(conf, conf_global=None, unitTest=False):
     :return: - nothing -
     '''
 
-    #
-    # create the secret key file if it does not exist
-    #
-
-    if "linotpSecretFile" in conf:
-        filename = conf.get("linotpSecretFile")
-        try:
-            open(filename)
-        except IOError:
-            log.warning("The Linotp Secret File could not be found. " +
-                        "Creating a new one at %s", filename)
-            f_handle = open(filename, 'ab+')
-            secret = os.urandom(32 * 5)
-            f_handle.write(secret)
-            f_handle.close()
-            os.chmod(filename, 0400)
-        log.debug("linotpSecretFile: %s", filename)
-
     set_defaults()
 
     Session.commit()
