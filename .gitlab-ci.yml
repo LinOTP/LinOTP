@@ -284,7 +284,7 @@ coverage-report:buster:
   image: debian:${DEBIAN_RELEASE_NAME}
   script:
     - apt-get update
-    - apt-get install --yes --no-install-recommends equivs git-buildpackage lsb-release
+    - apt-get install --yes --no-install-recommends equivs git-buildpackage lsb-release rename
     # Generate snapshot entries for debian changelogs
     - ci/update-debian-changelog adminclient/LinOTPAdminClientCLI/src
     - ci/update-debian-changelog linotpd/src
