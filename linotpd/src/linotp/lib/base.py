@@ -30,6 +30,7 @@ import re
 import flask
 
 from flask import Blueprint
+from flask import Response
 
 from linotp.flap import (
     _ as translate, set_lang, LanguageError,
@@ -763,8 +764,15 @@ class BaseController(Blueprint):
     def before_handler(self):
         params = {}
         if hasattr(self, '__before__'):
-            action = "TODOACTION"
-            self.__before__(action, **params)
+            action = request_context['action']
+            response = self.__before__(action, **params)
 
+            # in case of exceptions / errors the __before__ handling submits an sendError
+            # flask.Response which has the special attribute _exception
+            # which is set in the lib/reply.py
+
+            if isinstance(response, Response) and hasattr(response, '_exception'):
+                return response
 
 # eof ########################################################################
+

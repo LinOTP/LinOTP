@@ -261,8 +261,8 @@ def sendError(response, exception, id=1, context=None):
         response = jsonify(res)
 
         if context in ['before', 'after']:
-            # response._exception = exception
-            # response.body = ret
+            response._exception = exception
+            response.body = ret
             ret = response
 
     return ret
