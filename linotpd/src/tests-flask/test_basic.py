@@ -31,7 +31,7 @@ def test_healthcheck(app, client):
     ('testmethod2', 'post', 405),
     ('testmethod2', 'put', 405),
     ('testmethod3', 'get', 200),
-    ('testmethod3', 'post', 405),
+    ('testmethod3', 'post', 200),
     ('testmethod3', 'put', 405),
 ])
 def test_dispatch(app, client, path, method, status):

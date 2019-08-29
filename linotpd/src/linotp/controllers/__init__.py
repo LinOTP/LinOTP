@@ -76,6 +76,10 @@ class BaseController(bc):
         for method_name in self._url_methods:
             url = '/' + method_name
             method = getattr(self, method_name)
+            # We can't set attributes on instancemethod objects but we
+            # can set attributes on the underlying function objects.
+            if not hasattr(method.__func__, 'methods'):
+                method.__func__.methods = ['GET', 'POST']
             for arg in getargspec(method)[0]:
                 if arg != 'self':
                     url += '/<' + arg + '>'
