@@ -629,7 +629,7 @@ class ManageController(BaseController):
         redirect("%s://%s/manage/" % (url_scheme, http_host))
 
 
-    def help(self):
+    def help(self, id=None):
         '''
         This downloads the Manual
 
@@ -644,16 +644,14 @@ class ManageController(BaseController):
             default_filename = config.get("linotpManual.File", "LinOTP_Manual-en.pdf")
             headers = []
 
-            route_dict = request.environ.get('pylons.routes_dict')
-            filename = route_dict.get('id')
-            if not filename:
-                filename = default_filename + ".gz"
+            if not id:
+                id = default_filename + ".gz"
                 headers = [('content-Disposition', 'attachment; filename=\"' + default_filename + '\"'),
                            ('content-Type', 'application/x-gzip')
                            ]
 
             from paste.fileapp import FileApp
-            wsgi_app = FileApp("%s/%s" % (directory, filename), headers=headers)
+            wsgi_app = FileApp("%s/%s" % (directory, id), headers=headers)
             Session.commit()
             return wsgi_app(request.environ, self.start_response)
 
