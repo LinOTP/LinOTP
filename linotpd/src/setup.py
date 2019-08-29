@@ -52,11 +52,15 @@ install_requirements = [
     'requests',
     'passlib',
     'pysodium>=0.6.8',
+    # python-ldap needs libsasl2-dev and libldap2-dev system packages on
+    # debian buster to be installable via pip or install python-ldap via
+    # apt.
     'python-ldap',
     'passlib',
     'bcrypt',
-    # We also need M2Crypto. But this package is so problematic on many
-    # distributions, that we do not require it here!
+    # m2crypto needs libssl-dev and swig system packages on debian buster
+    # to be installable via pip or install python-m2crypto via apt.
+    'm2crypto',
 ]
 
 # Requirements needed to run all the tests
@@ -82,24 +86,14 @@ setup_requirements = [
 # install with
 # > pip install -e ".[postgres]"
 postgres_requirements = [
-    'psycopg2-binary',
     # 'psycopg2' would require to compile some sources
+    'psycopg2-binary',
 ]
 
 # install with
 # > pip install -e ".[mysql]"
 mysql_requirements = [
     'mysql',
-]
-
-# install with
-# > pip install -e ".[extra]"
-
-extra_requirements = [
-    'swig',
-    'openssl',
-    'm2crypto',
-    'bcrypt'
 ]
 
 # Inspired by http://www.mattlayman.com/2015/i18n.html
@@ -132,7 +126,6 @@ setup(
     extras_require={
         'postgres': postgres_requirements,
         'mysql': mysql_requirements,
-        'extra': extra_requirements,
         'test': test_requirements,
     },
     tests_require=test_requirements,
