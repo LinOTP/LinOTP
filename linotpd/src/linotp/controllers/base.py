@@ -489,14 +489,27 @@ class BaseController(Blueprint):
         for method_name in self._url_methods:
             url = '/' + method_name
             method = getattr(self, method_name)
+
             # We can't set attributes on instancemethod objects but we
             # can set attributes on the underlying function objects.
             if not hasattr(method.__func__, 'methods'):
-                method.__func.__methods = ('GET', 'POST')
-            for arg in getargspec(method)[0]:
-                if arg != 'self':
-                    url += '/<' + arg + '>'
-            self.add_url_rule(url, method_name, view_func=method)
+                method.__func__.methods = ('GET', 'POST')
+
+            # Add another route if the method has an optional second
+            # parameter called `id` (and no parameters after that).
+            args, _, _, defaults = getargspec(method)
+            if ((len(args) == 2 and args[1] == 'id')
+                and (defaults is not None and len(defaults) == 1
+                     and defaults[0] is None)):
+                self.add_url_rule(url, method_name, view_func=method)
+                self.add_url_rule(url + '/<id>', method_name, view_func=method)
+            else:
+                # Otherwise, add any parameters of the method to the end
+                # of the route, in order.
+                for arg in args:
+                    if arg != 'self':
+                        url += '/<' + arg + '>'
+                self.add_url_rule(url, method_name, view_func=method)
 
         # Add pre/post handlers
         self.before_request(self.first_run_setup)

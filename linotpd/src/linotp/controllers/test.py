@@ -19,3 +19,6 @@ class TestController(BaseController):
 
     def testmethod_args(self, s, t):
         return 'method:' + request.method + ',' + ','.join([s, t])
+
+    def testmethod_optional_id(self, id=None):
+        return 'method:' + request.method + ',id=' + str(id)

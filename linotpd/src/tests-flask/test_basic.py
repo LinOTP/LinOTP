@@ -41,7 +41,20 @@ def test_dispatch(app, client, path, method, status):
     if res.status_code == 200:
         assert res.data == 'method:' + method.upper()
 
+
 def test_dispatch_args(app, client):
     res = client.get('/test/testmethod_args/foo/bar')
     assert res.status_code == 200
     assert res.data == 'method:GET,foo,bar'
+
+
+@pytest.mark.parametrize('path,status, id_value', [
+    ('testmethod_optional_id', 200, 'None'),
+    ('testmethod_optional_id/4711', 200, '4711'),
+])
+def test_dispatch_optional_id(app, client, path, status, id_value):
+    res = client.get('/test/' + path)
+    assert res.status_code == status
+    if res.status_code == 200:
+        _, _, id_arg = res.data.rpartition('=')
+        assert id_arg == id_value
