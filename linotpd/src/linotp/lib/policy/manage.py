@@ -269,9 +269,9 @@ def create_policy_export_file(policy, filename):
     This function takes a policy dictionary and creates an export file from it
     '''
     TMP_DIRECTORY = "/tmp"
-    filename = "%s/%s" % (TMP_DIRECTORY, filename)
+    file_name = "%s/%s" % (TMP_DIRECTORY, filename)
     if len(policy) == 0:
-        f = open(filename, "w")
+        f = open(file_name, "w")
         f.write('')
         f.close()
     else:
@@ -280,10 +280,10 @@ def create_policy_export_file(policy, filename):
                 value[k] = value[k] or ""
 
         policy_file = ConfigObj(encoding="UTF-8")
-        policy_file.filename = filename
+        policy_file.filename = file_name
 
         for name in policy.keys():
             policy_file[name] = policy[name]
             policy_file.write()
 
-    return filename
+    return file_name
