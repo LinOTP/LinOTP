@@ -76,6 +76,8 @@ test_requirements = [
     'unittest2',
     'freezegun',
     'coverage',
+    'pylint',
+    'autopep8',
 ]
 
 # packages needed during package build phase
