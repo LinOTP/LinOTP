@@ -18,20 +18,12 @@ from pylons.middleware import (
 from pylons.templating import render_mako
 from pylons.wsgiapp import PylonsApp as App
 
+from werkzeug import LocalProxy
+
 import flask
 
 
-class ConfigProxy(object):
-    """
-    Flask configuration object
-    """
-    def __contains__(self, name):  # Make "... in config" work
-        return name in flask.g.request_context['config']
-    def __getitem__(self, name):
-        return flask.g.request_context['config'].__getitem__(name)
-    def get(self, name, default=None):
-        return flask.g.request_context['config'].get(name, default)
-config = ConfigProxy()
+config = LocalProxy(lambda: flask.g.request_context['config'])
 
 class RequestProxy(object):
     """
@@ -61,6 +53,8 @@ class RequestContextProxy(object):
         return flask.g.request_context.__getitem__(key)
     def __setitem__(self, key, value):
         flask.g.request_context.__setitem__(key, value)
+    def setdefault(self, key, value):
+        return flask.g.request_context.setdefault(key, value)
 
 tmpl_context = RequestContextProxy()
 
