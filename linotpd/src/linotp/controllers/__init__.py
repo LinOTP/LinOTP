@@ -79,7 +79,9 @@ class BaseController(bc):
             for arg in getargspec(method)[0]:
                 if arg != 'self':
                     url += '/<' + arg + '>'
-            self.add_url_rule(url, method_name, view_func=method)
+            self.add_url_rule(
+                url, method_name, view_func=method, methods=['GET', 'POST'])
+
 
         # Add pre/post handlers
         self.before_request(self.first_run_setup)
