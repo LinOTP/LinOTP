@@ -585,15 +585,15 @@ class BaseController(Blueprint):
         Parses the request params from the request objects body / params
         dependent on request content_type.
         """
-        if _request.content_type == 'application/json':
-            self.request_params = _request.json_body
+        if _request.is_json:
+            self.request_params = _request.json
         else:
             self.request_params = {}
-            for key in request.params:
+            for key in _request.values:
                 if(key.endswith('[]')):
-                    self.request_params[key[:-2]] = _request.params.getall(key)
+                    self.request_params[key[:-2]] = _request.values.getall(key)
                 else:
-                    self.request_params[key] = _request.params[key]
+                    self.request_params[key] = _request.values.get(key)
 
     def set_language(self, headers):
         '''Invoke before everything else. And set the translation language'''
