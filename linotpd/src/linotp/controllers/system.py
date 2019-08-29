@@ -1650,10 +1650,16 @@ class SystemController(BaseController):
             Session.close()
 
 ##########################################################################
-    def getPolicy(self):
+    def getPolicy(self, id=None):
         """
         method:
             system/getPolicy
+
+        params:
+            id: (optional) The filename needs to be specified as the
+                            third part of the URL like
+                            /system/getPolicy/policy.cfg.
+                            It will then be exported to this file.
 
         description:
             this function is used to retrieve the policies that you
@@ -1668,10 +1674,7 @@ class SystemController(BaseController):
             * user    (optional) will only return the policy for this user
             * scope - (optional) will only return the policies within the
                                  given scope
-            * export - (optional) The filename needs to be specified as the
-                                  third part of the URL like
-                                  /system/getPolicy/policy.cfg.
-                                  It will then be exported to this file.
+
             * display_inactive - (optional) if set, then also inactive policies
                                             will be displayed
 
@@ -1686,7 +1689,6 @@ class SystemController(BaseController):
         param = getLowerParams(self.request_params)
 
         log.debug("[getPolicy] getting policy: %r", param)
-        export = None
         action = None
         user = None
 
@@ -1704,9 +1706,6 @@ class SystemController(BaseController):
             display_inactive = param.get("display_inactive", False)
             if display_inactive:
                 only_active = False
-
-            route_dict = request.environ.get('pylons.routes_dict')
-            export = route_dict.get('id')
 
             log.debug("[getPolicy] retrieving policy name: %s, realm: %s,"
                       " scope: %s", name, realm, scope)
@@ -1756,8 +1755,9 @@ class SystemController(BaseController):
 
             Session.commit()
 
-            if export:
-                filename = create_policy_export_file(pol, export)
+            # if id is set, this defines the export filename
+            if id:
+                filename = create_policy_export_file(pol, id)
                 wsgi_app = FileApp(filename)
                 return wsgi_app(request.environ, self.start_response)
             else:
