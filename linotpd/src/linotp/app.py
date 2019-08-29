@@ -29,6 +29,7 @@ from flask import Flask, g as flask_g, jsonify
 
 from . import __version__
 from . import flap
+from .config.defaults import set_defaults
 from .config.environment import load_environment
 from .settings import configs
 from .lib.ImportOTP.vasco import init_vasco
@@ -173,11 +174,11 @@ def create_app(config_name='default'):
 
     with app.app_context():
         setup_db(app)
-
-    generate_secret_key_file(app)
+        generate_secret_key_file(app)
+        set_defaults(app)
 
     app.before_request(flap.set_config)
-    app.before_request(init_vasco)
+    app.before_first_request(init_vasco)
 
     @app.before_request
     def load_environment_for_request():
