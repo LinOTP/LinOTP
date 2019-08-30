@@ -13,8 +13,10 @@ variables:
   CI_IMAGE_PREFIX: $REGISTRY_URL/$CI_PROJECT_NAME/ci
   NOSE_COVER_PACKAGE: linotp
   DOCKER_COMPOSE_VERSION: "1.22.0"
+  LINTED_MODULE: ""
 
 stages:
+  - lint
   - build-test-environment
   - test
   - coverage-report
@@ -26,6 +28,51 @@ stages:
 .docker-registry: &docker-registry
   before_script:
     - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+
+.lint:
+  stage: lint
+  image: python:2.7
+  allow_failure: true
+  before_script:
+    - pip install pylint
+    - cd linotpd/src
+  script:
+    - pylint linotp/${LINTED_MODULE}
+
+lint-config:
+  extends: .lint
+  variables:
+    LINTED_MODULE: config
+
+lint-controllers:
+  extends: .lint
+  variables:
+    LINTED_MODULE: controllers
+
+lint-lib:
+  extends: .lint
+  variables:
+    LINTED_MODULE: lib
+
+lint-model:
+  extends: .lint
+  variables:
+    LINTED_MODULE: model
+
+lint-provider:
+  extends: .lint
+  variables:
+    LINTED_MODULE: provider
+
+lint-tokens:
+  extends: .lint
+  variables:
+    LINTED_MODULE: tokens
+
+lint-useridresolver:
+  extends: .lint
+  variables:
+    LINTED_MODULE: useridresolver
 
 .build-test-environment-debian:
   stage: build-test-environment
