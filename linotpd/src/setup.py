@@ -50,13 +50,13 @@ install_requirements = [
     'configobj>=4.6.0',
     'httplib2',
     'requests',
+    'pillow',
     'passlib',
     'pysodium>=0.6.8',
     # python-ldap needs libsasl2-dev and libldap2-dev system packages on
     # debian buster to be installable via pip or install python-ldap via
     # apt.
     'python-ldap',
-    'passlib',
     'bcrypt',
     # m2crypto needs libssl-dev and swig system packages on debian buster
     # to be installable via pip or install python-m2crypto via apt.
