@@ -24,8 +24,15 @@
 #    Support: www.keyidentity.com
 #
 '''The Controller's Base class '''
+from inspect import getargspec
 import os
+from types import FunctionType
 import re
+
+import flask
+
+from flask import Blueprint
+from flask import Response
 
 from linotp.flap import (
     _ as translate, set_lang, LanguageError,
@@ -57,7 +64,6 @@ from linotp.model import meta
 from linotp.lib.openid import SQLStorage
 
 from linotp.lib.context import request_context
-from linotp.lib.context import request_context_safety
 from linotp.lib.logs import init_logging_config
 from linotp.lib.logs import log_request_timedelta
 
@@ -82,7 +88,6 @@ log = logging.getLogger(__name__)
 
 Session = linotp.model.meta.Session
 
-Audit = config.get('audit')
 
 # HTTP-ACCEPT-LANGUAGE strings are in the form of i.e.
 # de-DE, de; q=0.7, en; q=0.3
@@ -434,26 +439,98 @@ def setup_app(conf, conf_global=None, unitTest=False):
     log.info("Successfully set up.")
 
 
-class BaseController(WSGIController):
+class ControllerMetaClass(type):
+    """This is used to determine the list of methods of a new
+    controller that should be made available as API endpoints.
+    Basically every method whose name does not start with an
+    underscore has a Flask route to it added in the blueprint
+    when a controller class is instantiated.
+    """
+
+    def __new__(meta, name, bases, dct):
+        """When creating the new class, put a list of all its methods
+        whose names do not start with `_` into the `_url_methods` class
+        attribute. To support inheritance, we also add the content of
+        the `_url_methods` attributes of any base classes.
+
+        Note that we don't do this for the `BaseController` class. This
+        is (a) because the `BaseController` does not actually contain
+        routable API-endpoint methods, and (b) it contains so many
+        utility methods that are not API endpoints that it would be
+        a hassle to prefix all of their names with `_`.
+        """
+
+        cls = super(ControllerMetaClass, meta).__new__(meta, name, bases, dct)
+
+        if name == 'BaseController':
+            cls._url_methods = set()
+        else:
+            cls._url_methods = {
+                m for b in bases for m in getattr(b, '_url_methods', [])
+            }
+            for key, value in dct.items():
+                if key[0] != '_' and isinstance(value, FunctionType):
+                    cls._url_methods.add(key)
+        return cls
+
+
+class BaseController(Blueprint):
     """
     BaseController class - will be called with every request
     """
+    __metaclass__ = ControllerMetaClass
 
-    def __init__(self, *args, **kw):
+    def __init__(self, name, install_name='', **kwargs):
+        super(BaseController, self).__init__(name, __name__, **kwargs)
+
+        # Add routes for all the routeable endpoints in this "controller",
+        # as well as base classes.
+
+        for method_name in self._url_methods:
+            url = '/' + method_name
+            method = getattr(self, method_name)
+
+            # We can't set attributes on instancemethod objects but we
+            # can set attributes on the underlying function objects.
+            if not hasattr(method.__func__, 'methods'):
+                method.__func__.methods = ('GET', 'POST')
+
+            # Add another route if the method has an optional second
+            # parameter called `id` (and no parameters after that).
+            args, _, _, defaults = getargspec(method)
+            if ((len(args) == 2 and args[1] == 'id')
+                and (defaults is not None and len(defaults) == 1
+                     and defaults[0] is None)):
+                self.add_url_rule(url, method_name, view_func=method)
+                self.add_url_rule(url + '/<id>', method_name, view_func=method)
+            else:
+                # Otherwise, add any parameters of the method to the end
+                # of the route, in order.
+                for arg in args:
+                    if arg != 'self':
+                        url += '/<' + arg + '>'
+                self.add_url_rule(url, method_name, view_func=method)
+
+        # Add pre/post handlers
+        self.before_request(self.first_run_setup)
+        self.before_request(self.start_session)
+        self.before_request(self.before_handler)
+        if hasattr(self, '__after__'):
+            self.after_request(self.__after__)
+        self.teardown_request(self.finalise_request)
+
+    def first_run_setup(self):
         """
-        base controller constructor
-
-        :param *args: generic argument array
-        :param **kw: generic argument dict
-        :return: None
-
+        Set up the app and database. This only needs to be called once per application
+        TODO: Move out of base controller
         """
+
+        config = flask.g.request_context['config']
+
         self.sep = None
-        self.set_language(request.headers)
+        # TODO - language
+        #self.set_language(request.headers)
         self.base_auth_user = ''
-
-        self.parent = super(WSGIController, self)
-        self.parent.__init__(*args, **kw)
 
         # make the OpenID SQL Instance globally available
         openid_sql = config.get('openid_sql', None)
@@ -523,91 +600,77 @@ class BaseController(WSGIController):
                 if not license_str:
                     log.error("empty license file: %s", filename)
                 else:
-                    with request_context_safety():
-                        request_context['translate'] = translate
+                    request_context['translate'] = translate
 
-                        import linotp.lib.support
-                        res, msg = linotp.lib.support.setSupportLicense(
-                            license_str)
-                        if res is False:
-                            log.error("failed to load license: %s: %s",
-                                      license_str, msg)
+                    import linotp.lib.support
+                    res, msg = linotp.lib.support.setSupportLicense(
+                        license_str)
+                    if res is False:
+                        log.error("failed to load license: %s: %s",
+                                    license_str, msg)
 
-                        else:
-                            log.info("license successfully loaded")
+                    else:
+                        log.info("license successfully loaded")
             if 'provider.config_file' in config:
                 from linotp.provider import load_provider_ini
 
                 load_provider_ini(config['provider.config_file'])
 
-    def __call__(self, environ, start_response):
-        '''Invoke the Controller'''
-        # WSGIController.__call__ dispatches to the Controller method
-        # the request is routed to. This routing information is
-        # available in environ['pylons.routes_dict']
-
+    def start_session(self):
         # we add a unique request id to the request enviroment
         # so we can trace individual requests in the logging
 
-        environ['REQUEST_ID'] = str(uuid4())
-        environ['REQUEST_START_TIMESTAMP'] = datetime.now()
+        request.environ['REQUEST_ID'] = str(uuid4())
+        request.environ['REQUEST_START_TIMESTAMP'] = datetime.now()
 
-        with request_context_safety():
+        try:
+            self._parse_request_params(request)
+        except UnicodeDecodeError as exx:
+            # we supress Exception here as it will be handled in the
+            # controller which will return corresponding response
+            log.warning('Failed to access request parameters: %r' % exx)
 
-            try:
-                self._parse_request_params(request)
-            except UnicodeDecodeError as exx:
-                # we supress Exception here as it will be handled in the
-                # controller which will return corresponding response
-                log.warning('Failed to access request parameters: %r' % exx)
+        self.create_context(request, request.environ)
 
-            self.create_context(request, environ)
+        try:
+            user_desc = getUserFromRequest(request)
+            self.base_auth_user = user_desc.get('login', '')
+        except UnicodeDecodeError as exx:
+            # we supress Exception here as it will be handled in the
+            # controller which will return corresponding response
+            log.warning('Failed to identify user due to %r' % exx)
 
-            try:
-                try:
-                    user_desc = getUserFromRequest(request)
-                    self.base_auth_user = user_desc.get('login', '')
-                except UnicodeDecodeError as exx:
-                    # we supress Exception here as it will be handled in the
-                    # controller which will return corresponding response
-                    log.warning('Failed to identify user due to %r' % exx)
+    def finalise_request(self, exc):
+        meta.Session.remove()
+        # free the lock on the scurityPovider if any
+        if self.sep:
+            self.sep.dropSecurityModule()
+        closeResolvers()
 
-                ret = WSGIController.__call__(self, environ, start_response)
-                log.debug("Request reply: %r", ret)
+        # hint for the garbage collector to make the dishes
+        data_objects = ["resolvers_loaded",
+                        "resolver_clazzes", "linotpConfig", "audit", "hsm"]
+        for data_obj in data_objects:
+            if hasattr(c, data_obj):
+                data = getattr(c, data_obj)
+                del data
 
-            finally:
-                meta.Session.remove()
-                # free the lock on the scurityPovider if any
-                if self.sep:
-                    self.sep.dropSecurityModule()
-                closeResolvers()
-
-                # hint for the garbage collector to make the dishes
-                data_objects = ["resolvers_loaded",
-                                "resolver_clazzes", "linotpConfig", "audit", "hsm"]
-                for data_obj in data_objects:
-                    if hasattr(c, data_obj):
-                        data = getattr(c, data_obj)
-                        del data
-
-                log_request_timedelta(log)
-
-            return ret
+        log_request_timedelta(log)
 
     def _parse_request_params(self, _request):
         """
         Parses the request params from the request objects body / params
         dependent on request content_type.
         """
-        if _request.content_type == 'application/json':
-            self.request_params = _request.json_body
+        if _request.is_json:
+            self.request_params = _request.json
         else:
             self.request_params = {}
-            for key in request.params:
+            for key in _request.values:
                 if(key.endswith('[]')):
-                    self.request_params[key[:-2]] = _request.params.getall(key)
+                    self.request_params[key[:-2]] = _request.values.getall(key)
                 else:
-                    self.request_params[key] = _request.params[key]
+                    self.request_params[key] = _request.values.get(key)
 
     def set_language(self, headers):
         '''Invoke before everything else. And set the translation language'''
@@ -647,6 +710,8 @@ class BaseController(WSGIController):
 
         linotp_config = getLinotpConfig()
 
+        request_context = flask.g.request_context
+
         # make the request id available in the request context
         request_context['RequestId'] = environment['REQUEST_ID']
 
@@ -659,11 +724,29 @@ class BaseController(WSGIController):
         request_context['Config'] = linotp_config
         request_context['Policies'] = parse_policies(linotp_config)
         request_context['translate'] = translate
-        request_context['CacheManager'] = environment['beaker.cache']
 
-        routes = environment.get('pylons.routes_dict', {})
-        path = "/%s/%s" % (routes['controller'], routes['action'])
-        request_context['Path'] = path
+        # TODO: Port beaker.cache Middleware functionality
+        # request_context['CacheManager'] = environment['beaker.cache']
+        request_context['CacheManager'] = None
+
+        request_context['Path'] = request.path
+
+        # ------------------------------------------------------------------------
+
+        # setup the knowlege where we are
+
+        request_context['action'] = None
+        request_context['controller'] = None
+
+        path = request.path.strip().strip('/').split('/')
+
+        if path[0]:
+            request_context['controller'] = path[0]
+
+        if path[1]:
+            request_context['action'] = path[1]
+
+        # ------------------------------------------------------------------------
 
         request_context['hsm'] = self.hsm
 
@@ -677,6 +760,7 @@ class BaseController(WSGIController):
 
         request_context['Client'] = client
 
+        Audit = config['audit']
         request_context['Audit'] = Audit
         request_context['audit'] = Audit.initialize(request, client=client)
 
@@ -771,4 +855,33 @@ class BaseController(WSGIController):
 
         request_context['SystemConfig'] = sysconfig
 
+    def before_handler(self):
+        params = {}
+        if hasattr(self, '__before__'):
+            action = request_context['action']
+            response = self.__before__(action, **params)
+
+            # in case of exceptions / errors the __before__ handling submits an sendError
+            # flask.Response which has the special attribute _exception
+            # which is set in the lib/reply.py
+
+            if isinstance(response, Response) and hasattr(response, '_exception'):
+                return response
+
+def methods(mm=['GET']):
+    """
+    Decorator to specify the allowable HTTP methods for a
+    controller/blueprint method. It turns out that `Flask.add_url_rule`
+    looks at a function object's `methods` property when figuring out
+    what HTTP methods should be allowed on a view, so that's where we're
+    putting the methods list.
+    """
+
+    def inner(func):
+        func.methods = mm[:]
+        return func
+    return inner
+
+
 # eof ########################################################################
+

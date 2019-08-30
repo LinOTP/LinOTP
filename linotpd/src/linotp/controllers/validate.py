@@ -37,7 +37,7 @@ from linotp.flap import (
 )
 
 from linotp.lib.auth.validate import ValidationHandler
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import ParameterError
 
@@ -73,8 +73,6 @@ Session = linotp.model.Session
 
 CONTENT_TYPE_PAIRING = 1
 
-audit = config.get('audit')
-
 log = logging.getLogger(__name__)
 
 
@@ -96,6 +94,7 @@ class ValidateController(BaseController):
         try:
             c.audit = request_context['audit']
             c.audit['client'] = get_client(request)
+            audit = config.get('audit')
             request_context['Audit'] = audit
             return response
 

@@ -63,7 +63,7 @@ from linotp.flap import (
 
 from mako.exceptions import CompileException
 
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.auth.validate import ValidationHandler
 
 from linotp.lib.policy import (checkPolicyPre,
@@ -139,29 +139,28 @@ from linotp.lib.context import request_context
 from linotp.lib.reporting import token_reporting
 
 log = logging.getLogger(__name__)
-audit = config.get('audit')
 
 ENCODING = "utf-8"
 
 # -------------------------------------------------------------------------- --
 
-# provide secure cookies for production evironments
+def secure_cookie():
+    # in the development environment where we run in debug or uniTest mode
+    # there is probaly no https defined. So we switch secure cookies only off
+    # if the url is not https
 
-secure_cookie = True
+    if config.get('debug') is True or config.get('unitTest') in [True, 'True']:
 
-# in the development environment where we run in debug or uniTest mode
-# there is probaly no https defined. So we switch secure cookies only off
-# if the url is not https
+        try:
+            app_url = request.application_url
+        except TypeError:
+            app_url = ''
 
-if config.get('debug') is True or config.get('unitTest') in [True, 'True']:
+        if not app_url.startswith('https://'):
+            return False
 
-    try:
-        app_url = request.application_url
-    except TypeError:
-        app_url = ''
-
-    if not app_url.startswith('https://'):
-        secure_cookie = False
+    # provide secure cookies for production evironments
+    return True
 
 # -------------------------------------------------------------------------- --
 
@@ -497,7 +496,7 @@ class UserserviceController(BaseController):
              expiration) = create_auth_cookie(user, self.client)
 
             response.set_cookie('userauthcookie', cookie,
-                                secure=secure_cookie,
+                                secure=secure_cookie(),
                                 expires=expires)
 
             c.audit['action_detail'] = "expires: %s " % expiration
@@ -562,7 +561,7 @@ class UserserviceController(BaseController):
                                                         user, self.client)
 
                     response.set_cookie('user_selfservice', cookie,
-                                        secure=secure_cookie,
+                                        secure=secure_cookie(),
                                         expires=expires)
 
                     c.audit['info'] = ("User %r authenticated from otp" % user)
@@ -590,7 +589,7 @@ class UserserviceController(BaseController):
                                         state_data=reply)
 
                 response.set_cookie('user_selfservice', cookie,
-                                    secure=secure_cookie,
+                                    secure=secure_cookie(),
                                     expires=expires)
 
                 c.audit['success'] = False
@@ -632,7 +631,7 @@ class UserserviceController(BaseController):
                      expiration) = create_auth_cookie(user, self.client)
 
                     response.set_cookie('user_selfservice', cookie,
-                                        secure=secure_cookie,
+                                        secure=secure_cookie(),
                                         expires=expires)
 
                     c.audit['action_detail'] = "expires: %s " % expiration
@@ -667,7 +666,7 @@ class UserserviceController(BaseController):
                  expiration) = create_auth_cookie(user, self.client)
 
                 response.set_cookie('user_selfservice', cookie,
-                                    secure=secure_cookie,
+                                    secure=secure_cookie(),
                                     expires=expires)
                 c.audit['action_detail'] = "expires: %s " % expiration
                 c.audit['info'] = "%r logged in " % user
@@ -714,7 +713,7 @@ class UserserviceController(BaseController):
                  expiration) = create_auth_cookie(user, self.client)
 
                 response.set_cookie('user_selfservice', cookie,
-                                    secure=secure_cookie,
+                                    secure=secure_cookie(),
                                     expires=expires)
 
                 c.audit['action_detail'] = "expires: %s " % expiration
@@ -739,7 +738,7 @@ class UserserviceController(BaseController):
                             state='credentials_verified')
 
         response.set_cookie('user_selfservice', cookie,
-                            secure=secure_cookie,
+                            secure=secure_cookie(),
                             expires=expires)
         reply = {'message': 'credential verified - '
                  'additional authentication parameter required'}

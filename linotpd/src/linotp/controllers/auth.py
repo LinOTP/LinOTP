@@ -33,7 +33,7 @@ import logging
 
 from linotp.flap import render_mako as render, response, tmpl_context as c
 
-from linotp.lib.base    import BaseController
+from linotp.controllers.base    import BaseController
 from linotp.lib.util    import get_version
 from linotp.lib.util    import get_copyright_info
 from linotp.lib.reply import sendError

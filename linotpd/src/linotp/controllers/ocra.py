@@ -33,7 +33,7 @@ from linotp import flap
 from linotp.flap import request, response, config, tmpl_context as c
 
 from linotp.lib.auth.validate import ValidationHandler
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.error import ParameterError
 
 from linotp.lib.policy import PolicyException
@@ -65,8 +65,6 @@ import linotp.model.meta
 Session = linotp.model.meta.Session
 
 
-audit = config.get('audit')
-
 log = logging.getLogger(__name__)
 
 
@@ -89,6 +87,7 @@ class OcraController(BaseController):
             if action != "check_t":
                 check_session(request)
 
+            audit = config.get('audit')
             request_context['Audit'] = audit
             return response
 

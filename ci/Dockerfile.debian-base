@@ -33,6 +33,7 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
 	python-pip \
         python-pysodium \
         python-setuptools \
+        python-wheel \
         rename \
         swig && \
         apt-get clean

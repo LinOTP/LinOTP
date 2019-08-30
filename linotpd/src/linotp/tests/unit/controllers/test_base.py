@@ -31,7 +31,7 @@ import unittest
 
 from mock import mock
 
-from linotp.lib.base import BaseController
+from linotp.lib.controllers import BaseController
 from linotp.flap import MultiDict, NestedMultiDict
 
 
@@ -54,8 +54,8 @@ class TestBaseController(unittest.TestCase):
     test for request parameter handling to support parameters from json body
     """
 
-    @mock.patch('linotp.lib.base.request')
-    @mock.patch('linotp.lib.base.BaseController.__init__', return_value=None)
+    @mock.patch('linotp.lib.controllers.request')
+    @mock.patch('linotp.lib.controllers.BaseController.__init__', return_value=None)
     def test_multidict_params(self, _mock_base, mock_request):
         """"
         check if global request.params gets parsed to a plain dict correctly
@@ -81,8 +81,8 @@ class TestBaseController(unittest.TestCase):
             expected_params,
             'parsed request_params do not match')
 
-    @mock.patch('linotp.lib.base.request')
-    @mock.patch('linotp.lib.base.BaseController.__init__', return_value=None)
+    @mock.patch('linotp.lib.controllers.request')
+    @mock.patch('linotp.lib.controllers.BaseController.__init__', return_value=None)
     def test_jsondict_params(self, _mock_base, mock_request):
         """"
         check if global request.json_body gets parsed correctly
@@ -105,8 +105,8 @@ class TestBaseController(unittest.TestCase):
             expected_params,
             'parsed request_params do not match')
 
-    @mock.patch('linotp.lib.base.request')
-    @mock.patch('linotp.lib.base.BaseController.__init__', return_value=None)
+    @mock.patch('linotp.lib.controllers.request')
+    @mock.patch('linotp.lib.controllers.BaseController.__init__', return_value=None)
     def test_both_given(self, _mock_base, mock_request):
         """"
         check if json is give as content type the other params are ignored

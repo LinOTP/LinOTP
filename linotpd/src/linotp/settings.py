@@ -2,7 +2,7 @@
 import logging
 import os
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 
 class Config:
@@ -13,7 +13,7 @@ class Config:
     # as `FOO:/bar`, which will register it on `/bar` instead.
 
     # CONTROLLERS = "admin manage system validate"
-    CONTROLLERS = "test"
+    CONTROLLERS = "system test"
 
     # We're using a `RotatingFileHandler` to manage log files. The
     # main log file is written to `LOGFILE_DIR/LOGFILE_NAME`, with one
@@ -50,6 +50,8 @@ class Config:
     LOGGING = None
 
     ROOT_DIR = basedir
+
+    SECRET_FILE = os.path.join(basedir, "encKey")
 
     @staticmethod
     def init_app(app):

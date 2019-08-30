@@ -27,13 +27,15 @@
     helper to manage the pylons global object
 """
 
-from linotp.config import environment as env
-
-global_object = env.config.get('pylons.app_globals', env.config.get(
-                                'pylons.g'))
+from linotp.flap import config
+import flask
 
 
 def getGlobalObject():
+
+    global_object = config.get('pylons.app_globals', config.get(
+                                    'pylons.g'))
+
     return global_object
 
 

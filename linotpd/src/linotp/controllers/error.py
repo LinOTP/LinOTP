@@ -39,7 +39,7 @@ from paste.urlparser import PkgResourcesParser
 
 from webhelpers.html.builder import literal
 
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.util import str2unicode
 
 

@@ -20,6 +20,7 @@
 
 from __future__ import print_function
 
+import flask
 import importlib
 from logging.config import dictConfig as logging_dictConfig
 import os
@@ -28,7 +29,10 @@ import time
 from flask import Flask, jsonify
 
 from . import __version__
+from . import flap
+from .config.environment import load_environment
 from .settings import configs
+from .lib.ImportOTP.vasco import init_vasco
 
 start_time = time.time()
 this_dir = os.path.dirname(os.path.abspath(__file__))
@@ -97,6 +101,13 @@ def create_app(config_name='default'):
     app.config.from_envvar(CONFIG_FILE_ENVVAR, silent=True)
 
     init_logging(app)
+
+    app.before_request(flap.set_config)
+    app.before_request(init_vasco)
+
+    @app.before_request
+    def load_environment_for_request():
+        load_environment(flask.g, app.config)
 
     app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
 

@@ -99,7 +99,6 @@ def xfail_if_unported(controller, action):
         'openid',
         'reporting',
         'selfservice',
-        'system',
         'testing',
         'tools',
         'u2f',

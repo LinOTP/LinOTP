@@ -361,8 +361,7 @@ def uencode(value):
     """
     ret = value
 
-    if ("linotp.uencode_data" in env
-            and env["linotp.uencode_data"].lower() == 'true'):
+    if (env.get("linotp.uencode_data", "").lower() == 'true'):
         try:
             ret = json.dumps(value)[1:-1]
         except Exception as exx:

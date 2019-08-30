@@ -46,7 +46,7 @@ from linotp.flap import (
 from mako.exceptions import CompileException
 
 import linotp.model
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.error import ParameterError
 
 from linotp.lib.token import getTokenType
@@ -90,8 +90,6 @@ Session = linotp.model.Session
 
 ENCODING = "utf-8"
 log = logging.getLogger(__name__)
-audit = config.get('audit')
-
 
 class SelfserviceController(BaseController):
 
@@ -138,6 +136,7 @@ class SelfserviceController(BaseController):
             self.client = get_client(request)
             c.audit['client'] = self.client
 
+            audit = config.get('audit')
             request_context['Audit'] = audit
 
             # -------------------------------------------------------------- --

@@ -38,7 +38,7 @@ from linotp.flap import config, request, response, tmpl_context as c, _
 from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 
 from linotp.lib.selftest import isSelfTest
-from linotp.lib.base import BaseController
+from .base import BaseController
 
 from linotp.lib.config import storeConfig
 from linotp.lib.config import getLinotpConfig
@@ -125,7 +125,6 @@ import linotp.model.meta
 
 Session = linotp.model.meta.Session
 
-audit = config.get('audit')
 log = logging.getLogger(__name__)
 
 
@@ -159,7 +158,11 @@ class SystemController(BaseController):
             c.audit['client'] = get_client(request)
 
             # check session might raise an abort()
-            check_session(request)
+
+            # TODO: re-enable the session check
+            # check_session(request)
+
+            audit = config.get('audit')
             request_context['Audit'] = audit
 
             # check authorization
@@ -192,7 +195,8 @@ class SystemController(BaseController):
             return sendError(response, exx, context='before')
 
 
-    def __after__(self):
+    @staticmethod
+    def __after__(response):
         '''
         __after is called after every action
 
@@ -200,6 +204,7 @@ class SystemController(BaseController):
         :rtype:  pylons response
         '''
         try:
+            audit = config.get('audit')
             c.audit['administrator'] = getUserFromRequest(request).get("login")
             audit.log(c.audit)
             # default return for the __before__ and __after__
@@ -1645,10 +1650,16 @@ class SystemController(BaseController):
             Session.close()
 
 ##########################################################################
-    def getPolicy(self):
+    def getPolicy(self, id=None):
         """
         method:
             system/getPolicy
+
+        params:
+            id: (optional) The filename needs to be specified as the
+                            third part of the URL like
+                            /system/getPolicy/policy.cfg.
+                            It will then be exported to this file.
 
         description:
             this function is used to retrieve the policies that you
@@ -1663,10 +1674,7 @@ class SystemController(BaseController):
             * user    (optional) will only return the policy for this user
             * scope - (optional) will only return the policies within the
                                  given scope
-            * export - (optional) The filename needs to be specified as the
-                                  third part of the URL like
-                                  /system/getPolicy/policy.cfg.
-                                  It will then be exported to this file.
+
             * display_inactive - (optional) if set, then also inactive policies
                                             will be displayed
 
@@ -1681,7 +1689,6 @@ class SystemController(BaseController):
         param = getLowerParams(self.request_params)
 
         log.debug("[getPolicy] getting policy: %r", param)
-        export = None
         action = None
         user = None
 
@@ -1699,9 +1706,6 @@ class SystemController(BaseController):
             display_inactive = param.get("display_inactive", False)
             if display_inactive:
                 only_active = False
-
-            route_dict = request.environ.get('pylons.routes_dict')
-            export = route_dict.get('id')
 
             log.debug("[getPolicy] retrieving policy name: %s, realm: %s,"
                       " scope: %s", name, realm, scope)
@@ -1751,8 +1755,9 @@ class SystemController(BaseController):
 
             Session.commit()
 
-            if export:
-                filename = create_policy_export_file(pol, export)
+            # if id is set, this defines the export filename
+            if id:
+                filename = create_policy_export_file(pol, id)
                 wsgi_app = FileApp(filename)
                 return wsgi_app(request.environ, self.start_response)
             else:

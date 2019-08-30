@@ -31,7 +31,7 @@ import logging
 
 from linotp.flap import tmpl_context as c, request, response, config
 
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 
 
 from linotp.lib.util import check_session
@@ -51,7 +51,6 @@ from linotp.lib.context import request_context
 import linotp.model
 Session = linotp.model.Session
 
-audit = config.get('audit')
 
 optional = True
 required = False
@@ -75,6 +74,7 @@ class AuditController(BaseController):
             c.audit = request_context['audit']
             c.audit['client'] = get_client(request)
             check_session(request)
+            audit = config.get('audit')
             request_context['Audit'] = audit
 
 

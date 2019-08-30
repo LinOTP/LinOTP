@@ -32,7 +32,7 @@ from cgi import FieldStorage
 
 from linotp.flap import request, response, tmpl_context as c
 
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.reply import sendError
 from linotp.lib.reply import sendResult
 from linotp.lib.error import ParameterError

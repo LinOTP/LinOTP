@@ -35,7 +35,7 @@ from linotp.flap import (
 )
 
 import linotp.model
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 
 from linotp.lib.util import getParam, check_session
 from linotp.lib.util import get_client
@@ -56,7 +56,6 @@ from linotp.lib.context import request_context
 
 Session = linotp.model.Session
 
-audit = config.get('audit')
 
 optional = True
 required = False

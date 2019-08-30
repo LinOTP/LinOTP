@@ -2,7 +2,7 @@
 
 from flask import request
 
-from . import BaseController, methods
+from .base import BaseController, methods
 
 
 class TestController(BaseController):
@@ -19,3 +19,6 @@ class TestController(BaseController):
 
     def testmethod_args(self, s, t):
         return 'method:' + request.method + ',' + ','.join([s, t])
+
+    def testmethod_optional_id(self, id=None):
+        return 'method:' + request.method + ',id=' + str(id)

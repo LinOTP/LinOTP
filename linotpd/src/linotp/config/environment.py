@@ -27,9 +27,11 @@
 
 import os
 
+import flask
+
 from mako.lookup import TemplateLookup
 from linotp.flap import config, handle_mako_error
-from sqlalchemy import engine_from_config
+from sqlalchemy import create_engine
 
 import linotp.lib.app_globals as app_globals
 import linotp.lib.helpers
@@ -80,8 +82,9 @@ def load_environment(global_conf, app_conf):
     """
     Configure the Pylons environment via the ``pylons.config``
     object
-    """
 
+    @param app_conf Flask configuration
+    """
     # Pylons paths
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     paths = dict(root=root,
@@ -91,11 +94,12 @@ def load_environment(global_conf, app_conf):
                                          os.path.join(root, 'templates')),
                             os.path.join(root, 'templates')])
 
-    # Initialize config with the basic options
-    config.init_app(global_conf, app_conf, package='linotp', paths=paths)
-
+    config = flask.g.request_context['config']
     config['linotp.root'] = root
-    config['routes.map'] = make_map(global_conf, app_conf)
+
+    # Copy Flask config into global config
+    config.update(app_conf)
+
     config['pylons.app_globals'] = app_globals.Globals()
     config['pylons.h'] = linotp.lib.helpers
 
@@ -107,6 +111,7 @@ def load_environment(global_conf, app_conf):
 
     import linotp.tokens as token_package
 
+    token_package.reload_classes()
     token_package_path = os.path.dirname(token_package.__file__)
     directories.append(token_package_path)
 
@@ -120,19 +125,12 @@ def load_environment(global_conf, app_conf):
     unique_directories = _uniqify_list(directories)
     log.debug("[load_environment] Template directories: %r" % unique_directories)
 
-    config['pylons.app_globals'].mako_lookup = TemplateLookup(
-        directories=unique_directories,
-        error_handler=handle_mako_error,
-        module_directory=os.path.join(app_conf['cache_dir'], 'templates'),
-        input_encoding='utf-8', default_filters=['escape'],
-        imports=['from webhelpers.html import escape'])
-
     # Setup the SQLAlchemy database engine
     # If we load the linotp.model here, the pylons.config is loaded with
     # the entries from the config file. if it is loaded at the top of the file,
     # the pylons.config does not contain the config file, yet.
     from linotp.model import init_model
-    engine = engine_from_config(config, 'sqlalchemy.')
+    engine = create_engine(config['SQLALCHEMY_DATABASE_URI'])
     init_model(engine)
 
     # CONFIGURATION OPTIONS HERE (note: all config options will override
@@ -154,7 +152,9 @@ def load_environment(global_conf, app_conf):
     # get the help url
     url = config.get("linotpHelp.url", None)
     if url is None:
-        version = pkg_resources.get_distribution("linotp").version
+        # version = pkg_resources.get_distribution("linotp").version
+        # TODO
+        version = 3
         # First try to get the help for this specific version
         url = "https://linotp.org/doc/%s/index.html" % version
     config['help_url'] = url
@@ -173,7 +173,7 @@ def get_activated_token_modules():
     the list of modules defined there as a list. if the key is not
     present this will return None.
     """
-
+    config = flask.g.request_context['config']
     if 'linotpTokenModules' not in config:
         return None
 

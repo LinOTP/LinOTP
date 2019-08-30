@@ -116,11 +116,7 @@ class AuditBase(object):
                  'client': '',
                  'success': False,
                 }
-        path = ("%s/%s"
-                 % (request.environ['pylons.routes_dict']['controller'],
-                    request.environ['pylons.routes_dict']['action'])
-                )
-        audit['action'] = path
+        audit['action'] = request.path
         if client:
             audit['client'] = client
         return audit

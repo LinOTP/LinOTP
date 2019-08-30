@@ -28,10 +28,8 @@
     - located here as required in certain places
 """
 
-from linotp.config import environment as env
+from linotp.flap import config
 from linotp.lib.crypto.encrypted_data import EncryptedData
-
-linotp_root = env.config.get("linotp.root")
 
 
 def expand_here(value):
@@ -41,6 +39,7 @@ def expand_here(value):
     :param value: the input value
     :return: the expanded value
     """
+    linotp_root = config.get("linotp.root")
 
     if not linotp_root:
         return value

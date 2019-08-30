@@ -52,13 +52,6 @@ import linotp
 
 from linotp.lib.text_utils import utf8_slice
 
-# Create the logging object from the linotp.ini config file
-ini_file = config.get("__file__")
-if ini_file is not None:
-    # When importing the module with Sphinx to generate documentation
-    # 'ini_file' is None. In other cases this should not be the case.
-    logging.config.fileConfig(ini_file, disable_existing_loggers=False)
-
 log = logging.getLogger(__name__)
 
 metadata = schema.MetaData()
@@ -68,7 +61,7 @@ def now():
     return u_now
 
 ######################## MODEL ################################################
-table_prefix = config.get("linotpAudit.sql.table_prefix", "")
+table_prefix = ""
 
 audit_table_name = '%saudit' % table_prefix
 

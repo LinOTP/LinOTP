@@ -34,6 +34,8 @@ try:
 except ImportError:
     import simplejson as json
 
+from flask import Response, jsonify
+
 from linotp.flap import request, tmpl_context as c
 
 from linotp.lib.error import LinotpError
@@ -120,7 +122,7 @@ def _get_httperror_from_params(pylons_request):
     return httperror
 
 
-def sendError(response, exception, id=1, context=None):
+def sendError(_response, exception, id=1, context=None):
     '''
     sendError - return a HTML or JSON error result document
 
@@ -229,22 +231,20 @@ def sendError(response, exception, id=1, context=None):
         # Always set a reason, when no standard one found (e.g. custom HTTP
         # code like 444) use 'LinOTP Error'
         reason = httpErr.get(httperror, 'LinOTP Error')
-
-        response.content_type = 'text/html'
-        response.status = "%s %s" % (httperror, reason)
-
         code = httperror
         status = "%s %s" % (httperror, reason)
         desc = '[%s] %d: %s' % (get_version(), errId, errDesc)
         ret = resp % (code, status, code, status, desc)
 
+        response = Response(response=ret, status=code, mimetype= 'text/html')
+
         if context in ['before', 'after']:
             response._exception = exception
-            response.text = u'' + ret
-            ret = response
+
+        return response
+
     else:
         # Send JSON response with HTTP status 200 OK
-        response.content_type = 'application/json'
         res = { "jsonrpc": get_api_version(),
                 "result" :
                     {"status": False,
@@ -256,15 +256,13 @@ def sendError(response, exception, id=1, context=None):
                  "version": get_version(),
                  "id": id
             }
-
-        ret = json.dumps(res, indent=3)
+        data = json.dumps(res, indent=3)
+        response = Response(response=data, status=2000, mimetype= 'application/json')
 
         if context in ['before', 'after']:
             response._exception = exception
-            response.body = ret
-            ret = response
 
-    return ret
+        return response
 
 
 def sendResult(response, obj, id=1, opt=None, status=True):
@@ -285,8 +283,6 @@ def sendResult(response, obj, id=1, opt=None, status=True):
 
     '''
 
-    response.content_type = 'application/json'
-
     res = { "jsonrpc": get_api_version(),
             "result": { "status": status,
                         "value": obj,
@@ -297,7 +293,9 @@ def sendResult(response, obj, id=1, opt=None, status=True):
     if opt is not None and len(opt) > 0:
         res["detail"] = opt
 
-    return json.dumps(res, indent=3)
+    data = json.dumps(res, indent=3)
+    return Response(response=data, status=200, mimetype= 'application/json')
+
 
 
 def sendResultIterator(obj, id=1, opt=None, rp=None, page=None,

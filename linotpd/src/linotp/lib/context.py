@@ -31,6 +31,8 @@ from linotp.lib.error import ProgrammingError
 from contextlib import contextmanager
 from functools import partial
 
+from linotp.flap import tmpl_context as request_context
+
 # --------------------------------------------------------------------------- --
 # Context stack tracing
 # --------------------------------------------------------------------------- --
@@ -102,19 +104,6 @@ def is_on_context_stack(manager_id):
     """
 
     return manager_id in context_stack
-
-
-# --------------------------------------------------------------------------- --
-# request context
-# --------------------------------------------------------------------------- --
-
-    # replaces the old templ_context provided by pylons
-
-
-request_context = LocalContainer(source_func=dict,
-                                 access_check=partial(is_on_context_stack,
-                                                      'request_context_safety'))
-
 
 @contextmanager
 def request_context_safety():

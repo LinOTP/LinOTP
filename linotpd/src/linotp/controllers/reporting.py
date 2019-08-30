@@ -34,7 +34,7 @@ import logging
 from datetime import datetime
 
 from linotp.flap import request, response, config, tmpl_context as c
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.context import request_context
 
 from linotp.lib.policy import (checkAuthorisation,
@@ -55,8 +55,6 @@ from linotp.lib.util import check_session
 from linotp.lib.util import get_client
 
 from linotp.model.meta import Session
-
-audit = config.get('audit')
 
 log = logging.getLogger(__name__)
 
@@ -79,6 +77,7 @@ class ReportingController(BaseController):
             # Session handling
             check_session(request)
 
+            audit = config.get('audit')
             request_context['Audit'] = audit
             checkAuthorisation(scope='reporting.access', method=action)
 

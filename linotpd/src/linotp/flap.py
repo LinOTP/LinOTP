@@ -3,9 +3,10 @@
 import webob
 from webob.multidict import MultiDict, NestedMultiDict
 
+from flask import request
+
 from pylons import (
-    config, request, response, tmpl_context, url,
-    __version__,
+    response, url, __version__,
 )
 from pylons.configuration import PylonsConfig as Config
 from pylons.controllers import WSGIController
@@ -17,6 +18,53 @@ from pylons.middleware import (
 from pylons.templating import render_mako
 from pylons.wsgiapp import PylonsApp as App
 
+from werkzeug import LocalProxy
+
+import flask
+
+
+config = LocalProxy(lambda: flask.g.request_context['config'])
+
+class RequestProxy(object):
+    """
+    Flask request object plus params -> args
+    """
+    def __init__(self, proxy):
+        self.proxy = proxy
+
+    def __getattribute__(self, name):
+        if name == 'params':
+            return self.proxy.args
+        elif name == 'proxy':
+            return super(RequestProxy, self).__getattribute__('proxy')
+        return getattr(self.proxy, name)
+request = RequestProxy(flask.request)
+
+class RequestContextProxy(object):
+    def __getattr__(self, name):
+        return flask.g.request_context.__getitem__(name)
+    def get(self, name, default=None):
+        return flask.g.request_context.get(name, default)
+        #return flask.g.request_context.__getattribute__(name)
+    def __setattr__(self, name, value):
+        #flask.g.request_context.__setattr__(name, value)
+        flask.g.request_context.__setitem__(name, value)
+    def __getitem__(self, key):
+        return flask.g.request_context.__getitem__(key)
+    def __setitem__(self, key, value):
+        flask.g.request_context.__setitem__(key, value)
+    def setdefault(self, key, value):
+        return flask.g.request_context.setdefault(key, value)
+
+tmpl_context = RequestContextProxy()
+
+def set_config():
+    """
+    Set up config from flask request object
+    """
+    flask.g.request_context = {
+        'config': {},
+    }
 
 def _(s):
     """Mickey Mouse translation utility."""

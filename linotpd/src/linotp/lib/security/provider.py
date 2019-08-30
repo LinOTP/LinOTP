@@ -86,7 +86,7 @@ class SecurityProvider(object):
         '''
         provider_config = {}
 
-        keyFile = config['linotpSecretFile']
+        keyFile = config['SECRET_FILE']
         provider_config['default'] = {
             'pinHandle': TOKEN_KEY,
             'passHandle': CONFIG_KEY,
