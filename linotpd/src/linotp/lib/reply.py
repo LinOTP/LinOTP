@@ -488,11 +488,11 @@ def json2xml(json_obj, line_padding=""):
     return "%s%s" % (line_padding, json_obj)
 
 
-def sendXMLResult(response, obj, id=1, opt=None):
+def sendXMLResult(_response, obj, id=1, opt=None):
     """
     send the result as an xml format
     """
-    response.content_type = 'text/xml'
+
     res = '<?xml version="1.0" encoding="UTF-8"?>\
             <jsonrpc version="%s">\
             <result>\
@@ -516,11 +516,12 @@ def sendXMLResult(response, obj, id=1, opt=None):
     <version>%s</version>
     <id>%s</id>%s
 </jsonrpc>""" % (xml_object, get_version(), id, xml_options)
-    return res
+    return Response(response=res, status=200, mimetype='text/xml')
 
 
-def sendXMLError(response, exception, id=1):
-    response.content_type = 'text/xml'
+
+def sendXMLError(_response, exception, id=1):
+
     if not hasattr(exception, "getId"):
         errId = -311
         errDesc = str(exception)
@@ -539,7 +540,7 @@ def sendXMLError(response, exception, id=1):
             <version>%s</version>\
             <id>%s</id>\
             </jsonrpc>' % (get_api_version(), errId, errDesc, get_version(), id)
-    return res
+    return Response(response=res, status=200, mimetype='text/xml')
 
 
 def sendQRImageResult(response, data, param=None, id=1, typ='html'):
