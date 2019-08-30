@@ -27,12 +27,10 @@
 import unittest
 import json
 
-from contextlib import nested
-from linotp.lib.context import request_context_safety
-from linotp.lib.context import request_context
 from linotp.tokens.qrtoken.qrtoken import QrTokenClass
 from mock import patch
 from linotp.flap import config
+from linotp.lib.context import request_context
 
 
 class FakeHSM(object):
@@ -72,7 +70,7 @@ class FakeTokenModel(object):
 # ---------------------------------------------------------------------------- -
 
 
-class QRTokenClassUnitTestCase(unittest.TestCase):
+class QRTokenClassUnitTestCase(object):
 
     def test_unpair(self):
 
@@ -88,14 +86,14 @@ class QRTokenClassUnitTestCase(unittest.TestCase):
 
         token.unpair()
 
-        self.assertNotIn('user_token_id', fake.info_dict)
-        self.assertNotIn('user_public_key', fake.info_dict)
-        self.assertEqual('pairing_url_sent', token.current_state)
+        assert 'user_token_id' not in fake.info_dict
+        assert 'user_public_key' not in fake.info_dict
+        assert 'pairing_url_sent' == token.current_state
 
     # ------------------------------------------------------------------------ -
 
     @patch('linotp.tokens.pushtoken.pushtoken.get_secret_key')
-    def test_url_protocol_id(self, mocked_get_secret_key):
+    def test_url_protocol_id(self, base_app, mocked_get_secret_key):
 
         """
         QRToken unittest: Test url protocol id customization
@@ -110,7 +108,7 @@ class QRTokenClassUnitTestCase(unittest.TestCase):
         token.addToTokenInfo('user_token_id', 1234)
         token.addToTokenInfo('user_public_key', user_public_key)
 
-        with nested(patch.dict(config), request_context_safety()):
+        with base_app.test_request_context():
 
             if 'mobile_app_protocol_id' in config:
                 del config['mobile_app_protocol_id']
@@ -129,7 +127,7 @@ class QRTokenClassUnitTestCase(unittest.TestCase):
                                                 callback_url='foo',
                                                 callback_sms_number='+491234')
 
-            self.assertTrue(url.startswith('lseqr://'))
+            assert url.startswith('lseqr://')
 
         # -------------------------------------------------------------------- -
 
@@ -138,8 +136,8 @@ class QRTokenClassUnitTestCase(unittest.TestCase):
         token.addToTokenInfo('user_token_id', 1234)
         token.addToTokenInfo('user_public_key', user_public_key)
 
-        with nested(patch.dict(config, {'mobile_app_protocol_id': 'yolo'}),
-                    request_context_safety()):
+        with base_app.test_request_context():
+            config['mobile_app_protocol_id'] = 'yolo'
 
             request_context['hsm'] = fake_hsm_wrapper
 
@@ -152,4 +150,4 @@ class QRTokenClassUnitTestCase(unittest.TestCase):
                                                 callback_url='foo',
                                                 callback_sms_number='+491234')
 
-            self.assertTrue(url.startswith('yolo://'))
+            assert url.startswith('yolo://')
