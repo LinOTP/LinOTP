@@ -41,6 +41,8 @@ class TestSystemController(TestController):
     def setUp(self):
         TestController.setUp(self)
         self.delete_all_policies()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
 
     def test_setDefault(self):
         '''
