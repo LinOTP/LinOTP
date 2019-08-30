@@ -31,7 +31,7 @@ import unittest
 
 from mock import mock
 
-from linotp.lib.controllers import BaseController
+from linotp.controllers.base import BaseController
 from linotp.flap import MultiDict, NestedMultiDict
 
 

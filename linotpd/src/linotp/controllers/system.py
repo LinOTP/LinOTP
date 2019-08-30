@@ -23,6 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+from werkzeug import FileStorage
 """
 system controller - to configure the system
 """
@@ -1496,25 +1497,22 @@ class SystemController(BaseController):
         res = True
         try:
 
-            log.debug("[importPolicy] getting POST request: %r", request.POST)
+            log.debug("[importPolicy] getting POST request: %r", request.files)
 
-            policy_file = request.POST['file']
+            policy_file = request.files.get('file')
             fileString = ""
             log.debug("[importPolicy] loading policy file to server using POST"
                       " request. File: %r", policy_file)
+            if not policy_file:
+                raise ParameterError('missing input file')
 
-            # -- ----------------------------------------------------------- --
-            # In case of form post requests, it is a "instance" of FieldStorage
-            # i.e. the Filename is selected in the browser and the data is
-            # transferred in an iframe.
-            #     see: http://jquery.malsup.com/form/#sample4
-            # -- ----------------------------------------------------------- --
-
-            if type(policy_file).__name__ == 'instance':
+            if isinstance(policy_file, FileStorage):
                 log.debug("[importPolicy] Field storage file: %s", policy_file)
-                fileString = policy_file.value
+                fileString = policy_file.read()
+
                 sendResultMethod = sendXMLResult
                 sendErrorMethod = sendXMLError
+
             else:
                 fileString = policy_file
 

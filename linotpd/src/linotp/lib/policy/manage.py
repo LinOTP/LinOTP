@@ -155,7 +155,7 @@ def deletePolicy(name, enforce=False):
         raise ServerError("policy name may only contain the "
                           "characters a-zA-Z0-9_", id=8888)
 
-    if context and 'Config' in context:
+    if context and context.get('Config'):
         Config = context['Config']
     else:
         Config = getLinotpConfig()
