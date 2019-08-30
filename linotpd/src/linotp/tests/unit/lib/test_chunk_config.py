@@ -28,6 +28,7 @@ Tests the chunked data handling in the config
 """
 
 
+import pytest
 import unittest
 
 from mock import patch
@@ -173,6 +174,7 @@ class ContEntries(object):
         return iter([])
 
 
+@pytest.mark.usefixtures("app")
 class TestChunkConfigCase(unittest.TestCase):
 
     @patch('linotp.lib.config.db_api._storeConfigEntryDB', storeConfigEntryDB)
@@ -356,6 +358,7 @@ class TestChunkConfigCase(unittest.TestCase):
         return
 
 
+@pytest.mark.usefixtures("app")
 class TestConfigStoreCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

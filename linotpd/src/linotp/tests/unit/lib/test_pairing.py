@@ -24,6 +24,7 @@
 #    Support: www.keyidentity.com
 #
 
+import pytest
 import unittest
 
 from linotp.flap import config
@@ -31,6 +32,7 @@ from linotp.lib.pairing import generate_pairing_url
 from mock import patch
 
 
+@pytest.mark.usefixtures("app")
 class PairingUnitTestCase(unittest.TestCase):
 
     @patch('linotp.lib.pairing.get_secret_key')

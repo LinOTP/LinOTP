@@ -26,6 +26,7 @@
 
 """
 
+import pytest
 import unittest
 
 
@@ -53,7 +54,7 @@ class Request(object):
     def __init__(self, environ):
         self.environ = environ
 
-
+@pytest.mark.usefixtures("app")
 class TestGetClientCase(unittest.TestCase):
     """
     unit test for methods to access the client information

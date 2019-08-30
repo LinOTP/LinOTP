@@ -27,6 +27,7 @@ Tests a very small subset of linotp.lib.reply
 """
 
 import json
+import pytest
 import unittest
 from mock import (
     MagicMock,
@@ -37,6 +38,7 @@ from linotp.lib.error import ProgrammingError
 from linotp.lib.context import request_context
 
 
+@pytest.mark.usefixtures("app")
 class TestReplyTestCase(unittest.TestCase):
     def setUp(self):
         self.pylons_request = MagicMock(spec=['params', 'query_string'])

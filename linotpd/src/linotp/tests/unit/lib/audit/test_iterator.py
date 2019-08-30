@@ -24,6 +24,7 @@
 #    Support: www.keyidentity.com
 #
 
+import pytest
 import sys
 if sys.version_info < (2, 7):
     try:
@@ -42,6 +43,7 @@ except ImportError:
     import simplejson as json
 
 
+@pytest.mark.usefixtures("app")
 class AuditIteratorTestCase(unittest.TestCase):
     """
     This class tests the AuditQuery, JSONAuditIterator and CSVAuditIterator
