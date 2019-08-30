@@ -1856,7 +1856,13 @@ class AdminController(BaseController):
 
                 Session.commit()
 
-                response.content_type = 'application/json'
+                result = []
+                for user_result in iterate_users(users_iters):
+                    result.append(json.loads(user_result))
+
+                return sendResult(response, result)
+
+                # response.content_type = 'application/json'
 
                 # ---------------------------------------------------------- --
 
