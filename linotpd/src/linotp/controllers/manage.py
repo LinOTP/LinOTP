@@ -76,6 +76,7 @@ from linotp.lib.context import request_context
 from linotp.lib.ImportOTP import getKnownTypes, getImportText
 import linotp
 
+import linotp.model.meta
 Session = linotp.model.meta.Session
 
 audit = config.get('audit')
@@ -89,7 +90,16 @@ log.info("importing linotp.lib. Known import types: %s" % IMPORT_TEXT)
 
 class ManageController(BaseController):
 
-    def __before__(self, action, **params):
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        action = request_context['action']
 
         try:
             c.audit = request_context['audit']
@@ -141,17 +151,27 @@ class ManageController(BaseController):
         finally:
             log.debug("[__before__::%r] done" % (action))
 
-    def __after__(self):
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
         if c.audit['action'] in ['manage/tokenview_flexi',
                                  'manage/userview_flexi' ]:
             c.audit['administrator'] = getUserFromRequest(request).get("login")
-            if 'serial' in self.request_params:
-                serial = self.request_params['serial']
+            if 'serial' in request.params:
+                serial = request.params['serial']
                 c.audit['serial'] = serial
                 c.audit['token_type'] = getTokenType(serial)
 
             c.audit['action_detail'] += linotp.lib.audit.base.get_token_num_info()
             audit.log(c.audit)
+
+        return response
 
     def index(self):
         '''

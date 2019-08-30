@@ -54,7 +54,8 @@ from linotp.lib.user import (getUserFromRequest, )
 from linotp.lib.util import check_session
 from linotp.lib.util import get_client
 
-from linotp.model.meta import Session
+import linotp.model.meta
+Session = linotp.model.meta.Session
 
 log = logging.getLogger(__name__)
 
@@ -64,9 +65,17 @@ class ReportingController(BaseController):
     reporting
     """
 
-    def __before__(self, action, **params):
+    def __before__(self, **params):
         """
+        __before__ is called before every action
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
         """
+
+        action = request_context['action']
+
         try:
 
             c.audit = request_context['audit']
@@ -81,7 +90,7 @@ class ReportingController(BaseController):
             request_context['Audit'] = audit
             checkAuthorisation(scope='reporting.access', method=action)
 
-            return request
+            return
 
         except Exception as exception:
             log.exception(exception)
@@ -90,15 +99,23 @@ class ReportingController(BaseController):
             return sendError(response, exception, context='before')
 
 
-    def __after__(self, action):
-        """
-        """
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
+        audit = config.get('audit')
+
         try:
             c.audit['administrator'] = getUserFromRequest(request).get('login')
 
             audit.log(c.audit)
             Session.commit()
-            return request
+            return response
 
         except Exception as exception:
             log.exception(exception)

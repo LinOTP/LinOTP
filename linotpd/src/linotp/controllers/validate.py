@@ -89,14 +89,23 @@ class ValidateController(BaseController):
     The functions are described below in more detail.
     '''
 
-    def __before__(self, action, **params):
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError
+        """
+
+        action = request_context['action']
 
         try:
             c.audit = request_context['audit']
             c.audit['client'] = get_client(request)
             audit = config.get('audit')
             request_context['Audit'] = audit
-            return response
+            return
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
@@ -105,7 +114,16 @@ class ValidateController(BaseController):
             return sendError(response, exx, context='before')
 
 
-    def __after__(self, action, **params):
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
+        audit = config.get('audit')
         audit.log(c.audit)
         return response
 

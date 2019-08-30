@@ -79,7 +79,16 @@ class GettokenController(BaseController):
     The functions are described below in more detail.
     '''
 
-    def __before__(self, action):
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        action = request_context['action']
 
         try:
             c.audit = request_context['audit']
@@ -92,13 +101,25 @@ class GettokenController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
-    def __after__(self):
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
         c.audit['administrator'] = getUserFromRequest(request).get("login")
-        if 'serial' in self.request_params:
-            serial = self.request_params['serial']
+        if 'serial' in request.params:
+            serial = request.params['serial']
             c.audit['serial'] = serial
             c.audit['token_type'] = getTokenType(serial)
+
+        audit = config.get('audit')
         audit.log(c.audit)
+
+        return response
 
     def getmultiotp(self):
         '''

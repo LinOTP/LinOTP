@@ -96,10 +96,26 @@ class TestingController(BaseController):
     The functions are described below in more detail.
     '''
 
-    def __before__(self):
-        return response
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
 
-    def __after__(self):
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        return
+
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
         return response
 
     def autosms(self):

@@ -124,15 +124,23 @@ class AdminController(BaseController):
     The functions are described below in more detail.
     '''
 
-    def __before__(self, action, **params):
-        '''
-        '''
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        action = request_context['action']
 
         try:
 
             c.audit = request_context['audit']
             c.audit['success'] = False
             c.audit['client'] = get_client(request)
+
             # Session handling
             check_session(request)
 
@@ -146,18 +154,26 @@ class AdminController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
-    def __after__(self, action):
+    @staticmethod
+    def __after__(response):
         '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
         '''
+
+        action = request_context['action']
+        audit = config.get('audit')
 
         try:
             # prevent logging of getsession or other irrelevant requests
             if action in ['getsession', 'dropsession']:
-                return request
+                return response
 
             c.audit['administrator'] = getUserFromRequest(request).get("login")
 
-            serial = self.request_params.get('serial')
+            serial = request.params.get('serial')
             if serial:
                 c.audit['serial'] = serial
                 c.audit['token_type'] = getTokenType(serial)
@@ -185,7 +201,7 @@ class AdminController(BaseController):
 
             audit.log(c.audit)
             Session.commit()
-            return request
+            return response
 
         except Exception as e:
             log.exception("[__after__] unable to create a session cookie: %r" % e)

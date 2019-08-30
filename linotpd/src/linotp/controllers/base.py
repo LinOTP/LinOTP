@@ -523,10 +523,12 @@ class BaseController(Blueprint):
         request_context['SystemConfig'] = sysconfig
 
     def before_handler(self):
-        params = {}
+
+        params = self.request_params
+
         if hasattr(self, '__before__'):
-            action = request_context['action']
-            response = self.__before__(action, **params)
+
+            response = self.__before__(**params)
 
             # in case of exceptions / errors the __before__ handling submits an sendError
             # flask.Response which has the special attribute _exception
