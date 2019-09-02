@@ -175,9 +175,9 @@ def create_app(config_name='default'):
     with app.app_context():
         setup_db(app)
         generate_secret_key_file(app)
+        flap.set_config()
         set_defaults(app)
 
-    app.before_request(flap.set_config)
     app.before_first_request(init_vasco)
 
     @app.before_request
