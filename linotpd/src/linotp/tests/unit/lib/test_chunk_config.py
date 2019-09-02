@@ -28,6 +28,7 @@ Tests the chunked data handling in the config
 """
 
 
+import pytest
 import unittest
 
 from mock import patch
@@ -173,6 +174,7 @@ class ContEntries(object):
         return iter([])
 
 
+@pytest.mark.usefixtures("app")
 class TestChunkConfigCase(unittest.TestCase):
 
     @patch('linotp.lib.config.db_api._storeConfigEntryDB', storeConfigEntryDB)
@@ -202,14 +204,14 @@ class TestChunkConfigCase(unittest.TestCase):
         # make sure that the first key entry 'test' is avaliable
         # and that the keys are representing the calculated number
 
-        self.assertTrue(key_name in conf_keys, TestConfigEntries)
+        assert key_name in conf_keys, TestConfigEntries
 
         entry = TestConfigEntries[key_name]
         value = entry['value']
         from_, to_ = entry['desc'].split(':')
 
         # we count from 0 to eg 3 so we have 4 entries
-        self.assertTrue(len(conf_keys) == int(to_) + 1, conf_keys)
+        assert len(conf_keys) == int(to_) + 1, conf_keys
 
         # ------------------------------------------------------------------ --
 
@@ -217,11 +219,11 @@ class TestChunkConfigCase(unittest.TestCase):
 
         for i in range(int(from_) + 1, int(to_) + 1):
             entry_key = "%s__[%d:%d]" % (key_name, i, int(to_))
-            self.assertTrue(entry_key in TestConfigEntries)
+            assert entry_key in TestConfigEntries
 
             value += TestConfigEntries[entry_key]['value']
 
-        self.assertTrue(value == big_value)
+        assert value == big_value
 
         # finally we check if the original type and description is in the
         # last entry
@@ -230,8 +232,8 @@ class TestChunkConfigCase(unittest.TestCase):
         entry_type = TestConfigEntries[entry_key]['type']
         entry_desc = TestConfigEntries[entry_key]['desc']
 
-        self.assertTrue(entry_type == key_type)
-        self.assertTrue(entry_desc == key_desc)
+        assert entry_type == key_type
+        assert entry_desc == key_desc
 
         # --------------------------------------------------------------------
 
@@ -261,13 +263,13 @@ class TestChunkConfigCase(unittest.TestCase):
 
         conf_keys = TestConfigEntries.keys()
 
-        self.assertTrue(key in conf_keys, TestConfigEntries)
+        assert key in conf_keys, TestConfigEntries
 
         entry = TestConfigEntries[key]
         _from_, to_ = entry['desc'].split(':')
 
         # we count from 0 to eg 3 so we have 4 entries
-        self.assertTrue(len(conf_keys) == int(to_) + 1, conf_keys)
+        assert len(conf_keys) == int(to_) + 1, conf_keys
 
         # --------------------------------------------------------------------
 
@@ -301,13 +303,13 @@ class TestChunkConfigCase(unittest.TestCase):
 
         conf_keys = TestConfigEntries.keys()
 
-        self.assertTrue(key in conf_keys, TestConfigEntries)
+        assert key in conf_keys, TestConfigEntries
 
         entry = TestConfigEntries[key]
         _from_, to_ = entry['desc'].split(':')
 
         # we count from 0 to eg 3 so we have 4 entries
-        self.assertTrue(len(conf_keys) == int(to_) + 1, conf_keys)
+        assert len(conf_keys) == int(to_) + 1, conf_keys
 
         # --------------------------------------------------------------------
 
@@ -339,12 +341,12 @@ class TestChunkConfigCase(unittest.TestCase):
 
         conf_keys = TestConfigEntries.keys()
 
-        self.assertTrue(key in conf_keys, TestConfigEntries)
+        assert key in conf_keys, TestConfigEntries
 
-        self.assertTrue(len(TestConfigEntries) == 1)
+        assert len(TestConfigEntries) == 1
 
         entry = TestConfigEntries['linotp.test_data']
-        self.assertTrue(entry['value'] == val)
+        assert entry['value'] == val
 
         # --------------------------------------------------------------------
 
@@ -356,6 +358,7 @@ class TestChunkConfigCase(unittest.TestCase):
         return
 
 
+@pytest.mark.usefixtures("app")
 class TestConfigStoreCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -393,7 +396,7 @@ class TestConfigStoreCase(unittest.TestCase):
 
         # Check value is correctly returned
         stored_value = _retrieveConfigDB(conf['Key'])
-        self.assertEqual(conf['Value'], stored_value)
+        assert conf['Value'] == stored_value
 
         # Check type, description in database
         entries = Session.query(Config).all()
@@ -402,8 +405,8 @@ class TestConfigStoreCase(unittest.TestCase):
         stored_conf = entries[0]
 
         for key in conf.keys():
-            self.assertEqual(conf[key], getattr(stored_conf, key),
-                             "Key should match key:%s - expected %r, recevied %r" % (key, conf[key], getattr(stored_conf, key)))
+            assert conf[key] == getattr(stored_conf, key), \
+                             "Key should match key:%s - expected %r, recevied %r" % (key, conf[key], getattr(stored_conf, key))
 
     def test_updateExisting(self):
         # Test the following conditions:
@@ -420,18 +423,18 @@ class TestConfigStoreCase(unittest.TestCase):
         description = None
 
         _storeConfigDB(key, longvalue, typ, description)
-        self.assertEqual(Session.query(Config).count(), 2)
+        assert Session.query(Config).count() == 2
         oldentries = Session.query(Config).all()
-        self.assertEqual(len(oldentries), 2)
+        assert len(oldentries) == 2
 
         _storeConfigDB(key, value, typ, description)
         entries = Session.query(Config).all()
-        self.assertEqual(len(entries), 1)
+        assert len(entries) == 1
 
         entry = entries[0]
-        self.assertEqual(entry.Key, key)
-        self.assertEqual(entry.Value, value)
-        self.assertEqual(entry.Description, '')  # None is converted to ''
-        self.assertEqual(entry.Type, typ)
+        assert entry.Key == key
+        assert entry.Value == value
+        assert entry.Description == ''  # None is converted to ''
+        assert entry.Type == typ
 
 # eof #

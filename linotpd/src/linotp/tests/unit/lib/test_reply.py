@@ -27,6 +27,7 @@ Tests a very small subset of linotp.lib.reply
 """
 
 import json
+import pytest
 import unittest
 from mock import (
     MagicMock,
@@ -37,6 +38,7 @@ from linotp.lib.error import ProgrammingError
 from linotp.lib.context import request_context
 
 
+@pytest.mark.usefixtures("app")
 class TestReplyTestCase(unittest.TestCase):
     def setUp(self):
         self.pylons_request = MagicMock(spec=['params', 'query_string'])
@@ -119,7 +121,8 @@ class TestReplyTestCase(unittest.TestCase):
         httperror = _get_httperror_from_params(self.pylons_request)
         self.assertEquals(httperror, None)
 
-    def test_response_iterator_request_context(self):
+    @pytest.mark.skip("Not yet ported to Flask")
+    def test_response_iterator(self):
 
         """ test if request context gets reinstated in sendResultIterator """
 

@@ -124,10 +124,11 @@ def  get_request_param(request, key, default=None):
     Returns the get / post / etc. param with the given key dependent on
     the content type
     """
-    if request.content_type == 'application/json':
-        return request.json_body.get(key, default)
+
+    if request.is_json:
+        return request.json.get(key, default)
     else:
-        return request.params.get(key, default)
+        return request.values.get(key, default)
 
 def getLowerParams(param):
     ret = {}

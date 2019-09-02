@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
@@ -23,29 +22,39 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+"""
+Tests for EncryptedData
+"""
 
-'''
-This is the controller module. The controllers provide the Web API to
-communicate with LinOTP. You can use the following controllers:
+import pytest
 
-account		- used for loggin in to the selfservice
-admin		- API to manage the tokens
-audit		- to search the audit trail
-auth		- to do authentication tests
-error		- to display errors
-gettoken	- to retrieve OTP values
-manage		- the Web UI
-openid		- the openid interface
-selfservice	- the selfservice UI
-system		- to configure the system
-testing		- for testing purposes
-validate	- for authenticating/ OTP checking
-maintenance     - for internal maintenance purposes
+from linotp.lib.crypto.encrypted_data import EncryptedData
 
-'''
+TEST_STRING = "test string to be encrypted"
 
-from .base import BaseController
+# pylint:disable=redefined-outer-name
+@pytest.fixture
+def data():
+    """
+    Fixture to return an instance of encryptedData
 
-__all__ = [
-    'BaseController'
-]
+    The unencrypted string is TEST_STRING
+    """
+
+    instance = EncryptedData(TEST_STRING)
+
+    return instance
+
+def test_str(data):
+    """
+    str() should return the string itself
+    """
+    assert str(data) == TEST_STRING
+
+def test_repr(data):
+    """
+    repr() should return a placeholder
+    """
+    rep = repr(data)
+    assert TEST_STRING not in rep
+    assert rep == "XXXXXX"

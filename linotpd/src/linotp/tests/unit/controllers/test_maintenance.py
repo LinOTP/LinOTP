@@ -56,9 +56,8 @@ class TestMaintenance(unittest.TestCase):
         mock_senderror.side_effect = lambda response, exx: exx
         mock_sendresult.side_effect = lambda response, obj, *args: obj
 
-        ret = self.maint.check_status()
+        ret = self.maint.check_status().json
 
-        ret = json.loads(ret)
         self.assertEqual(ret['detail']['config']['entries'], entries)
 
     @patch('linotp.controllers.system.sendResult')

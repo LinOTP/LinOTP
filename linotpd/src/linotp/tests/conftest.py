@@ -1,44 +1,37 @@
-# Pylons fixture
-# based on pylons.test.PylonsPlugin
-
-import os
-import sys
-
-import pkg_resources
-import pylons
+import flask
 import pytest
-from paste.deploy import loadapp
-from pylons.i18n.translation import _get_translator
 
-pylonsapp = None
+from linotp.app import create_app
+from linotp.flap import set_config
+from linotp.config.environment import load_environment
 
-def pytest_addoption(parser):
-    parser.addoption('--with-pylons', default='test.ini', help='Pylons support: configuration file')
+@pytest.fixture
+def base_app():
+    """
+    App instance without context
 
-def pylons_app(request):
-    config_file = request.config.getoption('--with-pylons')
+    Creates and returns a bare app. If you wish
+    an app with an initialised application context,
+    use the `app` fixture instead
+    """
 
-    path = os.getcwd()
-    sys.path.insert(0, path)
-    pkg_resources.working_set.add_entry(path)
-    app = loadapp('config:' + config_file,
-                                    relative_to=path)
+    # create a temporary file to isolate the database for each test
+    # db_fd, db_path = tempfile.mkstemp()
+    # create the app with common test config
+    app = create_app()
 
-    # Setup the config and app_globals, only works if we can get
-    # to the config object
-    conf = getattr(app, 'config')
-    if conf:
-        pylons.config._push_object(conf)
+    yield app
 
-        if 'pylons.app_globals' in conf:
-            pylons.app_globals._push_object(conf['pylons.app_globals'])
+    # close and remove the temporary database
+    # os.close(db_fd)
+    # os.unlink(db_path)
 
-    # Initialize a translator for tests that utilize i18n
-    translator = _get_translator(pylons.config.get('lang'))
-    pylons.translator._push_object(translator)
-
-    # Legacy - set global variable
-    global pylonsapp
-    pylonsapp = app
-
-    return app
+@pytest.fixture
+def app(base_app):
+    """
+    Provide an app and configured application context
+    """
+    with base_app.app_context():
+        set_config()
+        load_environment(flask.g, base_app.config)
+        yield base_app

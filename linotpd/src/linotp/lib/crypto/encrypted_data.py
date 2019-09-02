@@ -42,7 +42,9 @@ class EncryptedData(str):
     def __init__(self, encrypted_str):
         """ constructor """
         self._encrypted_str = encrypted_str
-        super(EncryptedData, self).__init__(string=encrypted_str)
+
+    def __new__(cls, encrypted_str):
+        return str.__new__(cls, encrypted_str)
 
     def get_unencrypted(self):
         """ return the decrypted data """
