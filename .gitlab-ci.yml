@@ -74,6 +74,9 @@ lint-useridresolver:
   variables:
     LINTED_MODULE: useridresolver
 
+include:
+  - template: Code-Quality.gitlab-ci.yml
+
 .build-test-environment-debian:
   stage: build-test-environment
   image: docker:latest
