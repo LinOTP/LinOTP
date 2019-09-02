@@ -294,9 +294,10 @@ def sendResult(response, obj, id=1, opt=None, status=True):
         res["detail"] = opt
 
     data = json.dumps(res, indent=3)
-    return Response(response=data, status=200, mimetype= 'application/json')
 
+    response = Response(response=data, status=200, mimetype= 'application/json')
 
+    return response
 
 def sendResultIterator(obj, id=1, opt=None, rp=None, page=None,
                        request_context_copy=None):

@@ -44,6 +44,13 @@ class TestAdminController(TestController):
         self.create_common_realms()
 
     def tearDown(self):
+        """
+        Reset the LinOTP server by deleting all tokens/realms/resolvers
+        """
+
+        # Ensure that our session cookie is reset
+        self.client.cookie_jar.clear_session_cookies
+
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
@@ -656,15 +663,44 @@ class TestAdminController(TestController):
         '''
         Testing getting session and dropping session
         '''
+
+        self.client.cookie_jar.clear_session_cookies()
         response = self.make_admin_request('getsession',
                                 params={})
 
+
         self.assertTrue('"value": true' in response, response)
 
+        session = None
+
+        cookies = response.headers.getlist('Set-Cookie')
+        for cookie in cookies:
+            key_value, _, _rest = cookie.partition(';')
+            key, value = key_value.split('=')
+            if key == 'admin_session':
+                session = value
+
+        assert session
+
+        # Remove the new session cookie from the client cookie jar
+        # so that we can use the test session again
+        self.client.cookie_jar.clear_session_cookies()
+
         response = self.make_admin_request('dropsession',
-                                params={})
+                                params={'session': session})
 
         self.assertTrue('' in response, response)
+
+        session = None
+
+        cookies = response.headers.getlist('Set-Cookie')
+        for cookie in cookies:
+            key_value, _, _rest = cookie.partition(';')
+            key, value = key_value.split('=')
+            if key == 'admin_session':
+                session = value
+
+        assert not session
 
     def test_check_serial(self):
         '''

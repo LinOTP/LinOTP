@@ -31,6 +31,9 @@ import os
 import logging
 from datetime import datetime
 
+from binascii import hexlify
+from flask import Response, after_this_request
+
 import json
 
 from linotp.flap import (
@@ -141,8 +144,9 @@ class AdminController(BaseController):
             c.audit['success'] = False
             c.audit['client'] = get_client(request)
 
-            # Session handling
-            check_session(request)
+            if request.path.lower() != '/admin/getsession':
+                # Check we have a valid session
+                check_session(request)
 
             audit = config.get('audit')
             request_context['Audit'] = audit
@@ -241,36 +245,52 @@ class AdminController(BaseController):
                    path='/', domain=None, secure=None, httponly=False,
                    version=None, comment=None, expires=None, overwrite=False):
         '''
-        import binascii
-        try:
-            web_host = request.environ.get('HTTP_HOST')
-            # HTTP_HOST also contains the port number. We need to stript this!
-            web_host = web_host.split(':')[0]
-            log.debug("[getsession] environment: %s" % request.environ)
-            log.debug("[getsession] found this web_host: %s" % web_host)
-            random_key = os.urandom(SESSION_KEY_LENGTH)
-            cookie = binascii.hexlify(random_key)
-            log.debug("[getsession] adding session cookie %s to response." % cookie)
-            # we send all three to cope with IE8
-            response.set_cookie('admin_session', value=cookie, domain=web_host)
-            # this produces an error with the gtk client
-            # response.set_cookie('admin_session', value=cookie,  domain=".%" % web_host )
-            response.set_cookie('admin_session', value=cookie, domain="")
-            return sendResult(response, True)
+        @after_this_request
+        def set_session_cookie(response):
+            try:
+                web_host = request.environ.get('HTTP_HOST')
+                # HTTP_HOST also contains the port number. We need to stript this!
+                web_host = web_host.split(':')[0]
+                log.debug("[getsession] found this web_host: %s" % web_host)
+                random_key = os.urandom(SESSION_KEY_LENGTH)
 
-        except Exception as e:
-            log.exception("[getsession] unable to create a session cookie: %r" % e)
-            Session.rollback()
-            return sendError(response, e)
+                value = hexlify(random_key)
+                log.debug("[getsession] adding session cookie %s to response." % value)
 
-        finally:
-            Session.close()
+                if web_host not in ('127.0.0.1', 'localhost'):
+                    domain = web_host
+                else:
+                    domain = None
+
+                # TODO: add secure cookie at least for https
+
+                # Add cookie to generated response
+                response.set_cookie('admin_session', value, domain)
+
+                return response
+
+            except Exception as e:
+                log.exception("[getsession] unable to create a session cookie")
+                Session.rollback()
+                return sendError(response, e)
+
+        return sendResult(None, True)
 
     def dropsession(self):
-        # request.cookies.pop( 'admin_session', None )
-        # FIXME: Does not seem to work
-        response.set_cookie('admin_session', None, expires=1)
-        return
+        """
+        dropsession - invalidate the admin session cookie
+
+        :remark: by delete_cookie the cookie is not deleted. instead the
+                 expiration date is set to the beginning of unix time ;)
+        """
+        @after_this_request
+        def drop_session_cookie(response):
+            response.delete_cookie(key='admin_session')
+
+        response = Response(
+            response='', status=200, mimetype= 'application/json')
+
+        return sendResult(None, True)
 
     def getTokenOwner(self):
         """
