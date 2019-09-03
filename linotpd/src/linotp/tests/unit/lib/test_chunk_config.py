@@ -173,6 +173,11 @@ class ContEntries(object):
     def __iter__(self):
         return iter([])
 
+@pytest.fixture
+def deleteconfig(app):
+    # Clear all config entries before starting each test
+    Session.query(Config).delete(synchronize_session='fetch')
+    Session.commit()
 
 @pytest.mark.usefixtures("app")
 class TestChunkConfigCase(unittest.TestCase):
@@ -359,28 +364,8 @@ class TestChunkConfigCase(unittest.TestCase):
 
 
 @pytest.mark.usefixtures("app")
+@pytest.mark.usefixtures("deleteconfig")
 class TestConfigStoreCase(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # we need a clean Session context to setup new sqlite db
-        # no matter what other unittests did
-        Session.close_all()
-        Session.remove()
-        # Use an in memory empty Sqlite database
-        super(TestConfigStoreCase, cls).setUpClass()
-        cls.engine = create_engine('sqlite:///:memory:')
-        metadata.create_all(cls.engine)
-        init_model(cls.engine)
-
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-
-        # Clear all config entries before starting each test
-        Session.query(Config).delete(synchronize_session='fetch')
-
-    def tearDown(self):
-        Session.remove()
-
     def test_storeConfigDB_encoding(self):
         # Test round trip of _storeConfigDB with entries that require
         # encoding of special characters

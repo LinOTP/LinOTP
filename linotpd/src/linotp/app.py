@@ -20,19 +20,23 @@
 
 from __future__ import print_function
 
-import flask
 import importlib
 from logging.config import dictConfig as logging_dictConfig
 import os
 import time
 
-from flask import Flask, jsonify
+from flask import Flask, g as flask_g, jsonify
 
 from . import __version__
 from . import flap
+from .config.defaults import set_defaults
 from .config.environment import load_environment
 from .settings import configs
 from .lib.ImportOTP.vasco import init_vasco
+
+from sqlalchemy import create_engine
+from .model import init_model, meta         # FIXME: Flask-SQLAlchemy
+from .model.migrate import run_data_model_migration
 
 start_time = time.time()
 this_dir = os.path.dirname(os.path.abspath(__file__))
@@ -92,7 +96,83 @@ def init_logging(app):
     app.logger.info("LinOTP {} starting ...".format(__version__))
 
 
-def create_app(config_name='default'):
+def setup_db(app):
+    """Set up the database for LinOTP. This used to be part of the
+    `lib.base.setup_app()` function.
+
+    FIXME: This is not how we would do this in Flask. We want to
+    rewrite it once we get Flask-SQLAlchemy and Flask-Migrate
+    working properly."""
+
+    # Initialise the SQLAlchemy engine (this used to be in
+    # linotp.config.environment and done once per request (barf)).
+
+    engine = create_engine(app.config.get("SQLALCHEMY_DATABASE_URI"))
+    init_model(engine)
+
+    if app.config.get("TESTING_DROP_TABLES", False):
+        app.logger.debug("Deleting previous tables ...")
+        meta.metadata.drop_all(bind=meta.engine)
+
+    # Create database tables if they don't already exist
+
+    app.logger.info("Creating tables ...")
+    meta.metadata.create_all(bind=meta.engine)
+
+    # For the cloud mode, we require the `admin_user` table to
+    # manage the admin users to allow password setting
+
+    admin_username = app.config.get('ADMIN_USERNAME', None)
+    admin_password = app.config.get('ADMIN_PASSWORD', None)
+
+    if admin_username is not None and admin_password is not None:
+        from .lib.tools.set_password import (
+            SetPasswordHandler, DataBaseContext
+        )
+        db_context = DataBaseContext(sql_url=meta.engine.url)
+        SetPasswordHandler.create_table(db_context)
+        SetPasswordHandler.create_admin_user(
+            db_context,
+            username=admin_username, crypted_password=admin_password)
+
+    # Hook for schema upgrade (Don't bother with this for the time being).
+
+    # run_data_model_migration(meta)
+
+
+def generate_secret_key_file(app):
+    """Generate a secret-key file if it doesn't exist."""
+
+    filename = app.config.get("SECRET_FILE", None)
+    if filename is not None:
+        try:
+            open(filename)
+        except IOError:
+            app.logger.warning(
+                "The Linotp Secret File could not be found. "
+                "Creating a new one at {}".format(filename))
+            with open(filename, "ab+") as f:
+                # We're protecting the file before we're writing the
+                # secret key material to it in order to avoid a
+                # possible race condition.
+
+                os.fchmod(f.fileno(), 0o400)
+                secret = os.urandom(32 * 5)
+                f.write(secret)
+        app.logger.debug("SECRET_FILE: {}".format(filename))
+
+
+def create_app(config_name='default', config_extra=None):
+    """
+    Generate a new instance of the Flask app
+
+    This generates and configures the main application instance. Testing
+    environments can use `config_extra` to provide extra configuration values
+    such as a temporary database URL.
+
+    @param config_name The name of the configuration to load from settings.py
+    @param config_extra An optional dict of configuration override values
+    """
     app = Flask(__name__)
 
     app.config.from_object(configs[config_name])
@@ -100,14 +180,22 @@ def create_app(config_name='default'):
 
     app.config.from_envvar(CONFIG_FILE_ENVVAR, silent=True)
 
+    if config_extra is not None:
+        app.config.update(config_extra)
+
     init_logging(app)
 
-    app.before_request(flap.set_config)
-    app.before_request(init_vasco)
+    with app.app_context():
+        setup_db(app)
+        generate_secret_key_file(app)
+        flap.set_config()
+        set_defaults(app)
+
+    app.before_first_request(init_vasco)
 
     @app.before_request
     def load_environment_for_request():
-        load_environment(flask.g, app.config)
+        load_environment(flask_g, app.config)
 
     app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
 
