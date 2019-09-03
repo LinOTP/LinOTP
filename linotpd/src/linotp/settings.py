@@ -68,6 +68,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
+    LOGGING_LEVEL = logging.DEBUG
     SQLALCHEMY_DATABASE_URI = os.getenv("LINOTP_TEST_DATABASE_URL") or \
         "sqlite:///" + os.path.join(basedir, "linotp-test.sqlite")
 

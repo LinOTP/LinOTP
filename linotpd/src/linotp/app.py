@@ -162,13 +162,26 @@ def generate_secret_key_file(app):
         app.logger.debug("SECRET_FILE: {}".format(filename))
 
 
-def create_app(config_name='default'):
+def create_app(config_name='default', config_extra=None):
+    """
+    Generate a new instance of the Flask app
+
+    This generates and configures the main application instance. Testing
+    environments can use `config_extra` to provide extra configuration values
+    such as a temporary database URL.
+
+    @param config_name The name of the configuration to load from settings.py
+    @param config_extra An optional dict of configuration override values
+    """
     app = Flask(__name__)
 
     app.config.from_object(configs[config_name])
     configs[config_name].init_app(app)
 
     app.config.from_envvar(CONFIG_FILE_ENVVAR, silent=True)
+
+    if config_extra is not None:
+        app.config.update(config_extra)
 
     init_logging(app)
 
