@@ -51,6 +51,7 @@ def create_multidict(*args):
 
     return NestedMultiDict(*multi_dicts)
 
+@pytest.mark.usefixtures("app")
 class TestBaseController(object):
     """
     test for request parameter handling to support parameters from json body
