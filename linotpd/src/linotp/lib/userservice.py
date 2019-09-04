@@ -332,7 +332,7 @@ def get_pre_context(client):
     pre_context["default_realm"] = getDefaultRealm()
     pre_context["realm_box"] = getRealmBox()
 
-    pre_context["realms"] = json.dumps(_get_realms_())
+    pre_context["realms"] = _get_realms_()
 
     # check for mfa_login, autoassign and autoenroll in policy definition
 
