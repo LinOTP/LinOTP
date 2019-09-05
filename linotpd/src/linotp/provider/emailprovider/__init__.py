@@ -154,6 +154,8 @@ class SMTPEmailProvider(IEmailProvider):
         self.email_subject = configDict.get(
             'EMAIL_SUBJECT', self.DEFAULT_EMAIL_SUBJECT)
 
+        self.template = configDict.get('TEMPLATE', None)
+
     @staticmethod
     def render_simple_message(
             email_to, email_from, subject, message, replacements):
@@ -193,6 +195,63 @@ class SMTPEmailProvider(IEmailProvider):
 
         return msg.as_string()
 
+    @staticmethod
+    def render_template_message(email_to, email_from, subject, template_message, replacements):
+        """
+        render the email message body based on a template
+
+        the template must be of type multipart/related and can contain
+        multipart/alternative
+
+        ```
+        Content-Type: multipart/related; boundary="===============2836215581944440979=="
+        MIME-Version: 1.0
+        Subject: ${Subject}
+        From: ${From}
+        To: ${To}
+
+        This is a multi-part message in MIME format.
+        --===============2836215581944440979==
+        Content-Type: multipart/alternative; boundary="===============7101583199791879210=="
+        MIME-Version: 1.0
+        --===============7101583199791879210==
+        Content-Type: text/plain; charset="us-ascii"
+        MIME-Version: 1.0
+        Content-Transfer-Encoding: 7bit
+
+        This is the alternative plain text message.
+        . . .
+        ```
+
+        :param email_to:
+        :param email_from:
+        :param subject:
+        :param template_message:
+        :param replacements:
+
+        :return: email message body as string
+        """
+
+        replacements['Subject'] = subject
+        replacements['From'] = email_from
+        replacements['To'] = email_to
+
+        template_data = template_message
+
+        if template_message.startswith('file://'):
+            with open(template_message[len('file://'):]) as f:
+                template_data = f.read()
+
+        # feature - would be nice :)
+        #
+        # if self.template.startswith('db://'):
+        #     read_from_config('linotp.template.' + self.template[len('db://'):])
+
+        from mako.template import Template
+        message_template = Template(template_data)
+
+        return message_template.render(**replacements)
+
     def render_message(
             self, email_to, subject, message, replacements):
         """
@@ -208,6 +267,11 @@ class SMTPEmailProvider(IEmailProvider):
 
         email_subject = subject or self.email_subject
         email_from = self.email_from
+
+        if self.template:
+            return self.render_template_message(
+                email_to, email_from, email_subject,
+                self.template, replacements)
 
         return self.render_simple_message(
                 email_to, email_from, email_subject, message, replacements)
