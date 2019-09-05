@@ -410,6 +410,10 @@ class EmailTokenClass(HmacTokenClass):
         message = self._getEmailMessage(user=owner)
         subject = self._getEmailSubject(user=owner)
 
+        replacements = {}
+        replacements['otp'] = otp
+        replacements['serial'] = self.getSerial()
+
         if "<otp>" not in message:
             message = message + "<otp>"
 
@@ -425,7 +429,8 @@ class EmailTokenClass(HmacTokenClass):
                 provider_type='email', user=owner)
 
             status, status_message = email_provider.submitMessage(
-                email_address, subject=subject, message=message)
+                email_address, subject=subject, message=message,
+                replacements=replacements)
 
         except Exception as exx:
             LOG.error('Failed to submit EMail: %r', exx)

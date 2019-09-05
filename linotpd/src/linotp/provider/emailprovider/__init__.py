@@ -154,7 +154,7 @@ class SMTPEmailProvider(IEmailProvider):
         self.email_subject = configDict.get(
             'EMAIL_SUBJECT', self.DEFAULT_EMAIL_SUBJECT)
 
-    def submitMessage(self, email_to, message, subject=None):
+    def submitMessage(self, email_to, message, subject=None, replacements=None):
         """
         Sends out the e-mail.
 
