@@ -154,6 +154,65 @@ class SMTPEmailProvider(IEmailProvider):
         self.email_subject = configDict.get(
             'EMAIL_SUBJECT', self.DEFAULT_EMAIL_SUBJECT)
 
+    @staticmethod
+    def render_simple_message(
+            email_to, email_from, subject, message, replacements):
+        """
+        render the email message body based on a simple text message
+
+        :param email_to: the target email address
+        :param subject: the subject of the email message could be None
+        :param message: the given message
+        :param replacements: a dictionary with replacement key/value pairs
+
+        :return: email message body as string
+        """
+
+        # ---------------------------------------------------------------- - --
+
+        # legacy pre processing - transfered from email token
+
+        otp = replacements['otp']
+        serial = replacements['serial']
+
+        if "<otp>" not in message:
+            message = message + "<otp>"
+
+        message = message.replace("<otp>", otp)
+        message = message.replace("<serial>", serial)
+
+        subject = subject.replace("<otp>", otp)
+        subject = subject.replace("<serial>", serial)
+
+        # ---------------------------------------------------------------- - --
+
+        msg = MIMEText(message)
+        msg['Subject'] = subject
+        msg['From'] = email_from
+        msg['To'] = email_to
+
+        return msg.as_string()
+
+    def render_message(
+            self, email_to, subject, message, replacements):
+        """
+        create a text/plain or a template rendered email message
+
+        :param email_to: the target email address
+        :param subject: the subject of the email message could be None
+        :param message: the given message
+        :param replacements: a dictionary with replacement key/value pairs
+
+        :return: the email message body
+        """
+
+        email_subject = subject or self.email_subject
+        email_from = self.email_from
+
+        return self.render_simple_message(
+                email_to, email_from, email_subject, message, replacements)
+
+
     def submitMessage(self, email_to, message, subject=None, replacements=None):
         """
         Sends out the e-mail.
@@ -179,14 +238,8 @@ class SMTPEmailProvider(IEmailProvider):
 
         # setup message
 
-        email_subject = subject or self.email_subject
-
-        # create a text/plain MIME message
-
-        msg = MIMEText(message)
-        msg['Subject'] = email_subject
-        msg['From'] = self.email_from
-        msg['To'] = email_to
+        email_message =self.render_message(
+            email_to, subject, message, replacements)
 
         # ------------------------------------------------------------------ --
 
@@ -239,7 +292,7 @@ class SMTPEmailProvider(IEmailProvider):
 
         try:
             errors = smtp_connection.sendmail(self.email_from,
-                                              email_to, msg.as_string())
+                                              email_to, email_message)
             if len(errors) > 0:
                 LOG.error("error(s) sending e-mail %r", errors)
                 return False, ("error sending e-mail %r" % errors)

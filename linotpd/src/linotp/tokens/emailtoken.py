@@ -414,15 +414,6 @@ class EmailTokenClass(HmacTokenClass):
         replacements['otp'] = otp
         replacements['serial'] = self.getSerial()
 
-        if "<otp>" not in message:
-            message = message + "<otp>"
-
-        message = message.replace("<otp>", otp)
-        message = message.replace("<serial>", self.getSerial())
-
-        subject = subject.replace("<otp>", otp)
-        subject = subject.replace("<serial>", self.getSerial())
-
         try:
 
             email_provider = loadProviderFromPolicy(
