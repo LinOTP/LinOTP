@@ -408,6 +408,7 @@ class EmailTokenClass(HmacTokenClass):
 
         owner = get_token_owner(self)
         message = self._getEmailMessage(user=owner)
+        subject = self._getEmailSubject(user=owner)
 
         if "<otp>" not in message:
             message = message + "<otp>"
@@ -415,15 +416,21 @@ class EmailTokenClass(HmacTokenClass):
         message = message.replace("<otp>", otp)
         message = message.replace("<serial>", self.getSerial())
 
-        subject = self._getEmailSubject(user=owner)
         subject = subject.replace("<otp>", otp)
         subject = subject.replace("<serial>", self.getSerial())
 
-        email_provider = loadProviderFromPolicy(provider_type='email',
-                                                user=owner)
-        status, status_message = email_provider.submitMessage(email_address,
-                                                              subject=subject,
-                                                              message=message)
+        try:
+
+            email_provider = loadProviderFromPolicy(
+                provider_type='email', user=owner)
+
+            status, status_message = email_provider.submitMessage(
+                email_address, subject=subject, message=message)
+
+        except Exception as exx:
+            LOG.error('Failed to submit EMail: %r', exx)
+            raise
+
         return status, status_message
 
     def is_challenge_response(self, passw, user, options=None, challenges=None):
