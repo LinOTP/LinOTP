@@ -31,6 +31,7 @@ import datetime
 import logging
 
 from linotp.provider import loadProviderFromPolicy
+from linotp.provider.emailprovider import DEFAULT_MESSAGE
 
 from linotp.lib.token import get_token_owner
 from linotp.tokens import tokenclass_registry
@@ -349,7 +350,7 @@ class EmailTokenClass(HmacTokenClass):
             at least the placeholder <otp>
         :rtype: string
         """
-        message = '<otp>'
+        message = DEFAULT_MESSAGE
 
         if not user:
             return message

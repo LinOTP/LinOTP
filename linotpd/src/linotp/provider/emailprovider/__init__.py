@@ -40,6 +40,8 @@ from linotp.provider import provider_registry
 from linotp.lib.type_utils import boolean
 from linotp.lib.context import request_context
 
+DEFAULT_MESSAGE = '<otp>'
+
 EMAIL_PROVIDER_TEMPLATE_ROOT = '/etc/linotp/email_provider_tempates'
 EMAIL_PROVIDER_TEMPLATE_KEY = 'email_provider_template_root'
 
@@ -403,6 +405,14 @@ class SMTPEmailProvider(IEmailProvider):
 
             # in case of the templating, the subject from the provider config
             # overrules the policy subject
+
+            if message and message != DEFAULT_MESSAGE:
+                LOG.warning('ignoring "message" defined by policy - '
+                            'using template defintion')
+
+            if subject:
+                LOG.warning('ignoring "subject" defined by policy - '
+                            'using subject from template defintion')
 
             if self.email_subject:
                 email_subject = self.email_subject
