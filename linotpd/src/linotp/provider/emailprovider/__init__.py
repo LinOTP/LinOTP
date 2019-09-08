@@ -28,12 +28,20 @@
 
 import logging
 import smtplib
+import os
+import copy
 
 from hashlib import sha256
+
+from mako.template import Template
 
 from email.mime.text import MIMEText
 from linotp.provider import provider_registry
 from linotp.lib.type_utils import boolean
+from linotp.lib.context import request_context
+
+EMAIL_PROVIDER_TEMPLATE_ROOT = '/etc/linotp/email_provider_tempates'
+EMAIL_PROVIDER_TEMPLATE_KEY = 'email_provider_template_root'
 
 LOG = logging.getLogger(__name__)
 
@@ -115,6 +123,7 @@ class SMTPEmailProvider(IEmailProvider):
         self.start_tls_params_keyfile = None
         self.start_tls_params_certfile = None
 
+
     def loadConfig(self, configDict):
         """
         Loads the configuration for this e-mail e-mail provider
@@ -155,6 +164,36 @@ class SMTPEmailProvider(IEmailProvider):
             'EMAIL_SUBJECT', self.DEFAULT_EMAIL_SUBJECT)
 
         self.template = configDict.get('TEMPLATE', None)
+
+
+    @staticmethod
+    def get_template_root():
+        """
+        get the email provider template root directory
+
+        if there is in
+            'email_provider_template_root' in linotp.config defined
+
+        Fallback is EMAIL_PROVIDER_TEMPLATE_ROOT
+                which is '/etc/linotp/email_provider_templates'
+
+        :return: the directory where the email provider templates are expected
+        """
+
+        linotp_config = request_context['Config']
+
+        template_root = EMAIL_PROVIDER_TEMPLATE_ROOT
+
+        if linotp_config.get(EMAIL_PROVIDER_TEMPLATE_KEY):
+            template_root = linotp_config.get(EMAIL_PROVIDER_TEMPLATE_KEY)
+
+        if not os.path.isdir(template_root):
+            LOG.error(
+                'Configuration error: no email provider template directory '
+                'found: %r')
+            raise Exception('Email provider template directory not found')
+
+        return template_root
 
     @staticmethod
     def render_simple_message(
