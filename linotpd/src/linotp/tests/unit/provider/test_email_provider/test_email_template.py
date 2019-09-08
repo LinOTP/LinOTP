@@ -129,10 +129,18 @@ DMt11kPAK5S/Dn2QiCeKXgf4X0iH4OfyrFVlAAAAAElFTkSuQmCC
 """
 )
 
+import os
+from mock import patch
 from unittest import TestCase
 
 from linotp.provider.emailprovider import SMTPEmailProvider as EMailProvider
+from linotp.provider.emailprovider import EMAIL_PROVIDER_TEMPLATE_KEY
 
+mocked_context = {
+    'Config': {
+        EMAIL_PROVIDER_TEMPLATE_KEY: os.path.dirname(__file__)
+    }
+}
 
 class TestEMailTemplate(TestCase):
     '''
@@ -186,7 +194,8 @@ class TestEMailTemplate(TestCase):
         response = EMailProvider.render_simple_message(
             email_to, email_from, subject, message, replacements)
 
-        assert otp + 'double ' + otp in response
+        assert otp + ' double ' + otp in response
+
 
     def test_email_templates(self):
         """
@@ -238,5 +247,55 @@ class TestEMailTemplate(TestCase):
         assert "Your requested OTP is " + otp + " ${var}"in response
         assert "<td align='center'>" + otp + " ${var}" in response
         assert "Subject: " + otp + " subject" in response
+
+
+    @patch('linotp.provider.emailprovider.request_context', new=mocked_context)
+    def test_load_file_template(self):
+        """ test secure template file loding - not allowed below the templ root"""
+
+        email_from = 'me@home.org'
+        email_to = 'you@home.org'
+
+        subject = '${otp} subject'
+
+        otp = '123 456'
+
+        replacements = {
+            'otp': otp,
+            'serial': 'LEMT_12345'
+            }
+
+        # ------------------------------------------------------------------ --
+
+        # now get the fixture directory which contains our email.eml template
+
+        fixture_path = os.path.abspath(os.path.join(
+            os.path.dirname(__file__), '..', '..', '..','functional', 'fixtures'))
+
+        global mocked_context
+        mocked_context['Config'][EMAIL_PROVIDER_TEMPLATE_KEY]= fixture_path
+
+        # ------------------------------------------------------------------ --
+
+        # lets render the template, which is found in the fixture directory
+
+        template_message = "file://email.eml"
+
+        response = EMailProvider.render_template_message(
+            email_to, email_from, subject, template_message, replacements)
+
+        assert "Subject: " + otp + " subject" in response
+
+        # ------------------------------------------------------------------ --
+
+        # try to access a file below the defined template root directory
+
+        template_message = "file://../__init__.py"
+
+        with self.assertRaises(Exception) as exx:
+            response = EMailProvider.render_template_message(
+                email_to, email_from, subject, template_message, replacements)
+
+        assert 'not in email provider template root' in exx.exception.message
 
 # eof
