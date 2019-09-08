@@ -235,31 +235,45 @@ class SMTPEmailProvider(IEmailProvider):
         return msg.as_string()
 
     @staticmethod
-    def render_template_message(email_to, email_from, subject, template_message, replacements):
+    def render_template_message(email_to, email_from, subject,
+                                template_message, replacements):
         """
         render the email message body based on a template
 
-        the template must be of type multipart/related and can contain
-        multipart/alternative
+        the template must be of type multipart/alternative and can contain
+        multipart/related content for example imaged which ewra referenced
+        via cid: names
 
         ```
-        Content-Type: multipart/related; boundary="===============2836215581944440979=="
-        MIME-Version: 1.0
-        Subject: ${Subject}
-        From: ${From}
-        To: ${To}
+            Content-Type: multipart/alternative;
+             boundary="===============3294676191386143061=="
+            MIME-Version: 1.0
+            Subject: ${Subject}
+            From: ${From}
+            To: ${To}
 
-        This is a multi-part message in MIME format.
-        --===============2836215581944440979==
-        Content-Type: multipart/alternative; boundary="===============7101583199791879210=="
-        MIME-Version: 1.0
-        --===============7101583199791879210==
-        Content-Type: text/plain; charset="us-ascii"
-        MIME-Version: 1.0
-        Content-Transfer-Encoding: 7bit
+            This is a multi-part alternative message in MIME format.
+            --===============3294676191386143061==
+            Content-Type: text/plain; charset="us-ascii"
+            MIME-Version: 1.0
+            Content-Transfer-Encoding: 7bit
 
-        This is the alternative plain text message.
-        . . .
+            This is the alternative plain text message.
+            --===============3294676191386143061==
+            Content-Type: multipart/related;
+             boundary="===============3984710301122897564=="
+            MIME-Version: 1.0
+
+            --===============3984710301122897564==
+            Content-Type: text/html; charset="us-ascii"
+            MIME-Version: 1.0
+            Content-Transfer-Encoding: 7bit
+
+            <html>
+
+            <body>
+                <div align='center' height='100%'>
+                    <table width='40%' cellpadding='20px' bgcolor="#f1f2f5">
         ```
 
         :param email_to:
