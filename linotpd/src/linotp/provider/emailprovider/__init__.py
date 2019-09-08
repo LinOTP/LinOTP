@@ -400,6 +400,13 @@ class SMTPEmailProvider(IEmailProvider):
         email_from = self.email_from
 
         if self.template:
+
+            # in case of the templating, the subject from the provider config
+            # overrules the policy subject
+
+            if self.email_subject:
+                email_subject = self.email_subject
+
             return self.render_template_message(
                 email_to, email_from, email_subject,
                 self.template, replacements)
