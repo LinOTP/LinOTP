@@ -291,19 +291,97 @@ class SMTPEmailProvider(IEmailProvider):
 
         template_data = template_message
 
+        # ------------------------------------------------------------------ --
+
         if template_message.startswith('file://'):
-            with open(template_message[len('file://'):]) as f:
+
+            filename = template_message[len('file://'):]
+
+            provider_template_root = SMTPEmailProvider.get_template_root()
+
+            absolute_filename = os.path.abspath(
+                os.path.join(provider_template_root, filename))
+
+            # secure open of the template file - only if it is below the
+            # provider template root directory
+
+            if not absolute_filename.startswith(provider_template_root):
+                raise Exception(
+                    'Template %r - not in email provider template root %r' %
+                    (absolute_filename, provider_template_root))
+
+            with open(absolute_filename, "rb") as f:
                 template_data = f.read()
 
-        # feature - would be nice :)
-        #
+        # ------------------------------------------------------------------ --
+
+        # db feature - would be nice :)
+
         # if self.template.startswith('db://'):
         #     read_from_config('linotp.template.' + self.template[len('db://'):])
 
-        from mako.template import Template
-        message_template = Template(template_data)
+        # ------------------------------------------------------------------ --
 
-        return message_template.render(**replacements)
+        # now trigger the text replacements:
+
+        # first replace the vars in Subject as it can contain as well ${otp}
+        # - we use here a copy of the replacement dict without 'Subject' to
+        # protect against recursion
+
+        subject_replacements = copy.deepcopy(replacements)
+        if 'Subject' in subject_replacements:
+            del subject_replacements['Subject']
+
+        subject_replacement = SMTPEmailProvider._render_template(
+            subject, subject_replacements)
+
+        # and put it back for the message replacements
+
+        replacements['Subject'] = subject_replacement
+
+        # now build up the final message with all replacements
+
+        message = SMTPEmailProvider._render_template(
+            template_data, replacements)
+
+        return message
+
+
+    @staticmethod
+    def _render_template(template_data, replacements):
+        """
+        helper to encapsulate the template rendering with unknown ${vars}
+
+        The template rendering here contains a hack as the mako template
+        rendering does not support to leave unresolved variable defintions
+        untouched. In the normal case an UNKNOWN exception is raised.
+        When using the option 'strict_undefined=True' a NameError is raised.
+
+        We use this NameError Exception that is catched to add the missing
+        ${var} with the value '${var}' to the replacements and retry the
+        rendering.
+
+        This way could help together with the submitted email
+        and the log information to identify the missing defintions
+        while supporting arbitrary user driven templates
+
+        :param template_data: template text
+        :param replacements: the dict with the replacements key values
+
+        :return: rendered text
+        """
+
+        message_template = Template(template_data, strict_undefined=True)
+
+        while True:
+            try:
+                message = message_template.render(**replacements)
+                return message
+            except NameError as exx:
+                var = str(exx).split()[0].strip("'")
+                replacements[var]= "${%s}" % var
+                LOG.error(
+                    'Template refers to unresolved replacement: %r' % var)
 
     def render_message(
             self, email_to, subject, message, replacements):
