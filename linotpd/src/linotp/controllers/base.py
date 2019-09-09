@@ -179,17 +179,18 @@ class BaseController(Blueprint):
                 self.add_url_rule(url, method_name, view_func=method)
 
         # Add pre/post handlers
-        self.before_app_first_request(self.first_run_setup)
+        self.before_request(self.run_setup)
         self.before_request(self.start_session)
         self.before_request(self.before_handler)
         if hasattr(self, '__after__'):
             self.after_request(self.__after__)
         self.teardown_request(self.finalise_request)
 
-    def first_run_setup(self):
+    def run_setup(self):
         """
-        Set up the app and database. This only needs to be called once per application
-        TODO: Move out of base controller
+        Set up the app and database context for a request. Some of this is
+        intended to be done only once and could be refactored into a
+        before_first_request function
         """
 
         self.sep = None

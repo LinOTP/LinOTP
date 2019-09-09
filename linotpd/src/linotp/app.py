@@ -193,7 +193,7 @@ def create_app(config_name='default', config_extra=None):
         setup_db(app)
         generate_secret_key_file(app)
 
-    @app.before_first_request
+    @app.before_request
     def setup_env():
         flap.set_config()
         set_defaults(app)
