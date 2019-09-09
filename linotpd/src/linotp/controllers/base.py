@@ -195,7 +195,6 @@ class BaseController(Blueprint):
         self.sep = None
         # TODO - language
         #self.set_language(request.headers)
-        self.base_auth_user = ''
 
         # make the OpenID SQL Instance globally available
         openid_sql = config.get('openid_sql', None)
@@ -282,6 +281,8 @@ class BaseController(Blueprint):
                 load_provider_ini(config['provider.config_file'])
 
     def start_session(self):
+        self.base_auth_user = ''
+
         # we add a unique request id to the request enviroment
         # so we can trace individual requests in the logging
 
