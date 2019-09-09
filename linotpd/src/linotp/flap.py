@@ -1,5 +1,6 @@
 # Pylons-to-Flask porting scaffold.
 
+import logging
 import webob
 from webob.multidict import MultiDict, NestedMultiDict
 
@@ -18,7 +19,10 @@ from pylons.wsgiapp import PylonsApp as App
 from werkzeug import LocalProxy
 
 import flask
-from flask_mako import render_template
+from flask_mako import render_template, TemplateError
+
+
+log = logging.getLogger(__name__)
 
 config = LocalProxy(lambda: flask.g.request_context['config'])
 
@@ -96,4 +100,10 @@ def render_mako(template_name, extra_context=None):
 
     if extra_context:
         flask.g.request_context.update(extra_context)
-    return render_template(template_name, c=tmpl_context)
+
+    try:
+        ret = render_template(template_name.lstrip('/'), c=tmpl_context, _=lambda s: s)
+    except TemplateError as e:
+        log.error(e.text)
+        return e.text
+    return ret
