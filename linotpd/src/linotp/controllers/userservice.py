@@ -128,7 +128,7 @@ from linotp.lib.userservice import (get_userinfo,
                                     remove_auth_cookie,
                                     )
 
-from linotp.model import Session
+
 
 from linotp.lib.resolver import getResolverObject
 
@@ -137,6 +137,9 @@ from linotp.lib.error import ParameterError
 from linotp.lib.context import request_context
 
 from linotp.lib.reporting import token_reporting
+
+import linotp.model.meta
+Session = linotp.model.meta.Session
 
 log = logging.getLogger(__name__)
 
@@ -219,12 +222,21 @@ class UserserviceController(BaseController):
     request during which the auth_cookie and session is verified
     """
 
-    def __before__(self, action, **parameters):
+    def __before__(self, **params):
         """
+        __before__ is called before every action
+
         every request to the userservice must pass this place
         here we can check the authorisation for each action and the
         per request general available information
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+
         """
+
+        action = request_context['action']
 
         self.client = get_client(request) or ''
 
@@ -303,9 +315,18 @@ class UserserviceController(BaseController):
 
         return
 
-    def __after__(self, action):
+    @staticmethod
+    def __after__(response):
         '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
         '''
+
+        action = request_context['action']
+        authUser = request_context['authUser']
+
         try:
             if c.audit['action'] not in ['userservice/context',
                                          'userservice/pre_context',
@@ -313,9 +334,9 @@ class UserserviceController(BaseController):
                                          'userservice/load_form'
                                          ]:
 
-                if hasattr(self, 'authUser') and not self.authUser.is_empty:
-                    c.audit['user'] = self.authUser.login
-                    c.audit['realm'] = self.authUser.realm
+                if hasattr(self, 'authUser') and not authUser.is_empty:
+                    c.audit['user'] = authUser.login
+                    c.audit['realm'] = authUser.realm
                 else:
                     c.audit['user'] = ''
                     c.audit['realm'] = ''
@@ -323,8 +344,8 @@ class UserserviceController(BaseController):
                 log.debug("[__after__] authenticating as %s in realm %s!"
                           % (c.audit['user'], c.audit['realm']))
 
-                if 'serial' in self.request_params:
-                    serial = self.request_params['serial']
+                if 'serial' in request.params:
+                    serial = request.params['serial']
                     c.audit['serial'] = serial
                     c.audit['token_type'] = getTokenType(serial)
 
@@ -346,6 +367,8 @@ class UserserviceController(BaseController):
 
                     c.audit['action_detail'] += get_token_num_info()
 
+                audit = config.get('audit')
+
                 audit.log(c.audit)
                 Session.commit()
 
@@ -354,7 +377,7 @@ class UserserviceController(BaseController):
         except Exception as acc:
             # the exception, when an abort() is called if forwarded
             log.exception("[__after__::%r] webob.exception %r" % (action, acc))
-            raise acc
+            raise sendError(response, acc, context='__after__')
 
     def _identify_user(self, params):
         """
@@ -449,6 +472,7 @@ class UserserviceController(BaseController):
             uid = "%s@%s" % (user.login, user.realm)
 
             self.authUser = user
+            request_context['authUser'] = user
 
             # -------------------------------------------------------------- --
 
@@ -825,6 +849,7 @@ class UserserviceController(BaseController):
                 raise UserNotFound('user %r not found!' % param.get('login'))
 
             self.authUser = user
+            request_context['authUser'] = user
 
             # -------------------------------------------------------------- --
 

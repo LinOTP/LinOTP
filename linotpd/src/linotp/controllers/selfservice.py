@@ -118,13 +118,20 @@ class SelfserviceController(BaseController):
         "webprovisionoathtoken"
     ]
 
-    def __before__(self, action):
-        '''
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
+
         This is the authentication to self service. If you want to do
         ANYTHING with the selfservice, you need to be authenticated. The
         _before_ is executed before any other function in this controller.
-        '''
 
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        action = request_context['action']
         self.redirect = None
 
         try:
@@ -281,14 +288,21 @@ class SelfserviceController(BaseController):
             Session.close()
             return sendError(response, e, context='before')
 
-    def __after__(self, action,):
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
         '''
 
-        '''
-        if self.redirect:
-            return
+        if request_context.get('reponse_redirect', False):
+            # FIXME: does this really do a redirect???
+            return response
 
-        param = self.request_params
+        param = request.params
+        action = request_context['action']
 
         try:
             if c.audit['action'] in ['selfservice/index']:
@@ -317,6 +331,7 @@ class SelfserviceController(BaseController):
                     c.audit['serial'] = param['serial']
                     c.audit['token_type'] = getTokenType(param['serial'])
 
+                audit = config.get('audit')
                 audit.log(c.audit)
 
             return response
@@ -326,6 +341,7 @@ class SelfserviceController(BaseController):
             log.exception("[__after__::%r] webob.exception %r" % (action, acc))
             Session.rollback()
             Session.close()
+            # FIXME: verify that this really works
             raise acc
 
         except Exception as e:
@@ -355,7 +371,7 @@ class SelfserviceController(BaseController):
             remove_auth_cookie(cookie)
             response.delete_cookie('user_selfservice')
 
-        self.redirect = True
+        request_context['reponse_redirect'] = True
         redirect(url(controller='selfservice', action='login'))
 
     def login(self):

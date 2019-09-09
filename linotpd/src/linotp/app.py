@@ -188,14 +188,13 @@ def create_app(config_name='default', config_extra=None):
     with app.app_context():
         setup_db(app)
         generate_secret_key_file(app)
+
+    @app.before_first_request
+    def setup_env():
         flap.set_config()
         set_defaults(app)
-
-    app.before_first_request(init_vasco)
-
-    @app.before_request
-    def load_environment_for_request():
         load_environment(flask_g, app.config)
+        init_vasco()
 
     app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
 

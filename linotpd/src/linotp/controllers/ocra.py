@@ -74,10 +74,18 @@ class OcraController(BaseController):
     according to RFC 6287
     '''
 
-    def __before__(self, action, **params):
-        '''
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
+
         Here we see, what action is to be called and check the authorization
-        '''
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        action = request_context['action']
 
         try:
 
@@ -89,7 +97,7 @@ class OcraController(BaseController):
 
             audit = config.get('audit')
             request_context['Audit'] = audit
-            return response
+            return
 
         except flap.HTTPUnauthorized as acc:
 
@@ -108,9 +116,18 @@ class OcraController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
 
-    def __after__(self):
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
         c.audit['administrator'] = getUserFromRequest(request).get("login")
+
+        audit = config.get('audit')
         audit.log(c.audit)
 
         return response

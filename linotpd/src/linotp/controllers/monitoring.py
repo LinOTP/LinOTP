@@ -43,7 +43,6 @@ from linotp.lib.realm import match_realms
 
 from linotp.lib.reply import (sendResult,
                               sendError)
-from linotp.model.meta import Session
 
 from linotp.lib.policy import PolicyException
 
@@ -57,7 +56,9 @@ from linotp.lib.support import InvalidLicenseException, \
 from linotp.lib.monitoring import MonitorHandler
 
 from linotp.lib.context import request_context
+import linotp.model.meta
 
+Session = linotp.model.meta.Session
 
 log = logging.getLogger(__name__)
 
@@ -67,9 +68,17 @@ class MonitoringController(BaseController):
     monitoring
     """
 
-    def __before__(self, action, **params):
+    def __before__(self, **params):
         """
+        __before__ is called before every action
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
         """
+
+        action = request_context['action']
+
         try:
 
             c.audit = request_context['audit']
@@ -84,7 +93,7 @@ class MonitoringController(BaseController):
             request_context['Audit'] = audit
             checkAuthorisation(scope='monitoring', method=action)
 
-            return request
+            return
 
         except Exception as exception:
             log.exception(exception)
@@ -92,16 +101,22 @@ class MonitoringController(BaseController):
             Session.close()
             return sendError(response, exception, context='before')
 
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
 
-    def __after__(self, action):
-        """
-        """
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
         try:
             c.audit['administrator'] = getUserFromRequest(request).get('login')
 
+            audit = config.get('audit')
             audit.log(c.audit)
             Session.commit()
-            return request
+            return response
 
         except Exception as exception:
             log.exception(exception)

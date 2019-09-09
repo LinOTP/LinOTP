@@ -67,8 +67,16 @@ class AuditController(BaseController):
 
     '''
 
-    def __before__(self, action, **params):
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
 
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        action = request_context['action']
 
         try:
             c.audit = request_context['audit']
@@ -77,18 +85,27 @@ class AuditController(BaseController):
             audit = config.get('audit')
             request_context['Audit'] = audit
 
-
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
             Session.rollback()
             Session.close()
             return sendError(response, exx, context='before')
 
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
 
-    def __after__(self):
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
+        audit = config.get('audit')
+
         c.audit['administrator'] = getUserFromRequest(request).get("login")
         audit.log(c.audit)
 
+        return response
 
     def search(self):
 
@@ -136,6 +153,7 @@ class AuditController(BaseController):
 
             audit_iterator = None
 
+            audit = config.get('audit')
             audit_query = AuditQuery(search_params, audit)
 
             if output_format == "csv":

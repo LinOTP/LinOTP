@@ -47,6 +47,9 @@ class ErrorController(BaseController):
 
     def document(self):
         """Render the error document"""
+
+        # TODO: this will break - adjust to flask response
+
         resp = request.environ.get('pylons.original_response')
         if resp is not None:
             unicode_body = str2unicode(resp.body)

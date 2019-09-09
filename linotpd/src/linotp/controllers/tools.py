@@ -69,9 +69,16 @@ class ToolsController(BaseController):
     """
     """
 
-    def __before__(self, action, **params):
+    def __before__(self, **params):
         """
+        __before__ is called before every action
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
         """
+
+        action = request_context['action']
 
         try:
 
@@ -80,7 +87,7 @@ class ToolsController(BaseController):
 
             checkToolsAuthorisation(action, params)
             c.audit = request_context['audit']
-            return request
+            return
 
         except PolicyException as exx:
             log.exception("policy failed %r" % exx)
@@ -94,9 +101,15 @@ class ToolsController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
-    def __after__(self, action):
-        """
-        """
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
         try:
             # finally create the audit entry
             Audit = request_context['Audit']
@@ -105,7 +118,7 @@ class ToolsController(BaseController):
             c.audit.update(audit)
             Audit.log(c.audit)
             Session.commit()
-            return request
+            return response
 
         except Exception as exx:
             log.exception(exx)

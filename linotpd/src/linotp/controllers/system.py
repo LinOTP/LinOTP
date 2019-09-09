@@ -140,18 +140,18 @@ class SystemController(BaseController):
 
     The functions are described below in more detail.
     '''
+    def __before__(self, **params):
+        """
+        __before__ is called before every action so we can check the
+                   authorization
 
-    def __before__(self, action, **params):
-        '''
-        __before__ is called before every action
-             so we can check the authorization (fixed?)
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
 
-        :param action: name of the to be called action
-        :param params: the list of http parameters
+        action = request_context['action']
 
-        :return: return response
-        :rtype:  pylon response
-        '''
         try:
 
             c.audit = request_context['audit']
@@ -159,9 +159,7 @@ class SystemController(BaseController):
             c.audit['client'] = get_client(request)
 
             # check session might raise an abort()
-
-            # TODO: re-enable the session check
-            # check_session(request)
+            check_session(request)
 
             audit = config.get('audit')
             request_context['Audit'] = audit
@@ -173,8 +171,9 @@ class SystemController(BaseController):
                               'isSupportValid']:
                 checkPolicyPre('system', action)
 
-            # default return for the __before__ and __after__
-            return response
+
+            # default return for the __before__ is nothing
+            return
 
         except PolicyException as pex:
             log.exception("[__before__::%r] policy exception %r", action, pex)
@@ -199,13 +198,16 @@ class SystemController(BaseController):
     @staticmethod
     def __after__(response):
         '''
-        __after is called after every action
+        __after__ is called after every action
 
+        :param response: the previously created response - for modification
         :return: return the response
-        :rtype:  pylons response
         '''
+
         try:
+
             audit = config.get('audit')
+
             c.audit['administrator'] = getUserFromRequest(request).get("login")
             audit.log(c.audit)
             # default return for the __before__ and __after__

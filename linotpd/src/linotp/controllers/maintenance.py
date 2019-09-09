@@ -52,12 +52,18 @@ class MaintenanceController(BaseController):
     log levels) at runtime
     """
 
-    def __before__(self, action, **params):
+    def __before__(self, **params):
         """
+        __before__ is called before every action
+
         we check if the client cert was valid by looking for
         the existance of an env variable. for apache this is
         SSL_CLIENT_S_DN_CN. to support other servers we read
         the name of the variable from the config
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
         """
 
         env_var = request_context['Config'].get(

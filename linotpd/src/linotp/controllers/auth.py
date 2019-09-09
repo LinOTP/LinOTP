@@ -38,9 +38,11 @@ from linotp.lib.util    import get_version
 from linotp.lib.util    import get_copyright_info
 from linotp.lib.reply import sendError
 
-from linotp.model.meta import Session
-
 from linotp.lib.config import getLinotpConfig
+from linotp.lib.context import request_context
+
+import linotp.model.meta
+Session = linotp.model.meta.Session
 
 log = logging.getLogger(__name__)
 
@@ -50,7 +52,16 @@ required = False
 
 class AuthController(BaseController):
 
-    def __before__(self, action,):
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        action = request_context['action']
 
         try:
 

@@ -80,10 +80,21 @@ class OpenidController(BaseController):
     BASEURL = "https://linotpserver"
     COOKIE_EXPIRE = 3600
 
-    def __before__(self, action, **params):
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        action = request_context['action']
 
         valid_request = False
         try:
+
+            audit = config.get('audit')
 
             c.audit = request_context[audit]
             c.audit['client'] = get_client(request)
@@ -91,6 +102,7 @@ class OpenidController(BaseController):
             request_context['Audit'] = audit
 
             self.storage = config.get('openid_sql')
+            request_context['OpenId.Storage'] = self.storage
 
             getCookieExpire = int(config.get("linotpOpenID.CookieExpire", -1))
 
@@ -111,7 +123,9 @@ class OpenidController(BaseController):
                 audit.log(c.audit)
                 c.audit["action_detail"] = err
                 log.error(err)
-                raise HTTPBadRequest(err)
+
+                # TODO: FlaskPort - this will break
+                raise linotp.flap.HTTPBadRequest(err)
 
             self.BASEURL = request.environ.get("wsgi.url_scheme") + "://" + http_host
 
@@ -124,13 +138,13 @@ class OpenidController(BaseController):
             # default return for the __before__ and __after__
             valid_request = True
 
-            return response
+            return
 
         except PolicyException as pex:
             log.exception("[__before__::%r] policy exception %r" % (action, pex))
             return sendError(response, pex, context='before')
 
-        except flap.HTTPUnauthorized as acc:
+        except linotp.flap.HTTPUnauthorized as acc:
             ## the exception, when an abort() is called if forwarded
             log.exception("[__before__::%r] webob.exception %r" % (action, acc))
             raise acc
@@ -144,21 +158,31 @@ class OpenidController(BaseController):
                 self.storage.session.rollback()
                 self.storage.session.close()
 
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
 
-    def __after__(self):
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
+        audit = config.get('audit')
+        storage = request_context['OpenId.Storage']
+
         try:
             audit.log(c.audit)
-            self.storage.session.commit()
+            storage.session.commit()
             ## default return for the __before__ and __after__
             return response
 
         except Exception as exx:
             log.exception("[__after__] exception %r" % (exx))
-            self.storage.session.rollback()
+            storage.session.rollback()
             return sendError(response, exx, context='after')
 
         finally:
-            self.storage.session.close()
+            storage.session.close()
 
 
     def id(self):
