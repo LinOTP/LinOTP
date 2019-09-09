@@ -26,6 +26,7 @@ import os
 import time
 
 from flask import Flask, g as flask_g, jsonify
+from flask_mako import MakoTemplates
 
 from . import __version__
 from . import flap
@@ -45,6 +46,8 @@ CONFIG_FILE_ENVVAR = "LINOTP_CONFIG_FILE"  # DRY
 CONFIG_FILE_NAME = os.path.join(os.path.dirname(this_dir), "linotp.cfg")
 if os.getenv(CONFIG_FILE_ENVVAR) is None:
     os.environ[CONFIG_FILE_ENVVAR] = CONFIG_FILE_NAME
+
+mako = MakoTemplates()
 
 
 class ConfigurationError(Exception):
@@ -183,6 +186,7 @@ def create_app(config_name='default', config_extra=None):
     if config_extra is not None:
         app.config.update(config_extra)
 
+    mako.init_app(app)
     init_logging(app)
 
     with app.app_context():
