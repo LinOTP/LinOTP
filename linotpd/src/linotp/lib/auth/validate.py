@@ -827,10 +827,17 @@ class ValidationHandler(object):
             invalid_tokens.extend(iToken)
             valid_tokens.extend(vToken)
 
+        valid_tokens = list(set(valid_tokens))
+        invalid_tokens = list(set(invalid_tokens))
+        pin_matching_tokens = list(set(pin_matching_tokens))
+        challenge_tokens = list(set(challenge_tokens))
+
         # end of token verification loop
         matching_challenges = []
         for token in valid_tokens:
             matching_challenges.extend(token.matching_challenges)
+
+        matching_challenges = list(set(matching_challenges))
 
         # if there are related / sub challenges, we have to call their janitor
         Challenges.handle_related_challenge(matching_challenges)
@@ -847,8 +854,9 @@ class ValidationHandler(object):
         (res, reply) = fh.finish_checked_tokens()
 
         # add to all tokens the last accessd time stamp
-        add_last_accessed_info(
-            [valid_tokens, pin_matching_tokens, challenge_tokens, valid_tokens])
+        add_last_accessed_info([
+            valid_tokens, pin_matching_tokens, challenge_tokens, invalid_tokens
+            ])
 
         # now we care for all involved tokens and their challenges
         for token in (valid_tokens + pin_matching_tokens +
