@@ -415,8 +415,6 @@ class BaseController(Blueprint):
 
         # ------------------------------------------------------------------------
 
-        request_context['hsm'] = self.hsm
-
         initResolvers()
 
         client = None
