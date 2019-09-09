@@ -94,6 +94,6 @@ def render_mako(template_name, extra_context=None):
     eventually the templates may be rewritten to use that.
     """
 
-    if extra_context is None:
-        tmpl_context.update(extra_context)
+    if extra_context:
+        flask.g.request_context.update(extra_context)
     return render_template(template_name, c=tmpl_context)
