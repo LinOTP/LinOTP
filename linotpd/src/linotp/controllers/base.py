@@ -154,7 +154,14 @@ class BaseController(Blueprint):
         # as well as base classes.
 
         for method_name in self._url_methods:
-            url = '/' + method_name
+            # Route the method to a URL of the same name,
+            # except for index, which is routed to
+            # /<controller-name>/
+            if method_name == 'index':
+                url = '/'
+            else:
+                url = '/' + method_name
+
             method = getattr(self, method_name)
 
             # We can't set attributes on instancemethod objects but we
@@ -408,8 +415,7 @@ class BaseController(Blueprint):
         if path[0]:
             request_context['controller'] = path[0]
 
-        if path[1]:
-            request_context['action'] = path[1]
+        request_context['action'] = 'index' if len(path) == 1 else path[1]
 
         # ------------------------------------------------------------------------
 
