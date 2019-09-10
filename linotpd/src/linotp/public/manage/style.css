@@ -440,7 +440,7 @@ html {
 }
 
 #header #logo {
-	background-image: url(/images/linotp_logo_103x35.png);
+	background-image: url(/static/images/linotp_logo_103x35.png);
 	background-repeat: no-repeat;
 	background-position: center;
 	display: block;
@@ -759,7 +759,7 @@ table.tokeninfoInnerTable {
 }
 
 .light-text-color .ui-icon {
-	background-image: url(/css/jquery-ui/images/ui-icons_ffffff_256x240.png)!important;
+	background-image: url(/static/css/jquery-ui/images/ui-icons_ffffff_256x240.png)!important;
 }
 
 form .input_hint {

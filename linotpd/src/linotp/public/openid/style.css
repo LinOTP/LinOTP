@@ -65,7 +65,7 @@ padding: 3px;
  #header {
  background:#feb77e;
  font-size:large;
- background-image:url(/images/ui-bg_highlight-soft_75_cccccc_1x100.png);
+ background-image:url(/static/images/ui-bg_highlight-soft_75_cccccc_1x100.png);
  margin: 1px;
  padding: 3px;
  border: 1px solid #aaaaaa;
@@ -73,7 +73,7 @@ padding: 3px;
  }
 
  #logo{
- background-image:  url(/images/linotp_logo_200x68_72dpi.png);
+ background-image:  url(/static/images/linotp_logo_200x68_72dpi.png);
  background-repeat: no-repeat;
  float: left;
  height: 68px;

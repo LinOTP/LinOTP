@@ -49,62 +49,62 @@ if isinstance(lang, list):
 <meta http-equiv="content-style-type" content="text/css">
 
 %if c.debug:
-    <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.structure.css">
-    <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.theme.css">
+    <link type="text/css" rel="stylesheet" href="/static/css/jquery-ui/jquery-ui.structure.css">
+    <link type="text/css" rel="stylesheet" href="/static/css/jquery-ui/jquery-ui.theme.css">
 %else:
-    <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.structure.min.css">
-    <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.theme.min.css">
+    <link type="text/css" rel="stylesheet" href="/static/css/jquery-ui/jquery-ui.structure.min.css">
+    <link type="text/css" rel="stylesheet" href="/static/css/jquery-ui/jquery-ui.theme.min.css">
 %endif
-<link type="text/css" rel="stylesheet" href="/css/flexigrid/flexigrid.css">
-<link type='text/css' rel='stylesheet' media='screen' href='/css/superfish.css'>
-<link type="text/css" rel="stylesheet" href="/css/datetimepicker/jquery.datetimepicker.css">
-<link type="text/css" rel="stylesheet" href="/css/linotp.css?ref=${c.version_ref}">
-<link type="text/css" rel="stylesheet" href="/manage/style.css?ref=${c.version_ref}">
+<link type="text/css" rel="stylesheet" href="/static/css/flexigrid/flexigrid.css">
+<link type='text/css' rel='stylesheet' media='screen' href='/static/css/superfish.css'>
+<link type="text/css" rel="stylesheet" href="/static/css/datetimepicker/jquery.datetimepicker.css">
+<link type="text/css" rel="stylesheet" href="/static/css/linotp.css?ref=${c.version_ref}">
+<link type="text/css" rel="stylesheet" href="/static/manage/style.css?ref=${c.version_ref}">
 <link type="text/css" rel="stylesheet" href="/custom/manage-style.css">
 
 %if c.debug:
-    <script type="text/javascript" src="/js/jquery-1.12.4.js"></script>
-    <script type="text/javascript" src="/js/jquery-ui.js"></script>
-    <script type="text/javascript" src="/js/jquery.validate.js"></script>
-    <script type="text/javascript" src="/js/jquery.form.js"></script>
-    <script type="text/javascript" src="/js/jquery.cookie.js"></script>
-    <script type='text/javascript' src='/js/jquery.datetimepicker.js'></script>
-    <script type='text/javascript' src='/js/hoverIntent.js'></script>
-    <script type='text/javascript' src='/js/superfish.js'></script>
+    <script type="text/javascript" src="/static/js/jquery-1.12.4.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-ui.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.validate.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.form.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.cookie.js"></script>
+    <script type='text/javascript' src='/static/js/jquery.datetimepicker.js'></script>
+    <script type='text/javascript' src='/static/js/hoverIntent.js'></script>
+    <script type='text/javascript' src='/static/js/superfish.js'></script>
 %else:
-    <script type="text/javascript" src="/js/jquery-1.12.4.min.js"></script>
-    <script type="text/javascript" src="/js/jquery-ui.min.js"></script>
-    <script type="text/javascript" src="/js/jquery.validate.min.js"></script>
-    <script type="text/javascript" src="/js/jquery.form.min.js"></script>
-    <script type="text/javascript" src="/js/jquery.cookie.min.js"></script>
-    <script type='text/javascript' src='/js/jquery.datetimepicker.min.js'></script>
-    <script type='text/javascript' src='/js/hoverIntent.js'></script>
-    <script type='text/javascript' src='/js/superfish.min.js'></script>
+    <script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.form.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.cookie.min.js"></script>
+    <script type='text/javascript' src='/static/js/jquery.datetimepicker.min.js'></script>
+    <script type='text/javascript' src='/static/js/hoverIntent.js'></script>
+    <script type='text/javascript' src='/static/js/superfish.min.js'></script>
 %endif
-<script type="text/javascript" src="/js/jed.js"></script>
-<script type="text/javascript" src="/js/flexigrid.js"></script>
+<script type="text/javascript" src="/static/js/jed.js"></script>
+<script type="text/javascript" src="/static/js/flexigrid.js"></script>
 
-<script type="text/javascript" src="/js/linotp_utils.js?ref=${c.version_ref}"></script>
-<script type="text/javascript" src="/js/jquery.validate.linotp.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/linotp_utils.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/jquery.validate.linotp.js?ref=${c.version_ref}"></script>
 
-<script type="text/javascript" src="/js/aladdin.js?ref=${c.version_ref}"></script>
-<script type="text/javascript" src="/js/oathcsv.js?ref=${c.version_ref}"></script>
-<script type="text/javascript" src="/js/yubikeycsv.js?ref=${c.version_ref}"></script>
-<script type="text/javascript" src="/js/feitian.js?ref=${c.version_ref}"></script>
-<script type="text/javascript" src="/js/dpw.js?ref=${c.version_ref}"></script>
-<script type="text/javascript" src="/js/dat.js?ref=${c.version_ref}"></script>
-<script type="text/javascript" src="/js/vasco.js?ref=${c.version_ref}"></script>
-<script type="text/javascript" src="/js/pskc.js?ref=${c.version_ref}"></script>
-<script type="text/javascript" src="/js/tools.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/aladdin.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/oathcsv.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/yubikeycsv.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/feitian.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/dpw.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/dat.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/vasco.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/pskc.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/tools.js?ref=${c.version_ref}"></script>
 
 <!-- load libmanage and language settings before manage.js -->
-<script type="text/javascript" src="/js/libmanage.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/libmanage.js?ref=${c.version_ref}"></script>
 <script type="text/javascript">
     window.CURRENT_LANGUAGE = "${lang}";
     window.ALL_CURRENT_LANGUAGE = "${allang}";
 </script>
 
-<script type="text/javascript" src="/js/manage.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/manage.js?ref=${c.version_ref}"></script>
 
 </head>
 <body>
@@ -2194,7 +2194,7 @@ if isinstance(lang, list):
             </table>
 
             <button class="action-button" id="button_test_ldap">${_("Test LDAP Server connection")}</button>
-            <div id="progress_test_ldap"><img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connection ...")} </div>
+            <div id="progress_test_ldap"><img src="/static/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connection ...")} </div>
         </fieldset>
 
         <fieldset>
@@ -2267,7 +2267,7 @@ if isinstance(lang, list):
                 <tr><td> </td>
                     <td>
                     <button class="action-button" id="button_test_http">${_("Test HTTP Server connection")}</button>
-                    <div id="progress_test_http"><img src="/images/ajax-loader.gif" border="0" alt="">${_("Testing connection ... ")}</div>
+                    <div id="progress_test_http"><img src="/static/images/ajax-loader.gif" border="0" alt="">${_("Testing connection ... ")}</div>
                     </td>
                 </tr>
             </table>
@@ -2386,7 +2386,7 @@ if isinstance(lang, list):
                 <td><input type="text" name="sql_conparams" class="optional"  id="sql_conparams" size="30"></td></tr>
         </table>
         <button class="action-button" id="button_test_sql">${_("Test SQL connection")}</button>
-        <div id="progress_test_sql"><img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connections...")} </div>
+        <div id="progress_test_sql"><img src="/static/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connections...")} </div>
     </fieldset>
 
     <fieldset>
@@ -2523,7 +2523,7 @@ if isinstance(lang, list):
 </div>
 
 <div id="do_waiting">
-    <img src="/images/ajax-loader.gif" alt="loading"><span>${_("Communicating with LinOTP server...")}</span>
+    <img src="/static/images/ajax-loader.gif" alt="loading"><span>${_("Communicating with LinOTP server...")}</span>
 </div>
 
 
