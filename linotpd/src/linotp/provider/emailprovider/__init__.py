@@ -36,6 +36,8 @@ from hashlib import sha256
 from mako.template import Template
 
 from email.mime.text import MIMEText
+from email.header import Header
+
 from linotp.provider import provider_registry
 from linotp.lib.type_utils import boolean
 from linotp.lib.context import request_context
@@ -285,9 +287,9 @@ class SMTPEmailProvider(IEmailProvider):
         :return: email message body as string
         """
 
-        replacements['Subject'] = subject
-        replacements['From'] = email_from
-        replacements['To'] = email_to
+        replacements['Subject'] = Header(subject).encode('utf-8')
+        replacements['From'] = Header(email_from).encode('utf-8')
+        replacements['To'] = Header(email_to).encode('utf-8')
 
         template_data = template_message
 
