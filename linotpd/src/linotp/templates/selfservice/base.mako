@@ -27,12 +27,8 @@
  *
 </%doc>
 
-<%!
-from pylons.i18n.translation import get_lang
-%>
-
 <%
-lang = get_lang() or "en"
+lang = "en" # TODO
 allang = "%r" % lang
 if isinstance(lang, list):
     lang = lang[0]

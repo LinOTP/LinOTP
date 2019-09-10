@@ -28,12 +28,8 @@
  * contains the template login web interface
 </%doc>
 
-<%!
-from pylons.i18n.translation import get_lang
-%>
-
 <%
-lang = get_lang() or "en"
+lang = "en" # TODO
 if isinstance(lang, list):
     lang = lang[0]
 %>
