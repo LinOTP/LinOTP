@@ -140,6 +140,10 @@ def getPolicyDefinitions(scope=""):
             'mfa_3_fields': {
                 'type': 'bool',
                 'desc': 'optional OTP for selfservice authentication'},
+            'mfa_passOnNoToken': {
+                'type': 'bool',
+                'desc': ('support mfa login if user has no token '
+                         'with password only')},
             'show_landing_page': {
                 'type': 'bool',
                 'desc': 'show selfservice landing page as first tab'},
