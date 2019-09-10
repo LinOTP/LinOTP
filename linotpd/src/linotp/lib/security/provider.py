@@ -410,7 +410,7 @@ class SecurityProvider(object):
                     retry = False
                     log.debug(
                         "[getSecurityModule] using existing pool session %s" % found)
-                    return found.get('obj')
+                    return found
                 else:
                     # create new entry
                     log.debug("[getSecurityModule] getting new Session (%s) "

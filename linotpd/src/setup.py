@@ -37,6 +37,7 @@ package_directory = os.path.realpath(os.path.dirname(__file__))
 
 install_requirements = [
     'Flask',
+    'Flask-Mako',
     'Pylons>=0.9.7',
     'PasteScript<=1.7.5',
     'WebOb',

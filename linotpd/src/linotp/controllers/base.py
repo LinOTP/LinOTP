@@ -39,6 +39,7 @@ from linotp.flap import (
 )
 
 from linotp.lib.config import getLinotpConfig
+from linotp.lib.context import request_context
 from linotp.lib.resolver import initResolvers
 from linotp.lib.resolver import setupResolvers
 from linotp.lib.resolver import closeResolvers
@@ -61,7 +62,6 @@ from linotp.lib.crypto.utils import init_key_partition
 from linotp.model import meta
 from linotp.lib.openid import SQLStorage
 
-# from linotp.lib.context import request_context
 from linotp.lib.logs import init_logging_config
 from linotp.lib.logs import log_request_timedelta
 
@@ -154,7 +154,14 @@ class BaseController(Blueprint):
         # as well as base classes.
 
         for method_name in self._url_methods:
-            url = '/' + method_name
+            # Route the method to a URL of the same name,
+            # except for index, which is routed to
+            # /<controller-name>/
+            if method_name == 'index':
+                url = '/'
+            else:
+                url = '/' + method_name
+
             method = getattr(self, method_name)
 
             # We can't set attributes on instancemethod objects but we
@@ -179,25 +186,23 @@ class BaseController(Blueprint):
                 self.add_url_rule(url, method_name, view_func=method)
 
         # Add pre/post handlers
-        self.before_request(self.first_run_setup)
+        self.before_request(self.run_setup)
         self.before_request(self.start_session)
         self.before_request(self.before_handler)
         if hasattr(self, '__after__'):
             self.after_request(self.__after__)
         self.teardown_request(self.finalise_request)
 
-    def first_run_setup(self):
+    def run_setup(self):
         """
-        Set up the app and database. This only needs to be called once per application
-        TODO: Move out of base controller
+        Set up the app and database context for a request. Some of this is
+        intended to be done only once and could be refactored into a
+        before_first_request function
         """
-
-        config = flask_g.request_context['config']
 
         self.sep = None
         # TODO - language
         #self.set_language(request.headers)
-        self.base_auth_user = ''
 
         # make the OpenID SQL Instance globally available
         openid_sql = config.get('openid_sql', None)
@@ -267,7 +272,7 @@ class BaseController(Blueprint):
                 if not license_str:
                     log.error("empty license file: %s", filename)
                 else:
-                    flask_g.request_context['translate'] = translate
+                    request_context['translate'] = translate
 
                     import linotp.lib.support
                     res, msg = linotp.lib.support.setSupportLicense(
@@ -284,6 +289,8 @@ class BaseController(Blueprint):
                 load_provider_ini(config['provider.config_file'])
 
     def start_session(self):
+        self.base_auth_user = ''
+
         # we add a unique request id to the request enviroment
         # so we can trace individual requests in the logging
 
@@ -377,8 +384,6 @@ class BaseController(Blueprint):
 
         linotp_config = getLinotpConfig()
 
-        request_context = flask_g.request_context
-
         # make the request id available in the request context
         request_context['RequestId'] = environment['REQUEST_ID']
 
@@ -410,12 +415,9 @@ class BaseController(Blueprint):
         if path[0]:
             request_context['controller'] = path[0]
 
-        if path[1]:
-            request_context['action'] = path[1]
+        request_context['action'] = 'index' if len(path) == 1 else path[1]
 
         # ------------------------------------------------------------------------
-
-        request_context['hsm'] = self.hsm
 
         initResolvers()
 

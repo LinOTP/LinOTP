@@ -33,7 +33,6 @@ from mako.lookup import TemplateLookup
 from linotp.flap import config, handle_mako_error
 # from sqlalchemy import create_engine
 
-import linotp.lib.app_globals as app_globals
 import linotp.lib.helpers
 
 from linotp.useridresolver import resolver_registry
@@ -100,7 +99,9 @@ def load_environment(global_conf, app_conf):
     # Copy Flask config into global config
     config.update(app_conf)
 
-    config['pylons.app_globals'] = app_globals.Globals()
+    from linotp.lib.config.global_api import initGlobalObject
+    initGlobalObject()
+
     config['pylons.h'] = linotp.lib.helpers
 
     # add per token a location for the mako template lookup
@@ -144,9 +145,9 @@ def load_environment(global_conf, app_conf):
 
     # setup Security provider definition
     try:
-        log.debug('[load_environment] loading token list definition')
-        g = config['pylons.app_globals']
-        g.security_provider.load_config(config)
+        log.debug('[load_environment] loading security provider pool')
+        from linotp.lib.config.global_api import getGlobalObject
+        getGlobalObject().security_provider.load_config(config)
     except Exception as e:
         log.exception("Failed to load security provider definition: %r" % e)
         raise e
