@@ -176,7 +176,7 @@ def create_app(config_name='default', config_extra=None):
     @param config_name The name of the configuration to load from settings.py
     @param config_extra An optional dict of configuration override values
     """
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='public', static_url_path='/static')
 
     app.config.from_object(configs[config_name])
     configs[config_name].init_app(app)
