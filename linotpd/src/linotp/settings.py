@@ -13,7 +13,7 @@ class Config:
     # as `FOO:/bar`, which will register it on `/bar` instead.
 
     # CONTROLLERS = "admin manage system validate"
-    CONTROLLERS = "system test auth"
+    CONTROLLERS = "admin auth manage selfservice system test validate"
 
     # We're using a `RotatingFileHandler` to manage log files. The
     # main log file is written to `LOGFILE_DIR/LOGFILE_NAME`, with one
@@ -52,6 +52,8 @@ class Config:
     ROOT_DIR = basedir
 
     SECRET_FILE = os.path.join(basedir, "encKey")
+
+    # MAKO_TRANSLATE_EXCEPTIONS = False
 
     @staticmethod
     def init_app(app):

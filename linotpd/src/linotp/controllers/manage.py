@@ -79,7 +79,6 @@ import linotp
 import linotp.model.meta
 Session = linotp.model.meta.Session
 
-audit = config.get('audit')
 log = logging.getLogger(__name__)
 
 KNOWN_TYPES = getKnownTypes()
@@ -169,6 +168,7 @@ class ManageController(BaseController):
                 c.audit['token_type'] = getTokenType(serial)
 
             c.audit['action_detail'] += linotp.lib.audit.base.get_token_num_info()
+            audit = config.get('audit')
             audit.log(c.audit)
 
         return response

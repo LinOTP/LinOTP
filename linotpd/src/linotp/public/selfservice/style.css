@@ -86,7 +86,7 @@ div#header {
 }
 
 #logo{
-	background-image:  url(/images/linotp_logo_103x35.png);
+	background-image:  url(/static/images/linotp_logo_103x35.png);
 	background-repeat: no-repeat;
 	background-position: center;
 	display: block;

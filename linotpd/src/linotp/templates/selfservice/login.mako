@@ -28,12 +28,8 @@
  * contains the template login web interface
 </%doc>
 
-<%!
-from pylons.i18n.translation import get_lang
-%>
-
 <%
-lang = get_lang() or "en"
+lang = "en" # TODO
 if isinstance(lang, list):
     lang = lang[0]
 %>
@@ -49,7 +45,7 @@ if isinstance(lang, list):
 
   <link type="text/css" rel="stylesheet" href="/selfservice/style.css">
   <link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
-  <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.min.css">
+  <link type="text/css" rel="stylesheet" href="/static/css/jquery-ui/jquery-ui.min.css">
 </head>
 
 <body>
@@ -168,7 +164,7 @@ if isinstance(lang, list):
       <p>${_("Transaction-ID")}: <b class="transactionid"></b></p>
       <p><small>${_("Compare this value to the transaction id shown on your mobile.")}</small></p>
       <br>
-      <p><img src="/images/ajax-loader.gif" alt="loading">&nbsp;${_("Waiting for confirmation...")}</p>
+      <p><img src="/static/images/ajax-loader.gif" alt="loading">&nbsp;${_("Waiting for confirmation...")}</p>
       <br>
     </div>
 
@@ -185,12 +181,12 @@ if isinstance(lang, list):
     window.CURRENT_LANGUAGE = "${lang}";
   </script>
 
-  <script type="text/javascript" src="/js/jquery-1.12.4.min.js"></script>
-  <script type="text/javascript" src="/js/jquery-ui.min.js"></script>
-  <script type="text/javascript" src="/js/jquery.form.js"></script>
-  <script type="text/javascript" src="/js/jed.js"></script>
-  <script type="text/javascript" src="/js/linotp_utils.js"></script>
-  <script type="text/javascript" src="/js/selfservice/login.js"></script>
+  <script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>
+  <script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="/static/js/jquery.form.js"></script>
+  <script type="text/javascript" src="/static/js/jed.js"></script>
+  <script type="text/javascript" src="/static/js/linotp_utils.js"></script>
+  <script type="text/javascript" src="/static/js/selfservice/login.js"></script>
 </body>
 
 </html>

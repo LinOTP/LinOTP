@@ -27,12 +27,8 @@
  *
 </%doc>
 
-<%!
-from pylons.i18n.translation import get_lang
-%>
-
 <%
-lang = get_lang() or "en"
+lang = "en" # TODO
 allang = "%r" % lang
 if isinstance(lang, list):
     lang = lang[0]
@@ -47,26 +43,26 @@ if isinstance(lang, list):
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
 <meta http-equiv="content-style-type" content="text/css">
 
-<link type="text/css" rel="stylesheet" href="/css/linotp.css">
+<link type="text/css" rel="stylesheet" href="/static/css/linotp.css">
 <link type="text/css" rel="stylesheet" href="/selfservice/style.css">
 <link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
-<link type="text/css" rel="stylesheet" href="/css/flexigrid/flexigrid.css">
+<link type="text/css" rel="stylesheet" href="/static/css/flexigrid/flexigrid.css">
 
-<link type="text/css" href="/css/jquery-ui/jquery-ui.min.css" rel="stylesheet">
+<link type="text/css" href="/static/css/jquery-ui/jquery-ui.min.css" rel="stylesheet">
 
 
-<script type="text/javascript" src="/js/jquery-1.12.4.min.js"></script>
-<script type="text/javascript" src="/js/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/js/jquery.validate.min.js"></script>
-<script type="text/javascript" src="/js/jquery.cookie.js"></script>
+<script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery.validate.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery.cookie.js"></script>
 
-<script type="text/javascript" src="/js/jed.js"></script>
+<script type="text/javascript" src="/static/js/jed.js"></script>
 
-<script type="text/javascript" src="/js/linotp_utils.js"></script>
-<script type="text/javascript" src="/js/flexigrid.js"></script>
+<script type="text/javascript" src="/static/js/linotp_utils.js"></script>
+<script type="text/javascript" src="/static/js/flexigrid.js"></script>
 
 % if "enrollU2F" in c.actions:
-<script type="text/javascript" src="/js/u2f-api.js"></script>
+<script type="text/javascript" src="/static/js/u2f-api.js"></script>
 % endif
 
 <!-- load language settings befor selfservice.js -->
@@ -75,7 +71,7 @@ if isinstance(lang, list):
     window.ALL_CURRENT_LANGUAGE = "${allang}";
 </script>
 
-<script type="text/javascript" src="/js/selfservice.js"></script>
+<script type="text/javascript" src="/static/js/selfservice.js"></script>
 
 
 </head>
@@ -109,7 +105,7 @@ if isinstance(lang, list):
 </div>
 
 <div id="do_waiting">
-    <img src="/images/ajax-loader.gif" border="0" alt=""><span>${_("Communicating with LinOTP server...")}</span>
+    <img src="/static/images/ajax-loader.gif" border="0" alt=""><span>${_("Communicating with LinOTP server...")}</span>
 </div>
 
 <div id="tabs">
