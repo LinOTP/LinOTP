@@ -184,10 +184,8 @@ class SMTPEmailProvider(IEmailProvider):
 
         linotp_config = request_context['Config']
 
-        template_root = EMAIL_PROVIDER_TEMPLATE_ROOT
-
-        if linotp_config.get(EMAIL_PROVIDER_TEMPLATE_KEY):
-            template_root = linotp_config.get(EMAIL_PROVIDER_TEMPLATE_KEY)
+        template_root = linotp_config.get(EMAIL_PROVIDER_TEMPLATE_KEY,
+                                          EMAIL_PROVIDER_TEMPLATE_ROOT)
 
         if not os.path.isdir(template_root):
             LOG.error(
