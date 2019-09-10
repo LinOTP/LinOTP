@@ -28,12 +28,24 @@
 
 import logging
 import smtplib
+import os
+import copy
 
 from hashlib import sha256
 
+from mako.template import Template
+
 from email.mime.text import MIMEText
+from email.header import Header
+
 from linotp.provider import provider_registry
 from linotp.lib.type_utils import boolean
+from linotp.lib.context import request_context
+
+DEFAULT_MESSAGE = '<otp>'
+
+EMAIL_PROVIDER_TEMPLATE_ROOT = '/etc/linotp/email_provider_templates'
+EMAIL_PROVIDER_TEMPLATE_KEY = 'email_provider_template_root'
 
 LOG = logging.getLogger(__name__)
 
@@ -115,6 +127,7 @@ class SMTPEmailProvider(IEmailProvider):
         self.start_tls_params_keyfile = None
         self.start_tls_params_certfile = None
 
+
     def loadConfig(self, configDict):
         """
         Loads the configuration for this e-mail e-mail provider
@@ -154,7 +167,265 @@ class SMTPEmailProvider(IEmailProvider):
         self.email_subject = configDict.get(
             'EMAIL_SUBJECT', self.DEFAULT_EMAIL_SUBJECT)
 
-    def submitMessage(self, email_to, message, subject=None):
+        self.template = configDict.get('TEMPLATE', None)
+
+
+    @staticmethod
+    def get_template_root():
+        """
+        get the email provider template root directory
+
+        if there is in
+            'email_provider_template_root' in linotp.config defined
+
+        Fallback is EMAIL_PROVIDER_TEMPLATE_ROOT
+                which is '/etc/linotp/email_provider_templates'
+
+        :return: the directory where the email provider templates are expected
+        """
+
+        linotp_config = request_context['Config']
+
+        template_root = linotp_config.get(EMAIL_PROVIDER_TEMPLATE_KEY,
+                                          EMAIL_PROVIDER_TEMPLATE_ROOT)
+
+        if not os.path.isdir(template_root):
+            LOG.error(
+                'Configuration error: no email provider template directory '
+                'found: %r')
+            raise Exception('Email provider template directory not found')
+
+        return template_root
+
+    @staticmethod
+    def render_simple_message(
+            email_to, email_from, subject, message, replacements):
+        """
+        render the email message body based on a simple text message
+
+        :param email_to: the target email address
+        :param subject: the subject of the email message could be None
+        :param message: the given message
+        :param replacements: a dictionary with replacement key/value pairs
+
+        :return: email message body as string
+        """
+
+        # ---------------------------------------------------------------- - --
+
+        # legacy pre processing - transfered from email token
+
+        otp = replacements['otp']
+        serial = replacements['serial']
+
+        if "<otp>" not in message:
+            message = message + "<otp>"
+
+        message = message.replace("<otp>", otp)
+        message = message.replace("<serial>", serial)
+
+        subject = subject.replace("<otp>", otp)
+        subject = subject.replace("<serial>", serial)
+
+        # ---------------------------------------------------------------- - --
+
+        msg = MIMEText(message)
+        msg['Subject'] = subject
+        msg['From'] = email_from
+        msg['To'] = email_to
+
+        return msg.as_string()
+
+    @staticmethod
+    def render_template_message(email_to, email_from, subject,
+                                template_message, replacements):
+        """
+        render the email message body based on a template
+
+        the template must be of type multipart/alternative and can contain
+        multipart/related content for example imaged which ewra referenced
+        via cid: names
+
+        ```
+            Content-Type: multipart/alternative;
+             boundary="===============3294676191386143061=="
+            MIME-Version: 1.0
+            Subject: ${Subject}
+            From: ${From}
+            To: ${To}
+
+            This is a multi-part alternative message in MIME format.
+            --===============3294676191386143061==
+            Content-Type: text/plain; charset="us-ascii"
+            MIME-Version: 1.0
+            Content-Transfer-Encoding: 7bit
+
+            This is the alternative plain text message.
+            --===============3294676191386143061==
+            Content-Type: multipart/related;
+             boundary="===============3984710301122897564=="
+            MIME-Version: 1.0
+
+            --===============3984710301122897564==
+            Content-Type: text/html; charset="us-ascii"
+            MIME-Version: 1.0
+            Content-Transfer-Encoding: 7bit
+
+            <html>
+
+            <body>
+                <div align='center' height='100%'>
+                    <table width='40%' cellpadding='20px' bgcolor="#f1f2f5">
+        ```
+
+        :param email_to:
+        :param email_from:
+        :param subject:
+        :param template_message:
+        :param replacements:
+
+        :return: email message body as string
+        """
+
+        replacements['Subject'] = Header(subject).encode('utf-8')
+        replacements['From'] = Header(email_from).encode('utf-8')
+        replacements['To'] = Header(email_to).encode('utf-8')
+
+        template_data = template_message
+
+        # ------------------------------------------------------------------ --
+
+        if template_message.startswith('file://'):
+
+            filename = template_message[len('file://'):]
+
+            provider_template_root = SMTPEmailProvider.get_template_root()
+
+            absolute_filename = os.path.abspath(
+                os.path.join(provider_template_root, filename))
+
+            # secure open of the template file - only if it is below the
+            # provider template root directory
+
+            if not absolute_filename.startswith(provider_template_root):
+                raise Exception(
+                    'Template %r - not in email provider template root %r' %
+                    (absolute_filename, provider_template_root))
+
+            with open(absolute_filename, "rb") as f:
+                template_data = f.read()
+
+        # ------------------------------------------------------------------ --
+
+        # db feature - would be nice :)
+
+        # if self.template.startswith('db://'):
+        #     read_from_config('linotp.template.' + self.template[len('db://'):])
+
+        # ------------------------------------------------------------------ --
+
+        # now trigger the text replacements:
+
+        # first replace the vars in Subject as it can contain as well ${otp}
+        # - we use here a copy of the replacement dict without 'Subject' to
+        # protect against recursion
+
+        subject_replacements = copy.deepcopy(replacements)
+        if 'Subject' in subject_replacements:
+            del subject_replacements['Subject']
+
+        subject_replacement = SMTPEmailProvider._render_template(
+            subject, subject_replacements)
+
+        # and put it back for the message replacements
+
+        replacements['Subject'] = subject_replacement
+
+        # now build up the final message with all replacements
+
+        message = SMTPEmailProvider._render_template(
+            template_data, replacements)
+
+        return message
+
+
+    @staticmethod
+    def _render_template(template_data, replacements):
+        """
+        helper to encapsulate the template rendering with unknown ${vars}
+
+        The template rendering here contains a hack as the mako template
+        rendering does not support to leave unresolved variable defintions
+        untouched. In the normal case an UNKNOWN exception is raised.
+        When using the option 'strict_undefined=True' a NameError is raised.
+
+        We use this NameError Exception that is catched to add the missing
+        ${var} with the value '${var}' to the replacements and retry the
+        rendering.
+
+        This way could help together with the submitted email
+        and the log information to identify the missing defintions
+        while supporting arbitrary user driven templates
+
+        :param template_data: template text
+        :param replacements: the dict with the replacements key values
+
+        :return: rendered text
+        """
+
+        message_template = Template(template_data, strict_undefined=True)
+
+        while True:
+            try:
+                message = message_template.render(**replacements)
+                return message
+            except NameError as exx:
+                var = str(exx).split()[0].strip("'")
+                replacements[var]= "${%s}" % var
+                LOG.error(
+                    'Template refers to unresolved replacement: %r' % var)
+
+    def render_message(
+            self, email_to, subject, message, replacements):
+        """
+        create a text/plain or a template rendered email message
+
+        :param email_to: the target email address
+        :param subject: the subject of the email message could be None
+        :param message: the given message
+        :param replacements: a dictionary with replacement key/value pairs
+
+        :return: the email message body
+        """
+
+        email_subject = subject or self.email_subject
+        email_from = self.email_from
+
+        if self.template:
+
+            # in case of the templating, the subject from the provider config
+            # overrules the policy subject
+
+            if message and message != DEFAULT_MESSAGE:
+                LOG.warning('ignoring "message" defined by policy - '
+                            'using template defintion')
+
+            if subject:
+                LOG.warning('ignoring "subject" defined by policy - '
+                            'using subject from template defintion')
+
+            if self.email_subject:
+                email_subject = self.email_subject
+
+            return self.render_template_message(
+                email_to, email_from, email_subject,
+                self.template, replacements)
+
+        return self.render_simple_message(
+                email_to, email_from, email_subject, message, replacements)
+
+
+    def submitMessage(self, email_to, message, subject=None, replacements=None):
         """
         Sends out the e-mail.
 
@@ -179,14 +450,8 @@ class SMTPEmailProvider(IEmailProvider):
 
         # setup message
 
-        email_subject = subject or self.email_subject
-
-        # create a text/plain MIME message
-
-        msg = MIMEText(message)
-        msg['Subject'] = email_subject
-        msg['From'] = self.email_from
-        msg['To'] = email_to
+        email_message =self.render_message(
+            email_to, subject, message, replacements)
 
         # ------------------------------------------------------------------ --
 
@@ -239,7 +504,7 @@ class SMTPEmailProvider(IEmailProvider):
 
         try:
             errors = smtp_connection.sendmail(self.email_from,
-                                              email_to, msg.as_string())
+                                              email_to, email_message)
             if len(errors) > 0:
                 LOG.error("error(s) sending e-mail %r", errors)
                 return False, ("error sending e-mail %r" % errors)

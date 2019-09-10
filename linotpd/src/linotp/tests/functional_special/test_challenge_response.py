@@ -1060,7 +1060,7 @@ class TestChallengeResponseController(TestSpecialController):
 
         # 2.2 response
         (email_to, email_dict) = EMAIL_MESSAGE_OTP
-        otp = email_dict.get('message','')
+        otp = email_dict.get('replacements', {}).get('otp', '')
 
         params = {"user": user, "pass": pin + otp}
         response = self.make_validate_request(action='check',
@@ -1081,7 +1081,7 @@ class TestChallengeResponseController(TestSpecialController):
 
         # 3.2 response
         (email_to, email_dict) = EMAIL_MESSAGE_OTP
-        otp = email_dict.get('message','')
+        otp = email_dict.get('replacements', {}).get('otp', '')
 
         params = {"user": user, "pass": otp, "state": state}
         response = self.make_validate_request(action='check',
@@ -1099,7 +1099,7 @@ class TestChallengeResponseController(TestSpecialController):
 
         # 4.2 do std auth
         (email_to, email_dict) = EMAIL_MESSAGE_OTP
-        otp = email_dict.get('message','')
+        otp = email_dict.get('replacements', {}).get('otp', '')
 
         params = {"user": user, "pass": pin + otp}
         response = self.make_validate_request(action='check',

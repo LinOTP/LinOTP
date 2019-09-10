@@ -31,6 +31,7 @@ import datetime
 import logging
 
 from linotp.provider import loadProviderFromPolicy
+from linotp.provider.emailprovider import DEFAULT_MESSAGE
 
 from linotp.lib.token import get_token_owner
 from linotp.tokens import tokenclass_registry
@@ -349,7 +350,7 @@ class EmailTokenClass(HmacTokenClass):
             at least the placeholder <otp>
         :rtype: string
         """
-        message = '<otp>'
+        message = DEFAULT_MESSAGE
 
         if not user:
             return message
@@ -408,22 +409,25 @@ class EmailTokenClass(HmacTokenClass):
 
         owner = get_token_owner(self)
         message = self._getEmailMessage(user=owner)
-
-        if "<otp>" not in message:
-            message = message + "<otp>"
-
-        message = message.replace("<otp>", otp)
-        message = message.replace("<serial>", self.getSerial())
-
         subject = self._getEmailSubject(user=owner)
-        subject = subject.replace("<otp>", otp)
-        subject = subject.replace("<serial>", self.getSerial())
 
-        email_provider = loadProviderFromPolicy(provider_type='email',
-                                                user=owner)
-        status, status_message = email_provider.submitMessage(email_address,
-                                                              subject=subject,
-                                                              message=message)
+        replacements = {}
+        replacements['otp'] = otp
+        replacements['serial'] = self.getSerial()
+
+        try:
+
+            email_provider = loadProviderFromPolicy(
+                provider_type='email', user=owner)
+
+            status, status_message = email_provider.submitMessage(
+                email_address, subject=subject, message=message,
+                replacements=replacements)
+
+        except Exception as exx:
+            LOG.error('Failed to submit EMail: %r', exx)
+            raise
+
         return status, status_message
 
     def is_challenge_response(self, passw, user, options=None, challenges=None):
