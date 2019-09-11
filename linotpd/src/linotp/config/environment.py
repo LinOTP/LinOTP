@@ -69,10 +69,6 @@ def load_environment(global_conf, app_conf):
     from linotp.lib.config.global_api import initGlobalObject
     initGlobalObject()
 
-    import linotp.tokens as token_package
-
-    token_package.reload_classes()
-
     # Setup the SQLAlchemy database engine
     # If we load the linotp.model here, the pylons.config is loaded with
     # the entries from the config file. if it is loaded at the top of the file,
@@ -119,34 +115,14 @@ def load_environment(global_conf, app_conf):
 def get_activated_token_modules():
 
     """
-    checks in the ini file for the linotpTokenModules key and returns
-    the list of modules defined there as a list. if the key is not
-    present this will return None.
+    checks the setting for token modules to be activated and returns
+    the list of modules defined there as a list. If the key is not
+    present or has an empty value this will return an empty list.
     """
-    config = flask.g.request_context['config']
-    if 'linotpTokenModules' not in config:
-        return None
 
-    module_list = []
-    module_config_str = config.get('linotpTokenModules')
-
-    # in the config *.ini files we have some line continuation slashes,
-    # which will result in ugly module names, but as they are followed by
-    # \n they could be separated as single entries by the following two
-    # lines
-    lines = module_config_str.splitlines()
-    coco = ",".join(lines)
-    for module in coco.split(','):
-
-        if module.strip() == '\\':
-            continue
-
-        if module.strip() == '':
-            continue
-
-        module_list.append(module.strip())
-
-    return module_list
-
+    token_modules = flask.current_app.config.get("TOKEN_MODULES", "")
+    if not token_modules:
+        return []
+    return token_modules.split()
 
 ###eof#########################################################################

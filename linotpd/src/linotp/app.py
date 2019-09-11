@@ -33,6 +33,7 @@ from . import flap
 from .config.defaults import set_defaults
 from .config.environment import load_environment
 from .settings import configs
+from .tokens import reload_classes as reload_token_classes
 from .lib.ImportOTP.vasco import init_vasco
 
 from sqlalchemy import create_engine
@@ -194,6 +195,7 @@ def create_app(config_name='default', config_extra=None):
         generate_secret_key_file(app)
         flap.set_config()       # ensure `request_context` exists
         set_defaults(app)
+        reload_token_classes()
 
     @app.before_request
     def setup_env():

@@ -15,6 +15,11 @@ class Config:
     # CONTROLLERS = "admin manage system validate"
     CONTROLLERS = "admin auth manage selfservice system test validate"
 
+    # List all enabled token support modules. If this parameter is
+    # empty, all available token modules will be loaded.
+
+    TOKEN_MODULES = ""
+
     # We're using a `RotatingFileHandler` to manage log files. The
     # main log file is written to `LOGFILE_DIR/LOGFILE_NAME`, with one
     # message per line formatted as per `LOGFILE_FILE_LINE_FORMAT`,
