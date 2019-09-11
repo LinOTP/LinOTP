@@ -60,6 +60,12 @@ class Config:
 
     # MAKO_TRANSLATE_EXCEPTIONS = False
 
+    # Where the online help can be found. The `{0}` will be replaced
+    # with the major version number of this LinOTP instance. (If there
+    # is no `{0}` in the URL that is not a big deal.)
+
+    HELP_URL = "https://linotp.org/doc/{0}/index.html"
+
     @staticmethod
     def init_app(app):
         pass
