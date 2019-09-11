@@ -33,8 +33,6 @@ from mako.lookup import TemplateLookup
 from linotp.flap import config, handle_mako_error
 # from sqlalchemy import create_engine
 
-import linotp.lib.helpers
-
 from linotp.useridresolver import resolver_registry
 from linotp.useridresolver import UserIdResolver
 from linotp.config.routing import make_map
@@ -47,22 +45,6 @@ import pkg_resources
 
 import warnings
 warnings.filterwarnings(action='ignore', category=DeprecationWarning)
-
-
-def _uniqify_list(input_list):
-    """
-    Returns a list containing only unique elements from input_list whilst
-    preserving the original order.
-    See http://www.peterbe.com/plog/uniqifiers-benchmark
-    """
-    seen = {}
-    result = []
-    for item in input_list:
-        if item in seen:
-            continue
-        seen[item] = 1
-        result.append(item)
-    return result
 
 
 def fxn():
@@ -84,47 +66,12 @@ def load_environment(global_conf, app_conf):
 
     @param app_conf Flask configuration
     """
-    # Pylons paths
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    paths = dict(root=root,
-                 controllers=os.path.join(root, 'controllers'),
-                 static_files=os.path.join(root, 'public'),
-                 templates=[app_conf.get('custom_templates',
-                                         os.path.join(root, 'templates')),
-                            os.path.join(root, 'templates')])
-
-    config = flask.g.request_context['config']
-    config['linotp.root'] = root
-
-    # Copy Flask config into global config
-    config.update(app_conf)
-
     from linotp.lib.config.global_api import initGlobalObject
     initGlobalObject()
-
-    config['pylons.h'] = linotp.lib.helpers
-
-    # add per token a location for the mako template lookup
-    # @note: the location is defined in the .ini file by
-    # the entry [linotpTokenModules]
-
-    directories = paths['templates']
 
     import linotp.tokens as token_package
 
     token_package.reload_classes()
-    token_package_path = os.path.dirname(token_package.__file__)
-    directories.append(token_package_path)
-
-    for token_package_sub_path, _subdir, _files in os.walk(token_package_path):
-        directories.append(token_package_sub_path)
-
-    # add a template path for every resolver
-    resolver_module_path = UserIdResolver.__file__
-    directories.append(resolver_module_path)
-
-    unique_directories = _uniqify_list(directories)
-    log.debug("[load_environment] Template directories: %r" % unique_directories)
 
     # Setup the SQLAlchemy database engine
     # If we load the linotp.model here, the pylons.config is loaded with
