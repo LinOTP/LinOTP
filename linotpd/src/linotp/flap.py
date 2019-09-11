@@ -9,14 +9,10 @@ from werkzeug.datastructures import MultiDict
 from pylons import (
     response, url, __version__,
 )
-from pylons.configuration import PylonsConfig as Config
 from pylons.controllers.util import abort, forward, redirect
-from pylons.error import handle_mako_error
 from pylons.middleware import (
-    error_document_template, ErrorHandler, StatusCodeRedirect,
+    error_document_template,
 )
-# from pylons.templating import render_mako
-from pylons.wsgiapp import PylonsApp as App
 
 from werkzeug import LocalProxy
 

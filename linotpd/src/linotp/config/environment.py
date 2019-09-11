@@ -25,23 +25,7 @@
 #
 """  Pylons environment configuration """
 
-import os
-
 import flask
-
-from mako.lookup import TemplateLookup
-from linotp.flap import config, handle_mako_error
-# from sqlalchemy import create_engine
-
-from linotp.useridresolver import resolver_registry
-from linotp.useridresolver import UserIdResolver
-from linotp.config.routing import make_map
-from linotp.lib.error import TokenTypeNotSupportedError
-
-
-import sys
-import inspect
-import pkg_resources
 
 import warnings
 warnings.filterwarnings(action='ignore', category=DeprecationWarning)
@@ -53,10 +37,6 @@ def fxn():
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     fxn()
-
-import logging
-
-log = logging.getLogger(__name__)
 
 
 def load_environment(global_conf, app_conf):
