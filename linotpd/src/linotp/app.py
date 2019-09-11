@@ -34,6 +34,7 @@ from .config.defaults import set_defaults
 from .config.environment import load_environment
 from .settings import configs
 from .tokens import reload_classes as reload_token_classes
+from .lib.audit.base import getAudit
 from .lib.config.global_api import initGlobalObject
 from .lib.ImportOTP.vasco import init_vasco
 
@@ -167,6 +168,16 @@ def generate_secret_key_file(app):
         app.logger.debug("SECRET_FILE: {}".format(filename))
 
 
+def setup_audit(app):
+    """
+    Set up audit logging for a request. This is, again, straight from
+    `load_environment()` and as such should be looked at with a microscope,
+    probably when we're fixing auditing.
+    """
+    c = flask_g.request_context['config']
+    c['audit'] = getAudit(c)
+
+
 def create_app(config_name='default', config_extra=None):
     """
     Generate a new instance of the Flask app
@@ -203,6 +214,7 @@ def create_app(config_name='default', config_extra=None):
         flap.set_config()
         load_environment(flask_g, app.config)
         initGlobalObject()
+        setup_audit(app)
         init_vasco()
 
     app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)

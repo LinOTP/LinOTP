@@ -79,10 +79,6 @@ def load_environment(global_conf, app_conf):
     # CONFIGURATION OPTIONS HERE (note: all config options will override
     # any Pylons config options)
 
-    from linotp.lib.audit.base import getAudit
-    audit = getAudit(config)
-    config['audit'] = audit
-
     # setup Security provider definition
     try:
         log.debug('[load_environment] loading security provider pool')
