@@ -53,6 +53,7 @@ from linotp.lib.policy import PolicyException
 
 from linotp.lib.reply import sendError
 
+from linotp.lib.openid import SQLStorage
 from linotp.lib.openid import IdResMessage
 from linotp.lib.openid import create_association, check_authentication
 
@@ -79,6 +80,20 @@ class OpenidController(BaseController):
     '''
     BASEURL = "https://linotpserver"
     COOKIE_EXPIRE = 3600
+
+    def _run_setup(self):
+        super(OpenidController, self)._run_setup()
+
+        # make the OpenID SQL Instance globally available
+        openid_sql = config.get('openid_sql', None)
+        if openid_sql is None:
+            try:
+                openid_storage = SQLStorage()
+                config['openid_sql'] = openid_storage
+            except Exception as exx:
+                config['openid_sql'] = exx
+                log.error("Failed to configure openid_sql: %r" % exx)
+
 
     def __before__(self, **params):
         """

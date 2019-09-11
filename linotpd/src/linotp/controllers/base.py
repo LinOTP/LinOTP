@@ -60,7 +60,6 @@ from linotp.lib.crypto.utils import init_key_partition
 
 
 from linotp.model import meta
-from linotp.lib.openid import SQLStorage
 
 from linotp.lib.logs import init_logging_config
 from linotp.lib.logs import log_request_timedelta
@@ -186,14 +185,14 @@ class BaseController(Blueprint):
                 self.add_url_rule(url, method_name, view_func=method)
 
         # Add pre/post handlers
-        self.before_request(self.run_setup)
+        self.before_request(self._run_setup)
         self.before_request(self.start_session)
         self.before_request(self.before_handler)
         if hasattr(self, '__after__'):
             self.after_request(self.__after__)
         self.teardown_request(self.finalise_request)
 
-    def run_setup(self):
+    def _run_setup(self):
         """
         Set up the app and database context for a request. Some of this is
         intended to be done only once and could be refactored into a
@@ -203,16 +202,6 @@ class BaseController(Blueprint):
         self.sep = None
         # TODO - language
         #self.set_language(request.headers)
-
-        # make the OpenID SQL Instance globally available
-        openid_sql = config.get('openid_sql', None)
-        if openid_sql is None:
-            try:
-                openid_storage = SQLStorage()
-                config['openid_sql'] = openid_storage
-            except Exception as exx:
-                config['openid_sql'] = exx
-                log.error("Failed to configure openid_sql: %r" % exx)
 
         first_run = False
         app_setup_done = config.get('app_setup_done', False)
