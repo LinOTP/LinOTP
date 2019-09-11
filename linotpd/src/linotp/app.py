@@ -192,11 +192,12 @@ def create_app(config_name='default', config_extra=None):
     with app.app_context():
         setup_db(app)
         generate_secret_key_file(app)
+        flap.set_config()       # ensure `request_context` exists
+        set_defaults(app)
 
     @app.before_request
     def setup_env():
         flap.set_config()
-        set_defaults(app)
         load_environment(flask_g, app.config)
         init_vasco()
 
