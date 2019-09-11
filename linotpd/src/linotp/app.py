@@ -226,8 +226,19 @@ def create_app(config_name='default', config_extra=None):
 
     @app.before_request
     def setup_env():
+        # The following functions are called here because they're
+        # stuffing bits into `flask.g`, which is a per-request global
+        # object. Much of what is stuffed into `flask.g` is actually
+        # application-wide stuff that has no business being stored in
+        # `flask.g` in the first place, but lots of code expects to be
+        # able to look at the "request context" and find stuff
+        # there. Disentangling the application-wide stuff in the
+        # request context from the request-scoped stuff is a major
+        # project that will not be undertaken just now, and we're
+        # probably doing more work here than we need to. Global
+        # variables suck.
+
         flap.set_config()
-        load_environment(flask_g, app.config)
         initGlobalObject()
         setup_audit(app)
         setup_security_provider(app)
@@ -283,6 +294,10 @@ def _setup_controllers(app):
         app.logger.debug(
             "Registering {0} class at {1}".format(ctrl_class_name, url_prefix))
         app.register_blueprint(cls(ctrl_name), url_prefix=url_prefix)
+
+    app.logger.debug("Done loading controllers")
+    return app
+
 
 def _setup_token_template_path(app):
     """

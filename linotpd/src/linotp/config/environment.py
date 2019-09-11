@@ -66,22 +66,9 @@ def load_environment(global_conf, app_conf):
 
     @param app_conf Flask configuration
     """
-    # Setup the SQLAlchemy database engine
-    # If we load the linotp.model here, the pylons.config is loaded with
-    # the entries from the config file. if it is loaded at the top of the file,
-    # the pylons.config does not contain the config file, yet.
-    # NB: With Flask, this shouldn't matter because we have the
-    # `SQLALCHEMY_DATABASE_URI` in the Flask-side configuration.
-    # from linotp.model import init_model
-    # engine = create_engine(config['SQLALCHEMY_DATABASE_URI'])
-    # init_model(engine)
 
-    # CONFIGURATION OPTIONS HERE (note: all config options will override
-    # any Pylons config options)
+    return flask.g.request_context['config']
 
-    log.debug("[load_environment] done")
-
-    return config
 
 #######################################
 
