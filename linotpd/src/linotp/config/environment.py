@@ -66,9 +66,6 @@ def load_environment(global_conf, app_conf):
 
     @param app_conf Flask configuration
     """
-    from linotp.lib.config.global_api import initGlobalObject
-    initGlobalObject()
-
     # Setup the SQLAlchemy database engine
     # If we load the linotp.model here, the pylons.config is loaded with
     # the entries from the config file. if it is loaded at the top of the file,

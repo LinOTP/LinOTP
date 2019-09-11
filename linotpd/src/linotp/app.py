@@ -34,6 +34,7 @@ from .config.defaults import set_defaults
 from .config.environment import load_environment
 from .settings import configs
 from .tokens import reload_classes as reload_token_classes
+from .lib.config.global_api import initGlobalObject
 from .lib.ImportOTP.vasco import init_vasco
 
 from sqlalchemy import create_engine
@@ -201,6 +202,7 @@ def create_app(config_name='default', config_extra=None):
     def setup_env():
         flap.set_config()
         load_environment(flask_g, app.config)
+        initGlobalObject()
         init_vasco()
 
     app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
