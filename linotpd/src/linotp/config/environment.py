@@ -79,15 +79,6 @@ def load_environment(global_conf, app_conf):
     # CONFIGURATION OPTIONS HERE (note: all config options will override
     # any Pylons config options)
 
-    # setup Security provider definition
-    try:
-        log.debug('[load_environment] loading security provider pool')
-        from linotp.lib.config.global_api import getGlobalObject
-        getGlobalObject().security_provider.load_config(config)
-    except Exception as e:
-        log.exception("Failed to load security provider definition: %r" % e)
-        raise e
-
     log.debug("[load_environment] done")
 
     return config

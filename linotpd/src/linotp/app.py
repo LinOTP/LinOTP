@@ -168,6 +168,21 @@ def generate_secret_key_file(app):
         app.logger.debug("SECRET_FILE: {}".format(filename))
 
 
+def setup_security_provider(app):
+    """
+    Set up the security provider (HSM or software). This is straight from
+    `load_environment()` and should be rewritten to use Flask-style config
+    settings, but this is a huge bowl of spaghetti.
+    """
+    try:
+        flask_g.app_globals.security_provider.load_config(
+            flask_g.request_context['config'])
+    except Exception as e:
+        app.logger.error("Failed to load security provider definition: {}"
+                         .format(e))
+        raise e
+
+
 def setup_audit(app):
     """
     Set up audit logging for a request. This is, again, straight from
@@ -215,6 +230,7 @@ def create_app(config_name='default', config_extra=None):
         load_environment(flask_g, app.config)
         initGlobalObject()
         setup_audit(app)
+        setup_security_provider(app)
         init_vasco()
 
     app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
