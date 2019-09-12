@@ -222,6 +222,12 @@ def getPolicyDefinitions(scope=""):
                 'desc' : ("After a successfull login with a second token, the"
                           "rollout token is removed.")},
             },
+        'notification': {
+            'enrollment': {
+                'type': 'string',
+                'description': ('provider to be used for enrollment'
+                                'notification')}
+            },
         'authentication': {
             "delete_on_authentication_exceed": {
                 'type': 'bool',
