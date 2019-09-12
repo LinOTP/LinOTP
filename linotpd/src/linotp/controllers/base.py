@@ -342,7 +342,7 @@ class BaseController(Blueprint):
             self.request_params = {}
             for key in _request.values:
                 if(key.endswith('[]')):
-                    self.request_params[key[:-2]] = _request.values.getall(key)
+                    self.request_params[key[:-2]] = _request.values.getlist(key)
                 else:
                     self.request_params[key] = _request.values.get(key)
 
