@@ -407,4 +407,136 @@ class HelpdeskController(BaseController):
         finally:
             Session.close()
 
+    def enroll(self):
+        """
+        enroll token
+
+        parameters:
+            * user: the new token owner
+            * type: the token type
+
+        """
+
+        ret = False
+        response_detail = {}
+
+        params = self.request_params
+
+        try:
+
+            if 'user' not in params:
+                raise ParameterError('missing parameter: user!')
+
+            if 'type' not in params:
+                raise ParameterError('missing parameter: type!')
+
+            # --------------------------------------------------------------- --
+
+            # determine token class
+
+            token_cls_alias = params.get("type")
+            lower_alias = token_cls_alias.lower()
+
+            if lower_alias not in tokenclass_registry:
+                raise TokenAdminError('admin/init failed: unknown token '
+                                      'type %r' % token_cls_alias, id=1610)
+
+            token_cls = tokenclass_registry.get(lower_alias)
+
+            # --------------------------------------------------------------- --
+
+            # call the token class hook in order to enrich/overwrite the
+            # parameters
+
+            helper_params = token_cls.get_helper_params_pre(params)
+            params.update(helper_params)
+
+            # --------------------------------------------------------------- --
+
+            # fetch user from parameters.
+
+            user = getUserFromParam(params)
+
+            # --------------------------------------------------------------- --
+
+            # check admin authorization
+
+            res = checkPolicyPre('admin', 'init', params, user=user)
+
+            # --------------------------------------------------------------- --
+
+            helper_params = token_cls.get_helper_params_post(params, user=user)
+            params.update(helper_params)
+
+            # scope_extension: we are in scope helpdesk
+            params['::scope::'] = {
+                'helpdesk': True,
+                'user': user
+                }
+
+            # --------------------------------------------------------------- --
+
+            th = TokenHandler()
+
+            serial = th.genSerial(token_cls_alias)
+            params['serial'] = serial
+
+            log.info("[init] initialize token. user: %s, serial: %s"
+                     % (user.login, serial))
+
+            from linotp.lib.policy import _getRandomPin
+            params['otppin'] = _getRandomPin(randomPINLength=12, chars=None)
+
+            # --------------------------------------------------------------- --
+
+            (ret, token) = th.initToken(params, user)
+
+            # --------------------------------------------------------------- --
+
+            # different token types return different information on
+            # initialization (e.g. otpkey, pairing_url, etc)
+
+            initDetail = token.getInitDetail(params, user)
+            response_detail.update(initDetail)
+
+            # --------------------------------------------------------------- --
+
+            # prepare data for audit
+
+            if token is not None and ret is True:
+                c.audit['serial'] = token.getSerial()
+                c.audit['token_type'] = token.type
+
+            c.audit['success'] = ret
+            c.audit['user'] = user.login
+            c.audit['realm'] = user.realm
+
+            logTokenNum(c.audit)
+
+            res = checkPolicyPost('admin', 'init', params, user=user)
+
+            info = {
+                'message': 'A new %s token has been enrolled: %r' % (
+                                            token.type, response_detail),
+                'Subject': 'new EMail Token enrolled',
+                'Pin': params['otppin']
+            }
+
+            notify_user(user, 'enrollment', info)
+
+            logTokenNum(c.audit)
+
+            c.audit['success'] = ret
+
+            return sendResult(response, ret)
+
+        except PolicyException as pe:
+            log.exception("Policy Exception while enrolling token")
+            Session.rollback()
+            return sendError(response, unicode(pe), 1)
+
+        except Exception as exx:
+            log.exception("Exception while enrolling token")
+            Session.rollback()
+            return sendError(response, exx, 1)
 
