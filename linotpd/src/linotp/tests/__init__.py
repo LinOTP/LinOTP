@@ -45,6 +45,7 @@ directory.
 
 import base64
 import copy
+from datetime import datetime
 from distutils.version import LooseVersion
 import hashlib
 import io
@@ -53,9 +54,9 @@ import logging
 import os
 import warnings
 
-from flask import Flask
-from flask import Response
+from flask import Flask, request, Response
 from flask_testing import TestCase
+from uuid import uuid4
 import pkg_resources
 import pytest
 
@@ -249,6 +250,9 @@ class TestController(TestCase):
 
     def setUp(self):
         """ here we do the system test init per test method """
+        request.environ['REQUEST_ID'] = str(uuid4())
+        request.environ['REQUEST_START_TIMESTAMP'] = datetime.now()
+
         # self.delete_all_realms()
         # self.delete_all_resolvers()
         # self.create_common_resolvers()
