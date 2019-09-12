@@ -139,3 +139,41 @@ class HelpdeskController(BaseController):
         finally:
             Session.close()
 
+
+    def getsession(self):
+        '''
+        This generates a session key and sets it as a cookie
+        set_cookie is defined in python-webob::
+
+            def set_cookie(self, key, value='', max_age=None,
+                   path='/', domain=None, secure=None, httponly=False,
+                   version=None, comment=None, expires=None, overwrite=False):
+        '''
+        import binascii
+        try:
+            web_host = request.environ.get('HTTP_HOST')
+            # HTTP_HOST also contains the port number. We need to stript this!
+            web_host = web_host.split(':')[0]
+            log.debug("[getsession] environment: %s" % request.environ)
+            log.debug("[getsession] found this web_host: %s" % web_host)
+            random_key = os.urandom(SESSION_KEY_LENGTH)
+            cookie = binascii.hexlify(random_key)
+            log.debug("[getsession] adding session cookie %s to response." % cookie)
+            # we send all three to cope with IE8
+            response.set_cookie('helpdesk_session', value=cookie, domain=web_host)
+            # this produces an error with the gtk client
+            # response.set_cookie('admin_session', value=cookie,  domain=".%" % web_host )
+            response.set_cookie('helpdesk_session', value=cookie, domain="")
+            return sendResult(response, True)
+
+        except Exception as e:
+            log.exception("[getsession] unable to create a session cookie: %r" % e)
+            Session.rollback()
+            return sendError(response, e)
+
+        finally:
+            Session.close()
+
+    def dropsession(self):
+        response.set_cookie('helpdesk_session', None, expires=1)
+        return sendResult(response, True)
