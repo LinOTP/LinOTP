@@ -166,6 +166,7 @@ def _checkAdminPolicyPost(method, param=None, user=None):
             log.debug("pin set")
             # TODO: This random PIN could be processed and
             # printed in a PIN letter
+            ret['newpin'] = newpin
 
         # ------------------------------------------------------------------ --
 
