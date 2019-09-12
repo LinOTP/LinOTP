@@ -160,16 +160,15 @@ def _checkAdminPolicyPost(method, param=None, user=None):
         randomPINLength = _getRandomOTPPINLength(user)
 
         if randomPINLength > 0:
-            newpin = _getRandomPin(randomPINLength)
+            new_pin = createRandomPin(user, min_pin_length=randomPINLength)
 
             log.debug("setting random pin for token with serial %s and user: "
                       "%s", serial, user)
 
-            linotp.lib.token.setPin(newpin, None, serial)
+            linotp.lib.token.setPin(new_pin, None, serial)
             log.debug("pin set")
-            # TODO: This random PIN could be processed and
-            # printed in a PIN letter
-            ret['newpin'] = newpin
+
+            ret['new_pin'] = new_pin
 
         # ------------------------------------------------------------------ --
 
@@ -303,17 +302,19 @@ def _checkSelfservicePolicyPost(method, param=None, user=None):
     if method == 'enroll':
         # check if we are supposed to genereate a random OTP PIN
         randomPINLength = _getRandomOTPPINLength(user)
+
         if randomPINLength > 0:
-            newpin = _getRandomPin(randomPINLength)
+
+            new_pin = createRandomPin(user, min_pin_length=randomPINLength)
 
             log.debug("setting random pin for token with serial "
                       "%s and user: %s", serial, user)
 
-            linotp.lib.token.setPin(newpin, None, serial)
+            linotp.lib.token.setPin(new_pin, None, serial)
             log.debug("[init] pin set")
             # TODO: This random PIN could be processed and
             # printed in a PIN letter
-
+            ret['new_pin'] = new_pin
     # ------------------------------------------------------------------ --
 
     # maxtoken policy restricts the tokennumber for the user in a realm
