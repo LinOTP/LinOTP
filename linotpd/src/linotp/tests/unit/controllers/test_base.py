@@ -35,21 +35,8 @@ import pytest
 from mock import mock
 
 from linotp.controllers.base import BaseController
-from linotp.flap import MultiDict, NestedMultiDict
+from werkzeug.datastructures import MultiDict, CombinedMultiDict
 
-
-def create_multidict(*args):
-    """
-    Create a NestedMultiDict object from tuple lists
-        args = [[('k', '1'), ('k', '2'), ('k', '3')], [('l', 'Z')]]
-    :params args: list of list of tuples
-    :returns: NestedMultiDict object
-    """
-    multi_dicts = []
-    for arg in args:
-        multi_dicts.append(MultiDict(arg))
-
-    return NestedMultiDict(*multi_dicts)
 
 @pytest.mark.usefixtures("app")
 class TestBaseController(object):
@@ -63,19 +50,26 @@ class TestBaseController(object):
         check if global request.params gets parsed to a plain dict correctly
         """
 
+        input_params = CombinedMultiDict((
+            MultiDict([('k[]', '1'), ('k[]', '2'), ('l', 'Z')]),
+        ))
         expected_params = {'k': ['1', '2'], 'l': 'Z'}
 
         controller = BaseController("test")
 
         with base_app.test_request_context(
             "/test",
-            query_string=expected_params,
+            query_string=input_params,
             content_type="application/x-www-form-urlencoded",
         ):
             controller._parse_request_params(flask.request)
 
         assert isinstance(controller.request_params, dict), \
                             'self.request_params is not of type dict!'
+
+        assert controller.request_params == \
+            expected_params, \
+            'parsed request_params do not match'
 
     @mock.patch('linotp.controllers.BaseController.__init__', return_value=None)
     def test_jsondict_params(self, _mock_base, base_app):

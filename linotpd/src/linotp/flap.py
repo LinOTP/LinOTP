@@ -2,7 +2,7 @@
 
 import logging
 import webob
-from webob.multidict import MultiDict, NestedMultiDict
+from werkzeug.datastructures import MultiDict
 
 from pylons import (
     response, url, __version__,

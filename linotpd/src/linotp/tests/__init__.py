@@ -45,6 +45,7 @@ directory.
 
 import base64
 import copy
+from datetime import datetime
 from distutils.version import LooseVersion
 import hashlib
 import io
@@ -53,9 +54,9 @@ import logging
 import os
 import warnings
 
-from flask import Flask
-from flask import Response
+from flask import Flask, request, Response
 from flask_testing import TestCase
+from uuid import uuid4
 import pkg_resources
 import pytest
 
@@ -249,6 +250,9 @@ class TestController(TestCase):
 
     def setUp(self):
         """ here we do the system test init per test method """
+        request.environ['REQUEST_ID'] = str(uuid4())
+        request.environ['REQUEST_START_TIMESTAMP'] = datetime.now()
+
         # self.delete_all_realms()
         # self.delete_all_resolvers()
         # self.create_common_resolvers()
@@ -292,8 +296,9 @@ class TestController(TestCase):
         params=None,
         headers=None,
         cookies=None,
-        upload_files=None,
         client=None,
+        upload_files=None,
+        content_type=None,
     ):
         """
         Makes a request using WebTest app self.app
@@ -315,6 +320,10 @@ class TestController(TestCase):
             }
             params.update(nparams)
             headers["Content-Type"] = 'multipart/form-data'
+        if content_type:
+            headers['Content-Type'] = content_type
+            if content_type == "application/json":
+                params = json.dumps(params)
 
         if client:
             if not headers:
@@ -439,6 +448,7 @@ class TestController(TestCase):
         upload_files=None,
         client=None,
         auth_type="Digest",
+        content_type=None,
     ):
         """
         Makes an authenticated request (setting HTTP Digest header, cookie and
@@ -470,6 +480,7 @@ class TestController(TestCase):
             cookies=cookies,
             upload_files=upload_files,
             client=client,
+            content_type=content_type,
         )
 
     def make_admin_request(
@@ -481,6 +492,7 @@ class TestController(TestCase):
         client=None,
         upload_files=None,
         auth_type="Digest",
+        content_type=None,
     ):
         """
         Makes an authenticated request to /admin/'action'
@@ -496,6 +508,7 @@ class TestController(TestCase):
             upload_files=upload_files,
             client=client,
             auth_type=auth_type,
+            content_type=content_type,
         )
 
     def make_audit_request(
@@ -506,6 +519,7 @@ class TestController(TestCase):
         auth_user="admin",
         client=None,
         auth_type="Digest",
+        content_type=None,
     ):
         """
         Makes an authenticated request to /admin/'action'
@@ -520,6 +534,7 @@ class TestController(TestCase):
             auth_user=auth_user,
             client=client,
             auth_type=auth_type,
+            content_type=content_type,
         )
 
     def make_manage_request(
@@ -531,6 +546,7 @@ class TestController(TestCase):
         client=None,
         upload_files=None,
         auth_type="Digest",
+        content_type=None,
     ):
         """
         Makes an authenticated request to /manage/'action'
@@ -546,6 +562,7 @@ class TestController(TestCase):
             upload_files=upload_files,
             client=client,
             auth_type=auth_type,
+            content_type=content_type,
         )
 
     def make_system_request(
@@ -557,6 +574,7 @@ class TestController(TestCase):
         client=None,
         upload_files=None,
         auth_type="Digest",
+        content_type=None,
     ):
         """
         Makes an authenticated request to /admin/'action'
@@ -572,6 +590,7 @@ class TestController(TestCase):
             upload_files=upload_files,
             client=client,
             auth_type=auth_type,
+            content_type=content_type,
         )
 
     def make_reporting_request(self, action, params=None, method=None,
@@ -701,6 +720,7 @@ class TestController(TestCase):
             upload_files=upload_files,
             client=client,
             auth_type=auth_type,
+            content_type=content_type,
         )
 
     def make_validate_request(

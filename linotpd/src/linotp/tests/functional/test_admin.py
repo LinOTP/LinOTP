@@ -839,19 +839,19 @@ class TestAdminController(TestController):
                                 )
 
         self.assertTrue(
-            response.json['result']['status'] is True,
-            'Expected response.result.status to be True in response text: "{}"'
-                .format(response.text))
+            response.json['result']['status'],
+            'Expected response.result.status to be True in response: "{}"'
+                .format(response.json))
 
         self.assertTrue(
             token_serial_1 in response.json['result']['value'],
-            'Expected response.result.value to contain token id "{}" in response text: "{}"'
-                .format(token_serial_1, response.text))
+            'Expected response.result.value to contain token id "{}" in response: "{}"'
+                .format(token_serial_1, response.json))
 
         self.assertTrue(
             token_serial_2 in response.json['result']['value'],
-            'Expected response.result.value to contain token id "{}" in response text: "{}"'
-                .format(token_serial_2, response.text))
+            'Expected response.result.value to contain token id "{}" in response: "{}"'
+                .format(token_serial_2, response.json))
 
     def test_set_empty(self):
         '''

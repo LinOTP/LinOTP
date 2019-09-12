@@ -73,6 +73,7 @@ test_requirements = [
     'pytest<5.0.0',
     'pytest-cov',
     'pytest-freezegun',
+    'pytest-flask',
     'mock',
     'unittest2',
     'freezegun',
