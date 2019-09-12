@@ -215,8 +215,8 @@ class SMTPEmailProvider(IEmailProvider):
 
         # legacy pre processing - transfered from email token
 
-        otp = replacements['otp']
-        serial = replacements['serial']
+        otp = replacements.get('otp','')
+        serial = replacements.get('serial','')
 
         if "<otp>" not in message:
             message = message + "<otp>"
@@ -450,7 +450,7 @@ class SMTPEmailProvider(IEmailProvider):
 
         # setup message
 
-        email_message =self.render_message(
+        email_message = self.render_message(
             email_to, subject, message, replacements)
 
         # ------------------------------------------------------------------ --
