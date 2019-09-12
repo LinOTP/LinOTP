@@ -2197,12 +2197,15 @@ def checkOTPPINPolicy(pin, user):
             'error': ''}
 
 
-def _getRandomPin(randomPINLength):
+def _getRandomPin(randomPINLength, chars=None):
+    """ create a random pin """
     newpin = ""
 
     log.debug("creating a random otp pin of length %r", randomPINLength)
 
-    chars = letters + digits
+    if not chars:
+        chars = letters + digits
+
     for _i in range(randomPINLength):
         newpin = newpin + urandom.choice(chars)
 
