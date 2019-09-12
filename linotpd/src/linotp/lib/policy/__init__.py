@@ -31,7 +31,6 @@ import re
 
 from copy import deepcopy
 
-import string
 import linotp
 
 from linotp.lib.user import User
@@ -63,8 +62,10 @@ from linotp.lib.policy.util import _getLinotpConfig
 from linotp.lib.policy.util import _getRealms
 from linotp.lib.policy.util import _getUserFromParam
 from linotp.lib.policy.util import _getUserRealms
-from linotp.lib.policy.util import letters
-from linotp.lib.policy.util import digits
+
+from linotp.lib.policy.util import letters, digits, special_characters
+from linotp.lib.policy.util import ascii_lowercase, ascii_uppercase
+
 
 # for generating random passwords
 from linotp.lib.crypto import urandom
@@ -2232,41 +2233,24 @@ def createRandomPin(user, min_pin_length):
     :param user: user defines the realm/user policy selection
     :return: the new pin
     """
-
-    character_pool = "%s%s%s" % (string.ascii_lowercase,
-                             string.ascii_uppercase, string.digits)
+    character_pool = letters + digits
 
     pin_length = max(min_pin_length, _getRandomOTPPINLength(user))
 
     contents = _getRandomOTPPINContent(user)
 
-    if contents != "":
+    if contents:
         character_pool = ""
         if "c" in contents:
-            character_pool += string.ascii_lowercase
+            character_pool += ascii_lowercase
         if "C" in contents:
-            character_pool += string.ascii_uppercase
+            character_pool += ascii_uppercase
         if "n" in contents:
-            character_pool += string.digits
+            character_pool += digits
         if "s" in contents:
-            character_pool += "!#$%&()*+,-./:;<=>?@[]^_"
+            character_pool += special_characters
 
     return generate_password(size=pin_length, characters=character_pool)
-
-def _getRandomPin(randomPINLength, chars=None):
-    """ create a random pin """
-    newpin = ""
-
-    log.debug("creating a random otp pin of length %r", randomPINLength)
-
-    if not chars:
-        chars = letters + digits
-
-    for _i in range(randomPINLength):
-        newpin = newpin + urandom.choice(chars)
-
-    return newpin
-
 
 def checkToolsAuthorisation(method, param=None):
     # TODO: fix the semantic of the realm in the policy!
