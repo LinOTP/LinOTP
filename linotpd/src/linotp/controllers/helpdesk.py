@@ -50,6 +50,8 @@ from linotp.lib.policy import checkPolicyPost
 from linotp.lib.policy import PolicyException
 
 from linotp.lib.policy import getAdminPolicies
+from linotp.lib.policy import createRandomPin
+
 from linotp.tokens import tokenclass_registry
 
 from linotp.lib.tokeniterator import TokenIterator
@@ -459,6 +461,13 @@ class HelpdeskController(BaseController):
 
             # --------------------------------------------------------------- --
 
+            # create a new pin according to the policies
+
+            if 'otppin' not in params:
+                params['otppin'] = createRandomPin(user, min_pin_length=6)
+
+            # --------------------------------------------------------------- --
+
             # check admin authorization
 
             res = checkPolicyPre('admin', 'init', params, user=user)
@@ -468,13 +477,10 @@ class HelpdeskController(BaseController):
             helper_params = token_cls.get_helper_params_post(params, user=user)
             params.update(helper_params)
 
-            # scope_extension: we are in scope helpdesk
-            params['::scope::'] = {
-                'helpdesk': True,
-                'user': user
-                }
 
             # --------------------------------------------------------------- --
+
+            # create new serial
 
             th = TokenHandler()
 
@@ -484,10 +490,16 @@ class HelpdeskController(BaseController):
             log.info("[init] initialize token. user: %s, serial: %s"
                      % (user.login, serial))
 
-            from linotp.lib.policy import _getRandomPin
-            params['otppin'] = _getRandomPin(randomPINLength=12, chars=None)
-
             # --------------------------------------------------------------- --
+
+            # scope_extension: we are in scope helpdesk
+            # this is eg required to notify the emailtoken to use the
+            # email from user if none is given as param
+
+            params['::scope::'] = {
+                'helpdesk': True,
+                'user': user
+                }
 
             (ret, token) = th.initToken(params, user)
 
@@ -514,12 +526,13 @@ class HelpdeskController(BaseController):
             logTokenNum(c.audit)
 
             res = checkPolicyPost('admin', 'init', params, user=user)
+            pin = res.get('new_pin', params['otppin'])
 
             info = {
                 'message': 'A new %s token has been enrolled: %r' % (
                                             token.type, response_detail),
                 'Subject': 'new EMail Token enrolled',
-                'Pin': params['otppin']
+                'Pin': pin
             }
 
             notify_user(user, 'enrollment', info)
