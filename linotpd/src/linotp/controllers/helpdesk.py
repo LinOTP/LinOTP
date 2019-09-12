@@ -292,3 +292,119 @@ class HelpdeskController(BaseController):
         finally:
             Session.close()
 
+    def users(self):
+        '''
+        This function is used to fill the flexigrid.
+        Unlike the complex /admin/userlist function, it only returns a
+        simple array of the tokens.
+        '''
+        param = self.request_params
+
+        try:
+
+            page = param.get("page", 1)
+            qfilter = param.get("query", '*') or '*'
+            qtype = param.get("qtype", 'username')
+            sort = param.get("sortname", 'username')
+            direction = param.get("sortorder", 'asc')
+            psize = param.get("rp", 20)
+
+            user = getUserFromParam(param)
+
+            realms = get_realms_from_params(
+                param, getAdminPolicies('userlist', scope='admin'))
+
+            uniqueUsers = {}
+            for realm in realms:
+                # check admin authorization
+                # check if we got a realm or resolver, that is ok!
+                checkPolicyPre(
+                    'admin', 'userlist', {'user': user.login, 'realm': realm})
+
+                users_list = getUserList({qtype: qfilter, 'realm':realm}, user)
+                for u in users_list:
+                    pkey = u['userid'] + ':' + u['useridresolver']
+                    uniqueUsers[pkey] = u
+
+            userNum = len(uniqueUsers)
+
+            lines = []
+            for u in uniqueUsers.values():
+                # shorten the useridresolver, to get a better display value
+                resolver_display = ""
+                if "useridresolver" in u:
+                    if len(u['useridresolver'].split(".")) > 3:
+                        resolver_display = u['useridresolver'].split(".")[3] + " (" + u['useridresolver'].split(".")[1] + ")"
+                    else:
+                        resolver_display = u['useridresolver']
+                lines.append(
+                    { 'id' : u['username'],
+                        'cell': [
+                            (u['username']) if u.has_key('username') else (""),
+                            (resolver_display),
+                            (u['surname']) if u.has_key('surname') else (""),
+                            (u['givenname']) if u.has_key('givenname') else (""),
+                            (u['email']) if u.has_key('email') else (""),
+                            (u['mobile']) if u.has_key('mobile') else (""),
+                            (u['phone']) if u.has_key('phone') else (""),
+                            (u['userid']) if u.has_key('userid') else (""),
+                             ]
+                    }
+                    )
+
+            # sorting
+            reverse = False
+            sortnames = {
+                'username': 0,
+                'useridresolver': 1,
+                'surname': 2,
+                'givenname': 3,
+                'email': 4,
+                'mobile':5,
+                'phone': 6,
+                'userid': 7
+                }
+            if direction == "desc":
+                reverse = True
+
+            lines = sorted(lines,
+                           key=lambda user: user['cell'][sortnames[sort]],
+                           reverse=reverse,
+                           cmp=unicode_compare)
+
+            # end: sorting
+
+            # reducing the page
+            if page and psize:
+                page = int(page)
+                psize = int(psize)
+                start = psize * (page - 1)
+                end = start + psize
+                lines = lines[start:end]
+
+            # We need to return 'page', 'total', 'rows'
+            res = {
+                "page": int(page),
+                "total": userNum,
+                "rows": lines
+            }
+
+            c.audit['success'] = True
+
+            Session.commit()
+            return sendResult(response, res)
+
+        except PolicyException as pe:
+            log.exception("[userview_flexi] Error during checking policies: %r" % pe)
+            Session.rollback()
+            return sendError(response, unicode(pe), 1)
+
+        except Exception as e:
+            log.exception("[userview_flexi] failed: %r" % e)
+            Session.rollback()
+            return sendError(response, e)
+
+        finally:
+            Session.close()
+
+
