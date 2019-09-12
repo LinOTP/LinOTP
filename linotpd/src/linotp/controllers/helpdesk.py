@@ -177,3 +177,118 @@ class HelpdeskController(BaseController):
     def dropsession(self):
         response.set_cookie('helpdesk_session', None, expires=1)
         return sendResult(response, True)
+
+
+    def tokens(self):
+        '''
+        This function is used to fill the flexigrid.
+        Unlike the complex /admin/show function, it only returns a
+        simple array of the tokens.
+        '''
+        param = self.request_params
+
+        try:
+            page = param.get("page", 1)
+            qfilter = param.get("query")
+            qtype = param.get("qtype", 'all')
+            sort = param.get("sortname", )
+            direction = param.get("sortorder", "desc")
+            psize = param.get("rp", 20)
+
+            filter_all = None
+            filter_realm = None
+            user = User()
+
+            if qtype == "loginname":
+
+                # we take by default the given expression as a loginname,
+                # especially if it contains a "*" wildcard.
+                # it only might be more, a user and a realm, if there
+                # is an '@' sign in the loginname and the part after the
+                # last '@' sign is matching an existing realm
+
+                user = User(login=qfilter)
+
+                if "*" not in qfilter and "@" in qfilter:
+
+                    login, _ , realm = qfilter.rpartition("@")
+
+                    if realm.lower() in getRealms():
+                        user = User(login, realm)
+                        if not user.exists():
+                            user = User(login=qfilter)
+
+            elif qtype == "all":
+                filter_all = qfilter
+
+            elif qtype == "realm":
+                filter_realm = qfilter
+
+            # check admin authorization
+            res = checkPolicyPre('admin', 'show', param , user=user)
+
+            filterRealm = res['realms']
+            # check if policies are active at all
+            # If they are not active, we are allowed to SHOW any tokens.
+            pol = getAdminPolicies("show")
+            # If there are no admin policies, we are allowed to see all realms
+            if not pol['active']:
+                filterRealm = ["*"]
+
+            # check if we only want to see ONE realm or see all realms we are allowerd to see.
+            if filter_realm:
+                if filter_realm in filterRealm or '*' in filterRealm:
+                    filterRealm = [filter_realm]
+
+            tokenArray = TokenIterator(
+                user, None, page , psize, filter_all, sort,
+                direction, filterRealm=filterRealm)
+
+            resultset = tokenArray.getResultSetInfo()
+            # If we have chosen a page to big!
+            lines = []
+            for tok in tokenArray:
+                lines.append(
+                    {'id' : tok['LinOtp.TokenSerialnumber'],
+                     'cell': [
+                            tok['LinOtp.TokenSerialnumber'],
+                            tok['LinOtp.Isactive'],
+                            tok['User.username'],
+                            tok['LinOtp.RealmNames'],
+                            tok['LinOtp.TokenType'],
+                            tok['LinOtp.FailCount'],
+                            tok['LinOtp.TokenDesc'],
+                            tok['LinOtp.MaxFail'],
+                            tok['LinOtp.OtpLen'],
+                            tok['LinOtp.CountWindow'],
+                            tok['LinOtp.SyncWindow'],
+                            tok['LinOtp.Userid'],
+                            tok['LinOtp.IdResClass'].split('.')[-1],
+                            ]
+                    }
+                    )
+
+            # We need to return 'page', 'total', 'rows'
+            res = { "page": int(page),
+                "total": resultset['tokens'],
+                "rows": lines }
+
+            c.audit['success'] = True
+
+            Session.commit()
+            # The flexi handler should support std LinOTP output
+            return sendResult(response, res)
+
+        except PolicyException as pex:
+            log.exception("Error during checking policies")
+            Session.rollback()
+            return sendError(response, pex, 1)
+
+        except Exception as exx:
+            log.exception("tokens lookup failed!")
+            Session.rollback()
+            return sendError(response, exx)
+
+        finally:
+            Session.close()
+
