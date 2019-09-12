@@ -694,7 +694,8 @@ def loadProviderFromPolicy(provider_type, realm=None, user=None):
 
     return loadProvider(provider_type, provider_name)
 
-def get_provider_from_policy(provider_type, realm=None, user=None):
+def get_provider_from_policy(provider_type, realm=None, user=None,
+                             scope='authentication', action=None):
     """
     interface for the provider user like email token or sms token
 
@@ -720,9 +721,12 @@ def get_provider_from_policy(provider_type, realm=None, user=None):
     if user and user.login:
         realm = user.realm
 
+    if not action:
+        action = provider_action_name
+
     policies = get_client_policy(request_context['Client'],
-                                 scope='authentication',
-                                 action=provider_action_name, realm=realm,
+                                 scope=scope,
+                                 action=action, realm=realm,
                                  user=user.login)
 
     if not policies:
@@ -734,9 +738,7 @@ def get_provider_from_policy(provider_type, realm=None, user=None):
 
         return []
 
-    provider_names = getPolicyActionValue(policies,
-                                         provider_action_name,
-                                         is_string=True)
+    provider_names = getPolicyActionValue(policies, action, is_string=True)
 
     providers = []
 
@@ -975,5 +977,51 @@ def _load_provider_class(provider_slass_spec):
                          ' or '.join(required_method)))
 
     return provider_class_obj
+
+def notify_user(user, action, info):
+
+    policies = get_client_policy(request_context['Client'],
+                             scope='notification',
+                             action=action, realm=user.realm,
+                             user=user.login)
+
+    provider_specs = getPolicyActionValue(policies, action, is_string=True)
+
+    for provider_spec in provider_specs:
+
+        provider_type, _sep, provider_name = provider_spec.partition('::')
+
+        if provider_type == 'email':
+            notify_user_by_email(provider_name, user, action, info)
+
+        # elif provider_type == 'sms':
+        #    notify_user_by_email(provider_name, user, action, info)
+
+
+def notify_user_by_email(provider_name, user, action, info):
+
+    user_detail = user.getUserInfo()
+    user_email = user_detail.get('email')
+
+    replacements = {}
+    replacements.update(info)
+    replacements.update(user_detail)
+
+    if not user_email:
+        raise Exception(
+            'unable to notify user via email - user has no email address')
+
+    try:
+
+        provider = loadProvider('email', provider_name=provider_name)
+        provider.submitMessage(
+            email_to=user_email,
+            message=info.get('message',''),
+            subject=info.get('Subject',''),
+            replacements=replacements)
+
+    except Exception as exx:
+        log.error('Failed to notify user %r by email' % user_email)
+        raise exx
 
 # eof ####################################################################
