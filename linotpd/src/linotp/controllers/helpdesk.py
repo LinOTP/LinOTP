@@ -423,6 +423,7 @@ class HelpdeskController(BaseController):
 
         parameters:
             * user: the new token owner
+            * realm: the realm the user belongs to - used to identify the user
             * type: the token type
 
         """
@@ -543,7 +544,7 @@ class HelpdeskController(BaseController):
                 'Pin': pin
             }
 
-            notify_user(user, 'enrollment', info)
+            notify_user(user, 'enrollment', info, required=True)
 
             logTokenNum(c.audit)
 
