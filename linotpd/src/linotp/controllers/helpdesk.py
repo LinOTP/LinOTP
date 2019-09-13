@@ -326,6 +326,9 @@ class HelpdeskController(BaseController):
                 users_list = getUserList({qtype: qfilter, 'realm':realm}, user)
                 for u in users_list:
                     pkey = u['userid'] + ':' + u['useridresolver']
+                    user_realms = uniqueUsers.get(pkey, {}).get('realms', [])
+                    user_realms.append(realm)
+                    u['realms'] = user_realms
                     uniqueUsers[pkey] = u
 
             userNum = len(uniqueUsers)
@@ -350,6 +353,7 @@ class HelpdeskController(BaseController):
                             (u['mobile']) if u.has_key('mobile') else (""),
                             (u['phone']) if u.has_key('phone') else (""),
                             (u['userid']) if u.has_key('userid') else (""),
+                            (u['realms']),
                              ]
                     }
                     )
