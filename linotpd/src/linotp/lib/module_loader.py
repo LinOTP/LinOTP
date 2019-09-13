@@ -30,6 +30,10 @@ import importlib
 import pkgutil
 import sys
 
+import logging
+
+log = logging.getLogger(__name__)
+
 
 def import_submodules(package_name):
     """ Import all submodules of a module, recursively
@@ -38,10 +42,20 @@ def import_submodules(package_name):
     :type package_name: str
     :rtype: dict[types.ModuleType]
     """
+
     package = sys.modules[package_name]
+
     p_list = {}
+
     for _loader, name, _is_pkg in pkgutil.walk_packages(package.__path__):
-        p_list[name] = importlib.import_module(package_name + '.' + name)
+
+        try:
+
+            p_list[name] = importlib.import_module(package_name + '.' + name)
+
+        except Exception as exx:
+
+            log.warning("Failed to load %r - %r", name, exx)
 
     return p_list
 
