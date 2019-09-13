@@ -562,3 +562,73 @@ class HelpdeskController(BaseController):
             Session.rollback()
             return sendError(response, exx, 1)
 
+
+########################################################
+
+    def setPin(self):
+        """
+        method:
+            api/helpdesk/setPin
+
+        description:
+            This function sets the PIN of the token
+
+        arguments:
+            * serial     - required
+            * pin        - optional - uses random pin instead
+
+        returns:
+            a json result with a boolean
+              "result": true
+
+        """
+        res = {}
+
+        try:
+            params = self.request_params
+
+            serial = params.get("serial")
+            if not serial:
+                raise ParameterError("Missing parameter: 'serial'")
+
+            checkPolicyPre('admin', method='set')
+
+            from linotp.lib.token import getTokens4UserOrSerial
+            tokens = getTokens4UserOrSerial(serial=serial)
+
+            from linotp.lib.token import get_token_owner
+            for token in tokens:
+                owner = get_token_owner(token)
+                pin = params.get('pin', createRandomPin(owner, min_pin_length=6))
+                token.setPin(pin)
+                res = checkPolicyPost('admin', 'setPin', params, user=owner)
+                pin = res.get('new_pin', pin)
+
+                info = {
+                    'message': 'A new pin %s has been set for your token: %r'
+                                % (pin, serial),
+                    'Subject': 'new pin set for token %r' % serial,
+                    'Pin': pin
+                }
+
+                notify_user(owner, 'setPin', info, required=True)
+
+                res[serial] = 'pin set'
+
+            c.audit['success'] = res
+
+            Session.commit()
+            return sendResult(response, res)
+
+        except PolicyException as pex:
+            log.exception('[setPin] policy failed %r')
+            Session.rollback()
+            return sendError(response, pex, 1)
+
+        except Exception as exx:
+            log.exception('[setPin] error while setting pin')
+            Session.rollback()
+            return sendError(response, exx, 0)
+
+        finally:
+            Session.close()

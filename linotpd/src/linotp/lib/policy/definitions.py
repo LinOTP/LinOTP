@@ -229,8 +229,11 @@ def getPolicyDefinitions(scope=""):
         'notification': {
             'enrollment': {
                 'type': 'string',
-                'description': ('provider to be used for enrollment'
-                                'notification')}
+                'description': ('provider to be used for '
+                                'enrollment notification')},
+            'setPin': {
+                'type': 'string',
+                'description': ('provider to be used for setPin notification')}
             },
         'authentication': {
             "delete_on_authentication_exceed": {
