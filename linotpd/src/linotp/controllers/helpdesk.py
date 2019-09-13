@@ -68,8 +68,9 @@ from linotp.lib.realm import getRealms
 from linotp.lib.user import getUserList
 
 from linotp.lib.util import unicode_compare, SESSION_KEY_LENGTH
+from linotp.lib.util import check_session
 
-from linotp.provider import notify_user
+from linotp.provider.notification import notify_user
 
 from linotp.lib.audit.base import logTokenNum
 
@@ -91,9 +92,9 @@ class HelpdeskController(BaseController):
     the LinOTP server.
     The HelpdeskController is used for administrative tasks like adding tokens
     to LinOTP, assigning tokens or revoking tokens.
-    The functions of the AdminController are invoked like this
+    The functions of the HelpdeskController are invoked like this
 
-        https://server/helpdesk/<functionname>
+        https://server/api/helpdesk/<functionname>
 
     The functions are described below in more detail.
     '''
@@ -107,17 +108,20 @@ class HelpdeskController(BaseController):
             c.audit = request_context['audit']
             c.audit['success'] = False
             c.audit['client'] = get_client(request)
+            request_context['Audit'] = audit
 
             # Session handling
-            #check_session(request)
+            if action not in ['getsession', 'dropsession']:
+                check_session(request, scope='helpdesk')
 
-            request_context['Audit'] = audit
             return request
 
         except Exception as exx:
-            log.exception("[__before__::%r] exception %r", action, exx)
+            log.exception("[__before__::%r] exception", action)
+
             Session.rollback()
             Session.close()
+
             return sendError(response, exx, context='before')
 
     def __after__(self, action):
