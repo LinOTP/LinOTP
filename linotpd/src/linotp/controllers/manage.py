@@ -188,7 +188,8 @@ class ManageController(BaseController):
 
             log.debug("[index] importers: %s" % IMPORT_TEXT)
             c.importers = IMPORT_TEXT
-            c.help_url = config.get('help_url')
+            help_version = c.version[:c.version.find('.')]
+            c.help_url = config.get('HELP_URL').format(help_version)
 
             # -------------------------------------------------------------- --
 

@@ -25,44 +25,10 @@
 #
 """  Pylons environment configuration """
 
-import os
-
 import flask
-
-from mako.lookup import TemplateLookup
-from linotp.flap import config, handle_mako_error
-# from sqlalchemy import create_engine
-
-import linotp.lib.helpers
-
-from linotp.useridresolver import resolver_registry
-from linotp.useridresolver import UserIdResolver
-from linotp.config.routing import make_map
-from linotp.lib.error import TokenTypeNotSupportedError
-
-
-import sys
-import inspect
-import pkg_resources
 
 import warnings
 warnings.filterwarnings(action='ignore', category=DeprecationWarning)
-
-
-def _uniqify_list(input_list):
-    """
-    Returns a list containing only unique elements from input_list whilst
-    preserving the original order.
-    See http://www.peterbe.com/plog/uniqifiers-benchmark
-    """
-    seen = {}
-    result = []
-    for item in input_list:
-        if item in seen:
-            continue
-        seen[item] = 1
-        result.append(item)
-    return result
 
 
 def fxn():
@@ -72,10 +38,6 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     fxn()
 
-import logging
-
-log = logging.getLogger(__name__)
-
 
 def load_environment(global_conf, app_conf):
     """
@@ -84,87 +46,9 @@ def load_environment(global_conf, app_conf):
 
     @param app_conf Flask configuration
     """
-    # Pylons paths
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    paths = dict(root=root,
-                 controllers=os.path.join(root, 'controllers'),
-                 static_files=os.path.join(root, 'public'),
-                 templates=[app_conf.get('custom_templates',
-                                         os.path.join(root, 'templates')),
-                            os.path.join(root, 'templates')])
 
-    config = flask.g.request_context['config']
-    config['linotp.root'] = root
+    return flask.g.request_context['config']
 
-    # Copy Flask config into global config
-    config.update(app_conf)
-
-    from linotp.lib.config.global_api import initGlobalObject
-    initGlobalObject()
-
-    config['pylons.h'] = linotp.lib.helpers
-
-    # add per token a location for the mako template lookup
-    # @note: the location is defined in the .ini file by
-    # the entry [linotpTokenModules]
-
-    directories = paths['templates']
-
-    import linotp.tokens as token_package
-
-    token_package.reload_classes()
-    token_package_path = os.path.dirname(token_package.__file__)
-    directories.append(token_package_path)
-
-    for token_package_sub_path, _subdir, _files in os.walk(token_package_path):
-        directories.append(token_package_sub_path)
-
-    # add a template path for every resolver
-    resolver_module_path = UserIdResolver.__file__
-    directories.append(resolver_module_path)
-
-    unique_directories = _uniqify_list(directories)
-    log.debug("[load_environment] Template directories: %r" % unique_directories)
-
-    # Setup the SQLAlchemy database engine
-    # If we load the linotp.model here, the pylons.config is loaded with
-    # the entries from the config file. if it is loaded at the top of the file,
-    # the pylons.config does not contain the config file, yet.
-    # NB: With Flask, this shouldn't matter because we have the
-    # `SQLALCHEMY_DATABASE_URI` in the Flask-side configuration.
-    # from linotp.model import init_model
-    # engine = create_engine(config['SQLALCHEMY_DATABASE_URI'])
-    # init_model(engine)
-
-    # CONFIGURATION OPTIONS HERE (note: all config options will override
-    # any Pylons config options)
-
-    from linotp.lib.audit.base import getAudit
-    audit = getAudit(config)
-    config['audit'] = audit
-
-    # setup Security provider definition
-    try:
-        log.debug('[load_environment] loading security provider pool')
-        from linotp.lib.config.global_api import getGlobalObject
-        getGlobalObject().security_provider.load_config(config)
-    except Exception as e:
-        log.exception("Failed to load security provider definition: %r" % e)
-        raise e
-
-    # get the help url
-    url = config.get("linotpHelp.url", None)
-    if url is None:
-        # version = pkg_resources.get_distribution("linotp").version
-        # TODO
-        version = 3
-        # First try to get the help for this specific version
-        url = "https://linotp.org/doc/%s/index.html" % version
-    config['help_url'] = url
-
-    log.debug("[load_environment] done")
-
-    return config
 
 #######################################
 
@@ -172,34 +56,14 @@ def load_environment(global_conf, app_conf):
 def get_activated_token_modules():
 
     """
-    checks in the ini file for the linotpTokenModules key and returns
-    the list of modules defined there as a list. if the key is not
-    present this will return None.
+    checks the setting for token modules to be activated and returns
+    the list of modules defined there as a list. If the key is not
+    present or has an empty value this will return an empty list.
     """
-    config = flask.g.request_context['config']
-    if 'linotpTokenModules' not in config:
-        return None
 
-    module_list = []
-    module_config_str = config.get('linotpTokenModules')
-
-    # in the config *.ini files we have some line continuation slashes,
-    # which will result in ugly module names, but as they are followed by
-    # \n they could be separated as single entries by the following two
-    # lines
-    lines = module_config_str.splitlines()
-    coco = ",".join(lines)
-    for module in coco.split(','):
-
-        if module.strip() == '\\':
-            continue
-
-        if module.strip() == '':
-            continue
-
-        module_list.append(module.strip())
-
-    return module_list
-
+    token_modules = flask.current_app.config.get("TOKEN_MODULES", "")
+    if not token_modules:
+        return []
+    return token_modules.split()
 
 ###eof#########################################################################

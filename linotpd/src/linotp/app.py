@@ -33,6 +33,9 @@ from . import flap
 from .config.defaults import set_defaults
 from .config.environment import load_environment
 from .settings import configs
+from .tokens import reload_classes as reload_token_classes
+from .lib.audit.base import getAudit
+from .lib.config.global_api import initGlobalObject
 from .lib.ImportOTP.vasco import init_vasco
 
 from sqlalchemy import create_engine
@@ -165,6 +168,31 @@ def generate_secret_key_file(app):
         app.logger.debug("SECRET_FILE: {}".format(filename))
 
 
+def setup_security_provider(app):
+    """
+    Set up the security provider (HSM or software). This is straight from
+    `load_environment()` and should be rewritten to use Flask-style config
+    settings, but this is a huge bowl of spaghetti.
+    """
+    try:
+        flask_g.app_globals.security_provider.load_config(
+            flask_g.request_context['config'])
+    except Exception as e:
+        app.logger.error("Failed to load security provider definition: {}"
+                         .format(e))
+        raise e
+
+
+def setup_audit(app):
+    """
+    Set up audit logging for a request. This is, again, straight from
+    `load_environment()` and as such should be looked at with a microscope,
+    probably when we're fixing auditing.
+    """
+    c = flask_g.request_context['config']
+    c['audit'] = getAudit(c)
+
+
 def create_app(config_name='default', config_extra=None):
     """
     Generate a new instance of the Flask app
@@ -192,12 +220,28 @@ def create_app(config_name='default', config_extra=None):
     with app.app_context():
         setup_db(app)
         generate_secret_key_file(app)
+        flap.set_config()       # ensure `request_context` exists
+        set_defaults(app)
+        reload_token_classes()
 
     @app.before_request
     def setup_env():
+        # The following functions are called here because they're
+        # stuffing bits into `flask.g`, which is a per-request global
+        # object. Much of what is stuffed into `flask.g` is actually
+        # application-wide stuff that has no business being stored in
+        # `flask.g` in the first place, but lots of code expects to be
+        # able to look at the "request context" and find stuff
+        # there. Disentangling the application-wide stuff in the
+        # request context from the request-scoped stuff is a major
+        # project that will not be undertaken just now, and we're
+        # probably doing more work here than we need to. Global
+        # variables suck.
+
         flap.set_config()
-        set_defaults(app)
-        load_environment(flask_g, app.config)
+        initGlobalObject()
+        setup_audit(app)
+        setup_security_provider(app)
         init_vasco()
 
     app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
@@ -250,6 +294,10 @@ def _setup_controllers(app):
         app.logger.debug(
             "Registering {0} class at {1}".format(ctrl_class_name, url_prefix))
         app.register_blueprint(cls(ctrl_name), url_prefix=url_prefix)
+
+    app.logger.debug("Done loading controllers")
+    return app
+
 
 def _setup_token_template_path(app):
     """

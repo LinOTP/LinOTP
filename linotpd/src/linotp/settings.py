@@ -15,6 +15,11 @@ class Config:
     # CONTROLLERS = "admin manage system validate"
     CONTROLLERS = "admin auth manage selfservice system test validate"
 
+    # List all enabled token support modules. If this parameter is
+    # empty, all available token modules will be loaded.
+
+    TOKEN_MODULES = ""
+
     # We're using a `RotatingFileHandler` to manage log files. The
     # main log file is written to `LOGFILE_DIR/LOGFILE_NAME`, with one
     # message per line formatted as per `LOGFILE_FILE_LINE_FORMAT`,
@@ -54,6 +59,12 @@ class Config:
     SECRET_FILE = os.path.join(basedir, "encKey")
 
     # MAKO_TRANSLATE_EXCEPTIONS = False
+
+    # Where the online help can be found. The `{0}` will be replaced
+    # with the major version number of this LinOTP instance. (If there
+    # is no `{0}` in the URL that is not a big deal.)
+
+    HELP_URL = "https://linotp.org/doc/{0}/index.html"
 
     @staticmethod
     def init_app(app):

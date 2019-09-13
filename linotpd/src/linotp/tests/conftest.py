@@ -74,6 +74,5 @@ def app(base_app):
     """
     with base_app.app_context():
         set_config()
-        load_environment(flask.g, base_app.config)
         yield base_app
         meta.Session.remove()

@@ -1,25 +1,25 @@
 # Pylons-to-Flask porting scaffold.
 
 import logging
+import os.path
+
 import webob
 from werkzeug.datastructures import MultiDict
 
 from pylons import (
     response, url, __version__,
 )
-from pylons.configuration import PylonsConfig as Config
 from pylons.controllers.util import abort, forward, redirect
-from pylons.error import handle_mako_error
 from pylons.middleware import (
-    error_document_template, ErrorHandler, StatusCodeRedirect,
+    error_document_template,
 )
-# from pylons.templating import render_mako
-from pylons.wsgiapp import PylonsApp as App
 
 from werkzeug import LocalProxy
 
 import flask
 from flask_mako import render_template, TemplateError
+
+from .lib import helpers
 
 
 log = logging.getLogger(__name__)
@@ -64,8 +64,14 @@ def set_config():
     Set up config from flask request object
     """
     flask.g.request_context = {
-        'config': {},
+        'config': {             # This must die, die, die!!!
+            'linotp.root': os.path.dirname(os.path.abspath(__file__)),
+            'pylons.h': helpers,  # This can probably go away
+        },
     }
+
+    # We get this from `load_environment()`, and it basically sucks.
+    flask.g.request_context['config'].update(flask.current_app.config)
 
 def _(s):
     """Mickey Mouse translation utility."""
