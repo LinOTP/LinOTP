@@ -478,9 +478,9 @@ e2e-2:stretch:mariadb-10.1:
     - echo "$DEV_REPO_KNOWN_HOSTS" >~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
-    - find artifacts -ls
+    - find pkg/apt/* -ls
     # scp all files referenced by the changes files to the repository
-    - dcmd scp artifacts/*.changes dists@$DEV_REPO_HOST:deb-repo/incoming
+    - dcmd scp pkg/apt/*/*.changes dists@$DEV_REPO_HOST:deb-repo/incoming
 
 # Allow a manual step to upload packages directly from a pipeline
 # for testing
