@@ -55,7 +55,8 @@ class TestHelpdeskEnrollment(TestController):
 
         TestController.tearDown(self)
 
-    def test_enroll_email_token(self):
+    def test_list_users(self):
+        """ test that 'api/helpdesk/users' endpoint honores admin policies """
 
         # define admin policy for helpdesk user 'helpdesk'
 
@@ -83,12 +84,26 @@ class TestHelpdeskEnrollment(TestController):
         response = self.make_system_request('setPolicy', params=policy)
         assert 'false' not  in response
 
+        # ------------------------------------------------------------------ --
+
+        # verify that the helpdesk user can see only users for the
+        # specified realm
+
         params = {}
 
         response = self.make_helpdesk_request(
             'users', params=params)
 
-        jresp = json.loads(response.body)
         assert 'false' not in response
+
+
+        jresp = json.loads(response.body)
+        for user in jresp['result']['value']['rows']:
+            user_parts = user['cell']
+            realms = user_parts[8]
+            assert 'mydefrealm' in realms
+            assert len(realms) <= 1
+
+        return
 
 
