@@ -322,10 +322,28 @@ class HelpdeskController(BaseController):
 
             uniqueUsers = {}
             for realm in realms:
-                # check admin authorization
-                # check if we got a realm or resolver, that is ok!
-                checkPolicyPre(
-                    'admin', 'userlist', {'user': user.login, 'realm': realm})
+
+                # ---------------------------------------------------------- --
+
+                # check admin authorization: checkPolicyPre('admin',...
+
+                # admin policies are special as they are acl which define
+                # - for user (policy entry)
+                # - the actions (policy entry)
+                # - in the realm (policy entry)
+                # is allowed. while the user.login is not evaluated, the
+                # user.realm is.
+                #
+                # the admin policies are acls and are defined in contradiction
+                # to the other policy scopes where actions are either defiend
+                # for user or realm!!
+
+                # so we have to check for every user.realm
+
+                if isinstance(user, User):
+                    user.realm = realm
+
+                checkPolicyPre('admin', 'userlist', param=param, user=user)
 
                 users_list = getUserList({qtype: qfilter, 'realm':realm}, user)
                 for u in users_list:
