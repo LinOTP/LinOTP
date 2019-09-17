@@ -1377,7 +1377,6 @@ class SystemController(BaseController):
                 lines = lines[start:end]
 
             # We need to return 'page', 'total', 'rows'
-            response.content_type = 'application/json'
             res = {"page": int(page),
                    "total": lines_total,
                    "rows": lines}
@@ -1386,7 +1385,6 @@ class SystemController(BaseController):
             c.audit['info'] = ("name = %s, realm = %s, scope = %s" %
                                (name, realm, scope))
             Session.commit()
-            response.content_type = 'application/json'
             return json.dumps(res, indent=3)
 
         except Exception as exx:

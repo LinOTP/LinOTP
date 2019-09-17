@@ -554,7 +554,6 @@ class ManageController(BaseController):
                 lines = lines[start:end]
 
             # We need to return 'page', 'total', 'rows'
-            response.content_type = 'application/json'
             res = { "page": int(c.page),
                 "total": c.userNum,
                 "rows": lines }
