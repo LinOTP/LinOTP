@@ -32,6 +32,8 @@ import os
 import logging
 import json
 
+import flask
+
 from linotp.flap import (
     config, render_mako as render, request, response, tmpl_context as c, _,
 )
@@ -655,25 +657,30 @@ class ManageController(BaseController):
 
         The filename will be the 3. part,ID
         https://172.16.200.6/manage/help/somehelp.pdf
-        The file is downloaded through pylons!
+        The file is downloaded through Flask!
 
         '''
 
         try:
             directory = config.get("linotpManual.Directory", "/usr/share/doc/linotp")
             default_filename = config.get("linotpManual.File", "LinOTP_Manual-en.pdf")
+            mimetype = "application/pdf"
             headers = []
 
-            if not id:
-                id = default_filename + ".gz"
-                headers = [('content-Disposition', 'attachment; filename=\"' + default_filename + '\"'),
-                           ('content-Type', 'application/x-gzip')
-                           ]
+            # FIXME: Compression is better done using
+            # `Content-Encoding` (ideally farther up the WSGI stack).
 
-            from paste.fileapp import FileApp
-            wsgi_app = FileApp("%s/%s" % (directory, id), headers=headers)
+            # if not id:
+            #     id = default_filename + ".gz"
+            #     mimetype = "application/x-gzip"  # iffy
+
+            id = id or default_filename
+
+            r = flask.send_file("%s/%s" % (directory, id), mimetype=mimetype,
+                                as_attachment=True,
+                                attachment_filename=default_filename)
             Session.commit()
-            return wsgi_app(request.environ, self.start_response)
+            return r
 
         except Exception as e:
             log.exception("[help] Error loading helpfile: %r" % e)
