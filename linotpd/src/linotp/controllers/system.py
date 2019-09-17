@@ -33,6 +33,8 @@ import json
 import binascii
 from configobj import ConfigObj
 
+import flask
+
 from linotp import flap
 from linotp.flap import config, request, response, tmpl_context as c, _
 
@@ -116,7 +118,6 @@ from linotp.lib.type_utils import boolean
 
 from linotp.lib.crypto.utils import libcrypt_password
 
-from paste.fileapp import FileApp
 from cgi import escape
 
 from linotp.lib.context import request_context
@@ -1754,10 +1755,13 @@ class SystemController(BaseController):
             Session.commit()
 
             # if id is set, this defines the export filename
+            # FIXME: This is potentially racy because the value of `id`
+            # is hard-coded in the policy management JavaScript file.
+
             if id:
                 filename = create_policy_export_file(pol, id)
-                wsgi_app = FileApp(filename)
-                return wsgi_app(request.environ, self.start_response)
+                return flask.send_file(filename, mimetype="text/plain",
+                                       as_attachment=True)
             else:
                 return sendResult(response, pol, 1)
 
