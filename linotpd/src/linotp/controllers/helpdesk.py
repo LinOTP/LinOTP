@@ -138,13 +138,13 @@ class HelpdeskController(BaseController):
             return request
 
         except Exception as e:
-            log.exception("[__after__] unable to create a session cookie: %r" % e)
+            log.exception(
+                "[__after__] unable to create a session cookie: %r" % e)
             Session.rollback()
             return sendError(response, e, context='after')
 
         finally:
             Session.close()
-
 
     def getsession(self):
         '''
@@ -164,16 +164,19 @@ class HelpdeskController(BaseController):
             log.debug("[getsession] found this web_host: %s" % web_host)
             random_key = os.urandom(SESSION_KEY_LENGTH)
             cookie = binascii.hexlify(random_key)
-            log.debug("[getsession] adding session cookie %s to response." % cookie)
+            log.debug(
+                "[getsession] adding session cookie %s to response." % cookie)
             # we send all three to cope with IE8
-            response.set_cookie('helpdesk_session', value=cookie, domain=web_host)
+            response.set_cookie('helpdesk_session',
+                                value=cookie, domain=web_host)
             # this produces an error with the gtk client
             # response.set_cookie('admin_session', value=cookie,  domain=".%" % web_host )
             response.set_cookie('helpdesk_session', value=cookie, domain="")
             return sendResult(response, True)
 
         except Exception as e:
-            log.exception("[getsession] unable to create a session cookie: %r" % e)
+            log.exception(
+                "[getsession] unable to create a session cookie: %r" % e)
             Session.rollback()
             return sendError(response, e)
 
@@ -183,7 +186,6 @@ class HelpdeskController(BaseController):
     def dropsession(self):
         response.set_cookie('helpdesk_session', None, expires=1)
         return sendResult(response, True)
-
 
     def tokens(self):
         '''
@@ -217,7 +219,7 @@ class HelpdeskController(BaseController):
 
                 if "*" not in qfilter and "@" in qfilter:
 
-                    login, _ , realm = qfilter.rpartition("@")
+                    login, _, realm = qfilter.rpartition("@")
 
                     if realm.lower() in getRealms():
                         user = User(login, realm)
@@ -231,7 +233,7 @@ class HelpdeskController(BaseController):
                 filter_realm = qfilter
 
             # check admin authorization
-            res = checkPolicyPre('admin', 'show', param , user=user)
+            res = checkPolicyPre('admin', 'show', param, user=user)
 
             filterRealm = res['realms']
             # check if policies are active at all
@@ -247,7 +249,7 @@ class HelpdeskController(BaseController):
                     filterRealm = [filter_realm]
 
             tokenArray = TokenIterator(
-                user, None, page , psize, filter_all, sort,
+                user, None, page, psize, filter_all, sort,
                 direction, filterRealm=filterRealm)
 
             resultset = tokenArray.getResultSetInfo()
@@ -255,29 +257,29 @@ class HelpdeskController(BaseController):
             lines = []
             for tok in tokenArray:
                 lines.append(
-                    {'id' : tok['LinOtp.TokenSerialnumber'],
+                    {'id': tok['LinOtp.TokenSerialnumber'],
                      'cell': [
-                            tok['LinOtp.TokenSerialnumber'],
-                            tok['LinOtp.Isactive'],
-                            tok['User.username'],
-                            tok['LinOtp.RealmNames'],
-                            tok['LinOtp.TokenType'],
-                            tok['LinOtp.FailCount'],
-                            tok['LinOtp.TokenDesc'],
-                            tok['LinOtp.MaxFail'],
-                            tok['LinOtp.OtpLen'],
-                            tok['LinOtp.CountWindow'],
-                            tok['LinOtp.SyncWindow'],
-                            tok['LinOtp.Userid'],
-                            tok['LinOtp.IdResClass'].split('.')[-1],
-                            ]
+                        tok['LinOtp.TokenSerialnumber'],
+                        tok['LinOtp.Isactive'],
+                        tok['User.username'],
+                        tok['LinOtp.RealmNames'],
+                        tok['LinOtp.TokenType'],
+                        tok['LinOtp.FailCount'],
+                        tok['LinOtp.TokenDesc'],
+                        tok['LinOtp.MaxFail'],
+                        tok['LinOtp.OtpLen'],
+                        tok['LinOtp.CountWindow'],
+                        tok['LinOtp.SyncWindow'],
+                        tok['LinOtp.Userid'],
+                        tok['LinOtp.IdResClass'].split('.')[-1],
+                    ]
                     }
-                    )
+                )
 
             # We need to return 'page', 'total', 'rows'
-            res = { "page": int(page),
-                "total": resultset['tokens'],
-                "rows": lines }
+            res = {"page": int(page),
+                   "total": resultset['tokens'],
+                   "rows": lines}
 
             c.audit['success'] = True
 
@@ -345,7 +347,12 @@ class HelpdeskController(BaseController):
 
                 checkPolicyPre('admin', 'userlist', param=param, user=user)
 
-                users_list = getUserList({qtype: qfilter, 'realm':realm}, user)
+                users_list = getUserList(
+                    {qtype: qfilter, 'realm': realm}, user)
+
+                # now create a unique list of users with the unique key of
+                # userid + useridresolver
+
                 for u in users_list:
                     pkey = u['userid'] + ':' + u['useridresolver']
                     user_realms = uniqueUsers.get(pkey, {}).get('realms', [])
@@ -361,24 +368,26 @@ class HelpdeskController(BaseController):
                 resolver_display = ""
                 if "useridresolver" in u:
                     if len(u['useridresolver'].split(".")) > 3:
-                        resolver_display = u['useridresolver'].split(".")[3] + " (" + u['useridresolver'].split(".")[1] + ")"
+                        resolver_display = u['useridresolver'].split(
+                            ".")[3] + " (" + u['useridresolver'].split(".")[1] + ")"
                     else:
                         resolver_display = u['useridresolver']
                 lines.append(
-                    { 'id' : u['username'],
+                    {'id': u['username'],
                         'cell': [
                             (u['username']) if u.has_key('username') else (""),
                             (resolver_display),
                             (u['surname']) if u.has_key('surname') else (""),
-                            (u['givenname']) if u.has_key('givenname') else (""),
+                            (u['givenname']) if u.has_key(
+                                'givenname') else (""),
                             (u['email']) if u.has_key('email') else (""),
                             (u['mobile']) if u.has_key('mobile') else (""),
                             (u['phone']) if u.has_key('phone') else (""),
                             (u['userid']) if u.has_key('userid') else (""),
                             (u['realms']),
-                             ]
+                    ]
                     }
-                    )
+                )
 
             # sorting
             reverse = False
@@ -388,10 +397,10 @@ class HelpdeskController(BaseController):
                 'surname': 2,
                 'givenname': 3,
                 'email': 4,
-                'mobile':5,
+                'mobile': 5,
                 'phone': 6,
                 'userid': 7
-                }
+            }
             if direction == "desc":
                 reverse = True
 
@@ -423,7 +432,8 @@ class HelpdeskController(BaseController):
             return sendResult(response, res)
 
         except PolicyException as pe:
-            log.exception("[userview_flexi] Error during checking policies: %r" % pe)
+            log.exception(
+                "[userview_flexi] Error during checking policies: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
@@ -504,7 +514,6 @@ class HelpdeskController(BaseController):
             helper_params = token_cls.get_helper_params_post(params, user=user)
             params.update(helper_params)
 
-
             # --------------------------------------------------------------- --
 
             # create new serial
@@ -526,7 +535,7 @@ class HelpdeskController(BaseController):
             params['::scope::'] = {
                 'helpdesk': True,
                 'user': user
-                }
+            }
 
             (ret, token) = th.initToken(params, user)
 
@@ -556,7 +565,7 @@ class HelpdeskController(BaseController):
             pin = res.get('new_pin', params['otppin'])
 
             message = ("A new ${tokentype} token (${serial}) "
-                        "with pin '${Pin}' "
+                       "with pin '${Pin}' "
                        "for ${givenname} ${surname} has been enrolled.")
             info = {
                 'message': message,
@@ -574,10 +583,10 @@ class HelpdeskController(BaseController):
 
             return sendResult(response, ret)
 
-        except PolicyException as pe:
+        except PolicyException as pex:
             log.exception("Policy Exception while enrolling token")
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, pex, 1)
 
         except Exception as exx:
             log.exception("Exception while enrolling token")
@@ -621,14 +630,15 @@ class HelpdeskController(BaseController):
             from linotp.lib.token import get_token_owner
             for token in tokens:
                 owner = get_token_owner(token)
-                pin = params.get('pin', createRandomPin(owner, min_pin_length=6))
+                pin = params.get('pin', createRandomPin(
+                    owner, min_pin_length=6))
                 token.setPin(pin)
                 res = checkPolicyPost('admin', 'setPin', params, user=owner)
                 pin = res.get('new_pin', pin)
 
                 info = {
                     'message': 'A new pin %s has been set for your token: %r'
-                                % (pin, serial),
+                    % (pin, serial),
                     'Subject': 'new pin set for token %r' % serial,
                     'Pin': pin
                 }
