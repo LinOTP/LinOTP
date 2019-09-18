@@ -36,6 +36,7 @@ test the helpdesk enrollment api
 import json
 import re
 import smtplib
+import os
 
 from mock import patch
 
@@ -304,6 +305,99 @@ class TestHelpdeskEnrollment(TestController):
             parts = email_message.split("'")
             assert int(parts[1]), email_message
             assert len(parts[1]) == 12, email_message
+
+        return
+
+    def test_enrollment_with_template(self):
+        """verify that an email token will be enrolled"""
+
+        # ------------------------------------------------------------------ --
+
+        # define the email provider
+
+        filename = os.path.join(self.fixture_path, 'enrollment_email.eml')
+        with open(filename, "rb") as f:
+            content = f.read()
+        inline_template = json.dumps(content)
+
+        email_config = {
+            "SMTP_SERVER": "mail.example.com",
+            "SMTP_USER": "secret_user",
+            "SMTP_PASSWORD": "secret_pasword",
+            "EMAIL_FROM": "linotp@example.com",
+            "TEMPLATE": inline_template,
+        }
+
+        params = {
+            'name': 'enrollmentTemplateProvider',
+            'class': 'linotp.provider.emailprovider.SMTPEmailProvider',
+            'timeout': '120',
+            'type': 'email',
+            'config': json.dumps(email_config)
+        }
+
+        self.make_system_request('setProvider', params=params)
+
+        # ------------------------------------------------------------------ --
+
+        # define the notification provider policy
+
+        policy = {
+            'name': 'notify_enrollement',
+            'action': 'enrollment=email::enrollmentTemplateProvider ',
+            'scope': 'notification',
+            'active': True,
+            'realm': '*',
+            'user': '*',
+            'client': '*',
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response
+
+        # ------------------------------------------------------------------ --
+
+        # enroll email token for hans with given pin and random pin policy
+        # verify that message does not contain the given pin
+
+        policy = {
+            'name': 'enrollment_pin_policy',
+            'action': 'otp_pin_random=12, otp_pin_random_content=n',
+            'scope': 'enrollment',
+            'active': True,
+            'realm': '*',
+            'user': '*',
+            'client': '*',
+        }
+
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response
+
+        with MockedSMTP() as mock_smtp_instance:
+
+            mock_smtp_instance.sendmail.return_value = []
+
+            params = {'user': 'hans', 'type': 'email'}
+
+            response = self.make_helpdesk_request(
+                'enroll', params=params)
+
+            assert 'false' not in response, response
+
+            call_args = mock_smtp_instance.sendmail.call_args
+            _email_from, email_to, email_message = call_args[0]
+
+            assert email_to == 'hans@example.com'
+            message_parts = email_message.split('\\n')
+
+            assert 'Subject: New email token enrolled' in message_parts[3]
+            assert "with pin 'test123!" not in message_parts[13]
+
+            # now verify that there are only digits in the pin, as we defined
+            # the random pin contents
+
+            pin_message = message_parts[40].split(":")[1].split("<")
+            assert int(pin_message[0]), message_parts[40]
+            assert len(pin_message[0].strip()) == 12, message_parts[40]
 
         return
 
