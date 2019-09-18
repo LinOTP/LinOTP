@@ -555,12 +555,16 @@ class HelpdeskController(BaseController):
             res = checkPolicyPost('admin', 'init', params, user=user)
             pin = res.get('new_pin', params['otppin'])
 
+            message = ("A new ${tokentype} token (${serial}) "
+                        "with pin '${Pin}' "
+                       "for ${givenname} ${surname} has been enrolled.")
             info = {
-                'message': 'A new %s token has been enrolled: %r' % (
-                                            token.type, response_detail),
-                'Subject': 'new EMail Token enrolled',
-                'Pin': pin
+                'message': message,
+                'Subject': 'New %s token enrolled' % token.type,
+                'Pin': pin,
+                'tokentype': token.type
             }
+            info.update(response_detail)
 
             notify_user(user, 'enrollment', info, required=True)
 
