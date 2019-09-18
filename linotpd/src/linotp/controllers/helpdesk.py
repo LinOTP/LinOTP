@@ -53,9 +53,11 @@ from linotp.lib.policy import getAdminPolicies
 from linotp.lib.policy import createRandomPin
 
 from linotp.tokens import tokenclass_registry
+from linotp.lib.token import get_token_owner
+from linotp.lib.token import TokenHandler
+from linotp.lib.token import getTokens4UserOrSerial
 
 from linotp.lib.tokeniterator import TokenIterator
-from linotp.lib.token import TokenHandler
 
 from linotp.lib.util import get_client
 
@@ -627,35 +629,54 @@ class HelpdeskController(BaseController):
             if not serial:
                 raise ParameterError("Missing parameter: 'serial'")
 
-            checkPolicyPre('admin', method='set')
-
-            from linotp.lib.token import getTokens4UserOrSerial
             tokens = getTokens4UserOrSerial(serial=serial)
 
-            from linotp.lib.token import get_token_owner
+            result = []
+
             for token in tokens:
                 owner = get_token_owner(token)
-                pin = params.get('pin', createRandomPin(
-                    owner, min_pin_length=6))
+                current_serial = token.getSerial()
+
+                pin = params.get(
+                    'pin', createRandomPin(owner, min_pin_length=6))
+
+                # as the parameter pin in the params is evaluated by
+                # the checkPolicyPre and checkPolicyPost we need to put the
+                # parameter pin and current_serial into the params
+                params['pin'] = pin
+                params['serial'] = current_serial
+
+                # set pin is done by the admin/set with the parameter pin
+                checkPolicyPre(
+                    'admin', method='set', param=params, user=owner)
+
                 token.setPin(pin)
-                res = checkPolicyPost('admin', 'setPin', params, user=owner)
+
+                # while in the pre checks for method='set' the post checks
+                # for 'setPin' which is used to determin if a new pin has to
+                # be generated
+
+                res = checkPolicyPost(
+                    'admin', 'setPin', param=params, user=owner)
                 pin = res.get('new_pin', pin)
 
                 info = {
-                    'message': 'A new pin %s has been set for your token: %r'
-                    % (pin, serial),
-                    'Subject': 'new pin set for token %r' % serial,
-                    'Pin': pin
+                    'message': ('A new pin ${Pin} has been set for your '
+                                'token: ${serial}'),
+                    'Subject': 'new pin set for token ${serial}',
+                    'Pin': pin,
+                    'serial': current_serial,
                 }
 
                 notify_user(owner, 'setPin', info, required=True)
 
-                res[serial] = 'pin set'
+                result.append(serial)
 
-            c.audit['success'] = res
+            c.audit['success'] = True
+            c.audit['info'] = result
 
             Session.commit()
-            return sendResult(response, res)
+            return sendResult(response, result)
 
         except PolicyException as pex:
             log.exception('[setPin] policy failed %r')
