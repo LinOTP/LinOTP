@@ -97,14 +97,13 @@ def notify_user_by_email(provider_name, user, action, info):
         del user_detail['cryptpass']
 
     user_email = user_detail.get('email')
+    if not user_email:
+        raise NotificationException(
+            'Unable to notify user via email - user has no email address')
 
     replacements = {}
     replacements.update(info)
     replacements.update(user_detail)
-
-    if not user_email:
-        raise Exception(
-            'unable to notify user via email - user has no email address')
 
     try:
 
@@ -117,6 +116,7 @@ def notify_user_by_email(provider_name, user, action, info):
 
     except Exception as exx:
         log.error('Failed to notify user %r by email' % user_email)
-        raise exx
+        raise NotificationException(
+            'Failed to notify user %r by email:%r' % (user_email, exx))
 
 # eof #
