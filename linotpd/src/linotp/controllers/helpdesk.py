@@ -505,6 +505,11 @@ class HelpdeskController(BaseController):
 
             # --------------------------------------------------------------- --
 
+            if 'otpkey' not in params:
+                params['genkey'] = '1'
+
+            # --------------------------------------------------------------- --
+
             # check admin authorization
 
             res = checkPolicyPre('admin', 'init', params, user=user)
