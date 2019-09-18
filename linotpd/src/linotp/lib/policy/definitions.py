@@ -228,11 +228,11 @@ def getPolicyDefinitions(scope=""):
             },
         'notification': {
             'enrollment': {
-                'type': 'string',
+                'type': 'str',
                 'description': ('provider to be used for '
                                 'enrollment notification')},
             'setPin': {
-                'type': 'string',
+                'type': 'str',
                 'description': ('provider to be used for setPin notification')}
             },
         'authentication': {
