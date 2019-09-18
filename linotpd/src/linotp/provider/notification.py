@@ -93,6 +93,9 @@ def notify_user_by_email(provider_name, user, action, info):
     :param info: generic dict which is action specific
     """
     user_detail = user.getUserInfo()
+    if 'cryptpass' in user_detail:
+        del user_detail['cryptpass']
+
     user_email = user_detail.get('email')
 
     replacements = {}
