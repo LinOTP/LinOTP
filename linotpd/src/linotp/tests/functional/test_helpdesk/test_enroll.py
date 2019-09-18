@@ -387,4 +387,127 @@ class TestHelpdeskEnrollment(TestController):
 
         return
 
+    def test_enrollment_admin_right(self):
+        """verify that an email token will be enrolled adhering to the admin right """
+
+        # ------------------------------------------------------------------ --
+
+        # define the email provider
+
+        email_config = {
+            "SMTP_SERVER":"mail.example.com",
+            "SMTP_USER":"secret_user",
+            "SMTP_PASSWORD":"secret_pasword",
+            "EMAIL_FROM":"linotp@example.com",
+            "EMAIL_SUBJECT":"New Token enrolled"
+        }
+
+        params = {
+            'name': 'enrollmentProvider',
+            'class': 'linotp.provider.emailprovider.SMTPEmailProvider',
+            'timeout': '120',
+            'type': 'email',
+            'config': json.dumps(email_config)
+        }
+
+        self.make_system_request('setProvider', params=params)
+
+        # ------------------------------------------------------------------ --
+
+        # define the notification provider policy
+
+        policy = {
+            'name': 'notify_enrollement',
+            'action': 'enrollment=email::enrollmentProvider ',
+            'scope': 'notification',
+            'active': True,
+            'realm': '*',
+            'user': '*',
+            'client': '*',
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not  in response
+
+        # ------------------------------------------------------------------ --
+
+        # define admin policy which denies the enrollemt for the helpdesk user
+
+        policy = {
+            'name': 'admin',
+            'action': '*',
+            'scope': 'admin',
+            'active': True,
+            'realm': '*',
+            'user': 'superadmin, admin',
+            'client': '*',
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not  in response
+
+        # define the restricted admin policy for helpdesk user 'helpdesk'
+
+        policy = {
+            'name': 'helpdesk',
+            'scope': 'admin',
+            'active': True,
+            'user': 'helpdesk,',
+            'action': 'initEMAIL',
+            'realm': 'myotherrealm',
+            'client': '*',
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not  in response
+
+        # ------------------------------------------------------------------ --
+
+        # enroll email token for hans has to fail as the helpdesk is not
+        # allowed to enroll email token in the realm for hans
+
+        with MockedSMTP() as mock_smtp_instance:
+
+            mock_smtp_instance.sendmail.return_value = []
+
+            params = {'user': 'hans', 'type': 'email'}
+
+            response = self.make_helpdesk_request(
+                'enroll', params=params)
+
+            assert 'not have the administrative right' in response, response
+
+        # ------------------------------------------------------------------ --
+
+        # now adjust the admin policy so that the helpdesk is allowed to enroll
+        # email tokens in the realm mydefrealm as well
+
+        policy = {
+            'name': 'helpdesk',
+            'scope': 'admin',
+            'active': True,
+            'user': 'helpdesk,',
+            'action': 'initEMAIL',
+            'realm': 'myotherrealm, mydefrealm',
+            'client': '*',
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not  in response
+
+        # ------------------------------------------------------------------ --
+
+        # verify that the enrollment now is allowed
+
+        with MockedSMTP() as mock_smtp_instance:
+
+            mock_smtp_instance.sendmail.return_value = []
+
+            params = {'user': 'hans', 'type': 'email'}
+
+            response = self.make_helpdesk_request(
+                'enroll', params=params)
+
+            assert 'have the administrative right' not in response, response
+            assert '"value": true' in response, response
+
+        return
+
+
 # eof #
