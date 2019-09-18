@@ -308,7 +308,13 @@ class SMTPEmailProvider(IEmailProvider):
         :return: email message body as string
         """
 
-        replacements['Subject'] = Header(subject).encode('utf-8')
+        email_subject = subject
+
+        if ((not subject or subject == SMTPEmailProvider.DEFAULT_EMAIL_SUBJECT)
+            and "Subject" in replacements):
+            email_subject = replacements['Subject']
+
+        replacements['Subject'] = Header(email_subject).encode('utf-8')
         replacements['From'] = Header(email_from).encode('utf-8')
         replacements['To'] = Header(email_to).encode('utf-8')
 
@@ -356,7 +362,7 @@ class SMTPEmailProvider(IEmailProvider):
             del subject_replacements['Subject']
 
         subject_replacement = SMTPEmailProvider._render_template(
-            subject.encode('utf-8'), subject_replacements)
+            email_subject.encode('utf-8'), subject_replacements)
 
         # and put it back for the message replacements
 
