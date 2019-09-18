@@ -35,25 +35,11 @@ test the helpdesk enrollment api
 
 import json
 import re
-import smtplib
 import os
 
-from mock import patch
+from . import MockedSMTP
 
 from linotp.tests import TestController
-
-
-class MockedSMTP(object):
-    def __init__(self):
-        self.patch_smtp = patch('smtplib.SMTP', spec=smtplib.SMTP)
-
-    def __enter__(self):
-        mock_smtp_class = self.patch_smtp.start()
-        self.mock_smtp_instance = mock_smtp_class.return_value
-        return self.mock_smtp_instance
-
-    def __exit__(self, *args, **kwargs):
-        self.patch_smtp.stop()
 
 
 class TestHelpdeskEnrollment(TestController):
