@@ -509,5 +509,117 @@ class TestHelpdeskEnrollment(TestController):
 
         return
 
+    def test_enrollment_maxtoken(self):
+        """verify that only one email token will be enrolled"""
+
+        # ------------------------------------------------------------------ --
+
+        # define the email provider
+
+        email_config = {
+            "SMTP_SERVER":"mail.example.com",
+            "SMTP_USER":"secret_user",
+            "SMTP_PASSWORD":"secret_pasword",
+            "EMAIL_FROM":"linotp@example.com",
+            "EMAIL_SUBJECT":"New Token enrolled"
+        }
+
+        params = {
+            'name': 'enrollmentProvider',
+            'class': 'linotp.provider.emailprovider.SMTPEmailProvider',
+            'timeout': '120',
+            'type': 'email',
+            'config': json.dumps(email_config)
+        }
+
+        self.make_system_request('setProvider', params=params)
+
+        # ------------------------------------------------------------------ --
+
+        # define the notification provider policy
+
+        policy = {
+            'name': 'notify_enrollement',
+            'action': 'enrollment=email::enrollmentProvider ',
+            'scope': 'notification',
+            'active': True,
+            'realm': '*',
+            'user': '*',
+            'client': '*',
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not  in response
+
+        # ------------------------------------------------------------------ --
+
+        # enroll email token for hans with given pin and random pin policy
+        # verify that message does not contain the given pin
+
+        policy = {
+            'name': 'maxtoken',
+            'action': 'maxtoken=1',
+            'scope': 'enrollment',
+            'active': True,
+            'realm': 'mydefrealm',
+            'user': '*',
+            'client': '*',
+        }
+
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not  in response
+
+        # ------------------------------------------------------------------ --
+
+        # enroll email token for hans with given pin
+        # verify that message contains given pin
+
+        with MockedSMTP() as mock_smtp_instance:
+
+            mock_smtp_instance.sendmail.return_value = []
+
+            params = {'user': 'hans', 'type': 'email', 'otppin': 'test123!'}
+
+            response = self.make_helpdesk_request(
+                'enroll', params=params)
+
+            assert 'false' not in response, response
+
+            call_args = mock_smtp_instance.sendmail.call_args
+            _email_from, email_to, email_message = call_args[0]
+
+            assert email_to == 'hans@example.com'
+            assert 'Subject: New email token enrolled' in email_message
+            assert "with pin 'test123!" in email_message
+
+        # ------------------------------------------------------------------ --
+
+        # enroll email token for hans with given pin
+        # verify that message contains given pin
+
+        with MockedSMTP() as mock_smtp_instance:
+
+            mock_smtp_instance.sendmail.return_value = []
+
+            params = {'user': 'hans', 'type': 'email', 'otppin': 'test123!'}
+
+            response = self.make_helpdesk_request(
+                'enroll', params=params)
+
+            assert 'maximum number of allowed' in response, response
+
+        # ------------------------------------------------------------------ --
+
+        # verify that user has only one token
+        params = {
+            'qtype': 'loginname',
+            'query': 'hans'
+            }
+
+        response = self.make_helpdesk_request('tokens', params=params)
+        assert 'false' not in response
+        assert 'hans' in response
+        assert '"total": 1' in response
+
+        return
 
 # eof #
