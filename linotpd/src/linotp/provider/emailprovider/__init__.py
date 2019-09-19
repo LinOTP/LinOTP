@@ -251,7 +251,7 @@ class SMTPEmailProvider(IEmailProvider):
             message.encode('utf-8'), replacements)
 
         msg = MIMEText(email_message.encode('utf-8'))
-        msg['Subject'] = Header(subject).encode('utf-8')
+        msg['Subject'] = Header(subject_replacement).encode('utf-8')
         msg['From'] = Header(email_from).encode('utf-8')
         msg['To'] = Header(email_to).encode('utf-8')
 
