@@ -241,11 +241,13 @@ class HelpdeskController(BaseController):
             # check if policies are active at all
             # If they are not active, we are allowed to SHOW any tokens.
             pol = getAdminPolicies("show")
+
             # If there are no admin policies, we are allowed to see all realms
             if not pol['active']:
                 filterRealm = ["*"]
 
-            # check if we only want to see ONE realm or see all realms we are allowerd to see.
+            # check if we only want to see ONE realm or see all realms
+            # we are allowerd to see.
             if filter_realm:
                 if filter_realm in filterRealm or '*' in filterRealm:
                     filterRealm = [filter_realm]
@@ -258,9 +260,9 @@ class HelpdeskController(BaseController):
             # If we have chosen a page to big!
             lines = []
             for tok in tokenArray:
-                lines.append(
-                    {'id': tok['LinOtp.TokenSerialnumber'],
-                     'cell': [
+                lines.append({
+                    'id': tok['LinOtp.TokenSerialnumber'],
+                    'cell': [
                         tok['LinOtp.TokenSerialnumber'],
                         tok['LinOtp.Isactive'],
                         tok['User.username'],
@@ -275,18 +277,17 @@ class HelpdeskController(BaseController):
                         tok['LinOtp.Userid'],
                         tok['LinOtp.IdResClass'].split('.')[-1],
                     ]
-                    }
-                )
+                })
 
             # We need to return 'page', 'total', 'rows'
-            res = {"page": int(page),
-                   "total": resultset['tokens'],
-                   "rows": lines}
+            res = {
+                "page": int(page),
+                "total": resultset['tokens'],
+                "rows": lines
+            }
 
             c.audit['success'] = True
-
             Session.commit()
-            # The flexi handler should support std LinOTP output
             return sendResult(response, res)
 
         except PolicyException as pex:
@@ -449,12 +450,19 @@ class HelpdeskController(BaseController):
 
     def enroll(self):
         """
-        enroll token
+        method:
+            api/helpdesk/enroll
 
-        parameters:
+        description:
+            method to enroll a token as helpdesk
+
+        arguments:
+            * type: the token type, currently only 'email'
             * user: the new token owner
-            * realm: the realm the user belongs to - used to identify the user
-            * type: the token type
+            * realm: (optional) the realm the user belongs to - used to identify the user
+
+        returns:
+            success as boolean
 
         """
 
@@ -603,6 +611,7 @@ class HelpdeskController(BaseController):
 
 ########################################################
 
+
     def setPin(self):
         """
         method:
@@ -616,8 +625,7 @@ class HelpdeskController(BaseController):
             * pin        - optional - uses random pin instead
 
         returns:
-            a json result with a boolean
-              "result": true
+            an array with the list of affected serial numbers
 
         """
         res = {}
