@@ -35,6 +35,22 @@ import json
 import smtplib
 
 
+import smtplib
+from mock import patch
+
+class MockedSMTP(object):
+    def __init__(self):
+        self.patch_smtp = patch('smtplib.SMTP', spec=smtplib.SMTP)
+
+    def __enter__(self):
+        mock_smtp_class = self.patch_smtp.start()
+        self.mock_smtp_instance = mock_smtp_class.return_value
+        return self.mock_smtp_instance
+
+    def __exit__(self, *args, **kwargs):
+        self.patch_smtp.stop()
+
+
 from linotp.tests import TestController
 from linotp.provider.emailprovider import EMAIL_PROVIDER_TEMPLATE_KEY
 
@@ -134,12 +150,9 @@ class TestEmailtoken(TestController):
         # setup the mocking smtp client from which we get the sendmal args
         # to verify the template prcessing
 
-        patch_smtp = patch('smtplib.SMTP', spec=smtplib.SMTP)
-        mock_smtp_class = patch_smtp.start()
-        mock_smtp_instance = mock_smtp_class.return_value
-        mock_smtp_instance.sendmail.return_value = []
+        with MockedSMTP() as mock_smtp_instance:
 
-        try:
+            mock_smtp_instance.sendmail.return_value = []
 
             # now trigger a challenge for the user
 
@@ -149,7 +162,6 @@ class TestEmailtoken(TestController):
                 }
             response = self.make_validate_request('check', params=params)
             assert 'false' in response
-            assert '"message": "e-mail sent successfully"' in response
 
             call_args = mock_smtp_instance.sendmail.call_args
             _from, _to, message = call_args.args
@@ -158,10 +170,6 @@ class TestEmailtoken(TestController):
             assert '${otp}' not in message
             assert "${serial}" not in message
             assert serial in message
-
-        finally:
-
-            patch_smtp.stop()
 
 
     def test_email_template_with_inline(self):
@@ -265,12 +273,9 @@ class TestEmailtoken(TestController):
         # setup the mocking smtp client from which we get the sendmal args
         # to verify the template prcessing
 
-        patch_smtp = patch('smtplib.SMTP', spec=smtplib.SMTP)
-        mock_smtp_class = patch_smtp.start()
-        mock_smtp_instance = mock_smtp_class.return_value
-        mock_smtp_instance.sendmail.return_value = []
+        with MockedSMTP() as mock_smtp_instance:
 
-        try:
+            mock_smtp_instance.sendmail.return_value = []
 
             # now trigger a challenge for the user
 
@@ -300,8 +305,6 @@ class TestEmailtoken(TestController):
             # verify that the policy did not overrule the template
             assert 'from policy' not in message
 
-        finally:
 
-            patch_smtp.stop()
 
 # eof
