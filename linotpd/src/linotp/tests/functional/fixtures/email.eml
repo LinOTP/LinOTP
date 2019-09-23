@@ -11,7 +11,7 @@ Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 
-Your requested OTP is ${otp}.
+Dear ${givenname}, your requested OTP is ${otp}.
 --===============3294676191386143061==
 Content-Type: multipart/related;
  boundary="===============3984710301122897564=="
