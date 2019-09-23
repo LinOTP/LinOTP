@@ -424,6 +424,20 @@ class EmailTokenClass(HmacTokenClass):
         replacements['otp'] = otp
         replacements['serial'] = self.getSerial()
 
+        # ------------------------------------------------------------------ --
+
+        # add user detail to replacements, so we are aware of surename++
+
+        if owner and owner.login:
+            user_detail = owner.getUserInfo()
+            if 'cryptpass' in user_detail:
+                del user_detail['cryptpass']
+
+            replacements.update(user_detail)
+
+        # ------------------------------------------------------------------ --
+
+
         try:
 
             email_provider = loadProviderFromPolicy(
