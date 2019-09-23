@@ -163,6 +163,10 @@ def getPolicyDefinitions(scope=""):
             'otp_pin_random': {
                 'type': 'int',
                 'value': range(0, 100)},
+            'otp_pin_random_content': {
+                'type': 'string',
+                'desc': 'The contents of the temporary password, '
+                        'described by the characters C, c, n, s.'},
             'otp_pin_encrypt': {
                 'type': 'int',
                 'value': [0, 1]},
@@ -221,6 +225,15 @@ def getPolicyDefinitions(scope=""):
                 'type': 'bool',
                 'desc' : ("After a successfull login with a second token, the"
                           "rollout token is removed.")},
+            },
+        'notification': {
+            'enrollment': {
+                'type': 'str',
+                'description': ('provider to be used for '
+                                'enrollment notification')},
+            'setPin': {
+                'type': 'str',
+                'description': ('provider to be used for setPin notification')}
             },
         'authentication': {
             "delete_on_authentication_exceed": {

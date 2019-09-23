@@ -62,13 +62,17 @@ from linotp.lib.policy.util import _getLinotpConfig
 from linotp.lib.policy.util import _getRealms
 from linotp.lib.policy.util import _getUserFromParam
 from linotp.lib.policy.util import _getUserRealms
-from linotp.lib.policy.util import letters
-from linotp.lib.policy.util import digits
+
+from linotp.lib.policy.util import letters, digits, special_characters
+from linotp.lib.policy.util import ascii_lowercase, ascii_uppercase
+
 
 # for generating random passwords
 from linotp.lib.crypto import urandom
 from linotp.lib.util import uniquify
 
+
+from linotp.lib.util import generate_password
 
 from linotp.lib.context import request_context
 
@@ -157,15 +161,15 @@ def _checkAdminPolicyPost(method, param=None, user=None):
         randomPINLength = _getRandomOTPPINLength(user)
 
         if randomPINLength > 0:
-            newpin = _getRandomPin(randomPINLength)
+            new_pin = createRandomPin(user, min_pin_length=randomPINLength)
 
             log.debug("setting random pin for token with serial %s and user: "
                       "%s", serial, user)
 
-            linotp.lib.token.setPin(newpin, None, serial)
+            linotp.lib.token.setPin(new_pin, None, serial)
             log.debug("pin set")
-            # TODO: This random PIN could be processed and
-            # printed in a PIN letter
+
+            ret['new_pin'] = new_pin
 
         # ------------------------------------------------------------------ --
 
@@ -299,17 +303,19 @@ def _checkSelfservicePolicyPost(method, param=None, user=None):
     if method == 'enroll':
         # check if we are supposed to genereate a random OTP PIN
         randomPINLength = _getRandomOTPPINLength(user)
+
         if randomPINLength > 0:
-            newpin = _getRandomPin(randomPINLength)
+
+            new_pin = createRandomPin(user, min_pin_length=randomPINLength)
 
             log.debug("setting random pin for token with serial "
                       "%s and user: %s", serial, user)
 
-            linotp.lib.token.setPin(newpin, None, serial)
+            linotp.lib.token.setPin(new_pin, None, serial)
             log.debug("[init] pin set")
             # TODO: This random PIN could be processed and
             # printed in a PIN letter
-
+            ret['new_pin'] = new_pin
     # ------------------------------------------------------------------ --
 
     # maxtoken policy restricts the tokennumber for the user in a realm
@@ -1972,6 +1978,28 @@ def _getRandomOTPPINLength(user):
 
     return maxOTPPINLength
 
+def _getRandomOTPPINContent(user):
+    '''
+    This internal function returns the length of the random otp pin that is
+    define in policy scope = enrollment, action = otp_pin_random = 111
+    '''
+
+    Realms = _getUserRealms(user)
+    client = _get_client()
+
+    for R in Realms:
+
+        pol = has_client_policy(
+            client, scope='enrollment', action='otp_pin_random_content',
+            realm=R, user=user.login, userObj=user)
+
+        if len(pol) == 0:
+            log.debug("there is no scope=enrollment policy for Realm %r", R)
+            return ''
+
+        return getPolicyActionValue(pol, "otp_pin_random_content")
+
+    return ''
 
 def getOTPPINEncrypt(serial=None, user=None):
     '''
@@ -2197,17 +2225,32 @@ def checkOTPPINPolicy(pin, user):
             'error': ''}
 
 
-def _getRandomPin(randomPINLength):
-    newpin = ""
+def createRandomPin(user, min_pin_length):
+    """
+    create a random pin
 
-    log.debug("creating a random otp pin of length %r", randomPINLength)
+    :param min_pin_length: the requested minimum pin length
+    :param user: user defines the realm/user policy selection
+    :return: the new pin
+    """
+    character_pool = letters + digits
 
-    chars = letters + digits
-    for _i in range(randomPINLength):
-        newpin = newpin + urandom.choice(chars)
+    pin_length = max(min_pin_length, _getRandomOTPPINLength(user))
 
-    return newpin
+    contents = _getRandomOTPPINContent(user)
 
+    if contents:
+        character_pool = ""
+        if "c" in contents:
+            character_pool += ascii_lowercase
+        if "C" in contents:
+            character_pool += ascii_uppercase
+        if "n" in contents:
+            character_pool += digits
+        if "s" in contents:
+            character_pool += special_characters
+
+    return generate_password(size=pin_length, characters=character_pool)
 
 def checkToolsAuthorisation(method, param=None):
     # TODO: fix the semantic of the realm in the policy!

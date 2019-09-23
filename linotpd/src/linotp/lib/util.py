@@ -169,11 +169,12 @@ def generate_password(size=6, characters=None):
     return ''.join(urandom.choice(characters) for _x in range(size))
 
 
-def check_session(request):
+def check_session(request, scope='admin'):
     '''
-    This function checks the session cookie for management API
-    and compares it to the session parameter
+    This function checks the session cookie and compares it to
+    the session parameter
     '''
+
     if isSelfTest():
         return
 
@@ -197,19 +198,18 @@ def check_session(request):
             log.warning("misconfiguration in linotpNoSessionCheck: "
                         "%r - %r" % (network, ex))
 
-    if request.path.lower() == '/admin/getsession':
+    if request.path.endswith('/getsession'):
         log.debug('[check_session] requesting a new session cookie')
-    else:
-        cookie = request.cookies.get('admin_session')
-        session = get_request_param(request, 'session')
-        # doing any other request, we need to check the session!
-        log.debug("[check_session]: session: %s" % session)
-        log.debug("[check_session]: cookie:  %s" % cookie)
-        if session is None or session == "" or session != cookie:
-            log.error("The request did not pass a valid session!")
-            abort(401, "You have no valid session!")
-            pass
+        return
 
+    cookie = request.cookies.get(scope + '_session')
+    session = get_request_param(request, 'session')
+    # doing any other request, we need to check the session!
+    log.debug("[check_session]: session: %s" % session)
+    log.debug("[check_session]: cookie:  %s" % cookie)
+    if session is None or session == "" or session != cookie:
+        log.error("The request did not pass a valid session!")
+        abort(401, "You have no valid session!")
 
 def check_selfservice_session(cookies=None, params=None, url=None):
     '''

@@ -215,8 +215,8 @@ class SMTPEmailProvider(IEmailProvider):
 
         # legacy pre processing - transfered from email token
 
-        otp = replacements['otp']
-        serial = replacements['serial']
+        otp = replacements.get('otp','')
+        serial = replacements.get('serial','')
 
         if "<otp>" not in message:
             message = message + "<otp>"
@@ -229,10 +229,31 @@ class SMTPEmailProvider(IEmailProvider):
 
         # ---------------------------------------------------------------- - --
 
-        msg = MIMEText(message)
-        msg['Subject'] = subject
-        msg['From'] = email_from
-        msg['To'] = email_to
+        # now trigger the text replacements:
+
+        # first replace the vars in Subject as it can contain as well ${otp}
+        # - we use here a copy of the replacement dict without 'Subject' to
+        # protect against recursion
+
+        subject_replacements = copy.deepcopy(replacements)
+        if 'Subject' in subject_replacements:
+            del subject_replacements['Subject']
+
+        subject_replacement = SMTPEmailProvider._render_template(
+            subject.encode('utf-8'), subject_replacements)
+
+        # and put it back for the message replacements
+
+        replacements['Subject'] = subject_replacement
+
+        # now build up the final message with all replacements
+        email_message = SMTPEmailProvider._render_template(
+            message.encode('utf-8'), replacements)
+
+        msg = MIMEText(email_message.encode('utf-8'))
+        msg['Subject'] = Header(subject_replacement).encode('utf-8')
+        msg['From'] = Header(email_from).encode('utf-8')
+        msg['To'] = Header(email_to).encode('utf-8')
 
         return msg.as_string()
 
@@ -287,7 +308,13 @@ class SMTPEmailProvider(IEmailProvider):
         :return: email message body as string
         """
 
-        replacements['Subject'] = Header(subject).encode('utf-8')
+        email_subject = subject
+
+        if ((not subject or subject == SMTPEmailProvider.DEFAULT_EMAIL_SUBJECT)
+            and "Subject" in replacements):
+            email_subject = replacements['Subject']
+
+        replacements['Subject'] = Header(email_subject).encode('utf-8')
         replacements['From'] = Header(email_from).encode('utf-8')
         replacements['To'] = Header(email_to).encode('utf-8')
 
@@ -335,7 +362,7 @@ class SMTPEmailProvider(IEmailProvider):
             del subject_replacements['Subject']
 
         subject_replacement = SMTPEmailProvider._render_template(
-            subject, subject_replacements)
+            email_subject.encode('utf-8'), subject_replacements)
 
         # and put it back for the message replacements
 
@@ -344,9 +371,9 @@ class SMTPEmailProvider(IEmailProvider):
         # now build up the final message with all replacements
 
         message = SMTPEmailProvider._render_template(
-            template_data, replacements)
+            template_data.encode('utf-8'), replacements)
 
-        return message
+        return message.encode('utf-8')
 
 
     @staticmethod
@@ -450,7 +477,7 @@ class SMTPEmailProvider(IEmailProvider):
 
         # setup message
 
-        email_message =self.render_message(
+        email_message = self.render_message(
             email_to, subject, message, replacements)
 
         # ------------------------------------------------------------------ --

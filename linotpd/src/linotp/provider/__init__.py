@@ -694,7 +694,8 @@ def loadProviderFromPolicy(provider_type, realm=None, user=None):
 
     return loadProvider(provider_type, provider_name)
 
-def get_provider_from_policy(provider_type, realm=None, user=None):
+def get_provider_from_policy(provider_type, realm=None, user=None,
+                             scope='authentication', action=None):
     """
     interface for the provider user like email token or sms token
 
@@ -720,9 +721,12 @@ def get_provider_from_policy(provider_type, realm=None, user=None):
     if user and user.login:
         realm = user.realm
 
+    if not action:
+        action = provider_action_name
+
     policies = get_client_policy(request_context['Client'],
-                                 scope='authentication',
-                                 action=provider_action_name, realm=realm,
+                                 scope=scope,
+                                 action=action, realm=realm,
                                  user=user.login)
 
     if not policies:
@@ -734,9 +738,7 @@ def get_provider_from_policy(provider_type, realm=None, user=None):
 
         return []
 
-    provider_names = getPolicyActionValue(policies,
-                                         provider_action_name,
-                                         is_string=True)
+    provider_names = getPolicyActionValue(policies, action, is_string=True)
 
     providers = []
 
