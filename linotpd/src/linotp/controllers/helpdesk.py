@@ -510,8 +510,8 @@ class HelpdeskController(BaseController):
 
             # create a new pin according to the policies
 
-            if 'otppin' not in params:
-                params['otppin'] = createRandomPin(user, min_pin_length=6)
+            if 'pin' not in params:
+                params['pin'] = createRandomPin(user, min_pin_length=6)
 
             # --------------------------------------------------------------- --
 
@@ -577,7 +577,7 @@ class HelpdeskController(BaseController):
             logTokenNum(c.audit)
 
             res = checkPolicyPost('admin', 'init', params, user=user)
-            pin = res.get('new_pin', params['otppin'])
+            pin = res.get('new_pin', params['pin'])
 
             message = ("A new ${tokentype} token (${serial}) "
                        "with pin '${Pin}' "

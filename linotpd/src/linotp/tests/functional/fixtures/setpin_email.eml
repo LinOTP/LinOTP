@@ -11,7 +11,7 @@ Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 
-Dear ${givenname}, your requested OTP is ${otp}.
+A new pin '${Pin}' for your token ${serial} has been set.
 --===============3294676191386143061==
 Content-Type: multipart/related;
  boundary="===============3984710301122897564=="
@@ -32,12 +32,12 @@ Content-Transfer-Encoding: 7bit
                     <th align='center'><img src="cid:image1"></th>
                 </tr>
                 <tr>
-                    <th align='center'>Your requested OTP is</th>
+                    <th align='center'>A new pin for your token ${serial} has been set</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td align='center'>${otp}</td>
+                    <td align='center'>The pin is: ${Pin}</td>
                 </tr>
                 <tr>
                     <td align='right'><i>Happy authenticating</i></td>

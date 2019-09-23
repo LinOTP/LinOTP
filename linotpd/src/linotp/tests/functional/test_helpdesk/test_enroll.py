@@ -235,7 +235,7 @@ class TestHelpdeskEnrollment(TestController):
 
             mock_smtp_instance.sendmail.return_value = []
 
-            params = {'user': 'hans', 'type': 'email', 'otppin': 'test123!'}
+            params = {'user': 'hans', 'type': 'email', 'pin': 'test123!'}
 
             response = self.make_helpdesk_request(
                 'enroll', params=params)
@@ -271,7 +271,7 @@ class TestHelpdeskEnrollment(TestController):
 
             mock_smtp_instance.sendmail.return_value = []
 
-            params = {'user': 'hans', 'type': 'email', 'otppin': 'test123!'}
+            params = {'user': 'hans', 'type': 'email', 'pin': 'test123!'}
 
             response = self.make_helpdesk_request(
                 'enroll', params=params)
@@ -577,7 +577,7 @@ class TestHelpdeskEnrollment(TestController):
 
             mock_smtp_instance.sendmail.return_value = []
 
-            params = {'user': 'hans', 'type': 'email', 'otppin': 'test123!'}
+            params = {'user': 'hans', 'type': 'email', 'pin': 'test123!'}
 
             response = self.make_helpdesk_request(
                 'enroll', params=params)
@@ -600,7 +600,7 @@ class TestHelpdeskEnrollment(TestController):
 
             mock_smtp_instance.sendmail.return_value = []
 
-            params = {'user': 'hans', 'type': 'email', 'otppin': 'test123!'}
+            params = {'user': 'hans', 'type': 'email', 'pin': 'test123!'}
 
             response = self.make_helpdesk_request(
                 'enroll', params=params)
