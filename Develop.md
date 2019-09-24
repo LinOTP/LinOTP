@@ -71,4 +71,15 @@ Test LinOTP
 You can run unit and funtional tests by entering the respective commands below in the *project root directory* (/):
 
     make unittests
+
     make functionaltests
+
+You can also run the tests directly in the directories:
+
+    cd linotp/tests/unit; pytest
+
+and
+
+    cd linotp/tests/functional; pytest
+
+See the [Pytest documentation](https://docs.pytest.org/) for more information about using pytest.
