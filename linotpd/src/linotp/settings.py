@@ -13,7 +13,8 @@ class Config:
     # as `FOO:/bar`, which will register it on `/bar` instead.
 
     # CONTROLLERS = "admin manage system validate"
-    CONTROLLERS = "admin auth manage selfservice userservice system test validate"
+    CONTROLLERS = ("admin auth manage selfservice system "
+                   "test tools validate userservice")
 
     # List all enabled token support modules. If this parameter is
     # empty, all available token modules will be loaded.
