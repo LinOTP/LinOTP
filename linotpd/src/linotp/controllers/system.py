@@ -2014,12 +2014,12 @@ class SystemController(BaseController):
         try:
 
             try:
-                licField = request.POST['license']
+                licField = request.files['license']
             except KeyError as _keyerr:
                 return sendErrorMethod(response, 'No key \'license\': '
                                        'Not a form request')
 
-            response_format = request.POST.get('format', '')
+            response_format = self.request_params.get('format', '')
             if response_format == 'xml':
                 sendResultMethod = sendXMLResult
                 sendErrorMethod = sendXMLError
@@ -2028,7 +2028,7 @@ class SystemController(BaseController):
 
             # In case of normal post requests, it is a "instance" of
             # FieldStorage
-            if type(licField).__name__ == 'instance':
+            if isinstance(licField, FileStorage):
                 log.debug("[setSupport] Field storage: %s", licField)
                 support_description = licField.value
             else:
