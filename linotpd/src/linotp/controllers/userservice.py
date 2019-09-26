@@ -364,7 +364,7 @@ class UserserviceController(BaseController):
         '''
 
         action = request_context['action']
-        authUser = request_context['authUser']
+        authUser = request_context.get('authUser')
 
         try:
             if c.audit['action'] not in ['userservice/context',
@@ -373,7 +373,7 @@ class UserserviceController(BaseController):
                                          'userservice/load_form'
                                          ]:
 
-                if hasattr(self, 'authUser') and not authUser.is_empty:
+                if authUser and not authUser.is_empty:
                     c.audit['user'] = authUser.login
                     c.audit['realm'] = authUser.realm
                 else:
