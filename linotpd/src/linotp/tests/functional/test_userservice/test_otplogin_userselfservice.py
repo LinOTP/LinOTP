@@ -50,8 +50,6 @@
 #    Support: www.keyidentity.com
 #
 
-import os
-import webtest
 import pytest
 
 import logging

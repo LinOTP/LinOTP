@@ -32,7 +32,8 @@ import os
 import pytest
 
 import logging
-from linotp.tests import TestController, url
+
+from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 
