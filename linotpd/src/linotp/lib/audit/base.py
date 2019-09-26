@@ -84,6 +84,16 @@ class AuditBase(object):
     def __init__(self, config):
         self.config = config
 
+        rootdir = current_app.getConfigRootDirectory()
+
+        self.publicKeyFilename = self.config.get("AUDIT_PUBLIC_KEYFILE")
+        if not self.publicKeyFilename:
+            self.publicKeyFilename = os.path.join(rootdir, "public.pem")
+
+        self.privateKeyFilename = self.config.get("AUDIT_PRIVATE_KEYFILE")
+        if not self.privateKeyFilename:
+            self.privateKeyFilename = os.path.join(rootdir, "private.pem")
+
     def initialize(self, request, client=None):
         # defaults
         audit = {'action_detail': '',
@@ -106,22 +116,31 @@ class AuditBase(object):
             audit['client'] = client
         return audit
 
+    def createKeys(self):
+        """
+        Create audit keys using the configured filenames
+        """
+        if not os.path.exists(self.privateKeyFilename) and not os.path.exists(self.publicKeyFilename):
+            log.info("Generating audit keypair")
+            check_call("openssl genrsa -out %s 2048" % private, shell=True)
+            check_call("openssl rsa -in %s -pubout -out %s" % (private, public), shell=True)
+
     def readKeys(self):
-        priv = self.config.get("linotpAudit.key.private")
-        pub = self.config.get("linotpAudit.key.public")
+        self.createKeys()
+
         try:
-            f = open(priv, "r")
+            f = open(self.privateKeyFilename, "r")
             self.private = f.read()
             f.close()
         except Exception as e:
-            log.exception("[readKeys] Error reading private key %s: (%r)" % (priv, e))
+            log.exception("[readKeys] Error reading private key %s: (%r)" % (self.privateKeyFilename, e))
 
         try:
-            f = open(pub, "r")
+            f = open(self.publicKeyFilename, "r")
             self.public = f.read()
             f.close()
         except Exception as e:
-            log.exception("[readKeys] Error reading public key %s: (%r)" % (pub, e))
+            log.exception("[readKeys] Error reading public key %s: (%r)" % (self.publicKeyFilename, e))
 
         return
 

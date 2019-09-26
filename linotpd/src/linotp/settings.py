@@ -78,6 +78,11 @@ class Config:
     #
     AUDIT_DATABASE_URI='SHARED'
 
+    # The filename of the audit public/private key files can be
+    # set here
+    # AUDIT_PUBLIC_KEYFILE = os.path.join(ROOT_DIR, "public.pem")
+    # AUDIT_PRIVATE_KEYFILE = os.path.join(ROOT_DIR, "private.pem")
+
     # AUDIT_POOL_RECYCLE = 3600
 
     # MAKO_TRANSLATE_EXCEPTIONS = False

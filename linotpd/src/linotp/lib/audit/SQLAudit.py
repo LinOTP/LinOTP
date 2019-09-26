@@ -312,8 +312,7 @@ class Audit(AuditBase):
         # initialize signing keys
         self.readKeys()
 
-        self.PublicKey = RSA.load_pub_key(
-                                          self.config.get("linotpAudit.key.public"))
+        self.PublicKey = RSA.load_pub_key(self.publicKeyFilename)
         self.VerifyEVP = EVP.PKey()
         self.VerifyEVP.reset_context(md='sha256')
         self.VerifyEVP.assign_rsa(self.PublicKey)
