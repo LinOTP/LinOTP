@@ -289,8 +289,8 @@ class TestUserserviceAuthController(TestController):
             'login': 'passthru_user1@myDefRealm',
             'password': 'geheim1'}
 
-        response = self.client.get(url(controller='userservice',
-                                    action='login'), params=auth_user)
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=auth_user)
 
         cookies = TestController.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
@@ -305,8 +305,8 @@ class TestUserserviceAuthController(TestController):
 
         with self.assertRaises(Exception) as app_error:
 
-            response = self.client.get(url(controller='userservice',
-                                        action='history'), params=params)
+            response = self.client.post(url(controller='userservice',
+                                            action='history'), data=params)
 
         self.assertTrue("No valid session" in app_error.exception)
 
@@ -314,8 +314,8 @@ class TestUserserviceAuthController(TestController):
 
         params = {}
         params['session'] = auth_cookie
-        response = self.client.get(url(controller='userservice',
-                                    action='usertokenlist'), params=params)
+        response = self.client.post(url(controller='userservice',
+                                        action='usertokenlist'), data=params)
 
         response.body = response.data.decode("utf-8")
         self.assertTrue('LoginToken' in response, response)
@@ -328,8 +328,8 @@ class TestUserserviceAuthController(TestController):
 
         params = {}
         params['session'] = auth_cookie
-        response = self.client.get(url(controller='userservice',
-                                    action='login'), params=params)
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=params)
 
         response.body = response.data.decode("utf-8")
         self.assertTrue('"Please enter your otp value: "' in response,
@@ -350,8 +350,8 @@ class TestUserserviceAuthController(TestController):
         params['session'] = auth_cookie
         params['otp'] = self.otps.pop()
 
-        response = self.client.get(url(controller='userservice',
-                                    action='login'), params=params)
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=params)
 
         response.body = response.data.decode("utf-8")
         self.assertTrue('"value": true' in response, response)
@@ -364,8 +364,8 @@ class TestUserserviceAuthController(TestController):
 
         params = {}
         params['session'] = auth_cookie
-        response = self.client.get(url(controller='userservice',
-                                    action='history'), params=params)
+        response = self.client.post(url(controller='userservice',
+                                        action='history'), data=params)
 
         response.body = response.data.decode("utf-8")
         self.assertTrue('"rows": [' in response, response)

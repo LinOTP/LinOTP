@@ -1086,8 +1086,8 @@ class TestController(TestCase):
             passw = ":" + base64.b32encode(password)
 
         params = {"login": auth_user, "password": passw}
-        response = self.client.get(
-            url(controller="userservice", action="auth"), params=params
+        response = self.client.post(
+            url(controller="userservice", action="auth"), data=params
         )
 
         cookies = TestController.get_cookies(response)
@@ -1157,8 +1157,8 @@ class TestController(TestCase):
         if otp is not None:
             params["otp"] = otp
 
-        response = self.client.get(
-            url(controller="userservice", action="login"), params=params
+        response = self.client.post(
+            url(controller="userservice", action="login"), data=params
         )
 
         cookies = TestController.get_cookies(response)
@@ -1207,8 +1207,8 @@ class TestController(TestCase):
 
         params["session"] = auth_cookie
         # params['user'] = user
-        response = self.client.get(
-            url(controller="userservice", action=action), params=params
+        response = self.client.post(
+            url(controller="userservice", action=action), data=params
         )
 
         response.body = response.data.decode("utf-8")
