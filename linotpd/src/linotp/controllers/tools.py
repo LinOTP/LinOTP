@@ -28,7 +28,8 @@
 tools controller
 """
 import json
-from cgi import FieldStorage
+
+from werkzeug import FileStorage
 
 from linotp.flap import request, response, tmpl_context as c
 
@@ -217,14 +218,13 @@ class ToolsController(BaseController):
 
         try:
 
-            params = {}
-            params.update(request.POST)
+            params = self.request_params
 
             # -------------------------------------------------------------- --
             # processing required arguments
             try:
 
-                data_file = request.POST['file']
+                data_file = request.files['file']
                 resolver_name = params['resolver']
 
             except KeyError as exx:
@@ -245,8 +245,8 @@ class ToolsController(BaseController):
             #     see: http://jquery.malsup.com/form/#sample4
             # -- ----------------------------------------------------------- --
 
-            if isinstance(data_file, FieldStorage):
-                data = data_file.value
+            if isinstance(data_file, FileStorage):
+                data = data_file.read()
 
             # -------------------------------------------------------------- --
 
