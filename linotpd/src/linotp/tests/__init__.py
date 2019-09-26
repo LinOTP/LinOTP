@@ -233,7 +233,7 @@ class TestController(TestCase):
         """
         cookies = {}
         cookie_entries = ""
-        for entry in response.headerlist:
+        for entry in response.headers:
             key, val = entry
             if key == "Set-Cookie":
                 cookie_entries = val
