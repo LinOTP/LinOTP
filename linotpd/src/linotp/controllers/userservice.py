@@ -50,7 +50,7 @@ import base64
 import logging
 
 import os
-
+from flask import Response
 from werkzeug.exceptions import Forbidden
 
 try:
@@ -1090,8 +1090,9 @@ class UserserviceController(BaseController):
         '''
         try:
             pre_context = get_pre_context(self.client)
-            response.content_type = 'application/json'
-            return json.dumps(pre_context, indent=3)
+            data = json.dumps(pre_context, indent=3)
+            return Response(
+                response=data, status=200, mimetype='application/json')
 
         except Exception as e:
             log.exception("failed with error: %r" % e)
@@ -1115,9 +1116,9 @@ class UserserviceController(BaseController):
             realm = self.authUser.realm
 
             context = get_context(config, user, realm, self.client)
-
-            response.content_type = 'application/json'
-            return json.dumps(context, indent=3)
+            data = json.dumps(context, indent=3)
+            return Response(
+                response=data, status=200, mimetype='application/json')
 
         except Exception as e:
             log.exception("[context] failed with error: %r" % e)
