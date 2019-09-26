@@ -12,7 +12,7 @@ class Config:
     # You can specify a different URL prefix by listing the controller
     # as `FOO:/bar`, which will register it on `/bar` instead.
 
-    CONTROLLERS = ("admin auth manage selfservice system "
+    CONTROLLERS = ("admin audit auth manage selfservice system "
                    "test tools maintenance validate userservice")
 
     # List all enabled token support modules. If this parameter is

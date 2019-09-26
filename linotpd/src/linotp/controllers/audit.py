@@ -29,6 +29,8 @@ audit controller - to search the audit trail
 
 import logging
 
+from flask import Response, stream_with_context
+
 from linotp.flap import tmpl_context as c, request, response, config
 
 from linotp.controllers.base import BaseController
@@ -149,27 +151,31 @@ class AuditController(BaseController):
                     del search_params[key]
 
             output_format = self.request_params.get("outform", 'json') or 'json'
-            delimiter = self.request_params.get('delimiter', ',') or ','
 
-            audit_iterator = None
+            streamed_response = None
 
             audit = config.get('audit')
             audit_query = AuditQuery(search_params, audit)
 
             if output_format == "csv":
-                filename = "linotp-audit.csv"
-                response.content_type = "application/force-download"
-                response.headers['Content-disposition'] = (
-                                        'attachment; filename=%s' % filename)
-
+                delimiter = self.request_params.get('delimiter', ',') or ','
                 audit_iterator = CSVAuditIterator(audit_query, delimiter)
+                # TODO: Use stream_with_context instead of list
+                streamed_response = Response(list(audit_iterator),
+                                    content_type="text/csv")
+                filename = "linotp-audit.csv"
+                streamed_response.headers['Content-disposition'] = (
+                                        'attachment; filename=%s' % filename)
             else:
-                response.content_type = 'application/json'
                 audit_iterator = JSONAuditIterator(audit_query)
+                # TODO: Use stream_with_context instead of list
+                streamed_response = Response(list(audit_iterator),
+                                    content_type="application/json")
 
             c.audit['success'] = True
             Session.commit()
-            return audit_iterator
+
+            return streamed_response
 
         except PolicyException as pe:
             log.exception("[getotp] gettoken/getotp policy failed: %r" % pe)
