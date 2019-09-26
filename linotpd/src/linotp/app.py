@@ -56,6 +56,13 @@ mako = MakoTemplates()
 class ConfigurationError(Exception):
     pass
 
+class LinOTPApp(Flask):
+    """
+    The main LinOTP Flask application instance
+    """
+    def __init__(self):
+        super(LinOTPApp, self).__init__(__name__, static_folder='public', static_url_path='/static')
+
 
 def init_logging(app):
     """Sets up logging for LinOTP."""
@@ -204,7 +211,7 @@ def create_app(config_name='default', config_extra=None):
     @param config_name The name of the configuration to load from settings.py
     @param config_extra An optional dict of configuration override values
     """
-    app = Flask(__name__, static_folder='public', static_url_path='/static')
+    app = LinOTPApp()
 
     app.config.from_object(configs[config_name])
     configs[config_name].init_app(app)
