@@ -74,8 +74,8 @@ from linotp.lib.policy import (checkPolicyPre,
                                get_client_policy,
                                )
 
-from linotp.lib.reply import (sendResult,
-                              sendError,
+from linotp.lib.reply import sendResult as sendResponse
+from linotp.lib.reply import (sendError,
                               sendQRImageResult,
                               create_img,
                               create_img_src
@@ -212,6 +212,40 @@ def get_auth_user(request):
     return 'unauthenticated', None, None
 
 
+def sendResult(response_proxy, obj, id=1, opt=None, status=True):
+    """ extend the standard sendResult to handle cookies """
+
+    response = sendResponse(
+        response=None, obj=obj, id=id, opt=opt, status=status)
+
+    if response_proxy and response_proxy.delete_cookies:
+        for delete_cookie in response_proxy.delete_cookies:
+            response.delete_cookie(key=delete_cookie)
+
+    if response_proxy and response_proxy.cookies:
+        for args, kwargs in response_proxy.cookies:
+            response.set_cookie(*args, **kwargs)
+
+    if response_proxy and response_proxy.mime_type:
+        response.mime_type = response_proxy.mime_type
+
+    return response
+
+
+class LocalResponseProxy():
+
+    def __init__(self):
+        self.delete_cookies = set()
+        self.cookies = []
+        self.mime_type = None
+
+    def set_cookie(self, *args, **kwargs):
+        self.cookies.append((args, kwargs))
+
+    def delete_cookie(self, key):
+        self.delete_cookies.add(key)
+
+
 class UserserviceController(BaseController):
     """
     the interface from the service into linotp to execute the actions for the
@@ -235,6 +269,9 @@ class UserserviceController(BaseController):
                 created by sendError with the context info 'before'
 
         """
+
+        # for seamless migration from pylons to flask
+        self.response = LocalResponseProxy()
 
         action = request_context['action']
 
@@ -467,7 +504,7 @@ class UserserviceController(BaseController):
                 c.audit['action_detail'] = ("User %r not found" %
                                             param.get('login'))
                 c.audit['success'] = False
-                return sendResult(response, False, 0)
+                return sendResult(self.response, False, 0)
 
             uid = "%s@%s" % (user.login, user.realm)
 
@@ -486,7 +523,7 @@ class UserserviceController(BaseController):
                 c.audit['action_detail'] = ("Missing password for user %r"
                                             % uid)
                 c.audit['success'] = False
-                return sendResult(response, False, 0)
+                return sendResult(self.response, False, 0)
 
             (otp, passw) = password.split(':')
             otp = base64.b32decode(otp)
@@ -510,24 +547,26 @@ class UserserviceController(BaseController):
                 c.audit['action_detail'] = ("User %r failed to authenticate!"
                                             % uid)
                 c.audit['success'] = False
-                return sendResult(response, False, 0)
+                return sendResult(self.response, False, 0)
 
             # -------------------------------------------------------------- --
 
             log.debug("Successfully authenticated user %s:", uid)
 
-            (cookie, expires,
+            (cookie_value, expires,
              expiration) = create_auth_cookie(user, self.client)
 
-            response.set_cookie('userauthcookie', cookie,
-                                secure=secure_cookie(),
-                                expires=expires)
+            self.response.set_cookie(
+                'userauthcookie',
+                value=cookie_value,
+                secure=secure_cookie(),
+                expires=expires)
 
             c.audit['action_detail'] = "expires: %s " % expiration
             c.audit['success'] = True
 
             Session.commit()
-            return sendResult(response, True, 0)
+            return sendResult(self.response, True, 0)
 
         except Exception as exx:
 
@@ -580,18 +619,21 @@ class UserserviceController(BaseController):
             # if an otp is provided we can do a direct authentication
 
             if otp:
+
                 if res:
-                    (cookie, expires, _exp) = create_auth_cookie(
+                    (cookie_value, expires, _exp) = create_auth_cookie(
                                                         user, self.client)
 
-                    response.set_cookie('user_selfservice', cookie,
-                                        secure=secure_cookie(),
-                                        expires=expires)
+                    self.response.set_cookie(
+                        'user_selfservice',
+                        value=cookie_value,
+                        secure=secure_cookie(),
+                        expires=expires)
 
                     c.audit['info'] = ("User %r authenticated from otp" % user)
 
                 Session.commit()
-                return sendResult(response, res, 0)
+                return sendResult(self.response, res, 0)
 
             # -------------------------------------------------------------- --
 
@@ -606,23 +648,25 @@ class UserserviceController(BaseController):
                 if 'message' in reply and "://chal/" in reply['message']:
                     reply['img_src'] = create_img_src(reply['message'])
 
-                (cookie, expires,
+                (cookie_value, expires,
                  expiration) = create_auth_cookie(
                                         user, self.client,
                                         state='challenge_triggered',
                                         state_data=reply)
 
-                response.set_cookie('user_selfservice', cookie,
-                                    secure=secure_cookie(),
-                                    expires=expires)
+                self.reponse.set_cookie(
+                    'user_selfservice',
+                    value=cookie_value,
+                    secure=secure_cookie(),
+                    expires=expires)
 
                 c.audit['success'] = False
 
                 Session.commit()
-                return sendResult(response, False, 0, opt=reply)
+                return sendResult(self.response, False, 0, opt=reply)
 
             Session.commit()
-            return sendResult(response, res, 0, opt=reply)
+            return sendResult(self.response, res, 0, opt=reply)
 
         # -------------------------------------------------------------- --
 
@@ -651,18 +695,18 @@ class UserserviceController(BaseController):
                 c.audit['success'] = res
 
                 if res:
-                    (cookie, expires,
+
+                    (cookie_value, expires,
                      expiration) = create_auth_cookie(user, self.client)
 
-                    response.set_cookie('user_selfservice', cookie,
-                                        secure=secure_cookie(),
-                                        expires=expires)
-
-                    c.audit['action_detail'] = "expires: %s " % expiration
-                    c.audit['info'] = "%r logged in " % user
+                    self.response.set_cookie(
+                        'user_selfservice',
+                        value=cookie_value,
+                        secure=secure_cookie(),
+                        expires=expires)
 
                 Session.commit()
-                return sendResult(response, res, 0)
+                return sendResult(self.response, res, 0)
 
             # -------------------------------------------------------------- --
 
@@ -686,17 +730,20 @@ class UserserviceController(BaseController):
                             'valid_tan')
 
             if verified:
-                (cookie, expires,
+                (cookie_value, expires,
                  expiration) = create_auth_cookie(user, self.client)
 
-                response.set_cookie('user_selfservice', cookie,
-                                    secure=secure_cookie(),
-                                    expires=expires)
+                self.response.set_cookie(
+                    'user_selfservice',
+                    value=cookie_value,
+                    secure=secure_cookie(),
+                    expires=expires)
+
                 c.audit['action_detail'] = "expires: %s " % expiration
                 c.audit['info'] = "%r logged in " % user
 
             Session.commit()
-            return sendResult(response, verified, 0)
+            return sendResult(self.response, verified, 0)
 
         else:
             raise NotImplementedError('unknown state %r' % auth_state)
@@ -718,7 +765,7 @@ class UserserviceController(BaseController):
             c.audit['success'] = False
 
             Session.commit()
-            return sendResult(response, False, 0)
+            return sendResult(self.response, False, 0)
 
         # ------------------------------------------------------------------ --
 
@@ -733,12 +780,14 @@ class UserserviceController(BaseController):
             if res:
                 log.debug("Successfully authenticated user %r:", user)
 
-                (cookie, expires,
+                (cookie_value, expires,
                  expiration) = create_auth_cookie(user, self.client)
 
-                response.set_cookie('user_selfservice', cookie,
-                                    secure=secure_cookie(),
-                                    expires=expires)
+                self.response.set_cookie(
+                    'user_selfservice',
+                    value=cookie_value,
+                    secure=secure_cookie(),
+                    expires=expires)
 
                 c.audit['action_detail'] = "expires: %s " % expiration
                 c.audit['info'] = "%r logged in " % user
@@ -749,21 +798,24 @@ class UserserviceController(BaseController):
             c.audit['success'] = res
 
             Session.commit()
-            return sendResult(response, res, 0, reply)
+            return sendResult(self.response, res, 0, reply)
 
         # ------------------------------------------------------------------ --
 
         # last step - we have no otp but mfa_login request - so we
         # create the 'credentials_verified state'
 
-        (cookie, expires,
+        (cookie_value, expires,
          expiration) = create_auth_cookie(
                             user, self.client,
                             state='credentials_verified')
 
-        response.set_cookie('user_selfservice', cookie,
-                            secure=secure_cookie(),
-                            expires=expires)
+        self.response.set_cookie(
+            'user_selfservice',
+            value=cookie_value,
+            secure=secure_cookie(),
+            expires=expires)
+
         reply = {'message': 'credential verified - '
                  'additional authentication parameter required'}
 
@@ -773,7 +825,7 @@ class UserserviceController(BaseController):
         c.audit['success'] = True
         Session.commit()
 
-        return sendResult(response, False, 0, opt=reply)
+        return sendResult(self.response, False, 0, opt=reply)
 
     def _login_with_password_only(self, user, password):
         """
@@ -786,19 +838,21 @@ class UserserviceController(BaseController):
         res = user.checkPass(password)
 
         if res:
-            (cookie, expires,
+            (cookie_value, expires,
              _expiration) = create_auth_cookie(user, self.client)
 
-            response.set_cookie('user_selfservice', cookie,
-                                secure=secure_cookie,
-                                expires=expires)
+            self.response.set_cookie(
+                'user_selfservice',
+                value=cookie_value,
+                secure=secure_cookie(),
+                expires=expires)
 
         c.audit['success'] = res
         c.audit['info'] = "%r logged in " % user
 
         Session.commit()
 
-        return sendResult(response, res, 0)
+        return sendResult(self.response, res, 0)
 
     def login(self):
         """
@@ -838,7 +892,7 @@ class UserserviceController(BaseController):
 
             if user_selfservice_cookie and not auth_info[0]:
 
-                response.delete_cookie('user_selfservice')
+                self.response.delete_cookie('user_selfservice')
 
             # -------------------------------------------------------------- --
 
@@ -873,7 +927,7 @@ class UserserviceController(BaseController):
             c.audit['success'] = False
 
             Session.rollback()
-            return sendResult(response, False, 0)
+            return sendResult(self.response, False, 0)
 
         finally:
             Session.close()
@@ -961,7 +1015,7 @@ class UserserviceController(BaseController):
                                          exclude_rollout=False)
 
             Session.commit()
-            return sendResult(response, tokenArray, 0)
+            return sendResult(self.response, tokenArray, 0)
 
         except Exception as exx:
             log.exception("failed with error: %r", exx)
@@ -983,7 +1037,7 @@ class UserserviceController(BaseController):
             c.audit['success'] = True
 
             Session.commit()
-            return sendResult(response, uinfo, 0)
+            return sendResult(self.response, uinfo, 0)
 
         except Exception as exx:
             Session.rollback()
@@ -1003,11 +1057,12 @@ class UserserviceController(BaseController):
 
             cookie = request.cookies.get('user_selfservice')
             remove_auth_cookie(cookie)
-            response.delete_cookie('user_selfservice')
+            self.response.delete_cookie(key='user_selfservice')
+
             c.audit['success'] = True
 
             Session.commit()
-            return sendResult(response, True, 0)
+            return sendResult(self.response, True, 0)
 
         except Exception as exx:
             Session.rollback()
@@ -1176,7 +1231,7 @@ class UserserviceController(BaseController):
                 c.audit['success'] = ret
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("[enable] policy failed %r" % pe)
@@ -1230,7 +1285,7 @@ class UserserviceController(BaseController):
                 c.audit['success'] = ret
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("policy failed %r" % pe)
@@ -1275,7 +1330,7 @@ class UserserviceController(BaseController):
                 c.audit['success'] = ret
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("[userdelete] policy failed: %r" % pe)
@@ -1317,7 +1372,7 @@ class UserserviceController(BaseController):
                 c.audit['success'] = ret
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
@@ -1365,7 +1420,7 @@ class UserserviceController(BaseController):
                 c.audit['realm'] = self.authUser.realm
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
@@ -1425,7 +1480,7 @@ class UserserviceController(BaseController):
                 c.audit['success'] = ret
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pex:
             log.exception("policy failed: %r" % pex)
@@ -1467,7 +1522,7 @@ class UserserviceController(BaseController):
                 c.audit['success'] = ret
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pex:
             log.exception("policy failed: %r" % pex)
@@ -1514,7 +1569,7 @@ class UserserviceController(BaseController):
                 c.audit['success'] = ret
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
@@ -1574,7 +1629,7 @@ class UserserviceController(BaseController):
             checkPolicyPost('selfservice', 'userassign', param, self.authUser)
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("[userassign] policy failed: %r" % pe)
@@ -1636,7 +1691,7 @@ class UserserviceController(BaseController):
             c.audit['serial'] = serial
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
@@ -1734,7 +1789,7 @@ class UserserviceController(BaseController):
                 hparam['qr'] = param.get('qr') or 'html'
                 return sendQRImageResult(response, rdata, hparam)
             else:
-                return sendResult(response, ret, opt=response_detail)
+                return sendResult(self.response, ret, opt=response_detail)
 
         except PolicyException as pe:
             log.exception("[userinit] policy failed: %r" % pe)
@@ -1895,7 +1950,7 @@ class UserserviceController(BaseController):
             checkPolicyPost('selfservice', 'enroll', param, user=self.authUser)
 
             Session.commit()
-            return sendResult(response, {'init': ret1,
+            return sendResult(self.response, {'init': ret1,
                                          'setpin': False,
                                          'oathtoken': ret})
 
@@ -1970,7 +2025,7 @@ class UserserviceController(BaseController):
             c.audit['success'] = True
 
             Session.commit()
-            return sendResult(response, ret, 0)
+            return sendResult(self.response, ret, 0)
 
         except PolicyException as pe:
             log.exception("[usergetmultiotp] policy failed: %r" % pe)
@@ -2132,7 +2187,7 @@ class UserserviceController(BaseController):
             c.audit['realm'] = self.authUser.realm
 
             Session.commit()
-            return sendResult(response, {'activate': True, 'ocratoken': ret})
+            return sendResult(self.response, {'activate': True, 'ocratoken': ret})
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
@@ -2232,7 +2287,7 @@ class UserserviceController(BaseController):
                             param, self.authUser)
 
             Session.commit()
-            return sendResult(response, value, opt)
+            return sendResult(self.response, value, opt)
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
@@ -2304,7 +2359,7 @@ class UserserviceController(BaseController):
             c.audit['realm'] = self.authUser.realm
 
             Session.commit()
-            return sendResult(response, value, opt)
+            return sendResult(self.response, value, opt)
 
         except PolicyException as pe:
             log.exception("[userfinshocra2token] policy failed: %r" % pe)
@@ -2388,7 +2443,7 @@ class UserserviceController(BaseController):
                     c.audit['success'] = False
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("[token_call] policy failed: %r" % pe)
