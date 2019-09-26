@@ -52,6 +52,7 @@
 
 import os
 import webtest
+import pytest
 
 import logging
 import json
@@ -262,6 +263,7 @@ class TestUserserviceAuthController(TestController):
 
         return
 
+    @pytest.mark.skip(reason="requires the audit controller")
     def test_login_with_challenge_response(self):
         """
         test authentication with challenge response
