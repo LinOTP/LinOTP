@@ -26,11 +26,10 @@
 
 
 """
-Test the support for resolver definitions in system or admin policy user entry
+Test the support for userservice controller including authentication
 """
 import os
 import pytest
-
 import logging
 
 from linotp.tests import TestController
