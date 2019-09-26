@@ -303,12 +303,12 @@ class TestUserserviceAuthController(TestController):
         params = {}
         params['session'] = auth_cookie
 
-        with self.assertRaises(webtest.app.AppError) as app_error:
+        with self.assertRaises(Exception) as app_error:
 
             response = self.app.get(url(controller='userservice',
                                         action='history'), params=params)
 
-        self.assertTrue("403 Forbidden" in app_error.exception.message)
+        self.assertTrue("No valid session" in app_error.exception)
 
         TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
 

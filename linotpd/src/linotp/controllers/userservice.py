@@ -51,13 +51,15 @@ import logging
 
 import os
 
+from werkzeug.exceptions import Forbidden
+
 try:
     import json
 except ImportError:
     import simplejson as json
 
 from linotp.flap import (
-    request, response, config, tmpl_context as c, abort,
+    request, response, config, tmpl_context as c,
     render_mako as render, _,
 )
 
@@ -313,7 +315,7 @@ class UserserviceController(BaseController):
         if (not identity or
            auth_type not in ["userservice", 'user_selfservice']):
 
-            abort(403, _("No valid session"))
+            raise Forbidden(_("No valid session"))
 
         # ------------------------------------------------------------------ --
 
@@ -330,7 +332,7 @@ class UserserviceController(BaseController):
 
         if not check_session(request, self.authUser, self.client):
 
-            abort(403, _("No valid session"))
+            raise Forbidden(_("No valid session"))
 
         # ------------------------------------------------------------------ --
 
@@ -346,7 +348,7 @@ class UserserviceController(BaseController):
 
         if auth_state != 'authenticated':
 
-            abort(403, _("No valid session"))
+            raise Forbidden(_("No valid session"))
 
         # ------------------------------------------------------------------ --
 
