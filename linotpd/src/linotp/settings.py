@@ -55,9 +55,10 @@ class Config:
 
     LOGGING = None
 
+    # Directory for configuration files
     ROOT_DIR = basedir
 
-    SECRET_FILE = os.path.join(basedir, "encKey")
+    SECRET_FILE = os.path.join(ROOT_DIR, "encKey")
 
     # MAKO_TRANSLATE_EXCEPTIONS = False
 

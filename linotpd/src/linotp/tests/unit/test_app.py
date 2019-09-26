@@ -1,10 +1,16 @@
 
+import os
 import pytest                   # noqa: F401
 
 from flask import url_for
 
 from linotp import __version__ as linotp_version
+from linotp.app import LinOTPApp
 
+def test_rootdir(app):
+    rootdir = app.getConfigRootDirectory()
+
+    assert os.path.exists(rootdir)
 
 def test_healthcheck(base_app, client):
     wanted = {

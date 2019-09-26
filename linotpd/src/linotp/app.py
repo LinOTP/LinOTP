@@ -63,6 +63,22 @@ class LinOTPApp(Flask):
     def __init__(self):
         super(LinOTPApp, self).__init__(__name__, static_folder='public', static_url_path='/static')
 
+    def getConfigRootDirectory(self):
+        """
+        Get root directory for local configuration files. This directory
+        is used for storing files such as the DB secret key.
+
+        An exception is thrown if the directory does not exist.
+        """
+        rootdir = flap.config.get('ROOT_DIR')
+
+        if not rootdir:
+            raise ConfigurationError("Root directory (ROOT_DIR) is not set")
+
+        if not os.path.exists(rootdir):
+            raise ConfigurationError("Root directory {} does not exist")
+
+        return rootdir
 
 def init_logging(app):
     """Sets up logging for LinOTP."""
