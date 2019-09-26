@@ -705,6 +705,7 @@ class TestController(TestCase):
         client=None,
         upload_files=None,
         auth_type="Digest",
+        content_type=None
     ):
         """
         Makes an authenticated request to /tools/'action'
