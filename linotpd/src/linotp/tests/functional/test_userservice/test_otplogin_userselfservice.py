@@ -317,6 +317,7 @@ class TestUserserviceAuthController(TestController):
         response = self.app.get(url(controller='userservice',
                                     action='usertokenlist'), params=params)
 
+        response.body = response.data.decode("utf-8")
         self.assertTrue('LoginToken' in response, response)
 
         # ------------------------------------------------------------------ --
@@ -330,6 +331,7 @@ class TestUserserviceAuthController(TestController):
         response = self.app.get(url(controller='userservice',
                                     action='login'), params=params)
 
+        response.body = response.data.decode("utf-8")
         self.assertTrue('"Please enter your otp value: "' in response,
                         response)
 
@@ -351,6 +353,7 @@ class TestUserserviceAuthController(TestController):
         response = self.app.get(url(controller='userservice',
                                     action='login'), params=params)
 
+        response.body = response.data.decode("utf-8")
         self.assertTrue('"value": true' in response, response)
 
         cookies = TestController.get_cookies(response)
@@ -364,6 +367,7 @@ class TestUserserviceAuthController(TestController):
         response = self.app.get(url(controller='userservice',
                                     action='history'), params=params)
 
+        response.body = response.data.decode("utf-8")
         self.assertTrue('"rows": [' in response, response)
 
         return

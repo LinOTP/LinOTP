@@ -1126,6 +1126,7 @@ class TestController(TestCase):
                 user, password, otp)
 
             if not auth_cookie:
+                response.body = response.data.decode("utf-8")
                 return response
 
         TestController.set_cookie(self.client, "userauthcookie", auth_cookie)
@@ -1136,6 +1137,7 @@ class TestController(TestCase):
             "/userservice/" + action, query_string=params
         )
 
+        response.body = response.data.decode("utf-8")
         return response
 
     # ---------------------------------------------------------------------- --
@@ -1162,6 +1164,7 @@ class TestController(TestCase):
         cookies = TestController.get_cookies(response)
         auth_cookie = cookies.get("user_selfservice")
 
+        response.body = response.data.decode("utf-8")
         return response, auth_cookie
 
     def make_userselfservice_request(
@@ -1195,6 +1198,7 @@ class TestController(TestCase):
             )
 
             if not auth_cookie or '"value": false' in response.body:
+                response.body = response.data.decode("utf-8")
                 return response
 
             self.user_selfservice[user] = auth_cookie
@@ -1207,6 +1211,7 @@ class TestController(TestCase):
             url(controller="userservice", action=action), params=params
         )
 
+        response.body = response.data.decode("utf-8")
         return response
 
     # ------------------------------------------------------------------------ -
