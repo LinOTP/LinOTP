@@ -1157,7 +1157,7 @@ class TestController(TestCase):
         if otp is not None:
             params["otp"] = otp
 
-        response = self.app.get(
+        response = self.client.get(
             url(controller="userservice", action="login"), params=params
         )
 
@@ -1207,7 +1207,7 @@ class TestController(TestCase):
 
         params["session"] = auth_cookie
         # params['user'] = user
-        response = self.app.get(
+        response = self.client.get(
             url(controller="userservice", action=action), params=params
         )
 

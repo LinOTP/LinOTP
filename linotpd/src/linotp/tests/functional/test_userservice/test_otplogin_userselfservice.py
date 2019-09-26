@@ -289,12 +289,12 @@ class TestUserserviceAuthController(TestController):
             'login': 'passthru_user1@myDefRealm',
             'password': 'geheim1'}
 
-        response = self.app.get(url(controller='userservice',
+        response = self.client.get(url(controller='userservice',
                                     action='login'), params=auth_user)
 
         cookies = TestController.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
-        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
 
         # ------------------------------------------------------------------ --
 
@@ -305,16 +305,16 @@ class TestUserserviceAuthController(TestController):
 
         with self.assertRaises(Exception) as app_error:
 
-            response = self.app.get(url(controller='userservice',
+            response = self.client.get(url(controller='userservice',
                                         action='history'), params=params)
 
         self.assertTrue("No valid session" in app_error.exception)
 
-        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
 
         params = {}
         params['session'] = auth_cookie
-        response = self.app.get(url(controller='userservice',
+        response = self.client.get(url(controller='userservice',
                                     action='usertokenlist'), params=params)
 
         response.body = response.data.decode("utf-8")
@@ -324,11 +324,11 @@ class TestUserserviceAuthController(TestController):
 
         # next request is to trigger the login challenge response
 
-        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
 
         params = {}
         params['session'] = auth_cookie
-        response = self.app.get(url(controller='userservice',
+        response = self.client.get(url(controller='userservice',
                                     action='login'), params=params)
 
         response.body = response.data.decode("utf-8")
@@ -339,7 +339,7 @@ class TestUserserviceAuthController(TestController):
 
         cookies = TestController.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
-        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
 
         # ------------------------------------------------------------------ --
 
@@ -350,7 +350,7 @@ class TestUserserviceAuthController(TestController):
         params['session'] = auth_cookie
         params['otp'] = self.otps.pop()
 
-        response = self.app.get(url(controller='userservice',
+        response = self.client.get(url(controller='userservice',
                                     action='login'), params=params)
 
         response.body = response.data.decode("utf-8")
@@ -358,13 +358,13 @@ class TestUserserviceAuthController(TestController):
 
         cookies = TestController.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
-        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
 
         # ------------------------------------------------------------------ --
 
         params = {}
         params['session'] = auth_cookie
-        response = self.app.get(url(controller='userservice',
+        response = self.client.get(url(controller='userservice',
                                     action='history'), params=params)
 
         response.body = response.data.decode("utf-8")
