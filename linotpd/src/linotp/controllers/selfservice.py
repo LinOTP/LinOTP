@@ -35,12 +35,15 @@ selfservice controller - This is the controller for the self service interface,
 import os
 import json
 
+from flask import redirect, Response
+from werkzeug.exceptions import Forbidden
+
 from paste.httpexceptions import HTTPFound
 
 from linotp import flap
 from linotp.flap import (
     request, response, config, tmpl_context as c, url,
-    abort, redirect, _, render_mako as render
+    _, render_mako as render
 )
 
 from mako.exceptions import CompileException
@@ -170,10 +173,11 @@ class SelfserviceController(BaseController):
 
                 if action in ['index']:
                     self.redirect = True
-                    redirect(url(controller='selfservice', action='login'))
+                    return redirect(
+                        url(controller='selfservice', action='login'))
 
                 else:
-                    abort(403, "No valid session")
+                    Forbidden("No valid session")
 
             # -------------------------------------------------------------- --
 
@@ -187,7 +191,7 @@ class SelfserviceController(BaseController):
                     return
 
                 self.redirect = True
-                redirect(url(controller='selfservice', action='index'))
+                return redirect(url(controller='selfservice', action='index'))
 
             # -------------------------------------------------------------- --
 
@@ -195,12 +199,12 @@ class SelfserviceController(BaseController):
             if auth_user and auth_type is 'user_selfservice' \
                     and auth_state is not 'authenticated':
                 self.redirect = True
-                redirect(url(controller='selfservice', action='login'))
+                return redirect(url(controller='selfservice', action='login'))
 
             # futher processing with the authenticated user
 
             if auth_state != 'authenticated':
-                abort(403, "No valid session")
+                Forbidden("No valid session")
 
             c.user = auth_user.login
             c.realm = auth_user.realm
@@ -224,7 +228,7 @@ class SelfserviceController(BaseController):
                         c.audit['info'] = "session expired"
                         audit.log(c.audit)
 
-                        abort(403, "No valid session")
+                        Forbidden("No valid session")
 
             # -------------------------------------------------------------- --
 
@@ -366,23 +370,20 @@ class SelfserviceController(BaseController):
         redirect to the login page
         """
 
-        cookie = request.cookies.get('user_selfservice')
-        if cookie:
-            remove_auth_cookie(cookie)
+        request_context['reponse_redirect'] = True
+
+        response = redirect('login')
+
+        if request.cookies.get('user_selfservice'):
+            remove_auth_cookie(request.cookies.get('user_selfservice'))
             response.delete_cookie('user_selfservice')
 
-        request_context['reponse_redirect'] = True
-        redirect(url(controller='selfservice', action='login'))
+        return response
 
     def login(self):
         '''
         render the selfservice login page
         '''
-
-        cookie = request.cookies.get('user_selfservice')
-        if cookie:
-            remove_auth_cookie(cookie)
-            response.delete_cookie('user_selfservice')
 
         c.title = _("LinOTP Self Service Login")
 
@@ -416,7 +417,13 @@ class SelfserviceController(BaseController):
         if mfa_login and mfa_3_fields:
             c.mfa_3_fields = True
 
-        return render('/selfservice/login.mako')
+        response = Response(render('/selfservice/login.mako'))
+
+        if request.cookies.get('user_selfservice'):
+            remove_auth_cookie(request.cookies.get('user_selfservice'))
+            response.delete_cookie('user_selfservice')
+
+        return response
 
     def load_form(self):
         '''
@@ -483,8 +490,9 @@ class SelfserviceController(BaseController):
         Return an empty file instead of a 404 (which would mean hitting the
         debug console)
         '''
+        response = Response('')
         response.headers['Content-type'] = 'text/css'
-        return ''
+        return response
 
     def assign(self):
         '''
