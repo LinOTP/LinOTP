@@ -47,7 +47,7 @@ the check is made by a dryrun
 - delete the resolver on test end
 
 """
-
+import io
 import os
 import json
 import logging
@@ -128,7 +128,7 @@ class TestImportUser(TestController):
 
         def_passwd_file = os.path.join(self.fixture_path, 'def-passwd')
 
-        with open(def_passwd_file, "r") as f:
+        with io.open(def_passwd_file, "r", encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
@@ -174,7 +174,7 @@ class TestImportUser(TestController):
 
         def_passwd_file = os.path.join(self.fixture_path, 'def-passwd')
 
-        with open(def_passwd_file, "r") as f:
+        with io.open(def_passwd_file, "r", encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
@@ -236,7 +236,7 @@ class TestImportUser(TestController):
 
         def_passwd_file = os.path.join(self.fixture_path, 'def-passwd.csv')
 
-        with open(def_passwd_file, "r") as f:
+        with io.open(def_passwd_file, "r", encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
@@ -394,7 +394,7 @@ class TestImportUser(TestController):
         def_passwd_file = os.path.join(self.fixture_path,
                                        'def-passwd-plain.csv')
 
-        with open(def_passwd_file, "r") as f:
+        with io.open(def_passwd_file, "r", encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
