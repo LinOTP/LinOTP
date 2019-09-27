@@ -171,38 +171,60 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         info['policy']['authentication'] = auth_policies
 
-        info['policy']['selfservice'] = {'activate_PushToken':
-                                         {'type': 'bool',
-                                          'description': _('activate your '
-                                                           'PushToken')}
-                                         }
+        info['policy']['selfservice'] = {
+            'activate_PushToken': {
+                'type': 'bool',
+                'description': _('activate your PushToken')}
+        }
 
         # ------------------------------------------------------------------- --
 
         # wire the templates
 
         init_dict = {}
-        init_dict['title'] = {'html': 'pushtoken.mako', 'scope': 'enroll.title'}
-        init_dict['page'] = {'html': 'pushtoken.mako', 'scope': 'enroll'}
+
+        init_dict['title'] = {
+            'html': 'pushtoken/pushtoken.mako',
+            'scope': 'enroll.title'
+        }
+        init_dict['page'] = {
+            'html': 'pushtoken/pushtoken.mako',
+            'scope': 'enroll'
+        }
+
         info['init'] = init_dict
 
         config_dict = {}
         config_dict['title'] = {
-            'html': 'pushtoken.mako', 'scope': 'config.title'}
-        config_dict['page'] = {'html': 'pushtoken.mako', 'scope': 'config'}
+            'html': 'pushtoken/pushtoken.mako',
+            'scope': 'config.title'
+        }
+
+        config_dict['page'] = {
+            'html': 'pushtoken/pushtoken.mako',
+            'scope': 'config'
+        }
+
         info['config'] = config_dict
 
         ss_enroll = {}
-        ss_enroll['title'] = {'html': 'pushtoken.mako',
-                              'scope': 'selfservice.title.enroll'}
-        ss_enroll['page'] = {'html': 'pushtoken.mako',
-                             'scope': 'selfservice.enroll'}
+        ss_enroll['title'] = {
+            'html': 'pushtoken/pushtoken.mako',
+            'scope': 'selfservice.title.enroll'
+        }
+        ss_enroll['page'] = {
+            'html': 'pushtoken/pushtoken.mako',
+            'scope': 'selfservice.enroll'
+        }
 
         ss_activate = {}
-        ss_activate['title'] = {'html': 'pushtoken.mako',
-                                'scope': 'selfservice.title.activate'}
-        ss_activate['page'] = {'html': 'pushtoken.mako',
-                               'scope': 'selfservice.activate'}
+        ss_activate['title'] = {
+            'html': 'pushtoken/pushtoken.mako',
+            'scope': 'selfservice.title.activate'
+        }
+        ss_activate['page'] = {
+            'html': 'pushtoken/pushtoken.mako',
+            'scope': 'selfservice.activate'}
 
         selfservice_dict = {}
         selfservice_dict['enroll'] = ss_enroll

@@ -184,21 +184,21 @@ class VoiceTokenClass(HmacTokenClass):
             'description': 'A voice token.',
             'init': {
                 'page': {
-                    'html': 'voicetoken.mako',
+                    'html': 'voicetoken/voicetoken.mako',
                     'scope': 'enroll',
                 },
                 'title': {
-                    'html': 'voicetoken.mako',
+                    'html': 'voicetoken/voicetoken.mako',
                     'scope': 'enroll.title',
                 },
             },
             'config': {
                 'title': {
-                    'html': 'voicetoken.mako',
+                    'html': 'voicetoken/voicetoken.mako',
                     'scope': 'config.title',
                 },
                 'page': {
-                    'html': 'voicetoken.mako',
+                    'html': 'voicetoken/voicetoken.mako',
                     'scope': 'config',
                 },
             },
