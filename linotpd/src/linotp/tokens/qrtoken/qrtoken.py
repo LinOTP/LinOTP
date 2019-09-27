@@ -183,38 +183,57 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         info['policy']['authentication'] = auth_policies
 
-        info['policy']['selfservice'] = {'activate_QRToken':
-                                         {'type': 'bool',
-                                          'description': _('activate your '
-                                                           'QRToken')}
-                                         }
+        info['policy']['selfservice'] = {
+            'activate_QRToken': {
+                'type': 'bool',
+                'description': _('activate your QRToken')}
+            }
 
         # ------------------------------------------------------------------- --
 
         # wire the templates
 
         init_dict = {}
-        init_dict['title'] = {'html': 'qrtoken.mako', 'scope': 'enroll.title'}
-        init_dict['page'] = {'html': 'qrtoken.mako', 'scope': 'enroll'}
+        init_dict['title'] = {
+            'html': 'qrtoken/qrtoken.mako',
+            'scope': 'enroll.title'
+        }
+        init_dict['page'] = {
+            'html': 'qrtoken/qrtoken.mako',
+            'scope': 'enroll'
+        }
         info['init'] = init_dict
 
         config_dict = {}
         config_dict['title'] = {
-            'html': 'qrtoken.mako', 'scope': 'config.title'}
-        config_dict['page'] = {'html': 'qrtoken.mako', 'scope': 'config'}
+            'html': 'qrtoken/qrtoken.mako',
+            'scope': 'config.title'
+        }
+        config_dict['page'] = {
+            'html': 'qrtoken/qrtoken.mako',
+            'scope': 'config'
+        }
         info['config'] = config_dict
 
         ss_enroll = {}
-        ss_enroll['title'] = {'html': 'qrtoken.mako',
-                              'scope': 'selfservice.title.enroll'}
-        ss_enroll['page'] = {'html': 'qrtoken.mako',
-                             'scope': 'selfservice.enroll'}
+        ss_enroll['title'] = {
+            'html': 'qrtoken/qrtoken.mako',
+            'scope': 'selfservice.title.enroll'
+        }
+        ss_enroll['page'] = {
+            'html': 'qrtoken/qrtoken.mako',
+            'scope': 'selfservice.enroll'
+        }
 
         ss_activate = {}
-        ss_activate['title'] = {'html': 'qrtoken.mako',
-                                'scope': 'selfservice.title.activate'}
-        ss_activate['page'] = {'html': 'qrtoken.mako',
-                               'scope': 'selfservice.activate'}
+        ss_activate['title'] = {
+            'html': 'qrtoken/qrtoken.mako',
+            'scope': 'selfservice.title.activate'
+        }
+        ss_activate['page'] = {
+            'html': 'qrtoken/qrtoken.mako',
+            'scope': 'selfservice.activate'
+        }
 
         selfservice_dict = {}
         selfservice_dict['enroll'] = ss_enroll

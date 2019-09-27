@@ -44,7 +44,7 @@ if isinstance(lang, list):
 <meta http-equiv="content-style-type" content="text/css">
 
 <link type="text/css" rel="stylesheet" href="/static/css/linotp.css">
-<link type="text/css" rel="stylesheet" href="/selfservice/style.css">
+<link type="text/css" rel="stylesheet" href="/static/selfservice/style.css">
 <link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
 <link type="text/css" rel="stylesheet" href="/static/css/flexigrid/flexigrid.css">
 

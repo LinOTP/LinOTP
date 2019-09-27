@@ -83,29 +83,37 @@ class MotpTokenClass(TokenClass):
                'title'          : 'mOTP Token',
                'description'    : ('mobile otp token'),
 
-               'init'         : {'page' : {'html'      : 'motptoken.mako',
-                                            'scope'      : 'enroll', },
-                                   'title'  : {'html'      : 'motptoken.mako',
-                                             'scope'     : 'enroll.title', },
-                                   },
+               'init': {
+                   'page': {
+                       'html': 'motp/motptoken.mako',
+                       'scope'      : 'enroll',
+                    },
+                   'title': {
+                       'html': 'motp/motptoken.mako',
+                       'scope'     : 'enroll.title', },
+                   },
 
-               'config'        : { 'page' : {'html'      : 'motptoken.mako',
-                                            'scope'      : 'config', },
-                                   'title'  : {'html'      : 'motptoken.mako',
-                                             'scope'     : 'config.title', },
-                                 },
+               'config': {
+                   'page': {
+                       'html': 'motp/motptoken.mako',
+                       'scope': 'config',
+                       },
+                   'title': {
+                       'html': 'motp/motptoken.mako',
+                       'scope': 'config.title', },
+                   },
 
-               'selfservice'   :  { 'enroll' :
-                                   {'page' :
-                                    {'html'       : 'motptoken.mako',
-                                     'scope'      : 'selfservice.enroll', },
-                                   'title'  :
-                                     { 'html'      : 'motptoken.mako',
-                                      'scope'      : 'selfservice.title.enroll', },
-                                    },
-                                  },
-
-
+               'selfservice': {
+                   'enroll': {
+                       'page': {
+                           'html': 'motp/motptoken.mako',
+                           'scope': 'selfservice.enroll',
+                           },
+                       'title': {
+                           'html': 'motp/motptoken.mako',
+                           'scope': 'selfservice.title.enroll', },
+                       },
+                    },
                }
 
         if key and key in res:

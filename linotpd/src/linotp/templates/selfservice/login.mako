@@ -43,7 +43,7 @@ if isinstance(lang, list):
   <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
   <meta http-equiv="content-style-type" content="text/css">
 
-  <link type="text/css" rel="stylesheet" href="/selfservice/style.css">
+  <link type="text/css" rel="stylesheet" href="/static/selfservice/style.css">
   <link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
   <link type="text/css" rel="stylesheet" href="/static/css/jquery-ui/jquery-ui.min.css">
 </head>
