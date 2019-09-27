@@ -1,26 +1,21 @@
 # Pylons-to-Flask porting scaffold.
 
+# noqa pylint: disable=unused-import,invalid-name
+
 import logging
 import os.path
 
-import webob
-from werkzeug.datastructures import MultiDict
-
-from pylons import (
-    response, url, __version__,
-)
-from pylons.controllers.util import abort, forward, redirect
-from pylons.middleware import (
-    error_document_template,
-)
-
-from werkzeug import LocalProxy
-
 import flask
+from flask import abort, redirect, Response as response
 from flask_mako import render_template, TemplateError
 
-from .lib import helpers
+from pylons import url
 
+from werkzeug.exceptions import Unauthorized as HTTPUnauthorized
+from werkzeug.exceptions import Forbidden as HTTPForbidden
+from werkzeug.local import LocalProxy
+
+from .lib import helpers
 
 log = logging.getLogger(__name__)
 
@@ -78,20 +73,12 @@ def _(s):
     return s
 
 
-def set_lang(*args, **kwargs):
+def set_lang(*_args, **_kwargs):
     pass
 
 
 class LanguageError(Exception):
     pass
-
-
-class HTTPUnauthorized(webob.exc.HTTPUnauthorized):
-    pass
-
-class HTTPForbidden(webob.exc.HTTPForbidden):
-    pass
-
 
 def render_mako(template_name, extra_context=None):
     """This is loosely compatible with the Pylons `render_mako()`
