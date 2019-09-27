@@ -233,7 +233,7 @@ class TestController(TestCase):
         """
         cookies = {}
         cookie_entries = ""
-        for entry in response.headerlist:
+        for entry in response.headers:
             key, val = entry
             if key == "Set-Cookie":
                 cookie_entries = val
@@ -705,6 +705,7 @@ class TestController(TestCase):
         client=None,
         upload_files=None,
         auth_type="Digest",
+        content_type=None
     ):
         """
         Makes an authenticated request to /tools/'action'
@@ -1085,8 +1086,8 @@ class TestController(TestCase):
             passw = ":" + base64.b32encode(password)
 
         params = {"login": auth_user, "password": passw}
-        response = self.client.get(
-            url(controller="userservice", action="auth"), params=params
+        response = self.client.post(
+            url(controller="userservice", action="auth"), data=params
         )
 
         cookies = TestController.get_cookies(response)
@@ -1125,6 +1126,7 @@ class TestController(TestCase):
                 user, password, otp)
 
             if not auth_cookie:
+                response.body = response.data.decode("utf-8")
                 return response
 
         TestController.set_cookie(self.client, "userauthcookie", auth_cookie)
@@ -1135,6 +1137,7 @@ class TestController(TestCase):
             "/userservice/" + action, query_string=params
         )
 
+        response.body = response.data.decode("utf-8")
         return response
 
     # ---------------------------------------------------------------------- --
@@ -1154,13 +1157,14 @@ class TestController(TestCase):
         if otp is not None:
             params["otp"] = otp
 
-        response = self.app.get(
-            url(controller="userservice", action="login"), params=params
+        response = self.client.post(
+            url(controller="userservice", action="login"), data=params
         )
 
         cookies = TestController.get_cookies(response)
         auth_cookie = cookies.get("user_selfservice")
 
+        response.body = response.data.decode("utf-8")
         return response, auth_cookie
 
     def make_userselfservice_request(
@@ -1194,6 +1198,7 @@ class TestController(TestCase):
             )
 
             if not auth_cookie or '"value": false' in response.body:
+                response.body = response.data.decode("utf-8")
                 return response
 
             self.user_selfservice[user] = auth_cookie
@@ -1202,10 +1207,11 @@ class TestController(TestCase):
 
         params["session"] = auth_cookie
         # params['user'] = user
-        response = self.app.get(
-            url(controller="userservice", action=action), params=params
+        response = self.client.post(
+            url(controller="userservice", action=action), data=params
         )
 
+        response.body = response.data.decode("utf-8")
         return response
 
     # ------------------------------------------------------------------------ -

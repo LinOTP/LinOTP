@@ -44,6 +44,7 @@ class MockUserserviceController(UserserviceController):
     """
 
     def __init__(self):
+        self.response = None
         return
 
 # -------------------------------------------------------------------------- --

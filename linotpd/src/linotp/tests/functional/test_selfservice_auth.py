@@ -26,12 +26,13 @@
 
 
 """
-Test the support for resolver definitions in system or admin policy user entry
+Test the support for userservice controller including authentication
 """
 import os
-
+import pytest
 import logging
-from linotp.tests import TestController, url
+
+from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 
@@ -212,6 +213,7 @@ class TestSelfserviceAuthController(TestController):
         self.delete_policy('T1')
         self.delete_token('hmac123')
 
+    @pytest.mark.skip(reason="requires the audit controller")
     def test_selfservice_enable_disable_service(self):
         '''
         Selfservice Authorization: test of attribute in policies to enables service
