@@ -113,7 +113,7 @@ class LinOTPApp(Flask):
         before_first_request function
         """
 
-        self.sep = None
+        c.sep = None
         # TODO - language
         #self.set_language(request.headers)
 
@@ -132,10 +132,10 @@ class LinOTPApp(Flask):
         # set the decryption device before loading linotp config,
         # so it contains the decrypted values as well
         glo = getGlobalObject()
-        self.sep = glo.security_provider
+        c.sep = glo.security_provider
 
         try:
-            hsm = self.sep.getSecurityModule()
+            hsm = c.sep.getSecurityModule()
             self.hsm = hsm
             c.hsm = hsm
         except Exception as exx:
@@ -220,8 +220,8 @@ class LinOTPApp(Flask):
     def finalise_request(self, exc):
         meta.Session.remove()
         # free the lock on the scurityPovider if any
-        if self.sep:
-            self.sep.dropSecurityModule()
+        if c.get('sep'):
+            c.sep.dropSecurityModule()
         closeResolvers()
 
         # hint for the garbage collector to make the dishes
@@ -434,7 +434,7 @@ class LinOTPApp(Flask):
 
         An exception is thrown if the directory does not exist.
         """
-        rootdir = flap.config.get('ROOT_DIR')
+        rootdir = config.get('ROOT_DIR')
 
         if not rootdir:
             raise ConfigurationError("Root directory (ROOT_DIR) is not set")
@@ -621,7 +621,7 @@ def create_app(config_name='default', config_extra=None):
     with app.app_context():
         setup_db(app)
         generate_secret_key_file(app)
-        flap.set_config()       # ensure `request_context` exists
+        set_config()       # ensure `request_context` exists
         set_defaults(app)
         reload_token_classes()
 
@@ -639,7 +639,7 @@ def create_app(config_name='default', config_extra=None):
         # probably doing more work here than we need to. Global
         # variables suck.
 
-        flap.set_config()
+        set_config()
         initGlobalObject()
         setup_audit(app)
         setup_security_provider(app)
