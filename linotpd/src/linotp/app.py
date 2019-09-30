@@ -80,6 +80,20 @@ class LinOTPApp(Flask):
 
         return rootdir
 
+    def getCacheManager(self):
+        """
+        Get cache manager instance for caching classes
+
+        A warning is logged if the cache manager is not available in the config
+        """
+        cache_manager = request_context['CacheManager']
+        if not cache_manager:
+            import traceback
+            log.warning("[%s] Could not initialise cache due to missing manager", traceback.format_stack(None, 1))
+
+        return cache_manager
+
+
 def init_logging(app):
     """Sets up logging for LinOTP."""
 

@@ -31,6 +31,7 @@ import logging
 import json
 import re
 
+from flask import current_app
 from functools import partial
 
 from linotp.lib.context import request_context as context
@@ -736,7 +737,10 @@ def _get_resolver_config_cache():
                  "resolver_lookup_cache.expiration config")
         return None
 
-    cache_manager = context['CacheManager']
+    cache_manager = current_app.getCacheManager()
+    if not cache_manager:
+        return None
+
     cache_name = 'resolver_config'
     resolver_config_cache = cache_manager.get_cache(cache_name,
                                                     type="memory",
