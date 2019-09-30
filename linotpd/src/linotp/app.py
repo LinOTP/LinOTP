@@ -149,35 +149,39 @@ class LinOTPApp(Flask):
         # TODO: verify merge dropped
         # initResolvers()
 
-        # if we are in the setup cycle, we check for the linotpLicenseFile
-        if first_run:
-            if "linotpLicenseFile" in config and 'license' not in l_config:
-                license_str = ''
-                filename = config.get("linotpLicenseFile", '')
-                try:
-                    with open(filename) as f:
-                        license_str = f.read()
-                except IOError:
-                    log.error("could not open licence file: %s", filename)
+    def check_license(self):
+        """
+        if we are in the setup cycle, we check for the linotpLicenseFile
+        """
+        if "linotpLicenseFile" in config and 'license' not in config:
+            license_str = ''
+            filename = config.get("linotpLicenseFile", '')
+            try:
+                with open(filename) as f:
+                    license_str = f.read()
+            except IOError:
+                log.error("could not open licence file: %s", filename)
 
-                if not license_str:
-                    log.error("empty license file: %s", filename)
+            if not license_str:
+                log.error("empty license file: %s", filename)
+            else:
+                request_context['translate'] = translate
+
+                import linotp.lib.support
+                res, msg = linotp.lib.support.setSupportLicense(
+                    license_str)
+                if res is False:
+                    log.error("failed to load license: %s: %s",
+                                license_str, msg)
+
                 else:
-                    request_context['translate'] = translate
+                    log.info("license successfully loaded")
 
-                    import linotp.lib.support
-                    res, msg = linotp.lib.support.setSupportLicense(
-                        license_str)
-                    if res is False:
-                        log.error("failed to load license: %s: %s",
-                                    license_str, msg)
-
-                    else:
-                        log.info("license successfully loaded")
-            if 'provider.config_file' in config:
-                from linotp.provider import load_provider_ini
-
-                load_provider_ini(config['provider.config_file'])
+    def load_providers(self):
+        config_file = self.config.get('provider.config_file')
+        if config_file:
+            from linotp.provider import load_provider_ini
+            load_provider_ini(config_file)
 
     def start_session(self):
         self.base_auth_user = ''
@@ -612,6 +616,8 @@ def create_app(config_name='default', config_extra=None):
         set_config()       # ensure `request_context` exists
         set_defaults(app)
         reload_token_classes()
+        app.check_license()
+        app.load_providers()
 
     @app.before_request
     def setup_env():
