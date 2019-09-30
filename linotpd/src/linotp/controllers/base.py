@@ -91,6 +91,14 @@ class BaseController(Blueprint):
     def __init__(self, name, install_name='', **kwargs):
         super(BaseController, self).__init__(name, __name__, **kwargs)
 
+        # These methods will be called before each request
+        self.before_request(self._parse_request_params)
+        self.before_request(self.parse_requesting_user)
+        self.before_request(self.before_handler)
+
+        if hasattr(self, '__after__'):
+            self.after_request(self.__after__)    # noqa pylint: disable=no-member
+
         # Add routes for all the routeable endpoints in this "controller",
         # as well as base classes.
 
@@ -126,8 +134,57 @@ class BaseController(Blueprint):
                         url += '/<' + arg + '>'
                 self.add_url_rule(url, method_name, view_func=method)
 
-    def before_handler(self):
+    def parse_requesting_user(self):
+        """
+        load the requesting user
 
+        The result is placed into request_context['RequestUser']
+        """
+        from linotp.useridresolver.UserIdResolver import (
+            ResolverNotAvailable)
+
+        requestUser = None
+        try:
+            requestUser = getUserFromParam(self.request_params)
+        except UnicodeDecodeError as exx:
+            log.error("Failed to decode request parameters %r", exx)
+        except (ResolverNotAvailable, NoResolverFound) as exx:
+            log.error("Failed to connect to server %r", exx)
+
+        request_context['RequestUser'] = requestUser
+
+    def _parse_request_params(self):
+        """
+        Parses the request params from the request objects body / params
+        dependent on request content_type.
+
+        The resulting request parameters from the client are saved in
+        the class instance variable `request_params`
+
+        This method is called before each request is processed.
+        """
+        try:
+            if request.is_json:
+                self.request_params = request.json
+            else:
+                self.request_params = {}
+                for key in request.values:
+                   if(key.endswith('[]')):
+                       self.request_params[key[:-2]] = request.values.getlist(key)
+                   else:
+                        self.request_params[key] = request.values.get(key)
+        except UnicodeDecodeError as exx:
+            # we supress Exception here as it will be handled in the
+            # controller which will return corresponding response
+            log.warning('Failed to access request parameters: %r' % exx)
+
+
+    def before_handler(self):
+        """
+        Call derived controller's legacy __before__ method if it exists
+
+        This method is called before each request is processed.
+        """
         params = self.request_params
 
         if hasattr(self, '__before__'):

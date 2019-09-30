@@ -184,20 +184,12 @@ class LinOTPApp(Flask):
             load_provider_ini(config_file)
 
     def start_session(self):
-        self.base_auth_user = ''
 
         # we add a unique request id to the request enviroment
         # so we can trace individual requests in the logging
 
         request.environ['REQUEST_ID'] = str(uuid4())
         request.environ['REQUEST_START_TIMESTAMP'] = datetime.now()
-
-        try:
-            self._parse_request_params(request)
-        except UnicodeDecodeError as exx:
-            # we supress Exception here as it will be handled in the
-            # controller which will return corresponding response
-            log.warning('Failed to access request parameters: %r' % exx)
 
         self.create_context(request, request.environ)
 
@@ -207,6 +199,7 @@ class LinOTPApp(Flask):
         except UnicodeDecodeError as exx:
             # we supress Exception here as it will be handled in the
             # controller which will return corresponding response
+            self.base_auth_user = ''
             log.warning('Failed to identify user due to %r' % exx)
 
     def finalise_request(self, exc):
@@ -225,21 +218,6 @@ class LinOTPApp(Flask):
                 del data
 
         log_request_timedelta(log)
-
-    def _parse_request_params(self, _request):
-        """
-        Parses the request params from the request objects body / params
-        dependent on request content_type.
-        """
-        if _request.is_json:
-            self.request_params = _request.json
-        else:
-            self.request_params = {}
-            for key in _request.values:
-                if(key.endswith('[]')):
-                    self.request_params[key[:-2]] = _request.values.getlist(key)
-                else:
-                    self.request_params[key] = _request.values.get(key)
 
     def set_language(self, headers):
         '''Invoke before everything else. And set the translation language'''
@@ -368,22 +346,6 @@ class LinOTPApp(Flask):
             log.error("Failed to decode request parameters %r" % exx)
 
         request_context['defaultRealm'] = defaultRealm
-
-        # ------------------------------------------------------------------ --
-        # load the requesting user
-
-        from linotp.useridresolver.UserIdResolver import (
-            ResolverNotAvailable)
-
-        requestUser = None
-        try:
-            requestUser = getUserFromParam(self.request_params)
-        except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r", exx)
-        except (ResolverNotAvailable, NoResolverFound) as exx:
-            log.error("Failed to connect to server %r", exx)
-
-        request_context['RequestUser'] = requestUser
 
         # ------------------------------------------------------------------ --
         # load the providers
