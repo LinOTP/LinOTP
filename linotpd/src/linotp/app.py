@@ -117,18 +117,6 @@ class LinOTPApp(Flask):
         # TODO - language
         #self.set_language(request.headers)
 
-        first_run = False
-        app_setup_done = config.get('app_setup_done', False)
-        if app_setup_done is False:
-            try:
-                setup_app(config)
-                config['app_setup_done'] = True
-                first_run = True
-            except Exception as exx:
-                config['app_setup_done'] = False
-                log.error("Failed to serve request: %r" % exx)
-                raise exx
-
         # set the decryption device before loading linotp config,
         # so it contains the decrypted values as well
         glo = getGlobalObject()
@@ -648,6 +636,7 @@ def create_app(config_name='default', config_extra=None):
     app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
 
     # Add pre request handlers
+    app.before_first_request(init_logging_config)
     app.before_request(app._run_setup)
     app.before_request(app.start_session)
 

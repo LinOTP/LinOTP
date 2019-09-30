@@ -47,20 +47,6 @@ log = logging.getLogger(__name__)
 Session = linotp.model.meta.Session
 
 
-def setup_app(conf, conf_global=None, unitTest=False):
-    '''
-    setup_app is the hook, which is called, when the application is created
-
-    :param conf: the application configuration
-
-    :return: - nothing -
-    '''
-
-    init_logging_config()
-
-    log.info("Successfully set up.")
-
-
 class ControllerMetaClass(type):
     """This is used to determine the list of methods of a new
     controller that should be made available as API endpoints.
