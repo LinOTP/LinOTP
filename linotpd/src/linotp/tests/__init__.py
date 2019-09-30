@@ -1014,7 +1014,7 @@ class TestController(TestCase):
         params = {}
         params["realm"] = realm
 
-        if type(resolvers) == list:
+        if isinstance(resolvers, list):
             params["resolvers"] = ",".join(resolvers)
         else:
             params["resolvers"] = resolvers
@@ -1024,37 +1024,39 @@ class TestController(TestCase):
 
     def create_common_realms(self):
         """
-            Idea: build out of two resolvers
-                3 realms
-                - 1 per resolver
-                - 1 which contains both
-            Question:
-                search in the mix for the user root must find 2 users
+
+        create a set of three realms - if they do not already exist
+
+        Idea: build out of two resolvers
+            3 realms
+            - 1 per resolver
+            - 1 which contains both
+
         """
 
-        # Create 'myDefRealm' realm
-        response = self.create_realm(
-            realm="myDefRealm", resolvers=self.resolvers["myDefRes"]
-        )
-        content = response.json
-        assert content["result"]["status"]
-        assert content["result"]["value"]
+        common_realms = {
+            'myDefRealm': self.resolvers['myDefRes'],
+            'myOtherRealm': self.resolvers['myOtherRes'],
+            'myMixRealm': [self.resolvers['myDefRes'],
+                           self.resolvers['myOtherRes']]
+            }
 
-        # Create 'myOtherRealm' realm
-        response = self.create_realm(
-            realm="myOtherRealm", resolvers=self.resolvers["myOtherRes"]
-        )
-        content = response.json
-        assert content["result"]["status"]
-        assert content["result"]["value"]
 
-        # Create mixed realm
-        response = self.create_realm(
-            realm="myMixRealm", resolvers=",".join(list(self.resolvers.values()))
-        )
-        content = response.json
-        assert content["result"]["status"]
-        assert content["result"]["value"]
+        response = self.make_system_request("getRealms", {})
+        existing_realms = response.json["result"]["value"]
+
+        for realm, resolver_definition in common_realms.items():
+
+            if realm.lower() in existing_realms:
+                continue
+
+            response = self.create_realm(
+                realm=realm, resolvers=resolver_definition
+            )
+
+            content = response.json
+            assert content["result"]["status"]
+            assert content["result"]["value"]
 
         # Assert 'myDefRealm' is default
         response = self.make_system_request("getRealms", {})
