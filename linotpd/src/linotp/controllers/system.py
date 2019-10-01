@@ -2030,7 +2030,7 @@ class SystemController(BaseController):
             # FieldStorage
             if isinstance(licField, FileStorage):
                 log.debug("[setSupport] Field storage: %s", licField)
-                support_description = licField.value
+                support_description = licField.read()
             else:
                 # we got UTF-8!
                 support_description = licField.encode('utf-8')
