@@ -67,12 +67,19 @@ def base_app():
     os.close(db_fd)
     os.unlink(db_path)
 
+from linotp import app as app_py
+
 @pytest.fixture
-def app(base_app):
+def app(base_app, monkeypatch):
     """
     Provide an app and configured application context
     """
+    # Disable request time logging
+    monkeypatch.setattr(app_py, 'log_request_timedelta', lambda self: None)
+
     with base_app.app_context():
         set_config()
+
         yield base_app
+
         meta.Session.remove()
