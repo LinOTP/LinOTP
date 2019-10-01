@@ -74,6 +74,7 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    SESSION_COOKIE_SECURE = False
     LOGGING_LEVEL = logging.DEBUG
     LOGGING_FILE_LEVEL = LOGGING_LEVEL
     SQLALCHEMY_DATABASE_URI = os.getenv("LINOTP_DEV_DATABASE_URL") or \
@@ -82,12 +83,14 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
+    SESSION_COOKIE_SECURE = False
     LOGGING_LEVEL = logging.DEBUG
     SQLALCHEMY_DATABASE_URI = os.getenv("LINOTP_TEST_DATABASE_URL") or \
         "sqlite:///" + os.path.join(basedir, "linotp-test.sqlite")
 
 
 class ProductionConfig(Config):
+    SESSION_COOKIE_SECURE = True
     SQLALCHEMY_DATABASE_URI = os.getenv("LINOTP_DATABASE_URL") or \
         "sqlite:///" + os.path.join(basedir, "linotp.sqlite")
 

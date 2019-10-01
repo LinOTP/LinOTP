@@ -150,22 +150,12 @@ ENCODING = "utf-8"
 # -------------------------------------------------------------------------- --
 
 def secure_cookie():
-    # in the development environment where we run in debug or uniTest mode
-    # there is probaly no https defined. So we switch secure cookies only off
-    # if the url is not https
-
-    if config.get('debug') is True or config.get('unitTest') in [True, 'True']:
-
-        try:
-            app_url = request.application_url
-        except TypeError:
-            app_url = ''
-
-        if not app_url.startswith('https://'):
-            return False
-
-    # provide secure cookies for production evironments
-    return True
+    """
+    in the development environment where we run in debug mode
+    there is probaly no https defined. So we switch secure cookies off.
+    this is done in the settings.py
+    """
+    return config.get('SESSION_COOKIE_SECURE', True)
 
 # -------------------------------------------------------------------------- --
 
