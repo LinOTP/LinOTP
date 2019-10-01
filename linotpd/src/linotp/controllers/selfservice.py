@@ -42,7 +42,7 @@ from paste.httpexceptions import HTTPFound
 
 from linotp import flap
 from linotp.flap import (
-    request, response, config, tmpl_context as c, url,
+    request, response, config, tmpl_context as c,
     _, render_mako as render
 )
 
@@ -88,6 +88,12 @@ from linotp.tokens import tokenclass_registry
 from linotp.lib.context import request_context
 
 import logging
+
+def url(controller, action=''):
+    if action:
+        return controller + '/' + action
+    else:
+        return controller
 
 Session = linotp.model.Session
 
