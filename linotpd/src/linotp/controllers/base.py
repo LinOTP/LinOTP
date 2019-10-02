@@ -26,83 +26,25 @@
 '''The Controller's Base class '''
 
 from inspect import getargspec
-import os
 from types import FunctionType
+import logging
 import re
 
-from flask import Blueprint, g as flask_g, Response
+from flask import Blueprint, Response
 
-from linotp.flap import (
-    _ as translate, set_lang, LanguageError,
-    tmpl_context as c,
-    config, request,
-)
-
-from linotp.lib.config import getLinotpConfig
-from linotp.lib.context import request_context
-from linotp.lib.resolver import initResolvers
-from linotp.lib.resolver import setupResolvers
-from linotp.lib.resolver import closeResolvers
-from linotp.lib.resolver import getResolverList
-
-from linotp.lib.user import getUserFromRequest
-from linotp.lib.user import getUserFromParam
-from linotp.lib.user import NoResolverFound
-
-from linotp.lib.realm import getDefaultRealm
-from linotp.lib.realm import getRealms
-
-from linotp.lib.type_utils import boolean
-
-from linotp.lib.config.db_api import _retrieveAllConfigDB
-from linotp.lib.config.global_api import getGlobalObject
-from linotp.lib.crypto.utils import init_key_partition
-
-
-from linotp.model import meta
-
-from linotp.lib.logs import init_logging_config
-from linotp.lib.logs import log_request_timedelta
+from linotp.flap import request
 
 # this is a hack for the static code analyser, which
 # would otherwise show session.close() as error
 import linotp.model.meta
 
-#
-# manual schema migration
-# - should become part of schema migration tool like alembic
-from linotp.model.migrate import run_data_model_migration
+from linotp.lib.context import request_context
+from linotp.lib.user import getUserFromParam
+from linotp.lib.user import NoResolverFound
 
-from linotp.lib.config import getLinotpConfig
-from linotp.lib.policy.util import parse_policies
-
-from linotp.lib.util import get_client
-from uuid import uuid4
-from datetime import datetime
-
-import logging
 log = logging.getLogger(__name__)
 
 Session = linotp.model.meta.Session
-
-
-# HTTP-ACCEPT-LANGUAGE strings are in the form of i.e.
-# de-DE, de; q=0.7, en; q=0.3
-accept_language_regexp = re.compile(r'\s*([^\s;,]+)\s*[;\s*q=[0-9.]*]?\s*,?')
-
-
-def setup_app(conf, conf_global=None, unitTest=False):
-    '''
-    setup_app is the hook, which is called, when the application is created
-
-    :param conf: the application configuration
-
-    :return: - nothing -
-    '''
-
-    init_logging_config()
-
-    log.info("Successfully set up.")
 
 
 class ControllerMetaClass(type):
@@ -149,6 +91,14 @@ class BaseController(Blueprint):
     def __init__(self, name, install_name='', **kwargs):
         super(BaseController, self).__init__(name, __name__, **kwargs)
 
+        # These methods will be called before each request
+        self.before_request(self._parse_request_params)
+        self.before_request(self.parse_requesting_user)
+        self.before_request(self.before_handler)
+
+        if hasattr(self, '__after__'):
+            self.after_request(self.__after__)    # noqa pylint: disable=no-member
+
         # Add routes for all the routeable endpoints in this "controller",
         # as well as base classes.
 
@@ -184,288 +134,12 @@ class BaseController(Blueprint):
                         url += '/<' + arg + '>'
                 self.add_url_rule(url, method_name, view_func=method)
 
-        # Add pre/post handlers
-        self.before_request(self._run_setup)
-        self.before_request(self.start_session)
-        self.before_request(self.before_handler)
-        if hasattr(self, '__after__'):
-            self.after_request(self.__after__)
-        self.teardown_request(self.finalise_request)
-
-    def _run_setup(self):
+    def parse_requesting_user(self):
         """
-        Set up the app and database context for a request. Some of this is
-        intended to be done only once and could be refactored into a
-        before_first_request function
+        load the requesting user
+
+        The result is placed into request_context['RequestUser']
         """
-
-        self.sep = None
-        # TODO - language
-        #self.set_language(request.headers)
-
-        first_run = False
-        app_setup_done = config.get('app_setup_done', False)
-        if app_setup_done is False:
-            try:
-                setup_app(config)
-                config['app_setup_done'] = True
-                first_run = True
-            except Exception as exx:
-                config['app_setup_done'] = False
-                log.error("Failed to serve request: %r" % exx)
-                raise exx
-
-        # set the decryption device before loading linotp config,
-        # so it contains the decrypted values as well
-        glo = getGlobalObject()
-        self.sep = glo.security_provider
-
-        try:
-            hsm = self.sep.getSecurityModule()
-            self.hsm = hsm
-            c.hsm = hsm
-        except Exception as exx:
-            log.exception('failed to assign hsm device: %r' % exx)
-            raise exx
-
-        l_config = getLinotpConfig()
-
-        # initialize the elliptic curve secret + public key for the qrtoken
-        self.secret_key = l_config.get('SecretKey.Partition.0', False)
-
-        resolver_setup_done = config.get('resolver_setup_done', False)
-        if resolver_setup_done is False:
-            try:
-                cache_dir = config.get("app_conf", {}).get("cache_dir", None)
-                setupResolvers(config=l_config, cache_dir=cache_dir)
-                config['resolver_setup_done'] = True
-            except Exception as exx:
-                config['resolver_setup_done'] = False
-                log.error("Failed to setup resolver: %r", exx)
-                raise exx
-
-        # TODO: verify merge dropped
-        # initResolvers()
-
-        # if we are in the setup cycle, we check for the linotpLicenseFile
-        if first_run:
-            if "linotpLicenseFile" in config and 'license' not in l_config:
-                license_str = ''
-                filename = config.get("linotpLicenseFile", '')
-                try:
-                    with open(filename) as f:
-                        license_str = f.read()
-                except IOError:
-                    log.error("could not open licence file: %s", filename)
-
-                if not license_str:
-                    log.error("empty license file: %s", filename)
-                else:
-                    request_context['translate'] = translate
-
-                    import linotp.lib.support
-                    res, msg = linotp.lib.support.setSupportLicense(
-                        license_str)
-                    if res is False:
-                        log.error("failed to load license: %s: %s",
-                                    license_str, msg)
-
-                    else:
-                        log.info("license successfully loaded")
-            if 'provider.config_file' in config:
-                from linotp.provider import load_provider_ini
-
-                load_provider_ini(config['provider.config_file'])
-
-    def start_session(self):
-        self.base_auth_user = ''
-
-        # we add a unique request id to the request enviroment
-        # so we can trace individual requests in the logging
-
-        request.environ['REQUEST_ID'] = str(uuid4())
-        request.environ['REQUEST_START_TIMESTAMP'] = datetime.now()
-
-        try:
-            self._parse_request_params(request)
-        except UnicodeDecodeError as exx:
-            # we supress Exception here as it will be handled in the
-            # controller which will return corresponding response
-            log.warning('Failed to access request parameters: %r' % exx)
-
-        self.create_context(request, request.environ)
-
-        try:
-            user_desc = getUserFromRequest(request)
-            self.base_auth_user = user_desc.get('login', '')
-        except UnicodeDecodeError as exx:
-            # we supress Exception here as it will be handled in the
-            # controller which will return corresponding response
-            log.warning('Failed to identify user due to %r' % exx)
-
-    def finalise_request(self, exc):
-        meta.Session.remove()
-        # free the lock on the scurityPovider if any
-        if self.sep:
-            self.sep.dropSecurityModule()
-        closeResolvers()
-
-        # hint for the garbage collector to make the dishes
-        data_objects = ["resolvers_loaded",
-                        "resolver_clazzes", "linotpConfig", "audit", "hsm"]
-        for data_obj in data_objects:
-            if hasattr(c, data_obj):
-                data = getattr(c, data_obj)
-                del data
-
-        log_request_timedelta(log)
-
-    def _parse_request_params(self, _request):
-        """
-        Parses the request params from the request objects body / params
-        dependent on request content_type.
-        """
-        if _request.is_json:
-            self.request_params = _request.json
-        else:
-            self.request_params = {}
-            for key in _request.values:
-                if(key.endswith('[]')):
-                    self.request_params[key[:-2]] = _request.values.getlist(key)
-                else:
-                    self.request_params[key] = _request.values.get(key)
-
-    def set_language(self, headers):
-        '''Invoke before everything else. And set the translation language'''
-        languages = headers.get('Accept-Language', '')
-
-        found_lang = False
-
-        for match in accept_language_regexp.finditer(languages):
-            # make sure we have a correct language code format
-            language = match.group(1)
-            if not language:
-                continue
-            language = language.replace('_', '-').lower()
-
-            # en is the default language
-            if language.split('-')[0] == 'en':
-                found_lang = True
-                break
-
-            try:
-                set_lang(language.split('-')[0])
-                found_lang = True
-                break
-            except LanguageError:
-                log.debug("Cannot set requested language: %s. Trying next"
-                          " language if available.", language)
-
-        if not found_lang and languages:
-            log.warning("Cannot set preferred language: %r", languages)
-
-        return
-
-    def create_context(self, request, environment):
-        """
-        create the request context for all controllers
-        """
-
-        linotp_config = getLinotpConfig()
-
-        # make the request id available in the request context
-        request_context['RequestId'] = environment['REQUEST_ID']
-
-        # a request local cache to get the user info from the resolver
-        request_context['UserLookup'] = {}
-
-        # a request local cache to get the resolver from user and realm
-        request_context['UserRealmLookup'] = {}
-
-        request_context['Config'] = linotp_config
-        request_context['Policies'] = parse_policies(linotp_config)
-        request_context['translate'] = translate
-
-        # TODO: Port beaker.cache Middleware functionality
-        # request_context['CacheManager'] = environment['beaker.cache']
-        request_context['CacheManager'] = None
-
-        request_context['Path'] = request.path
-
-        # ------------------------------------------------------------------------
-
-        # setup the knowlege where we are
-
-        request_context['action'] = None
-        request_context['controller'] = None
-
-        path = request.path.strip().strip('/').split('/')
-
-        if path[0]:
-            request_context['controller'] = path[0]
-
-        request_context['action'] = 'index' if len(path) == 1 else path[1]
-
-        # ------------------------------------------------------------------------
-
-        initResolvers()
-
-        client = None
-        try:
-            client = get_client(request=request)
-        except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
-
-        request_context['Client'] = client
-
-        Audit = config['audit']
-        request_context['Audit'] = Audit
-        request_context['audit'] = Audit.initialize(request, client=client)
-
-        authUser = None
-        try:
-            authUser = getUserFromRequest(request)
-        except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
-
-        request_context['AuthUser'] = authUser
-        request_context['UserLookup'] = {}
-
-        # ------------------------------------------------------------------ --
-        # get the current resolvers
-
-        resolvers = []
-        try:
-            resolvers = getResolverList(config=linotp_config)
-        except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
-
-        request_context['Resolvers'] = resolvers
-
-        # ------------------------------------------------------------------ --
-        # get the current realms
-
-        realms = {}
-        try:
-            realms = getRealms()
-        except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
-
-        request_context['Realms'] = realms
-
-        # ------------------------------------------------------------------ --
-
-        defaultRealm = ""
-        try:
-            defaultRealm = getDefaultRealm(linotp_config)
-        except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
-
-        request_context['defaultRealm'] = defaultRealm
-
-        # ------------------------------------------------------------------ --
-        # load the requesting user
-
         from linotp.useridresolver.UserIdResolver import (
             ResolverNotAvailable)
 
@@ -479,42 +153,38 @@ class BaseController(Blueprint):
 
         request_context['RequestUser'] = requestUser
 
-        # ------------------------------------------------------------------ --
-        # load the providers
+    def _parse_request_params(self):
+        """
+        Parses the request params from the request objects body / params
+        dependent on request content_type.
 
-        from linotp.provider import Provider_types
-        from linotp.provider import getProvider
+        The resulting request parameters from the client are saved in
+        the class instance variable `request_params`
 
-        provider = {}
-        for provider_type in Provider_types.keys():
-            provider[provider_type] = getProvider(provider_type)
+        This method is called before each request is processed.
+        """
+        try:
+            if request.is_json:
+                self.request_params = request.json
+            else:
+                self.request_params = {}
+                for key in request.values:
+                   if(key.endswith('[]')):
+                       self.request_params[key[:-2]] = request.values.getlist(key)
+                   else:
+                        self.request_params[key] = request.values.get(key)
+        except UnicodeDecodeError as exx:
+            # we supress Exception here as it will be handled in the
+            # controller which will return corresponding response
+            log.warning('Failed to access request parameters: %r' % exx)
 
-        request_context['Provider'] = provider
-
-        # ------------------------------------------------------------------ --
-
-        # for the setup of encrypted data, we require the hsm is instatiated
-        # and available in the request context
-
-        if not self.secret_key:
-            init_key_partition(linotp_config, partition=0)
-
-        # ------------------------------------------------------------------ --
-
-        # copy some system entries from pylons
-        syskeys = {
-            "radius.nas_identifier": "LinOTP",
-            "radius.dictfile": "/etc/linotp2/dictionary"
-        }
-
-        sysconfig = {}
-        for key, default in syskeys.items():
-            sysconfig[key] = config.get(key, default)
-
-        request_context['SystemConfig'] = sysconfig
 
     def before_handler(self):
+        """
+        Call derived controller's legacy __before__ method if it exists
 
+        This method is called before each request is processed.
+        """
         params = self.request_params
 
         if hasattr(self, '__before__'):

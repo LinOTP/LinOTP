@@ -339,7 +339,10 @@ def _retrieveConfigDB(Key):
 
 def _retrieveAllConfigDB():
     """
-    get the server config from database with one call
+    Retrieve all configuration entries from the database
+
+    All configuration values are retrieved at once, and then parsed into
+    a hierarchical format.
 
     remark: for support for continous entries dedicated dicts for
             description and type are used for interim processing

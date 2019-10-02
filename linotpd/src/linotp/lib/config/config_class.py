@@ -58,6 +58,8 @@ log = logging.getLogger(__name__)
 
 class LinOtpConfig(dict):
     """
+    LinOTP Config class - a dictionary to hold the config entries with a backend database
+
     This class should be a request singleton.
 
     In case of a change, it must cover the different aspects like

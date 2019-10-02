@@ -253,35 +253,18 @@ class TestController(TestCase):
         request.environ['REQUEST_ID'] = str(uuid4())
         request.environ['REQUEST_START_TIMESTAMP'] = datetime.now()
 
-        # self.delete_all_realms()
-        # self.delete_all_resolvers()
-        # self.create_common_resolvers()
-        # self.create_common_realms()
+        # disable caching as this will change the behavior
+        params = {
+            "linotp.user_lookup_cache.enabled": True,
+            "linotp.resolver_lookup_cache.enabled": True,
+        }
 
-        # TODO - reenable when controllers are ready
+        self.make_system_request("setConfig", params=params)
 
-        if False:
-        # if TestController.run_state == 0:
-
-            # disable caching as this will change the behavior
-            params = {
-                "linotp.user_lookup_cache.enabled": True,
-                "linotp.resolver_lookup_cache.enabled": True,
-            }
-
-            self.make_system_request("setConfig", params=params)
-
-            try:
-                # self.delete_all_policies()
-                self.delete_all_realms()
-                self.delete_all_resolvers()
-                self.delete_all_token()
-            except Exception as exx:
-                raise exx
-
-        TestController.run_state += 1
-
-        return
+        self.delete_all_policies()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
+        self.delete_all_token()
 
     def tearDown(self):
         # self.delete_all_realms()

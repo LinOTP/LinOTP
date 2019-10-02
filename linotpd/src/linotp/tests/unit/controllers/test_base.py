@@ -62,7 +62,7 @@ class TestBaseController(object):
             query_string=input_params,
             content_type="application/x-www-form-urlencoded",
         ):
-            controller._parse_request_params(flask.request)
+            controller._parse_request_params()
 
         assert isinstance(controller.request_params, dict), \
                             'self.request_params is not of type dict!'
@@ -84,7 +84,7 @@ class TestBaseController(object):
         with base_app.test_request_context(
             json=expected_params,
         ):
-            controller._parse_request_params(flask.request)
+            controller._parse_request_params()
 
         assert isinstance(controller.request_params, dict), \
                             'self.request_params is not of type dict!'
@@ -108,7 +108,7 @@ class TestBaseController(object):
             query_string=expected_params,
             json=expected_params,
         ):
-            controller._parse_request_params(flask.request)
+            controller._parse_request_params()
 
         assert isinstance(controller.request_params, dict), \
                             'self.request_params is not of type dict!'

@@ -38,6 +38,8 @@ from linotp.app import create_app
 from linotp.flap import set_config
 from linotp.config.environment import load_environment
 from linotp.model import meta
+from . import TestController
+from flask.testing import FlaskClient
 
 @pytest.fixture
 def base_app():
@@ -67,12 +69,67 @@ def base_app():
     os.close(db_fd)
     os.unlink(db_path)
 
+from linotp import app as app_py
+
 @pytest.fixture
-def app(base_app):
+def app(base_app, monkeypatch):
     """
     Provide an app and configured application context
     """
+    # Disable request time logging
+    monkeypatch.setattr(app_py, 'log_request_timedelta', lambda self: None)
+
     with base_app.app_context():
         set_config()
+
         yield base_app
+
         meta.Session.remove()
+
+@pytest.fixture
+def adminclient(app, client):
+    """
+    A client that provides authorisation headers
+
+    Use this client if you need to make a request
+    that requires a session. This is the
+    equivalent of using TestClient's make_authenticated_request
+    """
+
+    # if "session" not in params:
+    #     params["session"] = self.session
+    # if "admin_session" not in cookies:
+    #     cookies["admin_session"] = self.session
+    # if "Authorization" not in headers:
+    #     if auth_type == "Basic":
+    #         headers["Authorization"] = TestController.get_http_basic_header(
+    #             username=auth_user
+    #         )
+    #     else:
+    #         headers[
+    #             "Authorization"
+    #         ] = TestController.get_http_digest_header(username=auth_user)
+
+    class AuthClient(FlaskClient):
+        # def __init__(self, *args, **kwargs):
+        #     super(AuthClient,self).__init__( *args, **kwargs)
+
+        def open(self, *args, **kwargs):
+            """
+            Add authorization headers & cookies
+            """
+            session = 'justatest'
+            params = kwargs.setdefault('query_string', {})
+            params['session'] = session
+
+            headers = kwargs.setdefault('headers', {})
+            headers["Authorization"] = TestController.get_http_digest_header(username='admin')
+            
+            self.set_cookie('local', "admin_session", session)
+
+            return super(AuthClient,self).open( *args, **kwargs)
+
+    app.test_client_class = AuthClient
+    client = app.test_client()
+
+    return client

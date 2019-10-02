@@ -30,6 +30,8 @@ import re
 import json
 from base64 import b64decode
 
+from flask import current_app
+
 from linotp.lib.error import UserError
 
 from linotp.lib.context import request_context
@@ -1062,7 +1064,10 @@ def _get_resolver_lookup_cache(realm):
                  "resolver_lookup_cache.expiration config")
         return None
 
-    cache_manager = request_context['CacheManager']
+    cache_manager = current_app.getCacheManager()
+    if not cache_manager:
+        return None
+
     cache_name = 'resolvers_lookup::%s' % realm
     resolvers_lookup_cache = cache_manager.get_cache(cache_name,
                                                      type="memory",
@@ -1314,7 +1319,10 @@ def _get_user_lookup_cache(resolver_spec):
                  "user_lookup_cache.expiration config")
         return None
 
-    cache_manager = request_context['CacheManager']
+    cache_manager = current_app.getCacheManager()
+    if not cache_manager:
+        return None
+
     cache_name = 'user_lookup::%s' % resolver_spec
     user_lookup_cache = cache_manager.get_cache(cache_name,
                                                 type="memory",

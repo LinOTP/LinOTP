@@ -42,9 +42,12 @@ from linotp.lib.config.type_definition import type_definitions
 
 log = logging.getLogger(__name__)
 
+# A global object containing the complete configuration from the
+# database as a dict. See _retrieveAllConfigDB() for the format
 linotp_config = None
-linotp_config_tree = None
 
+# Complete configuration tree in a hierarchical style
+linotp_config_tree = None
 
 def refresh_config():
 
@@ -65,7 +68,18 @@ def refresh_config():
 def getLinotpConfig():
 
     '''
-    return the thread local dict with all entries
+    Get the complete configuration and store in context
+
+    Calling this function results in a number of operations:
+    * Retrieve the complete configuration from the database
+    * Parse into a hierarchical format
+    * Make available in application context (flap.config)
+
+    The resulting class can be found under c.linotpConfig,
+    but is more generally accessed using the symbol `config`:
+
+    from linotp.flap import config
+    foo = config['foo']
 
     :return: local config dict
     :rtype: dict
@@ -77,6 +91,7 @@ def getLinotpConfig():
     # TODO: replication
 
     if linotp_config is None:
+        # Read all the configuration from the database
         refresh_config()
 
     if linotp_config_tree is None:
