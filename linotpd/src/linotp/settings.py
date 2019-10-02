@@ -12,9 +12,8 @@ class Config:
     # You can specify a different URL prefix by listing the controller
     # as `FOO:/bar`, which will register it on `/bar` instead.
 
-    # CONTROLLERS = "admin manage system validate"
     CONTROLLERS = ("admin auth manage selfservice system "
-                   "test tools validate userservice")
+                   "test tools maintenance validate userservice")
 
     # List all enabled token support modules. If this parameter is
     # empty, all available token modules will be loaded.
@@ -67,6 +66,14 @@ class Config:
     # is no `{0}` in the URL that is not a big deal.)
 
     HELP_URL = "https://linotp.org/doc/{0}/index.html"
+
+    # The maintenance controller can be configured to only serve responses
+    # to clients that serve a valid certificate. If set, we will check the
+    # existence of this variable before serving maintenence requests.
+    #
+    # For apache, set this to SSL_CLIENT_S_DN_CN.
+    # Default: No checking
+    MAINTENANCE_VERIFY_CLIENT_ENV_VAR = None
 
     @staticmethod
     def init_app(app):
