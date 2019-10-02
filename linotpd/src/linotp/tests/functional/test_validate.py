@@ -29,6 +29,7 @@
 
 
 import httplib2
+import urllib
 import time
 import hmac
 import logging
@@ -38,6 +39,8 @@ import hashlib
 import sys
 import json
 from mock import patch
+
+import pytest
 
 import freezegun
 from datetime import datetime
@@ -161,6 +164,7 @@ class HmacOtp():
         return sotp
 
 
+@pytest.mark.usefixtures('client_class')
 class TestValidateController(TestController):
     """
     test the validate controller
@@ -1851,12 +1855,9 @@ class TestValidateController(TestController):
         # dont replace with self.make_validate_request as it throw
         # the unicode exception without reaching the linotp server
 
-        response = self.app.get(
-                        url(controller='validate', action='check'),
-                        params=parameters)
+        response = self.client.get('/validate/check', query_string=parameters)
 
-        self.assertTrue('"value": false' in response or
-                        '"status": false' in response, response)
+        assert response.json['result']['value'] == False
 
         for serial in serials:
             self.delete_token(serial)
