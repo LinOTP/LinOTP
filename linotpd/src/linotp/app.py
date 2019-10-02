@@ -33,6 +33,9 @@ from uuid import uuid4
 from flask import Flask, g as flask_g, jsonify, Blueprint
 from flask_mako import MakoTemplates
 
+from beaker.cache import CacheManager
+from beaker.util import parse_cache_config_options
+
 from .lib.config import getLinotpConfig
 from .lib.config.db_api import _retrieveAllConfigDB
 from .lib.config.global_api import getGlobalObject
@@ -270,9 +273,7 @@ class LinOTPApp(Flask):
         request_context['Policies'] = parse_policies(linotp_config)
         request_context['translate'] = translate
 
-        # TODO: Port beaker.cache Middleware functionality
-        # request_context['CacheManager'] = environment['beaker.cache']
-        request_context['CacheManager'] = None
+        request_context['CacheManager'] = self.cache
 
         request_context['Path'] = request.path
 
@@ -457,6 +458,20 @@ def init_logging(app):
     app.logger.info("LinOTP {} starting ...".format(__version__))
 
 
+def setup_cache(app):
+    """Initialise the Beaker cache for this app."""
+
+    cache_opts = {}
+    cache_opts['cache_type'] = app.config.get("BEAKER_CACHE_TYPE", "memory")
+    if cache_opts['cache_type'] == 'file':
+        beaker_dir = app.config.get(
+            "BEAKER_CACHE_DIR",
+            os.path.join(app.getConfigRootDirectory(), "cache"))
+        cache_opts['cache.data_dir'] = os.path.join(beaker_dir, 'data')
+        cache_opts['cache.lock_dir'] = os.path.join(beaker_dir, 'lock')
+    app.cache = CacheManager(**parse_cache_config_options(cache_opts))
+
+
 def setup_db(app):
     """Set up the database for LinOTP. This used to be part of the
     `lib.base.setup_app()` function.
@@ -573,6 +588,7 @@ def create_app(config_name='default', config_extra=None):
     init_logging(app)
 
     with app.app_context():
+        setup_cache(app)
         setup_db(app)
         generate_secret_key_file(app)
         set_config()       # ensure `request_context` exists

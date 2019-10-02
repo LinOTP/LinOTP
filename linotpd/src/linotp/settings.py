@@ -57,6 +57,11 @@ class Config:
     # Directory for configuration files
     ROOT_DIR = basedir
 
+    # Beaker cache setup
+
+    BEAKER_CACHE_TYPE = "memory"     # In-memory cache (or `"file"`)
+    BEAKER_CACHE_DIR = os.path.join(ROOT_DIR, "cache")  # for `"file"`
+
     SECRET_FILE = os.path.join(ROOT_DIR, "encKey")
 
     # AUDIT_DATABASE_URI determines the audit logging method. These methods
