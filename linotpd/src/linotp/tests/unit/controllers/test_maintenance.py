@@ -27,8 +27,9 @@ from mock import patch
 import json
 import unittest
 from sqlalchemy.exc import OperationalError
-from webob.exc import HTTPUnauthorized
-from webob.exc import HTTPInternalServerError
+from werkzeug.exceptions import Unauthorized as HTTPUnauthorized
+from werkzeug.exceptions import InternalServerError as HTTPInternalServerError
+
 
 from linotp.controllers.maintenance import MaintenanceController
 
@@ -82,7 +83,7 @@ class TestMaintenance(unittest.TestCase):
         with self.assertRaises(HTTPInternalServerError) as err:
             self.maint.check_status()
 
-        self.assertTrue(err.exception.status_code == 500)
+        self.assertTrue(err.exception.code == 500)
 
 
         return
@@ -100,7 +101,7 @@ class TestMaintenance(unittest.TestCase):
         with self.assertRaises(HTTPUnauthorized) as err:
             self.maint.__before__(action='check_status')
 
-        self.assertTrue(err.exception.status_code == 401)
+        self.assertTrue(err.exception.code == 401)
 
         return
 
