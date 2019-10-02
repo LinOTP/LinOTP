@@ -27,53 +27,37 @@
 
 import logging
 log = logging.getLogger(__name__)
+import os
 import socket
 
+from subprocess import check_call
+
+from flask import current_app
 from linotp.lib.token import get_used_tokens_count
 from linotp.lib.support import get_license_type
 
 from linotp.lib.context import request_context as context
-
-
-
-def getAuditClass(packageName, className):
-    """
-        helper method to load the Audit class from a given
-        package in literal:
-
-        example:
-
-            getAuditClass("SQLAudit", "Audit")
-
-        check:
-            checks, if the log method exists
-            if not an error is thrown
-
-"""
-
-    if packageName is None:
-        log.error("No suitable Audit Class found. Working with dummy AuditBase class. "
-                  "Probably you didn't configure 'linotpAudit' in the linotp.ini file.")
-        packageName = "linotp.lib.audit.base"
-        className = "AuditBase"
-    elif packageName == "linotpee.lib.Audit.SQLAudit":
-        log.error("The linotpee package has been removed. Please modify your linotp.ini "
-                  "file: linotpAudit.type = linotp.lib.audit.SQLAudit")
-        packageName = "linotp.lib.audit.SQLAudit"
-
-    mod = __import__(packageName, globals(), locals(), [className])
-    klass = getattr(mod, className)
-    if not hasattr(klass, "log"):
-        raise NameError("Audit AttributeError: " + packageName + "." + \
-              className + " instance has no attribute 'log'")
-        return ""
-    else:
-        return klass
+from linotp.model import meta
 
 
 def getAudit(config):
-    audit_type = config.get("linotpAudit.type")
-    audit = getAuditClass(audit_type, "Audit")(config)
+
+    audit_url = config.get("AUDIT_DATABASE_URI")
+
+    if audit_url is None:
+        # Default to shared database if not set
+        audit_url = 'SHARED'
+
+    if audit_url == 'OFF':
+        log.warning("Audit logging is disabled because the URL has been configured to %s", audit_url)
+        audit = AuditBase(config)
+    else:
+        from . import SQLAudit
+        if audit_url == 'SHARED':
+            # Share with main database
+            audit = SQLAudit.AuditLinOTPDB(config)
+        else:
+            audit = SQLAudit.Audit(config, audit_url)
     return audit
 
 
@@ -95,9 +79,20 @@ def get_token_num_info():
 
 class AuditBase(object):
 
+    name = "AuditBase"
+
     def __init__(self, config):
-        self.name = "AuditBase"
         self.config = config
+
+        rootdir = current_app.getConfigRootDirectory()
+
+        self.publicKeyFilename = self.config.get("AUDIT_PUBLIC_KEYFILE")
+        if not self.publicKeyFilename:
+            self.publicKeyFilename = os.path.join(rootdir, "public.pem")
+
+        self.privateKeyFilename = self.config.get("AUDIT_PRIVATE_KEYFILE")
+        if not self.privateKeyFilename:
+            self.privateKeyFilename = os.path.join(rootdir, "private.pem")
 
     def initialize(self, request, client=None):
         # defaults
@@ -121,22 +116,31 @@ class AuditBase(object):
             audit['client'] = client
         return audit
 
+    def createKeys(self):
+        """
+        Create audit keys using the configured filenames
+        """
+        if not os.path.exists(self.privateKeyFilename) and not os.path.exists(self.publicKeyFilename):
+            log.info("Generating audit keypair")
+            check_call("openssl genrsa -out %s 2048" % private, shell=True)
+            check_call("openssl rsa -in %s -pubout -out %s" % (private, public), shell=True)
+
     def readKeys(self):
-        priv = self.config.get("linotpAudit.key.private")
-        pub = self.config.get("linotpAudit.key.public")
+        self.createKeys()
+
         try:
-            f = open(priv, "r")
+            f = open(self.privateKeyFilename, "r")
             self.private = f.read()
             f.close()
         except Exception as e:
-            log.exception("[readKeys] Error reading private key %s: (%r)" % (priv, e))
+            log.exception("[readKeys] Error reading private key %s: (%r)" % (self.privateKeyFilename, e))
 
         try:
-            f = open(pub, "r")
+            f = open(self.publicKeyFilename, "r")
             self.public = f.read()
             f.close()
         except Exception as e:
-            log.exception("[readKeys] Error reading public key %s: (%r)" % (pub, e))
+            log.exception("[readKeys] Error reading public key %s: (%r)" % (self.publicKeyFilename, e))
 
         return
 

@@ -42,8 +42,9 @@ from M2Crypto import EVP, RSA
 from binascii import hexlify
 from binascii import unhexlify
 from sqlalchemy import create_engine
-from linotp.lib.audit.base import AuditBase
 from linotp.flap import config
+from linotp.lib.audit.base import AuditBase
+from linotp.model import meta
 
 import logging.config
 import traceback
@@ -270,49 +271,87 @@ def add_column(engine, table, column):
 class Audit(AuditBase):
     """
     Audit Implementation to the generic audit interface
-    """
-    def __init__(self, config):
-        self.name = "SQlAudit"
-        self.config = config
-        connect_string = config.get("linotpAudit.sql.url")
-        pool_recycle = config.get("linotpAudit.sql.pool_recyle", 3600)
-        implicit_returning = config.get("linotpSQL.implicit_returning", True)
 
-        self.engine = None
+    This class provides audit capabilities mapped to an SQLAlchemy
+    backend which has a separate database connection.
+    """
+
+    name = "SQlAudit"
+
+    engine = None
+    """Database backend engine"""
+
+    session = None
+    """Database scoped session maker"""
+
+    def __init__(self, config, engine=None):
+        """
+        Initialise the audit backend
+
+        Here the audit backend is initialised from the given configuration,
+        encryption configuration is setup and a database connection opened.
+
+        By supplying an `engine` parameter to the constructor, it is possible
+        to use an existing instance as the backend, so that the audit table
+        can form a part of the main database. Note, this is not recommended
+        for large production systems because this table will be written to
+        frequently.
+
+        @param config Dict of configuration values
+        @param engine Use the given existing engine
+        """
+
+        super(Audit, self).__init__(config)
+
         ########################## SESSION ##################################
 
-        # Create an engine and create all the tables we need
-        if implicit_returning:
-            # If implicit_returning is explicitly set to True, we
-            # get lots of mysql errors
-            # AttributeError: 'MySQLCompiler_mysqldb' object has no
-            # attribute 'returning_clause'
-            # So we do not mention explicit_returning at all
-            self.engine = create_engine(connect_string,
-                                        pool_recycle=pool_recycle)
-        else:
-            self.engine = create_engine(connect_string,
-                                        pool_recycle=pool_recycle,
-                                        implicit_returning=False)
-
-        metadata.bind = self.engine
-        metadata.create_all()
-
-        # Set up the session
-        self.sm = orm.sessionmaker(bind=self.engine, autoflush=True,
-                                   autocommit=True, expire_on_commit=True)
-        self.session = orm.scoped_session(self.sm)
+        self._init_db()
+        self._init_sessionmaker()
+        self._createdb()
 
         # initialize signing keys
         self.readKeys()
 
-        self.PublicKey = RSA.load_pub_key(
-                                          self.config.get("linotpAudit.key.public"))
+        self.PublicKey = RSA.load_pub_key(self.publicKeyFilename)
         self.VerifyEVP = EVP.PKey()
         self.VerifyEVP.reset_context(md='sha256')
         self.VerifyEVP.assign_rsa(self.PublicKey)
 
-        return
+    def _init_db(self):
+        """
+        Get SQL Alchemy engine and sessionmaker for the audit interface
+        """
+
+        connect_string = self.config.get("AUDIT_DATABASE_URI")
+        pool_recycle = self.config.get("AUDIT_POOL_RECYCLE", 3600)
+
+        # If implicit_returning is explicitly set to True, we
+        # get lots of mysql errors
+        # AttributeError: 'MySQLCompiler_mysqldb' object has no
+        # attribute 'returning_clause'
+        # So we do not mention explicit_returning at all
+        implicit_returning = self.config.get("linotpSQL.implicit_returning", True)
+
+        self.engine = create_engine(connect_string,
+                                    pool_recycle=pool_recycle,
+                                    implicit_returning=implicit_returning)
+
+    def _init_sessionmaker(self):
+        """
+        Set up session maker in `self.session`
+        """
+        # Set up the session
+        sm = orm.sessionmaker(bind=self.engine, autoflush=True,
+                                   autocommit=True, expire_on_commit=True)
+        self.session = orm.scoped_session(sm)
+
+    def _createdb(self):
+        """
+        Create database tables
+        """
+        metadata.bind = self.engine
+        metadata.create_all()
+
 
     def _attr_to_dict(self, audit_line):
 
@@ -653,5 +692,35 @@ def getAsString(data):
         s += ", client=%s" % data.get('client')
     return s
 
+class AuditLinOTPDB(Audit):
+    """
+    SQL audit backend that uses LinOTP database
 
+    This backend is mainly to allow simple configuration scenario
+    where a separate engine is not required
+    """
+    name = "SQLAudit-LinOTPDB"
+
+    def __init__(self, config):
+        """
+        Iniailise the audit backend using the LinOTP
+        database backend
+        """
+        super(AuditLinOTPDB, self).__init__(config, None)
+
+    def _init_db(self):
+        """
+        Initialise engine using LinOTP DB
+        """
+        self.engine = meta.engine
+
+    def _init_sessionmaker(self):
+        """
+        Set up session maker in `self.session`
+        """
+        self.session = meta.Session
+
+    def log_entry(self, param):
+        super(AuditLinOTPDB, self).log_entry(param)
+        self.session.commit()
 ###eof#########################################################################

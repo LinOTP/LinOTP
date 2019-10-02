@@ -12,7 +12,7 @@ class Config:
     # You can specify a different URL prefix by listing the controller
     # as `FOO:/bar`, which will register it on `/bar` instead.
 
-    CONTROLLERS = ("admin auth manage selfservice system "
+    CONTROLLERS = ("admin audit auth manage selfservice system "
                    "test tools maintenance validate userservice")
 
     # List all enabled token support modules. If this parameter is
@@ -58,6 +58,32 @@ class Config:
     ROOT_DIR = basedir
 
     SECRET_FILE = os.path.join(ROOT_DIR, "encKey")
+
+    # AUDIT_DATABASE_URI determines the audit logging method. These methods
+    # are supported:
+    #
+    # AUDIT_DATABASE_URI='<sqlalchemy-url>'
+    #  The audit log is written to a separate database as defined by
+    #  the URL. You need to ensure that the database exists and that
+    #  the user has the correct permissions.
+    #
+    # AUDIT_DATABASE_URI='SHARED'
+    #  The audit log is written to a table within the main database,
+    #  as specified by SQLALCHEMY_DATABASE_URI. This option is simple to
+    #  administer but is not recommended for production use because it
+    #  can lead to disk usage issues
+    #
+    # AUDIT_DATABASE_URI='OFF'
+    #  No audit logs are generated. Not recommended for production use.
+    #
+    AUDIT_DATABASE_URI='SHARED'
+
+    # The filename of the audit public/private key files can be
+    # set here
+    # AUDIT_PUBLIC_KEYFILE = os.path.join(ROOT_DIR, "public.pem")
+    # AUDIT_PRIVATE_KEYFILE = os.path.join(ROOT_DIR, "private.pem")
+
+    # AUDIT_POOL_RECYCLE = 3600
 
     # MAKO_TRANSLATE_EXCEPTIONS = False
 
