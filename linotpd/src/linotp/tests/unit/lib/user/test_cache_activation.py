@@ -24,7 +24,7 @@
 #    Support: www.keyidentity.com
 #
 
-
+import pytest
 import unittest
 
 from mock import patch
@@ -54,9 +54,10 @@ mocked_context = {
 }
 
 
+@pytest.mark.usefixtures("app")
 class TestCacheActivation(unittest.TestCase):
 
-    @patch('linotp.lib.user.request_context', new=mocked_context)
+    @patch('flask.g.request_context', new=mocked_context)
     def test_user_cache_activation(self):
 
         global mocked_context
