@@ -42,6 +42,7 @@ install_requirements = [
     'PasteScript<=1.7.5',
     'WebOb',
     'SQLAlchemy>=0.6',
+    'beaker',
     'docutils>=0.4',
     'simplejson>=2.0',
     'pycryptodomex>=3.4',

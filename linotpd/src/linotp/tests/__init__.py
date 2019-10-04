@@ -89,7 +89,6 @@ def xfail_if_unported(controller, action):
     """
     unported_controllers = [
         'account',
-        'admin',
         'custom',
         'error',
         'gettoken',
@@ -104,7 +103,6 @@ def xfail_if_unported(controller, action):
         'tools',
         'u2f',
         'userservice',
-        'validate',
     ]
 
     if controller in unported_controllers:
