@@ -303,7 +303,7 @@ class TestController(TestCase):
             if not headers:
                 headers = {}
             headers["REMOTE_ADDR"] = client
-            pparams["extra_environ"] = {"REMOTE_ADDR": client}
+            pparams["environ_overrides"] = {"REMOTE_ADDR": client}
 
         if cookies:
             for key in cookies:
