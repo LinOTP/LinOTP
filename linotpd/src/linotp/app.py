@@ -417,6 +417,27 @@ class LinOTPApp(Flask):
 
         return cache_manager
 
+    def getRequestParams(self):
+        """
+        Parses the request params from the request objects body / params
+        dependent on request content_type.
+        """
+        try:
+            if request.is_json:
+                request_params = request.json
+            else:
+                request_params = {}
+                for key in request.values:
+                   if(key.endswith('[]')):
+                       request_params[key[:-2]] = request.values.getlist(key)
+                   else:
+                        request_params[key] = request.values.get(key)
+        except UnicodeDecodeError as exx:
+            # we supress Exception here as it will be handled in the
+            # controller which will return corresponding response
+            log.warning('Failed to access request parameters: %r' % exx)
+
+        return request_params
 
 def init_logging(app):
     """Sets up logging for LinOTP."""
