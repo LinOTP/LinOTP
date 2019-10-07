@@ -259,7 +259,7 @@ def sendError(_response, exception, id=1, context=None):
                  "id": id
             }
         data = json.dumps(res, indent=3)
-        response = Response(response=data, status=2000, mimetype= 'application/json')
+        response = Response(response=data, status=200, mimetype= 'application/json')
 
         if context in ['before', 'after']:
             response._exception = exception
