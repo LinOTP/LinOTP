@@ -119,8 +119,13 @@ def adminclient(app, client):
             Add authorization headers & cookies
             """
             session = 'justatest'
-            params = kwargs.setdefault('query_string', {})
-            params['session'] = session
+            if 'json' in kwargs:
+                # Add session to JSON body
+                kwargs['json']['session']=session
+            else:
+                # Add session to query_string parameter
+                params = kwargs.setdefault('query_string', {})
+                params['session'] = session
 
             headers = kwargs.setdefault('headers', {})
             headers["Authorization"] = TestController.get_http_digest_header(username='admin')
