@@ -55,7 +55,7 @@ import os
 import warnings
 
 from flask import Flask, request, Response
-from flask_testing import TestCase
+from unittest import TestCase
 from uuid import uuid4
 import pkg_resources
 import pytest
@@ -176,31 +176,18 @@ class TestController(TestCase):
         os.path.dirname(os.path.realpath(__file__)), "functional", "fixtures"
     )
 
-    def create_app(self, config=None):
-
-        os.environ["LINOTP_CONFIG_FILE"] = "/dev/null"
-        self.app = create_app("testing")
-        self.appconf = ConfigWrapper(self.app.config)
-
-        # Make responses compatible with Pylons' Response in operator
-        self.app.response_class = CompatibleTestResponse
-
-        return self.app
-
-    def __init__(self, *args, **kwargs):
+    @pytest.fixture(autouse=True)
+    def setup_self_app_and_client(self, app, client):
         """
-        initialize the test class
+        Make the `app` and `client` fixtures available
+        as class atributes
         """
+        self.app = app
 
-        self.session = "justatest"
-        self.resolvers = {}  # Set up of resolvers in create_common_resolvers
+        # Support '<STRING> in response' style tests in client
+        client.response_wrapper = CompatibleTestResponse
 
-        # dict of all autheticated users cookies
-        self.user_service = {}
-
-        # ------------------------------------------------------------------ --
-
-        super(TestCase, self).__init__(*args, **kwargs)
+        self.client = client
 
     @classmethod
     def setup_class(cls):
@@ -248,6 +235,12 @@ class TestController(TestCase):
 
     def setUp(self):
         """ here we do the system test init per test method """
+        self.session = "justatest"
+        self.resolvers = {}  # Set up of resolvers in create_common_resolvers
+
+        # dict of all authenticated users cookies
+        self.user_service = {}
+
         request.environ['REQUEST_ID'] = str(uuid4())
         request.environ['REQUEST_START_TIMESTAMP'] = datetime.now()
 
@@ -310,7 +303,7 @@ class TestController(TestCase):
             if not headers:
                 headers = {}
             headers["REMOTE_ADDR"] = client
-            pparams["extra_environ"] = {"REMOTE_ADDR": client}
+            pparams["environ_overrides"] = {"REMOTE_ADDR": client}
 
         if cookies:
             for key in cookies:

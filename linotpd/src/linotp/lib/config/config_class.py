@@ -34,6 +34,8 @@ import time
 
 from datetime import datetime
 
+from flask import current_app
+
 from linotp.config import environment as env
 from linotp.lib.config.util import expand_here
 
@@ -120,7 +122,7 @@ class LinOtpConfig(dict):
 
             writeback = False
             # get all conf entries from the config file
-            fileconf = _getConfigFromEnv()
+            fileconf = current_app.config
 
             # get all configs from the DB
             (dbconf, delay) = _retrieveAllConfigDB()
@@ -365,35 +367,5 @@ class LinOtpConfig(dict):
 
         _storeConfigDB('linotp.Config', datetime.now())
         return res
-
-
-###############################################################################
-#  helper class from here
-###############################################################################
-
-def _getConfigFromEnv():
-
-    linotpConfig = {}
-
-    try:
-        _getConfigReadLock()
-        for entry in env.config:
-            # we check for the modification time of the config file
-            if entry == '__file__':
-                fname = env.config.get('__file__')
-                mTime = time.localtime(os.path.getmtime(fname))
-                modTime = datetime(*mTime[:6])
-                linotpConfig['linotp.Config'] = modTime
-
-            if entry.startswith("linotp."):
-                linotpConfig[entry] = expand_here(env.config[entry])
-            if entry.startswith("enclinotp."):
-                linotpConfig[entry] = env.config[entry]
-        _releaseConfigLock()
-    except Exception as e:
-        log.exception('Error while reading config: %r' % e)
-        _releaseConfigLock()
-    return linotpConfig
-
 
 # eof #
