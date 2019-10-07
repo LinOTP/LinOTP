@@ -27,99 +27,75 @@ Tests a very small subset of linotp.lib.reply
 """
 
 import json
+
+import flask
 import pytest
-import unittest
-from mock import (
-    MagicMock,
-    PropertyMock,
-    )
-from linotp.lib.reply import sendResultIterator
-from linotp.lib.error import ProgrammingError
+
+from linotp.lib import reply
 from linotp.lib.context import request_context
+from linotp.lib.error import ProgrammingError
+from linotp.lib.reply import _get_httperror_from_params, sendResultIterator
 
 
-@pytest.mark.usefixtures("app")
-class TestReplyTestCase(unittest.TestCase):
-    def setUp(self):
-        self.pylons_request = MagicMock(spec=['params', 'query_string'])
+@pytest.mark.usefixtures('app')
+class TestReplyTestCase(object):
+    @pytest.mark.parametrize(
+        'querystring,result',
+        [
+            ('/?httperror=777', '777'),
+            ('/?httperror=somestr', '500'),
+            ('/?httperror', '500'),
+            ('', None)
+        ],
+        ids=(
+            'set and valid',
+            'set and invalid',
+            'set and empty',
+            'unset'),
+    )
+    def test_httperror_from_params(self, app, querystring, result):
+        with app.test_request_context(querystring):
+            httperror = _get_httperror_from_params(None)
+            assert httperror == result
 
-    def test_httperror_set_and_valid(self):
-        from linotp.lib.reply import _get_httperror_from_params
-        self.pylons_request.params = {
-            'httperror': '777',
-            }
-        self.pylons_request.query_string = 'httperror=777'
-        httperror = _get_httperror_from_params(self.pylons_request)
-        self.assertEquals(httperror, '777')
-        #self.assertFalse(self.pylons_request.query_string.called)
+    @pytest.fixture
+    def unicodeDecodeError(self, monkeypatch):
+        """
+        Simulate request parameters returning a UnicodeDecodeError
+        """
+        class fake_current_app(object):
+            def getRequestParams(self):
+                raise UnicodeDecodeError(
+                    'utf8',
+                    '\xc0',
+                    0,
+                    1,
+                    'invalid start byte'
+                    )
+        monkeypatch.setattr(reply, 'current_app', fake_current_app())
 
-    def test_httperror_set_and_invalid(self):
-        from linotp.lib.reply import _get_httperror_from_params
-        self.pylons_request.params = {
-            'httperror': 'somestr',
-            }
-        self.pylons_request.query_string = 'httperror=somestr'
-        httperror = _get_httperror_from_params(self.pylons_request)
-        self.assertEquals(httperror, '500')
-
-    def test_httperror_set_and_empty(self):
-        from linotp.lib.reply import _get_httperror_from_params
-        self.pylons_request.params = {
-            'httperror': '',
-            }
-        self.pylons_request.query_string = 'httperror'
-        httperror = _get_httperror_from_params(self.pylons_request)
-        self.assertEquals(httperror, '500')
-
-    def test_httperror_unset(self):
-        from linotp.lib.reply import _get_httperror_from_params
-        self.pylons_request.params = {}
-        self.pylons_request.query_string = ''
-        httperror = _get_httperror_from_params(self.pylons_request)
-        self.assertEquals(httperror, None)
-
+    @pytest.mark.usefixtures('unicodeDecodeError')
     def test_httperror_with_UnicodeDecodeError(self):
-        from linotp.lib.reply import _get_httperror_from_params
-        # Raising exceptions on attribute access
-        prop_mock = PropertyMock(
-            side_effect=UnicodeDecodeError(
-                'utf8',
-                '\xc0',
-                0,
-                1,
-                'invalid start byte'
-                )
-            )
-        type(self.pylons_request).params = prop_mock
-        self.pylons_request.query_string = 'httperror=555'
-        httperror = _get_httperror_from_params(self.pylons_request)
-        self.assertEquals(httperror, '555')
+        with flask.current_app.test_request_context('/?httperror=555'):
+            httperror = _get_httperror_from_params(None)
+            assert httperror == '555'
 
+    @pytest.mark.usefixtures('unicodeDecodeError')
     def test_httperror_with_UnicodeDecodeError_and_mult_param(self):
-        from linotp.lib.reply import _get_httperror_from_params
         # Raising exceptions on attribute access
-        prop_mock = PropertyMock(
-            side_effect=UnicodeDecodeError(
-                'utf8',
-                '\xc0',
-                0,
-                1,
-                'invalid start byte'
-                )
-            )
-        type(self.pylons_request).params = prop_mock
-        self.pylons_request.query_string = 'httperror=555&httperror=777'
-        httperror = _get_httperror_from_params(self.pylons_request)
-        self.assertEquals(httperror, '777')
+        with flask.current_app.test_request_context('/?httperror=555&httperror=777'):
+            httperror = _get_httperror_from_params(None)
+            assert httperror == '777'
 
-    def test_httperror_with_Exception(self):
-        from linotp.lib.reply import _get_httperror_from_params
-        # Raising exceptions on attribute access
-        prop_mock = PropertyMock(side_effect=Exception("Random exception"))
-        type(self.pylons_request).params = prop_mock
-        self.pylons_request.query_string = 'httperror=555'
-        httperror = _get_httperror_from_params(self.pylons_request)
-        self.assertEquals(httperror, None)
+    def test_httperror_with_Exception(self, monkeypatch):
+        class fake_current_app(object):
+            def getRequestParams(self):
+                raise Exception("Random exception")
+        monkeypatch.setattr(reply, 'current_app', fake_current_app())
+
+        with flask.current_app.test_request_context('/?httperror=555'):
+            httperror = _get_httperror_from_params(None)
+            assert httperror is None
 
     @pytest.mark.skip("Not yet ported to Flask")
     def test_response_iterator(self):
@@ -139,8 +115,8 @@ class TestReplyTestCase(unittest.TestCase):
             res = sendResultIterator(request_context_test_iterator(),
                                      request_context_copy=request_context_copy)
         except ProgrammingError:
-            self.assertTrue(False, 'request_context was used outside'
-                                   'of request_context_safety')
+            assert False, 'request_context was used outside' \
+                                   'of request_context_safety'
 
         result = ""
         for chunk in res:
@@ -149,4 +125,4 @@ class TestReplyTestCase(unittest.TestCase):
         result_dict = json.loads(result)
         value = result_dict.get('result', {}).get('value')
 
-        self.assertIn(u'bar', value)
+        assert u'bar' in value

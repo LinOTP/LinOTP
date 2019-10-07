@@ -44,6 +44,8 @@ from .lib.context import request_context
 
 from .lib.crypto.utils import init_key_partition
 
+from .lib.error import LinotpError
+
 from .lib.logs import init_logging_config
 from .lib.logs import log_request_timedelta
 
@@ -58,6 +60,7 @@ from .lib.user import getUserFromRequest
 
 from .lib.realm import getDefaultRealm
 from .lib.realm import getRealms
+from .lib.reply import sendError
 
 from .lib.type_utils import boolean
 
@@ -678,6 +681,16 @@ def create_app(config_name='default', config_extra=None):
     # Post handlers
     app.teardown_request(app.finalise_request)
 
+    @app.errorhandler(LinotpError)
+    def linotp_error_handler(e):
+        """
+        Pass LinotpError exceptions to sendError
+
+        If Flask receives an exception which is derived from LinotpError,
+        this handler will be called so that an error response can be
+        returned to the user.
+        """
+        return sendError(None, e)
 
     return app
 
