@@ -120,17 +120,11 @@ class LinOTPApp(Flask):
         before_first_request function
         """
 
-        c.sep = None
         # TODO - language
         #self.set_language(request.headers)
 
-        # set the decryption device before loading linotp config,
-        # so it contains the decrypted values as well
-        glo = getGlobalObject()
-        c.sep = glo.security_provider
-
         try:
-            hsm = c.sep.getSecurityModule()
+            hsm = self.security_provider.getSecurityModule()
             self.hsm = hsm
             c.hsm = hsm
         except Exception as exx:
@@ -155,6 +149,13 @@ class LinOTPApp(Flask):
 
         # TODO: verify merge dropped
         # initResolvers()
+
+    @property
+    def security_provider(self):
+        """
+        Return the security provider, which is an instance of SecurityProvider
+        """
+        return flask_g.app_globals.security_provider
 
     def check_license(self):
         """
@@ -614,8 +615,9 @@ def create_app(config_name='default', config_extra=None):
     with app.app_context():
         setup_cache(app)
         setup_db(app)
-        generate_secret_key_file(app)
         set_config()       # ensure `request_context` exists
+        initGlobalObject()
+        generate_secret_key_file(app)
         set_defaults(app)
         reload_token_classes()
         app.check_license()
