@@ -273,39 +273,6 @@ class TestFixesController(TestController):
 
         return
 
-    def test_ticket_2909(self):
-        '''
-        Test #2909: HSM problems will raise an HSM Exception
-               which could trigger an HTTP Error
-        '''
-        param = {'__HSMEXCEPTION__':'__ON__'}
-        response = self.make_system_request(
-                    'setupSecurityModule', params=param)
-
-        param = {'key':'sec', 'value':'mySec', 'type':'password'}
-        response = self.make_system_request('setConfig', params=param)
-
-        assert '707' in response
-        assert 'hsm not ready' in response
-
-        res = ''
-        try:
-            param = {'key':'sec', 'value':'mySec',
-                 'type':'password', 'httperror':'503'}
-            response = self.make_system_request('setConfig', params=param)
-        except Exception as exx:
-            log.info(response)
-            res = type(exx).__name__
-
-        assert res == 'AppError'
-
-        ## restore default
-        param = {'__HSMEXCEPTION__':'__OFF__'}
-        response = self.make_system_request(
-                        'setupSecurityModule', params=param)
-
-        return
-
     def test_ticket_12018(self):
         '''
         #12018: OTPLen of /admin/init is not ignored
