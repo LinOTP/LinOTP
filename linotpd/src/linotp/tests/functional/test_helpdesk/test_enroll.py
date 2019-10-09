@@ -149,6 +149,47 @@ class TestHelpdeskEnrollment(TestController):
 
         assert len(realm_set) == 2
 
+        # ------------------------------------------------------------------ --
+
+        # now we adjust the helpdesk user policy to have access to more than
+        # one realm
+
+        policy = {
+            'name': 'helpdesk',
+            'action': 'show, userlist',
+            'scope': 'admin',
+            'active': True,
+            'realm': '*',
+            'user': 'helpdesk,',
+            'client': '*',
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response
+
+        # verify that the helpdesk user can see only users for the
+        # specified realm
+
+        params = {}
+
+        response = self.make_helpdesk_request(
+            'users', params=params)
+
+        assert 'false' not in response
+
+        realm_set = set()
+
+        jresp = json.loads(response.body)
+        for user in jresp['result']['value']['rows']:
+            user_parts = user['cell']
+            realms = user_parts[8]
+            realm_set.update(realms)
+
+        assert 'mydefrealm' in realm_set
+        assert 'mymixrealm' in realm_set
+        assert 'myotherrealm' in realm_set
+
+        assert len(realm_set) == 3
+
         return
 
     def test_users_with_params(self):

@@ -260,8 +260,8 @@ class TestAutoassignSMSController(TestController):
         jresp = json.loads(response.body)
         trans_id = jresp.get('detail', {}).get('transactionid')
 
-        _, message = EMAIL_MESSAGE_OTP
-        otp = message.get('message')
+        _, submit_kwparams = EMAIL_MESSAGE_OTP
+        otp = submit_kwparams.get('replacements').get('otp')
         self.assertTrue(otp is not None)
 
         user = 'passthru_user1@myDefRealm'

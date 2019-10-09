@@ -596,6 +596,10 @@ def get_realms_from_params(param, acls=None):
     if 'realm' not in param or param['realm'] == '*':
 
         if acls and acls['active']:
+
+            if '*' in acls['realms']:
+                return getRealms().keys()
+
             return acls['realms']
 
         return getRealms().keys()

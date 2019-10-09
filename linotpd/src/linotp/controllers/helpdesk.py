@@ -74,7 +74,7 @@ from linotp.lib.util import check_session
 
 from linotp.provider.notification import notify_user
 
-from linotp.lib.audit.base import logTokenNum
+from linotp.lib.audit.base import get_token_num_info
 
 from linotp.lib.realm import get_realms_from_params
 
@@ -574,7 +574,7 @@ class HelpdeskController(BaseController):
             c.audit['user'] = user.login
             c.audit['realm'] = user.realm
 
-            logTokenNum(c.audit)
+            c.audit['action_detail'] += get_token_num_info()
 
             res = checkPolicyPost('admin', 'init', params, user=user)
             pin = res.get('new_pin', params['pin'])
@@ -592,7 +592,7 @@ class HelpdeskController(BaseController):
 
             notify_user(user, 'enrollment', info, required=True)
 
-            logTokenNum(c.audit)
+            c.audit['action_detail'] += get_token_num_info()
 
             c.audit['success'] = ret
 
