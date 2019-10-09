@@ -23,40 +23,21 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-""" contains utility functions to load dynamic modules """
+#
 
+""" smtp mocking helper """
 
-import importlib
-import pkgutil
-import sys
+import smtplib
+from mock import patch
 
-import logging
+class MockedSMTP(object):
+    def __init__(self):
+        self.patch_smtp = patch('smtplib.SMTP', spec=smtplib.SMTP)
 
-log = logging.getLogger(__name__)
+    def __enter__(self):
+        mock_smtp_class = self.patch_smtp.start()
+        self.mock_smtp_instance = mock_smtp_class.return_value
+        return self.mock_smtp_instance
 
-
-def import_submodules(package_name):
-    """ Import all submodules of a module, recursively
-
-    :param package_name: Package name
-    :type package_name: str
-    :rtype: dict[types.ModuleType]
-    """
-
-    package = sys.modules[package_name]
-
-    p_list = {}
-
-    for _loader, name, _is_pkg in pkgutil.walk_packages(package.__path__):
-
-        try:
-
-            p_list[name] = importlib.import_module(package_name + '.' + name)
-
-        except Exception as exx:
-
-            log.warning("Failed to load %r - %r", name, exx)
-
-    return p_list
-
-# eof #
+    def __exit__(self, *args, **kwargs):
+        self.patch_smtp.stop()

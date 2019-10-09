@@ -123,6 +123,15 @@ def make_map(global_conf, app_conf,):
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
+
+    # in case of helpdesk, we route the default to helpdesk/users
+    helpdesk = app_conf.get('service.helpdesk', 'True') == 'True'
+    if helpdesk:
+        routeMap.connect('/api/helpdesk/', controller='helpdesk', action='users')
+        for cont in ['helpdesk']:
+            routeMap.connect('/api/%s/{action}' % cont, controller=cont)
+            routeMap.connect('/api/%s/{action}/{id}' % cont, controller=cont)
+
     # in case of validate, we route the default / to validate
     validate = app_conf.get('service.validate', 'True') == 'True'
     if validate:
