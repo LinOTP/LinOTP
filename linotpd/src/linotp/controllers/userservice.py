@@ -839,6 +839,20 @@ class UserserviceController(BaseController):
 
             if self.mfa_login:
 
+                # allow the mfa login for users that have no token till now
+                # if the policy 'mfa_passOnNoToken' is defined with password
+                # only
+
+                tokenArray = getTokenForUser(self.authUser)
+
+                policy = get_client_policy(
+                    client=self.client, scope='selfservice',
+                    action='mfa_passOnNoToken', userObj=user, active_only=True)
+
+                if policy and not tokenArray:
+
+                    return self._login_with_password_only(user, password)
+
                 return self._login_with_otp(user, password, param)
 
             else:

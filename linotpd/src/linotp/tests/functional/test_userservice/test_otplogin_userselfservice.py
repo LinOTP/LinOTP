@@ -214,6 +214,72 @@ class TestUserserviceAuthController(TestController):
 
         return
 
+    # ---------------------------------------------------------------------- --
+
+    def test_login_without_token(self):
+        """
+        check if mfa_passOnNoToken will allow user to login with u/p and no otp
+        """
+
+        # prove that user has no tokens
+
+        self.delete_all_token()
+
+        auth_user = {'login': 'passthru_user1@myDefRealm',
+                     'password': 'geheim1'}
+
+        params = {}
+        response = self.make_userselfservice_request('history',
+                                                     params=params,
+                                                     auth_user=auth_user,
+                                                     new_auth_cookie=True)
+
+        assert 'additional authentication parameter required' in response
+
+        # after switching on the policy mfa_passOnNoToken the user can login
+
+        params = {
+            'name': 'mfa_noToken',
+            'active': True,
+            'scope': 'selfservice',
+            'action': 'mfa_login, mfa_passOnNoToken',
+            'user': '*',
+            'realm': '*',
+            }
+        response = self.make_system_request('setPolicy', params=params)
+        assert 'false' not in response
+
+        params = {'type': 'hmac', 'genkey': '1', 'serial': 'hmac123'}
+        response = self.make_userselfservice_request('enroll',
+                                                     params=params,
+                                                     auth_user=auth_user,
+                                                     new_auth_cookie=True)
+
+        self.assertTrue('"img": "<img ' in response, response)
+
+        # after the user has enrolled a tokan and has logged out,
+        # the login with u/p is not possible anymore
+
+        params = {}
+        response = self.make_userselfservice_request('logout',
+                                                     params=params,
+                                                     auth_user=auth_user)
+        assert "true" in response
+
+        with self.assertRaises(Exception) as exx:
+            params = {'serial': 'hmac123'}
+            response = self.make_userselfservice_request('delete',
+                                                         params=params,
+                                                         auth_user=auth_user)
+
+        msg = "%s" % exx.exception
+        assert 'Server Error 403' in msg
+
+        self.delete_all_token()
+        self.delete_policy(name='mfa_noToken')
+
+        return
+
     def test_login_with_false_password(self):
         """
         check that the login generate a cookie, which does not require
@@ -241,9 +307,7 @@ class TestUserserviceAuthController(TestController):
         unbound_msg = ('UnboundLocalError("local variable \'reply\' '
                        'referenced before assignment",)')
 
-        failed_auth_msg = ("User User(login=u'passthru_user1', "
-                           "realm=u'mydefrealm', conf='' ::resolverUid:{}, "
-                           "resolverConf:{}) failed to authenticate!")
+        failed_auth_msg = ("failed to authenticate!")
 
         unbound_not_found = True
         failed_auth_found = False
@@ -254,7 +318,7 @@ class TestUserserviceAuthController(TestController):
             if unbound_msg in entry:
                 unbound_not_found = False
 
-            if failed_auth_msg in entry:
+            if failed_auth_msg in entry[11]:
                 failed_auth_found = True
 
         self.assertTrue(unbound_not_found, entries)

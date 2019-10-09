@@ -31,6 +31,7 @@ import datetime
 import logging
 
 from linotp.provider import loadProviderFromPolicy
+from linotp.provider.emailprovider import DEFAULT_MESSAGE
 
 from linotp.lib.token import get_token_owner
 from linotp.tokens import tokenclass_registry
@@ -222,8 +223,17 @@ class EmailTokenClass(HmacTokenClass):
 
         _ = context['translate']
 
+        # in the scope helpdesk we allways have a user
+        # to whom the token will be assigned
+
+        if param.get('::scope::', {}).get('helpdesk', False):
+            user = param['::scope::']['user']
+            u_info = getUserDetail(user)
+            param[self.EMAIL_ADDRESS_KEY] = u_info.get('email', None)
+
         # specific - e-mail
         self._email_address = param[self.EMAIL_ADDRESS_KEY]
+
         # in scope selfservice - check if edit_email is allowed
         # if not allowed to edit, check if the email is the same
         # as from the user data
@@ -349,7 +359,7 @@ class EmailTokenClass(HmacTokenClass):
             at least the placeholder <otp>
         :rtype: string
         """
-        message = '<otp>'
+        message = DEFAULT_MESSAGE
 
         if not user:
             return message
@@ -408,22 +418,39 @@ class EmailTokenClass(HmacTokenClass):
 
         owner = get_token_owner(self)
         message = self._getEmailMessage(user=owner)
-
-        if "<otp>" not in message:
-            message = message + "<otp>"
-
-        message = message.replace("<otp>", otp)
-        message = message.replace("<serial>", self.getSerial())
-
         subject = self._getEmailSubject(user=owner)
-        subject = subject.replace("<otp>", otp)
-        subject = subject.replace("<serial>", self.getSerial())
 
-        email_provider = loadProviderFromPolicy(provider_type='email',
-                                                user=owner)
-        status, status_message = email_provider.submitMessage(email_address,
-                                                              subject=subject,
-                                                              message=message)
+        replacements = {}
+        replacements['otp'] = otp
+        replacements['serial'] = self.getSerial()
+
+        # ------------------------------------------------------------------ --
+
+        # add user detail to replacements, so we are aware of surename++
+
+        if owner and owner.login:
+            user_detail = owner.getUserInfo()
+            if 'cryptpass' in user_detail:
+                del user_detail['cryptpass']
+
+            replacements.update(user_detail)
+
+        # ------------------------------------------------------------------ --
+
+
+        try:
+
+            email_provider = loadProviderFromPolicy(
+                provider_type='email', user=owner)
+
+            status, status_message = email_provider.submitMessage(
+                email_address, subject=subject, message=message,
+                replacements=replacements)
+
+        except Exception as exx:
+            LOG.error('Failed to submit EMail: %r', exx)
+            raise
+
         return status, status_message
 
     def is_challenge_response(self, passw, user, options=None, challenges=None):

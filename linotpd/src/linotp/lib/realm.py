@@ -591,4 +591,25 @@ def match_realms(request_realms, allowed_realms):
 
     return realms
 
+def get_realms_from_params(param, acls=None):
+
+    if 'realm' not in param or param['realm'] == '*':
+
+        if acls and acls['active']:
+
+            if '*' in acls['realms']:
+                return getRealms().keys()
+
+            return acls['realms']
+
+        return getRealms().keys()
+
+
+    realm = param['realm']
+
+    if realm.strip() == '':
+        return  [getDefaultRealm()]
+
+    return [x.strip() for x in realm.split(',')]
+
 # eof ########################################################################

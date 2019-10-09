@@ -318,27 +318,35 @@ class TestController(unittest2.TestCase):
         if cookies:
             for key in cookies:
                 TestController.set_cookie(self.app, key, cookies[key])
+
+        # ------------------------------------------------------------------ --
+
+        # setup the request url
+
+        req_url = url(controller=controller, action=action)
+
+        # due to a bug in the url() we have to concat the contoller and
+        # the action for the helpdesk manually - probably because is the
+        # two part controller which results in an /account/login
+
+        if controller in ['api/helpdesk']:
+            req_url = '/' + controller + '/' + action
+
+        # ------------------------------------------------------------------ --
+
+        # determin which http method should be called
+
+        app_call = self.app.post
+
         if method == 'GET':
-            return self.app.get(
-                url(controller=controller, action=action),
-                params=params,
-                headers=headers,
-                **pparams
-            )
+            app_call = self.app.get
+
         elif method == 'PUT':
-            return self.app.put(
-                url(controller=controller, action=action),
-                params=params,
-                headers=headers,
-                **pparams
-            )
-        else:
-            return self.app.post(
-                url(controller=controller, action=action),
-                params=params,
-                headers=headers,
-                **pparams
-            )
+            app_call = self.app.put
+
+        return app_call(req_url, params=params, headers=headers, **pparams)
+
+
     @staticmethod
     def get_http_basic_header(username='admin', method='GET'):
         """
@@ -436,10 +444,17 @@ class TestController(unittest2.TestCase):
         params = params or {}
         headers = headers or {}
         cookies = cookies or {}
+
         if 'session' not in params:
             params['session'] = self.session
-        if 'admin_session' not in cookies:
-            cookies['admin_session'] = self.session
+
+        cookie_name = 'admin_session'
+        if controller in ['api/helpdesk']:
+            cookie_name = 'helpdesk_session'
+
+        if cookie_name not in cookies:
+            cookies[cookie_name] = params['session']
+
         if 'Authorization' not in headers:
             if auth_type == 'Basic':
                 headers['Authorization'] = \
@@ -471,6 +486,25 @@ class TestController(unittest2.TestCase):
             params = {}
         return self.make_authenticated_request(
             'admin',
+            action,
+            method=method,
+            params=params,
+            auth_user=auth_user,
+            upload_files=upload_files,
+            client=client,
+            auth_type=auth_type,
+            content_type=content_type
+        )
+
+    def make_helpdesk_request(
+            self, action, params=None, method=None, headers=None,
+            auth_user='helpdesk', client=None, upload_files=None,
+            auth_type='Digest', cookies=None, content_type=None):
+        """
+        Makes an authenticated request to /api/helpdesk/'action'
+        """
+        return self.make_authenticated_request(
+            'api/helpdesk',
             action,
             method=method,
             params=params,

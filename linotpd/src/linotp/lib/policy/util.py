@@ -40,6 +40,7 @@ ascii_lowercase = lowercase
 ascii_uppercase = uppercase
 ascii_letters = ascii_lowercase + ascii_uppercase
 digits = '0123456789'
+special_characters = "!#$%&()*+,-./:;<=>?@[]^_"
 
 
 def _getUserRealms(user):
