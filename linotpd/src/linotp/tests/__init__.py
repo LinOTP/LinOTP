@@ -252,11 +252,6 @@ class TestController(TestCase):
 
         self.make_system_request("setConfig", params=params)
 
-        self.delete_all_policies()
-        self.delete_all_realms()
-        self.delete_all_resolvers()
-        self.delete_all_token()
-
     def tearDown(self):
         # self.delete_all_realms()
         # self.delete_all_resolvers()

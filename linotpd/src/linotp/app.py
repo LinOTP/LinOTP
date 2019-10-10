@@ -106,6 +106,10 @@ class LinOTPApp(Flask):
     """
     The main LinOTP Flask application instance
     """
+
+    cache = None
+    """Beaker cache for this app"""
+
     def __init__(self):
         super(LinOTPApp, self).__init__(__name__, static_folder='public', static_url_path='/static')
 
@@ -442,9 +446,29 @@ def init_logging(app):
             },
             'loggers': {
                 'linotp.app': {
-                    'handlers': ['file', 'console'],
+                    'handlers': ['console'],
                     'level': app.config["LOGGING_LEVEL"],
                     'propagate': False,
+                },
+                'linotp.lib': {
+                    'handlers': ['console'],
+                    'level': app.config["LOGGING_LEVEL"],
+                    'propagate': True,
+                },
+                'linotp.lib.config.db_api': {
+                    'handlers': ['console'],
+                    'level': 'INFO',
+                    'propagate': True,
+                },
+                'linotp.lib.security.provider': {
+                    'handlers': ['console'],
+                    'level': 'INFO',
+                    'propagate': True,
+                },
+                'linotp.lib.ImportOTP.vasco': {
+                    'handlers': ['console'],
+                    'level': 'ERROR',
+                    'propagate': True,
                 },
             },
         }
