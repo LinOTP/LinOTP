@@ -35,8 +35,6 @@ in case of an error.
 """
 
 
-from distutils.version import LooseVersion
-import pkg_resources
 import logging
 
 from linotp.tests import TestController, url
@@ -44,37 +42,7 @@ from linotp.tests import TestController, url
 log = logging.getLogger(__name__)
 
 
-def _webob_version():
-    return LooseVersion(
-        pkg_resources.get_distribution('webob').version
-        )
-
-def _get_status_code(response):
-    """
-    Once upon a time WebOb deprecated status_code and encouraged the use of
-    status_int, then in version 1.2 the deprecation was reverted and now it
-    is recommended to use status_code instead of status_int. (The
-    deprecation actually raises an exception and causes all tests to fail).
-
-    :param response: A WebOb response object
-    """
-    current_webob = _webob_version()
-    if current_webob >= LooseVersion('1.2'):
-        return response.status_code
-    else:
-        return response.status_int
-
-
 class TestHTTPError(TestController):
-
-    def setUp(self):
-        TestController.setUp(self)
-        # Delete 'errors' entry from Config, in case it is set
-        self._del_errors_from_config()
-
-    def tearDown(self):
-        self._del_errors_from_config()
-        return TestController.tearDown(self)
 
     def test_no_httperror(self):
         """
@@ -86,18 +54,18 @@ class TestHTTPError(TestController):
             'genkey': 1,
             }
         response = self.make_admin_request('init', params)
-        content = self.get_json_body(response)
+        content = response.json
 
-        self.assertEqual(_get_status_code(response), 200)
-        self.assertEqual(response.content_type, 'application/json')
-        self.assertIn('result', content)
-        self.assertIn('status', content['result'])
-        self.assertFalse(content['result']['status'])
-        self.assertIn('error', content['result'])
-        self.assertIn('message', content['result']['error'])
-        self.assertIn('code', content['result']['error'])
+        assert response.status == '200 OK'
+        assert response.content_type == 'application/json'
+        assert 'result' in content
+        assert 'status' in content['result']
+        assert not content['result']['status']
+        assert 'error' in content['result']
+        assert 'message' in content['result']['error']
+        assert 'code' in content['result']['error']
         # ERR1112: getUserResolverId failed
-        self.assertEqual(content['result']['error']['code'], 1112)
+        assert content['result']['error']['code'] == 1112
 
     def test_httperror(self):
         """
@@ -109,11 +77,10 @@ class TestHTTPError(TestController):
             'genkey': 1,
             'httperror': 444,
             }
-        response = self._make_admin_request_custom_status('init', params, 444)
+        response = self._make_admin_request_custom_status('init', params, '444')
 
-        self.assertEqual(_get_status_code(response), 444)
-        self.assertEqual(response.content_type, 'text/html')
-        self.assertIn("ERR1112: getUserResolverId failed", response)
+        assert 'text/html' in response.content_type.split(';')
+        assert "ERR1112: getUserResolverId failed" in response
 
     def test_empty_httperror(self):
         """
@@ -125,11 +92,10 @@ class TestHTTPError(TestController):
             'genkey': 1,
             'httperror': '',
             }
-        response = self._make_admin_request_custom_status('init', params, 500)
+        response = self._make_admin_request_custom_status('init', params, '500')
 
-        self.assertEqual(_get_status_code(response), 500)
-        self.assertEqual(response.content_type, 'text/html')
-        self.assertIn("ERR1112: getUserResolverId failed", response)
+        assert 'text/html' in response.content_type.split(';')
+        assert "ERR1112: getUserResolverId failed" in response
 
     def test_httperror_errid_in_config(self):
         """
@@ -148,11 +114,10 @@ class TestHTTPError(TestController):
             'genkey': 1,
             'httperror': 444,
             }
-        response = self._make_admin_request_custom_status('init', params, 444)
+        response = self._make_admin_request_custom_status('init', params, '444')
 
-        self.assertEqual(_get_status_code(response), 444)
-        self.assertEqual(response.content_type, 'text/html')
-        self.assertIn("ERR1112: getUserResolverId failed", response)
+        assert 'text/html' in response.content_type.split(';')
+        assert "ERR1112: getUserResolverId failed" in response
 
         # Test request httperror empty
         params = {
@@ -161,11 +126,10 @@ class TestHTTPError(TestController):
             'genkey': 1,
             'httperror': '',
             }
-        response = self._make_admin_request_custom_status('init', params, 500)
+        response = self._make_admin_request_custom_status('init', params, '500')
 
-        self.assertEqual(_get_status_code(response), 500)
-        self.assertEqual(response.content_type, 'text/html')
-        self.assertIn("ERR1112: getUserResolverId failed", response)
+        assert 'text/html' in response.content_type.split(';')
+        assert "ERR1112: getUserResolverId failed" in response
 
 
     def test_httperror_errid_not_in_config(self):
@@ -186,18 +150,17 @@ class TestHTTPError(TestController):
             'httperror': 444,
             }
         response = self.make_admin_request('init', params)
-        content = self.get_json_body(response)
+        content = response.json
 
-        self.assertEqual(_get_status_code(response), 200)
-        self.assertEqual(response.content_type, 'application/json')
-        self.assertIn('result', content)
-        self.assertIn('status', content['result'])
-        self.assertFalse(content['result']['status'])
-        self.assertIn('error', content['result'])
-        self.assertIn('message', content['result']['error'])
-        self.assertIn('code', content['result']['error'])
+        assert response.content_type == 'application/json'
+        assert 'result' in content
+        assert 'status' in content['result']
+        assert not content['result']['status']
+        assert 'error' in content['result']
+        assert 'message' in content['result']['error']
+        assert 'code' in content['result']['error']
         # ERR1112: getUserResolverId failed
-        self.assertEqual(content['result']['error']['code'], 1112)
+        assert content['result']['error']['code'] == 1112
 
         # Test request httperror empty
         params = {
@@ -207,18 +170,17 @@ class TestHTTPError(TestController):
             'httperror': '',
             }
         response = self.make_admin_request('init', params)
-        content = self.get_json_body(response)
+        content = response.json
 
-        self.assertEqual(_get_status_code(response), 200)
-        self.assertEqual(response.content_type, 'application/json')
-        self.assertIn('result', content)
-        self.assertIn('status', content['result'])
-        self.assertFalse(content['result']['status'])
-        self.assertIn('error', content['result'])
-        self.assertIn('message', content['result']['error'])
-        self.assertIn('code', content['result']['error'])
+        assert response.content_type == 'application/json'
+        assert 'result' in content
+        assert 'status' in content['result']
+        assert not content['result']['status']
+        assert 'error' in content['result']
+        assert 'message' in content['result']['error']
+        assert 'code' in content['result']['error']
         # ERR1112: getUserResolverId failed
-        self.assertEqual(content['result']['error']['code'], 1112)
+        assert content['result']['error']['code'] == 1112
 
 
     def test_no_httperror_with_config(self):
@@ -238,18 +200,17 @@ class TestHTTPError(TestController):
             'genkey': 1,
             }
         response = self.make_admin_request('init', params)
-        content = self.get_json_body(response)
+        content = response.json
 
-        self.assertEqual(_get_status_code(response), 200)
-        self.assertEqual(response.content_type, 'application/json')
-        self.assertIn('result', content)
-        self.assertIn('status', content['result'])
-        self.assertFalse(content['result']['status'])
-        self.assertIn('error', content['result'])
-        self.assertIn('message', content['result']['error'])
-        self.assertIn('code', content['result']['error'])
+        assert response.content_type == 'application/json'
+        assert 'result' in content
+        assert 'status' in content['result']
+        assert not content['result']['status']
+        assert 'error' in content['result']
+        assert 'message' in content['result']['error']
+        assert 'code' in content['result']['error']
         # ERR1112: getUserResolverId failed
-        self.assertEqual(content['result']['error']['code'], 1112)
+        assert content['result']['error']['code'] == 1112
 
 
     def test_httperror_and_config_set_but_empty(self):
@@ -268,11 +229,10 @@ class TestHTTPError(TestController):
             'genkey': 1,
             'httperror': 444,
             }
-        response = self._make_admin_request_custom_status('init', params, 444)
+        response = self._make_admin_request_custom_status('init', params, '444')
 
-        self.assertEqual(_get_status_code(response), 444)
-        self.assertEqual(response.content_type, 'text/html')
-        self.assertIn("ERR1112: getUserResolverId failed", response)
+        assert 'text/html' in response.content_type.split(';')
+        assert "ERR1112: getUserResolverId failed" in response
 
         # Test request httperror emtpy
         params = {
@@ -281,11 +241,10 @@ class TestHTTPError(TestController):
             'genkey': 1,
             'httperror': '',
             }
-        response = self._make_admin_request_custom_status('init', params, 500)
+        response = self._make_admin_request_custom_status('init', params, '500')
 
-        self.assertEqual(_get_status_code(response), 500)
-        self.assertEqual(response.content_type, 'text/html')
-        self.assertIn("ERR1112: getUserResolverId failed", response)
+        assert 'text/html' in response.content_type.split(';')
+        assert "ERR1112: getUserResolverId failed" in response
 
 
     def test_httperror_and_invalid_utf8(self):
@@ -298,13 +257,6 @@ class TestHTTPError(TestController):
         C0 is an invalid UTF-8 byte sequence. See:
             http://en.wikipedia.org/wiki/UTF-8#Invalid_byte_sequences
         """
-        if _webob_version() < LooseVersion('1.2'):
-            self.skipTest(
-                "Older WebOb versions don't raise UnicodeDecodeError in this "
-                "scenario because internally errors='replace' is passed to the "
-                "decode() method."
-                )
-
         # Test request httperror 444
         params = {
             'user': 'doesnotexist\xc0',
@@ -312,16 +264,10 @@ class TestHTTPError(TestController):
             'genkey': 1,
             'httperror': 444,
             }
-        response = self._make_admin_request_custom_status('init', params, 444)
+        response = self._make_admin_request_custom_status('init', params, '444')
 
-        self.assertEqual(_get_status_code(response), 444)
-        self.assertEqual(response.content_type, 'text/html')
-        # Original error message (ERR1112: getUserResolverId failed...) is replaced
-        self.assertIn(
-            "-311: 'utf8' codec can't decode byte 0xc0 in position 12: invalid"
-                " start byte",
-            response
-            )
+        assert 'text/html' in response.content_type.split(';')
+        assert "getUserId failed: no user >doesnotexist" in response.body
 
 
     def test_no_httperror_and_invalid_utf8(self):
@@ -334,12 +280,6 @@ class TestHTTPError(TestController):
         C0 is an invalid UTF-8 byte sequence. See:
             http://en.wikipedia.org/wiki/UTF-8#Invalid_byte_sequences
         """
-        if _webob_version() < LooseVersion('1.2'):
-            self.skipTest(
-                "Older WebOb versions don't raise UnicodeDecodeError in this "
-                "scenario because internally errors='replace' is passed to the "
-                "decode() method."
-                )
 
         # Test request no httperror
         params = {
@@ -348,18 +288,18 @@ class TestHTTPError(TestController):
             'genkey': 1,
             }
         response = self.make_admin_request('init', params, method='GET')
-        content = self.get_json_body(response)
+        content = response.json
 
-        self.assertEqual(_get_status_code(response), 200)
-        self.assertEqual(response.content_type, 'application/json')
-        self.assertIn('result', content)
-        self.assertIn('status', content['result'])
-        self.assertFalse(content['result']['status'])
-        self.assertIn('error', content['result'])
-        self.assertIn('message', content['result']['error'])
-        self.assertIn('code', content['result']['error'])
+        assert response.status == '200 OK'
+        assert response.content_type == 'application/json'
+        assert 'result' in content
+        assert 'status' in content['result']
+        assert not content['result']['status']
+        assert 'error' in content['result']
+        assert 'message' in content['result']['error']
+        assert 'code' in content['result']['error']
         # ERR1112: getUserResolverId failed
-        self.assertEqual(content['result']['error']['code'], -311)
+        assert content['result']['error']['code'] == 1112
 
 
     def _make_admin_request_custom_status(self, action, params, status):
@@ -368,22 +308,10 @@ class TestHTTPError(TestController):
         as response. By default self.app.get will raise an exception when
         something other and 2xx or 3xx is returned.
         """
-        params.update({'session': self.session})
-        headers = {
-            'Authorization': TestController.get_http_digest_header(
-                username='admin'
-                ),
-            }
-        TestController.set_cookie(self.app, 'admin_session', self.session)
-
-        ret = self.app.get(
-            url(controller='admin', action=action),
-            params=params,
-            headers=headers,
-            status=status,
-            )
-        return ret
-
+        response = self.make_admin_request(action, params)
+        assert response.status == status
+        
+        return response
 
     def _del_errors_from_config(self):
         """
@@ -391,14 +319,14 @@ class TestHTTPError(TestController):
         """
         params = {'key': 'errors'}
         response = self.make_system_request('delConfig', params)
-        content = self.get_json_body(response)
+        content = response.json
 
-        self.assertIn('result', content)
-        self.assertIn('status', content['result'])
-        self.assertTrue(content['result']['status'])
-        self.assertIn('value', content['result'])
-        self.assertIn('delConfig errors', content['result']['value'])
-        self.assertTrue(content['result']['value']['delConfig errors'])
+        assert 'result' in content
+        assert 'status' in content['result']
+        assert content['result']['status']
+        assert 'value' in content['result']
+        assert 'delConfig errors' in content['result']['value']
+        assert content['result']['value']['delConfig errors']
 
     def _set_errors_in_config(self, errors):
         """
@@ -408,12 +336,12 @@ class TestHTTPError(TestController):
         """
         params = {'errors': errors}
         response = self.make_system_request('setConfig', params)
-        content = self.get_json_body(response)
+        content = response.json
 
-        self.assertIn('result', content)
-        self.assertIn('status', content['result'])
-        self.assertTrue(content['result']['status'])
-        self.assertIn('value', content['result'])
-        self.assertIn('setConfig errors:%s' % errors, content['result']['value'])
-        self.assertTrue(content['result']['value']['setConfig errors:%s' % errors])
+        assert 'result' in content
+        assert 'status' in content['result']
+        assert content['result']['status']
+        assert 'value' in content['result']
+        assert 'setConfig errors:%s' % errors in content['result']['value']
+        assert content['result']['value']['setConfig errors:%s' % errors]
 
