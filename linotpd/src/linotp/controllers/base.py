@@ -30,7 +30,7 @@ from types import FunctionType
 import logging
 import re
 
-from flask import Blueprint, Response
+from flask import current_app, Blueprint, Response
 
 from linotp.flap import request
 
@@ -163,21 +163,7 @@ class BaseController(Blueprint):
 
         This method is called before each request is processed.
         """
-        try:
-            if request.is_json:
-                self.request_params = request.json
-            else:
-                self.request_params = {}
-                for key in request.values:
-                   if(key.endswith('[]')):
-                       self.request_params[key[:-2]] = request.values.getlist(key)
-                   else:
-                        self.request_params[key] = request.values.get(key)
-        except UnicodeDecodeError as exx:
-            # we supress Exception here as it will be handled in the
-            # controller which will return corresponding response
-            log.warning('Failed to access request parameters: %r' % exx)
-
+        self.request_params = current_app.getRequestParams()
 
     def before_handler(self):
         """

@@ -44,6 +44,8 @@ from .lib.context import request_context
 
 from .lib.crypto.utils import init_key_partition
 
+from .lib.error import LinotpError
+
 from .lib.logs import init_logging_config
 from .lib.logs import log_request_timedelta
 
@@ -58,6 +60,7 @@ from .lib.user import getUserFromRequest
 
 from .lib.realm import getDefaultRealm
 from .lib.realm import getRealms
+from .lib.reply import sendError
 
 from .lib.type_utils import boolean
 
@@ -120,17 +123,11 @@ class LinOTPApp(Flask):
         before_first_request function
         """
 
-        c.sep = None
         # TODO - language
         #self.set_language(request.headers)
 
-        # set the decryption device before loading linotp config,
-        # so it contains the decrypted values as well
-        glo = getGlobalObject()
-        c.sep = glo.security_provider
-
         try:
-            hsm = c.sep.getSecurityModule()
+            hsm = self.security_provider.getSecurityModule()
             self.hsm = hsm
             c.hsm = hsm
         except Exception as exx:
@@ -155,6 +152,13 @@ class LinOTPApp(Flask):
 
         # TODO: verify merge dropped
         # initResolvers()
+
+    @property
+    def security_provider(self):
+        """
+        Return the security provider, which is an instance of SecurityProvider
+        """
+        return flask_g.app_globals.security_provider
 
     def check_license(self):
         """
@@ -416,6 +420,27 @@ class LinOTPApp(Flask):
 
         return cache_manager
 
+    def getRequestParams(self):
+        """
+        Parses the request params from the request objects body / params
+        dependent on request content_type.
+        """
+        try:
+            if request.is_json:
+                request_params = request.json
+            else:
+                request_params = {}
+                for key in request.values:
+                   if(key.endswith('[]')):
+                       request_params[key[:-2]] = request.values.getlist(key)
+                   else:
+                        request_params[key] = request.values.get(key)
+        except UnicodeDecodeError as exx:
+            # we supress Exception here as it will be handled in the
+            # controller which will return corresponding response
+            log.warning('Failed to access request parameters: %r' % exx)
+
+        return request_params
 
 def init_logging(app):
     """Sets up logging for LinOTP."""
@@ -614,8 +639,9 @@ def create_app(config_name='default', config_extra=None):
     with app.app_context():
         setup_cache(app)
         setup_db(app)
-        generate_secret_key_file(app)
         set_config()       # ensure `request_context` exists
+        initGlobalObject()
+        generate_secret_key_file(app)
         set_defaults(app)
         reload_token_classes()
         app.check_license()
@@ -655,6 +681,16 @@ def create_app(config_name='default', config_extra=None):
     # Post handlers
     app.teardown_request(app.finalise_request)
 
+    @app.errorhandler(LinotpError)
+    def linotp_error_handler(e):
+        """
+        Pass LinotpError exceptions to sendError
+
+        If Flask receives an exception which is derived from LinotpError,
+        this handler will be called so that an error response can be
+        returned to the user.
+        """
+        return sendError(None, e)
 
     return app
 

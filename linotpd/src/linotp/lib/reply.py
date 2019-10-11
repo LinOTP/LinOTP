@@ -34,7 +34,7 @@ try:
 except ImportError:
     import simplejson as json
 
-from flask import Response, jsonify
+from flask import current_app, Response, jsonify, request as flask_request
 
 from linotp.flap import request, tmpl_context as c
 
@@ -80,9 +80,10 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def _get_httperror_from_params(pylons_request):
+def _get_httperror_from_params(request):
     """
-    :param pylons_request: A Pylons request object
+    Extract an httperror parameter from the client request
+
     :return: The httperror parameter from the requests params, making sure it is
         a valid integer. If the value is contained in params then it will be
         returned. If it is an invalid value '500' will be returned instead.
@@ -93,13 +94,14 @@ def _get_httperror_from_params(pylons_request):
     """
     httperror = None
     try:
-        httperror = pylons_request.params.get('httperror', None)
+        request_params = current_app.getRequestParams()
+        httperror = request_params.get('httperror', None)
     except UnicodeDecodeError as exx:
         log.exception("Could not extract 'httperror' from params because some "
                 "parameter contains invalid Unicode. Trying to extract "
                 "directly from query_string. Exception: %r", exx)
         from urlparse import parse_qs
-        params = parse_qs(pylons_request.query_string)
+        params = parse_qs(flask_request.query_string)
         if 'httperror' in params:
             httperror_list = params['httperror']
             if len(httperror_list) > 1:
@@ -257,7 +259,7 @@ def sendError(_response, exception, id=1, context=None):
                  "id": id
             }
         data = json.dumps(res, indent=3)
-        response = Response(response=data, status=2000, mimetype= 'application/json')
+        response = Response(response=data, status=200, mimetype= 'application/json')
 
         if context in ['before', 'after']:
             response._exception = exception

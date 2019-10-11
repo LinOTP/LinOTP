@@ -97,16 +97,6 @@ class SecurityProvider(object):
             'module': 'linotp.lib.security.default.DefaultSecurityModule',
             'poolsize': 20, }
 
-        provider_config['err'] = {
-            'pinHandle': TOKEN_KEY,
-            'passHandle': CONFIG_KEY,
-            'valueHandle': VALUE_KEY,
-            'defaultHandle': DEFAULT_KEY,
-            'crypted': 'FALSE',
-            'file': keyFile,
-            'module': 'linotp.lib.security.default.ErrSecurityModule',
-            'poolsize': 20, }
-
         for key, value in config.items():
             for provider in provider_config.keys():
                 if key.startswith('linotpSecurity.%s' % provider):

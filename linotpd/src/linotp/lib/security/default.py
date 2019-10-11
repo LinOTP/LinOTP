@@ -463,11 +463,3 @@ class DefaultSecurityModule(SecurityModule):
         hash_obj.update(seed)
 
         return hash_obj.digest()
-
-
-class ErrSecurityModule(DefaultSecurityModule):
-
-    def setup_module(self, params):
-        ret = DefaultSecurityModule.setup_module(self, params)
-        self.is_ready = False
-        return ret

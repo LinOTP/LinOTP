@@ -24,11 +24,15 @@
 #    Support: www.keyidentity.com
 #
 
+import pytest
 import unittest
+from flask import appcontext_pushed
 from mock import patch
-from linotp.model.meta import Session
 
 from linotp.controllers.system import SystemController
+from linotp.flap import tmpl_context as context
+from linotp.lib.security.provider import SecurityProvider
+from linotp.model.meta import Session
 
 
 class TestSetResolver(unittest.TestCase):
@@ -72,3 +76,53 @@ class TestSetResolver(unittest.TestCase):
     def test_set_resolver_readonly_param_empty(self):
         ret = self.set_resolver({'readonly': ''})
         assert ret, "setResolver with empty readonly parameter should succeed. Returned:%s" % ret
+
+@pytest.fixture
+def err_hsm(app, monkeypatch):
+    """
+    An HSM object that answers with not ready for testing exception conditions
+    """
+
+    def getErrSecurityModule(s):
+        class ErrHSM(object):
+            def isReady(self):
+                return False
+
+        return {
+            'obj': ErrHSM()
+        }
+
+    # Override SecurityProvider.getSecurityModule() to return the error HSM
+    monkeypatch.setattr(SecurityProvider, 'getSecurityModule', getErrSecurityModule)
+
+@pytest.mark.usefixtures('err_hsm')
+class TestHSMFail(object):
+    """
+    Tests for #2909 to check behaviour with an HSM
+    in error state
+    """
+
+    def test_hsm_exception(self, adminclient):
+        '''
+        Test #2909: HSM problems will raise an HSM Exception
+               which could trigger an HTTP Error
+        '''
+        param = {'key':'sec', 'value':'mySec', 'type':'password'}
+
+        response = adminclient.post('/system/setConfig', json=param)
+        assert response.status_code == 200
+
+        result = response.json['result']
+        assert result['status'] == False
+        assert result['error']['code'] == 707
+        assert 'hsm not ready' in result['error']['message']
+
+    def test_httperror(self, adminclient):
+        '''
+        Test that custom error code is returned if requested
+        '''
+        param = {'key':'sec', 'value':'mySec',
+                'type':'password', 'httperror':'503'}
+
+        response = adminclient.post('/system/setConfig', json=param)
+        assert response.status_code == 503

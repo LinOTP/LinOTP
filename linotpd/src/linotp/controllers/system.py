@@ -1838,23 +1838,7 @@ class SystemController(BaseController):
 
             hsm_id = params.get('hsm_id', None)
 
-            from linotp.lib.config.global_api import getGlobalObject
-            glo = getGlobalObject()
-            sep = glo.security_provider
-
-            # for test purpose we switch to an errHSM
-            if isSelfTest():
-                if params.get('__hsmexception__') == '__ON__':
-                    hsm = c.hsm.get('obj')
-                    hsm_id = sep.activeOne
-                    if type(hsm).__name__ == 'DefaultSecurityModule':
-                        hsm_id = sep.setupModule('err', params)
-
-                if params.get('__hsmexception__') == '__OFF__':
-                    hsm = c.hsm.get('obj')
-                    hsm_id = sep.activeOne
-                    if type(hsm).__name__ == 'ErrSecurityModule':
-                        hsm_id = sep.setupModule('default', params)
+            sep = flask.current_app.security_provider
 
             if hsm_id is None:
                 hsm_id = sep.activeOne
