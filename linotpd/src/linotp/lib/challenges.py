@@ -28,6 +28,8 @@ import json
 import logging
 import datetime
 
+from flask import g
+
 from sqlalchemy import desc, and_
 import linotp
 from linotp.model import db, Challenge
@@ -312,8 +314,16 @@ class Challenges(object):
                 continue
 
             if not Challenges.verify_checksum(challenge):
-                log.error("Skipping challenge: Checksum verification failure"
-                          "for challenge %r.", challenge)
+                # as broken challenges are security relvant, we log this
+                # and make this visible to the system administrator by
+                # appending a message in audit log detail.
+
+                msg = " Checksum verification failure for challenge %r."
+
+                log.error(msg, challenge.transid)
+
+                g.audit['action_detail'] = g.audit.get('action_detail','') + (
+                    msg % challenge.transid)
                 continue
 
             # lookup the validty time of the challenge which is per token
