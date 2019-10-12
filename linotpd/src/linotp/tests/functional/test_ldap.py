@@ -474,8 +474,8 @@ class TestLDAP(TestController):
         #self.appconf = self.app.app.app.apps[1].application.app.application.app.app.app.config
         hostname = gethostname()
 
-        if self.app.config.has_key('linotp.ldapTestServerIp.' + hostname):
-            self.ldapurl = self.app.config.get('linotp.ldapTestServerIp.' + hostname)
+        if self.app.config.has_key('LINOTP.LDAPTESTSERVERIP.' + hostname):
+            self.ldapurl = self.app.config.get('LINOTP.LDAPTESTSERVERIP.' + hostname)
         elif self.app.config.has_key('<include>') is True:
             try:
                 filename = self.app.config.get('<include>')

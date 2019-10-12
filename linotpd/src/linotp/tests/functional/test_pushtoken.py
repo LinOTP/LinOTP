@@ -138,7 +138,7 @@ class TestPushToken(TestController):
                   'time': ''}
 
         self.create_policy(params=params)
-        self.uri = self.app.config.get('mobile_app_protocol_id', 'lseqr')
+        self.uri = self.app.config.get('MOBILE_APP_PROTOCOLL_ID', 'lseqr')
 
 # -------------------------------------------------------------------------- --
 
