@@ -98,11 +98,11 @@ def xfail_if_unported(controller, action):
         'ocra',
         'openid',
         'reporting',
-        'selfservice',
+        # 'selfservice',
         'testing',
         'tools',
         'u2f',
-        'userservice',
+        # 'userservice',
     ]
 
     if controller in unported_controllers:
@@ -1224,10 +1224,11 @@ class TestController(TestCase):
 
         params["session"] = auth_cookie
         # params['user'] = user
-        response = self.app.get(
-            url(controller="selfservice", action=action), params=params
+        response = self.client.get(
+            url(controller="selfservice", action=action), query_string=params
         )
 
+        response.body = response.data.decode("utf-8")
         return response
 
 # eof #
