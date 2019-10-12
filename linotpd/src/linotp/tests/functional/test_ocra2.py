@@ -3068,7 +3068,7 @@ class OcraTest(TestController):
                 is shown to the user!!! see ticket #12324
         """
 
-        sqlconnect = self.appconf.get('sqlalchemy.url')
+        sqlconnect = self.app.config.get('sqlalchemy.url')
         if (sqlconnect.startswith('sqlite://') or
                 sqlconnect.startswith('mysql://')):
             pass

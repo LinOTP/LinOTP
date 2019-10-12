@@ -53,7 +53,7 @@ class TestSetAdminPassword(TestController):
         for the tests, we will drop the imported user table
         """
 
-        sqlconnect = self.appconf.get('sqlalchemy.url')
+        sqlconnect = self.app.config.get('sqlalchemy.url')
         engine = create_engine(sqlconnect)
 
         # create the session for the db operation
@@ -83,7 +83,7 @@ class TestSetAdminPassword(TestController):
         for testing we require the admin user to exist
         """
 
-        sqlconnect = self.appconf.get('sqlalchemy.url')
+        sqlconnect = self.app.config.get('sqlalchemy.url')
         engine = create_engine(sqlconnect)
 
         db_context = DataBaseContext(engine.url)

@@ -124,7 +124,7 @@ class TestReplication(TestController):
 
         TestController.setUp(self)
 
-        self.sqlconnect = self.appconf.get('sqlalchemy.url')
+        self.sqlconnect = self.app.config.get('sqlalchemy.url')
         sqlData = SQLData(connect=self.sqlconnect)
         log.debug(sqlData)
         params = {

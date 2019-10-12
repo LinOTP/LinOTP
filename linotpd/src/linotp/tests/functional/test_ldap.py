@@ -474,11 +474,11 @@ class TestLDAP(TestController):
         #self.appconf = self.app.app.app.apps[1].application.app.application.app.app.app.config
         hostname = gethostname()
 
-        if self.appconf.has_key('linotp.ldapTestServerIp.' + hostname):
-            self.ldapurl = self.appconf.get('linotp.ldapTestServerIp.' + hostname)
-        elif self.appconf.has_key('<include>') is True:
+        if self.app.config.has_key('linotp.ldapTestServerIp.' + hostname):
+            self.ldapurl = self.app.config.get('linotp.ldapTestServerIp.' + hostname)
+        elif self.app.config.has_key('<include>') is True:
             try:
-                filename = self.appconf.get('<include>')
+                filename = self.app.config.get('<include>')
                 cfgParse = ConfigParser.ConfigParser()
                 cfgParse.readfp(open(filename))
                 incDict = cfgParse.defaults()
