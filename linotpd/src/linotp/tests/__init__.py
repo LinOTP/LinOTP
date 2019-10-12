@@ -100,7 +100,7 @@ def xfail_if_unported(controller, action):
         'reporting',
         # 'selfservice',
         'testing',
-        'tools',
+        #'tools',
         'u2f',
         # 'userservice',
     ]
