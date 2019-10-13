@@ -91,7 +91,7 @@ def xfail_if_unported(controller, action):
         'account',
         'custom',
         'error',
-        'gettoken',
+        #'gettoken',
         'maintenance',
         'migrate',
         'monitoring',

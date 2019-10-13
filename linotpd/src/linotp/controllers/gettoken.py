@@ -139,8 +139,8 @@ class GettokenController(BaseController):
             JSON response
         '''
 
-        getotp_active = config.get("linotpGetotp.active")
-        if "True" != getotp_active:
+        getotp_active = config.get("GETOTP_ENABLED")
+        if not getotp_active:
             return sendError(response, "getotp is not activated.", 0)
 
         param = self.request_params
@@ -207,8 +207,8 @@ class GettokenController(BaseController):
             JSON response
         '''
 
-        getotp_active = config.get("linotpGetotp.active")
-        if "True" != getotp_active:
+        getotp_active = config.get("GETOTP_ENABLED")
+        if not getotp_active:
             return sendError(response, "getotp is not activated.", 0)
 
         param = self.request_params

@@ -12,7 +12,7 @@ class Config:
     # You can specify a different URL prefix by listing the controller
     # as `FOO:/bar`, which will register it on `/bar` instead.
 
-    CONTROLLERS = ("admin audit auth manage selfservice system "
+    CONTROLLERS = ("admin audit auth gettoken manage selfservice system "
                    "test tools maintenance validate userservice")
 
     # List all enabled token support modules. If this parameter is
@@ -123,6 +123,7 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     SESSION_COOKIE_SECURE = False
+    GETOTP_ENABLED = True
     LOGGING_LEVEL = logging.DEBUG
     SQLALCHEMY_DATABASE_URI = os.getenv("LINOTP_TEST_DATABASE_URL") or \
         "sqlite:///" + os.path.join(basedir, "linotp-test.sqlite")

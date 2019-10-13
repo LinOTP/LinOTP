@@ -29,7 +29,6 @@
 """
 
 import datetime
-from simplejson import loads
 
 from linotp.tests import TestController
 from freezegun import freeze_time
@@ -338,7 +337,7 @@ class TestGetOtpController(TestController):
             response = self.make_gettoken_request(action='getmultiotp',
                                                   params=parameters)
 
-            resp = loads(response.body)
+            resp = response.json
             otps = resp.get('result').get('value').get('otp')
 
             otp1 = otps.get('44576668')
@@ -395,7 +394,7 @@ class TestGetOtpController(TestController):
                                                      params=parameters,
                                                      auth_user=auth_user)
 
-            resp = loads(response.body)
+            resp = response.json
             otps = resp.get('result').get('value').get('otp')
 
             otp1 = otps.get('44576668')
