@@ -91,18 +91,14 @@ def xfail_if_unported(controller, action):
         'account',
         'custom',
         'error',
-        #'gettoken',
         'maintenance',
         'migrate',
         'monitoring',
         'ocra',
         'openid',
         'reporting',
-        # 'selfservice',
         'testing',
-        #'tools',
         'u2f',
-        # 'userservice',
     ]
 
     if controller in unported_controllers:
