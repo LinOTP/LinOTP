@@ -55,6 +55,7 @@ class SqlUserDB(object):
 
         except Exception as e:
             print "%r" % e
+            raise e
         self.connection = connection
 
         umap = {

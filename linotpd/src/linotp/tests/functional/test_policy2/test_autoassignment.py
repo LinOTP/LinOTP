@@ -149,7 +149,7 @@ class TestAutoassignmentController(TestController):
             user_name, user_pwd = users[i]
             token = token_list[i]
             response = self.make_admin_request('getTokenOwner', {'serial': token['serial']})
-            content = TestController.get_json_body(response)
+            content = response.json
             self.assertTrue(content['result']['status'])
             self.assertEqual(user_name, content['result']['value']['username'])
 
@@ -185,7 +185,7 @@ class TestAutoassignmentController(TestController):
             'serial': token['serial'],
             }
         response = self.make_admin_request('assign', params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         self.assertTrue(content['result']['status'])
         self.assertEqual(1, content['result']['value'])
 
@@ -241,7 +241,7 @@ class TestAutoassignmentController(TestController):
             'serial': token['serial'],
         }
         response = self.make_admin_request('assign', params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         self.assertTrue(content['result']['status'])
         self.assertEqual(1, content['result']['value'])
 
@@ -390,7 +390,7 @@ class TestAutoassignmentController(TestController):
             "otplen": token['otplen'],
         }
         response = self.make_admin_request('init', params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         self.assertTrue(content['result']['status'])
         self.assertTrue(content['result']['value'])
         token['serial'] = content['detail']['serial']
@@ -429,7 +429,7 @@ class TestAutoassignmentController(TestController):
             'serial': token['serial'],
         }
         response = self.make_admin_request('assign', params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         self.assertTrue(content['result']['status'])
         self.assertEqual(1, content['result']['value'])
         # No PIN was set
@@ -472,7 +472,7 @@ class TestAutoassignmentController(TestController):
 
         # Assert the token was assigned to the correct user
         response = self.make_admin_request('getTokenOwner', {'serial': token['serial']})
-        content = TestController.get_json_body(response)
+        content = response.json
         self.assertTrue(content['result']['status'])
         self.assertEqual(user_name, content['result']['value']['username'])
 
@@ -500,7 +500,7 @@ class TestAutoassignmentController(TestController):
                 "otplen": token['otplen'],
             }
             response = self.make_admin_request('init', params=params)
-            content = TestController.get_json_body(response)
+            content = response.json
             self.assertTrue(content['result']['status'])
             self.assertTrue(content['result']['value'])
             token['serial'] = content['detail']['serial']
@@ -517,7 +517,7 @@ class TestAutoassignmentController(TestController):
                 'realms': realm_name
             }
             response = self.make_admin_request('tokenrealm', params=params)
-            content = TestController.get_json_body(response)
+            content = response.json
             self.assertTrue(content['result']['status'])
             self.assertEqual(1, content['result']['value'])
 
@@ -569,7 +569,7 @@ class TestAutoassignmentController(TestController):
             'pass': pwd.encode('utf-8')
         }
         response = self.make_validate_request('check', params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         if not err_msg:
             err_msg = "validate/check failed for %r. Response: %r" % (user, content)
         if expected == 'success':

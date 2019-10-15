@@ -430,7 +430,7 @@ class TestRandompinController(TestController):
         if user:
             params['user'] = user.encode('utf-8')
         response = self.make_admin_request('init', params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         self.assertTrue(content['result']['status'])
         self.assertTrue(content['result']['value'])
         token['serial'] = content['detail']['serial']
@@ -497,7 +497,7 @@ class TestRandompinController(TestController):
         :return: The content (JSON object)
         """
         response = self.make_validate_request(action, params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         if not err_msg:
             err_msg = "validate/%s failed for %r. Response: %r" % (
                 action,
@@ -533,7 +533,7 @@ class TestRandompinController(TestController):
             'user': user.encode('utf-8'),
             }
         response = self.make_admin_request('assign', params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         self.assertTrue(content['result']['status'])
         self.assertTrue(content['result']['value'])
         return
@@ -556,7 +556,7 @@ class TestRandompinController(TestController):
         response = self.make_userservice_request('setpin', params,
                                                  auth_user=(login, password))
 
-        content = TestController.get_json_body(response)
+        content = response.json
         self.assertTrue(content['result']['status'])
         expected = {
             "set userpin": 1
@@ -573,7 +573,7 @@ class TestRandompinController(TestController):
             'pin': pin,
             }
         response = self.make_admin_request('set', params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         self.assertTrue(content['result']['status'])
         self.assertTrue(content['result']['value'])
         return
@@ -588,7 +588,7 @@ class TestRandompinController(TestController):
             'realms': realm,
         }
         response = self.make_admin_request('tokenrealm', params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         self.assertTrue(content['result']['status'])
         self.assertEqual(1, content['result']['value'])
         return

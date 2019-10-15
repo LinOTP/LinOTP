@@ -227,7 +227,7 @@ class TestQRToken(TestController):
         self.public_key = calc_dh_base(self.secret_key)
         self.tokens = defaultdict(dict)
         self.tan_length = 8
-        self.uri = self.appconf.get('mobile_app_protocol_id', 'lseqr')
+        self.uri = self.app.config.get('MOBILE_APP_PROTOCOLL_ID', 'lseqr')
 
     def tearDown(self):
         self.delete_all_policies()

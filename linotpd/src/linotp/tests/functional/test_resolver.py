@@ -99,7 +99,7 @@ class TestResolver(TestController):
         create sql useridresolver
         """
 
-        engine = engine_from_config(config, 'sqlalchemy.')
+        engine = create_engine(config.get('SQLALCHEMY_DATABASE_URI'))
         db_url = engine.url
 
         server = db_url.host

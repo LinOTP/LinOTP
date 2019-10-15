@@ -141,7 +141,7 @@ class UserIdResolver(object):
 
         for crypt in cls.crypted_parameters:
 
-            if not new_params.get(crypt):
+            if new_params.get(crypt) is None:
                 missing.append(crypt)
 
         return missing

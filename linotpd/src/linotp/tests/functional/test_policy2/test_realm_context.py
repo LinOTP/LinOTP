@@ -341,7 +341,7 @@ class TestRealmContextController(TestController):
             "otplen": token['otplen'],
             }
         response = self.make_admin_request('init', params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         self.assertTrue(content['result']['status'])
         self.assertTrue(content['result']['value'])
         token['serial'] = content['detail']['serial']
@@ -353,7 +353,7 @@ class TestRealmContextController(TestController):
             'pin': 'mypin',
             }
         response = self.make_admin_request('set', params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         self.assertTrue(content['result']['status'])
         self.assertTrue(content['result']['value'])
         return token
@@ -367,7 +367,7 @@ class TestRealmContextController(TestController):
             'realms': realm,
             }
         response = self.make_admin_request('tokenrealm', params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         self.assertTrue(content['result']['status'])
         self.assertTrue(content['result']['value'])
 
@@ -381,13 +381,13 @@ class TestRealmContextController(TestController):
                 realm=realm,
                 resolvers=self.resolvers['myDefRes'],
                 )
-            content = TestController.get_json_body(response)
+            content = response.json
             self.assertTrue(content['result']['status'])
             self.assertTrue(content['result']['value'])
 
         # Assert 'realm_default' is default
         response = self.make_system_request('getRealms', {})
-        content = TestController.get_json_body(response)
+        content = response.json
         self.assertTrue(content['result']['status'])
         realms = content['result']['value']
         self.assertEqual(len(realms), 2)
@@ -404,7 +404,7 @@ class TestRealmContextController(TestController):
                 "realm": realm,
                 }
             response = self.make_system_request('delRealm', params)
-            content = TestController.get_json_body(response)
+            content = response.json
             self.assertTrue(content['result']['status'])
             expected_value = {u'delRealm': {u'result': True}}
             self.assertDictEqual(expected_value, content['result']['value'])
@@ -431,7 +431,7 @@ class TestRealmContextController(TestController):
             self.fail("Action %s not implemented" % action)
 
         response = self.make_validate_request(action, params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         if not err_msg:
             err_msg = "validate/%s failed for %r. Response: %r" % (
                 action,
@@ -467,7 +467,7 @@ class TestRealmContextController(TestController):
             'user': user.encode('utf-8'),
             }
         response = self.make_admin_request('assign', params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         self.assertTrue(content['result']['status'])
         self.assertTrue(content['result']['value'])
 

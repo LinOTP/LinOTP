@@ -34,6 +34,8 @@ from datetime import datetime
 from binascii import hexlify
 from flask import Response, after_this_request
 
+from werkzeug import FileStorage
+
 import json
 
 from linotp.flap import (
@@ -2327,18 +2329,20 @@ class AdminController(BaseController):
         from linotp.lib.ImportOTP.vasco import parseVASCOdata
         log.info("[loadtokens] loaded parseVASCOdata")
 
+        params = self.request_params
+
         try:
-            log.debug("[loadtokens] getting POST request")
-            log.debug("[loadtokens] %r" % request.POST)
-            tokenFile = request.POST['file']
-            fileType = request.POST['type']
-            targetRealm = request.POST.get(
-                            'realm', request.POST.get(
+            log.debug("[loadtokens] getting upload data")
+            log.debug("[loadtokens] %r", request.params)
+            tokenFile = request.files['file']
+            fileType = params['type']
+            targetRealm = params.get(
+                            'realm', params.get(
                                 'targetrealm', '')).lower()
 
 
             # for encrypted token import data, this is the decryption key
-            transportkey = request.POST.get('transportkey', None)
+            transportkey = params.get('transportkey', None)
             if not transportkey:
                 transportkey = None
 
@@ -2350,79 +2354,101 @@ class AdminController(BaseController):
             hashlib = None
 
             if "pskc" == fileType:
-                pskc_type = request.POST['pskc_type']
-                pskc_password = request.POST['pskc_password']
-                pskc_preshared = request.POST['pskc_preshared']
-                if 'pskc_checkserial' in request.POST:
+                pskc_type = params['pskc_type']
+                pskc_password = params['pskc_password']
+                pskc_preshared = params['pskc_preshared']
+                if 'pskc_checkserial' in params:
                     pskc_checkserial = True
 
             fileString = ""
             typeString = ""
 
-            log.debug("[loadtokens] loading token file to server using POST request. Filetype: %s. File: %s"
-                        % (fileType, tokenFile))
+            log.debug("[loadtokens] loading token file to server "
+                      "Filetype: %s. File: %s", fileType, tokenFile)
 
-            # In case of form post requests, it is a "instance" of FieldStorage
-            # i.e. the Filename is selected in the browser and the data is transferred
-            # in an iframe. see: http://jquery.malsup.com/form/#sample4
-            #
-            if type(tokenFile).__name__ == 'instance':
+            # In case of form post requests, it is a "instance" of FileStorage
+            # i.e. the Filename is selected in the browser and the data is
+            # transferred in an iframe. see:
+            # http://jquery.malsup.com/form/#sample4
+
+            if isinstance(tokenFile, FileStorage):
                 log.debug("[loadtokens] Field storage file: %s", tokenFile)
-                fileString = tokenFile.value
+                fileString = tokenFile.read()
                 sendResultMethod = sendXMLResult
                 sendErrorMethod = sendXMLError
             else:
                 fileString = tokenFile
             log.debug("[loadtokens] fileString: %s", fileString)
 
-            if type(fileType).__name__ == 'instance':
+            if isinstance(fileType, FileStorage):
                 log.debug("[loadtokens] Field storage type: %s", fileType)
-                typeString = fileType.value
+                typeString = fileType.read()
             else:
                 typeString = fileType
             log.debug("[loadtokens] typeString: <<%s>>", typeString)
             if "pskc" == typeString:
-                log.debug("[loadtokens] passing password: %s, key: %s, checkserial: %s" % (pskc_password, pskc_preshared, pskc_checkserial))
+                log.debug("[loadtokens] passing password: %s, key: %s, "
+                          "checkserial: %s",
+                          pskc_password, pskc_preshared, pskc_checkserial)
 
             if fileString == "" or typeString == "":
                 log.error("[loadtokens] file: %s", fileString)
                 log.error("[loadtokens] type: %s", typeString)
-                log.error("[loadtokens] Error loading/importing token file. file or type empty!")
-                return sendErrorMethod(response, "Error loading tokens. File or Type empty!")
+                log.error("[loadtokens] Error loading/importing token file. "
+                          "file or type empty!")
+                return sendErrorMethod(
+                    response, ("Error loading tokens. File or Type empty!"))
 
             if typeString not in known_types:
-                log.error("[loadtokens] Unknown file type: >>%s<<. We only know the types: %s" % (typeString, ', '.join(known_types)))
-                return sendErrorMethod(response, "Unknown file type: >>%s<<. We only know the types: %s" % (typeString, ', '.join(known_types)))
+                log.error("[loadtokens] Unknown file type: >>%s<<. "
+                          "We only know the types: %s",
+                          typeString, ', '.join(known_types))
+                return sendErrorMethod(
+                    response, ("Unknown file type: >>%s<<. We only know the "
+                               "types: %s" % (
+                                   typeString, ', '.join(known_types))))
 
             # Parse the tokens from file and get dictionary
             if typeString == "aladdin-xml":
                 TOKENS = parseSafeNetXML(fileString)
                 # we only do hashlib for aladdin at the moment.
-                if 'aladdin_hashlib' in request.POST:
-                    hashlib = request.POST['aladdin_hashlib']
+                if 'aladdin_hashlib' in params:
+                    hashlib = params['aladdin_hashlib']
+
             elif typeString == "oathcsv":
                 TOKENS = parseOATHcsv(fileString)
+
             elif typeString == "yubikeycsv":
                 TOKENS = parseYubicoCSV(fileString)
+
             elif typeString == "dpw":
                 TOKENS = parseDPWdata(fileString)
 
             elif typeString == "dat":
-                startdate = request.POST.get('startdate', None)
+                startdate = params.get('startdate', None)
                 TOKENS = parse_dat_data(fileString, startdate)
 
             elif typeString == "feitian":
                 TOKENS = parsePSKCdata(fileString, do_feitian=True)
+
             elif typeString == "pskc":
                 if "key" == pskc_type:
-                    TOKENS = parsePSKCdata(fileString, preshared_key_hex=pskc_preshared, do_checkserial=pskc_checkserial)
+                    TOKENS = parsePSKCdata(
+                        fileString, preshared_key_hex=pskc_preshared,
+                        do_checkserial=pskc_checkserial)
+
                 elif "password" == pskc_type:
-                    TOKENS = parsePSKCdata(fileString, password=pskc_password, do_checkserial=pskc_checkserial)
+                    TOKENS = parsePSKCdata(
+                        fileString, password=pskc_password,
+                        do_checkserial=pskc_checkserial)
+
                 elif "plain" == pskc_type:
-                    TOKENS = parsePSKCdata(fileString, do_checkserial=pskc_checkserial)
+                    TOKENS = parsePSKCdata(
+                        fileString, do_checkserial=pskc_checkserial)
+
             elif typeString == "vasco":
                 # TODO: verify merge 2.8.1.2 with 2.9
-                vasco_otplen = int(request.POST.get('vasco_otplen', 6))
+                vasco_otplen = int(params.get('vasco_otplen', 6))
                 TOKENS = parseVASCOdata(fileString, vasco_otplen, transportkey)
                 if TOKENS is None:
                     raise ImportException("Vasco DLL was not properly loaded. "

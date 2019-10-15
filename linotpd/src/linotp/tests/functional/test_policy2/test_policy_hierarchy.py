@@ -116,7 +116,7 @@ class TestPolicyHierarchy(TestController):
         validity_special = (today + timedelta(days=8)).strftime("%d/%m/%y 23:59")
         losetoken = self.make_authenticated_request(
             controller='admin', action='losttoken', params=token)
-        resp = TestController.get_json_body(losetoken)
+        resp = losetoken.json
         values = resp.get('result').get('value')
         self.assertEqual(values.get('end_date'), validity_special, resp)
 
@@ -155,7 +155,7 @@ class TestPolicyHierarchy(TestController):
         validity_special = (today + timedelta(days=8)).strftime("%d/%m/%y 23:59")
         losetoken = self.make_authenticated_request(
             controller='admin', action='losttoken', params=token)
-        resp = TestController.get_json_body(losetoken)
+        resp = losetoken.json
         values = resp.get('result').get('value')
         self.assertEqual(values.get('end_date'), validity_special, resp)
 
@@ -194,7 +194,7 @@ class TestPolicyHierarchy(TestController):
         validity_special = (today + timedelta(days=8)).strftime("%d/%m/%y")
         losetoken = self.make_authenticated_request(
             controller='admin', action='losttoken', params=token)
-        resp = TestController.get_json_body(losetoken)
+        resp = losetoken.json
         values = resp.get('result').get('value')
         self.assertTrue(validity_special in values.get('end_date'), resp)
 
