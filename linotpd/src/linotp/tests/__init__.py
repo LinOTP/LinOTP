@@ -314,7 +314,7 @@ class TestController(TestCase):
         elif method == "PUT":
             response = self.client.put(
                 url(controller=controller, action=action),
-                params=params,
+                data=params,
                 headers=headers,
                 **pparams
             )
