@@ -39,7 +39,7 @@ class TestCreateRealmDialog(TestCase):
 
     def test_clear_realms(self):
         r = self.manage_ui.realm_manager
-        r.clear_realms()
+        r.clear_realms_via_api()
 
         m = self.manage_ui.useridresolver_manager
         m.clear_resolvers_via_api()

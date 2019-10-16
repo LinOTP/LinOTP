@@ -33,7 +33,7 @@ import re
 from operator import methodcaller
 from warnings import warn
 
-from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import WebDriverException, NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -285,9 +285,8 @@ class ManageUi(object):
             element = EC.visibility_of_element_located(
                 (By.CSS_SELECTOR, css))(self.driver)
             self.testcase.enableImplicitWait()
-        except Exception:
+        except NoSuchElementException:
             return False
-
         is_visible = (element is not False)
         return is_visible
 
