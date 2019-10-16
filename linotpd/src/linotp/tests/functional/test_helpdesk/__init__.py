@@ -25,10 +25,35 @@
 #
 #
 
-""" smtp mocking helper """
+""" helper:
+    * smtp mocking
+    * enable the helpdesk controller by adding the route
+"""
 
 import smtplib
 from mock import patch
+
+def enable_helpdesk_controller(pylons_config):
+    """
+    enable the helpdesk controller by adding the route
+
+    :param pylons_config: which is the pylons test config, which
+                            holds the routing table
+
+    remark: there is no way to drop a route nor to copy the mapper
+    """
+
+    routeMap = pylons_config['routes.map']
+
+    controller = 'helpdesk'
+
+    routeMap.connect(
+        '/api/helpdesk/', controller=controller, action='users')
+    routeMap.connect(
+        '/api/%s/{action}' % controller, controller=controller)
+    routeMap.connect(
+        '/api/%s/{action}/{id}' % controller, controller=controller)
+
 
 class MockedSMTP(object):
     def __init__(self):

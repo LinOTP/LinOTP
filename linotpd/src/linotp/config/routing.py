@@ -125,7 +125,7 @@ def make_map(global_conf, app_conf,):
 
 
     # in case of helpdesk, we route the default to helpdesk/users
-    helpdesk = app_conf.get('service.helpdesk', 'True') == 'True'
+    helpdesk = app_conf.get('service.helpdesk', 'False') == 'True'
     if helpdesk:
         routeMap.connect('/api/helpdesk/', controller='helpdesk', action='users')
         for cont in ['helpdesk']:
