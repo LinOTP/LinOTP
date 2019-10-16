@@ -41,8 +41,17 @@ from . import MockedSMTP
 
 from linotp.tests import TestController
 
+from . import enable_helpdesk_controller
+import pylons.test
+
 
 class TestHelpdeskSetPin(TestController):
+
+    @classmethod
+    def setup_class(cls):
+        """add the helpdesk route to the test pylons app"""
+
+        enable_helpdesk_controller(pylons.test.pylonsapp.config)
 
     def setUp(self):
         """ setup for std resolver / realms"""
