@@ -137,7 +137,7 @@ class TestCase(unittest.TestCase):
             if selenium_driver == 'chrome':
                 try:
                     driver = webdriver.Chrome(
-                        chrome_options=_get_chrome_options())
+                        options=_get_chrome_options())
                 except WebDriverException, e:
                     logger.error("Error creating Chrome driver. Maybe you need to install"
                                  " 'chromedriver'. If you wish to use another browser please"
