@@ -9,8 +9,6 @@ import flask
 from flask import abort, redirect, Response as response
 from flask_mako import render_template, TemplateError
 
-from pylons import url
-
 from werkzeug.exceptions import Unauthorized as HTTPUnauthorized
 from werkzeug.exceptions import Forbidden as HTTPForbidden
 from werkzeug.local import LocalProxy
@@ -20,6 +18,13 @@ from .lib import helpers
 log = logging.getLogger(__name__)
 
 config = LocalProxy(lambda: flask.g.request_context['config'])
+
+def url(controller, action=None):
+    urlstr = '/{}/'.format(controller)
+    if action != 'index' and action:
+        urlstr += action
+
+    return urlstr
 
 class RequestProxy(object):
     """
