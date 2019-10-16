@@ -30,7 +30,7 @@ import time
 from datetime import datetime
 from uuid import uuid4
 
-from flask import Flask, g as flask_g, jsonify, Blueprint
+from flask import Flask, g as flask_g, jsonify, Blueprint, redirect
 from flask_mako import MakoTemplates
 
 from beaker.cache import CacheManager
@@ -736,6 +736,20 @@ def create_app(config_name='default', config_extra=None):
 
     # Per controller setup and handlers
     app.setup_controllers()
+
+    if 'selfservice' in app.enabled_controllers:
+        @app.route('/')
+        def index():
+            return redirect('/selfservice')
+
+        @app.route('/account/login')
+        def login():
+            return redirect('/selfservice/login')
+
+        @app.route('/account/logout')
+        def logout():
+            return redirect('/selfservice/logout')
+
     _setup_token_template_path(app)
 
     # Post handlers
