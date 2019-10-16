@@ -1604,7 +1604,7 @@ class UserserviceController(BaseController):
                 # if the token is assigned to realms, then the user must be in
                 # one of the realms, otherwise the token can not be assigned
                 raise Exception(_("The token you want to assign is "
-                                             " not contained in your realm!"))
+                                  "not contained in your realm!"))
             th = TokenHandler()
             if (False == th.hasOwner(serial)):
                 log.info("user %s@%s is assign the token with "

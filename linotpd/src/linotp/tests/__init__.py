@@ -127,6 +127,10 @@ class CompatibleTestResponse(Response):
     def __contains__(self, value):
         return value in self.body
 
+    def __str__(self, *args, **kwargs):
+        return self.body
+
+
 class ConfigWrapper:
     """
     Compatibility wrapper for old style configuration
@@ -310,7 +314,7 @@ class TestController(TestCase):
         elif method == "PUT":
             response = self.client.put(
                 url(controller=controller, action=action),
-                params=params,
+                data=params,
                 headers=headers,
                 **pparams
             )

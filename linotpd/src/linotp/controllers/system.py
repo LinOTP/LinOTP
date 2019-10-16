@@ -23,7 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-from werkzeug import FileStorage
+
 """
 system controller - to configure the system
 """
@@ -34,6 +34,7 @@ import binascii
 from configobj import ConfigObj
 
 import flask
+from werkzeug.datastructures import FileStorage
 
 from linotp import flap
 from linotp.flap import config, request, response, tmpl_context as c, _

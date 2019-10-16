@@ -33,6 +33,8 @@ import json
 import copy
 import logging
 
+import pytest
+
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.policy.util import parse_policies
 from linotp.lib.policy import get_qrtan_url
@@ -3663,6 +3665,7 @@ class TestPolicies(TestController):
 
         return
 
+    @pytest.mark.skip('should become a unit test for getqrtanurl')
     def test_801_getqrtanurl(self):
         '''
         Policy 801: Testing Authentication Scope: the QR-TAN Url with * realms
@@ -3683,6 +3686,7 @@ class TestPolicies(TestController):
                                             auth_user=auth_user)
         self.assertIn(URL, response.body, response.body)
 
+        # should be a unit test or should operate on mocked getPolicy
         with request_context_safety():
             context['Config'] = getLinotpConfig()
             context['Policies'] = parse_policies(context['Config'])
@@ -3693,6 +3697,8 @@ class TestPolicies(TestController):
 
         return
 
+
+    @pytest.mark.skip('should become a unit test for getqrtanurl')
     def test_802_getqrtanurl(self):
         '''
         Policy 802: Testing Authentication Scope: the QR-TAN Url with a single realm
@@ -3719,6 +3725,8 @@ class TestPolicies(TestController):
 
         return
 
+
+    @pytest.mark.skip('should become a unit test for getqrtanurl')
     def test_803_getqrtanurl(self):
         '''
         Policy 803: Testing Authentication Scope: the QR-TAN Url with 3 realms
@@ -3744,6 +3752,7 @@ class TestPolicies(TestController):
 
         return
 
+    @pytest.mark.skip('ocra not supported')
     def test_804_ocra_policy(self):
         '''
         Policy 804: Testing the ocra policies

@@ -213,8 +213,16 @@ class IdResolver(UserIdResolver):
         log.info("[setup] Finding CA certificate")
 
         # preserve system certfile
-        cls.SYS_CERTFILE = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
-        cls.SYS_CERTDIR = ldap.get_option(ldap.OPT_X_TLS_CACERTDIR)
+        log.info("Setting up cert %r ", ldap.OPT_X_TLS_CACERTFILE)
+        try:
+            cls.SYS_CERTFILE = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
+        except ValueError as exx:
+            log.info('unsupported option: ldap.OPT_X_TLS_CACERTFILE %r', exx)
+        try:
+            cls.SYS_CERTDIR = ldap.get_option(ldap.OPT_X_TLS_CACERTDIR)
+        except ValueError as exx:
+            log.info('unsupported option: ldap.OPT_X_TLS_CACERTDIR %r', exx)
+
 
         ca_resolvers = set()
 

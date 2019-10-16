@@ -34,7 +34,7 @@ from datetime import datetime
 from binascii import hexlify
 from flask import Response, after_this_request
 
-from werkzeug import FileStorage
+from werkzeug.datastructures import FileStorage
 
 import json
 

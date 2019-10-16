@@ -29,7 +29,7 @@ tools controller
 """
 import json
 
-from werkzeug import FileStorage
+from werkzeug.datastructures import FileStorage
 
 from linotp.flap import request, response, tmpl_context as c
 
