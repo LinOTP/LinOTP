@@ -280,8 +280,6 @@ class SelfserviceController(BaseController):
 
             c.pin_policy = _get_auth_PinPolicy(user=self.authUser)
 
-            return response
-
         except (flap.HTTPUnauthorized, flap.HTTPForbidden) as acc:
             # the exception, when an abort() is called if forwarded
             log.info("[__before__::%r] webob.exception %r" % (action, acc))

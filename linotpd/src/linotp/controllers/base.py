@@ -29,6 +29,7 @@ from inspect import getargspec
 from types import FunctionType
 import logging
 import re
+from warnings import warn
 
 from flask import current_app, Blueprint, Response
 
@@ -175,14 +176,12 @@ class BaseController(Blueprint):
 
         if hasattr(self, '__before__'):
 
-            response = self.__before__(**params)
-
-            # in case of exceptions / errors the __before__ handling submits an sendError
-            # flask.Response which has the special attribute _exception
-            # which is set in the lib/reply.py
-
-            if isinstance(response, Response) and hasattr(response, '_exception'):
-                return response
+            response = self.__before__(**params)  # pylint: disable=no-member
+            if response == request:
+                # Pylons style before handler
+                warn("Returning Request is no longer necessary", DeprecationWarning)
+                return None
+            return response
 
 def methods(mm=['GET']):
     """
