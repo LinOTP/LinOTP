@@ -28,7 +28,7 @@
 import requests
 from requests.auth import HTTPDigestAuth
 import logging
-from testconfig import config, load_ini
+from pytest_testconfig import config, load_ini
 from urlparse import urlparse
 
 from selenium.webdriver.common.action_chains import ActionChains

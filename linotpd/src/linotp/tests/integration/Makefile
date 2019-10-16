@@ -36,41 +36,30 @@
 # The test settings ini file to use. Override to use a different file.
 TCFILE=server_cfg.ini
 
-# Nosetests arguments
-NOSETESTS_ARGS=-v
+# Pytest arguments. You can override this to provide a specific configuration
+PYTEST_ARGS=-v
 
 ifdef TEST_DEBUG
-DEBUG_ARGS=-s --pdb
+DEBUG_ARGS=--pdb
 endif
-
-# Additional test arguments can be specified in SELENIUMTESTS_ARGS
-SELENIUMTESTS_ARGS=
-
-# The default log filter does not show debug messages from the Selenium connection and urllib connections.
-# Override this to include them.
-LOGGINGFILTER=-requests.packages.urllib3.connectionpool,-selenium.webdriver.remote.remote_connection
 
 #####################
 # Unit test targets
 #
 
-ifdef LOGGINGFILTER
-LOGFILTER_ARGS=--logging-filter=${LOGGINGFILTER}
-endif
-
 test: integrationtests
 
 integrationtests:
 	# integrationtests - selenium integration tests
-	nosetests $(NOSETESTS_ARGS) --with-flaky --tc-file=$(TCFILE) $(LOGFILTER_ARGS) $(SELENIUMTESTS_ARGS) $(DEBUG_ARGS) $(TEST_CASE)
+	pytest $(PYTEST_ARGS) --tc-file=$(TCFILE) $(DEBUG_ARGS) $(TEST_CASE)
 
 integrationtests-bunch1:
 	# integrationtests - selenium integration tests
-	nosetests $(NOSETESTS_ARGS) --with-flaky --tc-file=$(TCFILE) $(LOGFILTER_ARGS) $(SELENIUMTESTS_ARGS) $(DEBUG_ARGS) test_create_useridresolvers.py test_selfservice.py test_token_view.py test_policies.py test_manage.py test_emailtoken.py
+	pytest $(PYTEST_ARGS) --tc-file=$(TCFILE) $(DEBUG_ARGS) test_create_useridresolvers.py test_selfservice.py test_token_view.py test_policies.py test_manage.py test_emailtoken.py
 
 integrationtests-bunch2:
 	# integrationtests - selenium integration tests
-	nosetests $(NOSETESTS_ARGS) --with-flaky --tc-file=$(TCFILE) $(LOGFILTER_ARGS) $(SELENIUMTESTS_ARGS) $(DEBUG_ARGS) test_scenario01.py test_yubikey.py test_user_view.py test_system_config.py test_smstoken.py test_auth.py test_realm_dialog.py
+	pytest $(PYTEST_ARGS) --tc-file=$(TCFILE) $(DEBUG_ARGS) test_scenario01.py test_yubikey.py test_user_view.py test_system_config.py test_smstoken.py test_auth.py test_realm_dialog.py
 
 
 .PHONY: test integrationtests

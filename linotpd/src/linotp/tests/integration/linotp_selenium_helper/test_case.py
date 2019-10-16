@@ -69,7 +69,7 @@ def is_flaky_exception(err, *args):
 
 
 @flaky(rerun_filter=is_flaky_exception)
-class TestCase(unittest.TestCase):
+class TestCase(object):
     """Basic LinOTP TestCase class"""
 
     implicit_wait_time = 5
@@ -81,7 +81,7 @@ class TestCase(unittest.TestCase):
     _manage = None  # Manage UI
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """Initializes the base_url and sets the driver -
         called from unit tests"""
         cls.loadClsConfig()
@@ -185,7 +185,7 @@ class TestCase(unittest.TestCase):
         return driver
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         if cls.driver:
             cls.driver.quit()
 
@@ -197,7 +197,7 @@ class TestCase(unittest.TestCase):
 
     def tearDown(self):
         """Closes the driver and displays all errors"""
-        self.assertEqual([], self.verification_errors)
+        assert [] == self.verification_errors
 
     def disableFileUploadForSendKeys(self):
         self.driver.file_detector = UselessFileDetector()
