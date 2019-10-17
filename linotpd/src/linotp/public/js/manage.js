@@ -2866,7 +2866,6 @@ function save_ldap_config(){
             resolvers_load();
             $dialog_ldap_resolver.dialog('close');
         }
-        hide_waiting();
     });
     return false;
 }
@@ -2951,7 +2950,6 @@ function save_realm_config(){
                              'param': escape(realm),
                              'is_escaped': true});
         }
-        hide_waiting();
     });
 }
 
@@ -3012,7 +3010,6 @@ function save_file_config(){
             resolvers_load();
             $dialog_file_resolver.dialog('close');
         }
-        hide_waiting();
     });
 }
 
@@ -3066,7 +3063,6 @@ function save_sql_config(){
             resolvers_load();
             $dialog_sql_resolver.dialog('close');
         }
-        hide_waiting();
     });
     return false;
 }
@@ -3238,7 +3234,6 @@ function realm_delete(){
                              'type': ERROR,
                             'is_escaped': true});
         }
-        hide_waiting();
     });
 }
 
