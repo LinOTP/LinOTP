@@ -222,7 +222,7 @@ def close_alert_and_get_its_text(driver, accept=True):
 
     @return: Alert box text
     """
-    alert = driver.switch_to_alert()
+    alert = driver.switch_to.alert
     alert_text = alert.text
     if accept:
         alert.accept()

@@ -328,7 +328,7 @@ class TestCase(unittest.TestCase):
 
     def close_alert_and_get_its_text(self):
         try:
-            alert = self.driver.switch_to_alert()
+            alert = self.driver.switch_to.alert
             alert_text = alert.text
             if self.accept_next_alert:
                 alert.accept()

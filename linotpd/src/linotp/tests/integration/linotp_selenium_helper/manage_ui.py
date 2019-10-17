@@ -252,7 +252,7 @@ class ManageUi(object):
 
         assert not click_accept or not click_dismiss, "check_alert cannot click both accept and dismiss"
 
-        alert = self.driver.switch_to_alert()
+        alert = self.driver.switch_to.alert
         alert_text = alert.text
 
         if click_accept:
