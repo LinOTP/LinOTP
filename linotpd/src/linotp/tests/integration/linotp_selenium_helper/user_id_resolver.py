@@ -23,11 +23,14 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-from selenium.common.exceptions import NoSuchElementException
 """Contains UserIdResolver class"""
 
 import re
 import logging
+
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 
 from helper import find_by_css, find_by_id, fill_element_from_dict
 from manage_elements import ManageDialog
@@ -84,13 +87,14 @@ class UserIdResolverManager(ManageDialog):
                 self.element = element
                 self.name_in_dialog = "%s [%s]" % (name, resolverType)
 
-        try:
-            name_element = line.find_element_by_css_selector('.name')
-            # New style line (2.9.2) with managed flag
-            resolver_element = name_element
-        except NoSuchElementException:
-            # Pre 2.9.2 without managed flag
+        id = line.get_attribute('id')
+        if id and id.startswith('realm'):
+            # Realms dialog
             resolver_element = line
+        else:
+            # Resolvers dialog
+            name_element = line.find_element_by_css_selector('.name')
+            resolver_element = name_element
 
         resolver_name_re = r'([\w\-]+) \[([\w\-]+)\]$'
 
@@ -163,11 +167,13 @@ class UserIdResolverManager(ManageDialog):
         assert resolver.newbutton_id, "Resolver new button id is not defined"
         self.new_resolvers_dialog.click_button(
             resolver.newbutton_id)
+        self.manage.wait_for_waiting_finished()
 
         # Fill in new resolver form
         resolver.fill_form(data)
 
         self.find_by_id(resolver.savebutton_id).click()
+        self.manage.wait_for_waiting_finished()
 
         # We should be back to the resolver list
         self.raise_if_closed()
@@ -212,6 +218,7 @@ class UserIdResolverManager(ManageDialog):
         self.raise_if_closed()
         resolver = self.select_resolver(name)
         self.find_by_id("button_resolver_edit").click()
+        self.wait_for_waiting_finished()
         return resolver
 
     def delete_resolver(self, name):
@@ -222,11 +229,10 @@ class UserIdResolverManager(ManageDialog):
 
         self.select_resolver(name)
         self.find_by_id("button_resolver_delete").click()
-        self.testcase.assertEquals(
-            "Deleting resolver", self.find_by_id("ui-id-3").text)
+        assert self.find_by_id("ui-id-3").text == "Deleting resolver"
 
         t = find_by_css(driver, "#dialog_resolver_ask_delete > p").text
-        self.testcase.assertEqual(t, r"Do you want to delete the resolver?")
+        t == "Do you want to delete the resolver?"
 
         self.find_by_id("button_resolver_ask_delete_delete").click()
 
@@ -390,7 +396,7 @@ class LdapUserIdResolver(UserIdResolver):
         enforce_tls = data.get('enforce_tls')
 
         if enforce_tls:
-            assert(data['uri'].startswith('ldap:'))
+            assert data['uri'].startswith('ldap:')
             find_by_id(driver, 'ldap_enforce_tls').click()
 
         if data['uri'].startswith('ldaps:') or enforce_tls:
@@ -400,6 +406,11 @@ class LdapUserIdResolver(UserIdResolver):
         fill_element_from_dict(driver, 'ldap_basedn', 'basedn', data)
         fill_element_from_dict(driver, 'ldap_binddn', 'binddn', data)
         fill_element_from_dict(driver, 'ldap_password', 'password', data)
+
+        # Check that some fields have been filled in correctly
+        for field in ('uri', 'basedn', 'binddn', 'password'):
+            e = driver.find_element_by_id('ldap_' + field)
+            assert e.get_attribute('value') == data[field]
 
 
 class SqlUserIdResolver(UserIdResolver):
