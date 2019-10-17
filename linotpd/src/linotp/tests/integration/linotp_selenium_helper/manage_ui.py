@@ -31,6 +31,7 @@ import requests
 import re
 
 from operator import methodcaller
+from warnings import warn
 
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -336,7 +337,49 @@ class MsgType(object):
     Info = 'info'
 
 
-class AlertBoxHandler:
+class AlertBoxInfoLine(object):
+    """
+    Represenation of a line in the alert box
+    """
+    element = None # The WebElement representing this line
+    ok_button = None
+    classes = None
+    type = None
+
+    def __init__(self, element):
+        self.parse(element)
+
+    def parse(self, element):
+        """
+        Parse the line contents
+        """
+        self.element = element
+        self.ok_button = element.find_element_by_css_selector('button')
+        self.classes = element.get_attribute('class')
+
+        # Determine type of message
+        if 'error_box' in self.classes:
+            self.type = 'error'
+        elif 'info_box' in self.classes:
+            self.type = 'info'
+        else:
+            warn('unknown info box message type. class={}'.format(self.classes))
+            self.type = 'unknown'
+
+    @property
+    def text(self):
+        return self.element.text
+
+    def click_ok(self):
+        """
+        Click OK button on individual info line
+        """
+        self.ok_button.click()
+
+    def __str__(self):
+        return "{}:{}".format(self.type, self.text)
+
+class AlertBoxHandler(object):
     """
     The AlertBoxHandler class allows to check the info/error
     messages on the /manage page thrown by admin actions
@@ -346,10 +389,7 @@ class AlertBoxHandler:
     manageui = None
 
     msgs_parent_id = 'info_box'
-    error_msg_class = 'error_box'
-    info_msg_class = 'info_box'
     link_close_all_msgs_class = 'close_all'
-    single_msg_ok_button_xpath = "//button[contains(text(),'ok')]"
 
     def __init__(self, manage_ui):
         """
@@ -357,36 +397,46 @@ class AlertBoxHandler:
         :param manage_ui Reference to the manage_ui
         """
         self.manageui = manage_ui
+        self.driver = manage_ui.driver
+
+    def parse(self):
+        """
+        Parse the contents of the info box
+        """
+
+        # Get all elements in the box
+        info_box_elements = self.driver.find_elements_by_xpath('//div[@id="info_box"]/*')
+
+        self.info_bar = None
+        self.info_lines = []
+        self.close_all = None
+
+        for e in info_box_elements:
+            id = e.get_attribute('id')
+            if id == 'info_bar':
+                self.info_bar = e
+            else:
+                classes = e.get_attribute('class')
+                if 'info_box' in classes or 'error_box' in classes:
+                    self.info_lines.append(AlertBoxInfoLine(e))
+                elif 'close_all' in classes:
+                    self.close_all = e
+                else:
+                    warn('Could not parse info element box id={} class={}'.format(id, classes))
 
     def clear_messages(self):
         """
         Delete all action response messages
         """
+        self.parse()
 
-        try:
-            clear_msgs_button = self.manageui.find_by_class(
-                self.link_close_all_msgs_class)
-            clear_msgs_button.click()
-        except:
-            pass
-
-        # seems to be only one or no messages at all
-        # Remark: if only one message is visible, there's only an OK button
-        # beside the message
-
-        try:
-            allButtonsError = self.manageui.find_all_by_css(
-                ".error_box > button:nth-child(2)")
-            [but.click() for but in allButtonsError]
-        except:
-            pass
-
-        try:
-            allButtonsInfo = self.manageui.find_all_by_css(
-                ".info_box > button:nth-child(2)")
-            [but.click() for but in allButtonsInfo]
-        except:
-            pass
+        if self.close_all:
+            # 2 or more lines
+            self.close_all.click()
+        else:
+            # 0 or 1 lines
+            for l in self.info_lines:
+                l.click_ok()
 
     def check_info_message(self, msg):
         """
@@ -400,10 +450,10 @@ class AlertBoxHandler:
         """
         return self.check_message(msg, MsgType.Error)
 
-    def check_last_message(self, msg_regex):
+    @property
+    def last_line(self):
         """
-        Get the last alert and search the message for
-        regular expression pattern 'msg_regex'.
+        Return the last (latest) line in the box, or None if empty
 
         Example of the 'mother' box covering the alert boxes.
 
@@ -432,26 +482,24 @@ class AlertBoxHandler:
                  //
                  // THE LAST BOX WE ARE TALKING ABOUT HERE!
 
+        """
+        self.parse()
+        if self.info_lines:
+            return self.info_lines[-1]
+        else:
+            return None
+
+
+    def check_last_message(self, msg_regex):
+        """
+        Get the last alert and search the message for
+        regular expression pattern 'msg_regex'.
+
         :param msg_regex Regular expression pattern matching the message
                          of the last alert.
         :return Return True if alert exists.
         """
-        try:
-            info_box_mother_div = self.manageui.driver.find_element_by_xpath(
-                "//*[@id='info_box']")
-
-            child_divs = info_box_mother_div.find_elements_by_tag_name("div")
-
-            for curr_div in reversed(child_divs):
-                # We want the last visible alert box
-                if(curr_div.is_displayed()):
-                    if(re.search(msg_regex, curr_div.text)):
-                        return True
-                    else:
-                        return False
-
-        except:
-            return False
+        return re.search(msg_regex, self.last_line.text) is not None
 
     def check_message(self, msg, msg_type):
         """
@@ -463,16 +511,7 @@ class AlertBoxHandler:
         :return Return True if 'msg' is part of any alert box of 'msg_type'.
         """
 
-        xpath = None
-        try:
-            if(msg_type == MsgType.Error):
-                xpath = "//div[@class='" + self.error_msg_class + \
-                    "']//span[contains(text(), '" + msg + "')] "
-            else:
-                xpath = "//div[@class='" + self.info_msg_class + \
-                    "']//span[contains(text(), '" + msg + "')] "
+        self.parse()
+        lines = [l for l in self.info_lines if l.type == msg_type and msg in l.text]
 
-            self.manageui.find_by_xpath(xpath)
-            return True
-        except:
-            return False
+        return len(lines)>0
