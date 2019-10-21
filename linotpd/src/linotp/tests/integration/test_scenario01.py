@@ -123,14 +123,6 @@ class TestScenario01(TestCase):
         assert not err_import, \
                          "Error during Aladdin token import!"
 
-        token_import_aladdin = TokenImportAladdin(self.manage_ui)
-        err_import = token_import_aladdin.do_import(
-            file_path=os.path.join(self.manage_ui.test_data_dir,
-                                   'wrong_token.xml'))
-        # There shouldn't raise an error
-        assert err_import, \
-                        "Successful import of wrong Aladdin token file!"
-
         serial_token_bach = "oath137332"
         test1_realm = realm_name1.lower()
 
