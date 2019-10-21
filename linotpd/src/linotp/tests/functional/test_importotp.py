@@ -466,6 +466,35 @@ class TestImportOTP(TestController):
 
         return
 
+    def test_import_Yubikey_hmac(self):
+        '''
+        Test to import Yubikey CSV with hmac token
+        '''
+
+        params = {'type':'yubikeycsv'}
+        response = self.upload_tokens("yubi_hmac.csv", params=params)
+
+        self.assertTrue('<imported>2</imported>' in response, response)
+
+        # now verify that we have one token loaded and the otplen is 8
+        response = self.make_admin_request('show')
+
+        jresp = json.loads(response.body)
+        tokens = jresp['result']['value']['data']
+
+        otp_lens = set()
+        for token in tokens:
+
+            otp_lens.add(token['LinOtp.OtpLen'])
+
+            token_info = json.loads(token['LinOtp.TokenInfo'])
+            assert token_info['hashlib'] == 'sha1'
+
+        assert 6 in otp_lens
+        assert 8 in otp_lens
+
+        return
+
     def test_upload_token_into_targetrealm(self):
         '''
         Test the upload of the tokens into a target realm
