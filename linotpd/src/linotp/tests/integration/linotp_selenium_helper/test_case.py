@@ -316,8 +316,7 @@ class TestCase(object):
         self.useridresolver_manager.clear_resolvers_via_api()
 
         if resolver:
-            self.useridresolver_manager.create_resolver(resolver)
-            self.useridresolver_manager.close()
+            self.useridresolver_manager.create_resolver_via_api(resolver)
 
             if realm:
                 self.realm_manager.open()

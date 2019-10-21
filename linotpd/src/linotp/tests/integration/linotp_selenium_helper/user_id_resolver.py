@@ -187,6 +187,78 @@ class UserIdResolverManager(ManageDialog):
 
         return data['name']
 
+    def create_resolver_via_api(self, data):
+        """
+        Create resolver using API call
+
+        :param data: dictionary of parameters as used in create_resolver
+        """
+
+        # Default settings which the UI normally provides
+        if data['type'] == 'ldapresolver':
+            params = {
+                'EnforceTLS': 'False',
+                'TIMEOUT': '5',
+                'EnforceTLS' : 'False',
+                'TIMEOUT': '5',
+                'SIZELIMIT' : '500',
+                'CACERTIFICATE' : '',
+                'NOREFERRALS' : 'True',
+            }
+            if 'preset_ldap' in data:
+                # Preset LDAP
+                params.update({
+                    'LOGINNAMEATTRIBUTE': 'uid',
+                    'LDAPSEARCHFILTER': '(uid=*)(objectClass=inetOrgPerson)',
+                    'LDAPFILTER': '(&(uid=%s)(objectClass=inetOrgPerson))',
+                    'USERINFO': '{ "username": "uid", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }',
+                    'UIDTYPE': 'entryUUID',
+                })
+            elif 'preset_ad' in data:
+                # Preset Active Directory
+                params.update({
+                    'LOGINNAMEATTRIBUTE': 'sAMAccountName',
+                    'LDAPSEARCHFILTER': '(sAMAccountName=*)(objectClass=user)',
+                    'LDAPFILTER': '(&(sAMAccountName=%s)(objectClass=user))',
+                    'USERINFO': '{ "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }',
+                    'UIDTYPE': 'objectGUID',
+                })
+        else:
+            params = {}
+
+        params.update(data)
+
+        # Mapping for renaming items which have a different name in the API compared to the
+        # manage interface
+        name_map = {
+            'password': 'BINDPW',
+            'binddn': 'BINDDN',
+            'userfilter': 'LDAPFILTER',
+            'basedn': 'LDAPBASE',
+            'uri': 'LDAPURI',
+            'searchfilter': 'LDAPSEARCHFILTER',
+            'mapping': 'USERINFO',
+            'loginattr': 'LOGINNAMEATTRIBUTE',
+            'timeout': 'TIMEOUT',
+            'sizelimit': 'SIZELIMIT',
+            'certificate': 'CACERTIFICATE',
+
+            'filename': 'fileName',
+
+            'expected_users': None, # Delete
+            'preset_ldap': None,
+        }
+
+        params = {
+            name_map.get(k, k): v
+            for k,v in params.iteritems()
+            if name_map.get(k, k) is not None
+        }
+
+        # Get the resolvers in json format
+        json = self.manage.admin_api_call("system/setResolver", params)
+        assert json['result']['status'] == True
+
     def close(self):
         super(UserIdResolverManager, self).close()
         if self.no_realms_defined_dialog.is_open():
