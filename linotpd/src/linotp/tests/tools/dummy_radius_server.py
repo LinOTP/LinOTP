@@ -50,12 +50,13 @@ from pyrad.packet import AccessAccept, AccessReject, AccessChallenge
 import socket
 import sys
 import os.path
-import os
 
 from getopt import getopt, GetoptError
 
-
-myIP = socket.gethostbyname(socket.gethostname())
+try:
+    myIP = socket.gethostbyname(socket.gethostname())
+except socket.gaierror as exx:
+    myIP = '127.0.0.1'
 
 state_id = "11321312313213132"
 users = {'user_with_pin': 'test123456',
@@ -207,8 +208,12 @@ def main():
         else:
             print "Unknown option %s" % opt
 
+    ips = set()
+    ips.add("127.0.0.1")
+    ips.add(myIP)
+
     params = {
-                "addresses": ["127.0.0.1", myIP],
+                "addresses": list(ips),
                 "authport": authport,
                 "acctport": acctport,
                 "hosts": {myIP: client1, "127.0.0.1": client2},
