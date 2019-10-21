@@ -52,6 +52,12 @@ required = False
 
 class AuthController(BaseController):
 
+    def __init__(self, name, install_name='', **kwargs):
+        super(AuthController, self).__init__(name, install_name=install_name, **kwargs)
+
+        # Add a specific handler for /auth/index
+        self.add_url_rule('index', 'index', view_func=self.index)
+
     def __before__(self, **params):
         """
         __before__ is called before every action

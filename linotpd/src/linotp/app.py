@@ -30,7 +30,7 @@ import time
 from datetime import datetime
 from uuid import uuid4
 
-from flask import Flask, g as flask_g, jsonify, Blueprint
+from flask import Flask, g as flask_g, jsonify, Blueprint, redirect
 from flask_mako import MakoTemplates
 
 from beaker.cache import CacheManager
@@ -112,6 +112,9 @@ class LinOTPApp(Flask):
 
     cache = None
     """Beaker cache for this app"""
+
+    enabled_controllers = []
+    """Currently activated controller names"""
 
     def __init__(self):
         super(LinOTPApp, self).__init__(__name__, static_folder='public', static_url_path='/static')
@@ -442,6 +445,63 @@ class LinOTPApp(Flask):
 
         return request_params
 
+    def setup_controllers(self):
+        """
+        Initialise controllers and their routing
+
+        `CONTROLLERS` is a string that contains a space-separated list
+        of controllers that should be made available. If an entry in
+        this list is `foo`, this means that the Python module
+        `linotp.controllers.foo` should be loaded and its
+        `FooController` class be made available as a Flask blueprint at
+        the `/foo` URL prefix. Our dispatch mechanism then ensures that
+        a request to `/foo/bar` will be dispatched to the
+        `FooController.bar()` view method.
+
+        In general, controllers may be specified as
+        `module:url_prefix:class_prefix` (where `url_prefix` and
+        `class_prefix` are optional and will be constructed from
+        `module` as above if needed).
+
+        This function should be called during application setup
+        """
+        for ctrl_name in self.config["CONTROLLERS"].split():
+            bits = ctrl_name.split(':', 2)
+            while len(bits) < 3:
+                bits.append('')
+            ctrl_name, url_prefix, ctrl_class_name = bits
+            self.enable_controller(ctrl_name, url_prefix, ctrl_class_name)
+
+    def enable_controller(self, ctrl_name, url_prefix=None, ctrl_class_name=None):
+        """
+        Initialise an individual controller and its routing
+
+        :param ctrl_name: The name of the controller
+        :param url_prefix: Alternative url prefix. Defaults to /`ctrl_name`
+        :param ctrl_class_name: Name of controller class to load. Defaults to CtrlNameController
+        """
+        if not ctrl_name:
+            raise ConfigurationError(
+                "no controller module specified: {}".format(ctrl_name))
+        if not url_prefix:
+            url_prefix = '/' + ctrl_name    # "foobar" => "/foobar"
+        if not ctrl_class_name:
+            # "foobar" => "FoobarController"
+            ctrl_class_name = ctrl_name.title() + 'Controller'
+
+        mod = importlib.import_module('.' + ctrl_name, "linotp.controllers")
+        cls = getattr(mod, ctrl_class_name, None)
+        if cls is None:
+            raise ConfigurationError(
+                "{} does not define the '{}' class".format(ctrl_name,
+                                                            ctrl_class_name))
+        self.logger.debug(
+            "Registering {0} class at {1}".format(ctrl_class_name, url_prefix))
+        self.register_blueprint(cls(ctrl_name), url_prefix=url_prefix)
+
+        self.enabled_controllers.append(ctrl_name)
+
+
 def init_logging(app):
     """Sets up logging for LinOTP."""
 
@@ -675,7 +735,21 @@ def create_app(config_name='default', config_extra=None):
     app.before_request(app.start_session)
 
     # Per controller setup and handlers
-    _setup_controllers(app)
+    app.setup_controllers()
+
+    if 'selfservice' in app.enabled_controllers:
+        @app.route('/')
+        def index():
+            return redirect('/selfservice')
+
+        @app.route('/account/login')
+        def login():
+            return redirect('/selfservice/login')
+
+        @app.route('/account/logout')
+        def logout():
+            return redirect('/selfservice/logout')
+
     _setup_token_template_path(app)
 
     # Post handlers
@@ -693,54 +767,6 @@ def create_app(config_name='default', config_extra=None):
         return sendError(None, e)
 
     return app
-
-def _setup_controllers(app):
-    """
-    Initialise controllers and their routing
-
-    `CONTROLLERS` is a string that contains a space-separated list
-    of controllers that should be made available. If an entry in
-    this list is `foo`, this means that the Python module
-    `linotp.controllers.foo` should be loaded and its
-    `FooController` class be made available as a Flask blueprint at
-    the `/foo` URL prefix. Our dispatch mechanism then ensures that
-    a request to `/foo/bar` will be dispatched to the
-    `FooController.bar()` view method.
-
-    In general, controllers may be specified as
-    `module:url_prefix:class_prefix` (where `url_prefix` and
-    `class_prefix` are optional and will be constructed from
-    `module` as above if needed).
-
-    This function should be called during application setup
-        """
-
-    for ctrl_name in app.config["CONTROLLERS"].split():
-        bits = ctrl_name.split(':', 2)
-        while len(bits) < 3:
-            bits.append('')
-        if not bits[0]:
-            raise ConfigurationError(
-                "no controller module specified: {}".format(ctrl_name))
-        if not bits[1]:
-            bits[1] = '/' + bits[0]    # "foobar" => "/foobar"
-        if not bits[2]:
-            # "foobar" => "FoobarController"
-            bits[2] = bits[0].title() + 'Controller'
-        ctrl_name, url_prefix, ctrl_class_name = bits
-        mod = importlib.import_module('.' + ctrl_name, "linotp.controllers")
-        cls = getattr(mod, ctrl_class_name, None)
-        if cls is None:
-            raise ConfigurationError(
-                "{} does not define the '{}' class".format(ctrl_name,
-                                                              ctrl_class_name))
-        app.logger.debug(
-            "Registering {0} class at {1}".format(ctrl_class_name, url_prefix))
-        app.register_blueprint(cls(ctrl_name), url_prefix=url_prefix)
-
-    app.logger.debug("Done loading controllers")
-    return app
-
 
 def _setup_token_template_path(app):
     """

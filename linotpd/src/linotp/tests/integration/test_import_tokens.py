@@ -24,21 +24,26 @@
 #    Support: www.keyidentity.com
 #
 
+"""
+Test token import via UI
+"""
+
+# pylint: disable=redefined-outer-name
+
+import os
+
 import pytest
 
-from linotp_selenium_helper import TestCase
-from linotp_selenium_helper.manage_ui import ManageUi
+from linotp_selenium_helper.token_import import TokenImportAladdin, TokenImportError
 
-class TestManage(TestCase):
-    """
-    TestCase class that tests the manage page
-    """
+@pytest.fixture
+def aladdin(manage_ui):
+    return TokenImportAladdin(manage_ui)
 
-    @pytest.fixture(autouse=True)
-    def setUp(self):
-        self.manage = ManageUi(self)
+def test_token_import_aladdin_invalid_xml(manage_ui, aladdin):
 
-    def test_manage_open(self):
+    with pytest.raises(TokenImportError):
+        aladdin.do_import(
+            file_path=os.path.join(manage_ui.test_data_dir,
+                                    'wrong_token.xml'))
 
-        self.manage.open_manage()
-        self.manage.check_url()

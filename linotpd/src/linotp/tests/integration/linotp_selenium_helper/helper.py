@@ -28,7 +28,7 @@
 import requests
 from requests.auth import HTTPDigestAuth
 import logging
-from testconfig import config, load_ini
+from pytest_testconfig import config, load_ini
 from urlparse import urlparse
 
 from selenium.webdriver.common.action_chains import ActionChains
@@ -222,7 +222,7 @@ def close_alert_and_get_its_text(driver, accept=True):
 
     @return: Alert box text
     """
-    alert = driver.switch_to_alert()
+    alert = driver.switch_to.alert
     alert_text = alert.text
     if accept:
         alert.accept()

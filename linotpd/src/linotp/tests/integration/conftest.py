@@ -23,22 +23,33 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+"""
+Pytest fixtures for linotp integration tests
+"""
+
+# pylint: disable=redefined-outer-name
 
 import pytest
 
-from linotp_selenium_helper import TestCase
+from linotp_selenium_helper.test_case import TestCase
 from linotp_selenium_helper.manage_ui import ManageUi
 
-class TestManage(TestCase):
+@pytest.fixture(scope='module')
+def testcase():
     """
-    TestCase class that tests the manage page
+    Testcase, which manages the driver and test configuration
     """
 
-    @pytest.fixture(autouse=True)
-    def setUp(self):
-        self.manage = ManageUi(self)
+    # TestCase is a unittest based class. We simulate the unittest
+    # setup and teardown here so we can use it as a fixture
+    t = TestCase()
+    t.setup_class()
+    yield t
+    t.teardown_class()
 
-    def test_manage_open(self):
-
-        self.manage.open_manage()
-        self.manage.check_url()
+@pytest.fixture(scope='module')
+def manage_ui(testcase):
+    """
+    Manage interface
+    """
+    return ManageUi(testcase)

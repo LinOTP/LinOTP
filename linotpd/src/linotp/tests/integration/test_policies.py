@@ -30,6 +30,7 @@ Test policies
 """
 
 import binascii
+import pytest
 
 from linotp_selenium_helper import TestCase, Policy
 from linotp_selenium_helper.token_import import TokenImportAladdin
@@ -60,12 +61,7 @@ class TestPolicies(TestCase):
     # validate/check instance
     validate = None
 
-    def tearDown(self):
-        """
-        We clean up in front!
-        see setUp()
-        """
-
+    @pytest.fixture(autouse=True)
     def setUp(self):
         """ Some test set up steps """
 
@@ -190,8 +186,8 @@ class TestPolicies(TestCase):
 
         access_granted, _ = self.validate.validate(user=user_a + "@" +
                                                    user_a_realm, password=otp)
-        self.assertTrue(access_granted, "OTPPIN=3, PIN+OTP: " + otp + " for user " +
-                        user_a + "@" + user_a_realm + " returned False")
+        assert access_granted, "OTPPIN=3, PIN+OTP: " + otp + " for user " + \
+                        user_a + "@" + user_a_realm + " returned False"
 
         # PW+OTP -> success
         otp = user_a_pw + \
@@ -200,8 +196,8 @@ class TestPolicies(TestCase):
 
         access_granted, _ = self.validate.validate(user=user_a + "@" +
                                                    user_a_realm, password=otp)
-        self.assertTrue(access_granted, "OTPPIN=3, PW+OTP: " + otp + " for user " +
-                        user_a + "@" + user_a_realm + " returned False")
+        assert access_granted, "OTPPIN=3, PW+OTP: " + otp + " for user " + \
+                        user_a + "@" + user_a_realm + " returned False"
 
         # nonsense+OTP -> success
         otp = "nonsense" + \
@@ -210,8 +206,8 @@ class TestPolicies(TestCase):
 
         access_granted, _ = self.validate.validate(user=user_a + "@" +
                                                    user_a_realm, password=otp)
-        self.assertTrue(access_granted, "OTPPIN=3, nonsense+OTP: " + otp + " for user " +
-                        user_a + "@" + user_a_realm + " returned False")
+        assert access_granted, "OTPPIN=3, nonsense+OTP: " + otp + " for user " + \
+                        user_a + "@" + user_a_realm + " returned False"
 
         # OTP -> success
         otp = hotp_a.generate(counter=3,
@@ -219,16 +215,16 @@ class TestPolicies(TestCase):
 
         access_granted, _ = self.validate.validate(user=user_a + "@" +
                                                    user_a_realm, password=otp)
-        self.assertTrue(access_granted, "OTPPIN=3, OTP: " + otp + " for user " +
-                        user_a + "@" + user_a_realm + " returned False")
+        assert access_granted, "OTPPIN=3, OTP: " + otp + " for user " + \
+                        user_a + "@" + user_a_realm + " returned False"
 
         # wrong OTP -> fails
         otp = "111111"
 
         access_denied, _ = self.validate.validate(user=user_a + "@" +
                                                   user_a_realm, password=otp)
-        self.assertFalse(access_denied, "OTPPIN=3, wrong OTP: " + otp + " for user " +
-                         user_a + "@" + user_a_realm + " returned True")
+        assert not access_denied, "OTPPIN=3, wrong OTP: " + otp + " for user " + \
+                         user_a + "@" + user_a_realm + " returned True"
 
         ###########################
         #
@@ -258,8 +254,8 @@ class TestPolicies(TestCase):
 
         access_granted, _ = self.validate.validate(user=user_b + "@" +
                                                    user_b_realm, password=otp)
-        self.assertTrue(access_granted, "OTPPIN=3, PIN+OTP: " + otp + " for user " +
-                        user_b + "@" + user_b_realm + " returned False")
+        assert access_granted, "OTPPIN=3, PIN+OTP: " + otp + " for user " + \
+                        user_b + "@" + user_b_realm + " returned False"
 
         # PW+OTP -> success
         otp = user_b_pw + \
@@ -268,8 +264,8 @@ class TestPolicies(TestCase):
 
         access_granted, _ = self.validate.validate(user=user_b + "@" +
                                                    user_b_realm, password=otp)
-        self.assertTrue(access_granted, "OTPPIN=3, PW+OTP: " + otp + " for user " +
-                        user_b + "@" + user_b_realm + " returned False")
+        assert access_granted, "OTPPIN=3, PW+OTP: " + otp + " for user " + \
+                        user_b + "@" + user_b_realm + " returned False"
 
         # OTP -> success
         otp = hotp_b.generate(counter=2,
@@ -277,16 +273,16 @@ class TestPolicies(TestCase):
 
         access_granted, _ = self.validate.validate(user=user_b + "@" +
                                                    user_b_realm, password=otp)
-        self.assertTrue(access_granted, "OTPPIN=3, OTP: " + otp + " for user " +
-                        user_b + "@" + user_b_realm + " returned False")
+        assert access_granted, "OTPPIN=3, OTP: " + otp + " for user " + \
+                        user_b + "@" + user_b_realm + " returned False"
 
         # wrong OTP -> fails
         otp = "111111"
 
         access_denied, _ = self.validate.validate(user=user_b + "@" +
                                                   user_b_realm, password=otp)
-        self.assertFalse(access_denied, "OTPPIN=3, wrong OTP: " + otp + " for user " +
-                         user_b + "@" + user_b_realm + " returned False")
+        assert not access_denied, "OTPPIN=3, wrong OTP: " + otp + " for user " + \
+                         user_b + "@" + user_b_realm + " returned False"
 
         # Back to user A and try to authenticate
         # with changed policy!
@@ -298,8 +294,8 @@ class TestPolicies(TestCase):
 
         access_denied, _ = self.validate.validate(user=user_a + "@" +
                                                   user_a_realm, password=otp)
-        self.assertFalse(access_denied, "OTPPIN=3, OTP: " + otp + " for user " +
-                         user_a + "@" + user_a_realm + " returned True")
+        assert not access_denied, "OTPPIN=3, OTP: " + otp + " for user " + \
+                         user_a + "@" + user_a_realm + " returned True"
 
         # PIN+OTP -> success
         otp = user_a_token_pin + \
@@ -308,8 +304,8 @@ class TestPolicies(TestCase):
 
         access_granted, _ = self.validate.validate(user=user_a + "@" +
                                                    user_a_realm, password=otp)
-        self.assertTrue(access_granted, "OTPPIN=3, PIN+OTP: " + otp + " for user " +
-                        user_a + "@" + user_a_realm + " returned False")
+        assert access_granted, "OTPPIN=3, PIN+OTP: " + otp + " for user " + \
+                        user_a + "@" + user_a_realm + " returned False"
 
     def import_tokens(self):
         """ Import some tokens """
@@ -368,5 +364,5 @@ class TestPolicies(TestCase):
         token_import_aladdin = TokenImportAladdin(self.manage_ui)
         error_raised = token_import_aladdin.do_import(file_content)
         # There shouldn't raise an error
-        self.assertFalse(error_raised,
-                         "Error during Aladdin token import!")
+        assert not error_raised, \
+                         "Error during Aladdin token import!"

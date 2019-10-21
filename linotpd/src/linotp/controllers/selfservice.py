@@ -43,7 +43,7 @@ from paste.httpexceptions import HTTPFound
 from linotp import flap
 from linotp.flap import (
     request, response, config, tmpl_context as c,
-    _, render_mako as render
+    _, render_mako as render, url
 )
 
 from mako.exceptions import CompileException
@@ -88,12 +88,6 @@ from linotp.tokens import tokenclass_registry
 from linotp.lib.context import request_context
 
 import logging
-
-def url(controller, action=''):
-    if action:
-        return controller + '/' + action
-    else:
-        return controller
 
 Session = linotp.model.Session
 
@@ -279,8 +273,6 @@ class SelfserviceController(BaseController):
             c.totp_len = -1
 
             c.pin_policy = _get_auth_PinPolicy(user=self.authUser)
-
-            return response
 
         except (flap.HTTPUnauthorized, flap.HTTPForbidden) as acc:
             # the exception, when an abort() is called if forwarded

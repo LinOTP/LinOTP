@@ -92,7 +92,7 @@ class AuthUi(object):
         '''
         Parse alert box text and return result code
         '''
-        alert = self.driver.switch_to_alert()
+        alert = self.driver.switch_to.alert
         alert_text = alert.text
         logging.debug("Auth result: %s" % alert_text)
         alert.accept()
