@@ -24,6 +24,7 @@
 #    Support: www.keyidentity.com
 #
 from subprocess import check_output
+import pytest
 import unittest
 import re
 
@@ -42,8 +43,8 @@ import integration_data as data
 
 class TestSmsToken(TestCase):
 
+    @pytest.fixture(autouse=True)
     def setUp(self):
-        TestCase.setUp(self)
         self.realm_name = "SE_smstoken"
         self.reset_resolvers_and_realms(
             data.sepasswd_resolver, self.realm_name)
@@ -83,8 +84,8 @@ class TestSmsToken(TestCase):
 
         token_view = self.manage_ui.token_view
         token_info = token_view.get_token_info(sms_token.serial)
-        self.assertEqual(phone_number, token_info['LinOtp.TokenInfo']['phone'],
-                         "Wrong phone number was set for sms token.")
+        assert phone_number == token_info['LinOtp.TokenInfo']['phone'], \
+                         "Wrong phone number was set for sms token."
 
         # Authenticate with RADIUS
         if disable_radius.lower() == 'true':
@@ -98,8 +99,8 @@ class TestSmsToken(TestCase):
             with SMSProviderServer(self, 10) as smtpsvc:
                 rad1 = check_output(call_array)
                 m = re.search(r"State:\['(\d+)'\]", rad1)
-                self.assertTrue(m is not None,
-                                "'State' not found in linotp-auth-radius output. %r" % rad1)
+                assert m is not None, \
+                                "'State' not found in linotp-auth-radius output. %r" % rad1
                 state = m.group(1)
                 print "State: %s" % state
                 otp = smtpsvc.get_otp()
@@ -111,8 +112,8 @@ class TestSmsToken(TestCase):
                                '-s', radius_secret,
                                '-r', radius_server])
             rad2 = check_output(call_array)
-            self.assertTrue("Access granted to user " + username in rad2,
-                            "Access not granted to user. %r" % rad2)
+            assert "Access granted to user " + username in rad2, \
+                            "Access not granted to user. %r" % rad2
 
         # Authenticate over Web API
         validate = Validate(self.http_protocol, self.http_host, self.http_port,
@@ -121,19 +122,19 @@ class TestSmsToken(TestCase):
         with SMSProviderServer(self, 10) as smtpsvc:
             access_granted, validate_resp = validate.validate(user=username + "@" + realm_name,
                                                               password=sms_token_pin)
-            self.assertFalse(access_granted,
-                             "Should return false because this request only triggers the challenge.")
+            assert not access_granted, \
+                             "Should return false because this request only triggers the challenge."
             try:
                 message = validate_resp['detail']['message']
             except KeyError:
                 self.fail("detail.message should be present %r" %
                           validate_resp)
-            self.assertEqual(message,
-                             "sms submitted",
-                             "Wrong validate response %r" % validate_resp)
+            assert message == \
+                             "sms submitted", \
+                             "Wrong validate response %r" % validate_resp
             otp = smtpsvc.get_otp()
 
         access_granted, validate_resp = validate.validate(user=username + "@" + realm_name,
                                                           password=sms_token_pin + otp)
-        self.assertTrue(access_granted,
-                        "Could not authenticate user %s %r" % (username, validate_resp))
+        assert access_granted, \
+                        "Could not authenticate user %s %r" % (username, validate_resp)
