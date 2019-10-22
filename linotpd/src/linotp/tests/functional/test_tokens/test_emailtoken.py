@@ -305,6 +305,96 @@ class TestEmailtoken(TestController):
             # verify that the policy did not overrule the template
             assert 'from policy' not in message
 
+    def test_dynamic_email_address(self):
+        """ use the email address of the user not of the token (dynamic)"""
 
+        email_provider_config = {
+            "SMTP_SERVER": "mail.example.com",
+            "SMTP_USER": "secret_user",
+            "SMTP_PASSWORD": "secret_pasword",
+            "EMAIL_SUBJECT": ("Your requested otp ${otp} for "
+                        "token ${serial} and ${user}"),
+        }
+        email_provider_definition = {
+            'name': 'TemplEMailProvider', 
+            'timeout': '3', 
+            'type': 'email', 
+            'config': json.dumps(email_provider_config),
+            'class': 'linotp.provider.emailprovider.SMTPEmailProvider'
+            }
+
+        response = self.make_system_request(
+            'setProvider', params=email_provider_definition)
+
+        assert 'false' not in response
+
+        # ------------------------------------------------------------------ --
+
+        # and make him the default email provider
+
+        params = {
+            'type': 'email',
+            'name': 'TemplEMailProvider'
+        }
+        response = self.make_system_request(
+            'setDefaultProvider', params=params)
+
+        assert 'false' not in response
+
+        # ------------------------------------------------------------------ --
+
+        # enroll email token for user
+
+        user = 'passthru_user1'
+        serial = 'EMAIL_TOKEN_001'
+
+        params = {
+            'user': user,
+            'type': 'email',
+            'pin': '123',
+            'email_address': 'test@example.com',
+            'serial': serial
+        }
+        response = self.make_admin_request('init', params=params)
+        assert 'false' not in response
+
+        # ------------------------------------------------------------------ --
+
+        params = {
+            'name': 'dynamic_email_address',
+            'scope': 'authentication',
+            'action': 'dynamic_email_address',
+            'user': user,
+            'realm': '*',
+            'active': True,
+            }
+
+        response = self.make_system_request('setPolicy', params=params)
+        assert 'false' not in response
+
+        # ------------------------------------------------------------------ --
+
+        # setup the mocking smtp client from which we get the sendmal args
+        # to verify the template prcessing
+
+        with MockedSMTP() as mock_smtp_instance:
+
+            mock_smtp_instance.sendmail.return_value = []
+
+            # now trigger a challenge for the user
+
+            params = {
+                'user': user,
+                'pass': '123'
+                }
+            response = self.make_validate_request('check', params=params)
+
+            assert 'false' in response
+            assert '"message": "e-mail sent successfully"' in response
+
+            call_args = mock_smtp_instance.sendmail.call_args
+            _from, to, _message = call_args.args
+
+            assert to == 'pass.true@example.com'
 
 # eof
