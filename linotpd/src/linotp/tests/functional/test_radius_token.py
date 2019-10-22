@@ -25,9 +25,17 @@
 #
 
 
-""" used to do functional testing of the radius token"""
+""" used to do testing of the radius token"""
+
 import logging
-from linotp.tests import TestController, url
+
+import pyrad.packet
+from pyrad.client import Client
+import pyrad.server
+
+from mock import patch
+
+from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 
@@ -37,11 +45,24 @@ DEFAULT_NOSE_CONFIG = {
         'acctport': '18013',
         }
     }
-try:
-    from testconfig import config as nose_config
-except ImportError as exc:
-    print "You need to install nose-testconfig. Will use default values."
-    nose_config = None
+
+class RadiusReponse(Client):
+    def __init__(self, code=pyrad.packet.AccessAccept):
+        self.code = code
+
+def mocked_SendPacket_accept(rad_client, *argparams, **kwparams):
+    """ mock the radius accept response """
+    response = RadiusReponse(code=pyrad.packet.AccessAccept)
+    return response
+
+def mocked_SendPacket_reject(rad_client, *argparams, **kwparams):
+    """ mock the radius accept response """
+    response = RadiusReponse(code=pyrad.packet.AccessReject)
+    return response
+
+def mocked_SendPacket_error(rad_client, *argparams, **kwparams):
+    """ mock the radius accept response """
+    raise pyrad.server.ServerPacketError('bad packet')
 
 
 class TestRadiusToken(TestController):
@@ -49,12 +70,9 @@ class TestRadiusToken(TestController):
     p = None
 
     def setUp(self):
-        if nose_config and 'radius' in nose_config:
-            self.radius_authport = nose_config['radius']['authport']
-            self.radius_acctport = nose_config['radius']['acctport']
-        else:
-            self.radius_authport = DEFAULT_NOSE_CONFIG['radius']['authport']
-            self.radius_acctport = DEFAULT_NOSE_CONFIG['radius']['acctport']
+
+        self.radius_authport = DEFAULT_NOSE_CONFIG['radius']['authport']
+        self.radius_acctport = DEFAULT_NOSE_CONFIG['radius']['acctport']
 
         TestController.setUp(self)
         self.set_config_selftest()
@@ -126,137 +144,70 @@ class TestRadiusToken(TestController):
             self.assertTrue('"value": 1' in response, response)
             return
 
-    def _start_radius_server(self):
-        '''
-        Start the dummy radius server
-        '''
-        '''
-        We need to start the radius server for every test, since every test instantiates a new TestClass and thus the
-        radius server process will not be accessable outside of a test anymore
-        '''
-        import subprocess
-        import os.path
-
-        radius_server_file = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            '..',
-            'tools',
-            'dummy_radius_server.py',
-            )
-        dictionary_file = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            '..',
-            '..',
-            '..',
-            'config',
-            'dictionary',
-            )
-        self.assertTrue(os.path.isfile(radius_server_file) is True,
-                        "radius demo server not found: %s" % radius_server_file)
-
-        self.p = subprocess.Popen(
-            [
-                radius_server_file,
-                "--dict",
-                dictionary_file,
-                "--authport",
-                self.radius_authport,
-                "--acctport",
-                self.radius_acctport,
-                ]
-            )
-        assert self.p is not None
-
-        return
-
-    def _stop_radius_server(self):
-        '''
-        stopping the dummy radius server
-        '''
-        if self.p:
-            r = self.p.kill()
-            log.debug(r)
-
+    @patch.object(pyrad.client.Client, 'SendPacket', mocked_SendPacket_accept)
     def test_02_check_token_local_pin(self):
         '''
         Checking if token with local PIN works
         '''
-        try:
-            self._start_radius_server()
-            parameters = {"user": "localuser", "pass": "local654321"}
-            response = self.make_validate_request('check', params=parameters)
-            self.assertTrue('"value": true' in response, response)
-        finally:
-            self._stop_radius_server()
-        return
+        parameters = {"user": "localuser", "pass": "local654321"}
+        response = self.make_validate_request('check', params=parameters)
+        self.assertTrue('"value": true' in response, response)
 
+    @patch.object(pyrad.client.Client,'SendPacket', mocked_SendPacket_accept)
     def test_03_check_token_remote_pin(self):
         '''
         Checking if remote PIN works
         '''
-        try:
-            self._start_radius_server()
-            parameters = {"user": "remoteuser", "pass": "test123456"}
-            response = self.make_validate_request('check', params=parameters)
-            self.assertTrue('"value": true' in response, response)
-        finally:
-            self._stop_radius_server()
-        return
+        parameters = {"user": "remoteuser", "pass": "test123456"}
+        response = self.make_validate_request('check', params=parameters)
+        self.assertTrue('"value": true' in response, response)
 
+    @patch.object(pyrad.client.Client,'SendPacket', mocked_SendPacket_reject)
     def test_04_check_token_local_pin_fail(self):
         '''
         Checking if a missing local PIN will fail
         '''
-        try:
-            self._start_radius_server()
-            parameters = {"user": "localuser", "pass": "654321"}
-            response = self.make_validate_request('check', params=parameters)
-            self.assertTrue('"value": false' in response, response)
-        finally:
-            self._stop_radius_server()
+        parameters = {"user": "localuser", "pass": "654321"}
+        response = self.make_validate_request('check', params=parameters)
+        self.assertTrue('"value": false' in response, response)
 
-        return
 
+    @patch.object(pyrad.client.Client,'SendPacket', mocked_SendPacket_reject)
     def test_05_check_token_local_pin_fail2(self):
         '''
         Checking if a wrong local PIN will fail
         '''
-        try:
-            self._start_radius_server()
-            parameters = {"user": "localuser", "pass": "blabla654321"}
-            response = self.make_validate_request('check', params=parameters)
-            self.assertTrue('"value": false' in response, response)
-        finally:
-            self._stop_radius_server()
+        parameters = {"user": "localuser", "pass": "blabla654321"}
+        response = self.make_validate_request('check', params=parameters)
+        self.assertTrue('"value": false' in response, response)
 
-        return
 
+    @patch.object(pyrad.client.Client,'SendPacket', mocked_SendPacket_reject)
     def test_06_check_token_remote_pin_fail(self):
         '''
         Checking if a missing remote PIN will fail
         '''
-        try:
-            self._start_radius_server()
-            parameters = {"user": "remoteuser", "pass": "123456"}
-            response = self.make_validate_request('check', params=parameters)
-            self.assertTrue('"value": false' in response, response)
-        finally:
-            self._stop_radius_server()
+        parameters = {"user": "remoteuser", "pass": "123456"}
+        response = self.make_validate_request('check', params=parameters)
+        self.assertTrue('"value": false' in response, response)
 
-        return
 
+    @patch.object(pyrad.client.Client,'SendPacket', mocked_SendPacket_reject)
     def test_06_check_token_remote_pin_fail2(self):
         '''
         Checking if a wrong remote PIN will fail
         '''
-        try:
-            self._start_radius_server()
-            parameters = {"user": "remoteuser", "pass": "abcd123456"}
-            response = self.make_validate_request('check', params=parameters)
-            self.assertTrue('"value": false' in response, response)
-        finally:
-            self._stop_radius_server()
+        parameters = {"user": "remoteuser", "pass": "abcd123456"}
+        response = self.make_validate_request('check', params=parameters)
+        self.assertTrue('"value": false' in response, response)
 
-        return
+    @patch.object(pyrad.client.Client,'SendPacket', mocked_SendPacket_error)
+    def test_07_check_token_remote_pin_fail2(self):
+        '''
+        Checking if a wrong remote PIN will fail
+        '''
+        parameters = {"user": "remoteuser", "pass": "abcd123456"}
+        response = self.make_validate_request('check', params=parameters)
+        self.assertTrue('"value": false' in response, response)
 
 #eof##########################################################################
