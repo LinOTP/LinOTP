@@ -43,12 +43,14 @@ log = logging.getLogger(__name__)
 def getKnownTypes():
     return ["feitian", "pskc", "dpw", 'dat', "vasco"]
 
+
 def getImportText():
-    return { 'feitian' : 'Feitian XML',
-        'pskc' : 'OATH compliant PSKC',
-        'dpw' : 'Tagespasswort Token File',
-        'dat' : 'eToken DAT File',
-        'vasco' : 'Vasco DPX' }
+    return {'feitian': 'Feitian XML',
+            'pskc': 'OATH compliant PSKC',
+            'dpw': 'Tagespasswort Token File',
+            'dat': 'eToken DAT File',
+            'vasco': 'Vasco DPX'}
+
 
 def create_static_password(key_hex):
     '''
@@ -63,6 +65,7 @@ def create_static_password(key_hex):
 
     return password
 
+
 class ImportException(Exception):
     def __init__(self, description):
         #self.auth_scope = scope
@@ -72,6 +75,7 @@ class ImportException(Exception):
 
     def __str__(self):
         return ('%s' % self.description)
+
 
 def getTagName(elem):
     match = re.match("^({.*?})(.*)$", elem.tag)
@@ -238,6 +242,7 @@ def parseOATHcsv(csv):
 
     return TOKENS
 
+
 def parseYubicoCSV(csv):
     '''
     This function reads the CSV data as created by the Yubico personalization GUI.
@@ -302,17 +307,18 @@ def parseYubicoCSV(csv):
                     log.warning("No public ID in line %r" % line)
                     serial_int = int(binascii.hexlify(os.urandom(4)), 16)
                 else:
-                    serial_int = int(binascii.hexlify(modhex_decode(public_id)), 16)
+                    serial_int = int(binascii.hexlify(
+                        modhex_decode(public_id)), 16)
 
                 if typ.lower() == "yubico otp":
                     ttype = "yubikey"
                     otplen = 32 + len(public_id)
                     serial = "UBAM%08d_%s" % (serial_int, slot)
-                    TOKENS[serial] = { 'type' : ttype,
-                               'hmac_key' : key,
-                               'otplen' : otplen,
-                               'description': public_id
-                              }
+                    TOKENS[serial] = {'type': ttype,
+                                      'hmac_key': key,
+                                      'otplen': otplen,
+                                      'description': public_id
+                                      }
                 elif typ.lower() == "oath-hotp":
                     '''
                     TODO: this does not work out at the moment, since the GUI either
@@ -321,14 +327,18 @@ def parseYubicoCSV(csv):
                     '''
                     ttype = "hmac"
                     otplen = 6
+                    if l and len(l) >= 11 and l[11] and l[11].strip():
+                        otplen = int(l[11])
                     serial = "UBOM%08d_%s" % (serial_int, slot)
-                    TOKENS[serial] = { 'type' : ttype,
-                               'hmac_key' : key,
-                               'otplen' : otplen,
-                               'description': public_id
-                              }
+                    TOKENS[serial] = {
+                        'type': ttype,
+                        'hmac_key': key,
+                        'otplen': otplen,
+                        'description': public_id
+                    }
                 else:
-                    log.warning("[parseYubicoCSV] at the moment we do only support Yubico OTP and HOTP: %r" % line)
+                    log.warning(
+                        "[parseYubicoCSV] at the moment we do only support Yubico OTP and HOTP: %r" % line)
                     continue
             elif first_column.isdigit():
                 # first column is a number, (serial number), so we are in the yubico format
@@ -356,15 +366,15 @@ def parseYubicoCSV(csv):
                     serial = "UBAM%s_%s" % (serial, slot)
                     public_id = l[1].strip()
                     otplen = 32 + len(public_id)
-                TOKENS[serial] = { 'type' : typ,
-                               'hmac_key' : key,
-                               'otplen' : otplen,
-                               'description': public_id
-                              }
+                TOKENS[serial] = {'type': typ,
+                                  'hmac_key': key,
+                                  'otplen': otplen,
+                                  'description': public_id
+                                  }
         else:
-            log.warning("[parseYubicoCSV] the line %r did not contain a enough values" % line)
+            log.warning(
+                "[parseYubicoCSV] the line %r did not contain a enough values" % line)
             continue
-
 
     log.debug("[parseOATHcsv] read the following values: %s" % str(TOKENS))
 
@@ -386,7 +396,6 @@ def parseSafeNetXML(xml):
     if getTagName(elem_tokencontainer) != "Tokens":
         raise ImportException("No toplevel element Tokens")
 
-
     for elem_token in list(elem_tokencontainer):
         SERIAL = None
         COUNTER = None
@@ -399,7 +408,8 @@ def parseSafeNetXML(xml):
                 tag = getTagName(elem_tdata)
                 if "ProductName" == tag:
                     DESCRIPTION = elem_tdata.text
-                    log.debug("The Token with the serial %s has the productname %s" % (SERIAL, DESCRIPTION))
+                    log.debug("The Token with the serial %s has the productname %s" % (
+                        SERIAL, DESCRIPTION))
                 if "Applications" == tag:
                     for elem_apps in elem_tdata:
                         if getTagName(elem_apps) == "Application":
@@ -418,12 +428,13 @@ def parseSafeNetXML(xml):
                         hashlib = "sha256"
 
                     TOKENS[SERIAL] = {
-                        'hmac_key' : HMAC,
-                        'counter' : COUNTER,
-                        'type' : 'HMAC',
-                        'hashlib' : hashlib
+                        'hmac_key': HMAC,
+                        'counter': COUNTER,
+                        'type': 'HMAC',
+                        'hashlib': hashlib
                     }
                 else:
-                    log.error("Found token %s without a element 'Seed'" % SERIAL)
+                    log.error(
+                        "Found token %s without a element 'Seed'" % SERIAL)
 
     return TOKENS

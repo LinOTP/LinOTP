@@ -185,7 +185,7 @@ class HmacTokenClass(TokenClass):
 
         # Remark: the otpKey is handled in the parent class
 
-        self.hashlibStr = param.get("hashlib", 'sha1')
+        self.hashlibStr = param.get("hashlib", 'sha1') or 'sha1'
 
         # check if the key_size id provided
         # if not, we could derive it from the hashlib

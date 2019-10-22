@@ -731,7 +731,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         hmac2Otp = HmacOtp(secObj, self.getOtpCount(), otplen, self.getHashlib(self.hashlibStr))
 
-        tCounter = self.time2float(datetime.datetime.now())
+        tCounter = self.time2float(datetime.datetime.utcnow())
         if curTime:
             tCounter = self.time2float(curTime)
 
@@ -773,7 +773,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         hmac2Otp = HmacOtp(secObj, self.getOtpCount(),
                            otplen, self.getHashlib(self.hashlibStr))
 
-        tCounter = self.time2float(datetime.datetime.now())
+        tCounter = self.time2float(datetime.datetime.utcnow())
         if curTime:
             tCounter = self.time2float(curTime)
 
