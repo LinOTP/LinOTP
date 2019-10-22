@@ -586,19 +586,19 @@ def sendQRImageResult(response, data, param=None, id=1, typ='html'):
         img_data = data.get('value', "")
 
     if typ in ['img', 'embed']:
-        response.content_type = 'text/html'
+        content_type = 'text/html'
         ret = create_img(img_data, width, alt)
 
     elif typ in ['png']:
-        response.content_type = 'image/png'
+        content_type = 'image/png'
         ret = create_png(img_data)
         response.content_length = len(ret)
 
     else:
-        response.content_type = 'text/html'
+        content_type = 'text/html'
         ret = create_html(img_data, width, param)
 
-    return ret
+    return Response(response=ret, status=200, mimetype=content_type)
 
 
 def create_png(data, alt=None):
