@@ -430,9 +430,9 @@ def sendCSVResult(response, obj, flat_lines=False,
     '''
     delim = "'"
     seperator = ';'
-    response.content_type = "application/force-download"
-    response.headers['Content-disposition'] = ('attachment; filename=%s'
-                                               % filename)
+    content_type = "application/force-download"
+
+
     output = u""
 
     if not flat_lines:
@@ -462,7 +462,11 @@ def sendCSVResult(response, obj, flat_lines=False,
 
             output += "\n"
 
-    return output
+    response = Response(response=output, status=200, mimetype=content_type)
+    response.headers['Content-disposition'] = (
+        'attachment; filename=%s' % filename)
+
+    return response
 
 
 def json2xml(json_obj, line_padding=""):
