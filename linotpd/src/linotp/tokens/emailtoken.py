@@ -192,6 +192,11 @@ class EmailTokenClass(HmacTokenClass):
                                   'for an email token. Use <otp> '
                                   'and <serial> as parameters.')
                     },
+                    'dynamic_email_address':{
+                        'type': 'bool',
+                        'desc': _('if set, a new email address will be '
+                                  'retrieved from the user info instead '
+                                  'of the token')},
 
                 }
             }
@@ -350,6 +355,33 @@ class EmailTokenClass(HmacTokenClass):
 
         return success, status_message, data, attributes
 
+    def _get_email_address(self, user=None):
+        '''
+        get the email address
+            - from the token info or
+            - if the policy allowes it, from the user info
+        '''
+
+        if not user:
+            return self._email_address
+
+        pol = get_client_policy(
+            context['Client'], scope="authentication", user=user,
+            action="dynamic_email_address")
+
+        if not pol:
+            return self._email_address
+
+        get_dynamic = getPolicyActionValue(
+            pol, "dynamic_email_address", is_string=True)
+
+        if not get_dynamic:
+            return self._email_address
+
+        user_detail = getUserDetail(user)
+        return user_detail.get('email', self._email_address)
+
+
     def _getEmailMessage(self, user=""):
         """
         Could be used to implement some more complex logic similar to the
@@ -411,12 +443,14 @@ class EmailTokenClass(HmacTokenClass):
         :return: A tuple of success and status_message
         :rtype: bool, string
         """
+
         otp = self._getNextOtp()
-        email_address = self._email_address
+        owner = get_token_owner(self)
+
+        email_address = self._get_email_address(owner)
         if not email_address:
             raise Exception("No e-mail address was defined for this token.")
 
-        owner = get_token_owner(self)
         message = self._getEmailMessage(user=owner)
         subject = self._getEmailSubject(user=owner)
 
