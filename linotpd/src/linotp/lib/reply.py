@@ -297,9 +297,8 @@ def sendResult(response, obj, id=1, opt=None, status=True):
 
     data = json.dumps(res, indent=3)
 
-    response = Response(response=data, status=200, mimetype= 'application/json')
+    return Response(response=data, status=200, mimetype= 'application/json')
 
-    return response
 
 def sendResultIterator(obj, id=1, opt=None, rp=None, page=None,
                        request_context_copy=None):
@@ -519,8 +518,8 @@ def sendXMLResult(_response, obj, id=1, opt=None):
     <version>%s</version>
     <id>%s</id>%s
 </jsonrpc>""" % (xml_object, get_version(), id, xml_options)
-    return Response(response=res, status=200, mimetype='text/xml')
 
+    return Response(response=res, status=200, mimetype='text/xml')
 
 
 def sendXMLError(_response, exception, id=1):
