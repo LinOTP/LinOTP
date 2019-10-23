@@ -32,9 +32,6 @@
 # set these environment variables to configure make behaviour:
 # export http_proxy=http://proxy.hostname:port
 # export no_proxy=localhost,127.0.0.1,.my.local.domain
-# export RANCHER_URL=https://rancher.hostname/v1
-# export RANCHER_ACCESS_KEY=copy-from-rancher-UI-API-section
-# export RANCHER_SECRET_KEY=copy-from-rancher-UI-API-section
 # export DOCKER_REGISTRY_URL=registry.local.domain
 
 PYTHON:=python3
@@ -491,74 +488,3 @@ docker-run-linotp-functional-test: docker-build-linotp-test-image
 	rm -rf $(BUILDDIR)/../nose
 	docker cp $(FUNCTIONAL_DOCKER_CONTAINER_NAME):$(LOCAL_NOSE_BASE_DIR) $(BUILDDIR)/../
 	docker rm $(FUNCTIONAL_DOCKER_CONTAINER_NAME) $(FUNCTIONAL_MYSQL_CONTAINER_NAME)
-
-
-###############################################################################
-# Rancher targets
-#
-# These targets are for deploying built linotp images to rancher
-#
-###############################################################################
-
-
-# Override with ID e.g. branch name, tag or git commit
-LINOTP_IMAGE_TAG=$(shell git rev-parse --short HEAD)
-RANCHER_STACK_ID=$(shell git rev-parse --short HEAD)
-
-# Override with type, e.g. prod, qa
-RANCHER_STACK_TYPE=dev
-
-RANCHER_STACK_NAME=linotp-$(RANCHER_STACK_TYPE)-$(RANCHER_STACK_ID)
-
-DOCKER_REGISTRY=$(subst https://,,$(DOCKER_REGISTRY_URL))
-
-RANCHER_DOCKER_COMPOSER_FILE=$(BUILDDIR)/rancher/docker-compose.yml
-
-$(RANCHER_DOCKER_COMPOSER_FILE):
-	$(MAKE) rancher-prepare
-
-
-.PHONY: rancher-prepare
-rancher-prepare:
-	# Overrides to compose file specific to this stack
-	mkdir -pv $(BUILDDIR)/rancher
-	( echo 'version: "2"' ;\
-	  echo 'services:' ;\
-	  echo '  linotp:' ;\
-	  echo '    image: $(DOCKER_REGISTRY)/linotp:$(LINOTP_IMAGE_TAG)' ;\
-	) > $(RANCHER_DOCKER_COMPOSER_FILE)
-
-RANCHER_COMPOSE=rancher-compose --project-name $(RANCHER_STACK_NAME)
-RANCHER_COMPOSE_FILES_LINOTP=-f linotpd/src/docker-compose.yml \
-								-f $(RANCHER_DOCKER_COMPOSER_FILE)
-
-# Uncomment to aid debugging
-# export RANCHER_CLIENT_DEBUG=true
-
-# Run a given command
-
-.PHONY: rancher-linotp-do
-rancher-linotp-do:
-	$(RANCHER_COMPOSE) $(RANCHER_COMPOSE_FILES_LINOTP) $(CMD)
-
-rancher-linotp-create: rancher-prepare
-	$(MAKE) rancher-linotp-do CMD=create
-
-rancher-linotp-rm: $(RANCHER_DOCKER_COMPOSER_FILE)
-	$(MAKE) rancher-linotp-do CMD=rm
-
-rancher-linotp-start: $(RANCHER_DOCKER_COMPOSER_FILE)
-	$(MAKE) rancher-linotp-do CMD="start -d"
-
-rancher-linotp-stop: $(RANCHER_DOCKER_COMPOSER_FILE)
-	$(MAKE) rancher-linotp-do CMD=stop
-
-rancher-linotp-up: $(RANCHER_DOCKER_COMPOSER_FILE)
-	$(MAKE) rancher-linotp-do CMD="up -d"
-
-rancher-linotp-down: $(RANCHER_DOCKER_COMPOSER_FILE)
-	$(MAKE) rancher-linotp-do CMD=down
-
-.PHONY: rancher-linotp-create rancher-linotp-rm
-.PHONY: rancher-linotp-start rancher-linotp-stop
-.PHONY: rancher-linotp-up rancher-linotp-down
