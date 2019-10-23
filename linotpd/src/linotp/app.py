@@ -28,10 +28,12 @@ import os
 import time
 from typing import List
 
+import click
 from datetime import datetime
 from uuid import uuid4
 
-from flask import Flask, g as flask_g, jsonify, Blueprint, redirect
+from flask import Flask, current_app, g as flask_g, jsonify, Blueprint, redirect
+from flask.cli import with_appcontext
 from flask_mako import MakoTemplates
 
 from beaker.cache import CacheManager
@@ -67,12 +69,6 @@ from .lib.type_utils import boolean
 
 from .lib.util import get_client
 
-#
-# manual schema migration
-# - should become part of schema migration tool like alembic
-from .model.migrate import run_data_model_migration
-from .model import meta
-
 from . import __version__
 from .flap import LanguageError, config, set_config, set_lang, tmpl_context as c, request, _ as translate
 from .defaults import set_defaults
@@ -82,7 +78,7 @@ from .lib.audit.base import getAudit
 from .lib.config.global_api import initGlobalObject
 
 from sqlalchemy import create_engine
-from .model import init_model, meta         # FIXME: Flask-SQLAlchemy
+from .model import init_model, meta         # FIXME: With Flask-SQLAlchemy
 from .model.migrate import run_data_model_migration
 
 log = logging.getLogger(__name__)
@@ -495,7 +491,7 @@ class LinOTPApp(Flask):
         if cls is None:
             raise ConfigurationError(
                 "{} does not define the '{}' class".format(ctrl_name,
-                                                            ctrl_class_name))
+                                                           ctrl_class_name))
         self.logger.debug(
             "Registering {0} class at {1}".format(ctrl_class_name, url_prefix))
         self.register_blueprint(cls(ctrl_name), url_prefix=url_prefix)
@@ -577,13 +573,16 @@ def setup_cache(app):
     app.cache = CacheManager(**parse_cache_config_options(cache_opts))
 
 
-def setup_db(app):
+def setup_db(app, drop_data=False):
     """Set up the database for LinOTP. This used to be part of the
     `lib.base.setup_app()` function.
 
     FIXME: This is not how we would do this in Flask. We want to
     rewrite it once we get Flask-SQLAlchemy and Flask-Migrate
-    working properly."""
+    working properly.
+
+    :param drop_data: If True, all data will be cleared. Use with caution!
+    """
 
     # Initialise the SQLAlchemy engine (this used to be in
     # linotp.config.environment and done once per request (barf)).
@@ -591,13 +590,13 @@ def setup_db(app):
     engine = create_engine(app.config.get("SQLALCHEMY_DATABASE_URI"))
     init_model(engine)
 
-    if app.config.get("TESTING_DROP_TABLES", False):
-        app.logger.debug("Deleting previous tables ...")
+    if drop_data:
+        app.logger.info("Dropping tables to erase all data...")
         meta.metadata.drop_all(bind=meta.engine)
 
     # Create database tables if they don't already exist
 
-    app.logger.info("Creating tables ...")
+    app.logger.info("Creating tables...")
     meta.metadata.create_all(bind=meta.engine)
 
     # For the cloud mode, we require the `admin_user` table to
@@ -761,7 +760,37 @@ def create_app(config_name='default', config_extra=None):
         """
         return sendError(None, e)
 
+    # Command line handler
+    app.cli.add_command(init_db_command)
+
     return app
+
+def erase_confirm(ctx, param, value):
+    if ctx.params['erase_all_data']:
+        # The user asked for data to be erased. We now look for a confirmation
+        # or prompt the user
+        if not value:
+            prompt = click.prompt('Do you really want to erase the database?', type=click.BOOL)
+            if not prompt:
+                ctx.abort()
+
+@click.command('init-db', help="Create tables in the database")
+@click.option('--erase-all-data', is_flag=True, help="Erase ALL existing data")
+@click.option('--yes', is_flag=True, callback=erase_confirm, expose_value=False, help="Erase data without prompting for confirmation")
+@with_appcontext
+def init_db_command(erase_all_data):
+    """
+    Create new tables
+
+    The database is initialised and optionally data is cleared.
+    """
+    if erase_all_data:
+        info = 'Recreating database'
+    else:
+        info = 'Creating database'
+
+    click.echo(info)
+    setup_db(current_app, erase_all_data)
 
 def _setup_token_template_path(app):
     """

@@ -58,6 +58,7 @@ install_requirements = [
     'python-ldap',
     'bcrypt',
     'cryptography',
+    'click',
 ]
 
 # Requirements needed to run all the tests
