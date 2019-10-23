@@ -2,14 +2,11 @@ Source: linotp
 Section: net
 Priority: optional
 Maintainer: KeyIdentity GmbH <linotp@keyidentity.com>
-Build-Depends: cdbs,
-               debhelper (>=9),
+Build-Depends: debhelper (>=9),
                lsb-release,
                po-debconf,
                python-all,
                python-babel,
-               python-pastescript,
-               python-pylons (>=0.9.7),
                python-flask,
                python-setuptools,
                dh-python
@@ -43,12 +40,7 @@ Pre-Depends: adduser,
              python-mako,
              python-mysqldb,
              python-netaddr,
-             python-passlib,
-             python-paste,
-             python-pastedeploy,
-             python-pastescript,
              python-pygments,
-             python-pylons (>=0.9.7),
              python-socks | python-pysocks,
              python-pyrad,
              python-pysodium,
@@ -59,7 +51,6 @@ Pre-Depends: adduser,
              python-tempita,
              python-weberror,
              python-webhelpers,
-             python-webob
 Replaces: linotp-ee (<< 2.7-1~),
           linotp-smsprovider (<< 2.10),
           linotp-useridresolver (<< 2.10)
