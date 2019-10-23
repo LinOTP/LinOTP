@@ -48,7 +48,6 @@ class TestManageController(TestController):
         '''
 
         TestController.setUp(self)
-        self.set_config_selftest()
 
         # remove all other tokens
         self.delete_all_token()
