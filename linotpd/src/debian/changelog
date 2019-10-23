@@ -1,3 +1,9 @@
+linotp (2.90~0dev0-1) buster; urgency=low
+
+  * Set new version 2.90~0dev0-1
+
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Wed, 23 Oct 2019 14:05:58 +0200
+
 linotp (2.80~0dev0-1) buster; urgency=low
 
   * Set new version 2.80~0dev0-1
