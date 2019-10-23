@@ -29,7 +29,7 @@
 
 
 import httplib2
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import time
 import hmac
 import logging
@@ -156,7 +156,7 @@ class HmacOtp():
     def generate(self, counter=None):
         counter = counter or self.counter
         myHmac = self.calcHmac(counter)
-        otp = unicode(self.truncate(myHmac))
+        otp = str(self.truncate(myHmac))
 
         #  fill in the leading zeros
         sotp = (self.digits - len(otp)) * "0" + otp
@@ -1519,7 +1519,7 @@ class TestValidateController(TestController):
         }
 
         try:
-            for hashAlgo in testVector.keys():
+            for hashAlgo in list(testVector.keys()):
                 totp = self.createTOtpToken(hashAlgo)
                 arry = testVector.get(hashAlgo)
                 for tupp in arry:
@@ -1959,8 +1959,8 @@ class TestValidateController(TestController):
 
         # now check pw token: the pw token requires the fixed pw, which was
         # initially stored on the otpkey
-        otpkey = u"123456öäüß"
-        u_pin = u'#123ä'
+        otpkey = "123456öäüß"
+        u_pin = '#123ä'
 
         serial = self.createPWToken(pin=u_pin, user=user, otpkey=otpkey)
         params = {'user': user,

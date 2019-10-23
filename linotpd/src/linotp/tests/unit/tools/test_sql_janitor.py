@@ -26,7 +26,7 @@
 
 from mock import patch
 
-from script_testing_lib import ScriptTester
+from .script_testing_lib import ScriptTester
 
 # -------------------------------------------------------------------------- --
 

@@ -44,8 +44,8 @@ log = logging.getLogger(__name__)
 DEFAULT_ENCODING = "utf-8"
 
 
-import urllib2
-import urllib
+import urllib.request, urllib.error, urllib.parse
+import urllib.request, urllib.parse, urllib.error
 import base64
 
 
@@ -58,8 +58,8 @@ def urllib_encoded_dict(in_dict):
     """
 
     out_dict = {}
-    for k, v in in_dict.iteritems():
-        if type(v) in [str, unicode]:
+    for k, v in in_dict.items():
+        if type(v) in [str, str]:
             v = v.encode('utf8')
         out_dict[k] = v
     return out_dict
@@ -86,24 +86,24 @@ def urllib_request(url, parameter,
         handlers = []
         if config and 'PROXY' in config and config['PROXY']:
             # for simplicity we set both protocols
-            proxy_handler = urllib2.ProxyHandler({"http": config['PROXY'],
+            proxy_handler = urllib.request.ProxyHandler({"http": config['PROXY'],
                                                   "https": config['PROXY']})
             handlers.append(proxy_handler)
-            print "using Proxy: %r" % config['PROXY']
+            print("using Proxy: %r" % config['PROXY'])
 
         if username and password is not None:
-            password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+            password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
             password_mgr.add_password(None, url, username, password)
-            auth_handler = urllib2.HTTPBasicAuthHandler(password_mgr)
+            auth_handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
             handlers.append(auth_handler)
 
-        opener = urllib2.build_opener(*handlers)
-        urllib2.install_opener(opener)
+        opener = urllib.request.build_opener(*handlers)
+        urllib.request.install_opener(opener)
 
         full_url = str(url)
         encoded_params = None
         if parameter is not None and len(parameter) > 0:
-            encoded_params = urllib.urlencode(urllib_encoded_dict(parameter))
+            encoded_params = urllib.parse.urlencode(urllib_encoded_dict(parameter))
 
         if method == 'GET':
             c_data = None
@@ -112,13 +112,13 @@ def urllib_request(url, parameter,
         else:
             c_data = encoded_params
 
-        requ = urllib2.Request(full_url, data=c_data, headers={})
+        requ = urllib.request.Request(full_url, data=c_data, headers={})
         if username and password is not None:
             base64string = base64.encodestring('%s:%s' %
                                     (username, password)).replace('\n', '')
             requ.add_header("Authorization", "Basic %s" % base64string)
 
-        response = urllib2.urlopen(requ, timeout=float(timeout))
+        response = urllib.request.urlopen(requ, timeout=float(timeout))
         reply = response.read()
 
         log.debug(">>%s...%s<<", reply[:20], reply[-20:])
@@ -239,8 +239,8 @@ class IdResolver (UserIdResolver):
                     result_path, result_mapping):
 
             query_params = json.loads(request_mapping)
-            for key, value in query_params.items():
-                for repl, repl_val in request_params.items():
+            for key, value in list(query_params.items()):
+                for repl, repl_val in list(request_params.items()):
                     if repl in value:
                         value = value.replace(repl, repl_val)
                 query_params[key] = value
@@ -277,7 +277,7 @@ class IdResolver (UserIdResolver):
 
         # we have to invert the mapping
         re_map = {}
-        for key, value in mapping.items():
+        for key, value in list(mapping.items()):
             re_map[value] = key
 
         if not(re_map):
@@ -289,7 +289,7 @@ class IdResolver (UserIdResolver):
                 continue
 
             res_entry = {}
-            for key, value in entry.items():
+            for key, value in list(entry.items()):
                 if key in re_map:
                     res_entry[re_map[key]] = value
             re_list.append(res_entry)
@@ -384,7 +384,7 @@ class IdResolver (UserIdResolver):
         extract only those resolver entries, which are meant for me :-)
         """
         my_config = {}
-        for key, value in config.items():
+        for key, value in list(config.items()):
             parts = key.split('.')
             if parts[-1] == conf and parts[1] == 'httpresolver':
                 new_key = ".".join(parts[2:-1])
@@ -595,7 +595,7 @@ class IdResolver (UserIdResolver):
 
 if __name__ == "__main__":
 
-    print "HTTPIdResolver - loading test"
+    print("HTTPIdResolver - loading test")
     httpR = IdResolver()
 
 

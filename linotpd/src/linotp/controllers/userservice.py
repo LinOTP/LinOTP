@@ -1149,14 +1149,14 @@ class UserserviceController(BaseController):
             realm = self.authUser.realm
 
             context = get_context(config, user, realm, self.client)
-            for k, v in context.items():
+            for k, v in list(context.items()):
                 setattr(c, k, v)
 
             if tok in tokenclass_registry:
                 tclt = tokenclass_registry.get(tok)
                 if hasattr(tclt, 'getClassInfo'):
                     sections = tclt.getClassInfo(section, {})
-                    if scope in sections.keys():
+                    if scope in list(sections.keys()):
                         section = sections.get(scope)
                         page = section.get('page')
                         c.scope = page.get('scope')
@@ -1229,7 +1229,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("[enable] policy failed %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[enable] failed: %r" % e)
@@ -1283,7 +1283,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("policy failed %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("failed: %r" % e)
@@ -1328,7 +1328,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("[userdelete] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[userdelete] deleting token %s of user %s failed! %r"
@@ -1370,7 +1370,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("error resetting token with serial %s: %r"
@@ -1418,7 +1418,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("unassigning token %s of user %s failed! %r"
@@ -1478,7 +1478,7 @@ class UserserviceController(BaseController):
         except PolicyException as pex:
             log.exception("policy failed: %r" % pex)
             Session.rollback()
-            return sendError(response, unicode(pex), 1)
+            return sendError(response, str(pex), 1)
 
         except Exception as exx:
             log.exception("Error setting OTP PIN: %r" % exx)
@@ -1520,7 +1520,7 @@ class UserserviceController(BaseController):
         except PolicyException as pex:
             log.exception("policy failed: %r" % pex)
             Session.rollback()
-            return sendError(response, unicode(pex), 1)
+            return sendError(response, str(pex), 1)
 
         except Exception as exx:
             log.exception("Error setting the mOTP PIN %r" % exx)
@@ -1567,7 +1567,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("error resyncing token with serial %s:%r"
@@ -1627,7 +1627,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("[userassign] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[userassign] token assignment failed! %r" % exx)
@@ -1689,7 +1689,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("token getSerialByOtp failed! %r" % exx)
@@ -1787,7 +1787,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("[userinit] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[userinit] token initialization failed! %r" % e)
@@ -1950,7 +1950,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("[userwebprovision] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[userwebprovision] token initialization failed! %r"
@@ -2023,12 +2023,12 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("[usergetmultiotp] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[usergetmultiotp] gettoken/getmultiotp failed: %r" % e)
             Session.rollback()
-            return sendError(response, _(u"selfservice/usergetmultiotp failed:"
+            return sendError(response, _("selfservice/usergetmultiotp failed:"
                                          " %r") % e, 0)
 
         finally:
@@ -2087,13 +2087,13 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("[search] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[search] audit/search failed: %r" % exx)
             Session.rollback()
             return sendError(response, _("audit/search failed: %s")
-                                                        % unicode(exx), 0)
+                                                        % str(exx), 0)
 
         finally:
             Session.close()
@@ -2185,7 +2185,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("token initialization failed! %r" % e)
@@ -2233,19 +2233,19 @@ class UserserviceController(BaseController):
             ocraChallenge = OcraTokenClass.getTransaction(transid)
             if ocraChallenge is None:
                 error = ('[userfinshocratoken] No challenge for transaction'
-                            ' %s found' % unicode(transid))
+                            ' %s found' % str(transid))
                 raise Exception(error)
 
             serial = ocraChallenge.tokenserial
             if serial != p_serial:
                 error = ('[userfinshocratoken] token mismatch for token '
-                      'serial: %s - %s' % (unicode(serial), unicode(p_serial)))
+                      'serial: %s - %s' % (str(serial), str(p_serial)))
                 raise Exception(error)
 
             tokens = getTokens4UserOrSerial(serial=serial)
             if len(tokens) == 0 or len(tokens) > 1:
                 error = ('[userfinshocratoken] no token found for '
-                         'serial: %s' % (unicode(serial)))
+                         'serial: %s' % (str(serial)))
                 raise Exception(error)
 
             theToken = tokens[0]
@@ -2285,7 +2285,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             error = "token finitialization failed! %r" % e
@@ -2357,7 +2357,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("[userfinshocra2token] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             error = "[userfinshocra2token] token initialization failed! %r" % e
@@ -2441,7 +2441,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("[token_call] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[token_call] calling method %s.%s of user %s failed! %r"

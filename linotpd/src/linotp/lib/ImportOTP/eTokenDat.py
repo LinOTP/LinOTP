@@ -28,11 +28,11 @@
 import sys
 import datetime
 from getopt import getopt, GetoptError
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import logging
 import json
-import Cookie
+import http.cookies
 import httplib2
 import getpass
 
@@ -240,7 +240,7 @@ class DatToken(object):
         :return: - nothing -
         """
 
-        if self.init_params.has_key('description'):
+        if 'description' in self.init_params:
             value = self.init_params.get('description') + ' ' + value
         self.init_params['description'] = value
         return
@@ -286,7 +286,7 @@ class DatToken(object):
         ## the value e.g. 2011/05/03 02:46:54;, will be appended
         ## to the token description
 
-        if self.init_params.has_key('description'):
+        if 'description' in self.init_params:
             value = self.init_params.get('description') + ' ' + value
         self.init_params['description'] = value
         return
@@ -377,7 +377,7 @@ def get_session(lino_url, user=None, pwd=None):
 
         try:
             session = \
-               Cookie.SimpleCookie(resp['set-cookie'])['admin_session'].value
+               http.cookies.SimpleCookie(resp['set-cookie'])['admin_session'].value
         except Exception as exception:
             LOG.error('Could not retrieve session. Exception was: %r'
                       % exception)
@@ -410,7 +410,7 @@ def submit_tokens(lino_url, tokens, user=None, pwd=None):
         query_args = token.get_initparams()
         if session is not None:
             query_args['session'] = session
-        data = urllib.urlencode(query_args)
+        data = urllib.parse.urlencode(query_args)
 
         try:
             # Send HTTP GET request
@@ -418,7 +418,7 @@ def submit_tokens(lino_url, tokens, user=None, pwd=None):
             http.add_credentials(user, pwd)
             resp, content = http.request(url, headers=headers)
 
-        except urllib2.HTTPError as http_error:
+        except urllib.error.HTTPError as http_error:
             break
 
         LOG.debug("%s" % content)
@@ -492,7 +492,7 @@ def main():
                  "startdate"])
 
     except GetoptError:
-        print "There is an error in your parameter syntax:"
+        print("There is an error in your parameter syntax:")
         usage()
         sys.exit(1)
 
@@ -553,7 +553,7 @@ def usage():
 
     """
 
-    print usage_def
+    print(usage_def)
 
 if __name__ == '__main__':
     LOG = logging.getLogger()

@@ -63,8 +63,8 @@ try:
 except ImportError:
     import simplejson as json
 
-from urlparse import urlparse
-from urlparse import parse_qs
+from urllib.parse import urlparse
+from urllib.parse import parse_qs
 
 import unittest
 import binascii
@@ -377,7 +377,7 @@ class OcraTest(TestController):
         self.sqlconnect = self.appconf.get('sqlalchemy.url')
         # sys.argv[1] = 'arg'
         # del sys.argv[2] # remember that -s is in sys.argv[2], see below
-        print sys.argv
+        print(sys.argv)
 
         self.runs = 5
         self.threads = 6
@@ -706,7 +706,7 @@ class OcraTest(TestController):
             jresp = json.loads(response.body)
             challenge = str(jresp.get('detail').get('challenge'))
             transid = str(jresp.get('detail').get('transactionid'))
-        except Exception, e:
+        except Exception as e:
             challenge = None
             transid = None
 
@@ -756,7 +756,7 @@ class OcraTest(TestController):
             p_test = doRequest(self, rid=_i,
                                test='ptest_OCRA_token_failcounterInc')
             p_tests.append(p_test)
-            if environ.has_key('paste.registry'):
+            if 'paste.registry' in environ:
                 environ['paste.registry'].register(myglobal, p_test)
 
             #prevent that all threads start at same time:

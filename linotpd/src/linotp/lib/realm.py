@@ -130,7 +130,7 @@ def realm2Objects(realmList):
     return realmObjList
 
 
-def getRealmObject(name=u"", id=0):
+def getRealmObject(name="", id=0):
     '''
     returns the Realm Object for a given realm name.
     If the given realm name is not found, it returns "None"
@@ -149,7 +149,7 @@ def getRealmObject(name=u"", id=0):
     log.debug("Getting realm object for name=%s, id=%i", name, id)
     realmObj = None
 
-    name = u'' + str(name)
+    name = '' + str(name)
     if (0 == id):
         realmObjects = Session.query(Realm).filter(func.lower(Realm.name) == name.lower())
         if realmObjects.count() > 0:
@@ -209,7 +209,7 @@ def getRealms(aRealmName=""):
         # which is used for the user resolver lookup for a given realm
         # -- ------------------------------------------------------------ --
 
-        for realm_name, realm_defintion in realms.items():
+        for realm_name, realm_defintion in list(realms.items()):
 
             # get the resolvers list of the realm definition
             realm_resolvers = realm_defintion.get('useridresolver', [])
@@ -443,7 +443,7 @@ def _setDefaultRealm(realms, defaultRealm):
             r["default"] = "true"
             ret = True
         else:
-            if r.has_key("default"):
+            if "default" in r:
                 del r["default"]
     return ret
 
@@ -460,7 +460,7 @@ def isRealmDefined(realm):
     '''
     ret = False
     realms = getRealms()
-    if realms.has_key(realm.lower()):
+    if realm.lower() in realms:
         ret = True
     return ret
 
@@ -485,7 +485,7 @@ def setDefaultRealm(defaultRealm, check_if_exists=True):
         ret = True
 
     if ret is True or defaultRealm == "":
-        storeConfig(u"linotp.DefaultRealm", defaultRealm)
+        storeConfig("linotp.DefaultRealm", defaultRealm)
 
     return ret
 
@@ -559,7 +559,7 @@ def match_realms(request_realms, allowed_realms):
     :return: list of realms which were in both lists
     """
 
-    all_realms = getRealms().keys()
+    all_realms = list(getRealms().keys())
     all_allowed_realms = set()
     for realm in allowed_realms:
         if realm in all_realms:

@@ -255,7 +255,7 @@ class ResourceScheduler(object):
 
     # public interfaces
 
-    def next(self):
+    def __next__(self):
         """
         iterate trough all the resources and return only those, which are
         currently not blocked

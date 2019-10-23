@@ -224,7 +224,7 @@ def _check_policy_impact(scope='', action='', active='True',
     # add the new policy and check the constrains
     policies[name] = pol
 
-    for policy in policies.values():
+    for policy in list(policies.values()):
 
         # do we have a system policy that is active?
         p_scope = policy['scope'].lower()
@@ -275,14 +275,14 @@ def create_policy_export_file(policy, filename):
         f.write('')
         f.close()
     else:
-        for value in policy.values():
-            for k in value.keys():
+        for value in list(policy.values()):
+            for k in list(value.keys()):
                 value[k] = value[k] or ""
 
         policy_file = ConfigObj(encoding="UTF-8")
         policy_file.filename = file_name
 
-        for name in policy.keys():
+        for name in list(policy.keys()):
             policy_file[name] = policy[name]
             policy_file.write()
 

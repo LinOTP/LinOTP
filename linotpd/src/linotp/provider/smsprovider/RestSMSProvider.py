@@ -97,7 +97,7 @@ class RestSMSProvider(ISMSProvider):
         #!!! we set the timeout by default so that linotp wont block
 
         timeout = configDict.get("TIMEOUT", (3, 30))
-        if isinstance(timeout, (str, unicode)):
+        if isinstance(timeout, str):
             if ',' in timeout:
                 con_timeout, read_timeout = timeout.rpartition(',')
                 self.timeout = (float(con_timeout), float(read_timeout))
@@ -133,7 +133,7 @@ class RestSMSProvider(ISMSProvider):
 
         # if the template is a simple string, we do a simple replace
 
-        if isinstance(sms_phone_template, (str, unicode)):
+        if isinstance(sms_phone_template, str):
             if sms_phone_template and '<phone>' in sms_phone_template:
                 return sms_phone_template.replace('<phone>', phone)
 
@@ -144,7 +144,7 @@ class RestSMSProvider(ISMSProvider):
 
             sms_phone = []
             for phone_tmpl in sms_phone_template:
-                if (isinstance(phone_tmpl, (str, unicode)) and
+                if (isinstance(phone_tmpl, str) and
                         '<phone>' in phone_tmpl):
                     sms_phone.append(phone_tmpl.replace('<phone>', phone))
                 else:
@@ -263,7 +263,7 @@ class RestSMSProvider(ISMSProvider):
         server_cert = self.server_cert
         if server_cert is not None:
             # Session.post() doesn't like unicode values in Session.verify
-            if isinstance(server_cert, unicode):
+            if isinstance(server_cert, str):
                 server_cert = server_cert.encode('utf-8')
 
             http_session.verify = server_cert

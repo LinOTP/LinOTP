@@ -38,7 +38,7 @@ import re
 import time
 import json
 import logging
-import urlparse
+import urllib.parse
 
 from linotp.tests import url
 
@@ -80,7 +80,7 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
     if HTTP_RESPONSE_FUNC:
         test_func = HTTP_RESPONSE_FUNC
         body = kwparams.get('body')
-        params = dict(urlparse.parse_qsl(body))
+        params = dict(urllib.parse.parse_qsl(body))
         resp, content = test_func(params)
         HTTP_RESPONSE_FUNC = None
 

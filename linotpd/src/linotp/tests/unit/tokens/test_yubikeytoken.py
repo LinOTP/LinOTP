@@ -256,7 +256,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         otp = self.public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
         self.yubikey_token.checkOtp(otp)
         # Verify that the tokenid is passed onto linotp.model.Token
-        expected_tokeninfo = u'' + '{\n"yubikey.tokenid": "' + self.private_uid + '"\n}'
+        expected_tokeninfo = '' + '{\n"yubikey.tokenid": "' + self.private_uid + '"\n}'
         self.model_token.setInfo.assert_called_once_with(expected_tokeninfo)
 
     def test_checkotp_wrong_tokenid(self):
@@ -264,7 +264,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         Verify that if the stored uid differs from the one contained in the OTP then an error
         is returned.
         """
-        self.model_token.getInfo.return_value = u'' + '{\n"yubikey.tokenid": "wrong-value"\n}'
+        self.model_token.getInfo.return_value = '' + '{\n"yubikey.tokenid": "wrong-value"\n}'
         otp = self.public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
         counter_expected = -2
         # We want to suppress the warning generated because of the wrong CRC
@@ -298,16 +298,16 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
             'config': {}
             }
         class_info = YubikeyTokenClass.getClassInfo()
-        self.assertEquals(full_class_info, class_info)
-        self.assertEquals(
+        self.assertEqual(full_class_info, class_info)
+        self.assertEqual(
             "YubiKey in Yubico Mode",
             YubikeyTokenClass.getClassInfo(key='title')
             )
-        self.assertEquals(
+        self.assertEqual(
             full_class_info,
             YubikeyTokenClass.getClassInfo(key='some_non_existent_key')
             )
-        self.assertEquals(
+        self.assertEqual(
             "some_random_value",
             YubikeyTokenClass.getClassInfo(
                 key="some_non_existent_key",
@@ -324,15 +324,15 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         self.yubikey_token.incOtpCounter = MagicMock()
         counter_actual = self.yubikey_token.check_otp_exist(otp)
         self.yubikey_token.incOtpCounter.assert_called_once_with(counter_expected)
-        self.assertEquals(counter_expected, counter_actual)
+        self.assertEqual(counter_expected, counter_actual)
 
         # invalid (old) value
         self.model_token.LinOtpCount = 300
         otp = self.public_uid + "fcniufvgvjturjgvinhebbbertjnihit" # counter 256
         self.yubikey_token.incOtpCounter.reset_mock()
         counter_actual = self.yubikey_token.check_otp_exist(otp)
-        self.assertEquals(0, self.yubikey_token.incOtpCounter.call_count)
-        self.assertEquals(-1, counter_actual)
+        self.assertEqual(0, self.yubikey_token.incOtpCounter.call_count)
+        self.assertEqual(-1, counter_actual)
 
     def test_is_challenge_request(self):
         """

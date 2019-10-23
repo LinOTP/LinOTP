@@ -112,47 +112,47 @@ token_table = sa.Table('Token', meta.metadata,
                        sa.Column('LinOtpTokenId', sa.types.Integer(), sa.Sequence(
                            'token_seq_id', optional=True), primary_key=True, nullable=False),
                        sa.Column(
-                           'LinOtpTokenDesc', sa.types.Unicode(80), default=u''),
+                           'LinOtpTokenDesc', sa.types.Unicode(80), default=''),
                        sa.Column('LinOtpTokenSerialnumber', sa.types.Unicode(
-                           40), default=u'', unique=True, nullable=False, index=True),
+                           40), default='', unique=True, nullable=False, index=True),
 
                        sa.Column(
-                           'LinOtpTokenType', sa.types.Unicode(30), default=u'HMAC', index=True),
+                           'LinOtpTokenType', sa.types.Unicode(30), default='HMAC', index=True),
                        sa.Column(
-                           'LinOtpTokenInfo', sa.types.Unicode(2000), default=u''),
+                           'LinOtpTokenInfo', sa.types.Unicode(2000), default=''),
                        # # encrypt
                        sa.Column(
-                           'LinOtpTokenPinUser', sa.types.Unicode(512), default=u''),
+                           'LinOtpTokenPinUser', sa.types.Unicode(512), default=''),
                        # # encrypt
                        sa.Column(
-                           'LinOtpTokenPinUserIV', sa.types.Unicode(32), default=u''),
+                           'LinOtpTokenPinUserIV', sa.types.Unicode(32), default=''),
                        # # encrypt
                        sa.Column(
-                           'LinOtpTokenPinSO', sa.types.Unicode(512), default=u''),
+                           'LinOtpTokenPinSO', sa.types.Unicode(512), default=''),
                        # # encrypt
                        sa.Column(
-                           'LinOtpTokenPinSOIV', sa.types.Unicode(32), default=u''),
+                           'LinOtpTokenPinSOIV', sa.types.Unicode(32), default=''),
 
                        sa.Column(
-                           'LinOtpIdResolver', sa.types.Unicode(120), default=u'', index=True),
+                           'LinOtpIdResolver', sa.types.Unicode(120), default='', index=True),
                        sa.Column(
-                           'LinOtpIdResClass', sa.types.Unicode(120), default=u''),
+                           'LinOtpIdResClass', sa.types.Unicode(120), default=''),
                        sa.Column(
-                           'LinOtpUserid', sa.types.Unicode(320), default=u'', index=True),
+                           'LinOtpUserid', sa.types.Unicode(320), default='', index=True),
 
 
                        sa.Column(
-                           'LinOtpSeed', sa.types.Unicode(32), default=u''),
+                           'LinOtpSeed', sa.types.Unicode(32), default=''),
                        sa.Column(
                            'LinOtpOtpLen', sa.types.Integer(), default=6),
                        # # hashed
                        sa.Column(
-                           'LinOtpPinHash', sa.types.Unicode(512), default=u''),
+                           'LinOtpPinHash', sa.types.Unicode(512), default=''),
                        # # encrypt
                        sa.Column(
-                           'LinOtpKeyEnc', sa.types.Unicode(1024), default=u''),
+                           'LinOtpKeyEnc', sa.types.Unicode(1024), default=''),
                        sa.Column(
-                           'LinOtpKeyIV', sa.types.Unicode(32), default=u''),
+                           'LinOtpKeyIV', sa.types.Unicode(32), default=''),
 
                        sa.Column(
                            'LinOtpMaxFail', sa.types.Integer(), default=10),
@@ -178,9 +178,9 @@ class Token(object):
     def __init__(self, serial):
 
         # # self.LinOtpTokenId - will be generated DBType serial
-        self.LinOtpTokenSerialnumber = u'' + serial
+        self.LinOtpTokenSerialnumber = '' + serial
 
-        self.LinOtpTokenType = u''
+        self.LinOtpTokenType = ''
 
         self.LinOtpCount = 0
         self.LinOtpFailCount = 0
@@ -189,7 +189,7 @@ class Token(object):
         self.LinOtpIsactive = True
         self.LinOtpCountWindow = 10
         self.LinOtpOtpLen = 6
-        self.LinOtpSeed = u''
+        self.LinOtpSeed = ''
 
         self.LinOtpIdResolver = None
         self.LinOtpIdResClass = None
@@ -275,8 +275,8 @@ class Token(object):
         if reset_failcount:
             self.LinOtpFailCount = 0
 
-        self.LinOtpKeyEnc = unicode(binascii.hexlify(encrypted_seed))
-        self.LinOtpKeyIV = unicode(binascii.hexlify(iv))
+        self.LinOtpKeyEnc = str(binascii.hexlify(encrypted_seed))
+        self.LinOtpKeyIV = str(binascii.hexlify(iv))
 
     def get_encrypted_seed(self):
         key = binascii.unhexlify(self.LinOtpKeyEnc or '')
@@ -284,8 +284,8 @@ class Token(object):
         return key, iv
 
     def setUserPin(self, enc_userPin, iv):
-        self.LinOtpTokenPinUser = unicode(binascii.hexlify(enc_userPin))
-        self.LinOtpTokenPinUserIV = unicode(binascii.hexlify(iv))
+        self.LinOtpTokenPinUser = str(binascii.hexlify(enc_userPin))
+        self.LinOtpTokenPinUserIV = str(binascii.hexlify(iv))
 
     def getUserPin(self):
         pu = self._fix_spaces(self.LinOtpTokenPinUser or '')
@@ -298,8 +298,8 @@ class Token(object):
         return self.LinOtpCount or 0
 
     def set_hashed_pin(self, pin, iv):
-        self.LinOtpSeed = unicode(binascii.hexlify(iv))
-        self.LinOtpPinHash = unicode(binascii.hexlify(pin))
+        self.LinOtpSeed = str(binascii.hexlify(iv))
+        self.LinOtpPinHash = str(binascii.hexlify(pin))
 
     def get_hashed_pin(self):
         iv = binascii.unhexlify(self.LinOtpSeed)
@@ -312,8 +312,8 @@ class Token(object):
         target.LinOtpPinHash = src.LinOtpPinHash
 
     def set_encrypted_pin(self, pin, iv):
-        self.LinOtpSeed = unicode(binascii.hexlify(iv))
-        self.LinOtpPinHash = unicode(binascii.hexlify(pin))
+        self.LinOtpSeed = str(binascii.hexlify(iv))
+        self.LinOtpPinHash = str(binascii.hexlify(pin))
         self.LinOtpPinHash = "@@" + self.LinOtpPinHash
 
     def get_encrypted_pin(self):
@@ -323,8 +323,8 @@ class Token(object):
 
     def setHashedPin(self, pin):
         seed = geturandom(16)
-        self.LinOtpSeed = unicode(binascii.hexlify(seed))
-        self.LinOtpPinHash = unicode(binascii.hexlify(hash_digest(pin, seed)))
+        self.LinOtpSeed = str(binascii.hexlify(seed))
+        self.LinOtpPinHash = str(binascii.hexlify(hash_digest(pin, seed)))
         return self.LinOtpPinHash
 
     def getHashedPin(self, pin):
@@ -344,7 +344,7 @@ class Token(object):
     def setDescription(self, desc):
         if desc is None:
             desc = ""
-        self.LinOtpTokenDesc = unicode(desc)
+        self.LinOtpTokenDesc = str(desc)
         return self.LinOtpTokenDesc
 
     def setOtpLen(self, otplen):
@@ -372,8 +372,8 @@ class Token(object):
         return ret
 
     def setSoPin(self, enc_soPin, iv):
-        self.LinOtpTokenPinSO = unicode(binascii.hexlify(enc_soPin))
-        self.LinOtpTokenPinSOIV = unicode(binascii.hexlify(iv))
+        self.LinOtpTokenPinSO = str(binascii.hexlify(enc_soPin))
+        self.LinOtpTokenPinSOIV = str(binascii.hexlify(iv))
 
     def __unicode__(self):
         return self.LinOtpTokenDesc
@@ -469,7 +469,7 @@ class Token(object):
 
     def storeToken(self):
         if self.LinOtpUserid is None:
-            self.LinOtpUserid = u''
+            self.LinOtpUserid = ''
         if self.LinOtpIdResClass is None:
             self.LinOtpIdResClass = ''
         if self.LinOtpIdResolver is None:
@@ -522,7 +522,7 @@ class Token(object):
 
 def createToken(serial):
     log.debug('createToken(%s)' % serial)
-    serial = u'' + serial
+    serial = '' + serial
     token = Token(serial)
     log.debug('token object created')
 
@@ -534,10 +534,10 @@ config_table = sa.Table('Config', meta.metadata,
                         sa.Column(
                             'Key', sa.types.Unicode(255), primary_key=True, nullable=False),
                         sa.Column(
-                            'Value', sa.types.Unicode(2000), default=u''),
-                        sa.Column('Type', sa.types.Unicode(2000), default=u''),
+                            'Value', sa.types.Unicode(2000), default=''),
+                        sa.Column('Type', sa.types.Unicode(2000), default=''),
                         sa.Column(
-                            'Description', sa.types.Unicode(2000), default=u''),
+                            'Description', sa.types.Unicode(2000), default=''),
                         implicit_returning=implicit_returning,
                         )
 
@@ -546,15 +546,15 @@ CONFIG_ENCODE = ["Key", "Value", "Description"]
 
 class Config(object):
 
-    def __init__(self, Key, Value, Type=u'', Description=u''):
+    def __init__(self, Key, Value, Type='', Description=''):
 
         if (not Key.startswith("linotp.") and not Key.startswith("enclinotp.")):
             Key = "linotp." + Key
 
-        self.Key = unicode(Key)
-        self.Value = unicode(Value)
-        self.Type = unicode(Type)
-        self.Description = unicode(Description)
+        self.Key = str(Key)
+        self.Value = str(Value)
+        self.Type = str(Type)
+        self.Description = str(Description)
 
 
     def __unicode__(self):
@@ -622,9 +622,9 @@ realm_table = sa.Table('Realm', meta.metadata,
                        sa.Column('id', sa.types.Integer(), sa.Sequence(
                            'realm_seq_id', optional=True), primary_key=True, nullable=False),
                        sa.Column(
-                           'name', sa.types.Unicode(255), default=u'', unique=True, nullable=False),
+                           'name', sa.types.Unicode(255), default='', unique=True, nullable=False),
                        sa.Column('default', sa.types.Boolean(), default=False),
-                       sa.Column('option', sa.types.Unicode(40), default=u''),
+                       sa.Column('option', sa.types.Unicode(40), default=''),
                        implicit_returning=implicit_returning,
                        )
 
@@ -694,13 +694,13 @@ ocra_table = sa.Table('ocra', meta.metadata,
                           'token_seq_id', optional=True), primary_key=True, nullable=False),
                       sa.Column('transid', sa.types.Unicode(20), unique=True,
                                 nullable=False, index=True),
-                      sa.Column('data', sa.types.Unicode(512), default=u''),
+                      sa.Column('data', sa.types.Unicode(512), default=''),
                       sa.Column(
-                          'challenge', sa.types.Unicode(256), default=u''),
+                          'challenge', sa.types.Unicode(256), default=''),
                       sa.Column(
-                          session_column, sa.types.Unicode(512), default=u''),
+                          session_column, sa.types.Unicode(512), default=''),
                       sa.Column(
-                          'tokenserial', sa.types.Unicode(64), default=u''),
+                          'tokenserial', sa.types.Unicode(64), default=''),
                       sa.Column(
                           timestamp_column, sa.types.DateTime, default=datetime.now()),
                       sa.Column(
@@ -718,14 +718,14 @@ class OcraChallenge(object):
     '''
     '''
 
-    def __init__(self, transId, challenge, tokenserial, data, session=u''):
+    def __init__(self, transId, challenge, tokenserial, data, session=''):
 
-        self.transid = u'' + transId
-        self.challenge = u'' + challenge
-        self.tokenserial = u'' + tokenserial
-        self.data = u'' + data
+        self.transid = '' + transId
+        self.challenge = '' + challenge
+        self.tokenserial = '' + tokenserial
+        self.data = '' + data
         self.timestamp = datetime.now()
-        self.session = u'' + session
+        self.session = '' + session
         self.received_count = 0
         self.received_tan = False
         self.valid_tan = False
@@ -767,7 +767,7 @@ class OcraChallenge(object):
         return value
 
     def setData(self, data):
-        self.data = unicode(data)
+        self.data = str(data)
 
     def getData(self):
         return self.data
@@ -776,10 +776,10 @@ class OcraChallenge(object):
         return self.session
 
     def setSession(self, session):
-        self.session = unicode(session)
+        self.session = str(session)
 
     def setChallenge(self, challenge):
-        self.challenge = unicode(challenge)
+        self.challenge = str(challenge)
 
     def setTanStatus(self, received=False, valid=False):
         self.received_tan = received
@@ -813,7 +813,7 @@ class OcraChallenge(object):
         descr['received_tan'] = self.received_tan
         descr['valid_tan'] = self.valid_tan
 
-        return "%s" % unicode(descr)
+        return "%s" % str(descr)
 
     __str__ = __unicode__
 
@@ -834,19 +834,19 @@ challenges_table = sa.Table('challenges', meta.metadata,
                             sa.Column('ptransid', sa.types.Unicode(64),
                                       index=True),
                             sa.Column('data',
-                                      sa.types.Unicode(512), default=u''),
+                                      sa.types.Unicode(512), default=''),
                             sa.Column('bdata',
                                       sa.types.Binary(), default=None),
                             sa.Column('challenge',
-                                      sa.types.Unicode(512), default=u''),
+                                      sa.types.Unicode(512), default=''),
                             sa.Column('lchallenge',
-                                      sa.types.Unicode(2000), default=u''),
+                                      sa.types.Unicode(2000), default=''),
                             sa.Column('bchallenge',
                                       sa.types.Binary, default=None),
                             sa.Column(session_column,
-                                      sa.types.Unicode(512), default=u''),
+                                      sa.types.Unicode(512), default=''),
                             sa.Column('tokenserial',
-                                      sa.types.Unicode(64), default=u'',
+                                      sa.types.Unicode(64), default='',
                                       index=True),
                             sa.Column(timestamp_column, sa.types.DateTime,
                                       default=datetime.now()),
@@ -867,33 +867,33 @@ class Challenge(object):
     the generic challange handling
     '''
 
-    def __init__(self, transid, tokenserial, challenge=u'', data=u'', session=u''):
+    def __init__(self, transid, tokenserial, challenge='', data='', session=''):
 
-        self.transid = u'' + transid
+        self.transid = '' + transid
 
         #
         # for future use: subtransactions will refer to their parent
 
-        self.ptransid = u''
+        self.ptransid = ''
 
         # adjust challenge to be binary compatible
 
-        if isinstance(challenge, (str, unicode)):
+        if isinstance(challenge, str):
             challenge = challenge.encode('utf-8')
         self.challenge = challenge
 
         self.ochallenge = ''
 
-        self.tokenserial = u'' + tokenserial
+        self.tokenserial = '' + tokenserial
 
         # adjust data to be binary compatible
 
-        if isinstance(data, (str, unicode)):
+        if isinstance(data, str):
             data = data.encode('utf-8')
         self.data = data
 
         self.timestamp = datetime.now()
-        self.session = u'' + session
+        self.session = '' + session
         self.received_count = 0
         self.received_tan = False
         self.valid_tan = False
@@ -992,7 +992,7 @@ class Challenge(object):
 
         :param session: dictionary of the session info
         """
-        self.session = unicode(session)
+        self.session = str(session)
 
     def add_session_info(self, info):
         session_dict = {}
@@ -1002,7 +1002,7 @@ class Challenge(object):
 
         session_dict.update(info)
 
-        self.session = unicode(json.dumps(session_dict))
+        self.session = str(json.dumps(session_dict))
 
     def signChallenge(self, hsm):
         """
@@ -1169,7 +1169,7 @@ class Challenge(object):
 
     def __unicode__(self):
         descr = self.get_vars()
-        return "%s" % unicode(descr)
+        return "%s" % str(descr)
 
     __str__ = __unicode__
 
@@ -1204,30 +1204,30 @@ reporting_table =\
                        sa.Sequence('reporting_seq_id', optional=True),
                        primary_key=True, nullable=False),
              sa.Column('R_TIMESTAMP', sa.types.DateTime, default=datetime.now()),
-             sa.Column('R_EVENT', sa.types.Unicode(250), default=u''),
-             sa.Column('R_REALM', sa.types.Unicode(250), default=u''),
-             sa.Column('R_PARAMETER', sa.types.Unicode(250), default=u''),
-             sa.Column('R_VALUE', sa.types.Unicode(250), default=u''),
+             sa.Column('R_EVENT', sa.types.Unicode(250), default=''),
+             sa.Column('R_REALM', sa.types.Unicode(250), default=''),
+             sa.Column('R_PARAMETER', sa.types.Unicode(250), default=''),
+             sa.Column('R_VALUE', sa.types.Unicode(250), default=''),
              sa.Column('R_COUNT', sa.types.Integer(), default=0),
-             sa.Column('R_DETAIL', sa.types.Unicode(2000), default=u''),
-             sa.Column('R_SESSION', sa.types.Unicode(250), default=u''),
-             sa.Column('R_DESCRIPTION', sa.types.Unicode(2000), default=u''),
+             sa.Column('R_DETAIL', sa.types.Unicode(2000), default=''),
+             sa.Column('R_SESSION', sa.types.Unicode(250), default=''),
+             sa.Column('R_DESCRIPTION', sa.types.Unicode(2000), default=''),
              implicit_returning=implicit_returning,)
 
 
 class Reporting(object):
 
-    def __init__(self, event, realm, parameter=u'', value=u'', count=0,
-                 detail=u'', session=u'', description=u'', timestamp=None):
+    def __init__(self, event, realm, parameter='', value='', count=0,
+                 detail='', session='', description='', timestamp=None):
 
-        self.event = unicode(event)
-        self.realm = unicode(realm)
-        self.parameter = unicode(parameter)
-        self.value = unicode(value)
+        self.event = str(event)
+        self.realm = str(realm)
+        self.parameter = str(parameter)
+        self.value = str(value)
         self.count = count
-        self.detail = unicode(detail)
-        self.session = unicode(session)
-        self.description = unicode(description)
+        self.detail = str(detail)
+        self.session = str(session)
+        self.description = str(description)
         self.timestamp = datetime.now()
         if timestamp:
             self.timestamp = timestamp
@@ -1323,7 +1323,7 @@ mapping['timestamp'] = "%stimestamp" % COL_PREFIX
 # # create Ocra ORM mapping to the Ocra class
 ocra_properties = {}
 if len(COL_PREFIX) > 0:
-    for key, value in mapping.items():
+    for key, value in list(mapping.items()):
         ocra_properties[key] = ocra_table.columns[value]
 
 orm.mapper(OcraChallenge, ocra_table, properties=ocra_properties)

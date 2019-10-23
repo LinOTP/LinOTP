@@ -79,7 +79,7 @@ class dpwOtp:
                 md1 = hexlify(md5(input_data).digest())
                 md = md1[len(md1) - self.digits:]
                 otp = int(md, 16)
-                otp = unicode(otp)
+                otp = str(otp)
                 otp = otp[len(otp) - self.digits:]
 
                 return (self.digits - len(otp)) * "0" + otp
@@ -98,7 +98,7 @@ class dpwOtp:
                 :return: bool
                 '''
 
-                if unicode(anOtpVal) == self.getOtp():
+                if str(anOtpVal) == self.getOtp():
                     return 1
 
                 return -1
@@ -138,7 +138,7 @@ class TagespasswortTokenClass(TokenClass):
 
     def __init__(self, aToken):
         TokenClass.__init__(self, aToken)
-        self.setType(u"DPW")
+        self.setType("DPW")
 
         self.hKeyRequired = True
 
@@ -232,7 +232,7 @@ class TagespasswortTokenClass(TokenClass):
         if curTime:
             if isinstance(curTime, datetime):
                 date_string = curTime.strftime("%d%m%y")
-            elif isinstance(curTime, unicode):
+            elif isinstance(curTime, str):
                 date_string = datetime.strptime(
                     curTime, "%Y-%m-%d %H:%M:%S.%f").strftime("%d%m%y")
             else:
@@ -274,14 +274,14 @@ class TagespasswortTokenClass(TokenClass):
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
             log.exception("[get_multi_otp] %r" % ex)
-            return (False, unicode(ex), otp_dict)
+            return (False, str(ex), otp_dict)
 
         if count > 0:
             now = datetime.now()
             if curTime:
                 if isinstance(curTime, datetime):
                     now = curTime
-                elif isinstance(curTime, unicode):
+                elif isinstance(curTime, str):
                     now = datetime.strptime(curTime, "%Y-%m-%d %H:%M:%S.%f")
                 else:
                     raise TokenAdminError("[get_multi_otp] wrong curTime type:"

@@ -202,7 +202,7 @@ class TestChunkConfigCase(unittest.TestCase):
         _store_continous_entry_db(chunks, key=key_name, val=big_value,
                                   typ=key_type, desc=key_desc)
 
-        conf_keys = TestConfigEntries.keys()
+        conf_keys = list(TestConfigEntries.keys())
 
         # ------------------------------------------------------------------ --
 
@@ -244,7 +244,7 @@ class TestChunkConfigCase(unittest.TestCase):
 
         # cleanup the shared dictionary
 
-        for key in TestConfigEntries.keys():
+        for key in list(TestConfigEntries.keys()):
             del TestConfigEntries[key]
 
         return
@@ -266,7 +266,7 @@ class TestChunkConfigCase(unittest.TestCase):
         mock_session.query.return_value.filter.return_value = continous_entries
         _storeConfigDB(key, val, typ=typ, desc=desc)
 
-        conf_keys = TestConfigEntries.keys()
+        conf_keys = list(TestConfigEntries.keys())
 
         assert key in conf_keys, TestConfigEntries
 
@@ -280,7 +280,7 @@ class TestChunkConfigCase(unittest.TestCase):
 
         # cleanup the shared dictionary
 
-        for key in TestConfigEntries.keys():
+        for key in list(TestConfigEntries.keys()):
             del TestConfigEntries[key]
 
         return
@@ -306,7 +306,7 @@ class TestChunkConfigCase(unittest.TestCase):
 
         # check that the value is realy stored
 
-        conf_keys = TestConfigEntries.keys()
+        conf_keys = list(TestConfigEntries.keys())
 
         assert key in conf_keys, TestConfigEntries
 
@@ -320,7 +320,7 @@ class TestChunkConfigCase(unittest.TestCase):
 
         # cleanup the shared dictionary
 
-        for key in TestConfigEntries.keys():
+        for key in list(TestConfigEntries.keys()):
             del TestConfigEntries[key]
 
         return
@@ -344,7 +344,7 @@ class TestChunkConfigCase(unittest.TestCase):
 
         # check that the value is realy stored
 
-        conf_keys = TestConfigEntries.keys()
+        conf_keys = list(TestConfigEntries.keys())
 
         assert key in conf_keys, TestConfigEntries
 
@@ -357,7 +357,7 @@ class TestChunkConfigCase(unittest.TestCase):
 
         # cleanup the shared dictionary
 
-        for key in TestConfigEntries.keys():
+        for key in list(TestConfigEntries.keys()):
             del TestConfigEntries[key]
 
         return
@@ -370,10 +370,10 @@ class TestConfigStoreCase(unittest.TestCase):
         # Test round trip of _storeConfigDB with entries that require
         # encoding of special characters
         conf = {
-            'Key': u'linotp.TËST',
-            'Value': u'VALUEÄ',
-            'Type': u'TYPEß',
-            'Description': u'DESCRIPTIÖN',
+            'Key': 'linotp.TËST',
+            'Value': 'VALUEÄ',
+            'Type': 'TYPEß',
+            'Description': 'DESCRIPTIÖN',
         }
 
         _storeConfigDB(conf['Key'], conf['Value'],
@@ -389,7 +389,7 @@ class TestConfigStoreCase(unittest.TestCase):
         assert(len(entries) == 1)
         stored_conf = entries[0]
 
-        for key in conf.keys():
+        for key in list(conf.keys()):
             assert conf[key] == getattr(stored_conf, key), \
                              "Key should match key:%s - expected %r, recevied %r" % (key, conf[key], getattr(stored_conf, key))
 

@@ -43,9 +43,9 @@ from passlib.hash import (
 
 from . import resolver_registry
 
-from UserIdResolver import UserIdResolver
-from UserIdResolver import ResolverLoadConfigError
-from UserIdResolver import getResolverClass
+from .UserIdResolver import UserIdResolver
+from .UserIdResolver import ResolverLoadConfigError
+from .UserIdResolver import getResolverClass
 
 from linotp.lib.type_utils import text
 
@@ -67,7 +67,7 @@ def str2unicode(input_str):
                    ]
     for param in conversions:
         try:
-            output_str = unicode(input_str, **param)
+            output_str = str(input_str, **param)
             break
         except UnicodeDecodeError as exx:
             if param == conversions[-1]:
@@ -235,7 +235,7 @@ class IdResolver (UserIdResolver):
         of the passwd file needs to contain the crypted password
         """
 
-        if type(password) is unicode:
+        if type(password) is str:
             log.debug("Password is a unicode string. Encoding to UTF-8 for \
                        crypt.crypt() function.")
             password = password.encode('utf-8')
@@ -573,7 +573,7 @@ class IdResolver (UserIdResolver):
 
 if __name__ == "__main__":
 
-    print " PasswdIdResolver - IdResolver class test "
+    print(" PasswdIdResolver - IdResolver class test ")
 
     y = getResolverClass("PasswdIdResolver", "IdResolver")()
 
@@ -581,21 +581,21 @@ if __name__ == "__main__":
     x = getResolverClass("PasswdIdResolver", "IdResolver")()
     x.loadConfig({'linotp.passwdresolver.fileName': '/etc/meinpass'}, "")
 
-    print "======/etc/meinpass=========="
-    print x.getUserList({'username': '*', "userid": ">= 1000"})
-    print "======/etc/passwd=========="
-    print y.getUserList({'username': '*', "userid": ">= 1000"})
-    print "================"
+    print("======/etc/meinpass==========")
+    print(x.getUserList({'username': '*', "userid": ">= 1000"}))
+    print("======/etc/passwd==========")
+    print(y.getUserList({'username': '*', "userid": ">= 1000"}))
+    print("================")
 
     user = "koelbel"
     loginId = y.getUserId(user)
 
-    print " %s -  %s" % (user, loginId)
-    print " reId - " + y.getResolverId()
+    print(" %s -  %s" % (user, loginId))
+    print(" reId - " + y.getResolverId())
 
     ret = y.getUserInfo(loginId)
 
-    print "result %r" % ret
+    print("result %r" % ret)
 
     ret = y.getSearchFields()
     # ret["username"]="^bea*"
@@ -610,4 +610,4 @@ if __name__ == "__main__":
 
     ret = y.getUserList(search)
 
-    print ret
+    print(ret)

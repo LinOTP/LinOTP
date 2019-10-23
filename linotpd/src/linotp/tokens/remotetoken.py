@@ -29,7 +29,7 @@ import logging
 import copy
 
 import httplib2
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from linotp.tokens.base import TokenClass
 from linotp.tokens import tokenclass_registry
@@ -68,7 +68,7 @@ class RemoteTokenClass(TokenClass):
         :param aToken: the db bound token
         """
         TokenClass.__init__(self, aToken)
-        self.setType(u"remote")
+        self.setType("remote")
 
         self.remoteServer = ""
         self.remoteLocalCheckpin = None
@@ -338,7 +338,7 @@ class RemoteTokenClass(TokenClass):
             params['state'] = transactionid
 
         # use a POST request to check the token
-        data = urllib.urlencode(params)
+        data = urllib.parse.urlencode(params)
         request_url = "%s/%s" % (remoteServer.rstrip('/'),
                                  remotePath.lstrip('/'))
 

@@ -687,7 +687,7 @@ def _verify_signature(pub_keys, lic_str, lic_sign):
         return False
 
     # verify signature with M2Crypto
-    for pub_key_name, pub_key in pub_keys.items():
+    for pub_key_name, pub_key in list(pub_keys.items()):
 
         # some M2Crypto magic
         bio = M2Crypto.BIO.MemoryBuffer(pub_key)
@@ -851,7 +851,7 @@ def get_public_keys():
     for key_file in key_files:
         try:
             key_text = readPublicKey(key_file)
-            if key_text and key_text not in pubKeys.values():
+            if key_text and key_text not in list(pubKeys.values()):
                     idx = os.path.split(key_file)[-1]
                     if idx[-4:] == '.pem':
                         idx, _sep, _rest = idx.rpartition(".pem")

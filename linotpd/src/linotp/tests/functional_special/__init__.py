@@ -32,7 +32,7 @@ either an linotp server, an radius server or a http sms reciever
 The TestSpecialController gathers some of these common methods.
 
 """
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import httplib2
 import os
 
@@ -50,7 +50,7 @@ DEFAULT_NOSE_CONFIG = {
 try:
     from testconfig import config as nose_config
 except ImportError as exc:
-    print "You need to install nose-testconfig. Will use default values."
+    print("You need to install nose-testconfig. Will use default values.")
     nose_config = None
 
 
@@ -87,7 +87,7 @@ class TestSpecialController(TestController):
 
             if not params:
                 params = {}
-            data = urllib.urlencode(params)
+            data = urllib.parse.urlencode(params)
 
             # predefine the submit and receive headers, but allow the overwrite
             r_headers = {"Content-type": "application/x-www-form-urlencoded",
@@ -97,7 +97,7 @@ class TestSpecialController(TestController):
 
             if cookies:
                 cooking = []
-                for key, value in cookies.items():
+                for key, value in list(cookies.items()):
                     cooking.append('%s=%s' % (key, value))
                 r_headers['Cookie'] = ";".join(cooking)
 

@@ -72,7 +72,7 @@ class LDAPResolverTest(unittest.TestCase):
         '''
         res = obj.getUserList(arg)
         for item in res:
-            for key, val in item.iteritems():
+            for key, val in item.items():
                 self.assertNotIn('-ERR', str(val))
         return res
 
@@ -225,8 +225,8 @@ class LDAPResolverExtTest(LDAPResolverTest):
         res1 = self.ldap_y.getUserId("user1")
         res2 = self.ldap_y.getUserId("user2")
 
-        self.assertTrue(res1 == u"cn=user1,o=linotp,c=org")
-        self.assertTrue(res2 == u"cn=user2,o=linotp,c=org")
+        self.assertTrue(res1 == "cn=user1,o=linotp,c=org")
+        self.assertTrue(res2 == "cn=user2,o=linotp,c=org")
 
     def test_ldap_checkpass(self):
         '''
@@ -252,7 +252,7 @@ class LDAPResolverExtTest(LDAPResolverTest):
         # res4 = self.ldap_y.getUserId("weiß")
         # print "uid (weiß): ", res4
 
-        self.assertTrue(res3 == u"cn=kölbel,o=linotp,c=org")
+        self.assertTrue(res3 == "cn=kölbel,o=linotp,c=org")
 
     def test_ldap_getUserList(self):
         '''
@@ -272,12 +272,12 @@ class LDAPResolverExtTest(LDAPResolverTest):
         if not self.available:
             self.skipTest("missing tinyldap for testing")
 
-        r1 = self.ldap_y.getUsername(u"cn=user1,o=linotp,c=org")
-        r2 = self.ldap_y.getUsername(u"cn=kölbel,o=linotp,c=org")
-        r3 = self.ldap_y.getUsername(u"cn=niemand,o=linotp,c=org")
+        r1 = self.ldap_y.getUsername("cn=user1,o=linotp,c=org")
+        r2 = self.ldap_y.getUsername("cn=kölbel,o=linotp,c=org")
+        r3 = self.ldap_y.getUsername("cn=niemand,o=linotp,c=org")
 
-        self.assertTrue(r1 == u"user1")
-        self.assertTrue(r2 == u"kölbel")
+        self.assertTrue(r1 == "user1")
+        self.assertTrue(r2 == "kölbel")
         self.assertTrue(r3 == "")
 
 # eof #

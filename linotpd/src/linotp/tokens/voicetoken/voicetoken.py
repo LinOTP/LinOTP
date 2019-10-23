@@ -134,7 +134,7 @@ class VoiceTokenClass(HmacTokenClass):
 
         HmacTokenClass.__init__(self, token_obj)
 
-        self.setType(u'voice')
+        self.setType('voice')
 
         self.hashlibStr = "sha256"
 

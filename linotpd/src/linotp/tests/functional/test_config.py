@@ -47,7 +47,7 @@ import threading
 
 def create_unicode_alphabet():
     try:
-        get_char = unichr
+        get_char = chr
     except NameError:
         get_char = chr
 
@@ -199,7 +199,7 @@ class TestConfigController(TestController):
         config entry max length is 2000 -
         entry should be split up into 40 parts
         '''
-        for i in xrange(1, 10):
+        for i in range(1, 10):
 
             length = 1000 * i + random.randint(0, 1000)
 
@@ -231,7 +231,7 @@ class TestConfigController(TestController):
         config entry max length is 2000 -
         entry should be split up into 40 parts
         '''
-        for i in xrange(1, 10):
+        for i in range(1, 10):
 
             length = 1000 * i + random.randint(0, 1000)
 
@@ -266,7 +266,7 @@ class TestConfigController(TestController):
 
         alphabeth = create_unicode_alphabet()
 
-        for i in xrange(1, 10):
+        for i in range(1, 10):
 
             length = 1000 * i + random.randint(0, 1000)
 
@@ -324,7 +324,7 @@ class TestConfigController(TestController):
         chunk_len = 2000
         i = -1
         pos = 0
-        for pos in xrange(0, len(alphabeth), chunk_len):
+        for pos in range(0, len(alphabeth), chunk_len):
             i = i + 1
             config_data_array = alphabeth[pos:pos + chunk_len]
             config_data = config_data_base + ''.join(config_data_array)
@@ -381,7 +381,7 @@ class TestConfigController(TestController):
 
         alphabeth = create_unicode_alphabet()
 
-        for i in xrange(1, 40):
+        for i in range(1, 40):
 
             length = 1980 + i
 
@@ -440,7 +440,7 @@ class TestConfigController(TestController):
 
         alphabeth = create_unicode_alphabet()
 
-        for i in xrange(1, 40):
+        for i in range(1, 40):
 
             length = 1980 + i
 
@@ -485,7 +485,7 @@ class TestConfigController(TestController):
         so we check the correct wrapping from 1980 to 2020
         '''
 
-        for i in xrange(1, 40):
+        for i in range(1, 40):
 
             length = 1980 + i
 
@@ -535,7 +535,7 @@ class TestConfigController(TestController):
         so we check the correct wrapping from 1980 to 2020
         '''
 
-        for i in xrange(1, 40):
+        for i in range(1, 40):
 
             length = 1980 + i
 

@@ -177,13 +177,13 @@ class SMPPSMSProvider(ISMSProvider):
         """
         self.config = configDict
 
-        self.server = unicode(self.config['server'])
+        self.server = str(self.config['server'])
         self.port = int(self.config.get('port', 5100))
-        self.system_id = unicode(self.config['system_id'])
-        self.password = unicode(self.config['password'])
-        self.system_type = unicode(self.config.get('system_type', ''))
+        self.system_id = str(self.config['system_id'])
+        self.password = str(self.config['password'])
+        self.system_type = str(self.config.get('system_type', ''))
 
-        self.source_addr = unicode(self.config['source_addr'])
+        self.source_addr = str(self.config['source_addr'])
         self.source_addr_npi = int(self.config.get('source_addr_npi', 1))
         self.source_addr_ton = int(self.config.get('source_addr_ton', 1))
 
@@ -194,17 +194,17 @@ class SMPPSMSProvider(ISMSProvider):
         # self.registered_delivery = int(self.config.get('registered_delivery',
         #                                                0))
 
-        self.target_encoding = unicode(self.config.get('target_encoding',
+        self.target_encoding = str(self.config.get('target_encoding',
                                                        'ISO8859-1'))
 
 
 def main(phone, message, config):
 
-    print "SMPPSMSProvider - class load test "
+    print("SMPPSMSProvider - class load test ")
 
     sms_pro = SMPPSMSProvider()
     sms_pro.loadConfig(config)
-    print config
+    print(config)
     sms_pro.submitMessage(phone, message)
 
 

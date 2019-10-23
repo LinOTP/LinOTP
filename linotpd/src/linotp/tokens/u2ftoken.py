@@ -87,7 +87,7 @@ class U2FTokenClass(TokenClass):
 
         """
         TokenClass.__init__(self, aToken)
-        self.setType(u"u2f")
+        self.setType("u2f")
         self.mode = ['challenge']  # This is a challenge response token
         self.supports_offline_mode = True
 

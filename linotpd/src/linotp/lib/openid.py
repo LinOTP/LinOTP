@@ -32,7 +32,7 @@ This is the logic for the openid service
 '''
 
 import hashlib
-import cPickle
+import pickle
 from base64 import b64encode, b64decode
 
 import binascii
@@ -40,8 +40,8 @@ import binascii
 import hmac
 import os
 import time
-import urlparse
-import urllib
+import urllib.parse
+import urllib.request, urllib.parse, urllib.error
 
 from linotp.lib.crypto.utils import urandom
 
@@ -66,7 +66,7 @@ F75A2E27898B057F9891C2E27A639C3F29B60814581CD3B2CA3986D268370557
 7D45C2E7E52DC81C7A171876E5CEA74B1448BFDFAF18828EFD2519F14E45E382
 6634AF1949E5B535CC829A483B8A76223E5D490A257F05BDFF16F2FB22C583AB
 """
-_DEFAULT_MOD = long("".join(_DEFAULT_MOD.split()), 16)
+_DEFAULT_MOD = int("".join(_DEFAULT_MOD.split()), 16)
 _DEFAULT_GEN = 2
 _PROTO_2 = "http://specs.openid.net/auth/2.0"
 _PROTO_1 = "http://openid.net/signon/1.1"
@@ -83,8 +83,8 @@ def xor(x, y):
     if len(x) != len(y):
         raise ValueError('Inputs to strxor must have the same length')
 
-    xor = lambda (a, b): chr(ord(a) ^ ord(b))
-    return "".join(map(xor, zip(x, y)))
+    xor = lambda a_b: chr(ord(a_b[0]) ^ ord(a_b[1]))
+    return "".join(map(xor, list(zip(x, y))))
 
 def randchar():
     import string
@@ -99,13 +99,13 @@ def get_nonce():
 
 
 def btwoc(value):
-    res = cPickle.dumps(value, 2)
+    res = pickle.dumps(value, 2)
     return res[3 + ord(res[3]):3:-1]
 
 
 def unbtwoc(value):
     load = chr(len(value)) + value[::-1] + '.'
-    return cPickle.loads('\x80\x02\x8a' + load)
+    return pickle.loads('\x80\x02\x8a' + load)
 
 
 def create_handle(assoc_type):
@@ -174,15 +174,15 @@ metadata = schema.MetaData()
 
 openid_redirects_table = schema.Table('openid_redirects', metadata,
     schema.Column('token', types.Unicode(255), primary_key=True),
-    schema.Column('url', types.Text(), default=u''),
-    schema.Column('site', types.Text(), default=u''),
-    schema.Column('handle', types.Text(), default=u'')
+    schema.Column('url', types.Text(), default=''),
+    schema.Column('site', types.Text(), default=''),
+    schema.Column('handle', types.Text(), default='')
 )
 
 openid_handles_table = schema.Table('openid_handles', metadata,
     schema.Column('handler', types.Unicode(255), primary_key=True),
-    schema.Column('secret', types.Text(), default=u''),
-    schema.Column('assoc_type', types.Text(), default=u''),
+    schema.Column('secret', types.Text(), default=''),
+    schema.Column('assoc_type', types.Text(), default=''),
     schema.Column('private', types.Boolean(), default=False)
 )
 
@@ -191,12 +191,12 @@ openid_sites_table = schema.Table('openid_sites', metadata,
                   schema.Sequence('openid_sites_seq_id', optional=True),
                   primary_key=True),
     schema.Column('handle', types.Unicode(255)),
-    schema.Column('site', types.Text(), default=u'')
+    schema.Column('site', types.Text(), default='')
 )
 
 openid_user_table = schema.Table('openid_user', metadata,
     schema.Column('user', types.Unicode(255), primary_key=True),
-    schema.Column('token', types.Text(), default=u''),
+    schema.Column('token', types.Text(), default=''),
     schema.Column('expire', types.Integer, default=0, index=True)
 )
 
@@ -204,8 +204,8 @@ openid_trusted_table = schema.Table('openid_trustedroot', metadata,
     schema.Column('id', types.Integer,
                   schema.Sequence('openid_sites_seq_id', optional=True),
                   primary_key=True),
-    schema.Column('user', types.Unicode(255), default=u''),
-    schema.Column('site', types.Text(), default=u'')
+    schema.Column('user', types.Unicode(255), default=''),
+    schema.Column('site', types.Text(), default='')
 )
 
 class RedirectsTable(object):
@@ -575,14 +575,14 @@ class IdResMessage(dict):
         return handle
 
     def get_url(self):
-        parsed = list(urlparse.urlparse(self['openid.return_to']))
-        old_query = urlparse.parse_qs(parsed[4])
-        for key, value in old_query.items():
+        parsed = list(urllib.parse.urlparse(self['openid.return_to']))
+        old_query = urllib.parse.parse_qs(parsed[4])
+        for key, value in list(old_query.items()):
             if key in self:
                 continue
             self[key] = value[0]
-        parsed[4] = urllib.urlencode(self)
-        return urlparse.urlunparse(parsed)
+        parsed[4] = urllib.parse.urlencode(self)
+        return urllib.parse.urlunparse(parsed)
 
     def store_site(self):
         self.storage.add_site(self['openid.sreg.nickname'],
@@ -688,8 +688,8 @@ class IdResMessage(dict):
         fields = []
         for field in sorted_sign:
             value = self['openid.' + field]
-            fields.append(u'%s:%s\n' % (field, value))
-        fields = unicode(''.join(fields))
+            fields.append('%s:%s\n' % (field, value))
+        fields = str(''.join(fields))
 
         # getting the handle
         mac_key, assoc_type = self._get_association()
@@ -758,7 +758,7 @@ def create_association(storage, expires_in=3600, **params):
            'assoc_handle': assoc_handle,
            'session_type': session_type,
            'assoc_type': assoc_type,
-           'expires_in': unicode(expires_in)}
+           'expires_in': str(expires_in)}
 
     if session_type in ('DH-SHA1', 'DH-SHA256'):
         dh_pub = b64decode(params['openid.dh_consumer_public'])
@@ -789,5 +789,5 @@ def create_association(storage, expires_in=3600, **params):
     storage.add_association(assoc_handle, secret_b64,
                             assoc_type, False, expires_in)
 
-    res = ['%s:%s' % (key, value) for key, value in res.items()]
+    res = ['%s:%s' % (key, value) for key, value in list(res.items())]
     return '\n'.join(res) + "\n"

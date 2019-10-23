@@ -39,7 +39,7 @@ from linotpadminclientcli.clientutils import *
 from linotpadminclientcli.yubikey import enrollYubikey
 from linotpadminclientcli.yubikey import YubikeyPlug
 from linotpadminclientcli.yubikey import create_static_password
-import ConfigParser
+import configparser
 import pprint
 import smtplib
 from email.mime.text import MIMEText
@@ -55,9 +55,9 @@ try:
 except ImportError:
     EDITION = "NOETNG"
 
-print
-print "Thank you for running the LinOTP2 linotpadmin client"
-print
+print()
+print("Thank you for running the LinOTP2 linotpadmin client")
+print()
 
 
 REALM = "LinOTP2 admin area (admin/admin)"
@@ -71,8 +71,8 @@ COMMANDS = [ 'listtoken', 'inittoken', 'assigntoken',
             'securitymodule' ]
 
 def usage():
-    print "usage: %s --url=<url> --admin=<adminusername> --cert=<cert> --key=<rsakey> --command=<command> --version" % sys.argv[0]
-    print """"  --url/-U     : The base url of the LinOTP server. Something like
+    print("usage: %s --url=<url> --admin=<adminusername> --cert=<cert> --key=<rsakey> --command=<command> --version" % sys.argv[0])
+    print(""""  --url/-U     : The base url of the LinOTP server. Something like
                  http://localhost:5000 or https://linotp:443
   --admin/-a   : If the admin interface of the LinOTP service requires authentication
                  you need to pass the username and will be asked for the password.
@@ -173,14 +173,14 @@ def usage():
                                      something like (&(uid=%s)(ObjectClass=inetOrgPerson))
     --rl_attrmap      Resolver LDAP: the attribute mapping. Something like:
                                      { "username": "uid", "phone" : "telephoneNumber", "groups" : "o", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }
-"""
+""")
 
 
 
 
 def showresult(rv):
     pp = pprint.PrettyPrinter(indent=4)
-    print pp.pformat(rv['result'])
+    print(pp.pformat(rv['result']))
 
 
 def yubi_mass_enroll(lotpc,
@@ -206,7 +206,7 @@ def yubi_mass_enroll(lotpc,
     '''
     yp = YubikeyPlug()
     while 0 == 0:
-        print "\nPlease insert the next yubikey.",
+        print("\nPlease insert the next yubikey.", end=' ')
         sys.stdout.flush()
         submit_param = {}
         #input = raw_input("Please insert the next yubikey and press enter (x=Exit): ")
@@ -273,7 +273,7 @@ def yubi_mass_enroll(lotpc,
                    'description':description}
 
         else:
-            print "Unknown Yubikey mode"
+            print("Unknown Yubikey mode")
             pass
         if 'realm' in proc_params:
             submit_param['realm'] = proc_params.get('realm')
@@ -300,10 +300,10 @@ def cifs_push(config, text):
 
     filename = os.path.basename(FILENAME)
 
-    print "Pushing %s to %s//%s/%s" % (filename,
+    print("Pushing %s to %s//%s/%s" % (filename,
                                        config.get("cifs_server"),
                                        config.get("cifs_share", ""),
-                                       config.get("cifs_dir"))
+                                       config.get("cifs_dir")))
 
     args = ["smbclient", "//%s\\%s" % (config.get("cifs_server"), config.get("cifs_share", "")),
             "-U", "%s%%%s" % (config.get("cifs_user"), config.get("cifs_password")), "-c",
@@ -313,13 +313,13 @@ def cifs_push(config, text):
     p = subprocess.Popen(args, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
     (result, error) = p.communicate()
     rcode = p.returncode
-    print result
-    print error
+    print(result)
+    print(error)
 
     try:
         os.remove(FILENAME)
-    except Exception, e:
-        print ("couldn't remove push test file: %r" % e)
+    except Exception as e:
+        print(("couldn't remove push test file: %r" % e))
 
 
 def sendmail(config, text):
@@ -338,7 +338,7 @@ def sendmail(config, text):
     if not config.get("mail_host"):
         Exception("mail_host required!")
 
-    print "sending mail to %s" % config.get("mail_to")
+    print("sending mail to %s" % config.get("mail_to"))
     msg = MIMEText(text)
     sender = config.get("mail_from")
     recipient = config.get("mail_to")
@@ -355,7 +355,7 @@ def read_config(config_file):
     '''
     Read the configuration/parameters from a config file
     '''
-    cfg = ConfigParser.SafeConfigParser()
+    cfg = configparser.SafeConfigParser()
     cfg_dict = {}
     cfg.read(config_file)
     for key, value in cfg.items("Default"):
@@ -413,7 +413,7 @@ def main():
                 'automate=', 'realm='] + file_opts + ldap_opts)
 
     except GetoptError:
-        print "There is an error in your parameter syntax:"
+        print("There is an error in your parameter syntax:")
         usage()
         sys.exit(1)
 
@@ -435,7 +435,7 @@ def main():
                 config["protocol"] = "http"
                 config["host"] = arg[7:].rstrip('/')
             else:
-                print "Malformed url format. You need to start with http or https [" + arg + "]"
+                print("Malformed url format. You need to start with http or https [" + arg + "]")
                 sys.exit(1)
 
         elif opt in ('-a', '--admin'):
@@ -488,7 +488,7 @@ def main():
         elif opt in ('--otppin'):
             param['otppin'] = arg
         elif opt in ('-v', '--version'):
-            print "linotpadm.py " + __version__
+            print("linotpadm.py " + __version__)
             sys.exit(0)
         elif opt in ('--config'):
             key, value = arg.rsplit('=', 2)
@@ -518,7 +518,7 @@ def main():
             elif arg.lower() == "oath":
                 config["yubi_mode"] = YUBI_OATH_MODE
             else:
-                print "No matching yubimode. Using OATH as default."
+                print("No matching yubimode. Using OATH as default.")
         elif opt in ('--yubislot='):
             config["yubi_slot"] = int(arg)
         elif opt in ('--yubiprefixserial'):
@@ -550,12 +550,12 @@ def main():
         config.update(config_from_file)
 
     if not (config["host"] and config["command"]):
-        print "Missing arguments. See --help"
+        print("Missing arguments. See --help")
         usage()
         sys.exit(0)
 
     if config["command"] not in COMMANDS:
-        print "Unknown command. See --help"
+        print("Unknown command. See --help")
         usage()
         sys.exit(0)
 
@@ -632,20 +632,20 @@ def main():
         r1 = lotpc.readserverconfig({})
         showresult(r1)
     elif (config.get("command") == "setconfig"):
-        print param
+        print(param)
         r1 = lotpc.writeserverconfig(param)
         showresult(r1)
     elif (config.get("command") == "assigntoken"):
         if 'user' not in param or 'serial' not in param :
-            print "To assign a token, we need a username and a tokenserial:"
-            print "   --command=assigntoken --user=<username> --serial=<tokenserial>"
+            print("To assign a token, we need a username and a tokenserial:")
+            print("   --command=assigntoken --user=<username> --serial=<tokenserial>")
             sys.exit(1)
         r1 = lotpc.assigntoken(param)
         showresult(r1)
     elif (config.get("command") == "unassigntoken"):
         if 'serial' not in param :
-            print "To unassign a token, we need a tokenserial:"
-            print "   --command=unassigntoken --serial=<tokenserial>"
+            print("To unassign a token, we need a tokenserial:")
+            print("   --command=unassigntoken --serial=<tokenserial>")
             sys.exit(1)
         r1 = lotpc.unassigntoken(param)
         showresult(r1)
@@ -661,11 +661,11 @@ def main():
 
 
     elif (config.get("command") == "etokenng_mass_enroll"):
-        print "Mass-Enrolling eToken NG OTP. Beware the tokencontents of all tokens will be deleted."
-        print "Random User PINs and SO-PINs will be set. The SO-PIN will be stored in the Token-Database."
-        print
+        print("Mass-Enrolling eToken NG OTP. Beware the tokencontents of all tokens will be deleted.")
+        print("Random User PINs and SO-PINs will be set. The SO-PIN will be stored in the Token-Database.")
+        print()
         while 0 == 0:
-            answer = raw_input("Please insert the next eToken NG and press enter (x=Exit): ")
+            answer = input("Please insert the next eToken NG and press enter (x=Exit): ")
             if "x" == answer.lower():
                 break
             tokenlabel = param.get('label', "LinOTPToken")
@@ -673,7 +673,7 @@ def main():
             tdata = initetng({ 'label': tokenlabel, 'debug' : False,
                                'description' : description })
             if not tdata['userpin']  or not tdata['hmac'] or not tdata['serial']:
-                print "No token was added to LinOTP:", tdata['error']
+                print("No token was added to LinOTP:", tdata['error'])
                 sys.exit(1)
             param['serial'] = tdata['serial']
             param['otpkey'] = tdata['hmac']
@@ -687,16 +687,16 @@ def main():
             tokenlabel = param.get('user', param.get('label', "LinOTPeToken"))
             tdata = initetng({ 'label': tokenlabel, 'debug' : True })
             if not tdata['userpin']  or not tdata['hmac'] or not tdata['serial']:
-                print "No token was added to LinOTP:", tdata['error']
+                print("No token was added to LinOTP:", tdata['error'])
                 sys.exit(1)
             param['serial'] = tdata['serial']
             param['otpkey'] = tdata['hmac']
             param['userpin'] = tdata['userpin']
             param['sopin'] = tdata['sopin']
-            print "FIXME: what shall we do with the eToken password and SO PIN:", tdata['userpin'], tdata['sopin']
+            print("FIXME: what shall we do with the eToken password and SO PIN:", tdata['userpin'], tdata['sopin'])
         elif config.get("pytoken"):
             if 'user' not in param:
-                print "To initialize a pyToken, please provide a username"
+                print("To initialize a pyToken, please provide a username")
                 sys.exit(1)
             pyTemplate = "FAIL"
             pyTemplateList = ('pytoken.template.py',
@@ -709,24 +709,24 @@ def main():
                     pyTemplate = pT
                     break
             if pyTemplate == "FAIL":
-                print "Could not find any pytoken template!"
+                print("Could not find any pytoken template!")
                 sys.exit(1)
             else:
                 pyTok = pyToken(keylen=256, template=pyTemplate)
                 pyTokenfile = pyTok.createToken(param['user'])
                 param['otpkey'] = pyTok.getHMAC()
                 param['serial'] = pyTok.getSerial()
-                print pyTokenfile
+                print(pyTokenfile)
         else:
             if 'user' not in param or 'serial' not in param or 'otpkey' not in param:
-                print "To initialize a token, we need at least a username, a tokenserial and an OTPkey/HMAC:"
-                print "   --command=inittoken --user=<username> --serial=<tokenserial> --hmac=<HMAC>"
+                print("To initialize a token, we need at least a username, a tokenserial and an OTPkey/HMAC:")
+                print("   --command=inittoken --user=<username> --serial=<tokenserial> --hmac=<HMAC>")
                 sys.exit(1)
         r1 = lotpc.inittoken(param)
         showresult(r1)
     elif (config.get("command") == "importtoken"):
         if not file:
-            print "To import tokens, we need a filename!"
+            print("To import tokens, we need a filename!")
             sys.exit(1)
         lotpc.importtoken ({ 'file': file })
     elif (config.get("command") == "disabletoken"):
@@ -743,7 +743,7 @@ def main():
         showresult (r1)
     elif (config.get("command") == "set"):
         if 'user' not in param and 'serial' not in param:
-            print "Please provide either or user or a serial to set the pin."
+            print("Please provide either or user or a serial to set the pin.")
             sys.exit(1)
         r1 = lotpc.set(param)
         showresult(r1)
@@ -752,14 +752,14 @@ def main():
         showresult (r1)
     elif (config.get("command") == "setrealm"):
         if "realm" not in param or "resolver" not in param:
-            print "You need to provide a realm and resolvers."
+            print("You need to provide a realm and resolvers.")
             sys.exit(1)
         param['resolvers'] = param['resolver']
         r1 = lotpc.setrealm(param)
         showresult (r1)
     elif (config.get("command") == "deleterealm"):
         if "realm" not in param:
-            print "You need to provide a realm."
+            print("You need to provide a realm.")
             sys.exit(1)
         r1 = lotpc.deleterealm(param)
         showresult (r1)
@@ -767,17 +767,17 @@ def main():
         r1 = {}
         if "module" in param:
             password = getpass.getpass(prompt="Please enter password for security module '%s':" % param["module"])
-            print "Setting the password of your security module %s" % param['module']
+            print("Setting the password of your security module %s" % param['module'])
             r1 = lotpc.securitymodule(param={ "hsm_id" : param["module"],
                                                 "password" : str(password) })
         else:
-            print "This is the configuration of your active Security module:"
-            print
+            print("This is the configuration of your active Security module:")
+            print()
             r1 = lotpc.securitymodule(param={})
         showresult(r1)
     elif (config.get("command") == "setdefaultrealm"):
         if "realm" not in param:
-            print "You need to provide a realm."
+            print("You need to provide a realm.")
             sys.exit(1)
         r1 = lotpc.setdefaultrealm(param)
         showresult (r1)
@@ -786,26 +786,26 @@ def main():
         showresult (r1)
     elif (config.get("command") == "deleteresolver"):
         if "resolver" not in param:
-            print param
-            print "You need to provide a resolver."
+            print(param)
+            print("You need to provide a resolver.")
             sys.exit(1)
         r1 = lotpc.deleteresolver(param)
     elif (config.get("command") == "setresolver"):
         if not "rtype" in param:
-            print "your need to specify a type of the resolver."
+            print("your need to specify a type of the resolver.")
             sys.exit(1)
         if param['rtype'] == 'LDAP':
             for opt in ldap_opts:
                 o = opt.split('=')
                 if o[0] not in param:
-                    print "you need to specify --%s for ldap resolvers" % o[0]
+                    print("you need to specify --%s for ldap resolvers" % o[0])
                     sys.exit(1)
         elif param['rtype'] == 'SQL':
-            print "TODO: SQL parameters not implemented yet"
+            print("TODO: SQL parameters not implemented yet")
             sys.exit(1)
         elif param['rtype'] == 'FILE':
             if 'rf_file' not in param:
-                print "you need to specify --rf_file!"
+                print("you need to specify --rf_file!")
                 sys.exit(1)
         r1 = lotpc.setresolver(param)
         showresult(r1)
@@ -822,7 +822,7 @@ def main():
         showresult(ret)
 
     else:
-        print "Nothing to do and nothing done."
+        print("Nothing to do and nothing done.")
 
 
 if __name__ == '__main__':

@@ -458,7 +458,7 @@ class TestU2FController(TestController):
         if message == "Multiple challenges submitted.":
             self.assertIn('challenges', response_authentication1['detail'],
                           "Response: %r" % response_authentication1)
-            for challenge in response_authentication1['detail']['challenges'].values():
+            for challenge in list(response_authentication1['detail']['challenges'].values()):
                 # check for non-empty transactionid
                 self.assertIn('transactionid', challenge,
                               "Response: %r" % response_authentication1)
@@ -487,7 +487,7 @@ class TestU2FController(TestController):
                 self.assertNotEqual(challenge['signrequest']['keyHandle'], '')
 
             challenges = response_authentication1['detail']['challenges']
-            reply.extend(challenges.values())
+            reply.extend(list(challenges.values()))
         else:
             # check for non-empty transactionid
             self.assertIn('transactionid', response_authentication1['detail'],

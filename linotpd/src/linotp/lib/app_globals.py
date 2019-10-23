@@ -125,10 +125,10 @@ class Globals(object):
 
             if ty == 'list' or ty == 'dict':
                 for k in conf:
-                    if self.config.has_key(k):
+                    if k in self.config:
                         del self.config[k]
             elif ty == 'str' or ty == 'unicode':
-                if self.config.has_key(conf):
+                if conf in self.config:
                     del self.config[conf]
         finally:
             self.configLock.release()

@@ -454,7 +454,7 @@ class SelfserviceController(BaseController):
                 tclt = tokenclass_registry.get(tok)
                 if hasattr(tclt, 'getClassInfo'):
                     sections = tclt.getClassInfo(section, {})
-                    if scope in sections.keys():
+                    if scope in list(sections.keys()):
                         section = sections.get(scope)
                         page = section.get('page')
                         c.scope = page.get('scope')

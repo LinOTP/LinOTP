@@ -28,7 +28,7 @@ openid controller - This is the controller for the openid service
 """
 
 import logging
-from urllib import urlencode
+from urllib.parse import urlencode
 
 import linotp.model
 

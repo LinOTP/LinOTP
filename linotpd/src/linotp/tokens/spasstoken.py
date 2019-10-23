@@ -49,7 +49,7 @@ class SpassTokenClass(TokenClass):
 
     def __init__(self, aToken):
         TokenClass.__init__(self, aToken)
-        self.setType(u"spass")
+        self.setType("spass")
         self.mode = ['authenticate']
 
     @classmethod
@@ -91,7 +91,7 @@ class SpassTokenClass(TokenClass):
         }
 
         # do we need to define the lost token policies here...
-        if key is not None and res.has_key(key):
+        if key is not None and key in res:
             ret = res.get(key)
         else:
             if ret == 'all':

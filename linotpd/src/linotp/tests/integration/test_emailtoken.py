@@ -119,7 +119,7 @@ class TestEmailTokenAuth(TestEmailToken):
             logger.debug("Executing %s" % ' '.join(call_array))
             try:
                 return check_output(call_array)
-            except CalledProcessError, e:
+            except CalledProcessError as e:
                 assert e.returncode == 0, \
                     "radius auth process exit code %s. Command:%s Ouptut:%s" % \
                     (e.returncode, ' '.join(e.cmd), e.output)

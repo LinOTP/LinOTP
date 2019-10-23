@@ -18,7 +18,7 @@
 # settings are not to be confused with the actual configuration for
 # what LinOTP is doing, which is kept in the SQL database.
 
-from __future__ import print_function
+
 
 import importlib
 import logging
@@ -366,7 +366,7 @@ class LinOTPApp(Flask):
         from linotp.provider import getProvider
 
         provider = {}
-        for provider_type in Provider_types.keys():
+        for provider_type in list(Provider_types.keys()):
             provider[provider_type] = getProvider(provider_type)
 
         request_context['Provider'] = provider
@@ -388,7 +388,7 @@ class LinOTPApp(Flask):
         }
 
         sysconfig = {}
-        for key, default in syskeys.items():
+        for key, default in list(syskeys.items()):
             sysconfig[key] = config.get(key, default)
 
         request_context['SystemConfig'] = sysconfig

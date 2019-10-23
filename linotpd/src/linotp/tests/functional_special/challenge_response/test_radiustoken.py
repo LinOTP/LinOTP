@@ -35,7 +35,7 @@ import re
 import time
 import json
 import logging
-import urlparse
+import urllib.parse
 
 # we need this for the radius token
 from pyrad.client import Client
@@ -73,7 +73,7 @@ class RadiusResponse(object):
         return self.reply.get(key)
 
     def keys(self):
-        return self.reply.keys()
+        return list(self.reply.keys())
 
 
 def mocked_radius_SendPacket(Client, *argparams, **kwparams):

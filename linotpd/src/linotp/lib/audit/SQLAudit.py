@@ -58,7 +58,7 @@ log = logging.getLogger(__name__)
 metadata = schema.MetaData()
 
 def now():
-    u_now = u"%s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+    u_now = "%s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
     return u_now
 
 ######################## MODEL ################################################
@@ -71,19 +71,19 @@ audit_table = schema.Table(audit_table_name, metadata,
                                                        optional=True),
                   primary_key=True),
     schema.Column('timestamp', types.Unicode(30), default=now, index=True),
-    schema.Column('signature', types.Unicode(512), default=u''),
+    schema.Column('signature', types.Unicode(512), default=''),
     schema.Column('action', types.Unicode(30), index=True),
-    schema.Column('success', types.Unicode(30), default=u"False"),
+    schema.Column('success', types.Unicode(30), default="False"),
     schema.Column('serial', types.Unicode(30), index=True),
     schema.Column('tokentype', types.Unicode(40)),
     schema.Column('user', types.Unicode(255), index=True),
     schema.Column('realm', types.Unicode(255), index=True),
     schema.Column('administrator', types.Unicode(255)),
-    schema.Column('action_detail', types.Unicode(512), default=u''),
-    schema.Column('info', types.Unicode(512), default=u''),
+    schema.Column('action_detail', types.Unicode(512), default=''),
+    schema.Column('info', types.Unicode(512), default=''),
     schema.Column('linotp_server', types.Unicode(80)),
     schema.Column('client', types.Unicode(80)),
-    schema.Column('log_level', types.Unicode(20), default=u"INFO", index=True),
+    schema.Column('log_level', types.Unicode(20), default="INFO", index=True),
     schema.Column('clearance_level', types.Integer, default=0)
 )
 
@@ -94,13 +94,13 @@ AUDIT_ENCODE = ["action", "serial", "success", "user", "realm", "tokentype",
 
 class AuditTable(object):
 
-    def __init__(self, serial=u"", action=u"", success=u"False",
-                 tokentype=u"", user=u"",
-                 realm=u"", administrator=u"",
-                 action_detail=u"", info=u"",
-                 linotp_server=u"",
-                 client=u"",
-                 log_level=u"INFO",
+    def __init__(self, serial="", action="", success="False",
+                 tokentype="", user="",
+                 realm="", administrator="",
+                 action_detail="", info="",
+                 linotp_server="",
+                 client="",
+                 log_level="INFO",
                  clearance_level=0,
                  config_param=None):
         """
@@ -147,24 +147,24 @@ class AuditTable(object):
             self.config = config
         self.trunc_as_err = self.config.get('linotpAudit.error_on_truncation',
                                             'False') == 'True'
-        self.serial = unicode(serial or '')
-        self.action = unicode(action or '')
-        self.success = unicode(success or '0')
-        self.tokentype = unicode(tokentype or '')
-        self.user = unicode(user or '')
-        self.realm = unicode(realm or '')
-        self.administrator = unicode(administrator or '')
+        self.serial = str(serial or '')
+        self.action = str(action or '')
+        self.success = str(success or '0')
+        self.tokentype = str(tokentype or '')
+        self.user = str(user or '')
+        self.realm = str(realm or '')
+        self.administrator = str(administrator or '')
 
         #
         # we have to truncate the 'action_detail' and the 'info' data
         # in utf-8 compliant way
         #
-        self.action_detail = utf8_slice(unicode(action_detail or ''), 512).next()
-        self.info = utf8_slice(unicode(info or ''), 512).next()
+        self.action_detail = next(utf8_slice(str(action_detail or ''), 512))
+        self.info = next(utf8_slice(str(info or ''), 512))
 
-        self.linotp_server = unicode(linotp_server or '')
-        self.client = unicode(client or '')
-        self.log_level = unicode(log_level or '')
+        self.linotp_server = str(linotp_server or '')
+        self.client = str(client or '')
+        self.log_level = str(log_level or '')
         self.clearance_level = clearance_level
         self.timestamp = now()
         self.siganture = ' '
@@ -190,7 +190,7 @@ class AuditTable(object):
 
         :return: - nothing -
         """
-        if type(value) in [str, unicode]:
+        if type(value) in [str, str]:
             field_len = self._get_field_len(name)
             encoded_value = linotp.lib.crypto.utils.uencode(value)
             if field_len != -1 and len(encoded_value) > field_len:
@@ -391,7 +391,7 @@ class Audit(AuditBase):
         key.sign_init()
         key.sign_update(s_audit)
         signature = key.sign_final()
-        return u'' + hexlify(signature)
+        return '' + hexlify(signature)
 
 
     def _verify(self, auditline, signature):
@@ -494,7 +494,7 @@ class Audit(AuditBase):
         if not AND:
             boolCheck = or_
 
-        for k, v in param.items():
+        for k, v in list(param.items()):
             if "" != v:
                 if "serial" == k:
                     conditions.append(AuditTable.serial.like(v))
@@ -540,8 +540,8 @@ class Audit(AuditBase):
         line = self._attr_to_dict(audit_line)
 
         ## if we have an \uencoded data, we extract the unicode back
-        for key, value in line.items():
-            if value and type(value) in [str, unicode]:
+        for key, value in list(line.items()):
+            if value and type(value) in [str, str]:
                 value = linotp.lib.crypto.utils.udecode(value)
                 line[key] = value
             elif value is None:

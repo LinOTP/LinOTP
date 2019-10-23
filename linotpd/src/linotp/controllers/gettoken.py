@@ -177,7 +177,7 @@ class GettokenController(BaseController):
         except PolicyException as pe:
             log.exception("[getotp] gettoken/getotp policy failed: %r", pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[getmultiotp] gettoken/getmultiotp failed: %r", exx)
@@ -297,13 +297,13 @@ class GettokenController(BaseController):
         except PolicyException as pe:
             log.exception("[getotp] gettoken/getotp policy failed: %r", pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[getotp] gettoken/getotp failed: %r", exx)
             Session.rollback()
             return sendError(response, "gettoken/getotp failed: %s" %
-                             unicode(exx), 0)
+                             str(exx), 0)
 
         finally:
             Session.close()

@@ -40,7 +40,7 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 
 import logging
 import tempfile
-import urlparse
+import urllib.parse
 
 
 from linotp.lib.util import str2unicode
@@ -59,7 +59,7 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
 
     resp = 200
     body = kwparams.get('body', '')
-    params = dict(urlparse.parse_qsl(body))
+    params = dict(urllib.parse.parse_qsl(body))
 
     content = {
         "version": "LinOTP MOCK",
@@ -115,7 +115,7 @@ class DefaultProvider():
         jresp = json.loads(response.body)
         providers = jresp.get('result').get('value', {})
 
-        for provider_name, provider_def in providers.items():
+        for provider_name, provider_def in list(providers.items()):
             if 'default' in provider_def:
                 self.old_default = provider_name
 
@@ -159,7 +159,7 @@ class DefaultProvider():
         jresp = json.loads(response.body)
         providers = jresp.get('result').get('value', {})
 
-        for provider_name, provider_def in providers.items():
+        for provider_name, provider_def in list(providers.items()):
             if 'Default' not in provider_def:
                 response = self.test.make_system_request(
                                 'delProvider', params={
@@ -510,9 +510,9 @@ class TestHttpSmsController(TestSpecialController):
                 line = f.read()
 
             line = str2unicode(line)
-            self.assertTrue(u'Täst' in line, u"'Täst' not found in line")
+            self.assertTrue('Täst' in line, "'Täst' not found in line")
 
-            _left, otp = line.split(u'Täst')
+            _left, otp = line.split('Täst')
             response = self.make_validate_request('check',
                                                   params={'user': 'user1',
                                                           'pass': '1234%s' % otp})
@@ -571,7 +571,7 @@ class TestHttpSmsController(TestSpecialController):
             for row in jresp.get('rows',[]):
                 entry = row.get('cell',[])
                 for info in entry:
-                    if type(info) in [str, unicode]:
+                    if type(info) in [str, str]:
                         if 'SMS could not be sent' in info:
                             found = True
                             break

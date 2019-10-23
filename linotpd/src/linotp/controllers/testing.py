@@ -238,7 +238,7 @@ class TestingController(BaseController):
         except Exception as e:
             log.exception('[http2sms] %r' % e)
             Session.rollback()
-            return sendError(response, unicode(e), 0)
+            return sendError(response, str(e), 0)
 
         finally:
             Session.close()

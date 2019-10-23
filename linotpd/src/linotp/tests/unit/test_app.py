@@ -22,7 +22,7 @@ def test_healthcheck(base_app, client):
     assert res.status_code == 200
     assert len(res.json) == len(wanted), \
         'healthcheck result must contain exactly {} items'.format(len(wanted))
-    for key, test_fn in wanted.items():
+    for key, test_fn in list(wanted.items()):
         value = res.json.get(key, None)
         assert value is not None, \
             'healthcheck result missing key {}'.format(key)

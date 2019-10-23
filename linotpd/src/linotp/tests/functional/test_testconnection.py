@@ -94,11 +94,11 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
             'UIDTYPE': 'objectGUID',
             'BINDPW': 'Test123!',
             'USERINFO': json.dumps(u_map),
-            'TIMEOUT': u'5',
-            'SIZELIMIT': u'500',
-            'NOREFERRALS': u'True',
-            'type': u'ldapresolver',
-            'EnforceTLS': u'True'}
+            'TIMEOUT': '5',
+            'SIZELIMIT': '500',
+            'NOREFERRALS': 'True',
+            'type': 'ldapresolver',
+            'EnforceTLS': 'True'}
 
         response = self.make_system_request('setResolver', params=params)
 
@@ -122,7 +122,7 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
            'CACERTIFICATE': 'ldap_certificate'}
 
         transform = {}
-        for key, value in defintion.items():
+        for key, value in list(defintion.items()):
             if key in mapping:
                 transform[mapping[key]] = value
 

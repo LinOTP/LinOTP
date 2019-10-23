@@ -51,7 +51,7 @@ class YubikeyTokenClass(TokenClass):
 
     def __init__(self, aToken):
         TokenClass.__init__(self, aToken)
-        self.setType(u"yubikey")
+        self.setType("yubikey")
 
         self.hKeyRequired = True
         return

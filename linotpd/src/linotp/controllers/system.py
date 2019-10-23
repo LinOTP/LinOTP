@@ -272,7 +272,7 @@ class SystemController(BaseController):
         try:
             param = getLowerParams(self.request_params)
             log.info("[setDefault] saving default configuration: %r",
-                     param.keys())
+                     list(param.keys()))
 
             for k in keys:
                 if k.lower() in param:
@@ -332,7 +332,7 @@ class SystemController(BaseController):
         param = self.request_params
 
         try:
-            log.info("[setConfig] saving configuration: %r", param.keys())
+            log.info("[setConfig] saving configuration: %r", list(param.keys()))
 
             if "key" in param:
                 key = param["key"]
@@ -384,7 +384,7 @@ class SystemController(BaseController):
                 # --------------------------------------------------------- --
                 # after successfully storing run the direct config callback
 
-                for key, val in conf.items():
+                for key, val in list(conf.items()):
 
                     self._config_callback(key, val)
 
@@ -508,7 +508,7 @@ class SystemController(BaseController):
             # if there is no parameter, we return them all
             if len(param) == 0:
                 conf = getLinotpConfig()
-                keys = conf.keys()
+                keys = list(conf.keys())
                 keys.sort()
                 for key in keys:
 
@@ -528,7 +528,7 @@ class SystemController(BaseController):
                         typ = type(conf.get(key)).__name__
                         if typ not in ['str', 'unicode']:
                             if typ == 'datetime':
-                                res[Key] = unicode(conf.get(key))
+                                res[Key] = str(conf.get(key))
                             else:
                                 res[Key] = conf.get(key)
                         else:
@@ -705,7 +705,7 @@ class SystemController(BaseController):
                 else:
                     mode = 'rename'
 
-            log.info("[setResolver] saving configuration %r", param.keys())
+            log.info("[setResolver] saving configuration %r", list(param.keys()))
 
             #
             # before storing the new resolver, we check if already a
@@ -757,7 +757,7 @@ class SystemController(BaseController):
 
                 change_realms = {}
 
-                for realm_name, realm_description in getRealms().items():
+                for realm_name, realm_description in list(getRealms().items()):
 
                     resolvers = realm_description.get('useridresolver')
 
@@ -804,7 +804,7 @@ class SystemController(BaseController):
 
         except ResolverLoadConfigError as exx:
             log.exception("Failed to load resolver definition %r \n %r",
-                          exx, param.keys())
+                          exx, list(param.keys()))
             Session.rollback()
             return sendError(response, msg % new_resolver_name)
 
@@ -1278,7 +1278,7 @@ class SystemController(BaseController):
                 enforce = True
                 p_param['enforce'] = enforce
 
-            c.audit['action_detail'] = unicode(param)
+            c.audit['action_detail'] = str(param)
 
             if len(name) > 0 and len(action) > 0:
                 log.debug("[setPolicy] saving policy %r", p_param)
@@ -1616,7 +1616,7 @@ class SystemController(BaseController):
                     res["allowed"] = len(pol) > 0
                     res["policy"] = pol
                     if len(pol) > 0:
-                        c.audit['info'] = "allowed by policy %s" % pol.keys()
+                        c.audit['info'] = "allowed by policy %s" % list(pol.keys())
                 else:
                     # No policy active for this scope
                     c.audit['info'] = ("allowed since no policies in scope %s"
@@ -1632,7 +1632,7 @@ class SystemController(BaseController):
                 res["allowed"] = len(pol) > 0
                 res["policy"] = pol
                 if len(pol) > 0:
-                    c.audit['info'] = "allowed by policy %s" % pol.keys()
+                    c.audit['info'] = "allowed by policy %s" % list(pol.keys())
 
             c.audit['action_detail'] = ("action = %s, realm = %s, scope = %s"
                                         % (action, realm, scope))
@@ -1738,7 +1738,7 @@ class SystemController(BaseController):
 
             if user:
                 rpol = {}
-                for p_name, policy in pol.items():
+                for p_name, policy in list(pol.items()):
                     if policy['user'] is None:
                         rpol[p_name] = policy
                     else:
@@ -1835,7 +1835,7 @@ class SystemController(BaseController):
 
         try:
             params = getLowerParams(self.request_params)
-            log.debug("[setupSecurityModule] parameters: %r", params.keys())
+            log.debug("[setupSecurityModule] parameters: %r", list(params.keys()))
 
             hsm_id = params.get('hsm_id', None)
 
@@ -2148,7 +2148,7 @@ class SystemController(BaseController):
 
             res = getProvider(provider_type, provider_name, decrypted=True)
             if res:
-                for provider_name, desc in res.items():
+                for provider_name, desc in list(res.items()):
                     if 'Managed' in desc:
                         res[provider_name]['Managed'] = True
 

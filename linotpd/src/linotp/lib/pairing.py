@@ -77,7 +77,7 @@ SUPPORTED_TOKEN_TYPES = [TYPE_QRTOKEN_ED25519, TYPE_PUSHTOKEN]
 
 hash_algorithms = {'sha1': 0, 'sha256': 1, 'sha512': 2}
 TOKEN_TYPES = {'qr': TYPE_QRTOKEN_ED25519, 'push': TYPE_PUSHTOKEN}
-INV_TOKEN_TYPES = {v: k for k, v in TOKEN_TYPES.items()}
+INV_TOKEN_TYPES = {v: k for k, v in list(TOKEN_TYPES.items())}
 
 
 # -------------------------------------------------------------------------- --
@@ -162,7 +162,7 @@ def generate_pairing_url(token_type,
     try:
         TOKEN_TYPE = TOKEN_TYPES[token_type]
     except KeyError:
-        allowed_types = ', '.join(TOKEN_TYPES.keys())
+        allowed_types = ', '.join(list(TOKEN_TYPES.keys()))
         raise InvalidFunctionParameter('token_type',
                                        'Unsupported token type %s. Supported '
                                        'types for pairing are: %s' %
@@ -265,7 +265,7 @@ def generate_pairing_url(token_type,
         try:
             HASH_ALGO = hash_algorithms[hash_algorithm]
         except KeyError:
-            allowed_values = ", ".join(hash_algorithms.keys())
+            allowed_values = ", ".join(list(hash_algorithms.keys()))
             raise InvalidFunctionParameter('hash_algorithm',
                                            'Unsupported hash algorithm %s, '
                                            'allowed values are %s' %

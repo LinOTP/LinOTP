@@ -112,7 +112,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     def __init__(self, token_model_object):
         TokenClass.__init__(self, token_model_object)
-        self.setType(u'qr')
+        self.setType('qr')
         self.mode = ['challenge']
         self.supports_offline_mode = True
 

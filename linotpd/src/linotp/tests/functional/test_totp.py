@@ -146,7 +146,7 @@ class HmacOtp:
     def generate(self, key=None, counter=None):
         key = key or self.key
         counter = counter or self.counter
-        otp = unicode(self.truncate(self.hmac(key, counter)))
+        otp = str(self.truncate(self.hmac(key, counter)))
         sotp = (self.digits - len(otp)) * "0" + otp
         return sotp
 
@@ -219,7 +219,7 @@ class TotpToken(object):
             idate = int(counter - 0.5) * self.timestep
             ddate = datetime.datetime.utcfromtimestamp(idate / 1.0)
         except Exception as e:
-            print "%r" % e
+            print("%r" % e)
         return ddate
 
 
@@ -278,7 +278,7 @@ class TestTotpController(TestController):
         dt = datetime.datetime.now()
         if type(curTime) == datetime.datetime:
             dt = curTime
-        elif type(curTime) == unicode:
+        elif type(curTime) == str:
             if '.' in curTime:
                 tFormat = "%Y-%m-%d %H:%M:%S.%f"
             else:
@@ -885,7 +885,7 @@ class TestTotpController(TestController):
                 response = self.make_gettoken_request(
                                 'getmultiotp', params=parameters)
 
-                print response
+                print(response)
                 resp = json.loads(response.body)
 
                 otpres = resp.get('result').get('value').get('otp')

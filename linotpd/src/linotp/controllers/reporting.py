@@ -166,7 +166,7 @@ class ReportingController(BaseController):
 
             # if there are no policies for us, we are allowed to see all realms
             if not realm_whitelist or '*' in realm_whitelist:
-                realm_whitelist = request_context['Realms'].keys()
+                realm_whitelist = list(request_context['Realms'].keys())
 
             realms = match_realms(request_realms, realm_whitelist)
 
@@ -180,7 +180,7 @@ class ReportingController(BaseController):
         except PolicyException as policy_exception:
             log.exception(policy_exception)
             Session.rollback()
-            return sendError(response, unicode(policy_exception), 1)
+            return sendError(response, str(policy_exception), 1)
 
         except Exception as exc:
             log.exception(exc)
@@ -224,7 +224,7 @@ class ReportingController(BaseController):
 
             # if there are no policies for us, we are allowed to see all realms
             if not realm_whitelist or '*' in realm_whitelist:
-                realm_whitelist = request_context['Realms'].keys()
+                realm_whitelist = list(request_context['Realms'].keys())
 
             realms = match_realms(request_realms, realm_whitelist)
 
@@ -242,7 +242,7 @@ class ReportingController(BaseController):
         except PolicyException as policy_exception:
             log.exception(policy_exception)
             Session.rollback()
-            return sendError(response, unicode(policy_exception), 1)
+            return sendError(response, str(policy_exception), 1)
 
         except Exception as exc:
             log.exception(exc)
@@ -296,7 +296,7 @@ class ReportingController(BaseController):
 
             # if there are no policies for us, we are allowed to see all realms
             if not realm_whitelist or '*' in realm_whitelist:
-                realm_whitelist = request_context['Realms'].keys()
+                realm_whitelist = list(request_context['Realms'].keys())
 
             realms = match_realms(request_realms, realm_whitelist)
 
@@ -307,12 +307,12 @@ class ReportingController(BaseController):
         except PolicyException as policy_exception:
             log.exception(policy_exception)
             Session.rollback()
-            return sendError(response, unicode(policy_exception), 1)
+            return sendError(response, str(policy_exception), 1)
 
         except ValueError as value_error:
             log.exception(value_error)
             Session.rollback()
-            return sendError(response, unicode(value_error), 1)
+            return sendError(response, str(value_error), 1)
 
         except Exception as exc:
             log.exception(exc)
@@ -382,7 +382,7 @@ class ReportingController(BaseController):
 
             # if there are no policies for us, we are allowed to see all realms
             if not realm_whitelist or '*' in realm_whitelist:
-                realm_whitelist = request_context['Realms'].keys()
+                realm_whitelist = list(request_context['Realms'].keys())
 
             realms = match_realms(request_realms, realm_whitelist)
 
@@ -406,12 +406,12 @@ class ReportingController(BaseController):
         except PolicyException as policy_exception:
             log.exception(policy_exception)
             Session.rollback()
-            return sendError(response, unicode(policy_exception), 1)
+            return sendError(response, str(policy_exception), 1)
 
         except ValueError as value_error:
             log.exception(value_error)
             Session.rollback()
-            return sendError(response, unicode(value_error), 1)
+            return sendError(response, str(value_error), 1)
 
         except Exception as exc:
             log.exception(exc)

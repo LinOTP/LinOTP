@@ -118,8 +118,8 @@ def getPolicyDefinitions(scope=""):
             'setOTPPIN': {'type': 'bool'},
             'setMOTPPIN': {'type': 'bool'},
             'getotp': {'type': 'bool'},
-            'otp_pin_maxlength': {'type': 'int', 'value': range(0, 100)},
-            'otp_pin_minlength': {'type': 'int', 'value': range(0, 100)},
+            'otp_pin_maxlength': {'type': 'int', 'value': list(range(0, 100))},
+            'otp_pin_minlength': {'type': 'int', 'value': list(range(0, 100))},
             'otp_pin_contents': {'type': 'str'},
             'activateQR': {'type': 'bool'},
 
@@ -158,7 +158,7 @@ def getPolicyDefinitions(scope=""):
                         'have assigned.'},
             'otp_pin_random': {
                 'type': 'int',
-                'value': range(0, 100)},
+                'value': list(range(0, 100))},
             'otp_pin_encrypt': {
                 'type': 'int',
                 'value': [0, 1]},
@@ -479,9 +479,9 @@ def getPolicyDefinitions(scope=""):
         policy = linotp.lib.token.getTokenConfig(ttype, section='policy')
 
         ## get all policy sections like: admin, selfservice . . '''
-        pol_keys = pol.keys()
+        pol_keys = list(pol.keys())
 
-        for pol_section in policy.keys():
+        for pol_section in list(policy.keys()):
             # if we have a dyn token definition of this section type
             # add this to this section - and make sure, that it is
             # then token type prefixed

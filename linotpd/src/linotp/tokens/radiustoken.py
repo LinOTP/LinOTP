@@ -57,7 +57,7 @@ class RadiusTokenClass(RemoteTokenClass):
 
     def __init__(self, aToken):
         RemoteTokenClass.__init__(self, aToken)
-        self.setType(u"radius")
+        self.setType("radius")
 
         self.radiusServer = ""
         self.radiusUser = ""
@@ -109,7 +109,7 @@ class RadiusTokenClass(RemoteTokenClass):
             'policy': {},
         }
 
-        if key is not None and res.has_key(key):
+        if key is not None and key in res:
             ret = res.get(key)
         else:
             if ret == 'all':
@@ -267,7 +267,7 @@ class RadiusTokenClass(RemoteTokenClass):
 
             if response.code == pyrad.packet.AccessChallenge:
                 opt = {}
-                for attr in response.keys():
+                for attr in list(response.keys()):
                     opt[attr] = response[attr]
                 res = False
                 log.debug("challenge returned %r " % opt)

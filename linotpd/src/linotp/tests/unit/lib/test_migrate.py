@@ -104,7 +104,7 @@ class TestMigrate(unittest.TestCase):
         passphrase = "foobar"
         crypter = init_crypter(passphrase)
 
-        for key, value in config.items():
+        for key, value in list(config.items()):
 
             # calculate encryption and add mac from mac_data
             enc_value = crypter.encrypt(input_data=value,

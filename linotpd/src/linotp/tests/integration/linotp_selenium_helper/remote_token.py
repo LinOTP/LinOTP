@@ -28,8 +28,8 @@
 import time
 import re
 
-from token import Token
-from helper import hover, select
+from .token import Token
+from .helper import hover, select
 
 class RemoteToken(Token):
     """Creates a Remote Token in the LinOTP WebUI"""

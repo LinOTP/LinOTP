@@ -261,7 +261,7 @@ def _checkSystemPolicyPost(method, param=None, user=None):
                           "in these realms: %r", pol['realms'])
 
                 lowerRealms = uniquify(pol['realms'])
-                for realm, _v in res.items():
+                for realm, _v in list(res.items()):
                     if (realm.lower() not in lowerRealms and
                        '*' not in lowerRealms):
 
@@ -1686,7 +1686,7 @@ def _checkTokenAssigned(user):
 
         # compare the tokens of the user with the max numbers of the policy
 
-        for token_type, token_count in token_counts.items():
+        for token_type, token_count in list(token_counts.items()):
 
             max_token_count = getPolicyActionValue(
                                         policies,
@@ -1879,7 +1879,7 @@ def get_auto_enrollment(user):
 
     t_typ = getPolicyActionValue(pol, "autoenrollment", is_string=True)
 
-    if type(t_typ) not in [str, unicode]:
+    if type(t_typ) not in [str, str]:
         log.info("unsupported token type for auto enrollment %r", t_typ)
         return False, ''
 
@@ -2967,7 +2967,7 @@ def check_token_reporting(realm):
     report_policies = getPolicy({'scope': 'reporting', 'realm': realm})
     actions = []
 
-    for polname, policy in report_policies.items():
+    for polname, policy in list(report_policies.items()):
         action = policy.get('action', '')
         action = str(action)
         action = action.split(',')
@@ -2985,7 +2985,7 @@ def check_token_reporting(realm):
                           'inactive&assigned', 'inactive&unassigned',
                           'total', 'total users']
                 for stat in status:
-                    actions.append(unicode(stat))
+                    actions.append(str(stat))
     return actions
 
 

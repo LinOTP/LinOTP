@@ -132,7 +132,7 @@ class MotpTokenClass(TokenClass):
         :type a_token:  orm object
         '''
         TokenClass.__init__(self, a_token)
-        self.setType(u"mOTP")
+        self.setType("mOTP")
 
         return
 

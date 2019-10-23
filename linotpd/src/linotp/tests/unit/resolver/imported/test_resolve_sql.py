@@ -101,7 +101,7 @@ class TestSQLResolver(TestCase):
         '''
         res = obj.getUserList(arg)
         for item in res:
-            for _key, val in item.iteritems():
+            for _key, val in item.items():
                 self.assertNotIn('-ERR', str(val))
         return res
 
@@ -110,13 +110,13 @@ class TestSQLResolver(TestCase):
         SQL: test the existance of the user1 and user2
         '''
         res = self.y.getUserId("user1")
-        print "uid (user1): ", res
+        print("uid (user1): ", res)
         self.assertTrue(res == 1)
 
         self.assertTrue(self.y.getUserInfo(res).get("surname") == "Eins")
 
         res = self.y.getUserId("user2")
-        print "uid (user2): ", res
+        print("uid (user2): ", res)
         self.assertTrue(res == 2)
 
         self.assertTrue(self.y.getUserInfo(res).get("surname") == "Zwo")
@@ -167,7 +167,7 @@ class TestSQLResolver(TestCase):
         res3 = self.getUserList(self.y, {'username': 'user.3'})
         self.assertEqual(len(res3), 2)
         self.assertEqual(set(s['username'] for s in res3),
-                         set([u'user_3', u'userx3']))
+                         set(['user_3', 'userx3']))
 
         res4 = self.getUserList(self.y, {'username': 'user*'})
         self.assertEqual(len(res4), 4)

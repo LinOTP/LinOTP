@@ -168,7 +168,7 @@ class TestRealmContextController(TestController):
         # Assign to user in 'realm_no_default'
         self._assign(
             self.token['serial'],
-            u'molière@realm_no_default',
+            'molière@realm_no_default',
             )
 
         # validate PIN+OTP -> fails
@@ -219,7 +219,7 @@ class TestRealmContextController(TestController):
         # Assign to user in 'realm_no_default'
         self._assign(
             self.token['serial'],
-            u'molière@realm_no_default',
+            'molière@realm_no_default',
         )
 
         # Set token realm 'realm_default' (user is in 'realm_no_default')
@@ -243,7 +243,7 @@ class TestRealmContextController(TestController):
         # validate/check PIN+OTP -> fails (because when using check the user
         # realm is relevant and for 'realm_no_default' the policy is set)
         self._validate(
-            u'molière@realm_no_default',
+            'molière@realm_no_default',
             'mypin' + self.token['otps'].popleft(),
             action='check',
             expected='value-false',
@@ -256,7 +256,7 @@ class TestRealmContextController(TestController):
         # That is: A token either has 0-N token realms or a user (including his
         # realm).
         self._validate(
-            u'molière@realm_no_default',
+            'molière@realm_no_default',
             self.token['otps'].popleft(),
             action='check',
             expected='value-false',
@@ -288,13 +288,13 @@ class TestRealmContextController(TestController):
         # user realm is relevant. Since the user realm is 'realm_no_default'
         # and for that realm no policy is set, it succeeds)
         self._validate(
-            u'molière@realm_no_default',
+            'molière@realm_no_default',
             'mypin' + self.token['otps'].popleft(),
             action='check',
             )
         # validate/check_s OTP -> succeeds
         self._validate(
-            u'molière@realm_no_default',
+            'molière@realm_no_default',
             self.token['otps'].popleft(),
             action='check',
             expected='value-false',
@@ -406,7 +406,7 @@ class TestRealmContextController(TestController):
             response = self.make_system_request('delRealm', params)
             content = response.json
             self.assertTrue(content['result']['status'])
-            expected_value = {u'delRealm': {u'result': True}}
+            expected_value = {'delRealm': {'result': True}}
             self.assertDictEqual(expected_value, content['result']['value'])
 
     def _validate(self, user_or_serial, pwd, expected='success', err_msg=None, action='check'):

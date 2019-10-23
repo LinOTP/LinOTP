@@ -36,24 +36,24 @@ class TestAdminController(unittest.TestCase):
     token = {
             'LinOtp.TokenId': 201,
             'LinOtp.TokenInfo':
-                u'{\n"hashlib": "sha1", \n"timeShift": -10.0, \n"timeWindow": 180, \n"validity_period_end": "23/12/23 23:23", \n"validity_period_start": "01/01/01 01:01", \n"timeStep": "30"\n}',
+                '{\n"hashlib": "sha1", \n"timeShift": -10.0, \n"timeWindow": 180, \n"validity_period_end": "23/12/23 23:23", \n"validity_period_start": "01/01/01 01:01", \n"timeStep": "30"\n}',
             'LinOtp.OtpLen': 6,
-            'LinOtp.TokenType': u'TOTP',
-            'LinOtp.TokenSerialnumber': u'F722362',
+            'LinOtp.TokenType': 'TOTP',
+            'LinOtp.TokenSerialnumber': 'F722362',
             'LinOtp.CountWindow': 10,
-            'User.username': u'passthru_user1',
-            'LinOtp.TokenDesc': u'TestToken1',
+            'User.username': 'passthru_user1',
+            'LinOtp.TokenDesc': 'TestToken1',
         }
 
     token2 = {
             'LinOtp.TokenId': 201,
             'LinOtp.TokenInfo': '',
             'LinOtp.OtpLen': 6,
-            'LinOtp.TokenType': u'TOTP',
-            'LinOtp.TokenSerialnumber': u'F722362',
+            'LinOtp.TokenType': 'TOTP',
+            'LinOtp.TokenSerialnumber': 'F722362',
             'LinOtp.CountWindow': 10,
-            'User.username': u'passthru_user1',
-            'LinOtp.TokenDesc': u'TestToken1',
+            'User.username': 'passthru_user1',
+            'LinOtp.TokenDesc': 'TestToken1',
         }
 
 

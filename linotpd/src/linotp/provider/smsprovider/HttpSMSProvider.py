@@ -35,15 +35,15 @@ import socket
 import base64
 import re
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import httplib2
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 import requests
 from requests.auth import HTTPBasicAuth
 from requests.auth import HTTPDigestAuth
 
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 
 import logging
@@ -296,7 +296,7 @@ class HttpSMSProvider(ISMSProvider):
 
             if 'PROXY' in self.config and self.config['PROXY']:
 
-                if isinstance(self.config['PROXY'], (str, unicode)):
+                if isinstance(self.config['PROXY'], str):
                     proxy_defintion = {
                         "http": self.config['PROXY'],
                         "https": self.config['PROXY']
@@ -383,7 +383,7 @@ class HttpSMSProvider(ISMSProvider):
                 elif url.startswith('http') and 'http' in proxy:
                     proxy_url = proxy['http']
 
-            elif isinstance(proxy, (str, unicode)):
+            elif isinstance(proxy, str):
                 proxy_url = proxy
 
             if proxy_url:
@@ -503,16 +503,16 @@ class HttpSMSProvider(ISMSProvider):
 
                 proxy_handler = None
 
-                if isinstance(self.config['PROXY'], (str, unicode)):
+                if isinstance(self.config['PROXY'], str):
                     # for simplicity we set both protocols
-                    proxy_handler = urllib2.ProxyHandler({
+                    proxy_handler = urllib.request.ProxyHandler({
                         "http": self.config['PROXY'],
                         "https": self.config['PROXY']}
                     )
 
                 elif isinstance(self.config['PROXY'], dict):
                     proxy_defintion = self.config['PROXY']
-                    proxy_handler = urllib2.ProxyHandler(proxy_defintion)
+                    proxy_handler = urllib.request.ProxyHandler(proxy_defintion)
 
                 if proxy_handler:
                     handlers.append(proxy_handler)
@@ -520,17 +520,17 @@ class HttpSMSProvider(ISMSProvider):
 
             if username and password is not None:
 
-                password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+                password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
                 password_mgr.add_password(None, url, username, password)
-                auth_handler = urllib2.HTTPBasicAuthHandler(password_mgr)
+                auth_handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
                 handlers.append(auth_handler)
 
             timeout = None
             if 'timeout' in self.config and self.config['timeout']:
                 timeout = parse_timeout(self.config['timeout'])
 
-            opener = urllib2.build_opener(*handlers)
-            urllib2.install_opener(opener)
+            opener = urllib.request.build_opener(*handlers)
+            urllib.request.install_opener(opener)
 
             full_url = str(url)
 
@@ -546,20 +546,20 @@ class HttpSMSProvider(ISMSProvider):
                 headers["Content-type"] = "application/x-www-form-urlencoded"
                 c_data = encoded_params
 
-            requ = urllib2.Request(full_url, data=c_data, headers=headers)
+            requ = urllib.request.Request(full_url, data=c_data, headers=headers)
             if username and password is not None:
                 base64string = base64.encodestring(
                     '%s:%s' % (username, password)).replace('\n', '')
                 requ.add_header("Authorization", "Basic %s" % base64string)
 
-            response = urllib2.urlopen(requ, timeout=timeout)
+            response = urllib.request.urlopen(requ, timeout=timeout)
             reply = response.read()
 
             # some providers like clickatell have no response.status!
             log.debug("HttpSMSProvider >>%s...%s<<", reply[:20], reply[-20:])
             ret = self._check_success(reply)
 
-        except (urllib2.URLError, socket.timeout) as exc:
+        except (urllib.error.URLError, socket.timeout) as exc:
             log.exception("HttpSMSProvider urllib timeout exception")
             raise ProviderNotAvailable("Failed to send SMS -timed out %r" % exc)
 
@@ -584,11 +584,11 @@ class HttpSMSProvider(ISMSProvider):
         encoded_params = ''
         if type(parameter) == dict:
             params = []
-            for key, value in parameter.items():
-                key = unicode(key).encode('utf-8')
+            for key, value in list(parameter.items()):
+                key = str(key).encode('utf-8')
                 if value:
-                    value = unicode(value).encode('utf-8')
-                    params.append("%s=%s" % (key, urllib.quote(value)))
+                    value = str(value).encode('utf-8')
+                    params.append("%s=%s" % (key, urllib.parse.quote(value)))
                 else:
                     params.append("%s" % key)
             encoded_params = "&".join(params)

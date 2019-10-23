@@ -92,7 +92,7 @@ class TestRandompinController(TestController):
         case (because PIN has been set to an unknown value).
         """
         # Enroll token
-        user = u'aἰσχύλος'  # realm myDefRealm
+        user = 'aἰσχύλος'  # realm myDefRealm
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
@@ -125,7 +125,7 @@ class TestRandompinController(TestController):
         as in test_simple_enroll.
         """
         # Enroll token
-        user = u'aἰσχύλος'  # realm myDefRealm
+        user = 'aἰσχύλος'  # realm myDefRealm
         token = deepcopy(self.tokens[0])
         self._enroll_token(token)
 
@@ -146,7 +146,7 @@ class TestRandompinController(TestController):
         self._create_randompin_policy('myDefRealm')
 
         # Enroll token
-        user = u'aἰσχύλος'  # realm myDefRealm
+        user = 'aἰσχύλος'  # realm myDefRealm
         token2 = deepcopy(self.tokens[0])
         self._enroll_token(token2)
 
@@ -185,7 +185,7 @@ class TestRandompinController(TestController):
         self._create_selfservice_policy('myDefRealm')
 
         # Enroll token
-        user = u'aἰσχύλος'  # realm myDefRealm
+        user = 'aἰσχύλος'  # realm myDefRealm
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
@@ -197,7 +197,7 @@ class TestRandompinController(TestController):
             )
 
         # User logs into selfservice and sets PIN
-        pwd = u'Πέρσαι'
+        pwd = 'Πέρσαι'
         pin = 'mytokenpin'
         self._set_pin_in_selfservice(user, pwd, token['serial'], pin)
 
@@ -222,7 +222,7 @@ class TestRandompinController(TestController):
         self._create_selfservice_policy('myDefRealm')
 
         # Enroll token
-        user = u'aἰσχύλος'  # realm myDefRealm
+        user = 'aἰσχύλος'  # realm myDefRealm
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
@@ -242,7 +242,7 @@ class TestRandompinController(TestController):
             )
 
         # User logs into selfservice and sets PIN
-        pwd = u'Πέρσαι'
+        pwd = 'Πέρσαι'
         pin = 'mytokenpin'
         self._set_pin_in_selfservice(user, pwd, token['serial'], pin)
         # authenticate successfully with PIN+OTP
@@ -276,7 +276,7 @@ class TestRandompinController(TestController):
         self._create_selfservice_policy('myDefRealm')
 
         # Enroll token
-        user = u'aἰσχύλος'  # realm myDefRealm
+        user = 'aἰσχύλος'  # realm myDefRealm
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
@@ -288,7 +288,7 @@ class TestRandompinController(TestController):
             )
 
         # User logs into selfservice and sets PIN
-        pwd = u'Πέρσαι'
+        pwd = 'Πέρσαι'
         pin = 'mytokenpin'
         self._set_pin_in_selfservice(user, pwd, token['serial'], pin)
         # authenticate successfully with PIN+OTP
@@ -348,8 +348,8 @@ class TestRandompinController(TestController):
         self._set_token_realm(token['serial'], 'myDefRealm')
 
         # autoassign the token
-        user = u'aἰσχύλος'
-        pwd = u'Πέρσαι'
+        user = 'aἰσχύλος'
+        pwd = 'Πέρσαι'
         self._validate(
             user,
             pwd + token['otps'].popleft(),

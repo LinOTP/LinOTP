@@ -32,7 +32,7 @@ import logging
 import os
 import requests
 
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from requests.exceptions import Timeout
 from requests.exceptions import ConnectionError
@@ -174,7 +174,7 @@ class DefaultPushProvider(IPushProvider):
                 #
 
                 if ',' in timeout:
-                    connection_timeout, request_timeout = map(float, timeout.split(','))
+                    connection_timeout, request_timeout = list(map(float, timeout.split(',')))
 
                     # validate inputs, we do not allow values <= 0
                     if connection_timeout <= 0:
@@ -311,7 +311,7 @@ class DefaultPushProvider(IPushProvider):
         server_cert = self.server_cert
         if server_cert is not None:
             # Session.post() doesn't like unicode values in Session.verify
-            if isinstance(server_cert, unicode):
+            if isinstance(server_cert, str):
                 server_cert = server_cert.encode('utf-8')
 
             pparams['verify'] = server_cert
@@ -334,7 +334,7 @@ class DefaultPushProvider(IPushProvider):
 
         # iterate through all resources
 
-        for uri in res_scheduler.next():
+        for uri in next(res_scheduler):
 
             try:
 
@@ -436,8 +436,8 @@ def main():
         push_provider = DefaultPushProvider()
         push_provider.loadConfig(configDict)
         res, resp = push_provider.push_notification(message=message, gda=gda)
-        print "Result: %r" % res
-        print "Response: %r" % resp
+        print("Result: %r" % res)
+        print("Response: %r" % resp)
 
     except Exception as exx:
         log.error('Failed to push the notification (%r): %r',

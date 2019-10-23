@@ -74,7 +74,7 @@ def get_audit_table_name(engine):
     m = MetaData()
 
     m.reflect(engine)
-    table_names = m.tables.keys()
+    table_names = list(m.tables.keys())
     if 'audit' in table_names:
         return ['audit']
 

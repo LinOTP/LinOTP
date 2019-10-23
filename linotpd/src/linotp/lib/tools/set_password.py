@@ -108,27 +108,27 @@ class SetPasswordHandler(ToolsHandler):
                                index=True)
 
         username = schema.Column(types.Unicode(255),
-                                 default=u'',
+                                 default='',
                                  unique=True,
                                  index=True)
 
         phone = schema.Column(types.Unicode(100),
-                              default=u'')
+                              default='')
 
         mobile = schema.Column(types.Unicode(100),
-                               default=u'')
+                               default='')
 
         email = schema.Column(types.Unicode(100),
-                              default=u'')
+                              default='')
 
         surname = schema.Column(types.Unicode(100),
-                                default=u'')
+                                default='')
 
         givenname = schema.Column(types.Unicode(100),
-                                  default=u'')
+                                  default='')
 
         password = schema.Column(types.Unicode(255),
-                                 default=u'')
+                                 default='')
 
     @staticmethod
     def create_table(db_context):

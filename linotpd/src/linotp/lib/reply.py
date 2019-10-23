@@ -26,8 +26,8 @@
 """create responses"""
 
 import qrcode
-import StringIO
-import urllib
+import io
+import urllib.request, urllib.parse, urllib.error
 
 try:
     import json
@@ -100,7 +100,7 @@ def _get_httperror_from_params(request):
         log.exception("Could not extract 'httperror' from params because some "
                 "parameter contains invalid Unicode. Trying to extract "
                 "directly from query_string. Exception: %r", exx)
-        from urlparse import parse_qs
+        from urllib.parse import parse_qs
         params = parse_qs(flask_request.query_string)
         if 'httperror' in params:
             httperror_list = params['httperror']
@@ -199,15 +199,15 @@ def sendError(_response, exception, id=1, context=None):
     ## Exception, LinOtpError, str/unicode
     if hasattr(exception, '__class__') is True \
     and isinstance(exception, Exception):
-        errDesc = unicode(exception)
+        errDesc = str(exception)
         if isinstance(exception, LinotpError):
             errId = exception.getId()
 
-    elif type(exception) in [str, unicode]:
-        errDesc = unicode(exception)
+    elif type(exception) in [str, str]:
+        errDesc = str(exception)
 
     else:
-        errDesc = u"%r" % exception
+        errDesc = "%r" % exception
 
     ## check if we have an additional request parameter 'httperror'
     ## which triggers the error to be delivered as HTTP Error
@@ -222,7 +222,7 @@ def sendError(_response, exception, id=1, context=None):
             send_custom_http_status = True
         else:
             # Only send custom HTTP status in defined error cases
-            if unicode(errId) in linotp_errors.split(','):
+            if str(errId) in linotp_errors.split(','):
                 send_custom_http_status = True
             else:
                 send_custom_http_status = False
@@ -322,7 +322,7 @@ def sendResultIterator(obj, id=1, opt=None, rp=None, page=None,
 
     with request_context_safety():
 
-        for key, value in request_context_copy.items():
+        for key, value in list(request_context_copy.items()):
             request_context[key] = value
 
         api_version = get_api_version()
@@ -432,9 +432,7 @@ def sendCSVResult(response, obj, flat_lines=False,
     seperator = ';'
     content_type = "application/force-download"
 
-
-    output = u""
-
+    output = ""
     if not flat_lines:
 
         headers_printed = False
@@ -443,13 +441,13 @@ def sendCSVResult(response, obj, flat_lines=False,
         for row in data:
             # Do the header
             if not headers_printed:
-                for k in data[0].keys():
+                for k in list(data[0].keys()):
                     output += "%s%s%s%s " % (delim, k, delim, seperator)
                 output += "\n"
                 headers_printed = True
 
-            for val in row.values():
-                if type(val) in [str, unicode]:
+            for val in list(row.values()):
+                if type(val) in [str, str]:
                     value = val.replace("\n", " ")
                 else:
                     value = val
@@ -608,7 +606,7 @@ def create_png(data, alt=None):
 
     img = qrcode.make(data)
 
-    output = StringIO.StringIO()
+    output = io.StringIO()
     img.save(output)
     o_data = output.getvalue()
     output.close()
@@ -657,7 +655,7 @@ def create_img(data, width=0, alt=None, img_id="challenge_qrcode"):
         width_str = " width=%d " % (int(width))
 
     if alt is not None:
-        val = urllib.urlencode({'alt': alt})
+        val = urllib.parse.urlencode({'alt': alt})
         alt_str = " alt=%r " % (val[len('alt='):])
 
     ret_img = ('<img id="%s" %s  %s  src="%s"/>' %
@@ -682,11 +680,11 @@ def create_html(data, width=0, alt=None, list_id="challenge_data"):
     img = create_img(data, width=width, alt=data)
 
     if alt is not None:
-        if type(alt) in (str, u''):
+        if type(alt) in (str, ''):
             alt_str = '<p>%s</p>' % alt
         elif type(alt) == dict:
             alta = []
-            for k in alt.keys():
+            for k in list(alt.keys()):
                 alta.append('<li> %s: <span class="%s">%s</span> </li>' % (k, k, alt.get(k)))
             alt_str = '<ul id="%s">%s</ul>' % ( list_id, " ".join(alta))
         elif type(alt) == list:
@@ -720,11 +718,11 @@ def sendCSVIterator(obj, headers=True):
                 headers = False
 
             output = ""
-            for val in row.values():
-                if type(val) in [str, unicode]:
+            for val in list(row.values()):
+                if type(val) in [str, str]:
                     value = val.replace("\n", " ")
                     output += "%s%s%s, " % (delim, value, delim)
-                elif type(val) in [int, long]:
+                elif type(val) in [int, int]:
                     value = '%d' % val
                     output += "%s, " % (value)
                 else:

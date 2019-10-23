@@ -458,16 +458,16 @@ def vasco_otp_check(otpkey, otp):
 def test():
     tokens = parseVASCOdata("Demo_GO6.DPX")
 
-    for token, token_data in tokens.items():
-        print token
-        print token_data
+    for token, token_data in list(tokens.items()):
+        print(token)
+        print(token_data)
         data = pickle.loads(token_data['hmac_key'])
         passw = "000000"
         while passw != "X":
-            print "=========== Verify Password ============"
-            passw = raw_input("Enter OTP:")
+            print("=========== Verify Password ============")
+            passw = input("Enter OTP:")
             (res, data) = vasco_otp_check(data, passw)
 
-            print res
+            print(res)
 
 # eof #######################################################################

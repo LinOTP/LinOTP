@@ -27,8 +27,8 @@
 
 import logging
 
-import urlparse
-import urllib
+import urllib.parse
+import urllib.request, urllib.parse, urllib.error
 
 from linotp.lib.crypto.utils import encryptPin
 from linotp.lib.crypto.utils import decryptPin
@@ -67,7 +67,7 @@ class ForwardServerPolicy(object):
         name, _sep, values = action.partition('=')
         for value in values.split(' '):
             # decompose the server url to identify, if there is a secret inside
-            parsed_server = urlparse.urlparse(value)
+            parsed_server = urllib.parse.urlparse(value)
 
             # the urlparse has a bug,, where in elder versions, the
             # path is not split from the query
@@ -79,8 +79,8 @@ class ForwardServerPolicy(object):
 
             # in gereal url parsing allows mutiple entries per key
             # but we support here only one
-            params = urlparse.parse_qs(query)
-            for key, entry in params.items():
+            params = urllib.parse.parse_qs(query)
+            for key, entry in list(params.items()):
                 params[key] = entry[0]
 
             # finally we found the query parameters
@@ -96,8 +96,8 @@ class ForwardServerPolicy(object):
             parsed_list = list(parsed_server[:])
             parsed_list[ForwardServerPolicy.Path_index] = path.strip()
             parsed_list[ForwardServerPolicy.Query_index] = \
-                                                urllib.urlencode(params)
-            server_url = urlparse.urlunparse(tuple(parsed_list))
+                                                urllib.parse.urlencode(params)
+            server_url = urllib.parse.urlunparse(tuple(parsed_list))
 
             servers.append(server_url)
 
@@ -112,7 +112,7 @@ class ForwardServerPolicy(object):
         log.debug("start request to foreign server: %r" % servers)
 
         for server in servers.split(' '):
-            parsed_server = urlparse.urlparse(server)
+            parsed_server = urllib.parse.urlparse(server)
 
             # the urlparse has a bug,, where in elder versions, the
             # path is not split from the query
@@ -123,8 +123,8 @@ class ForwardServerPolicy(object):
                 query = parsed_server.query
 
             # finally we found the query parameters
-            params = urlparse.parse_qs(query)
-            for key, entry in params.items():
+            params = urllib.parse.parse_qs(query)
+            for key, entry in list(params.items()):
                 params[key] = entry[0]
 
             if 'encsecret' in params:
@@ -134,8 +134,8 @@ class ForwardServerPolicy(object):
             parsed_list = list(parsed_server[:])
             parsed_list[ForwardServerPolicy.Path_index] = path.strip()
             parsed_list[ForwardServerPolicy.Query_index] = \
-                                                urllib.urlencode(params)
-            server_url = urlparse.urlunparse(tuple(parsed_list))
+                                                urllib.parse.urlencode(params)
+            server_url = urllib.parse.urlunparse(tuple(parsed_list))
 
             if 'radius://' in server_url:
                 rad = RadiusRequest(server=server_url, env=env)

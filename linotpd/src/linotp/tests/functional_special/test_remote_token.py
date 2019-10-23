@@ -37,7 +37,7 @@ import binascii
 import json
 import logging
 import smtplib
-import urlparse
+import urllib.parse
 
 import httplib2
 from mock import patch
@@ -56,7 +56,7 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
 
     resp = 200
     body = kwparams.get('body', '')
-    params = dict(urlparse.parse_qsl(body))
+    params = dict(urllib.parse.parse_qsl(body))
 
     content = {
         "version": "LinOTP MOCK",
@@ -377,8 +377,8 @@ class TestRemoteToken(TestSpecialController):
         for offset in range(1, 20):
             pin_chars = []
             for i in range(1, 100):
-                pin_chars.append(unichr(0x28 * offset + i))
-            pin = u"pin" + u"".join(pin_chars)
+                pin_chars.append(chr(0x28 * offset + i))
+            pin = "pin" + "".join(pin_chars)
             pin = pin.encode('utf-8')
 
             params = {'serial': serial, 'pin': pin}

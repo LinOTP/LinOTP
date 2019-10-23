@@ -51,7 +51,7 @@ class TokenInfoMixin(object):
     def setTokenInfo(self, info):
 
         if info is not None:
-            tokeninfo = u'' + json.dumps(info, indent=0)
+            tokeninfo = '' + json.dumps(info, indent=0)
             self.token.setInfo(tokeninfo)
 
     def addToTokenInfo(self, key, value):

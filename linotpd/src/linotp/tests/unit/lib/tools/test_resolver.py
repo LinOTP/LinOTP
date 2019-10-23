@@ -31,7 +31,7 @@ from linotp.lib import resolver
 class TestResolverConfig(unittest.TestCase):
 
     def test_resolver_name_too_short(self):
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             Exception, 'Resolver name is invalid.',
             resolver.defineResolver,
             {'type': 'test', 'name': 'abc'}

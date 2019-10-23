@@ -51,7 +51,7 @@ class BaseClass:
                 ret = subprocess.call(["gnokii", "--version"], stdout=FNULL, stderr=FNULL)
                 cls.gnokii_available = True
             except Exception as e:
-                print e
+                print(e)
 
         def setUp(self):
             self.default_config = {

@@ -364,26 +364,26 @@ class SQLImportHandler(ImportHandler):
                                index=True)
 
         username = schema.Column(types.Unicode(255),
-                                 default=u'',
+                                 default='',
                                  index=True)
 
         phone = schema.Column(types.Unicode(100),
-                              default=u'')
+                              default='')
 
         mobile = schema.Column(types.Unicode(100),
-                               default=u'')
+                               default='')
 
         email = schema.Column(types.Unicode(100),
-                              default=u'')
+                              default='')
 
         surname = schema.Column(types.Unicode(100),
-                                default=u'')
+                                default='')
 
         givenname = schema.Column(types.Unicode(100),
-                                  default=u'')
+                                  default='')
 
         password = schema.Column(types.Unicode(255),
-                                 default=u'',
+                                 default='',
                                  index=True)
 
         user_entries = [

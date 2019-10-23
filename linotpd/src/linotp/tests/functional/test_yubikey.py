@@ -277,7 +277,7 @@ class TestYubikeyController(TestController):
             'ignore_pin': 'this is not the correct pin'
             }
 
-        for otppin_mode, pin in pp.items():
+        for otppin_mode, pin in list(pp.items()):
 
             # -------------------------------------------------------------- --
 

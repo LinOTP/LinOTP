@@ -88,7 +88,7 @@ def _compare_regex(regex, compare_string):
         if compare_string is None:
             return False
 
-        match = regex.match(u'' + compare_string.lower())
+        match = regex.match('' + compare_string.lower())
         if match is not None:
             return True
 
@@ -187,7 +187,7 @@ class TokenIterator(object):
             searchType = "exact"
 
         if searchType == "blank":
-            ucondition = and_(or_(Token.LinOtpUserid == u'',
+            ucondition = and_(or_(Token.LinOtpUserid == '',
                                   Token.LinOtpUserid is None))
 
         if searchType == "exact":
@@ -204,7 +204,7 @@ class TokenIterator(object):
                 # In case of a '*' wildcard in the list, we take all available
                 # realms
                 if '*' in valid_realms:
-                    valid_realm_list = getRealms().keys()
+                    valid_realm_list = list(getRealms().keys())
                 else:
                     valid_realm_list = valid_realms
 
@@ -220,7 +220,7 @@ class TokenIterator(object):
                     # if the realm is set to *, the getUserId
                     # triggers the identification of all resolvers, where the
                     # user might reside: trigger the user resolver lookup
-                    for realm in getRealms().keys():
+                    for realm in list(getRealms().keys()):
                         if realm in valid_realms or '*' in valid_realms:
                             usr.realm = realm
                             try:
@@ -250,7 +250,7 @@ class TokenIterator(object):
             else:
                 # if no token is found, block search for user
                 # and return nothing
-                ucondition = and_(Token.LinOtpTokenSerialnumber == u'')
+                ucondition = and_(Token.LinOtpTokenSerialnumber == '')
 
         ## handle case, when nothing found in former cases
         if searchType == "wildcard":
@@ -267,7 +267,7 @@ class TokenIterator(object):
             if len(serials) > 0:
                 ucondition = and_(Token.LinOtpTokenSerialnumber.in_(serials))
             else:
-                ucondition = and_(Token.LinOtpTokenSerialnumber == u'')
+                ucondition = and_(Token.LinOtpTokenSerialnumber == '')
         return ucondition
 
     def _get_filter_confition(self, filter):
@@ -368,7 +368,7 @@ class TokenIterator(object):
         resolvers = set()
         realms = getRealms()
         if '*' in valid_realms:
-            search_realms = realms.keys()
+            search_realms = list(realms.keys())
         else:
             search_realms = valid_realms
 
@@ -420,7 +420,7 @@ class TokenIterator(object):
         if self.user_fields is None:
             self.user_fields = []
 
-        if type(filterRealm) in (str, unicode):
+        if type(filterRealm) in (str, str):
             filterRealm = filterRealm.split(',')
 
         if type(filterRealm) in [list]:
@@ -435,7 +435,7 @@ class TokenIterator(object):
         #  create a list of all realms, which are allowed to be searched
         #  based on the list of the existing ones
         valid_realms = []
-        realms = getRealms().keys()
+        realms = list(getRealms().keys())
         if '*' in filterRealm:
             valid_realms.append("*")
         else:
@@ -554,16 +554,16 @@ class TokenIterator(object):
         userInfo = {}
         uInfo = {}
 
-        userInfo["User.description"] = u''
-        userInfo["User.userid"] = u''
-        userInfo["User.username"] = u''
+        userInfo["User.description"] = ''
+        userInfo["User.userid"] = ''
+        userInfo["User.username"] = ''
         for field in self.user_fields:
-            userInfo["User.%s" % field] = u''
+            userInfo["User.%s" % field] = ''
 
         if tok.LinOtpUserid:
             # userInfo["User.description"]    = u'/:no user info:/'
-            userInfo["User.userid"] = u'/:no user info:/'
-            userInfo["User.username"] = u'/:no user info:/'
+            userInfo["User.userid"] = '/:no user info:/'
+            userInfo["User.username"] = '/:no user info:/'
 
             uInfo = None
 
@@ -578,21 +578,21 @@ class TokenIterator(object):
                 log.error("no user info found!")
 
             if uInfo is not None and len(uInfo) > 0:
-                if uInfo.has_key("description"):
+                if "description" in uInfo:
                     description = uInfo.get("description")
                     if isinstance(description, str):
                         userInfo["User.description"] = description.decode(ENCODING)
                     else:
                         userInfo["User.description"] = description
 
-                if uInfo.has_key("userid"):
+                if "userid" in uInfo:
                     userid = uInfo.get("userid")
                     if isinstance(userid, str):
                         userInfo["User.userid"] = userid.decode(ENCODING)
                     else:
                         userInfo["User.userid"] = userid
 
-                if uInfo.has_key("username"):
+                if "username" in uInfo:
                     username = uInfo.get("username")
                     if isinstance(username, str):
                         userInfo["User.username"] = username.decode(ENCODING)
@@ -608,9 +608,9 @@ class TokenIterator(object):
 
         return (userInfo, uInfo)
 
-    def next(self):
+    def __next__(self):
 
-        tok = self.it.next()
+        tok = next(self.it)
         desc = tok.get_vars(save=True)
         ''' add userinfo to token description '''
         (userInfo, ret) = self.getUserDetail(tok)

@@ -224,7 +224,7 @@ class TestProviderController(TestController):
         """
         check if new provider is default after create
         """
-        config = u'{"file": "/tmp/müßte_gèhn"}'
+        config = '{"file": "/tmp/müßte_gèhn"}'
 
         # ------------------------------------------------------------------ --
 

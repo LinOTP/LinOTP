@@ -77,17 +77,16 @@ class ControllerMetaClass(type):
             cls._url_methods = {
                 m for b in bases for m in getattr(b, '_url_methods', [])
             }
-            for key, value in dct.items():
+            for key, value in list(dct.items()):
                 if key[0] != '_' and isinstance(value, FunctionType):
                     cls._url_methods.add(key)
         return cls
 
 
-class BaseController(Blueprint):
+class BaseController(Blueprint, metaclass=ControllerMetaClass):
     """
     BaseController class - will be called with every request
     """
-    __metaclass__ = ControllerMetaClass
 
     def __init__(self, name, install_name='', **kwargs):
         super(BaseController, self).__init__(name, __name__, **kwargs)

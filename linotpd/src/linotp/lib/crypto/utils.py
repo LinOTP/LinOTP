@@ -154,7 +154,7 @@ def createActivationCode(acode=None, checksum=True):
     activationcode = base64.b32encode(acode)
     if checksum is True:
         chsum = check(acode)
-        activationcode = u'' + activationcode + chsum
+        activationcode = '' + activationcode + chsum
 
     return activationcode
 
@@ -192,7 +192,7 @@ def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
     byte_len = 2
     salt_len = 8 * byte_len
 
-    salt = u'' + nonce[-salt_len:]
+    salt = '' + nonce[-salt_len:]
     bSalt = binascii.unhexlify(salt)
     activationcode = activationcode.replace('-', '')
 
@@ -216,7 +216,7 @@ def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
                             ' [%s]%s:%s' % (acode, veriCode, checkCode))
 
     activ = binascii.hexlify(bcode)
-    passphrase = u'' + sharedsecret + activ + nonce[:-salt_len]
+    passphrase = '' + sharedsecret + activ + nonce[:-salt_len]
     keyStream = PBKDF2(binascii.unhexlify(passphrase), bSalt,
                        iterations=iterations, digestmodule=digestmodule)
     key = keyStream.read(len)
@@ -649,7 +649,7 @@ class urandom(object):
             stop = start
             start = 0
         # see python definition of randrange
-        res = urandom.choice(range(start, stop, step))
+        res = urandom.choice(list(range(start, stop, step)))
         return res
 
 
@@ -679,7 +679,7 @@ def extract_tan(signature, digits):
     tan = "%d" % (itan % 10**digits)
 
     # fill up the tan with leading zeros
-    stan = u"%s%s" % ('0' * (digits - len(tan)), tan)
+    stan = "%s%s" % ('0' * (digits - len(tan)), tan)
 
     return stan
 

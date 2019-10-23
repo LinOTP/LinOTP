@@ -81,7 +81,7 @@ def legacy_get_client_policy(client, scope=None, action=None,
     log.debug("[get_client_policy] got policies %s " % Pols)
 
     # 1. Find a policy with this client
-    for pol, policy in Pols.items():
+    for pol, policy in list(Pols.items()):
         log.debug("[get_client_policy] checking policy %s" % pol)
         clients_array = split_value(policy, attribute="client")
         log.debug("[get_client_policy] the policy %s has these clients: %s. "
@@ -115,7 +115,7 @@ def legacy_get_client_policy(client, scope=None, action=None,
     # there is one without clients
     if len(Policies) == 0:
         log.debug("[get_client_policy] looking for policy without any client")
-        for pol, policy in Pols.items():
+        for pol, policy in list(Pols.items()):
             if len(split_value(policy, attribute="client")) == 0:
                 Policies[pol] = policy
 
@@ -143,7 +143,7 @@ def _user_filter(Policies, userObj, scope, find_resolver=True):
 
     user = userObj.login
 
-    for polname, pol in Policies.items():
+    for polname, pol in list(Policies.items()):
         policy_users = split_value(pol, attribute="user")
         log.debug("search user %s in users %s of policy %s",
                   user, policy_users, polname)
@@ -223,7 +223,7 @@ def _user_filter_extended(Policies, userObj):
     matched_policies = {}
     empty_policies = {}
 
-    for polname, pol in Policies.items():
+    for polname, pol in list(Policies.items()):
         extended_user_def = pol.get("user").split(',')
 
         for user_def in extended_user_def:
@@ -285,7 +285,7 @@ def _user_filter_for_resolver(Policies, userObj):
         reso = resolver.split('.')[-1]
         resolvers_of_user.add(reso)
 
-    for polname, pol in Policies.items():
+    for polname, pol in list(Policies.items()):
         resolver_def = set(split_value(pol, attribute="user", marks=True))
 
         # are there any resolver definitions in the policy
@@ -365,7 +365,7 @@ def legacy_getAuthorization(scope, action):
     policies = legacy_getPolicy(param=param)
     log.debug("Found the following policies: %r" % policies)
 
-    if len(policies.keys()) > 0:
+    if len(list(policies.keys())) > 0:
         auth = True
 
     return {'active': active, 'auth': auth, 'admin': admin_user['login']}
@@ -407,7 +407,7 @@ def legacy_getPolicy(param, only_active=True):
     # Now we need to clean up policies, that are inactive
     if only_active:
         pol2delete = []
-        for polname, policy in Policies.items():
+        for polname, policy in list(Policies.items()):
             pol_active = policy.get("active", "True")
             if pol_active == "False":
                 pol2delete.append(polname)
@@ -419,7 +419,7 @@ def legacy_getPolicy(param, only_active=True):
     if param.get('realm', None) is not None:
         # log.debug("[getPolicy] cleanup acccording to realm %s"
         #          % param["realm"])
-        for polname, policy in Policies.items():
+        for polname, policy in list(Policies.items()):
             delete_it = True
             # log.debug("[getPolicy] evaluating policy %s: %s"
             #          % (polname, str(policy)))
@@ -443,7 +443,7 @@ def legacy_getPolicy(param, only_active=True):
     if param.get('scope', None) is not None:
         # log.debug("[getPolicy] cleanup acccording to scope %s"
         #          % param["scope"])
-        for polname, policy in Policies.items():
+        for polname, policy in list(Policies.items()):
             if policy['scope'].lower() != param['scope'].lower():
                 pol2delete.append(polname)
         for polname in pol2delete:
@@ -454,7 +454,7 @@ def legacy_getPolicy(param, only_active=True):
         # log.debug("[getPolicy] cleanup acccording to action %s"
         #          % param["action"])
         param_action = param['action'].strip().lower()
-        for polname, policy in Policies.items():
+        for polname, policy in list(Policies.items()):
             delete_it = True
             # log.debug("[getPolicy] evaluating policy %s: %s"
             #          % (polname, str(policy)))
@@ -489,7 +489,7 @@ def legacy_getPolicy(param, only_active=True):
     wildcard_user_match = {}
     if param.get('user', None) is not None:
         # log.debug("cleanup acccording to user %s" % param["user"])
-        for polname, policy in Policies.items():
+        for polname, policy in list(Policies.items()):
             if policy.get('user'):
                 pol_users = [p.strip()
                              for p in policy.get('user').lower().split(',')]
@@ -584,7 +584,7 @@ def _post_realm_filter(policies, param):
     exact_matching = {}
 
     param_realm = param['realm'].lower()
-    for pol_name, pol in policies.items():
+    for pol_name, pol in list(policies.items()):
         if pol['realm'].lower() == param_realm:
             exact_matching[pol_name] = pol
 

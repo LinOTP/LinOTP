@@ -57,6 +57,6 @@ class TwillioMixin():
 
         if set(twilio_config.keys()) != set(twilio_config_keys):
             raise KeyError('unsupported key provided [%r]: %r!' %
-                           (twilio_config_keys, twilio_config.keys()))
+                           (twilio_config_keys, list(twilio_config.keys())))
 
         return {'twilioConfig': twilio_config}

@@ -92,7 +92,7 @@ class TestCacheActivation(unittest.TestCase):
 
         self.assertTrue(len(tokens) == 8, tokens)
 
-        for serial, token in tokens.items():
+        for serial, token in list(tokens.items()):
             if 'sha256' in serial:
                 self.assertTrue(token['hashlib'] == 'sha256', token)
 

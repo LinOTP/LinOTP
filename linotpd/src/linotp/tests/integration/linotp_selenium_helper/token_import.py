@@ -25,7 +25,7 @@
 #
 """Contains TokenImport class"""
 
-from manage_ui import ManageDialog
+from .manage_ui import ManageDialog
 from linotp_selenium_helper.manage_ui import MsgType
 
 import tempfile

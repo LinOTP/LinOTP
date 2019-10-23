@@ -108,7 +108,7 @@ def are_the_same(dict1, dict2):
     if not dict1 and dict2:
         return False
 
-    if len(dict1.keys()) != len(dict2.keys()):
+    if len(list(dict1.keys())) != len(list(dict2.keys())):
         return False
 
     unmatch = set(dict1.keys()) ^ set(dict2.keys())
@@ -144,7 +144,7 @@ def getPolicyActionValue(policies, action, max=True,
     """
     results = {}
 
-    for _polname, pol in policies.items():
+    for _polname, pol in list(policies.items()):
         action_key = action
         action_value = pol['action'].strip()
 
@@ -156,7 +156,7 @@ def getPolicyActionValue(policies, action, max=True,
         ret = values.get(action_key, None)
 
         # the parameter String=False enforces a conversion into an int
-        if type(ret) in [str, unicode] and is_string is False:
+        if type(ret) in [str, str] and is_string is False:
             try:
                 ret = int(ret)
             except ValueError:
@@ -166,8 +166,8 @@ def getPolicyActionValue(policies, action, max=True,
             results[_polname] = ret
 
     if len(results) > 1:
-        for val in results.values():
-            if val != results.values()[0]:
+        for val in list(results.values()):
+            if val != list(results.values())[0]:
                 LOG. error("multiple different action value matches exists %r"
                            % results)
 
@@ -176,7 +176,7 @@ def getPolicyActionValue(policies, action, max=True,
         ret = ""
 
     if results:
-        ret = results.values()[0]
+        ret = list(results.values())[0]
 
     return ret
 
@@ -371,7 +371,7 @@ def get_realm_from_policies(policies):
     """
     realms = set()
 
-    for _pol, val in policies.items():
+    for _pol, val in list(policies.items()):
         pol_realm = val.get('realm', '') or ''
         pol_realms = [x.strip() for x in pol_realm.split(',')]
         realms.update(pol_realms)
@@ -435,7 +435,7 @@ def parse_policies(lConfig):
     #  "empty values are treated as wildcards"
     # by replacing these empty values by '*'
 
-    for name, policy in Policies.items():
+    for name, policy in list(Policies.items()):
 
         # time has not been used before, so we can define the empty as wildcard
 

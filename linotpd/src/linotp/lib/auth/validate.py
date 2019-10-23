@@ -277,7 +277,7 @@ class ValidationHandler(object):
 
             if not tokens and not token_type:
                 raise Exception('tokenmismatch for token serial: %s'
-                                % (unicode(serial)))
+                                % (str(serial)))
 
             # there could be only one
             token = tokens[0]
@@ -606,7 +606,7 @@ class ValidationHandler(object):
             return False, opt
 
         if passw is None:
-            raise ParameterError(u"Missing parameter:pass", id=905)
+            raise ParameterError("Missing parameter:pass", id=905)
 
         (res, opt) = self.checkTokenList(
             tokenList, passw, user, options=options)
@@ -708,7 +708,7 @@ class ValidationHandler(object):
             typ = token.getType()
             if typ.lower() not in tokenclass_registry:
                 log.error('token typ %r not found in tokenclasses: %r' %
-                          (typ, tokenclass_registry.keys()))
+                          (typ, list(tokenclass_registry.keys())))
                 audit_entry['action_detail'] = "Unknown Token type"
                 continue
 

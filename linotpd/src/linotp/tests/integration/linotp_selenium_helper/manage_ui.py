@@ -25,7 +25,7 @@
 #
 
 import logging
-import helper
+from . import helper
 import os
 import requests
 import re
@@ -37,13 +37,13 @@ from selenium.common.exceptions import WebDriverException, NoSuchElementExceptio
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from manage_elements import ManageDialog
-from realm import RealmManager
-from policy import PolicyManager
-from system_config import SystemConfig
-from user_id_resolver import UserIdResolverManager
-from user_view import UserView
-from token_view import TokenView
+from .manage_elements import ManageDialog
+from .realm import RealmManager
+from .policy import PolicyManager
+from .system_config import SystemConfig
+from .user_id_resolver import UserIdResolverManager
+from .user_view import UserView
+from .token_view import TokenView
 
 """
 This file contains the main manage page class

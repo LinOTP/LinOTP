@@ -134,13 +134,13 @@ class TestResolver(TestController):
                 # 'Password': db_url.password,
 
                 'Map': json.dumps(usermap),
-                'Where': u'',
-                'Encoding': u'',
-                'Limit': u'40',
-                'Table': u'usertable',
-                'type': u'sqlresolver',
-                'Port': u'3306',
-                'conParams': u''}
+                'Where': '',
+                'Encoding': '',
+                'Limit': '40',
+                'Table': 'usertable',
+                'type': 'sqlresolver',
+                'Port': '3306',
+                'conParams': ''}
 
         resolver_def.update(params)
         resolver_def['name'] = name
