@@ -170,11 +170,11 @@ configure_sql() {
 
 # create_tables
 #
-# Use paster to try to create the SQL database tables.
+# Create and setup required SQL database tables
 
 create_tables() {
   echo_log "Trying to create tables"
-  python -m flask init-db || true
+  python3 -m flask init-db || true
 }
 
 # create_grant_strings

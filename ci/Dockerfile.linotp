@@ -163,7 +163,7 @@ ENTRYPOINT [ "/usr/local/bin/dockerfy", \
      "--run", "/bin/sh", "-c", \
         "if [ {{ .Env.LINOTP_DB_TYPE }} != sqlite ]; then /usr/local/bin/dockerfy --wait tcp://{{ .Env.LINOTP_DB_HOST }}:{{ .Env.LINOTP_DB_PORT }} --timeout 30s; fi", \
         "--", \
-     "--run", "/bin/su", "linotp", "-s", "/bin/sh", "-c", "paster setup-app /etc/linotp2/linotp.ini", "--" \
+     "--run", "/bin/su", "linotp", "-s", "/bin/sh", "-c", "python -m flask init-db", "--" \
      ]
 
 CMD [ \

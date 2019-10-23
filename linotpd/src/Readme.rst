@@ -18,7 +18,7 @@ Installing LinOTP can be performed easily by issuing the commands::
     
 You can start directly by creating the database::
 
-    $ paster setup-app etc/linotp2/linotp.ini.paster
+    $ flask init-db
 
 In the config file linotp.ini.paster the already shipped encryption key "dummy-encKey" is referenced.
 Of course, you need to create an encryption key and change in in the linotp.ini.paster:
@@ -27,7 +27,7 @@ Of course, you need to create an encryption key and change in in the linotp.ini.
 
 Then start the webserver by issuing::
 
-    $ paster serve etc/linotp2/linotp.ini.example
+    $ flask run
 
 Now you could go the the web interface http://localhost:5001/manage and start creating the UserIdResolver, a Realm and
 enroll tokens.
@@ -42,7 +42,7 @@ with an existing database and user:
 
 Then  you can create the database like above:
 
-    $ paster setup-app etc/linotp2/linotp.ini.paster
+    $ flask init-db
 
 You can change the location of your log file:
 

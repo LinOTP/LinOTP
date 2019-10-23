@@ -140,7 +140,7 @@ run_nose() {
 
     #Start paster http server
     cd ${linotp_src_dir}
-    /usr/bin/paster setup-app ${linotp_src_dir}/${config_ini_filename}
+    /usr/bin/flask init-db
     nohup /usr/bin/paster serve ${linotp_src_dir}/${config_ini_filename} &
 
     #Run nosetests
