@@ -27,7 +27,6 @@
 """ unit test for complex policy comparisons """
 
 import unittest
-from nose.tools import raises
 
 from datetime import datetime
 

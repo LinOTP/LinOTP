@@ -39,8 +39,6 @@ from linotp.flap import (
     config, render_mako as render, request, response, tmpl_context as c, _,
 )
 
-from paste.deploy.converters import asbool
-
 from mako.exceptions import CompileException
 
 from linotp.controllers.base import BaseController
@@ -182,7 +180,7 @@ class ManageController(BaseController):
         '''
 
         try:
-            c.debug = asbool(config.get('debug', False))
+            c.debug = bool(config.get('debug', False))
             c.title = "LinOTP Management"
             admin_user = getUserFromRequest(request)
 

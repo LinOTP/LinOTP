@@ -38,8 +38,6 @@ import json
 from flask import redirect, Response
 from werkzeug.exceptions import Forbidden
 
-from paste.httpexceptions import HTTPFound
-
 from linotp import flap
 from linotp.flap import (
     request, response, config, tmpl_context as c,
@@ -280,9 +278,6 @@ class SelfserviceController(BaseController):
             Session.rollback()
             Session.close()
             raise acc
-
-        except HTTPFound as exx:
-            raise exx
 
         except Exception as e:
             log.exception("[__before__] failed with error: %r" % e)
