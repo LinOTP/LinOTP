@@ -379,19 +379,22 @@ class LinOTPApp(Flask):
         if not self.secret_key:
             init_key_partition(linotp_config, partition=0)
 
-        # ------------------------------------------------------------------ --
+    def getRadiusDictionaryPath(self):
+        """
+        get the radius dictionary path
 
-        # copy some system entries from pylons
-        syskeys = {
-            "radius.nas_identifier": "LinOTP",
-            "radius.dictfile": "/etc/linotp2/dictionary"
-        }
+        The dictionary file should be placed in the linotp configuration directory.
+        If the file does not exist, an error is logged
 
-        sysconfig = {}
-        for key, default in syskeys.items():
-            sysconfig[key] = config.get(key, default)
+        :return: path to dictionary file
+        """
 
-        request_context['SystemConfig'] = sysconfig
+        dict_file = os.path.join(self.getConfigRootDirectory(), 'dictionary')
+
+        if not os.path.isfile(dict_file):
+            log.error("Radius settings setup failed - missing dictionary file: %s", dict_file)
+
+        return dict_file
 
     def getConfigRootDirectory(self):
         """
