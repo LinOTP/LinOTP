@@ -130,7 +130,7 @@ class TestManageController(TestController):
         '''
         Manage: testing index access
         '''
-        response = self.make_manage_request('index', params={})
+        response = self.make_manage_request('', params={})
         assert '<title>LinOTP 2 Management</title>'in response, response
 
     def test_policies(self):

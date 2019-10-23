@@ -274,7 +274,7 @@ class TestController(TestCase):
         """
         if method is None:
             method = TestController.DEFAULT_WEB_METHOD
-        assert controller and action
+        assert controller
         assert method in ["GET", "POST", "PUT"]
 
         # Clear state (e.g. cookies)
