@@ -25,7 +25,7 @@
 #
 '''The Controller's Base class '''
 
-from inspect import getargspec
+from inspect import getfullargspec
 from types import FunctionType
 import logging
 import re
@@ -120,7 +120,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
 
             # Add another route if the method has an optional second
             # parameter called `id` (and no parameters after that).
-            args, _, _, defaults = getargspec(method)
+            args, _, _, defaults, _, _, _ = getfullargspec(method)
             if ((len(args) == 2 and args[1] == 'id')
                 and (defaults is not None and len(defaults) == 1
                      and defaults[0] is None)):
