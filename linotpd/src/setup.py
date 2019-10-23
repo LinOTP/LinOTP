@@ -38,9 +38,6 @@ package_directory = os.path.realpath(os.path.dirname(__file__))
 install_requirements = [
     'Flask',
     'Flask-Mako',
-    'Pylons>=0.9.7',
-    'PasteScript<=1.7.5',
-    'WebOb',
     'SQLAlchemy>=0.6',
     'beaker',
     'docutils>=0.4',
@@ -78,7 +75,6 @@ test_requirements = [
     'pytest-selenium',
     'pytest-testconfig',
     'mock',
-    'unittest2',
     'freezegun',
     'coverage',
     'pylint',
