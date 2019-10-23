@@ -323,6 +323,6 @@ class TestManageController(TestController):
 
         response = self.make_manage_request('logout', params={})
 
-        assert '302 Found The resource was found at' in response, response
+        assert '<h1>Redirecting...</h1>' in response, response
 
 # eof
