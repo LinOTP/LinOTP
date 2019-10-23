@@ -434,9 +434,9 @@ class LinOTPApp(Flask):
             else:
                 request_params = {}
                 for key in request.values:
-                   if(key.endswith('[]')):
-                       request_params[key[:-2]] = request.values.getlist(key)
-                   else:
+                    if(key.endswith('[]')):
+                        request_params[key[:-2]] = request.values.getlist(key)
+                    else:
                         request_params[key] = request.values.get(key)
         except UnicodeDecodeError as exx:
             # we supress Exception here as it will be handled in the
