@@ -67,8 +67,7 @@ install_requirements = [
 # > pip install -e ".[test]"
 test_requirements = [
     'flask_testing',
-    # Pytest 5.0.0-5.1.1 (at least) contain python3 type syntax
-    'pytest<5.0.0',
+    'pytest',
     'pytest-cov',
     'pytest-freezegun',
     'pytest-flask',
