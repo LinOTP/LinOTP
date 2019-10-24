@@ -530,7 +530,7 @@ def user_list_compare(policy_conditions, login):
 
     if isinstance(login, User):
         user = login
-    elif isinstance(login, str) or isinstance(login, str):
+    elif isinstance(login, str):
         if '@' in login:
             usr, _sep, realm = login.rpartition('@')
             user = User(usr, realm)
@@ -561,8 +561,7 @@ def user_list_compare(policy_conditions, login):
 
         if '#' in condition:
 
-            if ((isinstance(login, str) or isinstance(login, str)) and
-               '@' in login):
+            if isinstance(login, str) and '@' in login:
 
                 usr, _sep, realm = login.rpartition('@')
 
@@ -583,8 +582,7 @@ def user_list_compare(policy_conditions, login):
             # and who have an '@' in it - we rely on that real users
             # are identified up front and then login will of type User
 
-            if ((isinstance(login, str) or isinstance(login, str)) and
-               '@' in login):
+            if isinstance(login, str) and '@' in login:
                 u_login, _, r_login = login.rpartition('@')
                 c_user = User(u_login, r_login)
             else:
@@ -598,8 +596,7 @@ def user_list_compare(policy_conditions, login):
             # we can split last part and check if it is an existing realm. If
             # not we treat the user login as literal only
 
-            if ((isinstance(login, str) or isinstance(login, str)) and
-               '@' in login):
+            if isinstance(login, str) and '@' in login:
 
                 usr, _sep, realm = login.rpartition('@')
 

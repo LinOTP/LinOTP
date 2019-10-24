@@ -411,8 +411,7 @@ def getResolverInfo(resolvername, passwords=False):
         # lead to some trouble. so we prepare for output comparison
         # the string representation
 
-        if (not isinstance(res_conf[key], str) and
-            not isinstance(res_conf[key], str)):
+        if not isinstance(res_conf[key], str):
             res_conf[key] = "%r" % res_conf[key]
 
     if 'readonly' in res_conf:

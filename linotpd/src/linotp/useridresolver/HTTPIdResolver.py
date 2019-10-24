@@ -59,7 +59,7 @@ def urllib_encoded_dict(in_dict):
 
     out_dict = {}
     for k, v in in_dict.items():
-        if type(v) in [str, str]:
+        if isinstance(v, str):
             v = v.encode('utf8')
         out_dict[k] = v
     return out_dict

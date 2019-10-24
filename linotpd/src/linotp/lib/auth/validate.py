@@ -276,8 +276,8 @@ class ValidationHandler(object):
                 continue
 
             if not tokens and not token_type:
-                raise Exception('tokenmismatch for token serial: %s'
-                                % (str(serial)))
+                raise Exception('tokenmismatch for token serial: %r'
+                                % serial)
 
             # there could be only one
             token = tokens[0]

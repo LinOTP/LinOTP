@@ -1363,7 +1363,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
             if key == 'context':
                 continue
             val = getattr(self, attr)
-            if type(val) in [list, dict, str, str, int, float, bool]:
+            if isinstance(val, (list, dict, str, int, float, bool)):
                 ldict[key] = val
             elif type(val).__name__.startswith('Token'):
                 ldict[key] = val.get_vars(save=save)

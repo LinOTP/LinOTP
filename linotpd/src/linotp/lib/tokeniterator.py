@@ -420,7 +420,7 @@ class TokenIterator(object):
         if self.user_fields is None:
             self.user_fields = []
 
-        if type(filterRealm) in (str, str):
+        if isinstance(filterRealm, str):
             filterRealm = filterRealm.split(',')
 
         if type(filterRealm) in [list]:

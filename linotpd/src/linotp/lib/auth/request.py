@@ -33,7 +33,6 @@ import json
 import copy
 import httplib2
 import urllib.request, urllib.parse, urllib.error
-import urllib.parse
 
 # this is needed for the radius request
 import pyrad.packet

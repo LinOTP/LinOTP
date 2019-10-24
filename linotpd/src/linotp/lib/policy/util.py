@@ -156,7 +156,7 @@ def getPolicyActionValue(policies, action, max=True,
         ret = values.get(action_key, None)
 
         # the parameter String=False enforces a conversion into an int
-        if type(ret) in [str, str] and is_string is False:
+        if isinstance(ret, str) and is_string is False:
             try:
                 ret = int(ret)
             except ValueError:

@@ -1076,7 +1076,7 @@ class IdResolver(UserIdResolver):
                 value = row[colName]
                 log.debug("[__getUserInfo] %r:%r" % (value, type(value)))
 
-                if type(value) in [str, str] and self.sqlEncoding != "":
+                if isinstance(value, str) and self.sqlEncoding != "":
                     value = value.decode(self.sqlEncoding)
                     log.debug("[__getUserInfo] convert %r to <%r>" %
                               (row[colName], value))

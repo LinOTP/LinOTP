@@ -137,7 +137,7 @@ class SecurityProvider(object):
                         (id, val) = entry.split('.')
                     except Exception as e:
                         error = ('[SecurityProvider:load_config] failed to '
-                                 'identify config entry: %s ' % (str(key)))
+                                 'identify config entry: %r ' % key)
                         log.exception(error)
                         raise HSMException(error, id=707)
 
@@ -148,8 +148,8 @@ class SecurityProvider(object):
                         self.config[id] = {val: config.get(key)}
 
         except Exception as e:
-            log.exception("[load_config] failed to identify module: %r " % e)
-            error = "failed to identify module: %s " % str(e)
+            log.exception("[load_config] failed to identify module")
+            error = "failed to identify module: %r " % e
             raise HSMException(error, id=707)
 
         # now create a pool of hsm objects for each module
@@ -202,8 +202,8 @@ class SecurityProvider(object):
 
         for method in methods:
             if hasattr(klass, method) is False:
-                error = ("[loadSecurityModule] Security Module %s misses the "
-                         "following interface: %s" % (str(module), str(method)))
+                error = ("[loadSecurityModule] Security Module %r misses the "
+                         "following interface: %r" % (module, method))
                 log.error(error)
                 raise NameError(error)
 
@@ -246,7 +246,7 @@ class SecurityProvider(object):
             pool = self._getHsmPool_(hsm_id)
             if pool is None:
                 error = ("[setupModule] failed to retieve pool "
-                         "for hsm_id: %s" % (str(hsm_id)))
+                         "for hsm_id: %r" % hsm_id)
                 log.error(error)
                 raise HSMException(error, id=707)
 
@@ -256,7 +256,7 @@ class SecurityProvider(object):
 
             self.activeOne = hsm_id
         except Exception as e:
-            error = "[setupModule] failed to load hsm : %s" % (str(e))
+            error = "[setupModule] failed to load hsm : %r" % e
             log.exception(error)
             raise HSMException(error, id=707)
 
@@ -350,7 +350,7 @@ class SecurityProvider(object):
 
         if hsm_id not in self.config:
             error = ('[SecurityProvider:dropSecurityModule] no config found '
-                     'for hsm with id %s ' % (str(hsm_id)))
+                     'for hsm with id %r ' % hsm_id)
             log.error(error)
             raise HSMException(error, id=707)
             return None
@@ -378,7 +378,7 @@ class SecurityProvider(object):
 
         if hsm_id not in self.config:
             error = ('[SecurityProvider:getSecurityModule] no config found for '
-                     'hsm with id %s ' % (str(hsm_id)))
+                     'hsm with id %r ' % hsm_id)
             log.error(error)
             raise HSMException(error, id=707)
 

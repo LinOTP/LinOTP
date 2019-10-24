@@ -40,7 +40,6 @@ import binascii
 import hmac
 import os
 import time
-import urllib.parse
 import urllib.request, urllib.parse, urllib.error
 
 from linotp.lib.crypto.utils import urandom

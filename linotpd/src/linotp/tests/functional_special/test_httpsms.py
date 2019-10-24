@@ -571,7 +571,7 @@ class TestHttpSmsController(TestSpecialController):
             for row in jresp.get('rows',[]):
                 entry = row.get('cell',[])
                 for info in entry:
-                    if type(info) in [str, str]:
+                    if isinstance(info, str):
                         if 'SMS could not be sent' in info:
                             found = True
                             break

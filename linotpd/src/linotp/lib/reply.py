@@ -203,7 +203,7 @@ def sendError(_response, exception, id=1, context=None):
         if isinstance(exception, LinotpError):
             errId = exception.getId()
 
-    elif type(exception) in [str, str]:
+    elif isinstance(exception, str):
         errDesc = str(exception)
 
     else:
@@ -447,7 +447,7 @@ def sendCSVResult(response, obj, flat_lines=False,
                 headers_printed = True
 
             for val in list(row.values()):
-                if type(val) in [str, str]:
+                if isinstance(val, str):
                     value = val.replace("\n", " ")
                 else:
                     value = val
@@ -580,7 +580,7 @@ def sendQRImageResult(response, data, param=None, id=1, typ='html'):
         del param['alt']
 
     img_data = data
-    if type(data) == dict:
+    if isinstance(data, dict):
         img_data = data.get('value', "")
 
     if typ in ['img', 'embed']:
@@ -680,14 +680,14 @@ def create_html(data, width=0, alt=None, list_id="challenge_data"):
     img = create_img(data, width=width, alt=data)
 
     if alt is not None:
-        if type(alt) in (str, ''):
+        if isinstance(alt, (str, '')):
             alt_str = '<p>%s</p>' % alt
-        elif type(alt) == dict:
+        elif isinstance(alt, dict):
             alta = []
             for k in list(alt.keys()):
                 alta.append('<li> %s: <span class="%s">%s</span> </li>' % (k, k, alt.get(k)))
             alt_str = '<ul id="%s">%s</ul>' % ( list_id, " ".join(alta))
-        elif type(alt) == list:
+        elif isinstance(alt, list):
             alta = []
             for k in alt:
                 alta.append('<li> %s </li>' % (k))
@@ -719,10 +719,10 @@ def sendCSVIterator(obj, headers=True):
 
             output = ""
             for val in list(row.values()):
-                if type(val) in [str, str]:
+                if isinstance(val, str):
                     value = val.replace("\n", " ")
                     output += "%s%s%s, " % (delim, value, delim)
-                elif type(val) in [int, int]:
+                elif isinstance(val, int):
                     value = '%d' % val
                     output += "%s, " % (value)
                 else:

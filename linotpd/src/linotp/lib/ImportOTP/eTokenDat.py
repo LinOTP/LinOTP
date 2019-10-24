@@ -29,7 +29,6 @@ import sys
 import datetime
 from getopt import getopt, GetoptError
 import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
 import logging
 import json
 import http.cookies

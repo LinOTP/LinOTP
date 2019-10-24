@@ -269,7 +269,7 @@ class CSVAuditIterator(object):
         ## import of the csv data - like SMSProviderConfig 8-(
             row = []
             for row_entry in raw_row:
-                if type(row_entry) in (str, str):
+                if isinstance(row_entry, str):
                     row_entry = row_entry.replace('\"', "'")
                 row.append(row_entry)
 

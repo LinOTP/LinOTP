@@ -88,7 +88,7 @@ def _storeConfigDB(key, val, typ=None, desc=None):
 
     # other types like datetime or int are simply stored
 
-    if not (isinstance(value, str) or isinstance(value, str)):
+    if not isinstance(value, str):
         return _storeConfigEntryDB(key, value, typ=typ, desc=desc)
 
     # ---------------------------------------------------------------------- --

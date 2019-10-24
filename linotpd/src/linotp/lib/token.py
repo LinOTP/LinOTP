@@ -108,7 +108,7 @@ class TokenHandler(object):
         if tokenrealm is None:
             tokenrealm = []
         # if we get a tokenrealm as string, we make an array out of this
-        elif type(tokenrealm) in [str, str]:
+        elif isinstance(tokenrealm, str):
             tokenrealm = [tokenrealm]
         # if there is a realm as parameter, we assign the token to this realm
         if 'realm' in param:
@@ -1314,10 +1314,10 @@ def getRealms4Token(user, tokenrealm=None):
         # tokenrealm can either be a string or a list
         log.debug("[getRealms4Token] tokenrealm given (%r). We will add the "
                   "new token to this realm" % tokenrealm)
-        if type(tokenrealm) in [str, str]:
+        if isinstance(tokenrealm, str):
             log.debug("[getRealms4Token] String: adding realm: %r" % tokenrealm)
             realms.append(tokenrealm)
-        elif type(tokenrealm) in [list]:
+        elif isinstance(tokenrealm, list):
             for tr in tokenrealm:
                 realms.append(tr)
 
@@ -1392,8 +1392,8 @@ def getRolloutToken4User(user=None, serial=None, tok_type='ocra'):
                 serials.append(token.LinOtpTokenSerialnumber)
 
     if len(serials) > 1:
-        raise Exception('multiple tokens found in rollout state: %s'
-                        % str(serials))
+        raise Exception('multiple tokens found in rollout state: %r'
+                        % serials)
 
     if len(serials) == 1:
         serial = serials[0]

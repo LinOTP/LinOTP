@@ -190,7 +190,7 @@ class AuditTable(object):
 
         :return: - nothing -
         """
-        if type(value) in [str, str]:
+        if isinstance(value, str):
             field_len = self._get_field_len(name)
             encoded_value = linotp.lib.crypto.utils.uencode(value)
             if field_len != -1 and len(encoded_value) > field_len:
@@ -541,7 +541,7 @@ class Audit(AuditBase):
 
         ## if we have an \uencoded data, we extract the unicode back
         for key, value in list(line.items()):
-            if value and type(value) in [str, str]:
+            if value and isinstance(value, str):
                 value = linotp.lib.crypto.utils.udecode(value)
                 line[key] = value
             elif value is None:

@@ -280,7 +280,7 @@ class Challenges(object):
                     challenge_id = challenge.get('id')
             elif type(challenge) == Challenge:
                 challenge_id = challenge.get('id')
-            elif type(challenge) in (str, str, int):
+            elif isinstance(challenge, (str, int)):
                 challenge_id = challenge
 
             try:

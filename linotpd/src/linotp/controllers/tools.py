@@ -304,8 +304,7 @@ class ToolsController(BaseController):
 
             # we have to convert the column_mapping back into an dict
 
-            if (isinstance(column_mapping, str) or
-                isinstance(column_mapping, str)):
+            if isinstance(column_mapping, str):
                 column_mapping = json.loads(column_mapping)
 
             # prevent overwrite of existing unmanaged resolver

@@ -44,13 +44,13 @@ class LinotpError(Exception):
 
     def __unicode__(self):
         pstr = "ERR%d: %r"
-        if type(self.message) in [str, str]:
+        if isinstance(self.message, str):
             pstr = "ERR%d: %s"
         return pstr % (self.id, self.message)
 
     def __str__(self):
         pstr = "ERR%d: %r"
-        if type(self.message) in [str, str]:
+        if isinstance(self.message, str):
             pstr = "ERR%d: %s"
 
         # if we have here unicode, we might fail with conversion error

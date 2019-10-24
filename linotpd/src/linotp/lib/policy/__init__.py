@@ -1879,7 +1879,7 @@ def get_auto_enrollment(user):
 
     t_typ = getPolicyActionValue(pol, "autoenrollment", is_string=True)
 
-    if type(t_typ) not in [str, str]:
+    if not isinstance(t_typ, str):
         log.info("unsupported token type for auto enrollment %r", t_typ)
         return False, ''
 

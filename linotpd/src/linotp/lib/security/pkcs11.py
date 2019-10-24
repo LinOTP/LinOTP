@@ -890,21 +890,21 @@ def main():
 
     if listing:
         keys = P11.find_aes_keys(label=label, wanted=100)
-        print(("Found these AES keys: %s" % keys))
+        print("Found these AES keys: %r" % keys)
     elif encrypt:
-        print(("Encrypting data %s with label %s from slot %s."
-              % (encrypt, str(l_handle), str(slot))))
+        print("Encrypting data %s with label %s from slot %s."
+              % (encrypt, str(l_handle), str(slot)))
         #i_handle = P11.find_aes_keys(label=str(l_handle))
         #print "Found handle %s" % str(i_handle)
         #P11.handles = { DEFAULT_KEY : i_handle }
         iv = P11.random(16)
         crypttext = P11.encrypt(encrypt, iv, DEFAULT_KEY)
-        print(("Encrypted Text : ", binascii.hexlify(crypttext)))
+        print("Encrypted Text : ", binascii.hexlify(crypttext))
         plaintext = P11.decrypt(crypttext, iv, DEFAULT_KEY)
         print("Decrypted Text >>%s<< " % plaintext)
     else:
         handle = P11.createAES(ks=32, label=name)
-        print("Created AES key with handle %s" % str(handle))
+        print("Created AES key with handle %r" % handle)
 
     P11.logout()
 
