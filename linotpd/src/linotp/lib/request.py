@@ -35,6 +35,8 @@ import httplib2
 import urllib
 import urlparse
 
+from flask import current_app
+
 # this is needed for the radius request
 import pyrad.packet
 from pyrad.client import Client
@@ -249,11 +251,8 @@ class RadiusRequest(RemoteRequest):
                 r_server = radiusServer
                 r_authport = 1812
 
-            nas_identifier = self.env.get("radius.nas_identifier", "LinOTP")
-            r_dict = self.env.get("radius.dictfile", "/etc/linotp2/dictionary")
-
-            log.debug("Radius: NAS Identifier: %r, Dictionary: %r",
-                      nas_identifier, r_dict)
+            nas_identifier = current_app.config['RADIUS_NAS_IDENTIFIER']
+            r_dict = current_app.getRadiusDictionaryPath()
 
             log.debug("Radius: constructing client object with server: %r, "
                       "port: %r, secret: %r", r_server, r_authport,
