@@ -163,6 +163,61 @@ class TestAdminController(TestController):
     def test_0000_000(self):
         self.delete_all_token()
 
+    def test_show(self):
+        """ test the admin show interface for json and csv response """
+
+        self.createToken()
+
+        # ------------------------------------------------------------------ --
+
+        # verify the json response
+
+        params = {
+            'serial': 'F722362',
+            }
+
+        response = self.make_admin_request('show', params=params)
+
+        jresp = response.json
+
+        tokens = jresp['result']['value']['data']
+        assert len(tokens) == 1
+
+        token = tokens[0]
+        assert token['LinOtp.TokenSerialnumber'] == 'F722362'
+
+        # ------------------------------------------------------------------ --
+
+        # verify the csv response
+
+        params = {
+            'serial': 'F722362',
+            'outform': 'csv'
+            }
+        response = self.make_admin_request('show', params=params)
+
+        counter = 0
+        for line in response.body.split('\n'):
+
+            if not line:
+                continue
+
+            entries = line.split(';')
+
+            # cvs has a header line
+            if counter == 0:
+                assert entries[4].strip() == "'LinOtp.TokenSerialnumber'"
+
+            # and one data line
+            if counter == 1:
+                assert entries[4].strip() == "'F722362'"
+
+            # but no more than one line
+            assert counter < 2
+
+            counter += 1
+
+
     def test_set(self):
         self.createToken()
 

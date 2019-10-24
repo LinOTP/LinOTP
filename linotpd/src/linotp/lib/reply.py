@@ -297,9 +297,8 @@ def sendResult(response, obj, id=1, opt=None, status=True):
 
     data = json.dumps(res, indent=3)
 
-    response = Response(response=data, status=200, mimetype= 'application/json')
+    return Response(response=data, status=200, mimetype= 'application/json')
 
-    return response
 
 def sendResultIterator(obj, id=1, opt=None, rp=None, page=None,
                        request_context_copy=None):
@@ -431,9 +430,9 @@ def sendCSVResult(response, obj, flat_lines=False,
     '''
     delim = "'"
     seperator = ';'
-    response.content_type = "application/force-download"
-    response.headers['Content-disposition'] = ('attachment; filename=%s'
-                                               % filename)
+    content_type = "application/force-download"
+
+
     output = u""
 
     if not flat_lines:
@@ -463,7 +462,11 @@ def sendCSVResult(response, obj, flat_lines=False,
 
             output += "\n"
 
-    return output
+    response = Response(response=output, status=200, mimetype=content_type)
+    response.headers['Content-disposition'] = (
+        'attachment; filename=%s' % filename)
+
+    return response
 
 
 def json2xml(json_obj, line_padding=""):
@@ -519,8 +522,8 @@ def sendXMLResult(_response, obj, id=1, opt=None):
     <version>%s</version>
     <id>%s</id>%s
 </jsonrpc>""" % (xml_object, get_version(), id, xml_options)
-    return Response(response=res, status=200, mimetype='text/xml')
 
+    return Response(response=res, status=200, mimetype='text/xml')
 
 
 def sendXMLError(_response, exception, id=1):
@@ -583,19 +586,19 @@ def sendQRImageResult(response, data, param=None, id=1, typ='html'):
         img_data = data.get('value', "")
 
     if typ in ['img', 'embed']:
-        response.content_type = 'text/html'
+        content_type = 'text/html'
         ret = create_img(img_data, width, alt)
 
     elif typ in ['png']:
-        response.content_type = 'image/png'
+        content_type = 'image/png'
         ret = create_png(img_data)
         response.content_length = len(ret)
 
     else:
-        response.content_type = 'text/html'
+        content_type = 'text/html'
         ret = create_html(img_data, width, param)
 
-    return ret
+    return Response(response=ret, status=200, mimetype=content_type)
 
 
 def create_png(data, alt=None):
