@@ -33,6 +33,7 @@ import logging
 import json
 
 import flask
+from flask import redirect
 
 from linotp.flap import (
     config, render_mako as render, request, response, tmpl_context as c, _,
@@ -645,10 +646,11 @@ class ManageController(BaseController):
         '''
         redirect logout
         '''
-        from linotp.flap import redirect
+
         http_host = request.environ.get("HTTP_HOST")
         url_scheme = request.environ.get("wsgi.url_scheme", "https")
-        redirect("%s://%s/manage/" % (url_scheme, http_host))
+
+        return redirect("%s://%s/manage/" % (url_scheme, http_host))
 
 
     def help(self, id=None):
