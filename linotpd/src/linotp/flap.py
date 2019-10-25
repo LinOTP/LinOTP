@@ -7,11 +7,11 @@ import os.path
 from builtins import KeyError
 
 import flask
-from flask import abort, redirect, Response as response
-from flask_mako import render_template, TemplateError
-
-from werkzeug.exceptions import Unauthorized as HTTPUnauthorized
+from flask import Response as response
+from flask import abort, redirect
+from flask_mako import TemplateError, render_template
 from werkzeug.exceptions import Forbidden as HTTPForbidden
+from werkzeug.exceptions import Unauthorized as HTTPUnauthorized
 from werkzeug.local import LocalProxy
 
 from .lib import helpers
