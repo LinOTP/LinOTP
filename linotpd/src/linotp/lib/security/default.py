@@ -117,10 +117,9 @@ class DefaultSecurityModule(SecurityModule):
 
         secret = ''
         try:
-            f = open(self.secFile)
-            for _i in range(0, id + 1):
-                secret = f.read(32)
-            f.close()
+            with open(self.secFile, 'rb') as f:
+                for _i in range(0, id + 1):
+                    secret = f.read(32)
             if not secret:
                 # secret = setupKeyFile(secFile, id+1)
                 raise Exception("No secret key defined for index: %r !\n"
@@ -197,11 +196,10 @@ class DefaultSecurityModule(SecurityModule):
             raise Exception('setup of security module incomplete')
 
         key = self.getSecret(id)
-        # convert input to ascii, so we can securely append bin data
-        input = binascii.b2a_hex(data)
-        input += '\x01\x02'
+        input = bytearray(data)
+        input += b'\x01\x02'
         padding = (16 - len(input) % 16) % 16
-        input += padding * "\0"
+        input += padding * b'\0'
         aes = AES.new(key, AES.MODE_CBC, iv)
 
         res = aes.encrypt(input)
@@ -335,7 +333,7 @@ class DefaultSecurityModule(SecurityModule):
             iv = self.random(16)
         v = self.encrypt(value, iv, keyNum)
 
-        value = binascii.hexlify(iv) + ':' + binascii.hexlify(v)
+        value = iv.hex() + ':' + v.hex()
         return value
 
     def _decryptValue(self, cryptValue, keyNum):
