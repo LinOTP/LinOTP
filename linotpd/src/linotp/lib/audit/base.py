@@ -122,8 +122,8 @@ class AuditBase(object):
         """
         if not os.path.exists(self.privateKeyFilename) and not os.path.exists(self.publicKeyFilename):
             log.info("Generating audit keypair")
-            check_call("openssl genrsa -out %s 2048" % private, shell=True)
-            check_call("openssl rsa -in %s -pubout -out %s" % (private, public), shell=True)
+            check_call("openssl genrsa -out %s 2048" % self.privateKeyFilename, shell=True)
+            check_call("openssl rsa -in %s -pubout -out %s" % (self.privateKeyFilename, self.publicKeyFilename), shell=True)
 
     def readKeys(self):
         self.createKeys()
