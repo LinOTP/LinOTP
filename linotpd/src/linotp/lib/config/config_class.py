@@ -73,9 +73,6 @@ class LinOtpConfig(dict):
     """
 
     def __init__(self, *args, **kw):
-        self.parent = super(LinOtpConfig, self)
-        self.parent.__init__(*args, **kw)
-
         self.delay = False
         self.realms = None
         self.glo = getGlobalObject()
@@ -152,7 +149,7 @@ class LinOtpConfig(dict):
 
             self.glo.setConfig(conf, replace=True)
 
-        self.parent.update(conf)
+        super().update(conf)
         return
 
     def setRealms(self, realmDict):
@@ -201,7 +198,7 @@ class LinOtpConfig(dict):
 
         # update this config and sync with global dict and db
 
-        res = self.parent.__setitem__(key, nVal)
+        res = super().__setitem__(key, nVal)
         self.glo.setConfig({key: nVal})
 
         # ----------------------------------------------------------------- --
@@ -263,24 +260,24 @@ class LinOtpConfig(dict):
         '''
         # has_key is required here, as we operate on the dict class
 
-        if key not in self.parent and not key.startswith('linotp.'):
+        if key not in self and not key.startswith('linotp.'):
             key = 'linotp.' + key
 
         # return default only if key does not exist
-        res = self.parent.get(key, default)
+        res = super().get(key, default)
         return res
 
     def has_key(self, key):
-        res = key in self.parent
+        res = key in self
         if res is False and key.startswith('linotp.') is False:
             key = 'linotp.' + key
 
-        res = key in self.parent
+        res = key in self
 
         if res is False and key.startswith('enclinotp.') is False:
             key = 'enclinotp.' + key
 
-        res = key in self.parent
+        res = key in self
 
         return res
 
@@ -296,13 +293,13 @@ class LinOtpConfig(dict):
         '''
         Key = key
 
-        if key in self.parent:
+        if key in super():
             Key = key
 
-        elif 'linotp.' + key in self.parent:
+        elif 'linotp.' + key in super():
             Key = 'linotp.' + key
 
-        res = self.parent.__delitem__(Key)
+        res = super().__delitem__(Key)
 
         # sync with global dict
 
@@ -323,8 +320,8 @@ class LinOtpConfig(dict):
         """
         support for 'in' operator of the Config dict
         """
-        res = (self.parent.__contains__(key) or
-               self.parent.__contains__('linotp.' + key))
+        res = (super().__contains__(key) or
+               super().__contains__('linotp.' + key))
         return res
 
     def update(self, dic):
@@ -349,7 +346,7 @@ class LinOtpConfig(dict):
         # put the data in the parent dictionary
         #
 
-        res = self.parent.update(dic)
+        res = super().update(dic)
 
         #
         # and sync the data with the global config dict
