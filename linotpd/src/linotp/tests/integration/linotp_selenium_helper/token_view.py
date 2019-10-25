@@ -32,8 +32,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
 from selenium.webdriver.support.select import Select
-from manage_elements import ManageTab, ManageDialog
-from helper import fill_form_element, find_by_id
+from .manage_elements import ManageTab, ManageDialog
+from .helper import fill_form_element, find_by_id
 
 logger = logging.getLogger(__name__)
 

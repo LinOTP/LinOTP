@@ -386,7 +386,7 @@ def new_getAuthorization(scope, action):
     policies = policy_elve.set_filters(param).evaluate(policy_set=p_at_all)
     LOG.debug("Found the following policies: %r", policies)
 
-    if len(policies.keys()) > 0:
+    if len(list(policies.keys())) > 0:
         auth = True
 
     return {'active': active,

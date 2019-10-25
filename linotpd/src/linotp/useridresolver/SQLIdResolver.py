@@ -34,7 +34,7 @@ Dependencies: UserIdResolver
 import re
 import base64
 import hashlib
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import json
 
 import traceback
@@ -135,10 +135,10 @@ def make_connect(driver, user, pass_, server, port, db, conParams=""):
         settings["{SERVER}"] = server
         settings["{PASSWORT}"] = pass_
         settings["{DATABASE}"] = db
-        for key, value in settings.items():
+        for key, value in list(settings.items()):
             param_str = param_str.replace(key, value)
 
-        url_quote = urllib.quote_plus(param_str)
+        url_quote = urllib.parse.quote_plus(param_str)
         connect = "%s%s" % (driver, url_quote)
     else:
         connect = build_simple_connect(driver, user, pass_,
@@ -796,7 +796,7 @@ class IdResolver(UserIdResolver):
             table = dbObj.getTable(self.sqlTable)
 
             invalid_columns = []
-            for key, sqlCol in self.sqlUserInfo.iteritems():
+            for key, sqlCol in self.sqlUserInfo.items():
                 column = table.c.get(sqlCol)
 
                 if column is None:
@@ -990,7 +990,7 @@ class IdResolver(UserIdResolver):
             # We build up here the regex dict in case of a wildcard,
             # For all others we do the exact compare
 
-            for key, value in searchDict.items():
+            for key, value in list(searchDict.items()):
                 if "*" in value or "." in value:
                     regex_dict[key] = re.compile(value.replace("*", ".*"))
 
@@ -1029,8 +1029,8 @@ class IdResolver(UserIdResolver):
         except Exception as exx:
             log.exception('[getUserList] Exception: %r' % exx)
 
-        log.debug("[getUserList] returning userlist %s" % users.values())
-        return users.values()
+        log.debug("[getUserList] returning userlist %s" % list(users.values()))
+        return list(users.values())
 
 #######################
 #   Helper functions
@@ -1044,12 +1044,12 @@ class IdResolver(UserIdResolver):
 
         :return: string with replaced patterns
         '''
-        retString = u""
+        retString = ""
         for i in string:
             if ord(i) > 127:
-                retString = u"%s%s" % (retString, repl)
+                retString = "%s%s" % (retString, repl)
             else:
-                retString = u"%s%s" % (retString, i)
+                retString = "%s%s" % (retString, i)
 
         if len(self.sqlEncoding) > 0:
             retString = retString. encode(self.sqlEncoding)
@@ -1076,7 +1076,7 @@ class IdResolver(UserIdResolver):
                 value = row[colName]
                 log.debug("[__getUserInfo] %r:%r" % (value, type(value)))
 
-                if type(value) in [str, unicode] and self.sqlEncoding != "":
+                if isinstance(value, str) and self.sqlEncoding != "":
                     value = value.decode(self.sqlEncoding)
                     log.debug("[__getUserInfo] convert %r to <%r>" %
                               (row[colName], value))
@@ -1244,7 +1244,7 @@ class IdResolver(UserIdResolver):
 
 if __name__ == "__main__":
 
-    print "SQLIdResolver - password hashing test"
+    print("SQLIdResolver - password hashing test")
 
     assert _check_hash_type("password", "sha", "W6ph5Mm5Pz8GgiULbPgzG37mj9g=")
 
@@ -1275,7 +1275,7 @@ if __name__ == "__main__":
     assert _check_hash_type("wrong password", "ssha",
                             "5ravvW12u10gQVQtfS4/rFuwVZMxMjM0") == False
 
-    print "SQLIdResolver - IdResolver class test "
+    print("SQLIdResolver - IdResolver class test ")
 
     #sqlR = getResolverClass("useridresolver.SQLIdResolver", "IdResolver")()
     sqlR = IdResolver()
@@ -1297,49 +1297,49 @@ if __name__ == "__main__":
              }
 
     sqlR.loadConfig(config)
-    print "JSON", json.dumps(config.get('linotp.sqlresolver.UserInfo'))
+    print("JSON", json.dumps(config.get('linotp.sqlresolver.UserInfo')))
 
     userId = sqlR.getUserId("kay")
-    print "getUserId:\n kay = ", userId
+    print("getUserId:\n kay = ", userId)
 
     userInfo = sqlR.getUserInfo(userId)
-    print "getUserInfo:\n Id:", userId, "\n Info:", userInfo
+    print("getUserInfo:\n Id:", userId, "\n Info:", userInfo)
 
     sf = sqlR.getSearchFields()
-    print "getSearchFields: \n ", sf
+    print("getSearchFields: \n ", sf)
 
     #, "id" : ">100"}
     searchDict = {"username": "k*%", "description": "*_Winkler*"}
     #searchDict=  {"userid" : ">100"}
 
     ulist = sqlR.getUserList(searchDict)
-    print "getUserList: \n ", ulist
+    print("getUserList: \n ", ulist)
 
     #, "id" : ">100"}
     searchDict2 = {"description": "*Winkler*"}
     #searchDict=  {"id" : ">100"}
 
     ulist = sqlR.getUserList(searchDict2)
-    print "getUserList2: \n ", ulist
+    print("getUserList2: \n ", ulist)
 
     #, "id" : ">100"}
     searchDict3 = {"username": "k..", "description": "*Winkler.;*"}
     #searchDict=  {"id" : ">100"}
 
     ulist = sqlR.getUserList(searchDict3)
-    print "getUserList3: \n ", ulist
+    print("getUserList3: \n ", ulist)
 
     #, "id" : ">100"}
     searchDict4 = {"username": "*"}
     #searchDict=  {"id" : ">100"}
 
     ulist = sqlR.getUserList(searchDict4)
-    print "getUserList4: \n ", ulist
+    print("getUserList4: \n ", ulist)
 
     pwcheck = sqlR.checkPass("kay", "test123!")
-    print "checkpass for kay: \n", pwcheck
+    print("checkpass for kay: \n", pwcheck)
 
     pwcheck = sqlR.checkPass("kay", "test!")
-    print "checkpass for kay: \n", pwcheck
+    print("checkpass for kay: \n", pwcheck)
 
 ##eof##########################################################################

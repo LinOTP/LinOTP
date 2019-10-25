@@ -24,11 +24,11 @@
 #    Support: www.keyidentity.com
 #
 
-import ConfigParser
+import configparser
 INI_FILE = "/etc/linotp2/linotp.ini"
 
 def config_get(section, option, default="", ini_file=INI_FILE):
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.read([ini_file])
     if config.has_option(section, option):
         return config.get(section, option)

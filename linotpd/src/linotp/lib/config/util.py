@@ -44,7 +44,7 @@ def expand_here(value):
     if not linotp_root:
         return value
 
-    if not (isinstance(value, unicode) or isinstance(value, str)):
+    if not isinstance(value, str):
         return value
 
     if isinstance(value, EncryptedData):

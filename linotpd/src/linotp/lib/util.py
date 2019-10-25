@@ -232,7 +232,7 @@ def remove_session_from_param(param):
     So we remove the session from the params.
     '''
     return_param = {}
-    for key in param.keys():
+    for key in list(param.keys()):
         if "session" != key.lower():
             return_param[key] = param[key]
 
@@ -436,8 +436,8 @@ def remove_empty_lines(doc):
 hexHexChars = '0123456789abcdef'
 modHexChars = 'cbdefghijklnrtuv'
 
-hex2ModDict = dict(zip(hexHexChars, modHexChars))
-mod2HexDict = dict(zip(modHexChars, hexHexChars))
+hex2ModDict = dict(list(zip(hexHexChars, modHexChars)))
+mod2HexDict = dict(list(zip(modHexChars, hexHexChars)))
 
 
 def modhex_encode(s):
@@ -482,7 +482,7 @@ def str2unicode(input_str):
                    ]
     for param in conversions:
         try:
-            output_str = unicode(input_str, **param)
+            output_str = str(input_str, **param)
             break
         except UnicodeDecodeError as exx:
             if param == conversions[-1]:
@@ -513,7 +513,7 @@ def dict_copy(dict_):
     # 3 to 4 levels deep.
 
     copy = {}
-    for key, value in dict_.iteritems():
+    for key, value in dict_.items():
         if isinstance(value, dict):
             fragment = {key: dict_copy(value)}
         else:

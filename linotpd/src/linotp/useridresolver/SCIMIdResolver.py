@@ -34,8 +34,8 @@ import logging
 log = logging.getLogger(__name__)
 
 from . import resolver_registry
-from UserIdResolver import UserIdResolver
-from UserIdResolver import getResolverClass
+from .UserIdResolver import UserIdResolver
+from .UserIdResolver import getResolverClass
 
 try:
     from osiam import connector
@@ -247,7 +247,7 @@ class IdResolver (UserIdResolver):
 
 if __name__ == "__main__":
 
-    print " SCIMIdResolver - IdResolver class test "
+    print(" SCIMIdResolver - IdResolver class test ")
 
     y = getResolverClass("SCIMIdResolver", "IdResolver")()
 
@@ -257,18 +257,18 @@ if __name__ == "__main__":
                    'linotp.scimresolver.client' : 'puckel',
                    'linotp.scimresolver.mapping' : '{ "username" : "userName" , "userid" : "id"}'}, "")
 
-    print "==== the complete userlist ======="
-    print y.getUserList({})
-    print "=================================="
+    print("==== the complete userlist =======")
+    print(y.getUserList({}))
+    print("==================================")
 
     user = "marissa"
     loginId = y.getUserId(user)
 
-    print " %s -  %s" % (user , loginId)
-    print " reId - " + y.getResolverId()
+    print(" %s -  %s" % (user , loginId))
+    print(" reId - " + y.getResolverId())
 
     ret = y.getUserInfo(loginId)
 
 
-    print ret
+    print(ret)
 

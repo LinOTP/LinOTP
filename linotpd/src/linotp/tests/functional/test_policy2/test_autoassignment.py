@@ -128,11 +128,11 @@ class TestAutoassignmentController(TestController):
 
         # 5 (user, password) pairs from myDefRealm
         users = [
-            (u'molière', u'molière'),
-            (u'shakespeare', u'shakespeare1'),
-            (u'lorca', u'lorca1'),
-            (u'aἰσχύλος', u'Πέρσαι'),
-            (u'beckett', u'beckett1'),
+            ('molière', 'molière'),
+            ('shakespeare', 'shakespeare1'),
+            ('lorca', 'lorca1'),
+            ('aἰσχύλος', 'Πέρσαι'),
+            ('beckett', 'beckett1'),
             ]
 
         # autoassign token to users
@@ -173,8 +173,8 @@ class TestAutoassignmentController(TestController):
 
         # (user, password) pairs from myDefRealm
         users = [
-            (u'molière', u'molière'),
-            (u'shakespeare', u'shakespeare1'),
+            ('molière', 'molière'),
+            ('shakespeare', 'shakespeare1'),
         ]
 
         # Assign token[0] to users[0]
@@ -230,7 +230,7 @@ class TestAutoassignmentController(TestController):
 
         # (user, password) pairs from myDefRealm
         users = [
-            (u'molière', u'molière'),
+            ('molière', 'molière'),
         ]
 
         # Assign token[0] to users[0]
@@ -281,7 +281,7 @@ class TestAutoassignmentController(TestController):
 
         # (user, password) pairs from myDefRealm
         users = [
-            (u'molière', u'molière'),
+            ('molière', 'molière'),
         ]
 
         self._set_token_realm(token_list, 'mydefrealm')
@@ -309,7 +309,7 @@ class TestAutoassignmentController(TestController):
 
         # (user, password) pairs from myDefRealm
         users = [
-            (u'molière', u'molière'),
+            ('molière', 'molière'),
         ]
 
         # Policy with <int> action
@@ -343,7 +343,7 @@ class TestAutoassignmentController(TestController):
 
         # (user, password) pairs from myDefRealm
         users = [
-            (u'molière', u'molière'),
+            ('molière', 'molière'),
         ]
 
         # Policy with action -1
@@ -399,8 +399,8 @@ class TestAutoassignmentController(TestController):
 
         # (user, password) pairs from myDefRealm
         users = [
-            (u'molière', u'molière'),
-            (u'shakespeare', u'shakespeare1'),
+            ('molière', 'molière'),
+            ('shakespeare', 'shakespeare1'),
         ]
 
         self._create_autoassignment_policy('my_autoassign_policy', 'mydefrealm')
@@ -457,7 +457,7 @@ class TestAutoassignmentController(TestController):
 
         # (user, password) pairs from myDefRealm
         users = [
-            (u'molière', u'molière'),
+            ('molière', 'molière'),
         ]
 
         self._create_ignore_autoassignment_pin_policy('mydefrealm')
@@ -604,7 +604,7 @@ class TestAutoassignmentController(TestController):
         """
 
         # 5 users from myDefRealm
-        users = [u'molière', u'shakespeare', u'lorca', u'aἰσχύλος', u'beckett']
+        users = ['molière', 'shakespeare', 'lorca', 'aἰσχύλος', 'beckett']
 
         # 5 token descriptions
         token_list = deepcopy(self.token_list)

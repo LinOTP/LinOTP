@@ -248,7 +248,7 @@ class TestVoiceProviderController(TestController):
                                             otp,
                                             locale)
 
-        self.assertEquals(status, True)
+        self.assertEqual(status, True)
         self.assertTrue(VALID_REQUEST in response)
 
         request_json = json.loads(response)

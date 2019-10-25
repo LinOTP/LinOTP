@@ -251,7 +251,7 @@ class IdResolver(UserIdResolver):
         # if there is any cert in the class dict, we build a certificate file
 
         if cls.ca_certs_dict:
-            ca_certs = cls.ca_certs_dict.values()
+            ca_certs = list(cls.ca_certs_dict.values())
             _add_cacertificates_to_file(cls.CERTFILE, ca_certs)
             try:
                 mtime = os.path.getmtime(cls.CERTFILE)
@@ -639,7 +639,7 @@ class IdResolver(UserIdResolver):
 
         resource_scheduler = ResourceScheduler(tries=2, uri_list=urilist)
 
-        for uri in resource_scheduler.next():
+        for uri in next(resource_scheduler):
             try:
                 l_obj = IdResolver.connect(uri, caller=self)
 
@@ -690,7 +690,7 @@ class IdResolver(UserIdResolver):
         log.debug("[getUserId] resolving userid for %r: %r",
                   type(loginname), loginname)
 
-        if type(loginname) == unicode:
+        if type(loginname) == str:
             # we are called from external by an unicode string
             LoginName = loginname.encode(ENCODING)
 
@@ -775,7 +775,7 @@ class IdResolver(UserIdResolver):
         if self.uidType.lower() == "dn":
             res = resultList[0][0]
             if res is not None:
-                userid = unicode(res, ENCODING)
+                userid = str(res, ENCODING)
 
         elif self.uidType.lower() == "objectguid":
             res = resultList[0][1]
@@ -832,7 +832,7 @@ class IdResolver(UserIdResolver):
         '''
 
 
-        username = u''
+        username = ''
 
         # getUserLDAPInfo returns (now) a list of unicode values
         l_user = self.getUserLDAPInfo(userid)
@@ -1018,7 +1018,7 @@ class IdResolver(UserIdResolver):
 
         '''
         log.debug("[getResolverId]")
-        resolver = u"LDAPIdResolver.IdResolver"
+        resolver = "LDAPIdResolver.IdResolver"
         if self.conf != "":
             resolver = resolver + "." + self.conf
         return resolver
@@ -1239,7 +1239,7 @@ class IdResolver(UserIdResolver):
             IdResolver.ca_certs_dict[cert_hash] = cacertificate
 
             _add_cacertificates_to_file(cls.CERTFILE,
-                                        IdResolver.ca_certs_dict.values())
+                                        list(IdResolver.ca_certs_dict.values()))
 
             IdResolver.CERTFILE_last_modified = last_modified_date
 
@@ -1332,10 +1332,10 @@ class IdResolver(UserIdResolver):
         if password is None or len(password) == 0:
             return False
 
-        if type(password) == unicode:
+        if type(password) == str:
             password = password.encode(ENCODING)
 
-        if type(uid) == unicode:
+        if type(uid) == str:
             uid = uid.encode(ENCODING)
 
         log.debug("[checkPass] uidType: %r", self.uidType)
@@ -1344,7 +1344,7 @@ class IdResolver(UserIdResolver):
         else:
             DN = self._getUserDN(uid)
 
-        if type(DN) == unicode:
+        if type(DN) == str:
             DN = DN.encode(ENCODING)
 
         log.debug("[checkPass] DN: %r", DN)
@@ -1357,7 +1357,7 @@ class IdResolver(UserIdResolver):
         last_error = None
         resource_scheduler = ResourceScheduler(tries=1, uri_list=urilist)
 
-        for uri in resource_scheduler.next():
+        for uri in next(resource_scheduler):
             l_obj = None
             try:
                 log.info("[checkPass] check password for user %r "
@@ -1457,7 +1457,7 @@ class IdResolver(UserIdResolver):
         special_dict['now'] = self.now_timestamp()
 
         try:
-            for key, val in special_dict.items():
+            for key, val in list(special_dict.items()):
                 search_st = "%(" + key + ")s"
                 if search_st in substitute:
                     substitute = substitute.replace(search_st, val)
@@ -1489,18 +1489,18 @@ class IdResolver(UserIdResolver):
 
         # add searchfilter attributes of searchDict
         try:
-            for skey, sval in searchDict.iteritems():
+            for skey, sval in searchDict.items():
                 log.debug("[getUserList] searchekys: %r / %r", skey, sval)
                 if skey in self.userinfo:
                     key = self.userinfo[skey]
                     value = searchDict[skey]
                     # value and searchFilter are Unicode!
-                    searchFilter += u"(%s=%s)" % (key, value)
+                    searchFilter += "(%s=%s)" % (key, value)
                 else:
                     log.warning("[getUserList] Unknown searchkey: %r", skey)
 
             # finaly embedd the filter in the ldap query string
-            searchFilter = u"(& %s )" % searchFilter
+            searchFilter = "(& %s )" % searchFilter
             log.debug("[getUserList] searchfilter: %r", searchFilter)
 
         except Exception as exep:
@@ -1524,7 +1524,7 @@ class IdResolver(UserIdResolver):
                 # Remark: the elememnts each must be of type string utf-8
 
                 attrlist = []
-                for ukey, uval in self.userinfo.iteritems():
+                for ukey, uval in self.userinfo.items():
                     attrlist.append(uval.encode(ENCODING))
 
                 if self.uidType.lower() != "dn":
@@ -1557,7 +1557,7 @@ class IdResolver(UserIdResolver):
                             # compose response as we like it
                             if self.uidType.lower() == "dn":
                                 userdata["userid"] = \
-                                        unicode(result_data[0][0], ENCODING)
+                                        str(result_data[0][0], ENCODING)
                             elif self.uidType.lower() == "objectguid":
                                 # res =
                                 # result_data[0][1].get(self.uidType,[None])[0]
@@ -1581,7 +1581,7 @@ class IdResolver(UserIdResolver):
                                 userdata["userid"] = \
                                  result_data[0][1].get(self.uidType, [None])[0]
 
-                            for ukey, uval in self.userinfo.iteritems():
+                            for ukey, uval in self.userinfo.items():
                                 if uval in result_data[0][1]:
                                     # An attribute can hold more than 1 value
                                     # So we only take the first one at the
@@ -1644,18 +1644,18 @@ class IdResolver(UserIdResolver):
 
         # add searchfilter attributes of searchDict
         try:
-            for skey, sval in searchDict.iteritems():
+            for skey, sval in searchDict.items():
                 log.debug("[getUserList] searchekys: %r / %r", skey, sval)
                 if skey in self.userinfo:
                     key = self.userinfo[skey]
                     value = searchDict[skey]
                     # value and searchFilter are Unicode!
-                    searchFilter += u"(%s=%s)" % (key, value)
+                    searchFilter += "(%s=%s)" % (key, value)
                 else:
                     log.warning("[getUserList] Unknown searchkey: %r", skey)
 
             # finaly embedd the filter in the ldap query string
-            searchFilter = u"(& %s )" % searchFilter
+            searchFilter = "(& %s )" % searchFilter
             log.debug("[getUserList] searchfilter: %r", searchFilter)
         except Exception as exep:
             log.exception("[getUserList] Error creating searchFilter: %r",
@@ -1760,7 +1760,7 @@ class IdResolver(UserIdResolver):
         # Remark: the elememnts each must be of type string utf-8
 
         attrlist = []
-        for _ukey, uval in self.userinfo.iteritems():
+        for _ukey, uval in self.userinfo.items():
             attrlist.append(uval.encode(ENCODING))
 
         # add the requested unique identifier if it is not the dn
@@ -1845,7 +1845,7 @@ class IdResolver(UserIdResolver):
             return userdata
 
         if self.uidType.lower() == "dn":
-            userdata["userid"] = unicode(account_dn, ENCODING)
+            userdata["userid"] = str(account_dn, ENCODING)
 
         elif self.uidType.lower() == "objectguid":
             userid = None
@@ -1868,7 +1868,7 @@ class IdResolver(UserIdResolver):
                 account_info[self.uidType][0]
 
         # finally add all existing userinfos (wrt the mapping)
-        for ukey, uval in self.userinfo.iteritems():
+        for ukey, uval in self.userinfo.items():
             if uval in account_info:
                 # An attribute can hold more than 1 value
                 # So we only take the first one at the moment
@@ -1923,11 +1923,11 @@ def getLdapUsers(params):
                     data = rData[0][1]
 
                     # Flatten, just for more easy access
-                    for (k, v) in data.items():
+                    for (k, v) in list(data.items()):
                         if len(v) == 1:
                             if type(v[0]) == str:
                                 try:
-                                    data[k] = u"%s" % v[0].decode('utf-8')
+                                    data[k] = "%s" % v[0].decode('utf-8')
                                 except UnicodeDecodeError:
                                     data[k] = v[0]
                             else:
@@ -1937,7 +1937,7 @@ def getLdapUsers(params):
                             for item in v:
                                 if type(item) == str:
                                     try:
-                                        data[k].append(u"%s" %
+                                        data[k].append("%s" %
                                                        item.decode('utf-8'))
                                     except UnicodeDecodeError:
                                         data[k].append(item)
@@ -1948,8 +1948,8 @@ def getLdapUsers(params):
                     data['uid'] = uid
                     users[cn] = data
         return users
-    except ldap.LDAPError, e:
-        print e
+    except ldap.LDAPError as e:
+        print(e)
     finally:
         l.unbind_s()
     return 0
@@ -1963,13 +1963,13 @@ def simple_request(params):
     """
 
     results = getLdapUsers(params)
-    for name, entry in results.items():
-        print "%s:" % name
-        for key, value in entry.items():
+    for name, entry in list(results.items()):
+        print("%s:" % name)
+        for key, value in list(entry.items()):
             if type(value) == str:
-                print "%s:%s" % (key, value)
+                print("%s:%s" % (key, value))
             else:
-                print "%s:%r" % (key, value)
+                print("%s:%r" % (key, value))
 
 
 def resolver_request(params):
@@ -1977,24 +1977,24 @@ def resolver_request(params):
     IdResolver.setup()
     ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_DEMAND)
 
-    print 'Trying to connect to %r' % params['LDAPURI']
+    print('Trying to connect to %r' % params['LDAPURI'])
     status, results = IdResolver.testconnection(params)
-    print "Status: %r" % status
+    print("Status: %r" % status)
 
     if results:
-        print "Result:"
+        print("Result:")
 
         if status != "success":
-            print "%r" % results
+            print("%r" % results)
             exit(-1)
 
         for result in results:
             if not result:
-                print "%r" % result
+                print("%r" % result)
             else:
-                for key, value in result.items():
-                    print "%s : %s" % (key.decode('utf-8'),
-                                       value.decode('utf-8'))
+                for key, value in list(result.items()):
+                    print("%s : %s" % (key.decode('utf-8'),
+                                       value.decode('utf-8')))
 
 
 def get_params():

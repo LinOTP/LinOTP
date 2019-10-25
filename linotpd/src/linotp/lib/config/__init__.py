@@ -176,7 +176,7 @@ def updateConfig(confi):
     entries = {}
     update_entries = {}
 
-    for entry in confi.keys():
+    for entry in list(confi.keys()):
 
         if entry.endswith('.type') or entry.endswith('.desc'):
             key = entry[:-len('.type')]
@@ -195,7 +195,7 @@ def updateConfig(confi):
                             confi.get(key + '.type'),
                             confi.get(key + '.desc'))
 
-    for key, data_tuple in entries.items():
+    for key, data_tuple in list(entries.items()):
 
         val, typ, desc = data_tuple
 
@@ -261,22 +261,22 @@ def removeFromConfig(key, iCase=False):
 
 # several config functions to follow
 def setDefaultMaxFailCount(maxFailCount):
-    return storeConfig(u"DefaultMaxFailCount", maxFailCount)
+    return storeConfig("DefaultMaxFailCount", maxFailCount)
 
 
 def setDefaultSyncWindow(syncWindowSize):
-    return storeConfig(u"DefaultSyncWindow", syncWindowSize)
+    return storeConfig("DefaultSyncWindow", syncWindowSize)
 
 
 def setDefaultCountWindow(countWindowSize):
-    return storeConfig(u"DefaultCountWindow", countWindowSize)
+    return storeConfig("DefaultCountWindow", countWindowSize)
 
 
 def setDefaultOtpLen(otpLen):
-    return storeConfig(u"DefaultOtpLen", otpLen)
+    return storeConfig("DefaultOtpLen", otpLen)
 
 
 def setDefaultResetFailCount(resetFailCount):
-    return storeConfig(u"DefaultResetFailCount", resetFailCount)
+    return storeConfig("DefaultResetFailCount", resetFailCount)
 
 # eof #########################################################################

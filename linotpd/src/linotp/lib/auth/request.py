@@ -32,8 +32,7 @@ import logging
 import json
 import copy
 import httplib2
-import urllib
-import urlparse
+import urllib.request, urllib.parse, urllib.error
 
 # this is needed for the radius request
 import pyrad.packet
@@ -72,7 +71,7 @@ class Request(object):
 
         # split the servers along the ';'
         for server in servers.split(';'):
-            parsed = urlparse.urlparse(server)
+            parsed = urllib.parse.urlparse(server)
             self.config[parsed.hostname] = {'scheme': parsed.scheme,
                                             'netloc': parsed.netloc,
                                             'port': parsed.port,
@@ -97,8 +96,8 @@ class Request(object):
         params = {}
         url = server_config.get('url')
         if '?' in url:
-            add_param = urlparse.parse_qs(url.split('?')[1])
-            for key, value in add_param.items():
+            add_param = urllib.parse.parse_qs(url.split('?')[1])
+            for key, value in list(add_param.items()):
                 params[key] = value[0]
         return params
 
@@ -130,10 +129,10 @@ class HttpRequest(Request):
         params['user'] = user.login
         params['realm'] = user.realm
 
-        for key, value in options.items():
+        for key, value in list(options.items()):
             params[key] = value.encode("utf-8")
 
-        for server in self.config.keys():
+        for server in list(self.config.keys()):
             server_config = self.config[server]
 
             request_url = "%(scheme)s://%(netloc)s%(path)s" % server_config
@@ -149,7 +148,7 @@ class HttpRequest(Request):
                 headers = {"Content-type": "application/x-www-form-urlencoded",
                            "Accept": "text/plain", 'Connection': 'close'}
 
-                data = urllib.urlencode(params)
+                data = urllib.parse.urlencode(params)
                 # submit the request
                 try:
                     # is httplib compiled with ssl?
@@ -217,7 +216,7 @@ class RadiusRequest(Request):
         reply = {}
         res = False
 
-        for server in self.config.keys():
+        for server in list(self.config.keys()):
             server_config = self.config[server]
             radiusServer = server_config['netloc']
             radiusUser = user.login
@@ -270,7 +269,7 @@ class RadiusRequest(Request):
 
                 if response.code == pyrad.packet.AccessChallenge:
                     opt = {}
-                    for attr in response.keys():
+                    for attr in list(response.keys()):
                         opt[attr] = response[attr]
                     res = False
                     log.debug("Radius: challenge returned %r ", opt)

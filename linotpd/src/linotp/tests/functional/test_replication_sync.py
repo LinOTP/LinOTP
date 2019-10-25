@@ -56,7 +56,7 @@ class SQLData(object):
             self.engine = create_engine(connect)
             connection = self.engine.connect()
         except Exception as e:
-            print "%r" % e
+            print("%r" % e)
         self.connection = connection
         return
 
@@ -97,7 +97,7 @@ class SQLData(object):
         rows = []
         for row in result:
             rows.append(row)
-            print unicode(row)
+            print(str(row))
         return
 
     def delData(self, key):
@@ -466,7 +466,7 @@ class TestReplication(TestController):
             "linotp.DefaultRealm": "realm",
             }
 
-        realmDef["linotp.useridresolver.group.realm"] = ','.join(res_group.values())
+        realmDef["linotp.useridresolver.group.realm"] = ','.join(list(res_group.values()))
 
         # 0. delete all related data
         for k in realmDef:
@@ -498,7 +498,7 @@ class TestReplication(TestController):
 
         # 5. set new resolver definition
         realmDef["linotp.useridresolver.group.realm"] = res_group["resolverTest"]
-        for key, value in realmDef.items():
+        for key, value in list(realmDef.items()):
             self.delData(key)
             self.addData(key, value, '')
 
@@ -513,7 +513,7 @@ class TestReplication(TestController):
 
         # 8. add new resolver definition again
         realmDef["linotp.useridresolver.group.realm"] = res_group["myDefRes"]
-        for key, value in realmDef.items():
+        for key, value in list(realmDef.items()):
             self.delData(key)
             self.addData(key, value, '')
 

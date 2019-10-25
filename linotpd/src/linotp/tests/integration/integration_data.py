@@ -70,12 +70,12 @@ musicians_ldap_resolver = {
     'certificate': ldap_ca_cert,
     'basedn': "ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de",
     # You may also use cn="Wolfgang Amadeus Mozart"
-    'binddn': u'cn="عبد الحليم حافظ",ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de',
+    'binddn': 'cn="عبد الحليم حافظ",ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de',
     'password': "Test123!",
     'preset_ldap': True,
     'expected_users': 10,
-    'users': ['bach', 'beethoven', 'berlioz', 'brahms', 'debussy', u'dvořák',
-              'haydn', 'mozart', u'حافظ', u'郎']
+    'users': ['bach', 'beethoven', 'berlioz', 'brahms', 'debussy', 'dvořák',
+              'haydn', 'mozart', 'حافظ', '郎']
 }
 
 physics_ldap_resolver = {
@@ -85,7 +85,7 @@ physics_ldap_resolver = {
     'uri': "ldaps://hottybotty.corp.lsexperts.de",
     'certificate': ldap_ca_cert,
     'basedn': 'dc=hotad,dc=example,dc=net',
-    'binddn': u'cn="Clark Maxwell",ou=corp,dc=hotad,dc=example,dc=net',
+    'binddn': 'cn="Clark Maxwell",ou=corp,dc=hotad,dc=example,dc=net',
     'password': "Test123!",
     'preset_ldap': False,
     'expected_users': 26,
@@ -102,7 +102,7 @@ sql_resolver = {
     'limit': 500,
     'encoding': 'latin1',
     'expected_users': 5,
-    'users': ['corny', 'kay', 'eric', u'knöt', 'bianca']
+    'users': ['corny', 'kay', 'eric', 'knöt', 'bianca']
 }
 
 # Expected content of /etc/se_mypasswd is:

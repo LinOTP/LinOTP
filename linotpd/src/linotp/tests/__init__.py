@@ -146,7 +146,7 @@ class ConfigWrapper:
         self.config = config
 
     def _mapkey(self, key):
-        if key in self.mappings.keys():
+        if key in list(self.mappings.keys()):
             return self.mappings[key]
         else:
             return key
@@ -274,7 +274,7 @@ class TestController(TestCase):
         """
         if method is None:
             method = TestController.DEFAULT_WEB_METHOD
-        assert controller and action
+        assert controller
         assert method in ["GET", "POST", "PUT"]
 
         # Clear state (e.g. cookies)
@@ -804,14 +804,14 @@ class TestController(TestCase):
         # first check which are the system policies with write rigts
 
         sys_policies = []
-        for policy_name, policy_def in policies.items():
+        for policy_name, policy_def in list(policies.items()):
             if policy_def['scope'] == 'system':
                 if 'write' in policy_def['action']:
                     sys_policies.append(policy_name)
 
         # first delete all non-system policies
 
-        for policy in policies.keys():
+        for policy in list(policies.keys()):
             if policy not in sys_policies:
                 self.delete_policy(policy, auth_user=auth_user)
 
@@ -844,15 +844,15 @@ class TestController(TestCase):
         content = response.json
         self.assertTrue(content["result"]["status"])
         expected_value = {
-            u"setPolicy %s"
+            "setPolicy %s"
             % params["name"]: {
-                u"realm": True,
-                u"active": True,
-                u"client": True,
-                u"user": True,
-                u"time": True,
-                u"action": True,
-                u"scope": True,
+                "realm": True,
+                "active": True,
+                "client": True,
+                "user": True,
+                "time": True,
+                "action": True,
+                "scope": True,
             }
         }
         self.assertDictEqual(expected_value, content["result"]["value"])
@@ -903,15 +903,15 @@ class TestController(TestCase):
         )
         content = response.json
         expected_value = {
-            u"delPolicy": {
-                u"result": {
-                    u"linotp.Policy.%s.action" % name: True,
-                    u"linotp.Policy.%s.active" % name: True,
-                    u"linotp.Policy.%s.client" % name: True,
-                    u"linotp.Policy.%s.realm" % name: True,
-                    u"linotp.Policy.%s.scope" % name: True,
-                    u"linotp.Policy.%s.time" % name: True,
-                    u"linotp.Policy.%s.user" % name: True,
+            "delPolicy": {
+                "result": {
+                    "linotp.Policy.%s.action" % name: True,
+                    "linotp.Policy.%s.active" % name: True,
+                    "linotp.Policy.%s.client" % name: True,
+                    "linotp.Policy.%s.realm" % name: True,
+                    "linotp.Policy.%s.scope" % name: True,
+                    "linotp.Policy.%s.time" % name: True,
+                    "linotp.Policy.%s.user" % name: True,
                 }
             }
         }
@@ -1030,7 +1030,7 @@ class TestController(TestCase):
 
         # Create mixed realm
         response = self.create_realm(
-            realm="myMixRealm", resolvers=",".join(self.resolvers.values())
+            realm="myMixRealm", resolvers=",".join(list(self.resolvers.values()))
         )
         content = response.json
         self.assertTrue(content["result"]["status"])

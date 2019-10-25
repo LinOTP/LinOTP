@@ -29,7 +29,7 @@ import logging
 
 from linotp.lib.config import getFromConfig
 from hashlib import sha1
-import urllib, urllib2
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import re
 import os
 import binascii
@@ -82,7 +82,7 @@ class YubicoTokenClass(TokenClass):
 
     def __init__(self, aToken):
         TokenClass.__init__(self, aToken)
-        self.setType(u"yubico")
+        self.setType("yubico")
 
         self.tokenid = ""
 
@@ -140,7 +140,7 @@ class YubicoTokenClass(TokenClass):
                }
 
 
-        if key is not None and res.has_key(key):
+        if key is not None and key in res:
             ret = res.get(key)
         else:
             if ret == 'all':
@@ -223,7 +223,7 @@ class YubicoTokenClass(TokenClass):
 
         nonce = binascii.hexlify(os.urandom(20))
 
-        p = urllib.urlencode({
+        p = urllib.parse.urlencode({
             'nonce': nonce,
             'otp':anOtpVal,
             'id':apiId
@@ -235,7 +235,7 @@ class YubicoTokenClass(TokenClass):
                         tries=2, uri_list=yubico_urls)
 
 
-        for uri in res_scheduler.next():
+        for uri in next(res_scheduler):
 
             try:
                 URL = "%s?%s" % (uri, p)

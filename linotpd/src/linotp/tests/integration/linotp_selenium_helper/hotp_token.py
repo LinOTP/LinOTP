@@ -25,8 +25,8 @@
 #
 """Contains HotpToken (event-based HMAC token) class"""
 
-from token import Token
-from helper import select
+from .token import Token
+from .helper import select
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By

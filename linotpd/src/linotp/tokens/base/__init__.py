@@ -63,8 +63,8 @@ from linotp.lib.auth.validate import check_pin
 from linotp.lib.auth.validate import check_otp
 from linotp.lib.auth.validate import split_pin_otp
 
-from validity_mixin import TokenValidityMixin
-from tokeninfo_mixin import TokenInfoMixin
+from .validity_mixin import TokenValidityMixin
+from .tokeninfo_mixin import TokenInfoMixin
 from linotp.tokens import tokenclass_registry
 
 from sqlalchemy import asc, desc
@@ -109,7 +109,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         self.supports_offline_mode = False
 
     def setType(self, typ):
-        typ = u'' + typ
+        typ = '' + typ
         self.type = typ
         self.token.setType(typ)
 
@@ -972,7 +972,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         set the token description
         :param description: set the token description
         """
-        self.token.setDescription(u'' + description)
+        self.token.setDescription('' + description)
         return
 
     def setDefaults(self):
@@ -987,7 +987,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         self.token.LinOtpSyncWindow = int(
             getFromConfig("DefaultSyncWindow") or 1000)
 
-        self.token.LinOtpTokenType = u'' + self.type
+        self.token.LinOtpTokenType = '' + self.type
         return
 
     def setUser(self, user, report):
@@ -1363,7 +1363,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
             if key == 'context':
                 continue
             val = getattr(self, attr)
-            if type(val) in [list, dict, str, unicode, int, float, bool]:
+            if isinstance(val, (list, dict, str, int, float, bool)):
                 ldict[key] = val
             elif type(val).__name__.startswith('Token'):
                 ldict[key] = val.get_vars(save=save)

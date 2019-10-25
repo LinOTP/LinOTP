@@ -30,7 +30,6 @@ import base64
 
 import pytest
 
-from contextlib import nested
 from pysodium import crypto_sign_keypair
 
 from linotp.flap import config

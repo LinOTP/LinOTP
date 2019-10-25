@@ -42,7 +42,7 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
 import json
-import urlparse
+import urllib.parse
 
 import httplib2
 from mock import patch
@@ -58,7 +58,7 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
 
     resp = 200
     body = kwparams.get('body', '')
-    params = dict(urlparse.parse_qsl(body))
+    params = dict(urllib.parse.parse_qsl(body))
 
     content = {
         "version": "LinOTP MOCK",
@@ -137,7 +137,7 @@ class TestRemoteToken2(TestSpecialController):
         stat = resp.get('result', {}).get('value', {})\
                 .get('setPolicy %s' % p_name, {})
         self.assertGreater(len(stat), 0, response)
-        for val in stat.values():
+        for val in list(stat.values()):
             self.assertTrue(val, response)
 
         # set the otppin=1 (native) for the 'withpin' realm
@@ -158,7 +158,7 @@ class TestRemoteToken2(TestSpecialController):
         stat = resp.get('result', {}).get('value', {})\
                 .get('setPolicy %s' % p_name, {})
         self.assertGreater(len(stat), 0, response)
-        for val in stat.values():
+        for val in list(stat.values()):
             self.assertTrue(val, response)
 
         return
@@ -182,7 +182,7 @@ class TestRemoteToken2(TestSpecialController):
         stat = resp.get('result', {}).get('value', {})\
                 .get('setPolicy %s' % p_name, {})
         self.assertGreater(len(stat), 0, response)
-        for val in stat.values():
+        for val in list(stat.values()):
             self.assertTrue(val, response)
 
         return
@@ -207,7 +207,7 @@ class TestRemoteToken2(TestSpecialController):
         stat = resp.get('result', {}).get('value', {})\
                 .get('setPolicy %s' % p_name, {})
         self.assertGreater(len(stat), 0, response)
-        for val in stat.values():
+        for val in list(stat.values()):
             self.assertTrue(val, response)
         return
 

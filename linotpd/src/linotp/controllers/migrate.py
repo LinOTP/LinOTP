@@ -148,7 +148,7 @@ class MigrateController(BaseController):
         except PolicyException as pe:
             Session.rollback()
             log.exception('[backup] policy failed: %r' % pe)
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             Session.rollback()
@@ -262,7 +262,7 @@ class MigrateController(BaseController):
 
         except PolicyException as pe:
             log.exception('[restore] policy failed: %r' % pe)
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except DecryptionError as err:
             decryption_error = True

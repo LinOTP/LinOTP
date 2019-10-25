@@ -49,9 +49,9 @@ class PBKDF2(TestCase):
 		expected_key = { 1000: "979d33c5e39bf7fc20ef",
 						 10: "3c28a7f09aa19108a17d",
 						 100: "303155b866685ad279fa" }
-		for key_length in expected_key.keys():
+		for key_length in list(expected_key.keys()):
 			key = binascii.hexlify(pbkdf2("my password", "salt", 10, key_length))
-			print key, expected_key[key_length]
+			print(key, expected_key[key_length])
 			assert key == expected_key[key_length]
 
 
@@ -72,7 +72,7 @@ key3 = value3
 
 		t.write(ini_file)
 		t.close()
-		print "section1,key1:", config_get("section1", "key1", ini_file=t.name)
+		print("section1,key1:", config_get("section1", "key1", ini_file=t.name))
 		assert config_get("section1", "key1", ini_file=t.name) == "value1"
 		assert config_get("section1", "key2", ini_file=t.name) == "value2"
 		assert config_get("section2", "key3", ini_file=t.name) == "value3"
@@ -310,7 +310,7 @@ class TestPSKC(TestCase):
 		testing import PSKC #1 -- no valid OATH serial
 		'''
 		res = parsePSKCdata(self.XML1)
-		print res
+		print(res)
 		assert res == {}
 
 	def test_02_xml1(self):
@@ -318,7 +318,7 @@ class TestPSKC(TestCase):
 		testing import PSKC #1 -- ignore OATH serial
 		'''
 		res = parsePSKCdata(self.XML1, 	do_checkserial=False)
-		print res
+		print(res)
 		assert len(res) == 1
 		assert res.get('12345678')
 		assert res.get('12345678').get('otplen') == 8
@@ -329,7 +329,7 @@ class TestPSKC(TestCase):
 		testing import PSKC #2 -- 2 valid OATH serials
 		'''
 		res = parsePSKCdata(self.XML2)
-		print res
+		print(res)
 		assert len(res) == 2
 
 	def test_04_preshared_key(self):
@@ -337,7 +337,7 @@ class TestPSKC(TestCase):
 		testing import PSKC #3 -- preshared key
 		'''
 		res = parsePSKCdata(self.XML3, preshared_key_hex="12345678901234567890123456789012", do_checkserial=False)
-		print res
+		print(res)
 		assert res.get('12345678').get('hmac_key') == "3132333435363738393031323334353637383930"
 
 	def test_05_password_based(self):
@@ -345,7 +345,7 @@ class TestPSKC(TestCase):
 		testing import PSKC #4 -- password based encryption
 		'''
 		res = parsePSKCdata(self.XML4, password="qwerty", do_checkserial=False)
-		print res
+		print(res)
 		assert res.get('123456').get('hmac_key') == "3132333435363738393031323334353637383930"
 
 
@@ -359,7 +359,7 @@ dpw23456789		3434343434343434'''
 		testing import of day password tokens
 		'''
 		res = parseDPWdata(self.DPW)
-		print res
+		print(res)
 		assert len(res) == 2
 		assert res.get("dpw23456789").get("hmac_key") == "3434343434343434"
 		assert res.get("dpw123456").get("hmac_key") == "12121212121212"

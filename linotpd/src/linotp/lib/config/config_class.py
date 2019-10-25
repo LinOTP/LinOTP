@@ -84,7 +84,7 @@ class LinOtpConfig(dict):
         do_reload = False
 
         # do the bootstrap if no entry in the app_globals
-        if len(conf.keys()) == 0:
+        if len(list(conf.keys())) == 0:
             do_reload = True
 
         if self.glo.isConfigComplet() is False:
@@ -116,7 +116,7 @@ class LinOtpConfig(dict):
         if do_reload is True:
             # in case there is no entry in the dbconf or
             # the config file is newer, we write the config back to the db
-            entries = conf.keys()
+            entries = list(conf.keys())
             for entry in entries:
                 del conf[entry]
 
@@ -148,7 +148,7 @@ class LinOtpConfig(dict):
                 for con in conf:
                     if con != 'linotp.selfTest':
                         _storeConfigDB(con, conf.get(con))
-                _storeConfigDB(u'linotp.Config', datetime.now())
+                _storeConfigDB('linotp.Config', datetime.now())
 
             self.glo.setConfig(conf, replace=True)
 
@@ -211,7 +211,7 @@ class LinOtpConfig(dict):
 
         now = datetime.now()
 
-        self.glo.setConfig({'linotp.Config': unicode(now)})
+        self.glo.setConfig({'linotp.Config': str(now)})
 
         _storeConfigDB(key, val, typ, des)
         _storeConfigDB('linotp.Config', now)
@@ -263,7 +263,7 @@ class LinOtpConfig(dict):
         '''
         # has_key is required here, as we operate on the dict class
 
-        if not self.parent.has_key(key) and not key.startswith('linotp.'):
+        if key not in self.parent and not key.startswith('linotp.'):
             key = 'linotp.' + key
 
         # return default only if key does not exist
@@ -271,16 +271,16 @@ class LinOtpConfig(dict):
         return res
 
     def has_key(self, key):
-        res = self.parent.has_key(key)
+        res = key in self.parent
         if res is False and key.startswith('linotp.') is False:
             key = 'linotp.' + key
 
-        res = self.parent.has_key(key)
+        res = key in self.parent
 
         if res is False and key.startswith('enclinotp.') is False:
             key = 'enclinotp.' + key
 
-        res = self.parent.has_key(key)
+        res = key in self.parent
 
         return res
 
@@ -296,10 +296,10 @@ class LinOtpConfig(dict):
         '''
         Key = key
 
-        if self.parent.has_key(key):
+        if key in self.parent:
             Key = key
 
-        elif self.parent.has_key('linotp.' + key):
+        elif 'linotp.' + key in self.parent:
             Key = 'linotp.' + key
 
         res = self.parent.__delitem__(Key)
@@ -342,7 +342,7 @@ class LinOtpConfig(dict):
         # first check if all data is type compliant
         #
 
-        for key, val in dic.items():
+        for key, val in list(dic.items()):
             self._check_type(key, val)
 
         #

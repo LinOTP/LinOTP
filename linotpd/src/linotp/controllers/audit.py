@@ -180,7 +180,7 @@ class AuditController(BaseController):
         except PolicyException as pe:
             log.exception("[getotp] gettoken/getotp policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[search] audit/search failed: %r" % e)

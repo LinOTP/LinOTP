@@ -187,13 +187,13 @@ class MonitorHandler(object):
             result['sync'] = True
             result['synctime'] = db_time
             now = datetime.datetime.now()
-            result['now'] = unicode(now)
+            result['now'] = str(now)
 
         else:
             format_string = '%Y-%m-%d %H:%M:%S.%f'
             linotp_t = datetime.datetime.strptime(str(linotp_time), format_string)
             db_t = datetime.datetime.strptime(str(db_time), format_string)
-            result['cache_to_db_diff'] = unicode(linotp_t - db_t)
+            result['cache_to_db_diff'] = str(linotp_t - db_t)
             result['db_time'] = db_time
 
         return result
@@ -258,7 +258,7 @@ class MonitorHandler(object):
         old_value = getFromConfig(test_key, defVal=None)
 
         now = datetime.datetime.now()
-        new_value_plain = unicode(now)
+        new_value_plain = str(now)
 
         storeConfig(test_key, new_value_plain, typ='password', desc=None)
 

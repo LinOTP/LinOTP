@@ -58,7 +58,7 @@ class TestTokenView(TestCase):
         v = self.token_view
         v.delete_all_tokens()
         # Create 10 tokens so UI delays are introduced while fetching tokens
-        for _ in xrange(0, 10):
+        for _ in range(0, 10):
             _create_test_token(self.driver, self.base_url)
         v.delete_all_tokens()
 

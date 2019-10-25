@@ -25,7 +25,7 @@
 #
 '''The Controller's Base class '''
 
-from inspect import getargspec
+from inspect import getfullargspec
 from types import FunctionType
 import logging
 import re
@@ -77,17 +77,16 @@ class ControllerMetaClass(type):
             cls._url_methods = {
                 m for b in bases for m in getattr(b, '_url_methods', [])
             }
-            for key, value in dct.items():
+            for key, value in list(dct.items()):
                 if key[0] != '_' and isinstance(value, FunctionType):
                     cls._url_methods.add(key)
         return cls
 
 
-class BaseController(Blueprint):
+class BaseController(Blueprint, metaclass=ControllerMetaClass):
     """
     BaseController class - will be called with every request
     """
-    __metaclass__ = ControllerMetaClass
 
     def __init__(self, name, install_name='', **kwargs):
         super(BaseController, self).__init__(name, __name__, **kwargs)
@@ -121,7 +120,7 @@ class BaseController(Blueprint):
 
             # Add another route if the method has an optional second
             # parameter called `id` (and no parameters after that).
-            args, _, _, defaults = getargspec(method)
+            args, _, _, defaults, _, _, _ = getfullargspec(method)
             if ((len(args) == 2 and args[1] == 'id')
                 and (defaults is not None and len(defaults) == 1
                      and defaults[0] is None)):

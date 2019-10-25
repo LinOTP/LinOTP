@@ -178,7 +178,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         registry = MockedResourceRegistry.registry
 
-        for key, val in registry.items():
+        for key, val in list(registry.items()):
             value, _b_ind, _b_count = val
 
             if 'fail' in key:
@@ -246,7 +246,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
             registry = MockedResourceRegistry.registry
 
-            for key, value in registry.items():
+            for key, value in list(registry.items()):
                 self.assertTrue(value is not None)
 
             # -------------------------------------------------------------- --
@@ -307,7 +307,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
             registry = MockedResourceRegistry.registry
 
-            for key, val in registry.items():
+            for key, val in list(registry.items()):
                 value, _b_ind, _b_count = val
 
                 if 'fail' in key:
@@ -372,7 +372,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         registry = MockedResourceRegistry.registry
 
-        for key, val in registry.items():
+        for key, val in list(registry.items()):
             value, _b_ind, _b_count = val
 
             if 'fail' in key:
@@ -413,7 +413,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         registry = MockedResourceRegistry.registry
 
-        for key, val in registry.items():
+        for key, val in list(registry.items()):
             value, _b_ind, _b_count = val
 
             if 'fail' in key:

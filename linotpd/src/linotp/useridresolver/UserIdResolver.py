@@ -267,7 +267,7 @@ class UserIdResolver(object):
 
         # filtering in the provided config for the resolver required parameters
 
-        for key, attr in cls.resolver_parameters.items():
+        for key, attr in list(cls.resolver_parameters.items()):
 
             required, default, typ = attr
 

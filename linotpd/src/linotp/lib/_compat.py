@@ -40,5 +40,5 @@ if py3k:
     from threading import get_ident as get_thread_ident  # pylint: disable=import-error
     str_ = str
 else:
-    from thread import get_ident as get_thread_ident
-    str_ = unicode
+    from _thread import get_ident as get_thread_ident
+    str_ = str

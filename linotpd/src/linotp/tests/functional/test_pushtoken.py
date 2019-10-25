@@ -932,7 +932,7 @@ class TestPushToken(TestController):
         open_challenges = 0
         accept_challenges = 0
 
-        for challenge in challenges.values():
+        for challenge in list(challenges.values()):
 
             status = challenge['session']['status']
             accept = challenge['session'].get('accept')

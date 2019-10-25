@@ -227,7 +227,7 @@ class AdminController(BaseController):
         detail = "401 Unauthorized"
         # return HTTPUnauthorized(request=request)
         raise HTTPUnauthorized(
-             unicode(detail),
+             str(detail),
              [('WWW-Authenticate', 'Digest realm="%s", nonce="%s", qop="auth"' % (realm, nonce))]
             )
 
@@ -318,7 +318,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("Error getting token owner. Exception was %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("Error getting token owner. Exception was %r" % e)
@@ -461,7 +461,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[show] policy failed: %r' % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception('[show] failed: %r' % e)
@@ -533,7 +533,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[remove] policy failed %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[remove] failed! %r" % e)
@@ -604,7 +604,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[enable] policy failed %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[enable] failed: %r" % e)
@@ -684,7 +684,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[disable] policy failed %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             c.audit['success'] = 0
@@ -758,7 +758,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[disable] policy failed %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[disable] failed! %r" % e)
@@ -817,7 +817,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[check_serial] policy failed %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[check_serial] failed! %r" % e)
@@ -1003,7 +1003,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[init] policy failed %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[init] token initialization failed! %r" % e)
@@ -1077,7 +1077,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[unassign] policy failed %r' % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[unassign] failed! %r" % e)
@@ -1144,7 +1144,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[assign] policy failed %r' % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception('[assign] token assignment failed! %r' % e)
@@ -1247,12 +1247,12 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[setPin] policy failed %r, %r' % (msg, pe))
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception('[setPin] %s :%r' % (msg, e))
             Session.rollback()
-            return sendError(response, unicode(e), 0)
+            return sendError(response, str(e), 0)
 
         finally:
             Session.close()
@@ -1395,7 +1395,7 @@ class AdminController(BaseController):
         except PolicyException as pex:
             log.exception('policy failed%r', pex)
             Session.rollback()
-            return sendError(response, unicode(pex), 1)
+            return sendError(response, str(pex), 1)
 
         except Exception as exx:
 
@@ -1403,7 +1403,7 @@ class AdminController(BaseController):
 
             log.exception('%r', exx)
             Session.rollback()
-            return sendError(response, unicode(exx), 0)
+            return sendError(response, str(exx), 0)
 
         finally:
             Session.close()
@@ -1554,7 +1554,7 @@ class AdminController(BaseController):
                 ret = th.setHashLib(hashlib, user, serial)
                 res["set hashlib"] = ret
                 count = count + 1
-                c.audit['action_detail'] += "hashlib=%s, " % unicode(hashlib)
+                c.audit['action_detail'] += "hashlib=%s, " % str(hashlib)
 
             if "timeWindow".lower() in param:
                 msg = "[set] setting timeWindow failed"
@@ -1661,7 +1661,7 @@ class AdminController(BaseController):
                     ret += 1
                 res["set validityPeriodStart"] = ret
                 c.audit[
-                    'action_detail'] += u"validityPeriodStart=%s, " % unicode(
+                    'action_detail'] += "validityPeriodStart=%s, " % str(
                     ca)
 
             if "validityPeriodEnd".lower() in param:
@@ -1677,7 +1677,7 @@ class AdminController(BaseController):
                     count = count + 1
                     ret += 1
                 res["set validityPeriodEnd"] = ret
-                c.audit['action_detail'] += "validityPeriodEnd=%s, " % unicode(
+                c.audit['action_detail'] += "validityPeriodEnd=%s, " % str(
                     ca)
 
             if "phone" in param:
@@ -1692,7 +1692,7 @@ class AdminController(BaseController):
                     count = count + 1
                     ret += 1
                 res["set phone"] = ret
-                c.audit['action_detail'] += "phone=%s, " % unicode(ca)
+                c.audit['action_detail'] += "phone=%s, " % str(ca)
 
             if count == 0:
                 Session.rollback()
@@ -1712,7 +1712,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[set] policy failed: %s, %r' % (msg, pe))
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as exx :
             log.exception('%s: %r' % (msg, exx))
@@ -1801,7 +1801,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[resync] policy failed %r' % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception('[resync] resyncing token failed %r' % e)
@@ -1913,7 +1913,7 @@ class AdminController(BaseController):
 
                 request_context_copy = {}
 
-                for key, value in request_context.items():
+                for key, value in list(request_context.items()):
                     request_context_copy[key] = value
 
                 return sendResultIterator(
@@ -1926,7 +1926,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[userlist] policy failed %r' % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[userlist] failed %r" % e)
@@ -1982,7 +1982,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[tokenrealm] policy failed %r' % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception('[tokenrealm] error setting realms for token %r' % e)
@@ -2049,7 +2049,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[reset] policy failed %r' % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[reset] Error resetting failcounter %r" % exx)
@@ -2110,7 +2110,7 @@ class AdminController(BaseController):
             c.audit['serial'] = serial_to
             c.audit['action_detail'] = "from %s" % serial_from
 
-            err_string = unicode(ret)
+            err_string = str(ret)
             if -1 == ret:
                 err_string = "can not get PIN from source token"
             if -2 == ret:
@@ -2129,7 +2129,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[losttoken] Error doing losttoken %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[copyTokenPin] Error copying token pin")
@@ -2192,7 +2192,7 @@ class AdminController(BaseController):
             c.audit['source_realm'] = getTokenRealms(serial_from)
             c.audit['realm'] = getTokenRealms(serial_to)
 
-            err_string = unicode(ret)
+            err_string = str(ret)
             if -1 == ret:
                 err_string = "can not get user from source token"
             if -2 == ret:
@@ -2211,7 +2211,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[copyTokenUser] Policy Exception %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[copyTokenUser] Error copying token user")
@@ -2271,12 +2271,12 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[losttoken] Policy Exception: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[losttoken] Error doing losttoken %r" % e)
             Session.rollback()
-            return sendError(response, unicode(e))
+            return sendError(response, str(e))
 
         finally:
             Session.close()
@@ -2574,7 +2574,7 @@ class AdminController(BaseController):
             res = { 'value' : True, 'imported' : len(TOKENS) }
 
             c.audit['info'] = "%s, %s (imported: %i)" % (fileType, tokenFile, len(TOKENS))
-            c.audit['serial'] = ', '.join(TOKENS.keys())
+            c.audit['serial'] = ', '.join(list(TOKENS.keys()))
             c.audit['success'] = ret
             c.audit['realm'] = tokenrealm
 
@@ -2625,7 +2625,7 @@ class AdminController(BaseController):
             "enforcetls": 'EnforceTLS',
 
         }
-        for key, value in params.items():
+        for key, value in list(params.items()):
             if key.lower() in mapping:
                 ldap_params[mapping[key.lower()]] = value
             else:
@@ -2745,7 +2745,7 @@ class AdminController(BaseController):
         except Exception as e:
             log.exception("[testresolver] failed: %r" % e)
             Session.rollback()
-            return sendError(response, unicode(e), 1)
+            return sendError(response, str(e), 1)
 
         finally:
             Session.close()
@@ -2813,12 +2813,12 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[totp_lookup] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe))
+            return sendError(response, str(pe))
 
         except Exception as exx:
             log.exception("[totp_lookup] failed: %r" % exx)
             Session.rollback()
-            return sendResult(response, unicode(exx), 0)
+            return sendResult(response, str(exx), 0)
 
         finally:
             Session.close()
@@ -2923,12 +2923,12 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[checkstatus] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe))
+            return sendError(response, str(pe))
 
         except Exception as exx:
             log.exception("[checkstatus] failed: %r" % exx)
             Session.rollback()
-            return sendResult(response, unicode(exx), 0)
+            return sendResult(response, str(exx), 0)
 
         finally:
             Session.close()
@@ -2990,7 +2990,7 @@ class AdminController(BaseController):
 
         except Exception as exx:
             log.exception("admin/unpair failed: %r" % exx)
-            c.audit['info'] = unicode(exx)
+            c.audit['info'] = str(exx)
             Session.rollback()
             return sendResult(response, False, 0, status=False)
 

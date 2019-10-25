@@ -117,7 +117,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         '''
 
         TokenClass.__init__(self, aToken)
-        self.setType(u"TOTP")
+        self.setType("TOTP")
         self.hKeyRequired = True
 
         # timeStep defines the granularity:
@@ -138,7 +138,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         # we support various hashlib methods, but only on create
         # which is effectively set in the update
 
-        self.hashlibStr = getFromConfig("totp.hashlib", u'sha1') or 'sha1'
+        self.hashlibStr = getFromConfig("totp.hashlib", 'sha1') or 'sha1'
 
         self.otplen = int(self.token.LinOtpOtpLen)
 
@@ -235,7 +235,7 @@ class TimeHmacTokenClass(HmacTokenClass):
                         },
                }
 
-        if key is not None and res.has_key(key):
+        if key is not None and key in res:
             ret = res.get(key)
         else:
             if ret == 'all':
@@ -358,7 +358,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         dt = datetime.datetime.now()
         if type(curTime) == datetime.datetime:
             dt = curTime
-        elif type(curTime) == unicode:
+        elif type(curTime) == str:
             if '.' in curTime:
                 tFormat = "%Y-%m-%d %H:%M:%S.%f"
             else:

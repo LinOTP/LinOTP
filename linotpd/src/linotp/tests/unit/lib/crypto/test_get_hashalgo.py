@@ -69,7 +69,7 @@ class TestGetHashAlgoFromDescription(unittest.TestCase):
         test to get the hash algo from different descriptions
         """
 
-        for description, hash_function in Hashlib_map.items():
+        for description, hash_function in list(Hashlib_map.items()):
 
             hash_algo = get_hashalgo_from_description(description)
             self.assertTrue(hash_algo == hash_function)

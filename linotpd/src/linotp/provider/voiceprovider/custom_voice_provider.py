@@ -313,7 +313,7 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
 
             # Session.post() doesn't like unicode values in Session.verify
 
-            if isinstance(server_cert, unicode):
+            if isinstance(server_cert, str):
                 server_cert = server_cert.encode('utf-8')
 
             http_session.verify = server_cert

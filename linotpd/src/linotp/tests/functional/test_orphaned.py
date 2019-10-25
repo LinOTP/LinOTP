@@ -58,7 +58,7 @@ class SQLUser(object):
                 self.usercol = 'user'
 
         except Exception as e:
-            print "%r" % e
+            print("%r" % e)
         self.connection = connection
 
         umap = {"userid": "id",
@@ -171,7 +171,7 @@ class SQLUser(object):
             t = sqlalchemy.sql.expression.text(delStr)
             self.connection.execute(t, user=username)
 
-        elif type(uid) in (str, u''):
+        elif type(uid) in (str, ''):
             delStr = 'DELETE FROM %s  WHERE id=:id;' % (self.userTable)
             t = sqlalchemy.sql.expression.text(delStr)
             self.connection.execute(t, id=uid)

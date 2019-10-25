@@ -40,7 +40,7 @@ DEFAULT_NOSE_CONFIG = {
 try:
     from testconfig import config as nose_config
 except ImportError as exc:
-    print "You need to install nose-testconfig. Will use default values."
+    print("You need to install nose-testconfig. Will use default values.")
     nose_config = None
 
 

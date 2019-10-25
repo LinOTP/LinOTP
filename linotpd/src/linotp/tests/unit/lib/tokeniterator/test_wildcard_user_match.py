@@ -56,7 +56,7 @@ class TestUserSearchExpression(unittest.TestCase):
             '*oxwell@hot*', ]:
 
             serials = _user_expression_match(user_search,
-                                             token_user_dict.items())
+                                             list(token_user_dict.items()))
 
             assert 'match' not in serials
 
@@ -78,7 +78,7 @@ class TestUserSearchExpression(unittest.TestCase):
             ]:
 
             serials = _user_expression_match(user_search,
-                                             token_user_dict.items())
+                                             list(token_user_dict.items()))
 
             assert 'match' in serials, user_search
 

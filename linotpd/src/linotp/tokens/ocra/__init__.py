@@ -229,7 +229,7 @@ def is_int(v):
 
 
 def truncated_value(h):
-    bytes_s = map(ord, h)
+    bytes_s = list(map(ord, h))
     offset = bytes_s[-1] & 0xf
     v = (bytes_s[offset] & 0x7f) << 24 | (bytes_s[offset + 1] & 0xff) << 16 | \
             (bytes_s[offset + 2] & 0xff) << 8 | (bytes_s[offset + 3] & 0xff)
@@ -237,14 +237,14 @@ def truncated_value(h):
 
 
 def dec(h, p):
-    v = unicode(truncated_value(h))
+    v = str(truncated_value(h))
     if len(v) < p:
         v = (p - len(v)) * "0" + v
     return v[len(v) - p:]
 
 
 def int2beint64(i):
-    hex_counter = hex(long(i))[2:-1]
+    hex_counter = hex(int(i))[2:-1]
     hex_counter = '0' * (16 - len(hex_counter)) + hex_counter
     bin_counter = binascii.unhexlify(hex_counter)
     return bin_counter
@@ -288,7 +288,7 @@ class OcraSuite():
         (hotpStr, hash_type, trunc) = crypto.split('-')
 
         if hotpStr.upper() != 'HOTP':
-            raise Exception('unsupported hash version: %s' % unicode(hotpStr))
+            raise Exception('unsupported hash version: %s' % str(hotpStr))
 
         self.hash_algo = self._getCrypto(hash_type.lower())
         self.truncation = self._getTruncation(trunc)
@@ -453,7 +453,7 @@ class OcraSuite():
             # do some sanity checks
             if Q is None or len(Q) == 0:
                 raise ValueError('challenge is empty : %r' % Q)
-            if type(Q) == unicode:
+            if type(Q) == str:
                 # this might raise an ascii conversion exception
                 Q = str(Q)
             if not isinstance(Q, str):
@@ -544,13 +544,13 @@ class OcraSuite():
             challenge = challenge_hex[:c_len * 2]
         elif c_type == 'N':
             challenge_num = int(challenge_hex[:c_len], 16)
-            challenge = unicode(challenge_num)
+            challenge = str(challenge_num)
 
         if len(challenge) < c_len:
             challenge += '\0' * (c_len - len(challenge))
         challenge = challenge[:c_len]
 
-        return unicode(challenge)
+        return str(challenge)
 
     def data2rawChallenge(self, data):
 
@@ -583,7 +583,7 @@ class OcraSuite():
         challenge += chall[c_:]
         challenge = challenge[:c_len]
 
-        return unicode(challenge)
+        return str(challenge)
 
     def data2randomChallenge(self, data):
         '''
@@ -613,7 +613,7 @@ class OcraSuite():
                 challenge += urandom.choice(hexs)
 
         challenge = challenge[:c_len]
-        return unicode(challenge)
+        return str(challenge)
 
     def checkOtp(self, passw, counter, window, ocraChallenge, pin='',
                  options=None, timeshift=0):
@@ -684,9 +684,9 @@ class OcraSuite():
             challenge = challenge[idx + 1:]
 
         param = {}
-        param['Q'] = unicode(challenge)
-        param['P'] = unicode(pin)
-        param['S'] = unicode(session)
+        param['Q'] = str(challenge)
+        param['P'] = str(pin)
+        param['S'] = str(session)
 
         for count in range(start, end, step):
             if self.C is not None:
@@ -739,8 +739,8 @@ def test():
     otp = ocra.compute(key, data)
 
     data = struct.pack(">Q", counter)
-    print "data %r" % binascii.hexlify(data)
-    print "otp %r" % otp
+    print("data %r" % binascii.hexlify(data))
+    print("otp %r" % otp)
 
 
 if __name__ == '__main__':

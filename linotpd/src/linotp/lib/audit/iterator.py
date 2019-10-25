@@ -100,7 +100,7 @@ class AuditQuery(object):
                 value = linotp.lib.crypto.utils.uencode(value)
                 self._search_dict[param['qtype']] = value
         else:
-            for key, value in param.items():
+            for key, value in list(param.items()):
                 ## unicode escape search parameter to match
                 ## encoding in db, which stores audit
                 ## entries in escaped format
@@ -110,7 +110,7 @@ class AuditQuery(object):
         if 'page' in param:
             try:
                 self.page = int(param.get('page', '1') or '1')
-                if self.page < 0 or self.page > sys.maxint:
+                if self.page < 0 or self.page > sys.maxsize:
                     self.page = 1
             except ValueError:
                 self.page = 1
@@ -120,7 +120,7 @@ class AuditQuery(object):
         if 'rp' in param:
             try:
                 rp = int(param.get('rp', '15') or '15')
-                if rp < 0 or rp > sys.maxint:
+                if rp < 0 or rp > sys.maxsize:
                     rp = 15
             except ValueError:
                 rp = 15
@@ -198,7 +198,7 @@ class JSONAuditIterator(object):
         self.i = 0
         self.closed = False
 
-    def next(self):
+    def __next__(self):
         """
         iterator callback for the response handler
         """
@@ -213,7 +213,7 @@ class JSONAuditIterator(object):
             self.i = self.i + 1
 
         try:
-            row_data = self.result.next()
+            row_data = next(self.result)
             entry = self.audit_query.get_entry(row_data)
             res = "%s %s" % (res, json.dumps(entry, indent=3))
 
@@ -247,7 +247,7 @@ class CSVAuditIterator(object):
         self.delimiter = delimiter
 
 
-    def next(self):
+    def __next__(self):
         """
         iterator callback for the response handler
         """
@@ -260,7 +260,7 @@ class CSVAuditIterator(object):
                                                ensure_ascii=False)[1:-1]
                 res = headers
 
-            row_data = self.result.next()
+            row_data = next(self.result)
             entry = self.audit_query.get_entry(row_data)
 
             raw_row = entry.get('cell', [])
@@ -269,7 +269,7 @@ class CSVAuditIterator(object):
         ## import of the csv data - like SMSProviderConfig 8-(
             row = []
             for row_entry in raw_row:
-                if type(row_entry) in (str, unicode):
+                if isinstance(row_entry, str):
                     row_entry = row_entry.replace('\"', "'")
                 row.append(row_entry)
 

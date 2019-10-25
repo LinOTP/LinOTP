@@ -63,7 +63,7 @@ user2:.4UO1mxvTmdM6:11:11:User Zwei:Irgendwas:Nochmal
         msg = ("File '/dev/shm/this_file_does_not_exist' does not "
                "exist or is not accesible")
 
-        with self.assertRaisesRegexp(ResolverLoadConfigError, msg):
+        with self.assertRaisesRegex(ResolverLoadConfigError, msg):
 
             self.y = PasswdResolver()
             self.y.loadConfig(pw_config, "my")

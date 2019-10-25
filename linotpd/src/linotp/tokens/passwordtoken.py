@@ -52,7 +52,7 @@ class PasswordTokenClass(HmacTokenClass):
     def __init__(self, aToken):
         TokenClass.__init__(self, aToken)
         self.hKeyRequired = True
-        self.setType(u"pw")
+        self.setType("pw")
 
     @classmethod
     def getClassType(cls):

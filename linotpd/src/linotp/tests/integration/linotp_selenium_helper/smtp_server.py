@@ -201,7 +201,7 @@ class SMSProviderServer(SmtpMessageServer):
             "mailsender" : "linotp-sms@localhost",
             "mailto": "seleniumtest@localhost"
         }''' % (self.addr, self.port)
-        print sms_provider_config
+        print(sms_provider_config)
 
         # Set SMTP sms config
         parameters = {

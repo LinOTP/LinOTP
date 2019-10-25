@@ -122,10 +122,9 @@ class TestPushProviderController(TestController):
         push_prov = DefaultPushProvider()
 
         for s in ['invalid timeout', 'invalid,timeout', '1,timeout', 'invalid,1']:
-            for t in [str, unicode]:
-                v = t(s)
-                with self.assertRaises(ValueError):
-                    push_prov.loadConfig(dict(timeout=v, push_url='https://x'))
+            v = str(s)
+            with self.assertRaises(ValueError):
+                push_prov.loadConfig(dict(timeout=v, push_url='https://x'))
 
         with self.assertRaises(ValueError):
             push_prov.loadConfig(dict(timeout='invalid,timeout', push_url='https://x'))
@@ -299,8 +298,8 @@ class TestPushProviderController(TestController):
                                             gda=gda,
                                             transactionId='012345678901234')
 
-        self.assertEquals(status, True)
-        self.assertEquals(response, VALID_REQUEST)
+        self.assertEqual(status, True)
+        self.assertEqual(response, VALID_REQUEST)
 
         return
 
@@ -341,8 +340,8 @@ class TestPushProviderFailover(TestController):
                                             gda=gda,
                                             transactionId='012345678901234')
 
-        self.assertEquals(status, True)
-        self.assertEquals(response, VALID_REQUEST)
+        self.assertEqual(status, True)
+        self.assertEqual(response, VALID_REQUEST)
 
     @patch.object(requests, 'post', cond_failing_http_response)
     def test_single_server(self):

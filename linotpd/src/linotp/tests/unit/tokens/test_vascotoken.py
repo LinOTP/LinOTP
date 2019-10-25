@@ -42,7 +42,7 @@ class VascoTokenClassTestCase(unittest.TestCase):
         mock_vasco_otpcheck.return_value = (vasco_retvalue, None)
 
         ret = vasco_token.checkOtp("123456", None, None)
-        self.assertEquals(ret, expected_retvalue, "Expecting return=%s for vasco return=%s")
+        self.assertEqual(ret, expected_retvalue, "Expecting return=%s for vasco return=%s")
 
     def test_check_otp_pass(self):
         self.do_check_otp(0, 0)

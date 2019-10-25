@@ -37,10 +37,10 @@ from linotp.provider import ProviderNotAvailable
 class CustomSMTPServer(smtpd.SMTPServer):
 
     def process_message(self, peer, mailfrom, rcpttos, data):
-        print 'Receiving message from:', peer
-        print 'Message addressed from:', mailfrom
-        print 'Message addressed to  :', rcpttos
-        print 'Message length        :', len(data)
+        print('Receiving message from:', peer)
+        print('Message addressed from:', mailfrom)
+        print('Message addressed to  :', rcpttos)
+        print('Message length        :', len(data))
         return
 
 
@@ -61,7 +61,7 @@ class TestSMS(TestCase):
     def setUp(self):
         #server = CustomSMTPServer(('127.0.0.1', 1025), None)
         # asyncore.loop()
-        print "EHLO"
+        print("EHLO")
 
     def test_01_smtp(self):
         '''
@@ -100,7 +100,7 @@ class TestSMS(TestCase):
         smtp_config['raise_exception'] = True
         sms.loadConfig(smtp_config)
 
-        with self.assertRaisesRegexp(Exception, "Connection refused|Cannot assign requested address"):
+        with self.assertRaisesRegex(Exception, "Connection refused|Cannot assign requested address"):
             sms.submitMessage(phone, message)
 
     def test_02_http(self):
@@ -154,12 +154,12 @@ class TestSMS(TestCase):
 
         msg = ("Failed to send SMS")
 
-        with self.assertRaisesRegexp(Exception, msg):
+        with self.assertRaisesRegex(Exception, msg):
             sms.loadConfig(clickatell_config)
             ret = sms.submitMessage(phone, message)
         self.assertFalse(ret)
 
-        with self.assertRaisesRegexp(Exception, msg):
+        with self.assertRaisesRegex(Exception, msg):
             sms.loadConfig(config)
             ret = sms.submitMessage(phone, message)
         self.assertFalse(ret)

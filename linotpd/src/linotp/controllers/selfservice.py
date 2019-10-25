@@ -38,8 +38,6 @@ import json
 from flask import redirect, Response
 from werkzeug.exceptions import Forbidden
 
-from paste.httpexceptions import HTTPFound
-
 from linotp import flap
 from linotp.flap import (
     request, response, config, tmpl_context as c,
@@ -281,9 +279,6 @@ class SelfserviceController(BaseController):
             Session.close()
             raise acc
 
-        except HTTPFound as exx:
-            raise exx
-
         except Exception as e:
             log.exception("[__before__] failed with error: %r" % e)
             Session.rollback()
@@ -454,7 +449,7 @@ class SelfserviceController(BaseController):
                 tclt = tokenclass_registry.get(tok)
                 if hasattr(tclt, 'getClassInfo'):
                     sections = tclt.getClassInfo(section, {})
-                    if scope in sections.keys():
+                    if scope in list(sections.keys()):
                         section = sections.get(scope)
                         page = section.get('page')
                         c.scope = page.get('scope')

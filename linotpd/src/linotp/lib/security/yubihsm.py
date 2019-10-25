@@ -429,8 +429,8 @@ def main():
                             ["help", "password=", "slot=", "name=", "find="])
 
     except GetoptError:
-        print "There is an error in your parameter syntax:"
-        print main.__doc__
+        print("There is an error in your parameter syntax:")
+        print(main.__doc__)
         sys.exit(1)
 
     password = None
@@ -441,7 +441,7 @@ def main():
 
     for opt, arg in opts:
         if opt in ("-h", "--help"):
-            print main.__doc__
+            print(main.__doc__)
             sys.exit(0)
         if opt in ("-p", "--password"):
             password = str(arg)
@@ -454,8 +454,8 @@ def main():
             label = arg
 
     if not name and not listing:
-        print "Parameter <name> required or list the AES keys."
-        print main.__doc__
+        print("Parameter <name> required or list the AES keys.")
+        print(main.__doc__)
         sys.exit(1)
 
     if not password:

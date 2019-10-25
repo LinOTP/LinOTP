@@ -114,7 +114,7 @@ class User(object):
         f_user = User(f_login, realm=f_realm)
         if check_if_exist:
             try:
-                _uid, _resolver = f_user.get_uid_resolver().next()
+                _uid, _resolver = next(f_user.get_uid_resolver())
             except StopIteration:
                 f_user.exists = False
 
@@ -239,7 +239,7 @@ class User(object):
 
         try:
             (userid,
-             resolver_spec) = self.get_uid_resolver(lookup_resolvers).next()
+             resolver_spec) = next(self.get_uid_resolver(lookup_resolvers))
         except StopIteration:
             return {}
 
@@ -269,14 +269,14 @@ class User(object):
 
         realms = set()
 
-        for realm, realm_definition in getRealms().items():
+        for realm, realm_definition in list(getRealms().items()):
             if self.resolver in realm_definition['useridresolver']:
                 realms.add(realm)
 
         return realms
 
     def getResolvers(self):
-        return self.resolverUid.keys()
+        return list(self.resolverUid.keys())
 
     def addResolverUId(self, resolver, uid, conf="", resId="", resCId=""):
         self.resolverUid[resolver] = uid
@@ -326,7 +326,7 @@ class User(object):
             return self._exists
 
         found = []
-        for realm_name, definition in realms.items():
+        for realm_name, definition in list(realms.items()):
             resolvers = definition.get('useridresolver', [])
             for realm_resolver in resolvers:
                 log.debug("checking in %r", realm_resolver)
@@ -396,7 +396,7 @@ class User(object):
         """ support for: user1 == user2 """
         return not self.__ne__(other)
 
-    def __nonzero__(self):
+    def __bool__(self):
         """ support for: if user: """
         if self.login is None:
             return False
@@ -409,7 +409,7 @@ def getUserResolverId(user, report=False):
     log.debug('getUserResolverId for %r', user)
 
     if user is None or user.is_empty:
-        return  (u'', u'', u'')
+        return  ('', '', '')
 
     try:
 
@@ -423,7 +423,7 @@ def getUserResolverId(user, report=False):
         if report is True:
             raise UserError("getUserResolverId failed: %r" % exx, id=1112)
 
-        return  (u'', u'', u'')
+        return  ('', '', '')
 
 
 def splitUser(username):
@@ -486,7 +486,7 @@ def get_user_from_options(
 
     if 'user' in options and options['user']:
 
-        if isinstance(options['user'], (str, unicode)):
+        if isinstance(options['user'], str):
             user = getUserFromParam(options)
 
         elif isinstance(options['user'], User):
@@ -735,7 +735,7 @@ def getUserRealms(user, allRealms=None, defaultRealm=None):
         Realms.append(user.realm.lower())
     else:
         # we got a resolver and will get all realms the resolver belongs to.
-        for key, val in allRealms.items():
+        for key, val in list(allRealms.items()):
             log.debug("[getUserRealms] evaluating realm %r: %r ", key, val)
             for reso in val['useridresolver']:
                 resotype, resoname = reso.rsplit('.', 1)
@@ -794,7 +794,7 @@ def find_resolver_spec_for_config_identifier(realms_dict, config_identifier):
     # assumes, that the config_identifier is globally
     # unique. This is not necessarily the case
 
-    for realm_dict in realms_dict.values():
+    for realm_dict in list(realms_dict.values()):
         resolver_specs = realm_dict['useridresolver']
         for resolver_spec in resolver_specs:
             __, current_config_identifier = parse_resolver_spec(resolver_spec)
@@ -1558,7 +1558,7 @@ def getUserList(param, search_user):
             try:
                 ulist_gen = y.getUserListIterator(searchDict)
                 while True:
-                    ulist = ulist_gen.next()
+                    ulist = next(ulist_gen)
                     log.debug("[getUserList] setting the resolver <%r> "
                               "for each user", resolver_spec)
                     for u in ulist:
@@ -1739,7 +1739,7 @@ def get_authenticated_user(username, realm, password=None,
     log.info("User %r from realm %r tries to authenticate to selfservice",
              username, realm)
 
-    if type(username) != unicode:
+    if type(username) != str:
         username = username.decode(ENCODING)
 
     # ease the handling of options

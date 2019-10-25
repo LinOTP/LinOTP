@@ -1661,7 +1661,7 @@ class TestChallengeResponseController(TestSpecialController):
         entries = self.get_audit_entries(num=3, page=1)
         for entry in entries:
             for info in entry:
-                if type(info) in [str, unicode]:
+                if isinstance(info, str):
                     if 'SMS could not be sent' in info:
                         found = True
                         break

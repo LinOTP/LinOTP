@@ -76,7 +76,7 @@ class MockedLogging():
         for arg in args:
             self.log_data.append(arg)
 
-        for key, val in kwargs.items():
+        for key, val in list(kwargs.items()):
             self.log_data.append('[%s] %r:%r' % (mode, key, val))
 
 

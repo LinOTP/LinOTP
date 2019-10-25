@@ -125,4 +125,4 @@ class TestReplyTestCase(object):
         result_dict = json.loads(result)
         value = result_dict.get('result', {}).get('value')
 
-        assert u'bar' in value
+        assert 'bar' in value

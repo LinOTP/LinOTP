@@ -220,7 +220,7 @@ def search(param, user=None, columns=None):
         else:
             search_dict[param['qtype']] = param["query"]
     else:
-        for k, v in param.items():
+        for k, v in list(param.items()):
             search_dict[k] = v
 
     rp_dict = {}
@@ -254,7 +254,7 @@ def search(param, user=None, columns=None):
     # In this case we have only a limited list of columns, like in
     # the selfservice portal
     for row in result:
-        a = dict(row.items())
+        a = dict(list(row.items()))
         if 'number' not in a and 'id' in a:
             a['number'] = a['id']
         if 'date' not in a and 'timestamp' in a:

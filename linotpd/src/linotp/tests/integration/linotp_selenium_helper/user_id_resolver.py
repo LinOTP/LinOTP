@@ -32,8 +32,8 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
-from helper import find_by_css, find_by_id, fill_element_from_dict
-from manage_elements import ManageDialog
+from .helper import find_by_css, find_by_id, fill_element_from_dict
+from .manage_elements import ManageDialog
 
 
 class NewResolverDialog(ManageDialog):
@@ -251,7 +251,7 @@ class UserIdResolverManager(ManageDialog):
 
         params = {
             name_map.get(k, k): v
-            for k,v in params.iteritems()
+            for k,v in params.items()
             if name_map.get(k, k) is not None
         }
 

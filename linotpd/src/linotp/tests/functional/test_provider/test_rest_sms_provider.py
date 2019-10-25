@@ -39,7 +39,7 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 
 
 import logging
-import urlparse
+import urllib.parse
 import requests
 from datetime import datetime
 from datetime import timedelta

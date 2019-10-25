@@ -263,9 +263,7 @@ class Crypter(object):
         """
         mac_message = ""
         for message in messages:
-            if type(message) == str:
-                mac_message += message
-            elif type(message) == unicode:
+            if isinstance(message, str):
                 mac_message += message.encode('utf-8')
 
         return Crypter.hmac_sha256(self.mac_key, mac_message)

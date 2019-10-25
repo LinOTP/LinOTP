@@ -19,14 +19,14 @@ def fake_get_client_policy(client, scope, realm, user, userObj):
 
     if realm == 'otherrealm':
 
-        fake_policies = {u'bla': {u'realm': u'*',
-                                  u'active': u'True',
-                                  u'client': u'',
-                                  u'user': u'',
-                                  u'time': u'',
-                                  u'action': u'maxtoken=2, maxtokenPUSH=1, '
+        fake_policies = {'bla': {'realm': '*',
+                                  'active': 'True',
+                                  'client': '',
+                                  'user': '',
+                                  'time': '',
+                                  'action': 'maxtoken=2, maxtokenPUSH=1, '
                                               'maxtokenHMAC',
-                                  u'scope': u'enrollment'}}
+                                  'scope': 'enrollment'}}
 
         return fake_policies
 

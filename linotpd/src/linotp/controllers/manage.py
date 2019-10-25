@@ -33,12 +33,11 @@ import logging
 import json
 
 import flask
+from flask import redirect
 
 from linotp.flap import (
     config, render_mako as render, request, response, tmpl_context as c, _,
 )
-
-from paste.deploy.converters import asbool
 
 from mako.exceptions import CompileException
 
@@ -181,11 +180,11 @@ class ManageController(BaseController):
         '''
 
         try:
-            c.debug = asbool(config.get('debug', False))
+            c.debug = bool(config.get('debug', False))
             c.title = "LinOTP Management"
             admin_user = getUserFromRequest(request)
 
-            if admin_user.has_key('login'):
+            if 'login' in admin_user:
                 c.admin = admin_user['login']
 
             log.debug("[index] importers: %s" % IMPORT_TEXT)
@@ -268,7 +267,7 @@ class ManageController(BaseController):
         except PolicyException as pe:
             log.exception("[index] Error during checking policies: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as ex:
             log.exception("[index] failed! %r" % ex)
@@ -284,7 +283,7 @@ class ManageController(BaseController):
         '''
         c.title = 'TokenTypeInfo'
         ttinfo = []
-        ttinfo.extend(tokenclass_registry.keys())
+        ttinfo.extend(list(tokenclass_registry.keys()))
         for tok in tokenclass_registry:
             tclass_object = tokenclass_registry.get(tok)
             if hasattr(tclass_object, 'getClassType'):
@@ -460,7 +459,7 @@ class ManageController(BaseController):
         except PolicyException as pe:
             log.exception("[tokenview_flexi] Error during checking policies: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[tokenview_flexi] failed: %r" % e)
@@ -521,14 +520,14 @@ class ManageController(BaseController):
                 lines.append(
                     { 'id' : u['username'],
                         'cell': [
-                            (u['username']) if u.has_key('username') else (""),
+                            (u['username']) if 'username' in u else (""),
                             (resolver_display),
-                            (u['surname']) if u.has_key('surname') else (""),
-                            (u['givenname']) if u.has_key('givenname') else (""),
-                            (u['email']) if u.has_key('email') else (""),
-                            (u['mobile']) if u.has_key('mobile') else (""),
-                            (u['phone']) if u.has_key('phone') else (""),
-                            (u['userid']) if u.has_key('userid') else (""),
+                            (u['surname']) if 'surname' in u else (""),
+                            (u['givenname']) if 'givenname' in u else (""),
+                            (u['email']) if 'email' in u else (""),
+                            (u['mobile']) if 'mobile' in u else (""),
+                            (u['phone']) if 'phone' in u else (""),
+                            (u['userid']) if 'userid' in u else (""),
                              ]
                     }
                     )
@@ -568,7 +567,7 @@ class ManageController(BaseController):
         except PolicyException as pe:
             log.exception("[userview_flexi] Error during checking policies: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[userview_flexi] failed: %r" % e)
@@ -630,7 +629,7 @@ class ManageController(BaseController):
         except PolicyException as pe:
             log.exception("[tokeninfo] Error during checking policies: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[tokeninfo] failed! %r" % e)
@@ -645,10 +644,11 @@ class ManageController(BaseController):
         '''
         redirect logout
         '''
-        from linotp.flap import redirect
+
         http_host = request.environ.get("HTTP_HOST")
         url_scheme = request.environ.get("wsgi.url_scheme", "https")
-        redirect("%s://%s/manage/" % (url_scheme, http_host))
+
+        return redirect("%s://%s/manage/" % (url_scheme, http_host))
 
 
     def help(self, id=None):

@@ -195,8 +195,8 @@ class UserImport(object):
                     continue
 
                 # prevent processing user multiple times
-                if (user.userid in processed_users.keys() or
-                    user.username in processed_users.values()):
+                if (user.userid in list(processed_users.keys()) or
+                    user.username in list(processed_users.values())):
                     raise Exception("Violation of unique constraint - "
                                     "duplicate user in data: %r" % user)
                 else:
@@ -229,7 +229,7 @@ class UserImport(object):
 
             # finally remove all former, not updated users
 
-            for del_userid, del_user_name in former_user_by_id.items():
+            for del_userid, del_user_name in list(former_user_by_id.items()):
                 users_deleted[del_userid] = del_user_name
                 if not dryrun:
                     self.import_handler.delete_by_id(del_userid)

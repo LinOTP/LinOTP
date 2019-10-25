@@ -126,7 +126,7 @@ from linotp.lib.token import getRolloutToken4User
 from linotp.tokens import tokenclass_registry
 from linotp.lib.util import normalize_activation_code
 
-from ocra import OcraSuite
+from .ocra import OcraSuite
 
 from linotp.lib.challenges import Challenges
 from linotp.lib.reply import create_img
@@ -135,7 +135,7 @@ from linotp.tokens.base import TokenClass
 from linotp.lib.context import request_context as context
 
 # needed for ocra token
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 import sys
 
@@ -429,7 +429,7 @@ class Ocra2TokenClass(TokenClass):
         '''
 
         TokenClass.__init__(self, aToken)
-        self.setType(u"ocra2")
+        self.setType("ocra2")
         self.transId = 0
 
         self.mode = ['challenge']
@@ -542,7 +542,7 @@ class Ocra2TokenClass(TokenClass):
             # the info url must be provided in any case
             info["url"] = callback
 
-            info['app_import'] = 'lseqr://init?%s' % (urllib.urlencode(uInfo))
+            info['app_import'] = 'lseqr://init?%s' % (urllib.parse.urlencode(uInfo))
             del info['ocrasuite']
             self.info = info
 
@@ -609,11 +609,11 @@ class Ocra2TokenClass(TokenClass):
             callback_user = params.get('callback.user', '')
 
             if "<user>" in callback and callback_user:
-                user = urllib.quote(callback_user)
+                user = urllib.parse.quote(callback_user)
                 callback = callback.replace('<user>', user)
 
             if "<password>" in callback and callback_pass:
-                passw = urllib.quote(callback_pass)
+                passw = urllib.parse.quote(callback_pass)
                 callback = callback.replace('<password>', passw)
 
         return callback
@@ -694,19 +694,19 @@ class Ocra2TokenClass(TokenClass):
             if message is not None:
                 uInfo['me'] = str(message.encode("utf-8"))
 
-            ustr = urllib.urlencode({'u': str(url.encode("utf-8"))})
+            ustr = urllib.parse.urlencode({'u': str(url.encode("utf-8"))})
             if ustr[2:]:
                 uInfo['u'] = ustr[2:]
                 info['url'] = str(url.encode("utf-8"))
 
-            app_import = 'lseqr://nonce?%s' % (urllib.urlencode(uInfo))
+            app_import = 'lseqr://nonce?%s' % (urllib.parse.urlencode(uInfo))
 
             ##  add a signature of the url
             signature = {'si': self.signData(app_import)}
             info['signature'] = signature.get('si')
 
             info['app_import'] = "%s&%s" % (app_import,
-                                             urllib.urlencode(signature))
+                                             urllib.parse.urlencode(signature))
             self.info = info
 
             ##  setup new state
@@ -888,8 +888,8 @@ class Ocra2TokenClass(TokenClass):
         '''
 
         url = data.get("url")
-        u = (str(urllib.urlencode({'u': '%s' % url})))
-        u = urllib.urlencode({'u': "%s" % (url.encode("utf-8"))})
+        u = (str(urllib.parse.urlencode({'u': '%s' % url})))
+        u = urllib.parse.urlencode({'u': "%s" % (url.encode("utf-8"))})
 
         challenge = data.get('challenge')
         input_data = data.get('input')
@@ -905,12 +905,12 @@ class Ocra2TokenClass(TokenClass):
                  }
 
         ## create the app_url from the data
-        dataobj = 'lseqr://req?%s' % (str(urllib.urlencode(uInfo)))
+        dataobj = 'lseqr://req?%s' % (str(urllib.parse.urlencode(uInfo)))
 
         ## append the signature to the url
         signature = {'si': self.signData(dataobj)}
         uInfo['si'] = signature
-        dataobj = '%s&%s' % (dataobj, str(urllib.urlencode(signature)))
+        dataobj = '%s&%s' % (dataobj, str(urllib.parse.urlencode(signature)))
 
         detail["data"] = dataobj
         detail["ocraurl"] = {
@@ -1156,7 +1156,7 @@ class Ocra2TokenClass(TokenClass):
                 if transid is not None:
                     mids[transid] = challenge
 
-            for transid in mids.keys():
+            for transid in list(mids.keys()):
                 # intentional overwrite the transaction which has been provided
                 loptions['transactionid'] = transid
                 otpcount = self.checkOtp(otpval, counter, window, options=loptions)
@@ -1642,8 +1642,8 @@ class Ocra2TokenClass(TokenClass):
             statusDict['valid_tan'] = challenge.valid_tan
             statusDict['failcount'] = self.getFailCount()
             statusDict['id'] = challenge.id
-            statusDict['timestamp'] = unicode(challenge.timestamp)
-            statusDict['active'] = unicode(self.isActive())
+            statusDict['timestamp'] = str(challenge.timestamp)
+            statusDict['active'] = str(self.isActive())
 
 
         return statusDict

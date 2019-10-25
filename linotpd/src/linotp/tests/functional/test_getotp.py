@@ -419,7 +419,7 @@ class TestGetOtpController(TestController):
         response = self.make_userservice_request(action='getmultiotp',
                                                  params=parameters,
                                                  auth_user=auth_user)
-        print response
+        print(response)
         self.assertTrue('"message": "The serial hotp1 does not belong'
                         ' to user passthru_user1@mydefrealm"' in response, response)
 

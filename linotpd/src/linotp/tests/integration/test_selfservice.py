@@ -50,7 +50,7 @@ class TestSelfservice(TestCase):
         Policy(self.manage_ui, "SE_policy_selfservice",
                "selfservice", "setOTPPIN, ", self.realm_name.lower())
 
-        login_user = u"郎"
+        login_user = "郎"
         login_password = "Test123!"
 
         self.selfservice.login(

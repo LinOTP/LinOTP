@@ -38,9 +38,6 @@ package_directory = os.path.realpath(os.path.dirname(__file__))
 install_requirements = [
     'Flask',
     'Flask-Mako',
-    'Pylons>=0.9.7',
-    'PasteScript<=1.7.5',
-    'WebOb',
     'SQLAlchemy>=0.6',
     'beaker',
     'docutils>=0.4',
@@ -70,15 +67,13 @@ install_requirements = [
 # > pip install -e ".[test]"
 test_requirements = [
     'flask_testing',
-    # Pytest 5.0.0-5.1.1 (at least) contain python3 type syntax
-    'pytest<5.0.0',
+    'pytest',
     'pytest-cov',
     'pytest-freezegun',
     'pytest-flask',
     'pytest-selenium',
     'pytest-testconfig',
     'mock',
-    'unittest2',
     'freezegun',
     'coverage',
     'pylint',

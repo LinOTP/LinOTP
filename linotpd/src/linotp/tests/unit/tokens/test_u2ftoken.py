@@ -31,8 +31,8 @@ if sys.version_info < (2, 7):
     try:
         import unittest2 as unittest
     except ImportError as exc:
-        print "You need to install unittest2 on Python 2.6. Unittest2 is a "\
-              "backport of new unittest features."
+        print("You need to install unittest2 on Python 2.6. Unittest2 is a "\
+              "backport of new unittest features.")
         raise exc
 else:
     import unittest
@@ -59,7 +59,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
                 "setType",
             ]
         )  # linotp.model.Token
-        model_token.getInfo.return_value = u'' + '{\n}'
+        model_token.getInfo.return_value = '' + '{\n}'
         self.u2f_token = U2FTokenClass(model_token)
         model_token.setType.assert_called_once_with("u2f")
 

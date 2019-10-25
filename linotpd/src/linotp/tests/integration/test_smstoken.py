@@ -89,7 +89,7 @@ class TestSmsToken(TestCase):
 
         # Authenticate with RADIUS
         if disable_radius.lower() == 'true':
-            print "Testconfig option radius.disable is set to True. Skipping RADIUS test!"
+            print("Testconfig option radius.disable is set to True. Skipping RADIUS test!")
         else:
             call_array = "linotp-auth-radius -f ../../../test.ini".split()
             call_array.extend(['-u', username + "@" + realm_name,
@@ -102,7 +102,7 @@ class TestSmsToken(TestCase):
                 assert m is not None, \
                                 "'State' not found in linotp-auth-radius output. %r" % rad1
                 state = m.group(1)
-                print "State: %s" % state
+                print("State: %s" % state)
                 otp = smtpsvc.get_otp()
 
             call_array = "linotp-auth-radius -f ../../../test.ini".split()

@@ -158,7 +158,7 @@ class TestScenario01(TestCase):
         spass_token = SpassToken(
             driver=self.driver,
             base_url=self.base_url,
-            pin=u"beethovenspass#ñô",
+            pin="beethovenspass#ñô",
             description="SPass Token enrolled with Selenium"
         )
         serial_token_beethoven = spass_token.serial
@@ -208,7 +208,7 @@ class TestScenario01(TestCase):
             "beethoven": serial_token_beethoven
         }
 
-        for user, token in user_token_dict.iteritems():
+        for user, token in user_token_dict.items():
             selfservice.login(user, "Test123!", test1_realm)
             selfservice.set_pin(token, user + "newpin")
             selfservice.logout()

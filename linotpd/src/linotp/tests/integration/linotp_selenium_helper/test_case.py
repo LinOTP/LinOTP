@@ -43,9 +43,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.file_detector import UselessFileDetector
 
-from helper import get_from_tconfig, load_tconfig_from_file
-from manage_ui import ManageUi
-from validate import Validate
+from .helper import get_from_tconfig, load_tconfig_from_file
+from .manage_ui import ManageUi
+from .validate import Validate
 from unittest.case import SkipTest
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -138,7 +138,7 @@ class TestCase(object):
                 try:
                     driver = webdriver.Chrome(
                         options=_get_chrome_options())
-                except WebDriverException, e:
+                except WebDriverException as e:
                     logger.error("Error creating Chrome driver. Maybe you need to install"
                                  " 'chromedriver'. If you wish to use another browser please"
                                  " adapt your configuratiion file. Error message: %s" % str(e))

@@ -1766,7 +1766,7 @@ class TestQRToken(TestController):
         response_dict = self.create_multiple_challenges('root', '1234')
         challenges = response_dict['detail']['challenges']
 
-        serial = challenges.keys()[0]
+        serial = list(challenges.keys())[0]
         challenge_url = challenges[serial]['message']
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
@@ -1803,7 +1803,7 @@ class TestQRToken(TestController):
         response_dict = self.create_multiple_challenges('root', '1234')
         challenges = response_dict['detail']['challenges']
 
-        serial = challenges.keys()[0]
+        serial = list(challenges.keys())[0]
         challenge_url = challenges[serial]['message']
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)

@@ -49,7 +49,7 @@ class TestLDAPResolverAttributes(unittest.TestCase):
         data encoded in utf-8, which has not been the case for the uidType
         """
 
-        uid_type = u'üid'
+        uid_type = 'üid'
         class Bindresult(object):
 
             def search_ext(self, base, scope_subtree, filterstr=None,
@@ -59,14 +59,14 @@ class TestLDAPResolverAttributes(unittest.TestCase):
                     for attr in attrlist:
 
                         # check if attribute is not a python unicode str
-                        if isinstance(attr, unicode):
+                        if isinstance(attr, str):
                             raise Exception('Unicode character recieved')
 
                         # invalid utf-8 will raise an exception too
                         attr.decode('utf-8')
 
                 # check if filterstr is not a python unicode str
-                if isinstance(filterstr, unicode):
+                if isinstance(filterstr, str):
                     raise Exception('Unicode character recieved')
 
                 # val could be str with ascii or non ascii (str.encode(utf-8).
@@ -94,17 +94,17 @@ class TestLDAPResolverAttributes(unittest.TestCase):
         mock_unbind.return_value = None
 
         resolver = LDAPResolver()
-        resolver.filter = u'(&(uid=%s)(objectClass=inetOrgPerson))'
+        resolver.filter = '(&(uid=%s)(objectClass=inetOrgPerson))'
         resolver.uidType = uid_type
 
         # ------------------------------------------------------------------ --
 
         # finally trigger the call to run the test
 
-        userid = resolver.getUserId(u'mözart')
+        userid = resolver.getUserId('mözart')
 
         # check if attribute is a python unicode str
-        if not isinstance(userid, unicode):
+        if not isinstance(userid, str):
             raise Exception('non Unicode character recieved')
 
         # if unicode could be converted to utf-8 and back
@@ -114,12 +114,12 @@ class TestLDAPResolverAttributes(unittest.TestCase):
 
         # extend the test to verify as well the getUserLDAPInfo and getUserInfo
 
-        userLdapInfo = resolver.getUserLDAPInfo(u'Üßalad')
+        userLdapInfo = resolver.getUserLDAPInfo('Üßalad')
 
-        for key, val_list in userLdapInfo.items():
+        for key, val_list in list(userLdapInfo.items()):
 
             # check if attribute is a python unicode str
-            if not isinstance(key, unicode) and not isinstance(key, str):
+            if not isinstance(key, str) and not isinstance(key, str):
                 raise Exception('Non Unicode character recieved')
 
             # val could be str with ascii or non ascii (str.encode(utf-8).
@@ -131,7 +131,7 @@ class TestLDAPResolverAttributes(unittest.TestCase):
             val = val_list[0]
 
             # check if attribute is a python unicode str
-            if not isinstance(val, unicode) and not isinstance(key, str):
+            if not isinstance(val, str) and not isinstance(key, str):
                 raise Exception('Non Unicode character recieved')
 
             # val could be str with ascii or non ascii (str.encode(utf-8).
@@ -142,14 +142,14 @@ class TestLDAPResolverAttributes(unittest.TestCase):
 
         # ------------------------------------------------------------------ --
 
-        userInfo = resolver.getUserInfo(u'Üßalad')
+        userInfo = resolver.getUserInfo('Üßalad')
 
-        for key, val in userInfo.items():
+        for key, val in list(userInfo.items()):
 
             if not isinstance(key, str):
 
                 # check if attribute is a python unicode str
-                if not isinstance(key, unicode):
+                if not isinstance(key, str):
                     raise Exception('Non Unicode character recieved')
 
             # key could be str with ascii or non ascii (str.encode(utf-8).
@@ -159,7 +159,7 @@ class TestLDAPResolverAttributes(unittest.TestCase):
             key.encode('utf-8').decode('utf-8')
 
             # check if attribute is a python unicode str
-            if not isinstance(val, unicode):
+            if not isinstance(val, str):
                 raise Exception('Non Unicode character recieved')
 
             # val could be str with ascii or non ascii (str.encode(utf-8).

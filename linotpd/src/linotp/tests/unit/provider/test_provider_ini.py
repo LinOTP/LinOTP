@@ -108,7 +108,7 @@ class TestProviderTestCase(unittest.TestCase):
         try:
             mock_storeConfig.assert_any_call(
                 key=provider_prefix + '.' + 'Config',
-                val=u'{"file":"/tmp/newone"}',
+                val='{"file":"/tmp/newone"}',
                 typ='password')
             mock_storeConfig.assert_any_call(
                 key=provider_prefix + '.' + 'Managed',
@@ -116,7 +116,7 @@ class TestProviderTestCase(unittest.TestCase):
                 typ=None)
             mock_storeConfig.assert_any_call(
                 key=provider_prefix + '.' + 'Timeout',
-                val=u'301',
+                val='301',
                 typ=None)
             mock_storeConfig.assert_any_call(
                 key=provider_prefix,

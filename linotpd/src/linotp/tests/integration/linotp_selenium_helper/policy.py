@@ -30,8 +30,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
 
-from manage_elements import ManageTab
-from helper import select, fill_form_element
+from .manage_elements import ManageTab
+from .helper import select, fill_form_element
 
 class PolicyManager(ManageTab):
     policy_entries_css_selector = "table#policy_table > tbody > tr"

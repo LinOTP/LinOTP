@@ -47,7 +47,7 @@ import time
 import re
 
 # needed for ocra token
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from sqlalchemy import asc, desc
 
@@ -218,7 +218,7 @@ class OcraTokenClass(TokenClass):
         :rtype: dict
         '''
         TokenClass.__init__(self, aToken)
-        self.setType(u"ocra")
+        self.setType("ocra")
         self.transId = 0
         return
 
@@ -322,7 +322,7 @@ class OcraTokenClass(TokenClass):
             info['serial'] = self.getSerial()
             uInfo['se'] = self.getSerial()
 
-            info['app_import'] = 'lseqr://init?%s' % (urllib.urlencode(uInfo))
+            info['app_import'] = 'lseqr://init?%s' % (urllib.parse.urlencode(uInfo))
             del info['ocrasuite']
             self.info = info
 
@@ -398,18 +398,18 @@ class OcraTokenClass(TokenClass):
             if message is not None:
                 uInfo['me'] = str(message.encode("utf-8"))
 
-            ustr = urllib.urlencode({'u': str(url.encode("utf-8"))})
+            ustr = urllib.parse.urlencode({'u': str(url.encode("utf-8"))})
             uInfo['u'] = ustr[2:]
             info['url'] = str(url.encode("utf-8"))
 
-            app_import = 'lseqr://nonce?%s' % (urllib.urlencode(uInfo))
+            app_import = 'lseqr://nonce?%s' % (urllib.parse.urlencode(uInfo))
 
             #  add a signature of the url
             signature = {'si': self.signData(app_import)}
             info['signature'] = signature.get('si')
 
             info['app_import'] = "%s&%s" % (app_import,
-                                            urllib.urlencode(signature))
+                                            urllib.parse.urlencode(signature))
             self.info = info
 
             #  setup new state
@@ -732,12 +732,12 @@ class OcraTokenClass(TokenClass):
         autosync = False
 
         try:
-            async = getFromConfig("AutoResync")
-            if async is None:
+            confsetting = getFromConfig("AutoResync")
+            if confsetting is None:
                 autosync = False
-            elif "true" == async.lower():
+            elif "true" == confsetting.lower():
                 autosync = True
-            elif "false" == async.lower():
+            elif "false" == confsetting.lower():
                 autosync = False
         except Exception as ex:
             log.exception('Ocra: autosync check undefined %r' % (ex))
@@ -1089,8 +1089,8 @@ class OcraTokenClass(TokenClass):
             statusDict['valid_tan'] = ocraChallenge.valid_tan
             statusDict['failcount'] = self.getFailCount()
             statusDict['id'] = ocraChallenge.id
-            statusDict['timestamp'] = unicode(ocraChallenge.timestamp)
-            statusDict['active'] = unicode(self.isActive())
+            statusDict['timestamp'] = str(ocraChallenge.timestamp)
+            statusDict['active'] = str(self.isActive())
 
         return statusDict
 
@@ -1196,7 +1196,7 @@ class OcraTokenClass(TokenClass):
 
         if transId is not None:
             challenges = Session.query(OcraChallenge).filter(
-                OcraChallenge.transid == u'' + transId)
+                OcraChallenge.transid == '' + transId)
             if challenges is None:
                 return
 
@@ -1209,7 +1209,7 @@ class OcraTokenClass(TokenClass):
             return
 
         challenges = Session.query(OcraChallenge).\
-            filter(OcraChallenge.tokenserial == u'' + serial)\
+            filter(OcraChallenge.tokenserial == '' + serial)\
             .order_by(desc(OcraChallenge.id))
 
         lastIds = set()
@@ -1249,7 +1249,7 @@ class OcraTokenClass(TokenClass):
             return None
 
         challenges = Session.query(OcraChallenge).filter(
-            OcraChallenge.transid == u'' + transId).all()
+            OcraChallenge.transid == '' + transId).all()
 
         if challenges is None:
             log.info('no ocraChallenge found for tranid %r' % (transId))
@@ -1295,7 +1295,7 @@ class OcraTokenClass(TokenClass):
                 ocraChallenges = Session.query(
                             OcraChallenge
                                 ).filter(
-                            OcraChallenge.tokenserial == u'' + serial
+                            OcraChallenge.tokenserial == '' + serial
                                 ).order_by(desc(OcraChallenge.id)).all()
             else:
 
@@ -1304,7 +1304,7 @@ class OcraTokenClass(TokenClass):
                 ocraChallenges = Session.query(
                             OcraChallenge
                                 ).filter(
-                            OcraChallenge.tokenserial == u'' + serial
+                            OcraChallenge.tokenserial == '' + serial
                                 ).filter(
                             OcraChallenge.received_tan == False
                                 ).order_by(asc(OcraChallenge.id)).all()

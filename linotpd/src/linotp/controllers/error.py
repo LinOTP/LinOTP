@@ -61,7 +61,7 @@ class ErrorController(BaseController):
 
         code = request.GET.get('code',
                                request.POST.get('code',
-                                               unicode(resp.status_int)))
+                                               str(resp.status_int)))
 
         page = error_document_template % \
             dict(prefix=request.environ.get('SCRIPT_NAME', ''),

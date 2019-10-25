@@ -173,7 +173,7 @@ def pkcs11error(rv):
 
 def output(loglevel, text):
     if running_as_main:
-        print "%s: %s" % (loglevel.upper(), text)
+        print("%s: %s" % (loglevel.upper(), text))
     else:
         if loglevel == "debug":
             log.debug(text)
@@ -841,8 +841,8 @@ def main():
                              "find=", "encrypt=", "label="])
 
     except GetoptError:
-        print "There is an error in your parameter syntax:"
-        print main.__doc__
+        print("There is an error in your parameter syntax:")
+        print(main.__doc__)
         sys.exit(1)
 
     password = None
@@ -855,7 +855,7 @@ def main():
 
     for opt, arg in opts:
         if opt in ("-h", "--help"):
-            print main.__doc__
+            print(main.__doc__)
             sys.exit(0)
         if opt in ("-p", "--password"):
             password = str(arg)
@@ -872,8 +872,8 @@ def main():
             encrypt = arg
 
     if not name and not listing and not encrypt:
-        print "Parameter <name> required or list the AES keys."
-        print main.__doc__
+        print("Parameter <name> required or list the AES keys.")
+        print(main.__doc__)
         sys.exit(1)
 
     if not password:
@@ -890,7 +890,7 @@ def main():
 
     if listing:
         keys = P11.find_aes_keys(label=label, wanted=100)
-        print("Found these AES keys: %s" % keys)
+        print("Found these AES keys: %r" % keys)
     elif encrypt:
         print("Encrypting data %s with label %s from slot %s."
               % (encrypt, str(l_handle), str(slot)))
@@ -901,10 +901,10 @@ def main():
         crypttext = P11.encrypt(encrypt, iv, DEFAULT_KEY)
         print("Encrypted Text : ", binascii.hexlify(crypttext))
         plaintext = P11.decrypt(crypttext, iv, DEFAULT_KEY)
-        print "Decrypted Text >>%s<< " % plaintext
+        print("Decrypted Text >>%s<< " % plaintext)
     else:
         handle = P11.createAES(ks=32, label=name)
-        print "Created AES key with handle %s" % str(handle)
+        print("Created AES key with handle %r" % handle)
 
     P11.logout()
 

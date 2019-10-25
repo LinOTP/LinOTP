@@ -29,7 +29,7 @@ import requests
 from requests.auth import HTTPDigestAuth
 import logging
 from pytest_testconfig import config, load_ini
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By

@@ -23,7 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-from __future__ import with_statement
+
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
@@ -86,7 +86,7 @@ def run_migrations_offline():
         rec['url'] = context.config.get_section_option(name,
                                                        "sqlalchemy.url")
 
-    for name, rec in engines.items():
+    for name, rec in list(engines.items()):
         logger.info("Migrating database %s" % name)
         file_ = "%s.sql" % name
         logger.info("Writing output to %s" % file_)
@@ -118,7 +118,7 @@ def run_migrations_online():
             prefix='sqlalchemy.',
             poolclass=pool.NullPool)
 
-    for name, rec in engines.items():
+    for name, rec in list(engines.items()):
         engine = rec['engine']
         rec['connection'] = conn = engine.connect()
 
@@ -128,7 +128,7 @@ def run_migrations_online():
             rec['transaction'] = conn.begin()
 
     try:
-        for name, rec in engines.items():
+        for name, rec in list(engines.items()):
             logger.info("Migrating database %s" % name)
             context.configure(
                 version_table='upgrade_%s' % name,
@@ -140,17 +140,17 @@ def run_migrations_online():
             context.run_migrations(engine_name=name)
 
         if USE_TWOPHASE:
-            for rec in engines.values():
+            for rec in list(engines.values()):
                 rec['transaction'].prepare()
 
-        for rec in engines.values():
+        for rec in list(engines.values()):
             rec['transaction'].commit()
     except:
-        for rec in engines.values():
+        for rec in list(engines.values()):
             rec['transaction'].rollback()
         raise
     finally:
-        for rec in engines.values():
+        for rec in list(engines.values()):
             rec['connection'].close()
 
 

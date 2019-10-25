@@ -106,7 +106,7 @@ class ForwardTokenClass(TokenClass):
         :param aToken: the db bound token
         """
         TokenClass.__init__(self, aToken)
-        self.setType(u"forward")
+        self.setType("forward")
 
         self.forwardSerial = None
         self.mode = ['authenticate', 'challenge']

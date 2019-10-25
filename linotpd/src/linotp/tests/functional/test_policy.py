@@ -3308,7 +3308,7 @@ class TestPolicies(TestController):
             tokens[serial] = descr
 
         # enroll tokens in realm myOtherRealm
-        for serial, descr in tokens.items():
+        for serial, descr in list(tokens.items()):
             params = {'type': 'hmac',
                       'serial': serial,
                       'otpkey': descr['otpkey'],
@@ -3321,7 +3321,7 @@ class TestPolicies(TestController):
 
             self.assertTrue('"value": true' in response, response)
 
-        for serial, descr in tokens.items():
+        for serial, descr in list(tokens.items()):
             # set realm of tokens
             params = {'serial': serial,
                       'realms': 'myOtherRealm',
@@ -3390,7 +3390,7 @@ class TestPolicies(TestController):
         self.assertTrue('"value": false' in response, response)
 
         # delete the tokens of the user
-        for serial in tokens.keys():
+        for serial in list(tokens.keys()):
             params = {'serial': serial}
             auth_user = 'superadmin'
             response = self.make_admin_request(action='remove',
@@ -3461,7 +3461,7 @@ class TestPolicies(TestController):
             tokens[serial] = descr
 
         # enroll tokens in realm myOtherRealm
-        for serial, descr in tokens.items():
+        for serial, descr in list(tokens.items()):
             params = {'type': 'hmac',
                       'serial': serial,
                       'otpkey': descr['otpkey'],
@@ -3474,7 +3474,7 @@ class TestPolicies(TestController):
 
             self.assertTrue('"value": true' in response, response)
 
-        for serial, descr in tokens.items():
+        for serial, descr in list(tokens.items()):
             # set realm of tokens
             params = {'serial': serial,
                       'realms': 'myOtherRealm',
@@ -3543,7 +3543,7 @@ class TestPolicies(TestController):
         self.assertTrue('"value": false' in response, response)
 
         # delete the tokens of the user
-        for serial in tokens.keys():
+        for serial in list(tokens.keys()):
             params = {'serial': serial}
             auth_user = 'superadmin'
             response = self.make_admin_request(action='remove',
@@ -3631,7 +3631,7 @@ class TestPolicies(TestController):
 
         # check for password length 10
         self.assertTrue(re.search('"password": "\S{8}"',
-                                  unicode(response)) is not None, response)
+                                  str(response)) is not None, response)
 
         params = {"serial": "token2"}
         auth_user = 'superadmin'
@@ -3641,7 +3641,7 @@ class TestPolicies(TestController):
 
         # check for password length 10
         self.assertTrue(re.search('"password": "\S{20}"',
-                                  unicode(response)) is not None, response)
+                                  str(response)) is not None, response)
 
         # delete the tokens of the user
         for serial in ["token1", "token2", "losttoken1", "losttoken2"]:
@@ -4022,7 +4022,7 @@ class TestPolicies(TestController):
                                             auth_user=auth_user)
 
         result = json.loads(response.body)
-        names = result.get("result").get('value').keys()
+        names = list(result.get("result").get('value').keys())
 
         # delete all standard policies
         for name in names:

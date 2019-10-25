@@ -97,7 +97,7 @@ class HmacOtp():
         for c in range(start , end):
             otpval = self.generate(c)
 
-            if (unicode(otpval) == unicode(anOtpVal)):
+            if (str(otpval) == str(anOtpVal)):
                 res = c
                 break
         #return -1 or the counter

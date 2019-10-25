@@ -48,7 +48,7 @@ def iterate_users(user_iterators):
 
         try:
             while True:
-                user_data = user_iterator.next()
+                user_data = next(user_iterator)
                 if type(user_data) in [list]:
                     for data in user_data:
                         data['resolver'] = reso
