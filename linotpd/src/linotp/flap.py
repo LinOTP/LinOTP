@@ -4,6 +4,7 @@
 
 import logging
 import os.path
+from builtins import KeyError
 
 import flask
 from flask import abort, redirect, Response as response
@@ -43,7 +44,10 @@ request = RequestProxy(flask.request)
 
 class RequestContextProxy(object):
     def __getattr__(self, name):
-        return flask.g.request_context.__getitem__(name)
+        try:
+            return flask.g.request_context.__getitem__(name)
+        except KeyError as exx:
+            raise AttributeError(exx)
     def get(self, name, default=None):
         return flask.g.request_context.get(name, default)
         #return flask.g.request_context.__getattribute__(name)
