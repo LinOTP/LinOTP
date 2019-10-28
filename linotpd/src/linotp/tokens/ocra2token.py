@@ -1321,12 +1321,12 @@ class Ocra2TokenClass(TokenClass):
         autosync = False
 
         try:
-            async = getFromConfig("AutoResync")
-            if async is None:
+            setting = getFromConfig("AutoResync")
+            if setting is None:
                 autosync = False
-            elif "true" == async.lower():
+            elif "true" == setting.lower():
                 autosync = True
-            elif "false" == async.lower():
+            elif "false" == setting.lower():
                 autosync = False
         except Exception as ex:
             log.exception('autosync check undefined %r' % (ex))

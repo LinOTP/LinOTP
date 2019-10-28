@@ -51,15 +51,15 @@ class EncryptedData(str):
         return decryptPassword(self._encrypted_str)
 
     @staticmethod
-    def from_unencrypted(value):
+    def from_unencrypted(value: str) -> 'EncryptedData':
         """
         to create an EncrytedData obejct from a plaintext password
         for the encryption it is required to have the value encoded as utf-8
 
-        :param value: value is a simple string or unicode which
+        :param value: value is a unicode string
         :return: new EncrytedData object
         """
-        crypted_value = encryptPassword(value.encode('utf-8'))
+        crypted_value = encryptPassword(value)
         return EncryptedData(crypted_value)
 
     def __str__(self):

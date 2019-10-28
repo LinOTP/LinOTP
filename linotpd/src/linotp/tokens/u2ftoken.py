@@ -31,7 +31,6 @@ import binascii
 import re
 from M2Crypto import X509, m2
 from hashlib import sha256
-from string import rfind
 
 from linotp.lib.auth.validate import check_otp
 from linotp.lib.auth.validate import check_pin
@@ -211,7 +210,7 @@ class U2FTokenClass(TokenClass):
         # Split OTP from pin
         # Since we know that the OTP has to be valid JSON  with format {"a":"b", "b":"c", ...}
         # we can parse the OTP for '{' beginning at the end of the OTP string
-        splitIndex = rfind(passw, "{")
+        splitIndex = passw.rfind("{")
         if splitIndex != -1:
             pin = passw[:splitIndex]
             otpval = passw[splitIndex:]

@@ -2,7 +2,7 @@
 import os
 import pytest                   # noqa: F401
 
-from flask import url_for
+from flask import url_for, request
 
 from linotp import __version__ as linotp_version
 from linotp.app import LinOTPApp
@@ -45,22 +45,25 @@ def test_dispatch(base_app, client, path, method, status):
     res = bound_method('/test/' + path)
     assert res.status_code == status
     if res.status_code == 200:
-        assert res.data == 'method:' + method.upper()
+        assert request.method == method.upper()
 
 
 def test_dispatch_args(base_app, client):
     res = client.get('/test/testmethod_args/foo/bar')
     assert res.status_code == 200
-    assert res.data == 'method:GET,foo,bar'
+    assert request.method == 'GET'
+    assert request.view_args['s'] == 'foo'
+    assert request.view_args['t'] == 'bar'
 
 
 @pytest.mark.parametrize('path,status, id_value', [
-    ('testmethod_optional_id', 200, 'None'),
+    ('testmethod_optional_id', 200, None),
     ('testmethod_optional_id/4711', 200, '4711'),
 ])
 def test_dispatch_optional_id(base_app, client, path, status, id_value):
     res = client.get('/test/' + path)
     assert res.status_code == status
-    if res.status_code == 200:
-        _, _, id_arg = res.data.rpartition('=')
-        assert id_arg == id_value
+    if id_value is not None:
+        assert request.view_args == {'id': id_value}
+    else:
+        assert request.view_args == {}

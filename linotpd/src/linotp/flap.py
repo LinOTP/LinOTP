@@ -4,13 +4,14 @@
 
 import logging
 import os.path
+from builtins import KeyError
 
 import flask
-from flask import abort, redirect, Response as response
-from flask_mako import render_template, TemplateError
-
-from werkzeug.exceptions import Unauthorized as HTTPUnauthorized
+from flask import Response as response
+from flask import abort, redirect
+from flask_mako import TemplateError, render_template
 from werkzeug.exceptions import Forbidden as HTTPForbidden
+from werkzeug.exceptions import Unauthorized as HTTPUnauthorized
 from werkzeug.local import LocalProxy
 
 from .lib import helpers
@@ -43,7 +44,10 @@ request = RequestProxy(flask.request)
 
 class RequestContextProxy(object):
     def __getattr__(self, name):
-        return flask.g.request_context.__getitem__(name)
+        try:
+            return flask.g.request_context.__getitem__(name)
+        except KeyError as exx:
+            raise AttributeError(exx)
     def get(self, name, default=None):
         return flask.g.request_context.get(name, default)
         #return flask.g.request_context.__getattribute__(name)
