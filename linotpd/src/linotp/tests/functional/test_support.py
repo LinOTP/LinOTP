@@ -34,7 +34,6 @@ import logging
 import json
 
 from mock import patch
-from nose.tools import raises
 
 from datetime import datetime
 from datetime import timedelta

@@ -28,7 +28,6 @@ import os
 import json
 import struct
 import mock
-from nose.tools import raises
 
 from tempfile import NamedTemporaryFile
 from collections import defaultdict

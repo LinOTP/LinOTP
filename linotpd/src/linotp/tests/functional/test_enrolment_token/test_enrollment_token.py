@@ -31,8 +31,6 @@ Test the onetime token for the selfservice login
 import json
 from linotp.tests import TestController
 
-import unittest2
-
 
 class TestRolloutToken(TestController):
     """

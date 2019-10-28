@@ -30,7 +30,6 @@ Test when policies defined for certain realms apply and when not. This depends
 on the 'realm context' during the request.
 """
 
-import unittest2
 from collections import deque
 
 from linotp.tests import TestController
@@ -470,4 +469,3 @@ class TestRealmContextController(TestController):
         content = response.json
         self.assertTrue(content['result']['status'])
         self.assertTrue(content['result']['value'])
-

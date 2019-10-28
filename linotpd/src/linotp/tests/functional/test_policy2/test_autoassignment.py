@@ -30,8 +30,9 @@ Test the autoassignment Policy.
 """
 import json
 
-import unittest2
 from copy import deepcopy
+
+import pytest
 from mock import patch
 from linotp.tests import TestController
 
@@ -367,9 +368,10 @@ class TestAutoassignmentController(TestController):
             expected='value-false',
             )
 
-    @unittest2.skip(
-        "Currently broken because the counter for all matching token is "
-        "increased even if autoassignment fails. See issue #13134."
+    @pytest.mark.skip(
+        reason=(
+            "Currently broken because the counter for all matching token is "
+            "increased even if autoassignment fails. See issue #13134.")
         )
     def test_duplicate_otp(self):
         """

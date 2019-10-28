@@ -29,7 +29,6 @@
 Test the autoassignment Policy.
 """
 
-import unittest2
 from copy import deepcopy
 
 from linotp.tests import TestController
