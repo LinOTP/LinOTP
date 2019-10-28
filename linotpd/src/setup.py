@@ -78,6 +78,7 @@ test_requirements = [
     'coverage',
     'pylint',
     'autopep8',
+    'flaky',
 ]
 
 # packages needed during package build phase
