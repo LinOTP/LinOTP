@@ -65,13 +65,8 @@ class TestReplyTestCase(object):
         """
         class fake_current_app(object):
             def getRequestParams(self):
-                raise UnicodeDecodeError(
-                    'utf8',
-                    '\xc0',
-                    0,
-                    1,
-                    'invalid start byte'
-                    )
+                # Raise UnicodeDecodeError
+                b'\xc0'.decode('utf-8')
         monkeypatch.setattr(reply, 'current_app', fake_current_app())
 
     @pytest.mark.usefixtures('unicodeDecodeError')
