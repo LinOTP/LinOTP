@@ -103,8 +103,8 @@ def _get_httperror_from_params(request):
                 "directly from query_string. Exception: %r", exx)
         from urllib.parse import parse_qs
         params = parse_qs(flask_request.query_string)
-        if 'httperror' in params:
-            httperror_list = params['httperror']
+        if b'httperror' in params:
+            httperror_list = params[b'httperror']
             if len(httperror_list) > 1:
                 log.warning("Parameter 'httperror' specified multiple times. "
                         "Using last value '%r'. All values: %r",
