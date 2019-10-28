@@ -47,7 +47,6 @@ from datetime import timedelta
 from freezegun import freeze_time
 
 from mock import patch
-from nose.tools import raises
 
 from linotp.tests.functional_special import TestSpecialController
 
@@ -407,7 +406,7 @@ class TestRestSmsController(TestSpecialController):
         sms_url = 'http://myfake.com/'
 
         sms_conf = {
-                "URL": sms_url, 
+                "URL": sms_url,
                 "PAYLOAD": {
                     "to": ["<phone>"],
                     "from": "123456789",
