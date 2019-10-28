@@ -223,7 +223,7 @@ def generate_pairing_url(token_type,
             raise InvalidFunctionParameter('server_public_key',
                                            'Public key must be 32 bytes long')
 
-        data += server_public_key
+        data += server_public_key.encode()
 
     # ---------------------------------------------------------------------- --
 

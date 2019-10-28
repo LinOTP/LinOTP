@@ -91,7 +91,7 @@ class TestAuditSearch(object):
     def test_audit_csv_empty(self, search):
         response = search(json=False)
 
-        assert response.data == '\n'
+        assert response.data == b'\n'
 
     def test_audit_with_json(self, adminclient, search):
         # GIVEN an empty audit database

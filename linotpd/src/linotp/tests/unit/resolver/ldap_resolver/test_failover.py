@@ -57,7 +57,7 @@ class MockedLdapObject:
         if 'fail' in self.uri:
             raise LDAPError('failed to connect')
 
-        if passw != 'geheim1':
+        if passw != b'geheim1':
             raise INVALID_CREDENTIALS('not geheim1!')
 
         return True

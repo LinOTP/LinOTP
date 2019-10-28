@@ -107,7 +107,7 @@ class ManageController(BaseController):
             c.audit['client'] = get_client(request)
 
             c.version = get_version()
-            c.version_ref = base64.encodestring(c.version)[:6]
+            c.version_ref = base64.encodebytes(c.version.encode())[:6]
 
             c.licenseinfo = get_copyright_info()
             c.polDefs = getPolicyDefinitions()

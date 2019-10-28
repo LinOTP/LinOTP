@@ -274,7 +274,7 @@ class CSVAuditIterator(object):
                 row.append(row_entry)
 
             r_str = json.dumps(row, ensure_ascii=False)[1:-1]
-            res = (headers + r_str + "\n").encode('utf-8')
+            res = headers + r_str + "\n"
             self.i = self.i + 1
 
         except StopIteration as exx:

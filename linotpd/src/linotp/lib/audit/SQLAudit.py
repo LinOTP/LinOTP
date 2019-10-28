@@ -384,14 +384,14 @@ class Audit(AuditBase):
         Create a signature of the audit object
         '''
         line = self._attr_to_dict(audit_line)
-        s_audit = getAsString(line)
+        s_audit = getAsBytes(line)
 
-        key = EVP.load_key_string(self.private)
+        key = EVP.load_key_string(bytes(self.private, 'utf-8'))
         key.reset_context(md='sha256')
         key.sign_init()
         key.sign_update(s_audit)
         signature = key.sign_final()
-        return '' + hexlify(signature)
+        return signature.hex()
 
 
     def _verify(self, auditline, signature):
@@ -403,7 +403,7 @@ class Audit(AuditBase):
             log.debug("[_verify] missing signature %r" % auditline)
             return res
 
-        s_audit = getAsString(auditline)
+        s_audit = getAsBytes(auditline)
 
         self.VerifyEVP.verify_init()
         self.VerifyEVP.verify_update(s_audit)
@@ -691,6 +691,13 @@ def getAsString(data):
     if 'client' in data:
         s += ", client=%s" % data.get('client')
     return s
+
+def getAsBytes(data):
+    """
+    Return the audit record in a bytes format that can be used
+    for signing
+    """
+    return bytes(getAsString(data), 'utf-8')
 
 class AuditLinOTPDB(Audit):
     """
