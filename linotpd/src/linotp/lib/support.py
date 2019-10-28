@@ -315,7 +315,7 @@ def setSupportLicense(licString):
         setSupportLicenseInfo(lic_info, lic_sign)
     except Exception as exx:
         ret = False
-        msg = "%s" % exx.message
+        msg = str(exx)
 
     return ret, msg
 

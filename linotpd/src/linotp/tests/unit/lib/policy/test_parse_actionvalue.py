@@ -124,22 +124,17 @@ class TestParseActionValue(unittest.TestCase):
         with self.assertRaises(Exception) as exx:
             parse_action_value(', delete="12 ,  3')
 
-        msg = "non terminated action"
-        assert msg in exx.exception.message
+        assert "non terminated action" in str(exx.exception)
 
         with self.assertRaises(Exception) as exx:
             parse_action_value(', delete, delete ,')
 
-        msg = "duplicate key defintion"
-        assert msg in exx.exception.message
+        assert "duplicate key defintion" in str(exx.exception)
 
         with self.assertRaises(Exception) as exx:
             parse_action_value(', del=1, del = 4 ,')
 
-        msg = "duplicate key defintion"
-        assert msg in exx.exception.message
-
-        return
+        assert "duplicate key defintion" in str(exx.exception)
 
 
     def test_action_values(self):

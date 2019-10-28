@@ -273,9 +273,7 @@ class dbObject():
 
             log.error("Connection error: %r", exx)
 
-            msg = ''
-            if not hasattr(exx, 'message'):
-                msg = exx.message
+            msg = str(exx)
 
             if "timeout expired" in msg or "can't connect to" in msg:
 

@@ -2696,8 +2696,7 @@ class AdminController(BaseController):
                 new_resolver_name = request_params["name"]
 
             except KeyError as exx:
-                raise ParameterError(_("Missing parameter: %r") %
-                                     exx.message)
+                raise ParameterError(_("Missing parameter: %r") % exx)
 
             # ---------------------------------------------------------- --
 

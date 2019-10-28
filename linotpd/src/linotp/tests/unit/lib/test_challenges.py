@@ -54,4 +54,4 @@ class TestChallengesTransactionidLength(unittest.TestCase):
                 }
                 Challenges.get_tranactionid_length()
 
-            self.assertEqual(wrong_range.exception.message, wrong_range_message)
+            assert str(wrong_range.exception) == wrong_range_message

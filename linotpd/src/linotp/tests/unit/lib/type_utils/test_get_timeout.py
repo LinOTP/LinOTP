@@ -37,9 +37,9 @@ class GetTimeoutTest(unittest.TestCase):
         with self.assertRaises(ValueError) as exx:
             get_timeout("5 , , ,")
 
-        assert "Failed to convert timeout" in exx.exception.message
+        assert "Failed to convert timeout" in str(exx.exception)
 
         with self.assertRaises(ValueError) as exx:
             get_timeout("5 , 3.0,     ,")
 
-        assert "Failed to convert timeout" in exx.exception.message
+        assert "Failed to convert timeout" in str(exx.exception)
