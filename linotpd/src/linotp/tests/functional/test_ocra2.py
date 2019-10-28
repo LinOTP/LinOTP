@@ -212,19 +212,19 @@ class OcraTest(TestController):
     TODO: test ocra token with otppi=1 and otppin=2
     """
 
-    fkey = 'a74f89f9251eda9a5d54a9955be4569f9720abe8'.decode('hex')
+    fkey = bytes.fromhex('a74f89f9251eda9a5d54a9955be4569f9720abe8')
     key20h = '3132333435363738393031323334353637383930'
-    key20 = key20h.decode('hex')
+    key20 = bytes.fromhex(key20h)
 
     key32h = '3132333435363738393031323334353637383930313233343536373839303132'
-    key32 = key32h.decode('hex')
+    key32 = bytes.fromhex(key32h)
     key64h = ('313233343536373839303132333435363738393031323334353637383930'
               '313233343536373839303132333435363738393031323334353637383930'
               '31323334')
-    key64 = key64h.decode('hex')
+    key64 = bytes.fromhex(key64h)
 
     pin = '1234'
-    pin_sha1 = '7110eda4d09e062aa5e4a390b0a572ac0d2c0220'.decode('hex')
+    pin_sha1 = bytes.fromhex('7110eda4d09e062aa5e4a390b0a572ac0d2c0220')
 
     testsnp = [{'ocrasuite': 'OCRA-1:HOTP-SHA1-6:QN08',
                 'key': key20,
