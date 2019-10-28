@@ -52,15 +52,13 @@ from linotp.lib.crypto.utils import kdf2
 from linotp.lib.crypto.utils import createActivationCode
 from linotp.lib.crypto.utils import check
 
-
+import pytest
 from linotp.tests import TestController
-
-from nose.plugins.attrib import attr
 
 log = logging.getLogger(__name__)
 
 
-@attr('nightly')
+@pytest.mark.nightly
 class OcraOtp(TestController):
 
     def __init__(self, ocrapin=None):
@@ -206,7 +204,7 @@ class OcraOtp(TestController):
         return otp
 
 
-@attr('nightly')
+@pytest.mark.nightly
 class OcraTest(TestController):
     """
     ocra2 test class:

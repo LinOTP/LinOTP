@@ -32,8 +32,8 @@ import json
 import time
 import binascii
 
+import pytest
 from mock import patch
-from nose.plugins.attrib import attr
 
 import linotp.provider.smsprovider.HttpSMSProvider
 
@@ -78,7 +78,7 @@ def mocked_submitMessage_request(SMS_Object, *argparams, **kwparams):
     return res
 
 
-@attr('nightly')
+@pytest.mark.nightly
 class TestChallengePrompt(TestController):
 
     sms_url = "http://localhost:%d/testing/http2sms" % 5001
@@ -460,7 +460,7 @@ class TestChallengePrompt(TestController):
         # --------------------------------------------------------------- --
 
         # trigger the challenge with a validate request
-    
+
         params = {
             'user': 'passthru_user1',
             'pass': 'pin'

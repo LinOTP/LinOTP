@@ -41,6 +41,13 @@ from linotp.model import meta
 from . import TestController
 from flask.testing import FlaskClient
 
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "nightly: mark test to run only nightly",
+    )
+
+
 @pytest.fixture
 def base_app():
     """
@@ -129,7 +136,7 @@ def adminclient(app, client):
 
             headers = kwargs.setdefault('headers', {})
             headers["Authorization"] = TestController.get_http_digest_header(username='admin')
-            
+
             self.set_cookie('local', "admin_session", session)
 
             return super(AuthClient,self).open( *args, **kwargs)
