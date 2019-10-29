@@ -170,7 +170,7 @@ class GettokenController(BaseController):
 
             if view:
                 c.ret = ret
-                return render('/manage/multiotp_view.mako')
+                return render('/manage/multiotp_view.mako').decode('utf-8')
             else:
                 return sendResult(response, ret, 0)
 
