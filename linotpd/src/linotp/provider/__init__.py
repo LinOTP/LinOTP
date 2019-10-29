@@ -30,6 +30,7 @@ provider handling
 import json
 import logging
 from functools import partial
+from configparser import ConfigParser
 
 from linotp.flap import _
 
@@ -781,9 +782,7 @@ def load_provider_ini(ini_file):
     load the provider from a ini config file format
     """
 
-    from configparser import SafeConfigParser
-
-    parser = SafeConfigParser()
+    parser = ConfigParser()
     parser.read(ini_file)
 
     for section_name in parser.sections():
