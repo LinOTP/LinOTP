@@ -50,7 +50,7 @@ class TestSetPasswordTool(unittest.TestCase):
                                     old_password,
                                     new_password)
 
-        self.assertTrue(message in exx.exception.message)
+        self.assertTrue(message in str(exx.exception))
 
     def test_set_password(self):
 
@@ -88,22 +88,22 @@ class TestSetPasswordTool(unittest.TestCase):
                                 Exception, message=msg)
 
         # test for invalid new password using different data types
-        msg = "must be string, not None"
+        msg = "must be str, not None"
         self.check_for_exeption(pw_handler,
                                 'admin', 'new_password', None,
                                 Exception, message=msg)
 
-        msg = "must be string, not int"
+        msg = "must be str, not int"
         self.check_for_exeption(pw_handler,
                                 'admin', 'new_password', 123456,
                                 Exception, message=msg)
 
-        msg = "must be string, not float"
+        msg = "must be str, not float"
         self.check_for_exeption(pw_handler,
                                 'admin', 'new_password', 1234.56,
                                 Exception, message=msg)
 
-        msg = "must be string, not DataBaseContext"
+        msg = "must be str, not DataBaseContext"
         self.check_for_exeption(pw_handler,
                                 'admin', 'new_password', self.db_context,
                                 Exception, message=msg)
