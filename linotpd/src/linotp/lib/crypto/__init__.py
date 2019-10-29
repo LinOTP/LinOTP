@@ -169,8 +169,7 @@ class SecretObj(object):
         b_key = bkey
 
         if not bkey:
-            self._setupKey_()
-            b_key = self.bkey
+            b_key = self._setupKey_()
 
         data = data_input
 
@@ -239,14 +238,17 @@ class SecretObj(object):
         return res
 
     def _setupKey_(self):
+
         if not hasattr(self, 'bkey'):
             self.bkey = None
 
         if self.bkey is None:
-            akey = decrypt(self.val, self.iv, hsm=self.hsm)
-            self.bkey = binascii.unhexlify(akey)
-            zerome(akey)
-            del akey
+            self.bkey = binascii.unhexlify(
+                self.decrypt(
+                    self.val, self.iv, hsm=self.hsm)
+                )
+
+        return self.bkey
 
     def _clearKey_(self, preserve=False):
         if preserve is False:
