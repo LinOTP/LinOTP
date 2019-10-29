@@ -112,7 +112,7 @@ def reload_classes():
             # and import
             mod_rel = fn[0:-3]
             try:
-                __import__(mod_rel, globals=globals())
+                __import__(mod_rel, globals=globals(), level=1)
             except Exception as exx:
                 log.warning('unable to load resolver module : %r (%r)'
                             % (mod_rel, exx))

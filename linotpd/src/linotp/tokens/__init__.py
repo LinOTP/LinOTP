@@ -103,7 +103,7 @@ def load_module(mod_rel):
 
     try:
 
-        __import__(mod_rel, globals=globals())
+        __import__(mod_rel, globals=globals(), level=0)
         return True
 
     except TokenTypeNotSupportedError:

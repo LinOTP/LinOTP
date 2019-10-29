@@ -940,7 +940,7 @@ def _load_provider_class(provider_slass_spec):
         try:
 
             packageName, _, className = str(provider_class).rpartition('.')
-            mod = __import__(packageName, globals(), locals(), [className])
+            mod = __import__(packageName, globals(), locals(), [className], 1)
             provider_class_obj = getattr(mod, className)
 
         except ImportError as err:

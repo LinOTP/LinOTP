@@ -329,7 +329,7 @@ def getResolverClass(packageName, className):
 
     :return: the class object
     """
-    mod = __import__(packageName, globals(), locals(), [className])
+    mod = __import__(packageName, globals(), locals(), [className], 1)
     klass = getattr(mod, className)
     ret = ""
     attribute = ""
