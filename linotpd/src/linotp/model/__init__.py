@@ -271,8 +271,8 @@ class Token(object):
         if reset_failcount:
             self.LinOtpFailCount = 0
 
-        self.LinOtpKeyEnc = str(binascii.hexlify(encrypted_seed))
-        self.LinOtpKeyIV = str(binascii.hexlify(iv))
+        self.LinOtpKeyEnc = binascii.hexlify(encrypted_seed).decode('utf-8')
+        self.LinOtpKeyIV = binascii.hexlify(iv).decode('utf-8')
 
     def get_encrypted_seed(self):
         key = binascii.unhexlify(self.LinOtpKeyEnc or '')
@@ -280,8 +280,8 @@ class Token(object):
         return key, iv
 
     def setUserPin(self, enc_userPin, iv):
-        self.LinOtpTokenPinUser = str(binascii.hexlify(enc_userPin))
-        self.LinOtpTokenPinUserIV = str(binascii.hexlify(iv))
+        self.LinOtpTokenPinUser = binascii.hexlify(enc_userPin).decode('utf-8')
+        self.LinOtpTokenPinUserIV = binascii.hexlify(iv).decode('utf-8')
 
     def getUserPin(self):
         pu = self._fix_spaces(self.LinOtpTokenPinUser or '')
@@ -294,8 +294,8 @@ class Token(object):
         return self.LinOtpCount or 0
 
     def set_hashed_pin(self, pin, iv):
-        self.LinOtpSeed = str(binascii.hexlify(iv))
-        self.LinOtpPinHash = str(binascii.hexlify(pin))
+        self.LinOtpSeed = binascii.hexlify(iv).decode('utf-8')
+        self.LinOtpPinHash = binascii.hexlify(pin).decode('utf-8')
 
     def get_hashed_pin(self):
         iv = binascii.unhexlify(self.LinOtpSeed)
@@ -308,8 +308,8 @@ class Token(object):
         target.LinOtpPinHash = src.LinOtpPinHash
 
     def set_encrypted_pin(self, pin, iv):
-        self.LinOtpSeed = str(binascii.hexlify(iv))
-        self.LinOtpPinHash = str(binascii.hexlify(pin))
+        self.LinOtpSeed = binascii.hexlify(iv).decode('utf-8')
+        self.LinOtpPinHash = binascii.hexlify(pin).decode('utf-8')
         self.LinOtpPinHash = "@@" + self.LinOtpPinHash
 
     def get_encrypted_pin(self):
@@ -319,8 +319,8 @@ class Token(object):
 
     def setHashedPin(self, pin):
         seed = geturandom(16)
-        self.LinOtpSeed = str(binascii.hexlify(seed))
-        self.LinOtpPinHash = str(binascii.hexlify(hash_digest(pin, seed)))
+        self.LinOtpSeed = binascii.hexlify(seed).decode('utf-8')
+        self.LinOtpPinHash = binascii.hexlify(hash_digest(pin, seed)).decode('utf-8')
         return self.LinOtpPinHash
 
     def getHashedPin(self, pin):
@@ -368,8 +368,8 @@ class Token(object):
         return ret
 
     def setSoPin(self, enc_soPin, iv):
-        self.LinOtpTokenPinSO = str(binascii.hexlify(enc_soPin))
-        self.LinOtpTokenPinSOIV = str(binascii.hexlify(iv))
+        self.LinOtpTokenPinSO = binascii.hexlify(enc_soPin).decode('utf-8')
+        self.LinOtpTokenPinSOIV = binascii.hexlify(iv).decode('utf-8')
 
     def __unicode__(self):
         return self.LinOtpTokenDesc
