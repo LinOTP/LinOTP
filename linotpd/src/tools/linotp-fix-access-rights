@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -28,23 +28,23 @@
 VERSION = '0.1'
 import os, sys
 from getopt import getopt, GetoptError
-import ConfigParser
+import configparser
 from subprocess import call
 import ast
 
 def usage():
-    print  '''
+    print('''
     Parameter:
     -f <linotp.ini file>
     -u <linotp user>
     -h : help
-    '''
+    ''')
 
 def fix_rights(file, user):
 
     config_file = os.path.basename(file)
     config_path = os.path.abspath(os.path.dirname(file))
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.read(file)
     config.set("DEFAULT", "here", config_path)
     config.set("app:main", "here", config_path)
@@ -56,46 +56,46 @@ def fix_rights(file, user):
     # TODO: which home directory?
     try:
         call("/usr/sbin/adduser  --no-create-home --system %s" % user, shell=True)
-        print "Created user %s" % user
-    except Exception, e:
-        print "Failed to create user %s: %s" % (user, str(e))
+        print("Created user %s" % user)
+    except Exception as e:
+        print("Failed to create user %s: %s" % (user, str(e)))
 
     try:
         call("chmod -R 600 %s" % cache_dir, shell=True)
         call("find %s -type d -exec chmod 700 {} \;" % cache_dir, shell=True)
         call("chown -R %s %s" % (user, cache_dir), shell=True)
-        print "Fixed access rights for %s" % cache_dir
-    except Exception, e:
-        print "Failed to fix access rights for %s" % cache_dir
+        print("Fixed access rights for %s" % cache_dir)
+    except Exception as e:
+        print("Failed to fix access rights for %s" % cache_dir)
 
     try:
         call("chmod 400 %s" % enckey, shell=True)
         call("chown %s %s" % (user, enckey), shell=True)
-        print "Fixed access rights for %s" % enckey
-    except Exception, e:
-        print "Failed to fix access rights for %s" % enckey
+        print("Fixed access rights for %s" % enckey)
+    except Exception as e:
+        print("Failed to fix access rights for %s" % enckey)
 
     try:
         call("chmod 400 %s" % who_ini, shell=True)
         call("chown %s %s" % (user, who_ini), shell=True)
-        print "Fixed access rights for %s" % who_ini
-    except Exception, e:
-        print "Failed to fix access rights for %s" % who_ini
+        print("Fixed access rights for %s" % who_ini)
+    except Exception as e:
+        print("Failed to fix access rights for %s" % who_ini)
 
     try:
         call("chmod 400 %s" % file, shell=True)
         call("chown %s %s" % (user, file), shell=True)
-        print "Fixed access rights for %s" % file
-    except Exception, e:
-        print "Failed to fix access rights for %s" % who_ini
+        print("Fixed access rights for %s" % file)
+    except Exception as e:
+        print("Failed to fix access rights for %s" % who_ini)
 
     try:
         call("chmod -R 644 %s" % os.path.dirname(logfile), shell=True)
         call("find %s -type d -exec chmod 755 {} \;" % os.path.dirname(logfile), shell=True)
         call("chown -R %s %s" % (user, os.path.dirname(logfile)), shell=True)
-        print "Fixed access rights for %s" % os.path.dirname(logfile)
-    except Exception, e:
-        print "Failed to fix access rights for %s" % os.path.dirname(logfile)
+        print("Fixed access rights for %s" % os.path.dirname(logfile))
+    except Exception as e:
+        print("Failed to fix access rights for %s" % os.path.dirname(logfile))
 
 
 def main():
@@ -106,7 +106,7 @@ def main():
         opts, args = getopt(sys.argv[1:], "f:u:h", ["file=", "user=", "help"])
 
     except GetoptError:
-        print "There is an error in your parameter syntax:"
+        print("There is an error in your parameter syntax:")
         usage()
         sys.exit(1)
 

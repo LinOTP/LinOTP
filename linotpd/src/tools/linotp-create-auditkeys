@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -28,23 +28,23 @@
 VERSION = '0.1'
 import os, sys
 from getopt import getopt, GetoptError
-import ConfigParser
+import configparser
 from subprocess import call
 
 
 def usage():
-    print  '''
+    print('''
     Parameter:
     -f <linotp.ini file>
     -h : help
-    '''
+    ''')
 
 
 def create_keys(file):
-    print "Creating audit signing keys..."
+    print("Creating audit signing keys...")
     config_file = os.path.basename(file)
     config_path = os.path.abspath(os.path.dirname(file))
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.read(file)
     config.set("DEFAULT", "here", config_path)
     private = config.get('DEFAULT', "linotpAudit.key.private")
@@ -52,11 +52,11 @@ def create_keys(file):
 
     r = call("openssl genrsa -out %s 2048" % private, shell=True)
     if r == 0:
-        print "create private key: %s" % private
+        print("create private key: %s" % private)
 
     r = call("openssl rsa -in %s -pubout -out %s" % (private, public), shell=True)
     if r == 0:
-        print "written public key: %s" % public
+        print("written public key: %s" % public)
 
 
 
@@ -67,7 +67,7 @@ def main():
         opts, args = getopt(sys.argv[1:], "f:", ["file="])
 
     except GetoptError:
-        print "There is an error in your parameter syntax:"
+        print("There is an error in your parameter syntax:")
         usage()
         sys.exit(1)
 

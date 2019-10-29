@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -77,11 +77,11 @@ def print_config():
     '''
     Print the munin config
     '''
-    print 'graph_title LinOTP Tokens'
-    print 'graph_vlabel Tokens'
-    print '_tokennum.label token count'
-    print '_inactive.label inactive tokens'
-    print '_notassigned.label not assigned tokens'
+    print('graph_title LinOTP Tokens')
+    print('graph_vlabel Tokens')
+    print('_tokennum.label token count')
+    print('_inactive.label inactive tokens')
+    print('_notassigned.label not assigned tokens')
 
 
 def main():
@@ -92,14 +92,14 @@ def main():
         if sys.argv[1] == "config":
             print_config()
         else:
-            print "invalid argument"
+            print("invalid argument")
     elif len(sys.argv) == 1:
         (t, n_active, n_assigned) = tokens_used(SQL_URL)
-        print "_tokennum.value %i" % t
-        print "_inactive.value %i" % n_active
-        print "_notassigned.value %i" % n_assigned
+        print("_tokennum.value %i" % t)
+        print("_inactive.value %i" % n_active)
+        print("_notassigned.value %i" % n_assigned)
     else:
-        print "wrong number of arguments"
+        print("wrong number of arguments")
 
     sys.exit(0)
 

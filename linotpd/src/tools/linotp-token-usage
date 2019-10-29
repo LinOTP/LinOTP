@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -73,19 +73,19 @@ def token_usage(SQL_URL, AUDIT_URL, AUDIT_PREFIX):
     row = rows.fetchone()
     not_active = int(row[id_pos])
 
-    print "Token statistics"
-    print "=============================="
-    print "Hostname:\t\t%s" % socket.gethostname()
-    print "Date:\t\t\t%s" % t1
-    print "Overall Token number:\t%i " % overall_number
-    print "Active Tokens: \t\t%i" % (overall_number - not_active)
-    print "Not Assigned Tokens:\t%i " % not_assigned
-    print "Inactive Tokens:\t%i " % not_active
+    print("Token statistics")
+    print("==============================")
+    print("Hostname:\t\t%s" % socket.gethostname())
+    print("Date:\t\t\t%s" % t1)
+    print("Overall Token number:\t%i " % overall_number)
+    print("Active Tokens: \t\t%i" % (overall_number - not_active))
+    print("Not Assigned Tokens:\t%i " % not_assigned)
+    print("Inactive Tokens:\t%i " % not_active)
 
 
-    print
-    print "Tokens per month"
-    print "================"
+    print()
+    print("Tokens per month")
+    print("================")
     # The audit table already exists, so no need to redefine it. Just
     # load it from the database using the "autoload" feature.
     audit = Table('%saudit' % AUDIT_PREFIX, metadata, autoload=True)
@@ -102,15 +102,15 @@ def token_usage(SQL_URL, AUDIT_URL, AUDIT_PREFIX):
             month = m.group(1)
         if month != current_month:
             if max_token:
-                print "maximum token: %i" % max_token
+                print("maximum token: %i" % max_token)
             if min_token:
-                print "minimum token: %i" % min_token
+                print("minimum token: %i" % min_token)
             # this is a new month
             current_month = month
             min_token = None
             max_token = None
-            print "Month %s" % current_month
-            print "----------------------"
+            print("Month %s" % current_month)
+            print("----------------------")
 
         tnum = None
         m = re.match("tokennum = (\d*)", row.action_detail)
@@ -122,9 +122,9 @@ def token_usage(SQL_URL, AUDIT_URL, AUDIT_PREFIX):
                 max_token = tnum
 
     if max_token:
-        print "maximum token: %i" % max_token
+        print("maximum token: %i" % max_token)
     if min_token:
-        print "minimum token: %i" % min_token
+        print("minimum token: %i" % min_token)
 
     return
 
