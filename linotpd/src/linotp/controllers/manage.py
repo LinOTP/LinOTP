@@ -272,7 +272,7 @@ class ManageController(BaseController):
         except Exception as ex:
             log.exception("[index] failed! %r" % ex)
             Session.rollback()
-            return sendError(response, ex)
+            raise
 
         finally:
             Session.close()
@@ -751,10 +751,6 @@ def _getTokenTypeConfig(section='config'):
                               "processing %r.%r:" % (tok, section))
                 log.error("[_getTokenTypeConfig] %r" % ex)
                 raise Exception(ex)
-
-            except Exception as e:
-                log.debug('no config for token type %r (%r)' % (tok, e))
-                p_html = ''
 
             if len (p_html) > 0:
                 res[tok] = { 'html' : p_html, 'title' : t_html}
