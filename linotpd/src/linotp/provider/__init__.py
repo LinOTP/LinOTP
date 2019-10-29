@@ -624,8 +624,6 @@ def save_new_provider(provider_type, provider_name, params):
         config_key, config_type = mapping_entry
 
         value = params[config_entry]
-        if isinstance(params[config_entry], str):
-            value = params[config_entry].decode('utf-8')
 
         # store the config entry
         storeConfig(key=provider_prefix + '.' + config_key,
