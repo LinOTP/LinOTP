@@ -48,7 +48,7 @@ class EncryptedData(str):
 
     def get_unencrypted(self):
         """ return the decrypted data """
-        return decryptPassword(self._encrypted_str)
+        return decryptPassword(self._encrypted_str).decode('utf-8')
 
     @staticmethod
     def from_unencrypted(value: str) -> 'EncryptedData':
@@ -59,7 +59,7 @@ class EncryptedData(str):
         :param value: value is a unicode string
         :return: new EncrytedData object
         """
-        crypted_value = encryptPassword(value)
+        crypted_value = encryptPassword(value.encode('utf-8'))
         return EncryptedData(crypted_value)
 
     def __str__(self):
