@@ -386,7 +386,7 @@ def _check_hash_type(password, hash_type, hash_value, salt=None):
             pw_hash = "{%s}%s" % (hash_type, hash_value)
             return atlassian_pbkdf2_sha1.verify(password, pw_hash)
 
-        except TypeError as exx:
+        except (TypeError, ValueError) as exx:
 
             # raised for example if the padding of the hash of the
             # sql entry is broken

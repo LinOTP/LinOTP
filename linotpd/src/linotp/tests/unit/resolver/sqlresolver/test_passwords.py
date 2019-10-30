@@ -42,7 +42,7 @@ class TestSQLResolver_Password(unittest.TestCase):
     def test_pbkdf2_password(self):
 
         brahms_hashed_pw = ('{PKCS5S2}TGF1K1olIoY5a4HHy89R+LcT8E/V5P+'
-                            'u92L0ClePbhzqWikJUGmS0lyHSibsj4th')
+                            'u92L0ClePbhzqWikJUGmS0lyHSibsj4th==')
 
         brahms_pw = 'brahms123'
 
