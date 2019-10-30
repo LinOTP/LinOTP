@@ -211,7 +211,7 @@ class SQLJanitor():
         id_pos = 0
         overall_number = 0
 
-        rows = self.audit.count().execute()
+        rows = select([func.count()]).select_from(self.audit).execute()
         row = rows.fetchone()
         overall_number = int(row[id_pos])
 

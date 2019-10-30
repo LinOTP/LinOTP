@@ -59,17 +59,17 @@ def token_usage(SQL_URL, AUDIT_URL, AUDIT_PREFIX):
     not_active = 0
 
     # overall
-    rows = token.count().execute()
+    rows = select([func.count()]).select_from(token).execute()
     row = rows.fetchone()
     overall_number = int(row[id_pos])
 
     # not assigned tokens
-    rows = token.count().where(sql_text("LinOtpUserid=''")).execute()
+    rows = select([func.count()]).select_from(token).where(sql_text("LinOtpUserid=''")).execute()
     row = rows.fetchone()
     not_assigned = int(row[id_pos])
 
     # disabled tokens
-    rows = token.count().where(sql_text("LinOtpIsactive=0")).execute()
+    rows = select([func.count()]).select_from(token).where(sql_text("LinOtpIsactive=0")).execute()
     row = rows.fetchone()
     not_active = int(row[id_pos])
 
