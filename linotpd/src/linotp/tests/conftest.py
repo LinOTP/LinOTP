@@ -35,7 +35,7 @@ import pytest
 import tempfile
 
 from linotp.app import create_app
-from linotp.flap import set_config
+from linotp.flap import set_config, tmpl_context as c
 from linotp.config.environment import load_environment
 from linotp.model import meta
 from . import TestController
@@ -145,3 +145,14 @@ def adminclient(app, client):
     client = app.test_client()
 
     return client
+
+@pytest.fixture
+def hsm_obj(app):
+    """
+    A fixture that initialises the HSM object
+
+    The hsm object is returned
+    """
+    app.preprocess_request()
+
+    return c['hsm']['obj']

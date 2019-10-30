@@ -58,3 +58,13 @@ def test_repr(data):
     rep = repr(data)
     assert TEST_STRING not in rep
     assert rep == "XXXXXX"
+
+@pytest.mark.usefixtures('hsm_obj')
+def test_round_trip(app):
+    orig_string = TEST_STRING
+
+    with app.test_request_context():
+        instance = EncryptedData.from_unencrypted(orig_string)
+        unencrypted = instance.get_unencrypted()
+
+        assert orig_string == unencrypted
