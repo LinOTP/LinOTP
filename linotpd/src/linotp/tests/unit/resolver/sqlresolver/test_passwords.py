@@ -71,7 +71,7 @@ class TestSQLResolver_Password(unittest.TestCase):
         """ check the bcypt password verification method """
 
         password = 'password'
-        password_hash = ('$2a$12$NT0I31Sa7ihGEWpka9ASYrEFk'
+        password_hash = ('$2a$12$NT0I31Sa7ihGEWpka9ASYeEFk'
                          'huTNeBQ2xfZskIiiJeyFXhRgS.Sy')
         res = check_bcypt_password(password, password_hash)
         assert res == True
