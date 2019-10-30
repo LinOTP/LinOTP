@@ -293,10 +293,10 @@ class LinOtpConfig(dict):
         '''
         Key = key
 
-        if key in super():
+        if key in self:
             Key = key
 
-        elif 'linotp.' + key in super():
+        elif 'linotp.' + key in self:
             Key = 'linotp.' + key
 
         res = super().__delitem__(Key)
