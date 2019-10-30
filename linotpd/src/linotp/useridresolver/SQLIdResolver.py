@@ -605,7 +605,7 @@ class IdResolver(UserIdResolver):
 
         # check if we have something like SHA or salted SHA
 
-        m = re.match("^\{(.*)\}(.*)", userInfo["password"])
+        m = re.match(r"^\{(.*)\}(.*)", userInfo["password"])
 
         if m:
             # The password field contains something like
