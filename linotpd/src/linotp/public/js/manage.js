@@ -5645,12 +5645,12 @@ $(document).ready(function(){
                 event.preventDefault();
             }
             else {
-                ui.jqXHR.success(function() {
+                ui.jqXHR.then(function () {
                     ui.tab.data ( "loaded", true );
                 });
                 // Following replaces ajaxOptions error function. ajaxOptions was
                 // removed in jQuery UI 1.10
-                ui.jqXHR.error(function(){
+                ui.jqXHR.fail(function (){
                     ui.panel.html("Couldn't load this tab. " +
                         "Please contact your administrator.");
                 });
