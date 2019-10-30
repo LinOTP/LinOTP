@@ -31,7 +31,6 @@ import logging
 from hashlib import md5
 from datetime import datetime
 from datetime import timedelta
-from binascii import hexlify
 
 from linotp.lib.crypto.utils import zerome
 from linotp.tokens.base import TokenClass
@@ -64,7 +63,7 @@ class dpwOtp:
             def __init__(self, secObj, digits=6):
                 self.secretObject = secObj
                 self.digits = digits
-                self.key = self.secretObject.getKey()
+                self.key: bytes = self.secretObject.getKey()
 
             def _calc_otp(self, date_string):
                 """
@@ -74,9 +73,9 @@ class dpwOtp:
                 :return: otp string of digits
                 """
 
-                input_data = self.key + date_string
+                input_data = self.key + date_string.encode('utf-8')
 
-                md1 = hexlify(md5(input_data).digest())
+                md1 = md5(input_data).digest().hex()
                 md = md1[len(md1) - self.digits:]
                 otp = int(md, 16)
                 otp = str(otp)
