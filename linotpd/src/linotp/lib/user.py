@@ -28,7 +28,6 @@
 import logging
 import re
 import json
-from base64 import b64decode
 
 from flask import current_app
 
@@ -624,9 +623,10 @@ def getUserFromRequest(request, config=None):
 
             if hdr.startswith('Basic '):
 
-                a_auth = b64decode(hdr[5:].strip())
+                a_auth = bytes.fromhex(hdr[5:])
 
-                d_auth['login'], _junk, _junk = a_auth.partition(':')
+                login, _junk, _junk = a_auth.partition(b':')
+                d_auth['login'] = login.decode('utf-8')
 
                 log.debug("[getUserFromRequest] BasicAuth: found "
                           "this HTTP_AUTHORIZATION: %r", d_auth)
