@@ -43,7 +43,7 @@ class SelfService(object):
     tab_set_pin = 'set PIN'
     tab_set_motp_pin = 'set mOTP PIN'
 
-    selected_token_css = 'div[role="tabpanel"][style="display: block;"] input.selectedToken'
+    selected_token_css = 'div[role="tabpanel"][style=""] input.selectedToken'
 
     def __init__(self, driver, base_url):
         """
