@@ -267,7 +267,7 @@ class AdminController(BaseController):
                 # TODO: add secure cookie at least for https
 
                 # Add cookie to generated response
-                response.set_cookie('admin_session', value, domain)
+                response.set_cookie('admin_session', value=value)
 
                 return response
 
