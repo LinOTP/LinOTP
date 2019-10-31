@@ -24,11 +24,11 @@
 #    Support: www.keyidentity.com
 #
 
-PYTHON:=$(shell which python)
+PYTHON:=$(shell which python3)
 DESTDIR=/
 BUILDDIR=$(PWD)/../build
 PROJECT=LinOTP
-LINOTP_SRC_VERSION=$(shell python setup.py --version)
+LINOTP_SRC_VERSION=$(shell python3 setup.py --version)
 DEB_BUILDDIR:=$(BUILDDIR)/linotp
 
 COPYSTUFF = tools setup.* linotp config debian Makefile DESCRIPTION MANIFEST.in README.txt
