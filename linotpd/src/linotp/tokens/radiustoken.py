@@ -30,6 +30,7 @@ import logging
 
 import binascii
 
+from flask import current_app
 
 # for update, we require the TokenClass
 from linotp.tokens.base import TokenClass
@@ -238,8 +239,9 @@ class RadiusTokenClass(RemoteTokenClass):
             server = radiusServer.split(':')
             r_server = server[0]
             r_authport = 1812
-            nas_identifier = env.get("radius.nas_identifier", "LinOTP")
-            r_dict = env.get("radius.dictfile", "/etc/linotp2/dictionary")
+
+            nas_identifier = current_app.config['RADIUS_NAS_IDENTIFIER']
+            r_dict = current_app.getRadiusDictionaryPath()
 
             if len(server) >= 2:
                 r_authport = int(server[1])
