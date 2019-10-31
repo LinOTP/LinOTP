@@ -26,12 +26,7 @@
 """ the iterators for the audit objects """
 
 import sys
-
-try:
-    import json
-except ImportError: # pragma: no cover
-    import simplejson as json
-
+import json
 
 import linotp.lib.crypto
 import logging
@@ -60,23 +55,23 @@ class AuditQuery(object):
         else:
             # Use all columns
             self._columns = ['number',
-                            'date',
-                            'sig_check',
-                            'missing_line',
-                            'action',
-                            'success',
-                            'serial',
-                            'token_type',
-                            'user',
-                            'realm',
-                            'administrator',
-                            'action_detail',
-                            'info',
-                            'linotp_server',
-                            'client',
-                            'log_level',
+                             'date',
+                             'sig_check',
+                             'missing_line',
+                             'action',
+                             'success',
+                             'serial',
+                             'token_type',
+                             'user',
+                             'realm',
+                             'administrator',
+                             'action_detail',
+                             'info',
+                             'linotp_server',
+                             'client',
+                             'log_level',
                              'clearance_level'
-                                     ]
+                             ]
 
         if "query" in param:
             if "extsearch" == param['qtype']:
@@ -152,7 +147,7 @@ class AuditQuery(object):
     def get_query_result(self):
 
         self.audit_search = self._audit.searchQuery(self._search_dict,
-                                                   rp_dict=self._rp_dict)
+                                                    rp_dict=self._rp_dict)
         return self.audit_search
 
     def get_entry(self, row):
@@ -257,7 +252,7 @@ class CSVAuditIterator(object):
             headers = ""
             if self.i == 0 and self.audit_query.with_headers():
                 headers = "%s\n" % json.dumps(self.audit_query.get_headers(),
-                                               ensure_ascii=False)[1:-1]
+                                              ensure_ascii=False)[1:-1]
                 res = headers
 
             row_data = next(self.result)

@@ -35,10 +35,7 @@ import logging
 from linotp.tests import TestController
 import copy
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 import hashlib
 import base64

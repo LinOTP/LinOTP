@@ -48,11 +48,7 @@ import logging
 import traceback
 from datetime import datetime
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
+import json
 
 """The application's model objects"""
 import sqlalchemy as sa

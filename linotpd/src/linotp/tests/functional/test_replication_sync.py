@@ -32,11 +32,7 @@ import random
 from datetime import datetime
 from datetime import timedelta
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
+import json
 
 from sqlalchemy.engine import create_engine
 import sqlalchemy

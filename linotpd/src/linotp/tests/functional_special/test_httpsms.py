@@ -88,10 +88,7 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
     return resp, json.dumps(content)
 
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 log = logging.getLogger(__name__)
 
