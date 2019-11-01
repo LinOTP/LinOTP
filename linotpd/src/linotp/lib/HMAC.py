@@ -33,10 +33,6 @@ import struct
 
 from hashlib import sha1
 
-import sys
-(ma, mi, _, _, _,) = sys.version_info
-pver = float(int(ma) + int(mi) * 0.1)
-
 
 log = logging.getLogger(__name__)
 
@@ -57,10 +53,7 @@ class HmacOtp():
             dig = str(self.secretObj.hmac_digest(data_input,
                                                  hash_algo=self.hashfunc))
         else:
-            if pver > 2.6:
-                dig = hmac.new(key, data_input, self.hashfunc).digest()
-            else:
-                dig = hmac.new(key, str(data_input), self.hashfunc).digest()
+            dig = hmac.new(key, data_input, self.hashfunc).digest()
 
         return dig
 

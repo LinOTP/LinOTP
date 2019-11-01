@@ -56,28 +56,7 @@ from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.error import ParameterError
 from linotp.lib.pairing import generate_pairing_url
 
-# --------------------------------------------------------------------------- --
-
-try:
-
-    from hmac import compare_digest
-
-except ImportError:
-
-    # for python version < 2.7.7
-
-    def compare_digest(a, b):
-
-        if len(a) != len(b):
-            return False
-
-        result = 0
-        for letter_a, letter_b in zip(a, b):
-            result |= ord(letter_a) ^ ord(letter_b)
-
-        return result == 0
-
-# --------------------------------------------------------------------------- --
+from hmac import compare_digest
 
 from linotp.lib.context import request_context as context
 
