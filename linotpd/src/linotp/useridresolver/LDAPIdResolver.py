@@ -118,7 +118,7 @@ class IdResolver(UserIdResolver):
     LDAP User Id resolver
     '''
 
-    nameDict = {}
+    nameDict: Dict[str, str] = {}
     conf = ""
     db_prefix = 'useridresolver.LDAPIdResolver.IdResolver'
 
