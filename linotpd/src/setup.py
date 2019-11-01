@@ -164,6 +164,7 @@ setup(
         (
             'etc/linotp2/',
             [
+                'config/linotp.cfg',
                 'config/linotpapp.wsgi',
             ]
         ),
