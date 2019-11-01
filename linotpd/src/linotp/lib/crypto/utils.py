@@ -91,7 +91,7 @@ def libcrypt_password(password, crypted_password=None):
     # charset, if '+' is changed to '.' and the fillchars '=' are
     # striped off
 
-    salt = base64.b64encode(b_salt).strip(b"=").replace(b'+', b'.')
+    salt = base64.b64encode(b_salt).strip(b"=").replace(b'+', b'.').decode('utf-8')
 
     # now define the password format by the salt definition
 
