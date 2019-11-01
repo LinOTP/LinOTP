@@ -56,6 +56,8 @@ from sqlalchemy import Table, MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import NoSuchColumnError
 
+from typing import Any, Callable, Dict, Tuple, Union
+
 from . import resolver_registry
 from linotp.useridresolver.UserIdResolver import UserIdResolver
 from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
@@ -422,7 +424,7 @@ class IdResolver(UserIdResolver):
 
     crypted_parameters = ['Password']
 
-    resolver_parameters = {
+    resolver_parameters: Dict[str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]] = {
         "Connect": (False, "", text),
         "Driver": (False, None, text),
         "Server": (False, "", text),

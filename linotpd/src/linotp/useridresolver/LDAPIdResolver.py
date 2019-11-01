@@ -37,6 +37,7 @@ import logging
 import os
 import tempfile
 import traceback
+from typing import Any, Callable, Dict, Tuple, Union
 
 import json
 import sys
@@ -148,7 +149,7 @@ class IdResolver(UserIdResolver):
     crypted_parameters = ['BINDPW']
     primary_key = 'UIDTYPE'
 
-    resolver_parameters = {
+    resolver_parameters: Dict[str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]] = {
         "LDAPURI": (True, None, text),
         "LDAPBASE": (True, None, text),
         "BINDDN": (True, None, text),

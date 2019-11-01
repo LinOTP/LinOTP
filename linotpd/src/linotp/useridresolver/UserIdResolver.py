@@ -41,8 +41,8 @@ Defines the rough interface for a UserId Resolver
 
 """
 
+from typing import List, Any, Callable, Dict, Tuple, Union
 from linotp.lib.type_utils import boolean
-
 import logging
 
 
@@ -65,11 +65,11 @@ class UserIdResolver(object):
     name = ""
     id = ""
 
-    critical_parameters = []
-    crypted_parameters = []
-    resolver_parameters = {
-            'readonly': (False, False, boolean)
-            }
+    critical_parameters: List[str] = []
+    crypted_parameters: List[str] = []
+    resolver_parameters: Dict[str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]] = {
+        'readonly': (False, False, boolean)
+    }
 
     def __init(self):
         """
