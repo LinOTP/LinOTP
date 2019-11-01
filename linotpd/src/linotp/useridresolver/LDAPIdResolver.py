@@ -179,7 +179,7 @@ class IdResolver(UserIdResolver):
     SYS_CERTFILE = None
     SYS_CERTDIR = None
 
-    ca_certs_dict = {}
+    ca_certs_dict: Dict[str, str] = {}
 
     @classmethod
     def primary_key_changed(cls, new_params, previous_params):
