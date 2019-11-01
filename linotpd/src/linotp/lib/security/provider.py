@@ -195,7 +195,7 @@ class SecurityProvider(object):
         className = parts[-1]
         packageName = '.'.join(parts[:-1])
 
-        mod = __import__(packageName, globals(), locals(), [className])
+        mod = __import__(packageName, globals(), locals(), [className], 0)
         klass = getattr(mod, className)
         config_name = klass.getAdditionalClassConfig()
         additional_config = self.get_config_entries(config_name)

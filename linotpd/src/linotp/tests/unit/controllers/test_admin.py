@@ -68,12 +68,10 @@ class TestAdminController(unittest.TestCase):
 
         AdminController.parse_tokeninfo(tok)
 
-        self.assertIsInstance(tok.get('LinOtp.TokenInfo'),
-                              dict,
-                              'TokenInfo is not of type dict!')
-        self.assertDictContainsSubset(self.expected_subset,
-                                      tok.get('LinOtp.TokenInfo'),
-                                      tok.get('LinOtp.TokenInfo'))
+        assert isinstance(tok.get('LinOtp.TokenInfo'), dict), \
+            'TokenInfo is not of type dict!'
+        assert dict(tok.get('LinOtp.TokenInfo'), **self.expected_subset) == tok.get('LinOtp.TokenInfo'), \
+            tok.get('LinOtp.TokenInfo')
 
     @mock.patch('linotp.controllers.admin.TokenIterator')
     @mock.patch('linotp.controllers.admin.c')
@@ -119,6 +117,6 @@ class TestAdminController(unittest.TestCase):
         tok = copy.deepcopy(self.token2)
         AdminController.parse_tokeninfo(tok)
 
-        self.assertTrue(tok['LinOtp.TokenInfo'] == {})
+        assert tok['LinOtp.TokenInfo'] == {}
 
         return

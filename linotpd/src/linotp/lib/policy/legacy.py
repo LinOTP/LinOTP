@@ -33,6 +33,8 @@ from linotp.lib.user import User
 from netaddr import IPAddress
 from netaddr import IPNetwork
 
+import collections
+
 from linotp.lib.policy.util import _getAuthenticatedUser
 from linotp.lib.policy.util import get_copy_of_policies
 from linotp.lib.policy.util import split_value
@@ -64,7 +66,7 @@ def legacy_get_client_policy(client, scope=None, action=None,
     4. if nothing matched so far, we try the extended policy check
 
     '''
-    Policies = {}
+    Policies = collections.OrderedDict()
 
     param = {}
 
@@ -109,7 +111,10 @@ def legacy_get_client_policy(client, scope=None, action=None,
                             "invalid client: %r" % (pol, e))
 
         if client_found and not client_excluded:
+            # we re order the policies to have the better
+            # matching in the first place
             Policies[pol] = policy
+            Policies.move_to_end(pol, last=False)
 
     # No policy for this client was found, but maybe
     # there is one without clients

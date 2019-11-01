@@ -440,18 +440,12 @@ hex2ModDict = dict(list(zip(hexHexChars, modHexChars)))
 mod2HexDict = dict(list(zip(modHexChars, hexHexChars)))
 
 
-def modhex_encode(s):
-    return ''.join(
-        [hex2ModDict[c] for c in s.encode('hex')]
-    )
-# end def modhex_encode
+def modhex_encode(s: str) -> str:
+    return ''.join([hex2ModDict[c] for c in s])
 
 
-def modhex_decode(m):
-    return ''.join(
-        [mod2HexDict[c] for c in m]
-    ).decode('hex')
-# end def modhex_decode
+def modhex_decode(m: str) -> str:
+    return ''.join([mod2HexDict[c] for c in m])
 
 
 def checksum(msg):

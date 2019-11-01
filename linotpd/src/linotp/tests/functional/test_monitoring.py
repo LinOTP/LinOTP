@@ -325,7 +325,7 @@ class TestMonitoringController(TestController):
             old_lic, old_sig = self.getCurrentLicense()
 
         except InvalidLicenseException as exx:
-            if (exx.message != "Support not available, your product is"
+            if (str(exx) != "Support not available, your product is"
                     " unlicensed"):
                 raise exx
         try:
@@ -350,7 +350,7 @@ class TestMonitoringController(TestController):
         try:
             old_lic, old_sig = self.getCurrentLicense()
         except InvalidLicenseException as exx:
-            if (exx.message != "Support not available, your product is "
+            if (str(exx) != "Support not available, your product is "
                     "unlicensed"):
                 raise exx
 

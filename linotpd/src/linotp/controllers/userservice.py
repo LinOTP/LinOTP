@@ -1135,7 +1135,7 @@ class UserserviceController(BaseController):
             try:
                 act = self.request_params["type"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             try:
                 (tok, section, scope) = act.split('.')
@@ -1207,7 +1207,7 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userenable', param,
@@ -1262,7 +1262,7 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userdisable', param,
@@ -1309,7 +1309,7 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
@@ -1352,7 +1352,7 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
@@ -1397,7 +1397,7 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             upin = param.get("pin", None)
 
@@ -1445,7 +1445,7 @@ class UserserviceController(BaseController):
                 userPin = param["userpin"]
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
@@ -1502,7 +1502,7 @@ class UserserviceController(BaseController):
                 pin = param["pin"]
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
@@ -1549,7 +1549,7 @@ class UserserviceController(BaseController):
                 otp1 = param["otp1"]
                 otp2 = param["otp2"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
@@ -1595,7 +1595,7 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             # check if token is in another realm
             realm_list = getTokenRealms(serial)
@@ -1670,7 +1670,7 @@ class UserserviceController(BaseController):
             try:
                 otp = param["otp"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             ttype = param.get("type", None)
 
@@ -1713,7 +1713,7 @@ class UserserviceController(BaseController):
             try:
                 tok_type = param["type"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             serial = param.get('serial', None)
             prefix = param.get('prefix', None)
@@ -1989,7 +1989,7 @@ class UserserviceController(BaseController):
                 serial = param["serial"]
                 count = int(param["count"])
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             curTime = param.get("curTime", None)
 
@@ -2129,7 +2129,7 @@ class UserserviceController(BaseController):
             try:
                 typ = param["type"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             if typ and typ.lower() not in ["ocra", "ocra2"]:
                 return sendError(response, _("valid types are 'ocra' "
@@ -2141,7 +2141,7 @@ class UserserviceController(BaseController):
             try:
                 helper_param['serial'] = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             acode = param["activationcode"]
             helper_param['activationcode'] = acode.upper()
@@ -2149,7 +2149,7 @@ class UserserviceController(BaseController):
             try:
                 helper_param['genkey'] = param["genkey"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
             (ret, tokenObj) = th.initToken(helper_param, self.authUser)
@@ -2226,7 +2226,7 @@ class UserserviceController(BaseController):
                 passw = param['pass']
                 p_serial = param['serial']
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             value = {}
 
@@ -2386,12 +2386,12 @@ class UserserviceController(BaseController):
                     method = param["method"]
                 except KeyError as exx:
                     raise ParameterError("Missing parameter: '%s'"
-                                         % exx.message)
+                                         % str(exx))
 
             try:
                 typ = param["type"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             serial = param.get("serial", None)
 

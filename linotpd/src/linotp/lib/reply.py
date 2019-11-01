@@ -27,6 +27,7 @@
 
 import qrcode
 import io
+import base64
 import urllib.request, urllib.parse, urllib.error
 
 try:
@@ -102,8 +103,8 @@ def _get_httperror_from_params(request):
                 "directly from query_string. Exception: %r", exx)
         from urllib.parse import parse_qs
         params = parse_qs(flask_request.query_string)
-        if 'httperror' in params:
-            httperror_list = params['httperror']
+        if b'httperror' in params:
+            httperror_list = params[b'httperror']
             if len(httperror_list) > 1:
                 log.warning("Parameter 'httperror' specified multiple times. "
                         "Using last value '%r'. All values: %r",
@@ -606,10 +607,9 @@ def create_png(data, alt=None):
 
     img = qrcode.make(data)
 
-    output = io.StringIO()
-    img.save(output)
-    o_data = output.getvalue()
-    output.close()
+    with io.BytesIO() as output:
+        img.save(output)
+        o_data = output.getvalue()
 
     return o_data
 
@@ -628,7 +628,7 @@ def create_img_src(data):
     '''
 
     o_data = create_png(data)
-    data_uri = o_data.encode("base64").replace("\n", "")
+    data_uri = base64.b64encode(o_data).decode()
     ret_img_src = 'data:image/png;base64,%s' % data_uri
 
     return ret_img_src

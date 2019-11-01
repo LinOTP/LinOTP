@@ -70,7 +70,7 @@ class TestValidateController(object):
 
         response = client.get("/validate/simplecheck")
         assert response.status_code == 200
-        assert response.data == data
+        assert response.data.decode() == data
         if isinstance(check_rv, AuthorizeException):
             assert "[simplecheck] validate/simplecheck: " in caplog.text
         elif isinstance(check_rv, NotAuthorizeException):

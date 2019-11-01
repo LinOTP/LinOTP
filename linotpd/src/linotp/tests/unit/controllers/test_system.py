@@ -71,7 +71,7 @@ class TestSetResolver(unittest.TestCase):
     def test_set_resolver_readonly_param_invalid(self):
         expected_message = "Failed to convert attribute 'readonly' to a boolean value! 'truly'"
         ret = self.set_resolver({'readonly': 'truly'})
-        self.assertEqual(ret.message, expected_message, "Unexpected result:\n Ret:%s\n Expected:%s" % (ret.message, expected_message))
+        assert str(ret) == expected_message
 
     def test_set_resolver_readonly_param_empty(self):
         ret = self.set_resolver({'readonly': ''})

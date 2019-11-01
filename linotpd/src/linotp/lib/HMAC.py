@@ -67,10 +67,10 @@ class HmacOtp():
     def truncate(self, digest):
         offset = ord(digest[-1:]) & 0x0f
 
-        binary = (ord(digest[offset + 0]) & 0x7f) << 24
-        binary |= (ord(digest[offset + 1]) & 0xff) << 16
-        binary |= (ord(digest[offset + 2]) & 0xff) << 8
-        binary |= (ord(digest[offset + 3]) & 0xff)
+        binary = (digest[offset + 0] & 0x7f) << 24
+        binary |= (digest[offset + 1] & 0xff) << 16
+        binary |= (digest[offset + 2] & 0xff) << 8
+        binary |= (digest[offset + 3] & 0xff)
 
         return binary % (10 ** self.digits)
 
@@ -104,4 +104,3 @@ class HmacOtp():
         return res
 
 #eof##########################################################################
-

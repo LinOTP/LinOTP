@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 #
@@ -37,9 +37,9 @@ import os
 from os import path, access, R_OK
 
 import getpass
-import ConfigParser
-import HTMLParser
-htmlparse = HTMLParser.HTMLParser()
+import configparser
+import html.parser
+htmlparse = html.parser.HTMLParser()
 
 
 import pyrad.packet
@@ -68,8 +68,8 @@ def usage(prog):
     :param prog:
     """
     intro(prog)
-    print "Radius Client to test the radius authentication, incl. CR authentication"
-    print  '''
+    print("Radius Client to test the radius authentication, incl. CR authentication")
+    print('''
 Parameter:
     '-f' or '--file':     the linotp ini with the radius dict and the nasid
     '-d' or '--dict':     the radius dictionary - required, if no ini file specified
@@ -136,7 +136,7 @@ Example:
 
        linotp-auth-radius -c -u horst -p 798811 -t 794560860539
 
-    '''
+    ''')
 
     return
 
@@ -149,9 +149,9 @@ def intro(prog):
     p_name = prog.rsplit(os.sep, 1)[1]
     p_name = p_name.rsplit('.')[0]
     hline = (len(p_name)) * "="
-    print hline
-    print "%s" % p_name
-    print hline
+    print(hline)
+    print("%s" % p_name)
+    print(hline)
 
     return
 
@@ -165,7 +165,7 @@ def saveConfig(config_file, section, config_dict):
     """
     cfgfile = None
 
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
 
     try:
         cfgfile = open(config_file, 'w')
@@ -196,7 +196,7 @@ def loadConfig(ini_file, section):
     """
     log.debug("Loading Config")
 
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     if os.path.isfile(ini_file) == False:
         raise Exception("File not found: %s" % ini_file)
 
@@ -333,7 +333,7 @@ class RadiusClient(object):
 
             if rcode == pyrad.packet.AccessChallenge:
                 opt = {}
-                for attr in reply.keys():
+                for attr in list(reply.keys()):
                     opt[attr] = reply[attr]
                 res = False
                 log.debug("challenge returned %r " % opt)
@@ -369,13 +369,13 @@ def authenticate(user, passw, otp, state, param, interactive=False):
         ## as long as we are challenged again..
         while opt is not None:
 
-            print("Received challenge for user %s" % (user))
+            print(("Received challenge for user %s" % (user)))
             state = opt.get("State", None)
             message = '>>%s' % opt.get("Reply-Message", "")
 
             ## if there is a dedicated otp, we will use it in the first challenge
             if otp is not None:
-                print message
+                print(message)
                 passw = otp
                 ## give it a one shot only
                 otp = None
@@ -391,15 +391,15 @@ def authenticate(user, passw, otp, state, param, interactive=False):
             (res, opt) = radcli.authenticate(user=user, passw=otp, state=state)
 
     if res == True:
-        print("Access granted to user %s." % (user))
+        print(("Access granted to user %s." % (user)))
         ret = 0
     else:
-        print("Access rejected for user %s." % (user))
+        print(("Access rejected for user %s." % (user)))
         ret = -1
 
     if opt is not None and len(opt) > 0:
-        for key, value in opt.items():
-            print("%s:%r" % (key, value))
+        for key, value in list(opt.items()):
+            print(("%s:%r" % (key, value)))
 
     return ret
 
@@ -425,7 +425,7 @@ def str2unicode(input_str):
     conversions = [{}, {'encoding':'utf-8'}, {'encoding': 'iso8859_15'}]
     for param in conversions:
         try:
-            output_str = unicode(output_str, **param)
+            output_str = str(output_str, **param)
             break
         except UnicodeDecodeError as exx:
             if param == conversions[-1]:
@@ -457,7 +457,7 @@ def main():
                          "password=", "otp=", "dict=", "nas=", "state="])
 
     except GetoptError:
-        print "There is an error in your parameter syntax:"
+        print("There is an error in your parameter syntax:")
         usage(prog)
         sys.exit(1)
 
@@ -478,8 +478,8 @@ def main():
             interactive = True
         elif opt in ('-e', '--environment'):
             env = os.environ
-            for entry, value in env.items():
-                print "%s=%s" % (entry, value)
+            for entry, value in list(env.items()):
+                print("%s=%s" % (entry, value))
         elif opt in ('-l', '--log'):
             global log
             log_level = arg.upper()[0]
@@ -532,7 +532,7 @@ def main():
             param["rNasId"] = config.get('radius.nas_identifier', None)
 
     if "rDict" not in param:
-        print "Missing radius dict specification - stop working"
+        print("Missing radius dict specification - stop working")
         sys.exit(1)
 
     if "rNasId" not in param:
@@ -542,7 +542,7 @@ def main():
         param["rSecret"] = getpass.getpass("Please enter radius secret: ")
 
     if user is None and interactive is True:
-        user = raw_input("Please enter user: ")
+        user = input("Please enter user: ")
 
     if passw is None and interactive is True:
         prompt = "Please enter password for user %s: " % user
@@ -553,8 +553,8 @@ def main():
 
     # config done #############################################################
     if user is None or passw is None or "rSecret" not in param:
-        print("missing parameters: user %r, passw %r or radius secret %r" %
-                (user, passw, param.get("rSecret", None)))
+        print(("missing parameters: user %r, passw %r or radius secret %r" %
+                (user, passw, param.get("rSecret", None))))
         sys.exit(-1)
 
     res = authenticate(user, passw, otp, state, param, interactive)

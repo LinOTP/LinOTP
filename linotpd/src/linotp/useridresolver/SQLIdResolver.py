@@ -273,9 +273,7 @@ class dbObject():
 
             log.error("Connection error: %r", exx)
 
-            msg = ''
-            if not hasattr(exx, 'message'):
-                msg = exx.message
+            msg = str(exx)
 
             if "timeout expired" in msg or "can't connect to" in msg:
 
@@ -388,7 +386,7 @@ def _check_hash_type(password, hash_type, hash_value, salt=None):
             pw_hash = "{%s}%s" % (hash_type, hash_value)
             return atlassian_pbkdf2_sha1.verify(password, pw_hash)
 
-        except TypeError as exx:
+        except (TypeError, ValueError) as exx:
 
             # raised for example if the padding of the hash of the
             # sql entry is broken
@@ -607,7 +605,7 @@ class IdResolver(UserIdResolver):
 
         # check if we have something like SHA or salted SHA
 
-        m = re.match("^\{(.*)\}(.*)", userInfo["password"])
+        m = re.match(r"^\{(.*)\}(.*)", userInfo["password"])
 
         if m:
             # The password field contains something like

@@ -58,7 +58,7 @@ class TestProviderTestCase(unittest.TestCase):
         {
             'name': 'newone',
             'default': 'True',
-            'config': '{"file":"/tmp/m\xc3\xbc\xc3\x9fte_g\xc3\xa8hn"}',
+            'config': '{"file":"/tmp/müßte_gèhn"}',
             'timeout': '301',
             'type': 'sms',
             'class': 'smsprovider.FileSMSProvider.FileSMSProvider'
@@ -112,7 +112,7 @@ class TestProviderTestCase(unittest.TestCase):
                 typ='password')
             mock_storeConfig.assert_any_call(
                 key=provider_prefix + '.' + 'Managed',
-                val=params['managed'].decode('utf-8'),
+                val=params['managed'],
                 typ=None)
             mock_storeConfig.assert_any_call(
                 key=provider_prefix + '.' + 'Timeout',

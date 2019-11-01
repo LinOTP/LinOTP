@@ -42,7 +42,7 @@ class TestSQLResolver_Password(unittest.TestCase):
     def test_pbkdf2_password(self):
 
         brahms_hashed_pw = ('{PKCS5S2}TGF1K1olIoY5a4HHy89R+LcT8E/V5P+'
-                            'u92L0ClePbhzqWikJUGmS0lyHSibsj4th')
+                            'u92L0ClePbhzqWikJUGmS0lyHSibsj4th==')
 
         brahms_pw = 'brahms123'
 
@@ -71,7 +71,7 @@ class TestSQLResolver_Password(unittest.TestCase):
         """ check the bcypt password verification method """
 
         password = 'password'
-        password_hash = ('$2a$12$NT0I31Sa7ihGEWpka9ASYrEFk'
+        password_hash = ('$2a$12$NT0I31Sa7ihGEWpka9ASYeEFk'
                          'huTNeBQ2xfZskIiiJeyFXhRgS.Sy')
         res = check_bcypt_password(password, password_hash)
         assert res == True

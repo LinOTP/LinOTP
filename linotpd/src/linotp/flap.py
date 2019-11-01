@@ -107,5 +107,5 @@ def render_mako(template_name, extra_context=None):
         ret = render_template(template_name.lstrip('/'), c=tmpl_context, _=lambda s: s)
     except TemplateError as e:
         log.error(e.text)
-        return e.text
+        raise
     return ret

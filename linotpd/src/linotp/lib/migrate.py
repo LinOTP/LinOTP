@@ -264,9 +264,9 @@ class Crypter(object):
         mac_message = ""
         for message in messages:
             if isinstance(message, str):
-                mac_message += message.encode('utf-8')
+                mac_message += message
 
-        return Crypter.hmac_sha256(self.mac_key, mac_message)
+        return Crypter.hmac_sha256(self.mac_key, mac_message.encode())
 
     def __init__(self, password, salt):
         """
@@ -300,7 +300,7 @@ class Crypter(object):
         cipher = AES.new(self.enc_key, AES.MODE_CBC, iv)
 
         # encrypt data
-        crypted_data = cipher.encrypt(Crypter.pad(input_data))
+        crypted_data = cipher.encrypt(Crypter.pad(input_data).encode())
 
         # mac encrypted data plus additional 'just_mac' data
         # mac = self.mac("%r%r%r" % (iv, crypted_data, just_mac))
@@ -330,7 +330,7 @@ class Crypter(object):
         cipher = AES.new(self.enc_key, AES.MODE_CBC, iv)
 
         # return decrypt, unpadded data
-        return Crypter.unpad(cipher.decrypt(crypted_data))
+        return Crypter.unpad(cipher.decrypt(crypted_data)).decode()
 
     @staticmethod
     def unpad(output_data):

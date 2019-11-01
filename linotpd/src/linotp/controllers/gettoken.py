@@ -170,7 +170,7 @@ class GettokenController(BaseController):
 
             if view:
                 c.ret = ret
-                return render('/manage/multiotp_view.mako')
+                return render('/manage/multiotp_view.mako').decode('utf-8')
             else:
                 return sendResult(response, ret, 0)
 
@@ -303,7 +303,7 @@ class GettokenController(BaseController):
             log.exception("[getotp] gettoken/getotp failed: %r", exx)
             Session.rollback()
             return sendError(response, "gettoken/getotp failed: %s" %
-                             str(exx), 0)
+                             exx, 0)
 
         finally:
             Session.close()

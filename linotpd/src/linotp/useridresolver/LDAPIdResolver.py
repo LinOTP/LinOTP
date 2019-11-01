@@ -800,15 +800,7 @@ class IdResolver(UserIdResolver):
                     for key in res:
 
                         if key.lower() == self.uidType.lower():
-
-                            # ---------------------------------------------- --
-
-                            # we have to convert the data back to unicode
-                            # from the utf-8 result of ldap layer
-
-                            userid = res.get(key)[0].decode(ENCODING)
-
-                            # ---------------------------------------------- --
+                            userid = res.get(key)[0]
 
         if res is None or not userid:
             log.info("[getUserId] : empty result for  %r - uidtype: %r",

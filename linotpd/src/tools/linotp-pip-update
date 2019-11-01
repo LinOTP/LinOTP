@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -32,12 +32,12 @@ import getopt, sys
 
 
 def usage():
-    print """
+    print("""
 linotp-pip-update
 
     -f, --force    force the update
     -h, --help     show this help
-    """
+    """)
 
 def update():
     for dist in pip.get_installed_distributions():
@@ -50,7 +50,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hf", ["help", "force"])
     except getopt.GetoptError as e:
-        print str(e)
+        print(str(e))
         sys.exit(1)
 
     for o, a in opts:
@@ -65,13 +65,13 @@ def main():
     else:
         answer = False
         while not answer:
-            res = raw_input("Do you really want to update your python environment? (y/N)")
+            res = input("Do you really want to update your python environment? (y/N)")
             answer = res.lower() in ['y', 'n', '']
 
         if res.lower() == 'y':
             update()
         else:
-            print "You canceled the update process."
+            print("You canceled the update process.")
 
 
 if __name__ == "__main__":

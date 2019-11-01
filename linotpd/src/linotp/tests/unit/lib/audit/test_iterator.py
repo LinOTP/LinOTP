@@ -399,7 +399,6 @@ class AuditIteratorTestCase(unittest.TestCase):
         result_csv = ""
         for value in csv_audit_iterator:
             result_csv += value
-        result_csv = result_csv.decode('utf-8')
         self.assertEqual(expected_csv, result_csv,
                          "%r \n\n%r" % (expected_csv, result_csv))
 

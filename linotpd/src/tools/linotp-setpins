@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -56,14 +56,14 @@ else:
 import logging
 
 def usage():
-    print  '''
+    print('''
 
     --linotp2=linotp2url
     --admin=linotp2 admin
         Password is asked
     --filename=<filename>
 
-'''
+''')
 
 
 def main():
@@ -79,7 +79,7 @@ def main():
                 ["help", "linotp2=", "admin=", "filename="])
 
     except GetoptError:
-        print "There is an error in your parameter syntax:"
+        print("There is an error in your parameter syntax:")
         usage()
         sys.exit(1)
 
@@ -96,7 +96,7 @@ def main():
                 linotp_protocol = "http"
                 linotp_url = arg[7:]
             else:
-                print "Malformed url format. You need to start with http or https [" + arg + "]"
+                print("Malformed url format. You need to start with http or https [" + arg + "]")
                 sys.exit(1)
         elif opt in ('--admin'):
             admin = arg
@@ -107,21 +107,21 @@ def main():
 
 
     # Create the linotpclient instance
-    print "LinOTP 2 protocol: %s " % linotp_protocol
-    print "LinOTP 2 server  : %s " % linotp_url
+    print("LinOTP 2 protocol: %s " % linotp_protocol)
+    print("LinOTP 2 server  : %s " % linotp_url)
     lotpc = linotpclient(linotp_protocol, linotp_url, admin=admin, adminpw=adminpw)
 
     # setting pins
 
-    print "reading file %s" % filename
+    print("reading file %s" % filename)
     f = open(filename, 'r')
     for line in f:
         (serial, pin) = line.split(':', 1)
         pin = string.rstrip(pin)
         pin = string.rstrip(pin, '\n')
-        print "setting pin of >>%s<< to >>%s<<" % (serial, pin)
+        print("setting pin of >>%s<< to >>%s<<" % (serial, pin))
         r1 = lotpc.set({'serial' : serial, 'pin' : pin })
-        print "    ", r1
+        print("    ", r1)
     f.close
 
 

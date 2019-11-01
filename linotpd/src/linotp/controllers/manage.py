@@ -107,7 +107,7 @@ class ManageController(BaseController):
             c.audit['client'] = get_client(request)
 
             c.version = get_version()
-            c.version_ref = base64.encodestring(c.version)[:6]
+            c.version_ref = base64.encodebytes(c.version.encode())[:6]
 
             c.licenseinfo = get_copyright_info()
             c.polDefs = getPolicyDefinitions()
@@ -272,7 +272,7 @@ class ManageController(BaseController):
         except Exception as ex:
             log.exception("[index] failed! %r" % ex)
             Session.rollback()
-            return sendError(response, ex)
+            raise
 
         finally:
             Session.close()
@@ -293,7 +293,7 @@ class ManageController(BaseController):
         log.debug("[index] importers: %s" % IMPORT_TEXT)
         c.tokeninfo = ttinfo
 
-        return render('/manage/tokentypeinfo.mako')
+        return render('/manage/tokentypeinfo.mako').decode('utf-8')
 
 
     def policies(self):
@@ -301,7 +301,7 @@ class ManageController(BaseController):
         This is the template for the policies TAB
         '''
         c.title = "LinOTP Management - Policies"
-        return render('/manage/policies.mako')
+        return render('/manage/policies.mako').decode('utf-8')
 
 
     def audittrail(self):
@@ -309,7 +309,7 @@ class ManageController(BaseController):
         This is the template for the audit trail TAB
         '''
         c.title = "LinOTP Management - Audit Trail"
-        return render('/manage/audit.mako')
+        return render('/manage/audit.mako').decode('utf-8')
 
 
     def tokenview(self):
@@ -328,7 +328,7 @@ class ManageController(BaseController):
         '''
         c.title = "LinOTP Management"
         c.tokenArray = []
-        return render('/manage/userview.mako')
+        return render('/manage/userview.mako').decode('utf-8')
 
     def custom_style(self):
         '''
@@ -624,7 +624,7 @@ class ManageController(BaseController):
                     except:
                         pass
 
-            return render('/manage/tokeninfo.mako')
+            return render('/manage/tokeninfo.mako').decode('utf-8')
 
         except PolicyException as pe:
             log.exception("[tokeninfo] Error during checking policies: %r" % pe)
@@ -738,12 +738,12 @@ def _getTokenTypeConfig(section='config'):
             try:
                 page = conf.get('page')
                 c.scope = page.get('scope')
-                p_html = render(os.path.sep + page.get('html'))
+                p_html = render(os.path.sep + page.get('html')).decode('utf-8')
                 p_html = remove_empty_lines(p_html)
 
                 tab = conf.get('title')
                 c.scope = tab.get('scope')
-                t_html = render(os.path.sep + tab.get('html'))
+                t_html = render(os.path.sep + tab.get('html')).decode('utf-8')
                 t_html = remove_empty_lines(t_html)
 
             except CompileException as ex:

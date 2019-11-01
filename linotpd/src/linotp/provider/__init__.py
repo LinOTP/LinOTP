@@ -30,6 +30,7 @@ provider handling
 import json
 import logging
 from functools import partial
+from configparser import ConfigParser
 
 from linotp.flap import _
 
@@ -624,8 +625,6 @@ def save_new_provider(provider_type, provider_name, params):
         config_key, config_type = mapping_entry
 
         value = params[config_entry]
-        if isinstance(params[config_entry], str):
-            value = params[config_entry].decode('utf-8')
 
         # store the config entry
         storeConfig(key=provider_prefix + '.' + config_key,
@@ -783,9 +782,7 @@ def load_provider_ini(ini_file):
     load the provider from a ini config file format
     """
 
-    from configparser import SafeConfigParser
-
-    parser = SafeConfigParser()
+    parser = ConfigParser()
     parser.read(ini_file)
 
     for section_name in parser.sections():
@@ -943,7 +940,7 @@ def _load_provider_class(provider_slass_spec):
         try:
 
             packageName, _, className = str(provider_class).rpartition('.')
-            mod = __import__(packageName, globals(), locals(), [className])
+            mod = __import__(packageName, globals(), locals(), [className], 1)
             provider_class_obj = getattr(mod, className)
 
         except ImportError as err:
