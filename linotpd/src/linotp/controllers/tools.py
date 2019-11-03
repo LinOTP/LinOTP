@@ -248,6 +248,8 @@ class ToolsController(BaseController):
             if isinstance(data_file, FileStorage):
                 data = data_file.read()
 
+            data = data.decode()
+
             # -------------------------------------------------------------- --
 
             # process the other arguments
