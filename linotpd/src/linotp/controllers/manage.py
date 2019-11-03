@@ -542,8 +542,8 @@ class ManageController(BaseController):
 
             lines = sorted(lines,
                            key=lambda user: user['cell'][sortnames[c.sort]],
-                           reverse=reverse,
-                           cmp=unicode_compare)
+                           reverse=reverse
+                           )
             # end: sorting
 
             # reducing the page

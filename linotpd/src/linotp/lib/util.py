@@ -491,7 +491,7 @@ def unicode_compare(x, y):
     :param y: right value
     :return: the locale aware comparison result
     """
-    return cmp(str2unicode(x), str2unicode(y))
+    return x == y
 
 
 
