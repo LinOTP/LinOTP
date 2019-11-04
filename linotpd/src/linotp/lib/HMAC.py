@@ -49,9 +49,10 @@ class HmacOtp():
         counter = counter or self.counter
 
         data_input = struct.pack(">Q", counter)
+
         if key is None:
-            dig = str(self.secretObj.hmac_digest(data_input,
-                                                 hash_algo=self.hashfunc))
+            dig = self.secretObj.hmac_digest(
+                data_input, hash_algo=self.hashfunc)
         else:
             dig = hmac.new(key, data_input, self.hashfunc).digest()
 
@@ -68,10 +69,16 @@ class HmacOtp():
         return binary % (10 ** self.digits)
 
     def generate(self, counter=None, inc_counter=True, key=None):
+
         counter = counter or self.counter
 
-        otp = str(self.truncate(self.hmac(counter=counter, key=key)))
-        """  fill in the leading zeros  """
+        otp = str(
+            self.truncate(
+                self.hmac(counter=counter, key=key))
+            )
+
+        # fill in the leading zeros
+
         sotp = (self.digits - len(otp)) * "0" + otp
         if inc_counter:
             self.counter = counter + 1
@@ -90,9 +97,10 @@ class HmacOtp():
         for c in range(start , end):
             otpval = self.generate(c)
 
-            if (str(otpval) == str(anOtpVal)):
+            if otpval == anOtpVal:
                 res = c
                 break
+
         #return -1 or the counter
         return res
 
