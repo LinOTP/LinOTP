@@ -148,9 +148,9 @@ class PasswordTokenClass(HmacTokenClass):
         :param reset_failcount: boolean, if the failcounter should be reseted
         """
 
-        password_hash = libcrypt_password(otpKey.encode('utf-8'))
+        password_hash = libcrypt_password(otpKey).encode('utf-8')
 
-        self.token.set_encrypted_seed(password_hash, ":1:",
+        self.token.set_encrypted_seed(password_hash, b":1:",
                                       reset_failcount=reset_failcount)
 
     def checkOtp(self, anOtpVal, counter, window, options=None):
@@ -168,7 +168,7 @@ class PasswordTokenClass(HmacTokenClass):
 
         secObj = self._get_secret_object()
 
-        if secObj.compare_password(anOtpVal.encode('utf-8')):
+        if secObj.compare_password(anOtpVal):
 
             return 0
 

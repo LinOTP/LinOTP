@@ -91,7 +91,7 @@ def libcrypt_password(password, crypted_password=None):
     # charset, if '+' is changed to '.' and the fillchars '=' are
     # striped off
 
-    salt = base64.b64encode(b_salt).strip(b"=").replace(b'+', b'.')
+    salt = base64.b64encode(b_salt).strip(b"=").replace(b'+', b'.').decode('utf-8')
 
     # now define the password format by the salt definition
 
@@ -437,13 +437,13 @@ def init_key_partition(config, partition, key_type='ed25519'):
     import linotp.lib.config
 
     public_key, secret_key = gen_dsa_keypair()
-    secret_key_entry = base64.b64encode(secret_key)
+    secret_key_entry = base64.b64encode(secret_key).decode('utf-8')
 
     linotp.lib.config.storeConfig(key='SecretKey.Partition.%d' % partition,
                                   val=secret_key_entry,
                                   typ='encrypted_data')
 
-    public_key_entry = base64.b64encode(public_key)
+    public_key_entry = base64.b64encode(public_key).decode('utf-8')
 
     linotp.lib.config.storeConfig(key='PublicKey.Partition.%d' % partition,
                                   val=public_key_entry,
@@ -466,7 +466,7 @@ def get_secret_key(partition):
     if not secret_key_b64:
         raise ConfigAdminError('No secret key found for %d' % partition)
 
-    secret_key = base64.b64decode(secret_key_b64)
+    secret_key = base64.b64decode(secret_key_b64.decode('utf-8'))
 
     # TODO: key type checking
 
@@ -493,7 +493,7 @@ def get_public_key(partition):
     if not public_key_b64:
         raise ConfigAdminError('No public key found for %d' % partition)
 
-    public_key = base64.b64decode(public_key_b64)
+    public_key = base64.b64decode(public_key_b64.decode('utf-8'))
 
     # TODO: key type checking
 

@@ -196,13 +196,13 @@ class DefaultSecurityModule(SecurityModule):
             raise Exception('setup of security module incomplete')
 
         key = self.getSecret(id)
-        input = bytearray(data)
-        input += b'\x01\x02'
-        padding = (16 - len(input) % 16) % 16
-        input += padding * b'\0'
+        input_data = binascii.b2a_hex(data)
+        input_data += b'\x01\x02'
+        padding = (16 - len(input_data) % 16) % 16
+        input_data += padding * b'\0'
         aes = AES.new(key, AES.MODE_CBC, iv)
 
-        res = aes.encrypt(input)
+        res = aes.encrypt(input_data)
 
         if self.crypted is False:
             zerome(key)
@@ -237,20 +237,19 @@ class DefaultSecurityModule(SecurityModule):
         if eof == -1:
             raise Exception('invalid encoded secret!')
 
-        while output[eof] == '\0':
+        while output[eof] == 0x00:
             eof -= 1
 
-        if output[eof-1:eof+1] != '\x01\x02':
+        if not(output[eof-1] == 0x01 and output[eof] == 0x02):
             raise Exception('invalid encoded secret!')
 
-        # convert output from ascii, back to bin data
-        data = binascii.a2b_hex(output[:eof-1])
+        data = output[:eof-1]
 
         if self.crypted is False:
             zerome(key)
             del key
 
-        return data
+        return binascii.a2b_hex(data)
 
     def decryptPassword(self, cryptPass):
         '''
