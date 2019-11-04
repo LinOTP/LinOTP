@@ -144,10 +144,7 @@ class UserImport(object):
                 if column_id == -1 or column_id >= len(row):
                     continue
 
-                # as the csv converter does not support unicode
-                # we have to decode the data
-
-                value = row[column_id].decode(self.encoding)
+                value = row[column_id]
 
                 user.set(entry, value)
 
