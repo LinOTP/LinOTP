@@ -31,10 +31,7 @@ import re
 import logging
 import fnmatch
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 from sqlalchemy import or_, and_, not_
 

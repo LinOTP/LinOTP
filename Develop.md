@@ -83,3 +83,21 @@ and
     cd linotp/tests/functional; pytest
 
 See the [Pytest documentation](https://docs.pytest.org/) for more information about using pytest.
+
+
+Typechecking with mypy
+----------------------
+
+To run a type check on the source code, install mypy and the stubs for sqlalchemy:
+```
+pip install mypy sqlalchemy-stubs
+```
+
+Then run mypy on a directory of your choice like so:
+```
+mypy some/python/dir
+```
+
+If you do not wish to be shown type errors recursively. i.e. from imported modules, use the flag `--follow-imports=silent`.
+
+The flag `--show-column-numbers` can also be helpful tracking the exact location of a problem.

@@ -58,9 +58,6 @@ from linotp.lib.crypto.utils import geturandom
 from linotp.lib.crypto.utils import get_dh_secret_key
 
 
-# for the hmac algo, we have to check the python version
-(python_major, python_minor, _, _, _,) = sys.version_info
-
 log = logging.getLogger(__name__)
 
 
@@ -145,10 +142,7 @@ class SecretObj(object):
             self._setupKey_()
             b_key = self.bkey
 
-        if (python_major, python_minor) > (2, 6):
-            data = data_input
-        else:
-            data = str(data_input)
+        data = data_input
 
         if not hash_algo:
             hash_algo = get_hashalgo_from_description('sha1')

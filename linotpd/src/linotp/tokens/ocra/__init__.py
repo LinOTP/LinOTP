@@ -215,10 +215,6 @@ from linotp.lib.crypto.utils import get_hashalgo_from_description
 
 log = logging.getLogger(__name__)
 
-# for the hmac algo, we have to check the python version
-(ma, mi, _, _, _,) = sys.version_info
-pver = float(int(ma) + int(mi) * 0.1)
-
 
 def is_int(v):
     try:
@@ -360,9 +356,6 @@ class OcraSuite():
         #    convert it to binary
         #                        from linotp.lib.crypto import SecretObj
         h = None
-
-        if pver <= 2.6:
-            data_input = str(data_input)
 
         if self.secretObj is not None:
             h = self.secretObj.hmac_digest(data_input, self.hash_algo)

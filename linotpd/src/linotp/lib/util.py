@@ -52,10 +52,7 @@ from linotp import (__version__ as linotp_version,
                     __product__ as linotp_product,
                     )
 
-try:
-    from linotp import __api__ as linotp_api
-except ImportError:
-    linotp_api = 2.0
+from linotp import __api__ as linotp_api
 
 SESSION_KEY_LENGTH = 32
 hostname_regex = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)

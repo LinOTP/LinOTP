@@ -297,7 +297,7 @@ def crypt(word, salt=None, iterations=None):
 # Add crypt as a static method of the PBKDF2 class
 # This makes it easier to do "from PBKDF2 import PBKDF2" and still use
 # crypt.
-PBKDF2.crypt = staticmethod(crypt)
+PBKDF2.crypt = staticmethod(crypt) #type: ignore
 
 def _makesalt():
     """Return a 48-bit pseudorandom salt for crypt().

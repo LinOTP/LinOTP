@@ -71,13 +71,13 @@ if (Fips.hmac_sha1(20 * b"\x0c", b"Test With Truncation") !=
 
 # test case 6
 if (Fips.hmac_sha1(80 * b"\xaa", b"Test Using Larger Than Block-Size Key"
-                   " - Hash Key First") !=
+                   b" - Hash Key First") !=
         unhexlify("aa4ae5e15272d00e95705637ce8a3b55ed402112")):
     raise Exception("HMAC-sha1 self check number 6 failed")
 
 # test case 7
 if (Fips.hmac_sha1(80 * b"\xaa", b"Test Using Larger Than Block-Size Key "
-                   "and Larger Than One Block-Size Data") !=
+                   b"and Larger Than One Block-Size Data") !=
         unhexlify("e8e99d0f45237d786d6bbaa7965c7808bbff1a91")):
     raise Exception("HMAC-sha1 self check number 7 failed")
 

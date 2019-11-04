@@ -53,10 +53,7 @@ import os
 from flask import Response
 from werkzeug.exceptions import Forbidden
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 from linotp.flap import (
     request, response, config, tmpl_context as c,

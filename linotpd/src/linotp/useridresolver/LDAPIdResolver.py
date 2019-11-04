@@ -37,6 +37,7 @@ import logging
 import os
 import tempfile
 import traceback
+from typing import Any, Callable, Dict, Tuple, Union
 
 import json
 import sys
@@ -117,7 +118,7 @@ class IdResolver(UserIdResolver):
     LDAP User Id resolver
     '''
 
-    nameDict = {}
+    nameDict: Dict[str, str] = {}
     conf = ""
     db_prefix = 'useridresolver.LDAPIdResolver.IdResolver'
 
@@ -148,7 +149,7 @@ class IdResolver(UserIdResolver):
     crypted_parameters = ['BINDPW']
     primary_key = 'UIDTYPE'
 
-    resolver_parameters = {
+    resolver_parameters: Dict[str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]] = {
         "LDAPURI": (True, None, text),
         "LDAPBASE": (True, None, text),
         "BINDDN": (True, None, text),
@@ -178,7 +179,7 @@ class IdResolver(UserIdResolver):
     SYS_CERTFILE = None
     SYS_CERTDIR = None
 
-    ca_certs_dict = {}
+    ca_certs_dict: Dict[str, str] = {}
 
     @classmethod
     def primary_key_changed(cls, new_params, previous_params):

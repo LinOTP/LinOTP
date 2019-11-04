@@ -30,10 +30,7 @@ import io
 import base64
 import urllib.request, urllib.parse, urllib.error
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 from flask import current_app, Response, jsonify, request as flask_request
 
