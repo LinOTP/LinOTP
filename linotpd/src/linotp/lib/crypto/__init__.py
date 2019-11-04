@@ -62,6 +62,29 @@ log = logging.getLogger(__name__)
 
 
 class SecretObj(object):
+    """
+    High level interface to security operations
+
+    This provides high level security operations without
+    needing access to the secure data
+
+    This is to be used by token implementations and
+    classes that need encrypted data such as the
+    database fields
+
+    The encryption operations themselves are realised
+    using a SecurityModule (such as HSM, PKCS11)
+
+    The class implementation ensures that secret keys
+    are not left around in memory after an operation
+    has been carried out.
+
+    It is possible to use this in two modes: With HSM,
+    where operations are passed to the HSM, and without
+    where a potentially degraded implementation is used.
+    This is to provide the functionality during startup,
+    before the HSM is ready.
+    """
     def __init__(self, val, iv, preserve=True, hsm=None):
         self.val = val
         self.iv = iv
@@ -176,7 +199,7 @@ class SecretObj(object):
         return msg_bin
 
     @staticmethod
-    def encrypt(seed, iv=None, hsm=None):
+    def encrypt(seed: bytes, iv=None, hsm=None):
         if not iv:
             iv = geturandom(16)
         enc_seed = encrypt(seed, iv, hsm=hsm)

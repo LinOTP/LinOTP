@@ -316,7 +316,7 @@ def decryptPin(cryptPin, hsm=None):
     return hsm_obj.decryptPin(cryptPin)
 
 
-def encrypt(data, iv, id=0, hsm=None):
+def encrypt(data: str, iv: bytes, id: int=0, hsm=None) -> bytes:
     """
     encrypt a variable from the given input with an initialization vector
 
