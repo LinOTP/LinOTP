@@ -2029,7 +2029,7 @@ def _gen_serial(prefix, tokennum, min_len=8):
     num_str = '%.4d' % tokennum
     h_len = min_len - len(num_str)
     if h_len > 0:
-        h_serial = binascii.hexlify(os.urandom(h_len)).upper()[0:h_len]
+        h_serial = binascii.hexlify(os.urandom(h_len)).decode().upper()[0:h_len]
     return "%s%s%s" % (prefix, num_str, h_serial)
 
 

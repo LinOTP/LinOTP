@@ -81,7 +81,7 @@ def create_google_authenticator(param, user=None):
 
     if not otpkey:
         raise Exception('Failed to create token url due to missing seed!')
-    key = base64.b32encode(binascii.unhexlify(otpkey))
+    key = base64.b32encode(binascii.unhexlify(otpkey)).decode()
     key = key.strip("=")
 
     algo = param.get("hashlib", "sha1") or "sha1"

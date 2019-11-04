@@ -57,6 +57,8 @@ from linotp.lib.error import TokenAdminError
 from linotp.lib.user import getUserResolverId
 from linotp.lib.util import generate_otpkey
 
+from linotp.lib.type_utils import boolean
+
 from linotp.lib.reply import create_img
 
 from linotp.lib.auth.validate import check_pin
@@ -893,23 +895,20 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
             raise ParameterError('[ParameterError] You may either specify'
                                  'genkey or otpkey, but not both!', id=344)
 
-        if otpKey is not None:
-            self.setOtpKey(otpKey, reset_failcount=reset_failcount)
-        else:
-            if genkey == 1:
-                otpKey = self._genOtpKey_()
+
+        if otpKey is None and genkey == 1:
+            otpKey = self._genOtpKey_()
 
         # otpKey still None?? - raise the exception
-        if otpKey is None:
-            if self.hKeyRequired is True:
-                try:
-                    otpKey = param["otpkey"]
-                except KeyError:
-                    raise ParameterError("Missing parameter: 'otpkey'")
+        if otpKey is None and self.hKeyRequired is True:
+            try:
+                otpKey = param["otpkey"]
+            except KeyError:
+                raise ParameterError("Missing parameter: 'otpkey'")
 
         if otpKey is not None:
             self.addToInfo('otpkey', otpKey)
-            self.setOtpKey(otpKey)
+            self.setOtpKey(otpKey, reset_failcount=reset_failcount)
 
         pin = param.get("pin")
         if pin is not None:
@@ -1273,7 +1272,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
             otplen = 6
 
         auth_info = []
-        if getFromConfig("PrependPin") == "True":
+        if boolean(getFromConfig("PrependPin", True)):
             pin = passw[0:-otplen]
             otpval = passw[-otplen:]
             auth_info.append(('pin_length', len(pin)))

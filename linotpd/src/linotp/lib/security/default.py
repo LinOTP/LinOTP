@@ -175,9 +175,16 @@ class DefaultSecurityModule(SecurityModule):
 
         return os.urandom(len)
 
-    def encrypt(self, data, iv=None, id=0):
+    def encrypt(self, data: str, iv=None, id=0) -> bytes:
         '''
         security module methods: encrypt
+
+        This module performs the following operations on
+        the input data, which is a string:
+            * convert data to hexidcimal representation
+            * add termination string
+            * pad with null to a multiple of 16 bytes
+            * aes encrypt
 
         :param data: the to be encrypted data
         :type  data:byte string
