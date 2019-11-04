@@ -26,6 +26,7 @@ from logging.config import dictConfig as logging_dictConfig
 import re
 import os
 import time
+from typing import List
 
 from datetime import datetime
 from uuid import uuid4
@@ -113,7 +114,7 @@ class LinOTPApp(Flask):
     cache = None
     """Beaker cache for this app"""
 
-    enabled_controllers = []
+    enabled_controllers: List[str] = []
     """Currently activated controller names"""
 
     def __init__(self):
