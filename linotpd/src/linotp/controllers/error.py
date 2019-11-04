@@ -31,9 +31,7 @@ error controller - to display errors
 
 import cgi
 
-from linotp.flap import (
-    request, error_document_template, forward,
-)
+from linotp.flap import (request, error_document_template)
 
 from paste.urlparser import PkgResourcesParser
 
@@ -85,7 +83,10 @@ class ErrorController(BaseController):
         at the specified path
         """
         request.environ['PATH_INFO'] = '/%s' % path
-        return forward(PkgResourcesParser('pylons', 'pylons'))
+        return ('<html><body>'
+                '<p>Failed to forward to WSGI application (Pylons '
+                'incompatibility).</p>'
+                '</body></html>')
 
 
 #eof###########################################################################
