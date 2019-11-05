@@ -420,7 +420,7 @@ class ValidationHandler(object):
             trans_dict['received_count'] = ch.received_count
             trans_dict['received_tan'] = ch.received_tan
             trans_dict['valid_tan'] = ch.valid_tan
-            trans_dict['message'] = ch.challenge
+            trans_dict['message'] = ch.challenge.decode()
             trans_dict['status'] = ch.getStatus()
 
             # -------------------------------------------------------------- --

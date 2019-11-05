@@ -1138,7 +1138,7 @@ class Challenge(object):
         descr = {}
         descr['id'] = self.id
         descr['transid'] = self.transid
-        descr['challenge'] = self.challenge
+        descr['challenge'] = self.challenge.decode()
         descr['tokenserial'] = self.tokenserial
         descr['data'] = self.getData()
         if save is True:

@@ -244,7 +244,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         self.ensure_state('pairing_url_sent')
 
         self.addToTokenInfo('user_token_id', user_token_id)
-        b64_user_public_key = b64encode(user_public_key)
+        b64_user_public_key = b64encode(user_public_key).decode()
         self.addToTokenInfo('user_public_key', b64_user_public_key)
 
         self.change_state('pairing_response_received')
@@ -496,7 +496,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         # ------------------------------------------------------------------- --
 
-        user_message = nonce + pt_header + sig + data_package
+        user_message = nonce + pt_header + sig.encode('utf-8') + data_package
 
         user_sig = sec_obj.hmac_digest(data_input=user_message,
                                        bkey=skB,
