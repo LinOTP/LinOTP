@@ -31,7 +31,7 @@ stages:
 
 .lint:
   stage: lint
-  image: python:2.7
+  image: python:3
   allow_failure: true
   before_script:
     - pip install pylint
@@ -119,10 +119,11 @@ build-test-environment:debian-buster:
 .test-debian:
   image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
   before_script:
+    - python3 --version
     - cd linotpd/src
-    - python --version
-    - pip install -e ".[test]"
-    - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
+    - pip3 install -e ".[test]"
+    - cd ${CI_PROJECT_DIR}
+#    - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
 #    - export PYTEST_COVER_DIR=${CI_PROJECT_DIR}/coverage/${DEBIAN_RELEASE_NAME}/
 #    - export COVERAGE_FILE=${PYTEST_COVER_DIR}/unit
 #    - mkdir -p ${PYTEST_COVER_DIR}
@@ -136,7 +137,7 @@ unit-test:
   variables:
     DEBIAN_RELEASE_NAME: buster
   script:
-    - make -C $CI_PROJECT_DIR unittests
+    - make unittests
 
 .functional-test:
   stage: test
@@ -153,7 +154,7 @@ unit-test:
     SHELL: /bin/bash
   before_script:
     - cd linotpd/src
-    - pip install -e ".[test]"
+    - pip3 install -e ".[test]"
 #    - mkdir /tmp/config
 #    - cp config/dictionary /tmp/config
 #    - rm test.ini
@@ -203,7 +204,7 @@ functional-test:buster:
 #   stage: coverage-report
 #   image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
 #   script:
-#     - pip install coverage
+#     - pip3 install coverage
 #     - cd coverage/${DEBIAN_RELEASE_NAME}
 #     - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
 #     - coverage combine *
