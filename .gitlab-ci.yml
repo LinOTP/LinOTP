@@ -123,8 +123,6 @@ build-test-environment:debian-buster:
     - python --version
     - pip install -e ".[test]"
     - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
-    - python tools/linotp-create-enckey -f test.ini
-    - python tools/linotp-create-auditkeys -f test.ini
 #    - export PYTEST_COVER_DIR=${CI_PROJECT_DIR}/coverage/${DEBIAN_RELEASE_NAME}/
 #    - export COVERAGE_FILE=${PYTEST_COVER_DIR}/unit
 #    - mkdir -p ${PYTEST_COVER_DIR}
@@ -132,7 +130,7 @@ build-test-environment:debian-buster:
 #    paths:
 #      - coverage/${DEBIAN_RELEASE_NAME}
 
-unit-test:debian-buster:
+unit-test:
   extends: .test-debian
   stage: test
   variables:
@@ -157,12 +155,9 @@ unit-test:debian-buster:
   before_script:
     - cd linotpd/src
     - pip install -e ".[test]"
-    - python tools/linotp-create-enckey -f test.ini
-    - python tools/linotp-create-auditkeys -f test.ini
-    - cp encKey public.pem private.pem /tmp/
-    - mkdir /tmp/config
-    - cp config/dictionary /tmp/config
-    - rm test.ini
+#    - mkdir /tmp/config
+#    - cp config/dictionary /tmp/config
+#    - rm test.ini
 #    - test "$CI_PIPELINE_SOURCE" != "schedule" && export NOSE_ATTRS='!nightly'
 #    - export PYTEST_COVER_DIR=${CI_PROJECT_DIR}/coverage/${DEBIAN_RELEASE_NAME}/
 #    - mkdir -p ${PYTEST_COVER_DIR}
