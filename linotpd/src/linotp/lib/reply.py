@@ -676,7 +676,7 @@ def create_html(data, width=0, alt=None, list_id="challenge_data"):
     img = create_img(data, width=width, alt=data)
 
     if alt is not None:
-        if isinstance(alt, (str, '')):
+        if isinstance(alt, str):
             alt_str = '<p>%s</p>' % alt
         elif isinstance(alt, dict):
             alta = []
