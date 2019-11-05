@@ -446,7 +446,7 @@ def add_dynamic_selfservice_enrollment(config, actions):
                     tab = service.get('title')
                     c.scope = tab.get('scope')
                     t_file = tab.get('html')
-                    t_html = render(t_file)
+                    t_html = render(t_file).decode()
                     ''' remove empty lines '''
                     t_html = '\n'.join([line for line in t_html.split('\n') if line.strip() != ''])
                     e_name = "%s.%s.%s" % (tok, 'selfservice', 'enroll')
@@ -464,7 +464,7 @@ def add_dynamic_selfservice_enrollment(config, actions):
                             tab = service.get('title')
                             c.scope = tab.get('scope')
                             t_file = tab.get('html')
-                            t_html = render(t_file)
+                            t_html = render(t_file).decode()
                             ''' remove empty lines '''
                             t_html = '\n'.join([line for line in t_html.split('\n') if line.strip() != ''])
                             e_name = "%s.%s.%s" % (tok, 'selfservice', action)

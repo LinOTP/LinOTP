@@ -455,7 +455,7 @@ class SelfserviceController(BaseController):
                         c.scope = page.get('scope')
                         c.authUser = self.authUser
                         html = page.get('html')
-                        res = render(os.path.sep + html)
+                        res = render(os.path.sep + html).decode()
                         res = remove_empty_lines(res)
 
             Session.commit()
