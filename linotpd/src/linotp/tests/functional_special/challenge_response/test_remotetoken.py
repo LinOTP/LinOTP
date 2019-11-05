@@ -181,7 +181,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         for params in params_list:
             serials.append(params.get('serial'))
             response = self.make_admin_request(action='init', params=params)
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
         # enforce the awareness of policy changes
         params = {
@@ -220,7 +220,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         params = {"user": "remoteuser", "pass": "rpin123456"}
         response = self.make_validate_request('check', params=params)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         def check_func2(params):
             resp = 200
@@ -242,7 +242,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         params = {"user": "localuser", "pass": "lpin123456"}
         response = self.make_validate_request('check', params=params)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         for serial in serials:
             self.delete_token(serial)
@@ -268,12 +268,12 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         # now switch policy on for challenge_response for hmac token
         response = self.setPinPolicy(name="ch_resp", realm='*',
                                 action='challenge_response=hmac remote')
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         response = self.setPinPolicy(name="ch_resp", realm='*',
                                 action='challenge_response=hmac remote',
                                 remoteurl=remoteurl)
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         # 1. part - pin belongs to remote token
         # check is simple auth works
@@ -301,7 +301,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         params = {"user": user, "pass": "rpin" + otp}
         response = self.make_validate_request('check', params=params)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # 1.1 now trigger a challenge
         otp = calcOTP(key=otpkey, counter=counter + 1, typ="hmac")
@@ -330,11 +330,11 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         params = {"user": user, "pass": "rpin"}
         response = self.make_validate_request('check', params=params)
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         body = json.loads(response.body)
         state = body.get('detail', {}).get('transactionid', '')
-        self.assertTrue(state != '', response)
+        assert state != '', response
 
         # 1.2 check the challenge
         otp = calcOTP(key=otpkey, counter=counter + 1, typ="hmac")
@@ -369,7 +369,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         response = self.make_validate_request('check', params=params)
 
         # hey, if this ok, we are done for the remote pin check
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         for serial in serials:
             self.delete_token(serial)
@@ -399,7 +399,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         response = self.setPinPolicy(name="ch_resp",
                                      realm='*',
                                      action='challenge_response=hmac remote')
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         response = self.setPinPolicy(name="ch_resp",
                                      realm='*',
@@ -436,7 +436,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         params = {"user": user, "pass": "lpin" + otp}
         response = self.make_validate_request('check', params=params)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # 2.1 now trigger a challenge
         counter = counter + 1
@@ -464,11 +464,11 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         params = {"user": user, "pass": "lpin"}
         response = self.make_validate_request('check', params=params)
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         body = json.loads(response.body)
         state = body.get('detail', {}).get('transactionid', '')
-        self.assertTrue(state != '', response)
+        assert state != '', response
 
         # 2.2 check the challenge
         counter = counter + 1
@@ -497,7 +497,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         response = self.make_validate_request('check', params=params)
 
         # hey, if this ok, we are done for the remote pin check
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         for serial in serials:
             self.delete_token(serial)

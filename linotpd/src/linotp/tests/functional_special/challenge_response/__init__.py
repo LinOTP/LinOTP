@@ -256,7 +256,7 @@ class TestChallengeResponseController(TestSpecialController):
             params['email_address'] = email_address
 
         response = self.make_admin_request(action='init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         self.serials.append(serial)
         return serial
 
@@ -276,10 +276,10 @@ class TestChallengeResponseController(TestSpecialController):
             }
 
         response = self.make_system_request("setPolicy", params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         response = self.make_system_request("getPolicy", params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         self.policies.append(name)
         return response

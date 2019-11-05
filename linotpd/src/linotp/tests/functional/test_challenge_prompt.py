@@ -134,7 +134,7 @@ class TestChallengePrompt(TestController):
             params['user'] = user
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, "Response: %r" % response)
+        assert '"value": true' in response, "Response: %r" % response
 
         # setup the otp values, that we check against
         self.init_yubikey_otps(public_uid)
@@ -157,7 +157,7 @@ class TestChallengePrompt(TestController):
             'scope': 'authentication'
             }
         response = self.make_system_request('setPolicy', params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         public_uid = "ecebeeejedecebeg"
         user = 'passthru_user1'
@@ -177,7 +177,7 @@ class TestChallengePrompt(TestController):
         params = {'YUBIKEY_CHALLENGE_PROMPT': prompt}
         response = self.make_system_request('setConfig', params)
 
-        self.assertTrue(prompt in response, response)
+        assert prompt in response, response
 
         # --------------------------------------------------------------- --
 
@@ -186,7 +186,7 @@ class TestChallengePrompt(TestController):
         params = {'user': user, 'pass': pin}
         response = self.make_validate_request('check', params=params)
 
-        self.assertTrue(prompt in response, response)
+        assert prompt in response, response
 
         # --------------------------------------------------------------- --
 
@@ -196,8 +196,8 @@ class TestChallengePrompt(TestController):
         params = {'key': 'YUBIKEY_CHALLENGE_PROMPT'}
         response = self.make_system_request('delConfig', params)
 
-        self.assertTrue('"delConfig YUBIKEY_CHALLENGE_PROMPT": true'
-                        in response, response)
+        assert '"delConfig YUBIKEY_CHALLENGE_PROMPT": true' \
+                        in response, response
 
         # --------------------------------------------------------------- --
 
@@ -225,7 +225,7 @@ class TestChallengePrompt(TestController):
             }
 
         response = self.make_system_request('setPolicy', params=params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         # --------------------------------------------------------------- --
 
@@ -243,7 +243,7 @@ class TestChallengePrompt(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # --------------------------------------------------------------- --
 
@@ -252,8 +252,8 @@ class TestChallengePrompt(TestController):
         params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.make_validate_request(action='check',
                                               params=params)
-        self.assertTrue('"value": false' in response, response)
-        self.assertTrue('"transactionid":' in response, response)
+        assert '"value": false' in response, response
+        assert '"transactionid":' in response, response
 
         # --------------------------------------------------------------- --
 
@@ -262,7 +262,7 @@ class TestChallengePrompt(TestController):
 
         body = json.loads(response.body)
         state = body.get('detail', {}).get('transactionid', None)
-        self.assertNotEqual(state, None, response)
+        assert state != None, response
 
         # --------------------------------------------------------------- --
 
@@ -273,7 +273,7 @@ class TestChallengePrompt(TestController):
         params['transactionid'] = state
         response = self.make_validate_request(action='check',
                                               params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # --------------------------------------------------------------- --
 
@@ -284,7 +284,7 @@ class TestChallengePrompt(TestController):
         params = {'HMAC_CHALLENGE_PROMPT': prompt}
         response = self.make_system_request('setConfig', params)
 
-        self.assertTrue(prompt in response, response)
+        assert prompt in response, response
 
         # --------------------------------------------------------------- --
 
@@ -293,9 +293,9 @@ class TestChallengePrompt(TestController):
         params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.make_validate_request(action='check',
                                               params=params)
-        self.assertTrue('"value": false' in response, response)
-        self.assertTrue('"transactionid":' in response, response)
-        self.assertTrue(prompt in response, response)
+        assert '"value": false' in response, response
+        assert '"transactionid":' in response, response
+        assert prompt in response, response
 
         # --------------------------------------------------------------- --
 
@@ -305,8 +305,8 @@ class TestChallengePrompt(TestController):
         params = {'key': 'HMAC_CHALLENGE_PROMPT'}
         response = self.make_system_request('delConfig', params)
 
-        self.assertTrue('"delConfig HMAC_CHALLENGE_PROMPT": true'
-                        in response, response)
+        assert '"delConfig HMAC_CHALLENGE_PROMPT": true' \
+                        in response, response
 
         # --------------------------------------------------------------- --
 
@@ -316,9 +316,9 @@ class TestChallengePrompt(TestController):
         params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.make_validate_request(action='check',
                                               params=params)
-        self.assertTrue('"value": false' in response, response)
-        self.assertTrue('"transactionid":' in response, response)
-        self.assertTrue(prompt not in response, response)
+        assert '"value": false' in response, response
+        assert '"transactionid":' in response, response
+        assert prompt not in response, response
 
         # --------------------------------------------------------------- --
 
@@ -355,7 +355,7 @@ class TestChallengePrompt(TestController):
             'SMSProviderConfig': json.dumps(sms_conf),
         }
         response = self.make_system_request(action='setConfig', params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         params = {
             'name': 'imported_default',
@@ -377,7 +377,7 @@ class TestChallengePrompt(TestController):
         }
 
         response = self.make_admin_request(action='init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # --------------------------------------------------------------- --
 
@@ -387,7 +387,7 @@ class TestChallengePrompt(TestController):
         params = {'SMS_CHALLENGE_PROMPT': prompt}
         response = self.make_system_request('setConfig', params)
 
-        self.assertTrue(prompt in response, response)
+        assert prompt in response, response
 
         # --------------------------------------------------------------- --
 
@@ -395,7 +395,7 @@ class TestChallengePrompt(TestController):
 
         params = {'serial': serial, 'pass': 'shortpin'}
         response = self.make_validate_request('check_s', params)
-        self.assertTrue(prompt in response, response)
+        assert prompt in response, response
 
         # --------------------------------------------------------------- --
 
@@ -405,8 +405,8 @@ class TestChallengePrompt(TestController):
         params = {'key': 'SMS_CHALLENGE_PROMPT'}
         response = self.make_system_request('delConfig', params)
 
-        self.assertTrue('"delConfig SMS_CHALLENGE_PROMPT": true'
-                        in response, response)
+        assert '"delConfig SMS_CHALLENGE_PROMPT": true' \
+                        in response, response
         # --------------------------------------------------------------- --
 
         self.delete_token(serial)
@@ -430,7 +430,7 @@ class TestChallengePrompt(TestController):
             }
 
         response = self.make_system_request('setPolicy', params=params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         # --------------------------------------------------------------- --
 
@@ -440,7 +440,7 @@ class TestChallengePrompt(TestController):
         params = {'PW_CHALLENGE_PROMPT': prompt}
         response = self.make_system_request('setConfig', params)
 
-        self.assertTrue(prompt in response, response)
+        assert prompt in response, response
 
         # --------------------------------------------------------------- --
 
@@ -455,7 +455,7 @@ class TestChallengePrompt(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # --------------------------------------------------------------- --
 
@@ -467,7 +467,7 @@ class TestChallengePrompt(TestController):
         }
 
         response = self.make_validate_request('check', params=params)
-        self.assertTrue(prompt in response, response)
+        assert prompt in response, response
 
         # --------------------------------------------------------------- --
 
@@ -477,8 +477,8 @@ class TestChallengePrompt(TestController):
         params = {'key': 'PW_CHALLENGE_PROMPT'}
         response = self.make_system_request('delConfig', params)
 
-        self.assertTrue('"delConfig PW_CHALLENGE_PROMPT": true'
-                        in response, response)
+        assert '"delConfig PW_CHALLENGE_PROMPT": true' \
+                        in response, response
         # --------------------------------------------------------------- --
 
         self.delete_all_token()

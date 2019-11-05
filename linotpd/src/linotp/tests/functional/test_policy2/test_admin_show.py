@@ -61,7 +61,7 @@ class TestAdminShowController(TestController):
             parameters.update(token_params)
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         return parameters['serial']
 
     def create_admin_policy(self, policy_def=None):
@@ -91,7 +91,7 @@ class TestAdminShowController(TestController):
         params = {'serial': serial}
         response = self.make_admin_request('show', params=params)
 
-        self.assertTrue(serial in response, response)
+        assert serial in response, response
 
         # set open policy without restrictions
         self.create_admin_policy()
@@ -99,7 +99,7 @@ class TestAdminShowController(TestController):
         params = {'serial': serial}
         response = self.make_admin_request('show', params=params)
 
-        self.assertTrue(serial in response, response)
+        assert serial in response, response
 
         # set policy with explicit show action and wildcard action
         policy_def = {'action': 'show, *'}
@@ -108,7 +108,7 @@ class TestAdminShowController(TestController):
         params = {'serial': serial}
         response = self.make_admin_request('show', params=params)
 
-        self.assertTrue(serial in response, response)
+        assert serial in response, response
 
         # set policy with not specified realm and wildcard action
         policy_def = {'action': '*',
@@ -118,7 +118,7 @@ class TestAdminShowController(TestController):
         params = {'serial': serial}
         response = self.make_admin_request('show', params=params)
 
-        self.assertTrue(serial not in response, response)
+        assert serial not in response, response
 
         # set policy with not specified realm and wildcard realm and
         # dedicated action
@@ -129,7 +129,7 @@ class TestAdminShowController(TestController):
         params = {'serial': serial}
         response = self.make_admin_request('show', params=params)
 
-        self.assertTrue(serial in response, response)
+        assert serial in response, response
 
         return
 
@@ -143,7 +143,7 @@ class TestAdminShowController(TestController):
         params = {'serial': serial}
         response = self.make_manage_request('tokeninfo', params=params)
 
-        self.assertTrue(serial in response, response)
+        assert serial in response, response
 
         # set open policy without restrictions
         self.create_admin_policy()
@@ -151,7 +151,7 @@ class TestAdminShowController(TestController):
         params = {'serial': serial}
         response = self.make_manage_request('tokeninfo', params=params)
 
-        self.assertTrue(serial in response, response)
+        assert serial in response, response
 
         # set policy with explicit show action and wildcard action
         policy_def = {'action': 'show, *'}
@@ -160,7 +160,7 @@ class TestAdminShowController(TestController):
         params = {'serial': serial}
         response = self.make_manage_request('tokeninfo', params=params)
 
-        self.assertTrue(serial in response, response)
+        assert serial in response, response
 
         # set policy with not specified realm and wildcard action
         policy_def = {'action': '*',
@@ -170,7 +170,7 @@ class TestAdminShowController(TestController):
         params = {'serial': serial}
         response = self.make_manage_request('tokeninfo', params=params)
 
-        self.assertTrue(serial not in response, response)
+        assert serial not in response, response
 
         # set policy with not specified realm and wildcard realm and
         # dedicated action
@@ -181,6 +181,6 @@ class TestAdminShowController(TestController):
         params = {'serial': serial}
         response = self.make_manage_request('tokeninfo', params=params)
 
-        self.assertTrue(serial in response, response)
+        assert serial in response, response
 
         return

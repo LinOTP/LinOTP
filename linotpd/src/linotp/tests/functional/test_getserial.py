@@ -97,7 +97,7 @@ class TestGetSerialController(TestController):
                   }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def setTokenRealm(self, serial, realms):
         parameters = {"serial": serial,
@@ -136,7 +136,7 @@ class TestGetSerialController(TestController):
                 os.path.join(self.fixture_path, "def-passwd")}
 
         resp = self.make_system_request("setConfig", params=parameters)
-        self.assertTrue('"status": true' in resp, resp)
+        assert '"status": true' in resp, resp
 
         # create realms
         parameters = {
@@ -145,7 +145,7 @@ class TestGetSerialController(TestController):
 
         resp = self.make_system_request("setRealm", params=parameters)
 
-        self.assertTrue('"status": true' in resp, resp)
+        assert '"status": true' in resp, resp
 
         # legacy syntax for resolver reference
 
@@ -154,13 +154,13 @@ class TestGetSerialController(TestController):
             "resolvers": "useridresolver.passwdresolver.mrealm"}
 
         resp = self.make_system_request("setRealm", params=parameters)
-        self.assertTrue('"status": true' in resp, resp)
+        assert '"status": true' in resp, resp
 
         resp = self.setTokenRealm("oath_mydef", "mydef")
-        self.assertTrue('"status": true' in resp, resp)
+        assert '"status": true' in resp, resp
 
         resp = self.setTokenRealm("oath_myrealm", "myrealm")
-        self.assertTrue('"status": true' in resp, resp)
+        assert '"status": true' in resp, resp
 
     def test_02_token01_success(self):
         '''
@@ -170,7 +170,7 @@ class TestGetSerialController(TestController):
         parameters = {'otp': '359152'}
         response = self.make_admin_request('getSerialByOtp',
                                            params=parameters)
-        self.assertTrue('"serial": "oath_mydef"' in response, response)
+        assert '"serial": "oath_mydef"' in response, response
 
         # test for the otp of the first token, with only in realm mydef
         # But it fails, due to same OTP value!
@@ -179,20 +179,20 @@ class TestGetSerialController(TestController):
                       'realm': 'mydef'}
         response = self.make_admin_request('getSerialByOtp',
                                            params=parameters)
-        self.assertTrue('"serial": ""' in response, response)
+        assert '"serial": ""' in response, response
 
         # test for the otp of the first token, with only in realm mydef
 
         parameters = {'otp': '969429',
                       'realm': 'mydef'}
         response = self.make_admin_request('getSerialByOtp', params=parameters)
-        self.assertTrue('"serial": "oath_mydef"' in response, response)
+        assert '"serial": "oath_mydef"' in response, response
 
         # The OTP of the first token shall not be found in the second realm
 
         parameters = {'otp': '338314',
                       'realm': 'myrealm'}
         response = self.make_admin_request('getSerialByOtp', params=parameters)
-        self.assertTrue('"serial": ""' in response, response)
+        assert '"serial": ""' in response, response
 
 # eof ########################################################################

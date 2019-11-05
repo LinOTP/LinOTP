@@ -106,24 +106,24 @@ class TestRadiusToken(TestController):
                       }
 
         response = self.make_admin_request('init', params=parameters1)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('init', params=parameters2)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         params = {'serial': 'radius2', 'pin': 'local'}
         response = self.make_admin_request('set', params=params)
-        self.assertTrue('"set pin": 1' in response, response)
+        assert '"set pin": 1' in response, response
 
         params = {'serial': 'radius1', 'pin': ''}
         response = self.make_admin_request('set', params=params)
-        self.assertTrue('"set pin": 1' in response, response)
+        assert '"set pin": 1' in response, response
 
     def deleteRadiusToken(self):
         for serial in ["radius1", "radius2"]:
             parameters = {"serial": serial}
             response = self.make_admin_request('remove', params=parameters)
-            self.assertTrue('"value": 1' in response, response)
+            assert '"value": 1' in response, response
             return
 
     def _start_radius_server(self):
@@ -151,8 +151,8 @@ class TestRadiusToken(TestController):
             'config',
             'dictionary',
             )
-        self.assertTrue(os.path.isfile(radius_server_file) is True,
-                        "radius demo server not found: %s" % radius_server_file)
+        assert os.path.isfile(radius_server_file) is True, \
+                        "radius demo server not found: %s" % radius_server_file
 
         self.p = subprocess.Popen(
             [
@@ -185,7 +185,7 @@ class TestRadiusToken(TestController):
             self._start_radius_server()
             parameters = {"user": "localuser", "pass": "local654321"}
             response = self.make_validate_request('check', params=parameters)
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
         finally:
             self._stop_radius_server()
         return
@@ -198,7 +198,7 @@ class TestRadiusToken(TestController):
             self._start_radius_server()
             parameters = {"user": "remoteuser", "pass": "test123456"}
             response = self.make_validate_request('check', params=parameters)
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
         finally:
             self._stop_radius_server()
         return
@@ -211,7 +211,7 @@ class TestRadiusToken(TestController):
             self._start_radius_server()
             parameters = {"user": "localuser", "pass": "654321"}
             response = self.make_validate_request('check', params=parameters)
-            self.assertTrue('"value": false' in response, response)
+            assert '"value": false' in response, response
         finally:
             self._stop_radius_server()
 
@@ -225,7 +225,7 @@ class TestRadiusToken(TestController):
             self._start_radius_server()
             parameters = {"user": "localuser", "pass": "blabla654321"}
             response = self.make_validate_request('check', params=parameters)
-            self.assertTrue('"value": false' in response, response)
+            assert '"value": false' in response, response
         finally:
             self._stop_radius_server()
 
@@ -239,7 +239,7 @@ class TestRadiusToken(TestController):
             self._start_radius_server()
             parameters = {"user": "remoteuser", "pass": "123456"}
             response = self.make_validate_request('check', params=parameters)
-            self.assertTrue('"value": false' in response, response)
+            assert '"value": false' in response, response
         finally:
             self._stop_radius_server()
 
@@ -253,7 +253,7 @@ class TestRadiusToken(TestController):
             self._start_radius_server()
             parameters = {"user": "remoteuser", "pass": "abcd123456"}
             response = self.make_validate_request('check', params=parameters)
-            self.assertTrue('"value": false' in response, response)
+            assert '"value": false' in response, response
         finally:
             self._stop_radius_server()
 

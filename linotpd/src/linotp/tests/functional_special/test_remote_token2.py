@@ -136,9 +136,9 @@ class TestRemoteToken2(TestSpecialController):
         resp = json.loads(response.body)
         stat = resp.get('result', {}).get('value', {})\
                 .get('setPolicy %s' % p_name, {})
-        self.assertGreater(len(stat), 0, response)
+        assert len(stat) > 0, response
         for val in list(stat.values()):
-            self.assertTrue(val, response)
+            assert val, response
 
         # set the otppin=1 (native) for the 'withpin' realm
         p_name = 'withpin'
@@ -157,9 +157,9 @@ class TestRemoteToken2(TestSpecialController):
         resp = json.loads(response.body)
         stat = resp.get('result', {}).get('value', {})\
                 .get('setPolicy %s' % p_name, {})
-        self.assertGreater(len(stat), 0, response)
+        assert len(stat) > 0, response
         for val in list(stat.values()):
-            self.assertTrue(val, response)
+            assert val, response
 
         return
 
@@ -181,9 +181,9 @@ class TestRemoteToken2(TestSpecialController):
         resp = json.loads(response.body)
         stat = resp.get('result', {}).get('value', {})\
                 .get('setPolicy %s' % p_name, {})
-        self.assertGreater(len(stat), 0, response)
+        assert len(stat) > 0, response
         for val in list(stat.values()):
-            self.assertTrue(val, response)
+            assert val, response
 
         return
 
@@ -206,9 +206,9 @@ class TestRemoteToken2(TestSpecialController):
         resp = json.loads(response.body)
         stat = resp.get('result', {}).get('value', {})\
                 .get('setPolicy %s' % p_name, {})
-        self.assertGreater(len(stat), 0, response)
+        assert len(stat) > 0, response
         for val in list(stat.values()):
-            self.assertTrue(val, response)
+            assert val, response
         return
 
     def init_remote_token(self, target_serial, target_otplen=6):
@@ -233,7 +233,7 @@ class TestRemoteToken2(TestSpecialController):
             }
 
         response = self.make_admin_request('init', params=params)
-        self.assertIn('"value": true', response, "Response: %r" % response)
+        assert '"value": true' in response, "Response: %r" % response
 
         return serial
 
@@ -284,7 +284,7 @@ class TestRemoteToken2(TestSpecialController):
             params['public_uid'] = public_uid
 
         response = self.make_admin_request('init', params=params)
-        self.assertIn('"value": true', response, "Response: %r" % response)
+        assert '"value": true' in response, "Response: %r" % response
 
         return serial
 
@@ -292,11 +292,11 @@ class TestRemoteToken2(TestSpecialController):
         # define new realms: nopin and withpin
         resolvers = self.resolvers['myDefRes']
         response = self.create_realm('nopin', resolvers)
-        self.assertIn('"value": true', response, "Response: %r" % response)
+        assert '"value": true' in response, "Response: %r" % response
 
         resolvers = self.resolvers['myDefRes']
         response = self.create_realm('withpin', resolvers)
-        self.assertIn('"value": true', response, "Response: %r" % response)
+        assert '"value": true' in response, "Response: %r" % response
 
         return
 
@@ -314,7 +314,7 @@ class TestRemoteToken2(TestSpecialController):
         params['serial'] = y_serial
         params['realms'] = 'nopin'
         response = self.make_admin_request('tokenrealm', params=params)
-        self.assertIn('"value": 1', response, response)
+        assert '"value": 1' in response, response
 
         # get token info:
         # admin/show serial = serial and extract the otplen
@@ -323,9 +323,9 @@ class TestRemoteToken2(TestSpecialController):
         response = self.make_admin_request('show', params=params)
         resp = json.loads(response.body)
         data = resp.get('result', {}).get('value', {}).get('data', [])
-        self.assertTrue(len(data) > 0, response)
+        assert len(data) > 0, response
         y_otplen = int(data[0].get("LinOtp.OtpLen", 0))
-        self.assertTrue(y_otplen > 0, response)
+        assert y_otplen > 0, response
 
         # create remote token
         r_serial = self.init_remote_token(target_serial=y_serial,
@@ -336,14 +336,14 @@ class TestRemoteToken2(TestSpecialController):
         params['serial'] = r_serial
         params['realms'] = 'withpin'
         response = self.make_admin_request('tokenrealm', params=params)
-        self.assertIn('"value": 1', response, response)
+        assert '"value": 1' in response, response
 
         # get token info:
         # admin/show serial = serial and extract the otplen
         params = {}
         params['serial'] = r_serial
         response = self.make_admin_request('show', params=params)
-        self.assertIn('"status": true', response, response)
+        assert '"status": true' in response, response
 
         return (y_serial, r_serial)
 
@@ -363,7 +363,7 @@ class TestRemoteToken2(TestSpecialController):
 
         response = self.make_admin_request(action='init',
                                            params=param_local_1)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         return serial
 
     @patch.object(httplib2.Http, 'request', mocked_http_request)
@@ -380,7 +380,7 @@ class TestRemoteToken2(TestSpecialController):
 
         params = {'serial': y_serial, 'pass': otp}
         response = self.make_validate_request(action='check_s', params=params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         # check otps on remote
         otp = self.yubi_valid_otps[1]
@@ -402,7 +402,7 @@ class TestRemoteToken2(TestSpecialController):
 
         params = {'serial': r_serial, 'pass': otp}
         response = self.make_validate_request(action='check_s', params=params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         return
 
@@ -419,21 +419,21 @@ class TestRemoteToken2(TestSpecialController):
         params['serial'] = y_serial
         params['user'] = 'passthru_user1@nopin'
         response = self.make_admin_request('assign', params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         # check otps on yubikey
         otp = self.yubi_valid_otps[2]
 
         params = {'user': 'passthru_user1@nopin', 'pass': otp}
         response = self.make_validate_request(action='check', params=params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         # check otps on remote
         params = {}
         params['serial'] = r_serial
         params['user'] = 'passthru_user1@withpin'
         response = self.make_admin_request('assign', params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         otp = self.yubi_valid_otps[3]
 
@@ -454,7 +454,7 @@ class TestRemoteToken2(TestSpecialController):
 
         params = {'user': 'passthru_user1@withpin', 'pass': otp}
         response = self.make_validate_request(action='check', params=params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         return
 
@@ -471,21 +471,21 @@ class TestRemoteToken2(TestSpecialController):
         params['serial'] = y_serial
         params['user'] = 'passthru_user1@nopin'
         response = self.make_admin_request('assign', params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         # check otps on yubikey
         otp = self.yubi_valid_otps[4]
 
         params = {'user': 'passthru_user1@nopin', 'pass': otp}
         response = self.make_validate_request(action='check', params=params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         # check otps on remote
         params = {}
         params['serial'] = r_serial
         params['user'] = 'passthru_user1@withpin'
         response = self.make_admin_request('assign', params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         params = {}
         params['serial'] = r_serial
@@ -493,7 +493,7 @@ class TestRemoteToken2(TestSpecialController):
         response = self.make_admin_request('set', params)
         resp = json.loads(response.body)
         val = resp.get('result', {}).get('value', {})
-        self.assertTrue(val['set pin'] == 1, response)
+        assert val['set pin'] == 1, response
 
         otp = self.yubi_valid_otps[5]
         passw = "local%s" % otp
@@ -515,7 +515,7 @@ class TestRemoteToken2(TestSpecialController):
 
         params = {'user': 'passthru_user1@withpin', 'pass': passw}
         response = self.make_validate_request(action='check', params=params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         return
 
@@ -534,21 +534,21 @@ class TestRemoteToken2(TestSpecialController):
         params['serial'] = y_serial
         params['user'] = 'passthru_user1@nopin'
         response = self.make_admin_request('assign', params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         # check otps on yubikey
         otp = self.yubi_valid_otps[0]
 
         params = {'user': 'passthru_user1@nopin', 'pass': otp}
         response = self.make_validate_request(action='check', params=params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         # check otps on remote
         params = {}
         params['serial'] = r_serial
         params['user'] = 'passthru_user1@withpin'
         response = self.make_admin_request('assign', params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         otp = self.yubi_valid_otps[1]
         passw = "geheim1%s" % otp
@@ -570,7 +570,7 @@ class TestRemoteToken2(TestSpecialController):
 
         params = {'user': 'passthru_user1@withpin', 'pass': passw}
         response = self.make_validate_request(action='check', params=params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         return
 
@@ -591,16 +591,16 @@ class TestRemoteToken2(TestSpecialController):
 
         params = {'user': 'passthru_user1@nopin', 'pass': passw}
         response = self.make_validate_request(action='check', params=params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         params = {}
         params['serial'] = y_serial
         response = self.make_admin_request('show', params=params)
         resp = json.loads(response.body)
         data = resp.get('result', {}).get('value', {}).get('data', [])
-        self.assertTrue(len(data) > 0, response)
+        assert len(data) > 0, response
         username = data[0].get("User.username", '')
-        self.assertEqual(username, 'passthru_user1', response)
+        assert username == 'passthru_user1', response
 
         # check otps on remote
         otp = self.yubi_valid_otps[9]
@@ -623,16 +623,16 @@ class TestRemoteToken2(TestSpecialController):
 
         params = {'user': 'passthru_user1@withpin', 'pass': passw}
         response = self.make_validate_request(action='check', params=params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         params = {}
         params['serial'] = r_serial
         response = self.make_admin_request('show', params=params)
         resp = json.loads(response.body)
         data = resp.get('result', {}).get('value', {}).get('data', [])
-        self.assertTrue(len(data) > 0, response)
+        assert len(data) > 0, response
         username = data[0].get("User.username", '')
-        self.assertEqual(username, 'passthru_user1', response)
+        assert username == 'passthru_user1', response
 
         return
 
@@ -655,7 +655,7 @@ class TestRemoteToken2(TestSpecialController):
 
         params = {'user': 'passthru_user1@withpin', 'pass': passw}
         response = self.make_validate_request(action='check', params=params)
-        self.assertIn('"value": true', response, response)
+        assert '"value": true' in response, response
 
         # get token info:
         # admin/show serial = serial and extract the owner
@@ -664,18 +664,18 @@ class TestRemoteToken2(TestSpecialController):
         response = self.make_admin_request('show', params=params)
         resp = json.loads(response.body)
         data = resp.get('result', {}).get('value', {}).get('data', [])
-        self.assertTrue(len(data) > 0, response)
+        assert len(data) > 0, response
         username = data[0].get("User.username", '')
-        self.assertEqual(username, 'passthru_user1', response)
+        assert username == 'passthru_user1', response
 
         params = {}
         params['serial'] = y_serial
         response = self.make_admin_request('show', params=params)
         resp = json.loads(response.body)
         data = resp.get('result', {}).get('value', {}).get('data', [])
-        self.assertTrue(len(data) > 0, response)
+        assert len(data) > 0, response
         username = data[0].get("User.username", '')
-        self.assertEqual(username, 'passthru_user1', response)
+        assert username == 'passthru_user1', response
 
         return
 

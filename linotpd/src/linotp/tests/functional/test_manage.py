@@ -83,7 +83,7 @@ class TestManageController(TestController):
             'resolvers': 'useridresolver.PasswdIdResolver.IdResolver.reso2'
         }
         response = self.make_system_request('setRealm', params=params)
-        self.assertTrue('"value": true'in response, response)
+        assert '"value": true'in response, response
 
         # create token
         params = {
@@ -189,13 +189,13 @@ class TestManageController(TestController):
         match_count = 0
         for token in tokens:
             if token.get('id') == 'token1':
-                self.assertTrue("heinz" in token['cell'], resp)
+                assert "heinz" in token['cell'], resp
                 match_count += 1
             elif token.get('id') == 'token2':
-                self.assertTrue("nick" in token['cell'], resp)
+                assert "nick" in token['cell'], resp
                 match_count += 1
             elif token.get('id') == 'token3':
-                self.assertTrue("renate" in token['cell'], resp)
+                assert "renate" in token['cell'], resp
                 match_count += 1
         assert match_count == 3, "Not all matches found in resp %r" % resp
 
@@ -216,7 +216,7 @@ class TestManageController(TestController):
         match_count = 0
         for token in tokens:
             if token.get('id') == 'token3':
-                self.assertTrue("renate" in token['cell'], resp)
+                assert "renate" in token['cell'], resp
                 match_count += 1
         assert match_count == 1, "Not all matches found in resp %r" % resp
 
@@ -235,10 +235,10 @@ class TestManageController(TestController):
         match_count = 0
         for token in tokens:
             if token.get('id') == 'token1':
-                self.assertTrue("heinz" in token['cell'], resp)
+                assert "heinz" in token['cell'], resp
                 match_count += 1
             elif token.get('id') == 'token2':
-                self.assertTrue("nick" in token['cell'], resp)
+                assert "nick" in token['cell'], resp
                 match_count += 1
 
         assert match_count == 2, "Not all matches found in resp %r" % resp
@@ -258,7 +258,7 @@ class TestManageController(TestController):
         match_count = 0
         for token in tokens:
             if token.get('id') == 'token2':
-                self.assertTrue("nick" in token['cell'], resp)
+                assert "nick" in token['cell'], resp
                 match_count += 1
 
         assert match_count == 1, "Not all matches found in resp %r" % resp

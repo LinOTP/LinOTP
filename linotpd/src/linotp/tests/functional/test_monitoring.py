@@ -134,14 +134,14 @@ class TestMonitoringController(TestController):
         response = self.make_authenticated_request(controller='admin',
                                                    action='init',
                                                    params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         if active is False:
             response = self.make_authenticated_request(controller='admin',
                                                        action='disable',
                                                        params={
                                                            'serial': serial})
 
-            self.assertTrue('"value": 1' in response, response)
+            assert '"value": 1' in response, response
         return serial
 
     # UnitTests...
@@ -150,8 +150,8 @@ class TestMonitoringController(TestController):
             controller='monitoring', action='config', params={})
         resp = json.loads(response.body)
         values = resp.get('result').get('value')
-        self.assertEqual(values.get('realms'), 3, response)
-        self.assertEqual(values.get('passwdresolver'), 2, response)
+        assert values.get('realms') == 3, response
+        assert values.get('passwdresolver') == 2, response
         # self.assertEqual(values.get('sync'), True, response)
 
         # provoke unsyncronized situation:
@@ -161,8 +161,8 @@ class TestMonitoringController(TestController):
             controller='monitoring', action='config', params={})
         resp = json.loads(response.body)
         values = resp.get('result').get('value')
-        self.assertEqual(values.get('realms'), 3, response)
-        self.assertEqual(values.get('passwdresolver'), 2, response)
+        assert values.get('realms') == 3, response
+        assert values.get('passwdresolver') == 2, response
         # self.assertEqual(values.get('sync'), False, response)
 
         return
@@ -178,9 +178,9 @@ class TestMonitoringController(TestController):
             controller='monitoring', action='tokens', params=parameters)
         resp = json.loads(response.body)
         values = resp.get('result').get('value')
-        self.assertEqual(values.get('Realms').get('mydefrealm').get('total'), 2,
-                         response)
-        self.assertEqual(values.get('Summary').get('total'), 3, response)
+        assert values.get('Realms').get('mydefrealm').get('total') == 2, \
+                         response
+        assert values.get('Summary').get('total') == 3, response
         return
 
     def test_token_active(self):
@@ -211,24 +211,24 @@ class TestMonitoringController(TestController):
         # in the mydefrealm we have 2 active tokens, one belongs to an user
 
         mydefrealm = r_values.get('mydefrealm', {})
-        self.assertEqual(mydefrealm.get('total', -1), 2, response)
-        self.assertEqual(mydefrealm.get('total users', -1), 1, response)
-        self.assertEqual(mydefrealm.get('active', -1), 2, response)
+        assert mydefrealm.get('total', -1) == 2, response
+        assert mydefrealm.get('total users', -1) == 1, response
+        assert mydefrealm.get('active', -1) == 2, response
 
         # in the myotherrealm we have 1 inactive tokens, belongs to no one
 
         myotherrealm = r_values.get('myotherrealm', {})
-        self.assertEqual(myotherrealm.get('total', -1), 1, response)
-        self.assertEqual(myotherrealm.get('total users', -1), 0, response)
-        self.assertEqual(myotherrealm.get('active', -1), 0, response)
+        assert myotherrealm.get('total', -1) == 1, response
+        assert myotherrealm.get('total users', -1) == 0, response
+        assert myotherrealm.get('active', -1) == 0, response
 
         # in summary for myotherrealm and mydefrealm we have:
         #  2 inactive tokens, 1 token belongs to an user and 3 tokens
 
         s_values = resp.get('result').get('value').get('Summary', {})
-        self.assertEqual(s_values.get('total', -1), 3, response)
-        self.assertEqual(s_values.get('total users', -1), 1, response)
-        self.assertEqual(s_values.get('active', -1), 2, response)
+        assert s_values.get('total', -1) == 3, response
+        assert s_values.get('total users', -1) == 1, response
+        assert s_values.get('active', -1) == 2, response
 
         return
 
@@ -250,28 +250,24 @@ class TestMonitoringController(TestController):
         resp = json.loads(response.body)
         values = resp.get('result').get('value').get('Realms')
 
-        self.assertEqual(
-            values.get(
+        assert values.get(
                 'mydefrealm').get(
-                    'total', -1), 2, response)
+                    'total', -1) == 2, response
 
-        self.assertEqual(
-            values.get(
+        assert values.get(
                 'myotherrealm').get(
-                    'total', -1), 3, response)
+                    'total', -1) == 3, response
 
-        self.assertEqual(
-            values.get(
+        assert values.get(
                 'myotherrealm').get(
-                    'unassigned&inactive', -1), 1, response)
+                    'unassigned&inactive', -1) == 1, response
 
-        self.assertEqual(
-            values.get(
+        assert values.get(
                 'mydefrealm').get(
-                    'unassigned&inactive', -1), 0, response)
+                    'unassigned&inactive', -1) == 0, response
 
         s_values = resp.get('result').get('value').get('Summary')
-        self.assertEqual(s_values.get('total', -1), 5, response)
+        assert s_values.get('total', -1) == 5, response
 
         return
 
@@ -290,7 +286,7 @@ class TestMonitoringController(TestController):
         response = self.make_authenticated_request(controller='admin',
                                                    action='tokenrealm',
                                                    params=newrealms)
-        self.assertTrue('"value": 1' in response, response)
+        assert '"value": 1' in response, response
 
         # create some tokens but only in dedicated realms
 
@@ -336,7 +332,7 @@ class TestMonitoringController(TestController):
                 controller='monitoring', action='license', params={})
             resp = json.loads(response.body)
             value = resp.get('result').get('value')
-            self.assertEqual(value.get('valid'), False, response)
+            assert value.get('valid') == False, response
 
         finally:
             # restore previous license...
@@ -382,11 +378,11 @@ class TestMonitoringController(TestController):
                                                        params={})
             resp = json.loads(response.body)
             value = resp.get('result').get('value')
-            self.assertEqual(value.get('token-num'),
-                             int(lic_dict.get('token-num')),
-                             response)
+            assert value.get('token-num') == \
+                             int(lic_dict.get('token-num')), \
+                             response
             token_left = int(lic_dict.get('token-num')) - 4
-            self.assertEqual(value.get('token-left'), token_left, response)
+            assert value.get('token-left') == token_left, response
 
         finally:
             # restore previous license...
@@ -401,17 +397,17 @@ class TestMonitoringController(TestController):
             controller='monitoring', action='storageEncryption', params={})
         resp = json.loads(response.body)
         values = resp.get('result').get('value')
-        self.assertEqual(values.get('encryption'), True, response)
-        self.assertEqual(values.get('cryptmodul_name'), 'Default', response)
-        self.assertEqual(values.get('cryptmodul_type'), 'DefaultSecurityModule',
-                         response)
+        assert values.get('encryption') == True, response
+        assert values.get('cryptmodul_name') == 'Default', response
+        assert values.get('cryptmodul_type') == 'DefaultSecurityModule', \
+                         response
 
         # and one more time:
         response = self.make_authenticated_request(
             controller='monitoring', action='storageEncryption', params={})
         resp = json.loads(response.body)
         values = resp.get('result').get('value')
-        self.assertEqual(values.get('encryption'), True, response)
+        assert values.get('encryption') == True, response
 
     def test_userinfo(self):
         response = self.make_authenticated_request(
@@ -419,11 +415,11 @@ class TestMonitoringController(TestController):
         resp = json.loads(response.body)
         myotherrealm = resp.get('result').get('value').get('Realms').get(
             'myotherrealm')
-        self.assertEqual(myotherrealm.get('myOtherRes'), 8, response)
+        assert myotherrealm.get('myOtherRes') == 8, response
         mymixrealm = resp.get('result').get('value').get('Realms').get(
             'mymixrealm')
-        self.assertEqual(mymixrealm.get('myOtherRes'), 8, response)
-        self.assertEqual(mymixrealm.get('myDefRes'), 27, response)
+        assert mymixrealm.get('myOtherRes') == 8, response
+        assert mymixrealm.get('myDefRes') == 27, response
 
     def test_userinfo_policy(self):
         # set policy:
@@ -440,11 +436,11 @@ class TestMonitoringController(TestController):
         resp = json.loads(response.body)
         myotherrealm = resp.get('result').get('value').get('Realms').get(
             'myotherrealm')
-        self.assertIsNone(myotherrealm)
+        assert myotherrealm is None
         mymixrealm = resp.get('result').get('value').get('Realms').get(
             'mymixrealm')
-        self.assertEqual(mymixrealm.get('myOtherRes'), 8, response)
-        self.assertEqual(mymixrealm.get('myDefRes'), 27, response)
+        assert mymixrealm.get('myOtherRes') == 8, response
+        assert mymixrealm.get('myDefRes') == 27, response
 
     def test_active_users(self):
         # mydefrealm = mydefresolver
@@ -470,18 +466,17 @@ class TestMonitoringController(TestController):
         response = self.make_authenticated_request(
             controller='monitoring', action='activeUsers', params={})
         resp = json.loads(response.body)
-        self.assertEqual(
-            resp.get('result').get('value').get('total'), 9, response)
+        assert resp.get('result').get('value').get('total') == 9, response
         mydefrealm = resp.get('result').get('value').get('Realms').get(
             'mydefrealm')
-        self.assertEqual(mydefrealm.get('myDefRes'), 5, response)
+        assert mydefrealm.get('myDefRes') == 5, response
         myotherrealm = resp.get('result').get('value').get('Realms').get(
             'myotherrealm')
-        self.assertEqual(myotherrealm.get('myOtherRes'), 4, response)
+        assert myotherrealm.get('myOtherRes') == 4, response
         mymixrealm = resp.get('result').get('value').get('Realms').get(
             'mymixrealm')
-        self.assertEqual(mymixrealm.get('myOtherRes'), 1, response)
-        self.assertEqual(mymixrealm.get('myDefRes'), 1, response)
+        assert mymixrealm.get('myOtherRes') == 1, response
+        assert mymixrealm.get('myDefRes') == 1, response
 
 
 # eof ########################################################################

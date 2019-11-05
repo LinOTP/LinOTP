@@ -64,17 +64,17 @@ class TestPasswdController(TestController):
         userlist = y.getUserList({'username': '*',
                                   "userid": "= 1000"})
 
-        self.assertTrue(userlist[0].get('username') == "heinz", userlist)
+        assert userlist[0].get('username') == "heinz", userlist
 
         loginId = y.getUserId("heinz")
-        self.assertTrue(loginId == '1000', loginId)
+        assert loginId == '1000', loginId
 
         ret = y.getUserInfo(loginId)
-        self.assertTrue(ret.get('username') == "heinz", ret)
+        assert ret.get('username') == "heinz", ret
 
         username_exists = y.getUsername('1000')
         msg = "Username exists: %r" % username_exists
-        self.assertTrue(username_exists, msg)
+        assert username_exists, msg
 
     def test_no_file(self):
         '''
@@ -85,13 +85,13 @@ class TestPasswdController(TestController):
 
         userlist = y.getUserList({'username': '*',
                                   "userid": "= 0"})
-        self.assertTrue(userlist[0].get('username') == "root", userlist)
+        assert userlist[0].get('username') == "root", userlist
 
         loginId = y.getUserId("root")
-        self.assertTrue(loginId == '0', loginId)
+        assert loginId == '0', loginId
 
         ret = y.getUserInfo(loginId)
-        self.assertTrue(ret.get('username') == "root", ret)
+        assert ret.get('username') == "root", ret
 
     def test_checkpass_shadow(self):
         '''
@@ -107,7 +107,7 @@ class TestPasswdController(TestController):
         except NotImplementedError:
             success = True
 
-        self.assertTrue(success)
+        assert success
 
     def test_checkpass(self):
         '''
@@ -119,11 +119,11 @@ class TestPasswdController(TestController):
 
         res = y.checkPass('2001', "geheim")
         msg = "result %r" % res
-        self.assertTrue(res, msg)
+        assert res, msg
 
         res = y.checkPass('2001', "wrongPW")
         msg = "result %r" % res
-        self.assertTrue(res is False, msg)
+        assert res is False, msg
 
     def test_searchfields(self):
         '''
@@ -134,4 +134,4 @@ class TestPasswdController(TestController):
                       os.path.join(self.fixture_path, 'my-pass2')}, "")
 
         s = y.getSearchFields()
-        self.assertTrue(s, s)
+        assert s, s

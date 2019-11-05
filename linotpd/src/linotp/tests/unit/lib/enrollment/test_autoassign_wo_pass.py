@@ -92,8 +92,8 @@ class TestAutoEnroll(unittest.TestCase):
 
         res = thdle.auto_assign_otp_only(otp, user, options)
 
-        self.assertTrue(res)
-        self.assertTrue(mocked_assignToken.called)
+        assert res
+        assert mocked_assignToken.called
 
         return
 
@@ -118,7 +118,7 @@ class TestAutoEnroll(unittest.TestCase):
         mocked_get_client.return_value = '127.0.0.1'
 
         res = get_autoassignment_without_pass(user=user)
-        self.assertTrue(res)
+        assert res
 
         mocked_get_client_policy.return_value = {
             'my_autoassign_policy_wo_pass': {
@@ -131,7 +131,7 @@ class TestAutoEnroll(unittest.TestCase):
                 'scope': 'enrollment'}}
 
         res = get_autoassignment_without_pass(user=user)
-        self.assertTrue(res)
+        assert res
 
         mocked_get_client_policy.return_value = {
             'my_autoassign_policy_wo_pass': {
@@ -144,7 +144,7 @@ class TestAutoEnroll(unittest.TestCase):
                 'scope': 'enrollment'}}
 
         res = get_autoassignment_without_pass(user=user)
-        self.assertFalse(res)
+        assert not res
 
         mocked_get_client_policy.return_value = {
             'my_autoassign_policy_wo_pass': {
@@ -157,7 +157,7 @@ class TestAutoEnroll(unittest.TestCase):
                 'scope': 'enrollment'}}
 
         res = get_autoassignment_without_pass(user=user)
-        self.assertFalse(res)
+        assert not res
 
     @patch('linotp.lib.policy._get_client')
     @patch('linotp.lib.policy.get_client_policy')
@@ -181,7 +181,7 @@ class TestAutoEnroll(unittest.TestCase):
                 'scope': 'enrollment'}}
 
         realm = get_autoassignment_from_realm(user)
-        self.assertTrue(src_realm.strip() == realm)
+        assert src_realm.strip() == realm
 
         src_realm = ' '
         mocked_get_client_policy.return_value = {
@@ -195,7 +195,7 @@ class TestAutoEnroll(unittest.TestCase):
                 'scope': 'enrollment'}}
 
         realm = get_autoassignment_from_realm(user)
-        self.assertTrue(not realm)
+        assert not realm
 
         return
 

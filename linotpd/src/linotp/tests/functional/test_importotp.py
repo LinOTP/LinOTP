@@ -97,7 +97,7 @@ class TestImportOTP(TestController):
     def create_policy(self, params):
         name = params['name']
         response = self.make_system_request('setPolicy', params=params)
-        self.assertTrue('setPolicy ' + name in response, response)
+        assert 'setPolicy ' + name in response, response
         return response
 
     def test_parse_DAT(self):
@@ -109,9 +109,9 @@ class TestImportOTP(TestController):
 
         TOKENS = eTokenDat.parse_dat_data(data, '1.1.2000')
 
-        self.assertTrue(len(TOKENS) == 2, TOKENS)
-        self.assertTrue(TOKENS.get("RAINER02") is not None, TOKENS)
-        self.assertTrue(TOKENS.get("RAINER01") is not None, TOKENS)
+        assert len(TOKENS) == 2, TOKENS
+        assert TOKENS.get("RAINER02") is not None, TOKENS
+        assert TOKENS.get("RAINER01") is not None, TOKENS
 
         return
 
@@ -138,7 +138,7 @@ class TestImportOTP(TestController):
         #    '    <id>1</id>'
         #    '</jsonrpc>'
 
-        self.assertTrue('<imported>2</imported>' in response.body, response)
+        assert '<imported>2</imported>' in response.body, response
 
         # ------------------------------------------------------------------ --
 
@@ -153,7 +153,7 @@ class TestImportOTP(TestController):
                                       params=params)
 
         error_msg = 'Error loading tokens. File or Type empty'
-        self.assertTrue(error_msg in response, response)
+        assert error_msg in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -168,7 +168,7 @@ class TestImportOTP(TestController):
                                       params=params)
 
         error_msg = '<imported>0</imported>'
-        self.assertTrue(error_msg in response, response)
+        assert error_msg in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -182,7 +182,7 @@ class TestImportOTP(TestController):
                                       params=params)
 
         error_msg = '<imported>2</imported>'
-        self.assertTrue(error_msg in response, response)
+        assert error_msg in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -197,7 +197,7 @@ class TestImportOTP(TestController):
 
 
         error_msg = '<imported>2</imported>'
-        self.assertTrue(error_msg in response, response)
+        assert error_msg in response, response
 
         return
 
@@ -212,10 +212,10 @@ class TestImportOTP(TestController):
                  preshared_key_hex="4A057F6AB6FCB57AB5408E46A9835E68",
                  do_checkserial=False)
 
-        self.assertTrue(len(TOKENS) == 3, TOKENS)
-        self.assertTrue(TOKENS.get("306EUO4-00954") is not None, TOKENS)
-        self.assertTrue(TOKENS.get("306EUO4-00958") is not None, TOKENS)
-        self.assertTrue(TOKENS.get("306EUO4-00960") is not None, TOKENS)
+        assert len(TOKENS) == 3, TOKENS
+        assert TOKENS.get("306EUO4-00954") is not None, TOKENS
+        assert TOKENS.get("306EUO4-00958") is not None, TOKENS
+        assert TOKENS.get("306EUO4-00960") is not None, TOKENS
 
         return
 
@@ -230,7 +230,7 @@ class TestImportOTP(TestController):
                                                     pskc_xml,
                                                     do_checkserial=False)
 
-        self.assertTrue(len(TOKENS) == 6, TOKENS)
+        assert len(TOKENS) == 6, TOKENS
 
         return
 
@@ -242,7 +242,7 @@ class TestImportOTP(TestController):
         csv = self._read_data("yubi_tokens.csv")
 
         TOKENS = parseYubicoCSV(csv)
-        self.assertTrue(len(TOKENS) == 5, TOKENS)
+        assert len(TOKENS) == 5, TOKENS
 
         return
 
@@ -253,7 +253,7 @@ class TestImportOTP(TestController):
         xml = self._read_data("safenet_tokens.xml")
 
         TOKENS = parseSafeNetXML(xml)
-        self.assertTrue(len(TOKENS) == 2, TOKENS)
+        assert len(TOKENS) == 2, TOKENS
 
         return
 
@@ -266,7 +266,7 @@ class TestImportOTP(TestController):
 
         response = self.upload_tokens("oath_tokens.csv", params=params)
 
-        self.assertTrue('<imported>4</imported>' in response, response)
+        assert '<imported>4</imported>' in response, response
 
         return
 
@@ -278,7 +278,7 @@ class TestImportOTP(TestController):
         params = {'type':'oathcsv'}
 
         response = self.upload_tokens("oath_tokens_sha256.csv", params=params)
-        self.assertTrue('<imported>8</imported>' in response, response)
+        assert '<imported>8</imported>' in response, response
 
         # we use for testing the totp test vectors from
         # https://tools.ietf.org/html/rfc6238
@@ -291,7 +291,7 @@ class TestImportOTP(TestController):
             'pass': '46119246'}
 
         response = self.make_validate_request('check_s', params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # 2. test token with no explicit sha256 - determined by seed length
         # htok_sha256_1, 31323334353637383....03132, hotp,       8   ,
@@ -301,7 +301,7 @@ class TestImportOTP(TestController):
             'pass': '46119246'}
 
         response = self.make_validate_request('check_s', params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # 3. positive test token - seed len for sha1 and sha1 otp
         # htok_sha1_6, 313233343...3031323334353637383930, hotp, 8, , , ,
@@ -311,7 +311,7 @@ class TestImportOTP(TestController):
             'pass': '94287082'}
 
         response = self.make_validate_request('check_s', params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # 4. negative test token - seed len for sha1 but declared as sha256
         # htok_sha256_7, 3132333435...1323334353637383930, hotp, 8 ,, Sha256,
@@ -321,7 +321,7 @@ class TestImportOTP(TestController):
             'pass': '94287082'}
 
         response = self.make_validate_request('check_s', params)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         return
 
@@ -333,7 +333,7 @@ class TestImportOTP(TestController):
         params = {'type':'oathcsv'}
 
         response = self.upload_tokens("oath_tokens_sha512.csv", params=params)
-        self.assertTrue('<imported>8</imported>' in response, response)
+        assert '<imported>8</imported>' in response, response
 
         # we use for testing the totp test vectors from
         # https://tools.ietf.org/html/rfc6238
@@ -346,7 +346,7 @@ class TestImportOTP(TestController):
             'pass': '90693936'}
 
         response = self.make_validate_request('check_s', params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # 2. test token with no explicit sha512 - determined by seed length
         # htok_sha512_1, 31323334353637383....03132, hotp,       8   ,
@@ -356,7 +356,7 @@ class TestImportOTP(TestController):
             'pass': '90693936'}
 
         response = self.make_validate_request('check_s', params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # 3. positive test token - seed len for sha1 and sha1 otp
         # htok_sha1_6, 313233343...3031323334353637383930, hotp, 8, , , ,
@@ -366,7 +366,7 @@ class TestImportOTP(TestController):
             'pass': '94287082'}
 
         response = self.make_validate_request('check_s', params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # 4. negative test token - seed len for sha1 but declared as sha512
         # htok_sha512_7, 3132333435...1323334353637383930, hotp, 8 ,, Sha512,
@@ -376,7 +376,7 @@ class TestImportOTP(TestController):
             'pass': '94287082'}
 
         response = self.make_validate_request('check_s', params)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         return
 
@@ -393,7 +393,7 @@ class TestImportOTP(TestController):
 
         response = self.upload_tokens("pskc_tokens.xml", params=params)
 
-        self.assertTrue('<imported>6</imported>' in response, response)
+        assert '<imported>6</imported>' in response, response
 
         params = {
             'type':'pskc',
@@ -404,7 +404,7 @@ class TestImportOTP(TestController):
 
         response = self.upload_tokens("pskc_tokens.xml", params=params)
 
-        self.assertTrue('<imported>0</imported>' in response, response)
+        assert '<imported>0</imported>' in response, response
 
         return
 
@@ -421,9 +421,9 @@ class TestImportOTP(TestController):
 
         response = self.upload_tokens('token.psk', data="", params=params)
 
-        self.assertTrue('<status>False</status>' in response, response)
-        self.assertTrue('Error loading tokens. File'
-                        ' or Type empty!' in response, response)
+        assert '<status>False</status>' in response, response
+        assert 'Error loading tokens. File' \
+                        ' or Type empty!' in response, response
 
         return
 
@@ -435,8 +435,8 @@ class TestImportOTP(TestController):
         params = {'type':'XYZ'}
         response = self.upload_tokens("pskc_tokens.xml", params=params)
 
-        self.assertTrue('<status>False</status>' in response, response)
-        self.assertTrue('Unknown file type' in response, response)
+        assert '<status>False</status>' in response, response
+        assert 'Unknown file type' in response, response
 
         return
 
@@ -448,7 +448,7 @@ class TestImportOTP(TestController):
         params = {'type':'aladdin-xml'}
         response = self.upload_tokens("safenet_tokens.dat", params=params)
 
-        self.assertTrue('<imported>2</imported>' in response, response)
+        assert '<imported>2</imported>' in response, response
 
         return
 
@@ -460,7 +460,7 @@ class TestImportOTP(TestController):
         params = {'type':'yubikeycsv'}
         response = self.upload_tokens("yubi_tokens.csv", params=params)
 
-        self.assertTrue('<imported>5</imported>' in response, response)
+        assert '<imported>5</imported>' in response, response
 
         return
 
@@ -494,7 +494,7 @@ class TestImportOTP(TestController):
 
         response = self.upload_tokens("yubi_chall_tokens.csv", params=params)
 
-        self.assertTrue('<imported>3</imported>' in response, response)
+        assert '<imported>3</imported>' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -505,11 +505,11 @@ class TestImportOTP(TestController):
         jresp = json.loads(response.body)
         tokens = jresp.get('result', {}).get('value', {}).get('data', [])
 
-        self.assertTrue(len(tokens) == 3, jresp)
+        assert len(tokens) == 3, jresp
 
         for token in tokens:
             token_realms = token.get('LinOtp.RealmNames', [])
-            self.assertTrue(target_realm in token_realms, token)
+            assert target_realm in token_realms, token
 
         self.delete_policy('all_actions')
 
@@ -529,7 +529,7 @@ class TestImportOTP(TestController):
 
         response = self.upload_tokens("yubi_chall_tokens.csv", params=params)
 
-        self.assertTrue('<imported>3</imported>' in response, response)
+        assert '<imported>3</imported>' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -552,7 +552,7 @@ class TestImportOTP(TestController):
         jresp = json.loads(response.body)
 
         err_msg = "Error getting token list. Response %r" % (jresp)
-        self.assertTrue(jresp['result']['status'], err_msg)
+        assert jresp['result']['status'], err_msg
 
         # extract the token info
 
@@ -587,7 +587,7 @@ class TestImportOTP(TestController):
 
         for serial in serials:
 
-            self.assertTrue(serial in response, response)
+            assert serial in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -597,7 +597,7 @@ class TestImportOTP(TestController):
 
         response = self.make_system_request('delPolicy', params=params)
 
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -610,7 +610,7 @@ class TestImportOTP(TestController):
 
         for serial in serials:
 
-            self.assertFalse(serial in response, response)
+            assert not (serial in response), response
 
         return
 
@@ -632,7 +632,7 @@ class TestImportOTP(TestController):
                   'name': 'all_admin'}
 
         response = self.create_policy(params)
-        self.assertTrue('"setPolicy all_admin"' in response.body, response)
+        assert '"setPolicy all_admin"' in response.body, response
 
         # ------------------------------------------------------------------ --
 
@@ -645,7 +645,7 @@ class TestImportOTP(TestController):
                                       auth_user='hugo')
 
         msg = "You do not have the administrative right to import tokens"
-        self.assertTrue(msg in response.body, response)
+        assert msg in response.body, response
 
         # ------------------------------------------------------------------ --
 
@@ -659,7 +659,7 @@ class TestImportOTP(TestController):
                                       auth_user='admin')
 
         msg = "target realm could not be assigned"
-        self.assertTrue(msg in response.body, response)
+        assert msg in response.body, response
 
         # ------------------------------------------------------------------ --
 
@@ -672,7 +672,7 @@ class TestImportOTP(TestController):
         response = self.upload_tokens("oath_tokens.csv", params=params,
                                       auth_user='admin')
 
-        self.assertTrue('<imported>4</imported>' in response, response)
+        assert '<imported>4</imported>' in response, response
 
         self.delete_policy('all_admin')
 

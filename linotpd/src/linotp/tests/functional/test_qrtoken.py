@@ -95,10 +95,10 @@ class TestQRToken(TestController):
         }
 
         response = self.make_system_request("setPolicy", params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         response = self.make_system_request("getPolicy", params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         return response
 
@@ -120,7 +120,7 @@ class TestQRToken(TestController):
         }
 
         response = self.make_system_request("setPolicy", params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
 # --------------------------------------------------------------------------- --
 
@@ -143,7 +143,7 @@ class TestQRToken(TestController):
         }
 
         response = self.make_system_request("setPolicy", params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
 # --------------------------------------------------------------------------- --
 
@@ -162,7 +162,7 @@ class TestQRToken(TestController):
         }
 
         response = self.make_system_request("setPolicy", params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
 # --------------------------------------------------------------------------- --
 
@@ -269,11 +269,11 @@ class TestQRToken(TestController):
         # sent and validate
 
         response_dict = json.loads(response.body)
-        self.assertIn('pairing_url', response_dict.get('detail', {}))
+        assert 'pairing_url' in response_dict.get('detail', {})
 
         pairing_url = response_dict.get('detail', {}).get('pairing_url')
-        self.assertIsNotNone(pairing_url)
-        self.assertTrue(pairing_url.startswith(self.uri + '://pair/'))
+        assert pairing_url is not None
+        assert pairing_url.startswith(self.uri + '://pair/')
 
         return pairing_url, pin
 
@@ -289,11 +289,11 @@ class TestQRToken(TestController):
 
         # check if challenge was triggered
 
-        self.assertIn('detail', response_dict)
+        assert 'detail' in response_dict
         detail = response_dict.get('detail')
 
-        self.assertIn('transactionid', detail)
-        self.assertIn('message', detail)
+        assert 'transactionid' in detail
+        assert 'message' in detail
 
         challenge_url = detail.get('message')
 
@@ -308,13 +308,13 @@ class TestQRToken(TestController):
         response = self.make_system_request('setPolicy', params)
         response_dict = json.loads(response.body)
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
-        self.assertIn('status', result)
+        assert 'status' in result
         status = result.get('status')
 
-        self.assertTrue(status)
+        assert status
 
         response = self.make_system_request('getPolicy', params)
 
@@ -373,8 +373,8 @@ class TestQRToken(TestController):
         callback_url = token['callback_url']
         callback_sms = token['callback_sms']
 
-        self.assertEqual(callback_url, '/foo/bar/url')
-        self.assertEqual(callback_sms, '1234')
+        assert callback_url == '/foo/bar/url'
+        assert callback_sms == '1234'
 
         # ------------------------------------------------------------------- --
 
@@ -393,8 +393,8 @@ class TestQRToken(TestController):
 
         # check if returned json is correct
 
-        self.assertFalse(response_dict.get('result', {}).get('value', True))
-        self.assertTrue(response_dict.get('result', {}).get('status', False))
+        assert not response_dict.get('result', {}).get('value', True)
+        assert response_dict.get('result', {}).get('status', False)
 
         # ------------------------------------------------------------------- --
 
@@ -412,10 +412,10 @@ class TestQRToken(TestController):
         # check if returned callbacks are correct
 
         callback_url = challenge['callback_url']
-        self.assertEqual(callback_url, '/bar/baz/url')
+        assert callback_url == '/bar/baz/url'
 
         callback_sms = challenge['callback_sms']
-        self.assertEqual(callback_sms, '5678')
+        assert callback_sms == '5678'
 
 # --------------------------------------------------------------------------- --
 
@@ -440,13 +440,13 @@ class TestQRToken(TestController):
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
-        self.assertIn('value', result)
+        assert 'value' in result
         value = result.get('value')
 
-        self.assertTrue(value)
+        assert value
 
 # --------------------------------------------------------------------------- --
 
@@ -498,16 +498,16 @@ class TestQRToken(TestController):
 
         # check if returned json is correct
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
-        self.assertIn('value', result)
+        assert 'value' in result
         value = result.get('value')
-        self.assertFalse(value)
+        assert not value
 
-        self.assertIn('status', result)
+        assert 'status' in result
         status = result.get('status')
-        self.assertTrue(status)
+        assert status
 
         # ------------------------------------------------------------------- --
 
@@ -528,11 +528,11 @@ class TestQRToken(TestController):
         # check if challenge was triggered
         challenge_url = None
         try:
-            self.assertIn('detail', response_dict)
+            assert 'detail' in response_dict
             detail = response_dict.get('detail')
 
-            self.assertIn('transactionid', detail)
-            self.assertIn('message', detail)
+            assert 'transactionid' in detail
+            assert 'message' in detail
 
             challenge_url = detail.get('message')
         except:
@@ -588,14 +588,14 @@ class TestQRToken(TestController):
         # right now, so type must be QRTOKEN_CT_PAIR)
 
         content_type = challenge['content_type']
-        self.assertEqual(content_type, QRTOKEN_CT_PAIR)
+        assert content_type == QRTOKEN_CT_PAIR
 
         # challenge message in content type QRTOKEN_CT_PAIR is defined
         # as the token serial - check, if this is the case
 
         user_token_id = challenge['user_token_id']
         serial = self.tokens[user_token_id]['serial']
-        self.assertEqual(challenge['message'], serial)
+        assert challenge['message'] == serial
 
         # ------------------------------------------------------------------- --
 
@@ -611,21 +611,21 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check_t', params)
         response_dict = json.loads(response.body)
 
-        self.assertIn('status', response_dict.get('result', {}))
+        assert 'status' in response_dict.get('result', {})
 
         status = response_dict.get('result', {}).get('status')
-        self.assertEqual(status, True)
+        assert status == True
 
         # ------------------------------------------------------------------- --
 
         value = response_dict.get('result', {}).get('value')
 
-        self.assertIn('value', value)
-        self.assertIn('failcount', value)
+        assert 'value' in value
+        assert 'failcount' in value
 
         value_value = value.get('value')
 
-        self.assertTrue(value_value)
+        assert value_value
 
         return user_token_id
 
@@ -652,8 +652,8 @@ class TestQRToken(TestController):
 
         # validate protocol versions and type id
 
-        self.assertEqual(token_type, TYPE_QRTOKEN)
-        self.assertEqual(version, PAIRING_URL_VERSION)
+        assert token_type == TYPE_QRTOKEN
+        assert version == PAIRING_URL_VERSION
 
         # ------------------------------------------------------------------- --
 
@@ -744,7 +744,7 @@ class TestQRToken(TestController):
 
         header = challenge_data[0:5]
         version, user_token_id = struct.unpack('<bI', header)
-        self.assertEqual(version, QRTOKEN_VERSION)
+        assert version == QRTOKEN_VERSION
 
         # ------------------------------------------------------------------- --
 
@@ -793,7 +793,7 @@ class TestQRToken(TestController):
         # present, if the content type is 'pairing'
 
         if content_type == QRTOKEN_CT_PAIR:
-            self.assertTrue(flags & FLAG_QR_SRVSIG)
+            assert flags & FLAG_QR_SRVSIG
 
         # ------------------------------------------------------------------- --
 
@@ -816,7 +816,7 @@ class TestQRToken(TestController):
 
             message = nonce + pt_header + data
             signed = HMAC.new(secret, msg=message, digestmod=SHA256).digest()
-            self.assertEqual(server_signature, signed)
+            assert server_signature == signed
 
         else:
 
@@ -978,10 +978,10 @@ class TestQRToken(TestController):
         # ------------------------------------------------------------------- --
 
         result = response_dict.get('result', {})
-        self.assertIn('status', result)
+        assert 'status' in result
 
         status = result.get('status')
-        self.assertEqual(status, False)
+        assert status == False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1012,10 +1012,10 @@ class TestQRToken(TestController):
         # ------------------------------------------------------------------- --
 
         result = response_dict.get('result', {})
-        self.assertIn('status', result)
+        assert 'status' in result
 
         status = result.get('status')
-        self.assertEqual(status, False)
+        assert status == False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1069,14 +1069,14 @@ class TestQRToken(TestController):
         # ------------------------------------------------------------------- --
 
         result = response_dict.get('result', {})
-        self.assertIn('status', result)
-        self.assertIn('value', result)
+        assert 'status' in result
+        assert 'value' in result
 
         status = result.get('status')
-        self.assertEqual(status, True)
+        assert status == True
 
         value = result.get('value')
-        self.assertEqual(value, False)
+        assert value == False
 
 # --------------------------------------------------------------------------- --
 
@@ -1141,14 +1141,14 @@ class TestQRToken(TestController):
 
         response_dict = self.send_pairing_response(wrong_pairing_response)
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('status', result)
+        assert 'status' in result
         status = result.get('status')
-        self.assertEqual(status, False)
+        assert status == False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1229,14 +1229,14 @@ class TestQRToken(TestController):
 
         response_dict = self.send_pairing_response(wrong_pairing_response)
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('status', result)
+        assert 'status' in result
         status = result.get('status')
-        self.assertEqual(status, False)
+        assert status == False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1324,14 +1324,14 @@ class TestQRToken(TestController):
 
         response_dict = self.send_pairing_response(wrong_pairing_response)
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('status', result)
+        assert 'status' in result
         status = result.get('status')
-        self.assertEqual(status, False)
+        assert status == False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1412,14 +1412,14 @@ class TestQRToken(TestController):
 
         response_dict = self.send_pairing_response(wrong_pairing_response)
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('status', result)
+        assert 'status' in result
         status = result.get('status')
-        self.assertEqual(status, False)
+        assert status == False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1474,10 +1474,10 @@ class TestQRToken(TestController):
         # ------------------------------------------------------------------- --
 
         result = response_dict.get('result', {})
-        self.assertIn('status', result)
+        assert 'status' in result
 
         status = result.get('status')
-        self.assertEqual(status, False)
+        assert status == False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1547,14 +1547,14 @@ class TestQRToken(TestController):
         # ------------------------------------------------------------------- --
 
         result = response_dict.get('result', {})
-        self.assertIn('status', result)
-        self.assertIn('value', result)
+        assert 'status' in result
+        assert 'value' in result
 
         status = result.get('status')
-        self.assertEqual(status, True)
+        assert status == True
 
         value = result.get('value')
-        self.assertEqual(value, False)
+        assert value == False
 
 # --------------------------------------------------------------------------- --
 
@@ -1580,17 +1580,17 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check_s', params)
         response_dict = json.loads(response.body)
 
-        self.assertIn('detail', response_dict)
+        assert 'detail' in response_dict
         detail = response_dict.get('detail')
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('transactionid', detail)
-        self.assertIn('message', detail)
+        assert 'transactionid' in detail
+        assert 'message' in detail
 
         challenge_url = detail.get('message')
 
-        self.assertTrue(challenge_url.startswith(self.uri + '://'))
+        assert challenge_url.startswith(self.uri + '://')
 
         return challenge_url
 
@@ -1621,14 +1621,14 @@ class TestQRToken(TestController):
         # ------------------------------------------------------------------- --
 
         result = response_dict.get('result', {})
-        self.assertIn('status', result)
-        self.assertIn('value', result)
+        assert 'status' in result
+        assert 'value' in result
 
         status = result.get('status')
-        self.assertEqual(status, True, response)
+        assert status == True, response
 
         value = result.get('value')
-        self.assertEqual(value, False, response)
+        assert value == False, response
 
 # --------------------------------------------------------------------------- --
 
@@ -1651,13 +1651,13 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check', params)
         response_dict = json.loads(response.body)
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
-        self.assertIn('value', result)
+        assert 'value' in result
         value = response_dict.get('value')
 
-        self.assertFalse(value)
+        assert not value
 
 # --------------------------------------------------------------------------- --
 
@@ -1676,23 +1676,23 @@ class TestQRToken(TestController):
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
-        self.assertIn('status', result)
+        assert 'status' in result
         status = result.get('status')
 
-        self.assertTrue(status)
+        assert status
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('value', result)
+        assert 'value' in result
         value = result.get('value')
 
-        self.assertIn('set pin', value)
+        assert 'set pin' in value
         set_pin = value.get('set pin')
 
-        self.assertEqual(set_pin, 1)
+        assert set_pin == 1
 
 # --------------------------------------------------------------------------- --
 
@@ -1726,27 +1726,27 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check', params)
         response_dict = json.loads(response.body)
 
-        self.assertIn('detail', response_dict)
+        assert 'detail' in response_dict
         detail = response_dict.get('detail')
 
-        self.assertIn('challenges', detail)
+        assert 'challenges' in detail
         challenges = detail.get('challenges')
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn(serial1, challenges)
+        assert serial1 in challenges
         data_1 = challenges.get(serial1)
 
-        self.assertIn(serial2, challenges)
+        assert serial2 in challenges
         data_2 = challenges.get(serial2)
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('transactionid', data_1)
-        self.assertIn('transactionid', data_2)
+        assert 'transactionid' in data_1
+        assert 'transactionid' in data_2
 
-        self.assertIn('message', data_1)
-        self.assertIn('message', data_2)
+        assert 'message' in data_1
+        assert 'message' in data_2
 
         # ------------------------------------------------------------------- --
 
@@ -1778,21 +1778,21 @@ class TestQRToken(TestController):
 
         response = self.make_validate_request('check_t', params)
         response_dict = json.loads(response.body)
-        self.assertIn('status', response_dict.get('result', {}))
+        assert 'status' in response_dict.get('result', {})
 
         status = response_dict.get('result', {}).get('status')
-        self.assertEqual(status, True)
+        assert status == True
 
         # ------------------------------------------------------------------- --
 
         value = response_dict.get('result', {}).get('value')
 
-        self.assertIn('value', value)
-        self.assertIn('failcount', value)
+        assert 'value' in value
+        assert 'failcount' in value
 
         value_value = value.get('value')
 
-        self.assertTrue(value_value)
+        assert value_value
 
         # ------------------------------------------------------------------- --
 
@@ -1815,21 +1815,21 @@ class TestQRToken(TestController):
 
         response = self.make_validate_request('check_t', params)
         response_dict = json.loads(response.body)
-        self.assertIn('status', response_dict.get('result', {}))
+        assert 'status' in response_dict.get('result', {})
 
         status = response_dict.get('result', {}).get('status')
-        self.assertEqual(status, True)
+        assert status == True
 
         # ------------------------------------------------------------------- --
 
         value = response_dict.get('result', {}).get('value')
 
-        self.assertIn('value', value)
-        self.assertIn('failcount', value)
+        assert 'value' in value
+        assert 'failcount' in value
 
         value_value = value.get('value')
 
-        self.assertTrue(value_value)
+        assert value_value
 
 # --------------------------------------------------------------------------- --
 
@@ -1852,17 +1852,17 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check', params)
         response_dict = json.loads(response.body)
 
-        self.assertIn('detail', response_dict)
+        assert 'detail' in response_dict
         detail = response_dict.get('detail')
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('transactionid', detail)
-        self.assertIn('message', detail)
+        assert 'transactionid' in detail
+        assert 'message' in detail
 
         challenge_url = detail.get('message')
 
-        self.assertTrue(challenge_url.startswith(self.uri + '://'))
+        assert challenge_url.startswith(self.uri + '://')
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
@@ -1878,15 +1878,15 @@ class TestQRToken(TestController):
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
-        self.assertIn('value', result)
+        assert 'value' in result
         value = result.get('value')
 
         # ------------------------------------------------------------------- --
 
-        self.assertTrue(value)
+        assert value
 
 # --------------------------------------------------------------------------- --
 
@@ -1910,17 +1910,17 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check', params)
         response_dict = json.loads(response.body)
 
-        self.assertIn('detail', response_dict)
+        assert 'detail' in response_dict
         detail = response_dict.get('detail')
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('transactionid', detail)
-        self.assertIn('message', detail)
+        assert 'transactionid' in detail
+        assert 'message' in detail
 
         challenge_url = detail.get('message')
 
-        self.assertTrue(challenge_url.startswith(self.uri + '://'))
+        assert challenge_url.startswith(self.uri + '://')
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
@@ -1934,15 +1934,15 @@ class TestQRToken(TestController):
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
-        self.assertIn('value', result)
+        assert 'value' in result
         value = result.get('value')
 
         # ------------------------------------------------------------------- --
 
-        self.assertTrue(value)
+        assert value
 
 
 # --------------------------------------------------------------------------- --
@@ -1960,7 +1960,7 @@ class TestQRToken(TestController):
         # check if the content type is right
 
         returned_content_type = challenge['content_type']
-        self.assertEqual(returned_content_type, content_type)
+        assert returned_content_type == content_type
 
         # ------------------------------------------------------------------- --
 
@@ -1976,21 +1976,21 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check_t', params)
         response_dict = json.loads(response.body)
 
-        self.assertIn('status', response_dict.get('result', {}))
+        assert 'status' in response_dict.get('result', {})
 
         status = response_dict.get('result', {}).get('status')
-        self.assertEqual(status, True)
+        assert status == True
 
         # ------------------------------------------------------------------- --
 
         value = response_dict.get('result', {}).get('value')
 
-        self.assertIn('value', value)
-        self.assertIn('failcount', value)
+        assert 'value' in value
+        assert 'failcount' in value
 
         value_value = value.get('value')
 
-        self.assertTrue(value_value)
+        assert value_value
 
 # --------------------------------------------------------------------------- --
 
@@ -2013,17 +2013,17 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check', params)
         response_dict = json.loads(response.body)
 
-        self.assertIn('detail', response_dict)
+        assert 'detail' in response_dict
         detail = response_dict.get('detail')
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('transactionid', detail)
-        self.assertIn('message', detail)
+        assert 'transactionid' in detail
+        assert 'message' in detail
 
         challenge_url = detail.get('message')
 
-        self.assertTrue(challenge_url.startswith(self.uri + '://'))
+        assert challenge_url.startswith(self.uri + '://')
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
@@ -2041,18 +2041,18 @@ class TestQRToken(TestController):
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
-        self.assertIn('value', result)
+        assert 'value' in result
         value = result.get('value')
 
-        self.assertTrue(value)
+        assert value
 
         # even if we provided the use_offline parameter, the data
         # should not be returned because the policy was not set
 
-        self.assertNotIn('detail', response_dict)
+        assert 'detail' not in response_dict
 
         # ------------------------------------------------------------------- --
 
@@ -2067,17 +2067,17 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check', params)
         response_dict = json.loads(response.body)
 
-        self.assertIn('detail', response_dict)
+        assert 'detail' in response_dict
         detail = response_dict.get('detail')
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('transactionid', detail)
-        self.assertIn('message', detail)
+        assert 'transactionid' in detail
+        assert 'message' in detail
 
         challenge_url = detail.get('message')
 
-        self.assertTrue(challenge_url.startswith(self.uri + '://'))
+        assert challenge_url.startswith(self.uri + '://')
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
@@ -2095,41 +2095,41 @@ class TestQRToken(TestController):
 
         # ------------------------------------------------------------------- --
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
-        self.assertIn('value', result)
+        assert 'value' in result
         value = result.get('value')
 
         # ------------------------------------------------------------------- --
 
-        self.assertTrue(value)
+        assert value
 
-        self.assertIn('detail', response_dict)
+        assert 'detail' in response_dict
         detail = response_dict.get('detail')
 
-        self.assertIn('offline', detail)
+        assert 'offline' in detail
         offline = detail.get('offline')
 
-        self.assertIn('type', offline)
-        self.assertIn('serial', offline)
-        self.assertIn('offline_info', offline)
+        assert 'type' in offline
+        assert 'serial' in offline
+        assert 'offline_info' in offline
 
         token_type = offline.get('type')
         serial = offline.get('serial')
 
-        self.assertEqual(token_type, 'qr')
-        self.assertEqual(serial, token['serial'])
+        assert token_type == 'qr'
+        assert serial == token['serial']
 
         offline_info = offline.get('offline_info')
-        self.assertIn('user_token_id', offline_info)
-        self.assertIn('public_key', offline_info)
+        assert 'user_token_id' in offline_info
+        assert 'public_key' in offline_info
 
         received_user_token_id = offline_info.get('user_token_id')
-        self.assertEqual(user_token_id, received_user_token_id)
+        assert user_token_id == received_user_token_id
 
         public_key = offline_info.get('public_key')
-        self.assertEqual(public_key, b64encode(self.public_key))
+        assert public_key == b64encode(self.public_key)
 
         # we run the test until one of the tans start with a '0'
 
@@ -2143,17 +2143,17 @@ class TestQRToken(TestController):
             response = self.make_validate_request('check', params)
             response_dict = json.loads(response.body)
 
-            self.assertIn('detail', response_dict)
+            assert 'detail' in response_dict
             detail = response_dict.get('detail')
 
             # -------------------------------------------------------------- --
 
-            self.assertIn('transactionid', detail)
-            self.assertIn('message', detail)
+            assert 'transactionid' in detail
+            assert 'message' in detail
 
             challenge_url = detail.get('message')
 
-            self.assertTrue(challenge_url.startswith(self.uri + '://'))
+            assert challenge_url.startswith(self.uri + '://')
 
             challenge, sig, tan = self.decrypt_and_verify_challenge(
                                         challenge_url)
@@ -2175,10 +2175,10 @@ class TestQRToken(TestController):
 
             # -------------------------------------------------------------- --
 
-            self.assertIn('result', response_dict)
+            assert 'result' in response_dict
             result = response_dict.get('result')
 
-            self.assertIn('value', result)
+            assert 'value' in result
             value = result.get('value')
 
         assert leading_zero_test
@@ -2214,7 +2214,7 @@ class TestQRToken(TestController):
 
         # call should succeed, because with no policy anything goes
 
-        self.assertTrue(response_dict.get('result', {}).get('value', False))
+        assert response_dict.get('result', {}).get('value', False)
 
         # -------------------------------------------------------------------- -
 
@@ -2229,7 +2229,7 @@ class TestQRToken(TestController):
         # call should fail, because policy engine is activated (unassign
         # dummy policy is active), but admin-unpair is not activated
 
-        self.assertFalse(response_dict.get('result', {}).get('value', True))
+        assert not response_dict.get('result', {}).get('value', True)
 
         # -------------------------------------------------------------------- -
 
@@ -2242,7 +2242,7 @@ class TestQRToken(TestController):
 
         # call should succeed now
 
-        self.assertTrue(response_dict.get('result', {}).get('value', True))
+        assert response_dict.get('result', {}).get('value', True)
 
         # -------------------------------------------------------------------- -
 
@@ -2290,7 +2290,7 @@ class TestQRToken(TestController):
 
         # call should succeed
 
-        self.assertTrue(response_dict.get('result', {}).get('value', False))
+        assert response_dict.get('result', {}).get('value', False)
 
         # -------------------------------------------------------------------- -
 
@@ -2303,4 +2303,4 @@ class TestQRToken(TestController):
 
         # call should fail, because user is not found
 
-        self.assertFalse(response_dict.get('result', {}).get('value', True))
+        assert not response_dict.get('result', {}).get('value', True)

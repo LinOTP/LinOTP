@@ -201,7 +201,7 @@ class TestValidateController(TestController):
         }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def createTOtpToken(self, hashlib_def):
         '''
@@ -243,7 +243,7 @@ class TestValidateController(TestController):
         }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         try:
             hmac_val = HmacOtp(otpkey, digits=8, hashfunc=hashlib_def)
@@ -288,7 +288,7 @@ class TestValidateController(TestController):
         }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         return serial
 
@@ -332,7 +332,7 @@ class TestValidateController(TestController):
         if realm is not None:
             parameters.update(realm)
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def createHMACToken(self, serial="F722362", user='root', pin="pin"):
 
@@ -360,7 +360,7 @@ class TestValidateController(TestController):
         }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         serials.add(parameters.get('serial'))
 
@@ -373,7 +373,7 @@ class TestValidateController(TestController):
         }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         serials.add(parameters.get('serial'))
 
@@ -387,7 +387,7 @@ class TestValidateController(TestController):
         }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         serials.add(parameters.get('serial'))
 
@@ -400,7 +400,7 @@ class TestValidateController(TestController):
         }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         serials.add(parameters.get('serial'))
 
@@ -416,7 +416,7 @@ class TestValidateController(TestController):
         }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def createToken3(self):
         parameters = {
@@ -428,7 +428,7 @@ class TestValidateController(TestController):
         }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def createTokenSMS(self):
         parameters = {
@@ -441,7 +441,7 @@ class TestValidateController(TestController):
         }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def createSpassToken(self, serial="TSpass", user="root", pin="pin"):
         parameters = {
@@ -454,7 +454,7 @@ class TestValidateController(TestController):
         }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         return serial
 
     def createPWToken(self, serial="TPW", user="root", pin="pin",
@@ -469,7 +469,7 @@ class TestValidateController(TestController):
                       }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         return serial
 
     def create_yubi_token(self, serialnum="01382015",
@@ -511,7 +511,7 @@ class TestValidateController(TestController):
             params['public_uid'] = public_uid
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, "Response: %r" % response)
+        assert '"value": true' in response, "Response: %r" % response
 
         # test initial assign
         params = {
@@ -520,7 +520,7 @@ class TestValidateController(TestController):
         }
         response = self.make_admin_request('assign', params=params)
         # Test response...
-        self.assertTrue('"value": true' in response, "Response: %r" % response)
+        assert '"value": true' in response, "Response: %r" % response
 
         return (serial, valid_otps)
 
@@ -554,7 +554,7 @@ class TestValidateController(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertIn('"value": true', response, "Response: %r" % response)
+        assert '"value": true' in response, "Response: %r" % response
 
         return serial
 
@@ -576,7 +576,7 @@ class TestValidateController(TestController):
         }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         return serial
 
@@ -592,13 +592,13 @@ class TestValidateController(TestController):
                       'serial': serial
                       }
             response = self.make_admin_request('set', params=params)
-            self.assertTrue('"set pin": 1' in response, response)
+            assert '"set pin": 1' in response, response
 
         # check all 3 tokens - the last one is it
         parameters = {"user": "root", "pass": "crypted!280395"}
         response = self.make_validate_request('check',
                                               params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         for serial in serials:
             self.delete_token(serial)
@@ -620,7 +620,7 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"user": "postgres", "pass": "pin"}
         parameters.update(realm)
@@ -628,7 +628,7 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         parameters = {"user": "postgres"}
         parameters.update(realm)
@@ -636,7 +636,7 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         parameters = {"user": "UnKnownUser"}
         parameters.update(realm)
@@ -644,7 +644,7 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
     def checkFalse2(self, realm):
 
@@ -654,7 +654,7 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n", response)
         # Test response...
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"user": "postgres", "pass": "pin"}
         parameters.update(realm)
@@ -662,7 +662,7 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"user": "UnKnownUser"}
         parameters.update(realm)
@@ -670,7 +670,7 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         parameters = {"user": "root", "pass": "pin088491"}
         parameters.update(realm)
@@ -678,13 +678,13 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"user": "root"}
         parameters.update(realm)
 
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         return
 
@@ -696,7 +696,7 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         parameters = {"user": "postgres", "pass": "pin"}
         parameters.update(realm)
@@ -704,7 +704,7 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         parameters = {"user": "UnKnownUser"}
         parameters.update(realm)
@@ -712,7 +712,7 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"user": "root", "pass": "pin818771"}
         parameters.update(realm)
@@ -720,13 +720,13 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"user": "root"}
         parameters.update(realm)
 
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
     def checkTrue(self, realm):
 
@@ -735,7 +735,7 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"user": "postgres"}
         parameters.update(realm)
@@ -743,7 +743,7 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"user": "UnKnownUser"}
         parameters.update(realm)
@@ -751,7 +751,7 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"user": "root", "pass": "pin217219"}
         parameters.update(realm)
@@ -759,13 +759,13 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"user": "root"}
         parameters.update(realm)
 
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         #
         #    otp[0]: 870581 :
@@ -810,39 +810,39 @@ class TestValidateController(TestController):
 
         parameters = {"PassOnUserNoToken": "True"}
         response = self.make_system_request('setConfig', params=parameters)
-        self.assertTrue('"setConfig PassOnUserNoToken:True": true' in response,
-                        response)
+        assert '"setConfig PassOnUserNoToken:True": true' in response, \
+                        response
 
         self.checkFalse2(realm)
 
         parameters = {"PassOnUserNoToken": "False"}
         response = self.make_system_request('setConfig', params=parameters)
-        self.assertTrue('"setConfig PassOnUserNoToken:False": true' in
-                        response, response)
+        assert '"setConfig PassOnUserNoToken:False": true' in \
+                        response, response
 
         parameters = {"PassOnUserNotFound": "True"}
         response = self.make_system_request('setConfig', params=parameters)
-        self.assertTrue('"setConfig PassOnUserNotFound:True": true' in
-                        response, response)
+        assert '"setConfig PassOnUserNotFound:True": true' in \
+                        response, response
 
         self.checkFalse3(realm)
 
         parameters = {"PassOnUserNoToken": "True"}
         response = self.make_system_request('setConfig', params=parameters)
-        self.assertTrue('"setConfig PassOnUserNoToken:True": true' in response,
-                        response)
+        assert '"setConfig PassOnUserNoToken:True": true' in response, \
+                        response
 
         self.checkTrue(realm)
 
         parameters = {"key": "PassOnUserNotFound"}
         response = self.make_system_request('delConfig', params=parameters)
-        self.assertTrue('"delConfig PassOnUserNotFound": true' in response,
-                        response)
+        assert '"delConfig PassOnUserNotFound": true' in response, \
+                        response
 
         parameters = {"key": "PassOnUserNoToken"}
         response = self.make_system_request('delConfig', params=parameters)
-        self.assertTrue('"delConfig PassOnUserNoToken": true' in response,
-                        response)
+        assert '"delConfig PassOnUserNoToken": true' in response, \
+                        response
 
         self.delete_token("F722362")
 
@@ -883,9 +883,9 @@ class TestValidateController(TestController):
                                               params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
         msg = '"linotp_tokentype": "pw"'
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         jresp = json.loads(response.body)
         transactionid = jresp.get('detail', {}).get('transactionid', {})
@@ -902,7 +902,7 @@ class TestValidateController(TestController):
                                               params=parameters)
 
         msg = '"token_type": "HMAC"'
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -916,7 +916,7 @@ class TestValidateController(TestController):
                                               params=parameters)
 
         msg = '"token_type": "pw"'
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -930,7 +930,7 @@ class TestValidateController(TestController):
                                               params=parameters)
 
         msg = '"token_type": ""'
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -978,9 +978,9 @@ class TestValidateController(TestController):
                                               params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
         msg = '"linotp_tokentype": "pw"'
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -994,9 +994,9 @@ class TestValidateController(TestController):
                                               params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
         msg = '"linotp_tokentype": "pw"'
-        self.assertFalse(msg in response, response)
+        assert not (msg in response), response
 
         # ------------------------------------------------------------------ --
 
@@ -1010,9 +1010,9 @@ class TestValidateController(TestController):
                                               params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
-        self.assertFalse(msg in response, response)
+        assert not (msg in response), response
         msg = '"linotp_tokentype": "pw"'
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -1059,9 +1059,9 @@ class TestValidateController(TestController):
                                               params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
         msg = '"linotp_tokentype": "pw"'
-        self.assertFalse(msg in response, response)
+        assert not (msg in response), response
 
         # ------------------------------------------------------------------ --
 
@@ -1075,9 +1075,9 @@ class TestValidateController(TestController):
                                               params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
-        self.assertFalse(msg in response, response)
+        assert not (msg in response), response
         msg = '"linotp_tokentype": "pw"'
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -1090,9 +1090,9 @@ class TestValidateController(TestController):
                                               params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
         msg = '"linotp_tokentype": "pw"'
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -1111,51 +1111,51 @@ class TestValidateController(TestController):
 
         parameters = {"user": "root", "pass": "pin123456"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         parameters = {"serial": "F722362"}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.FailCount": 1' in response, response)
-        self.assertTrue('"LinOtp.FailCount": 0' not in response, response)
+        assert '"LinOtp.FailCount": 1' in response, response
+        assert '"LinOtp.FailCount": 0' not in response, response
 
         # check all 3 tokens - the last one is it
         parameters = {"user": "root", "pass": "pin280395"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": "F722364"}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.Count": 1' in response, response)
-        self.assertTrue('"LinOtp.FailCount": 0' in response, response)
+        assert '"LinOtp.Count": 1' in response, response
+        assert '"LinOtp.FailCount": 0' in response, response
 
         parameters = {"serial": "F722362"}
         response = self.make_admin_request('show', params=parameters)
         # change with token counter fix:
         # if one token of a set of tokens is valid,
         # all others involved are resetted
-        self.assertTrue('"LinOtp.FailCount": 0' in response, response)
+        assert '"LinOtp.FailCount": 0' in response, response
 
         # check all 3 tokens - the last one is it
         parameters = {"pin": "TPIN", "serial": "F722364"}
         response = self.make_admin_request('set', params=parameters)
-        self.assertTrue('"set pin": 1' in response, response)
+        assert '"set pin": 1' in response, response
 
         # check all 3 tokens - the last one is it
         parameters = {"user": "root", "pass": "TPIN552629"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": "F722364"}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.Count": 4' in response, response)
-        self.assertTrue('"LinOtp.FailCount": 0' in response, response)
+        assert '"LinOtp.Count": 4' in response, response
+        assert '"LinOtp.FailCount": 0' in response, response
 
         # now increment the failcounter to 19
         for _i in range(1, 20):
             # check if otp could be reused
             parameters = {"user": "root", "pass": "TPIN552629"}
             response = self.make_validate_request('check', params=parameters)
-            self.assertTrue('"value": false' in response, response)
+            assert '"value": false' in response, response
 
         parameters = {"user": "root"}
         response = self.make_admin_request('show', params=parameters)
@@ -1163,7 +1163,7 @@ class TestValidateController(TestController):
         data = jresp.get('result', {}).get('value', {}).get('data', [])
 
         # assure that we have at least one data row found
-        self.assertGreater(len(data), 0, response)
+        assert len(data) > 0, response
 
         # now check, if the FailCounter has incremented:
         # -> if the 3. token has max fail of 10 it will become invalid
@@ -1175,14 +1175,14 @@ class TestValidateController(TestController):
         for token in data:
             tokens += 1
             if token.get('LinOtp.TokenSerialnumber') == 'F722362':
-                self.assertEqual(token.get('LinOtp.FailCount', -1), 9)
+                assert token.get('LinOtp.FailCount', -1) == 9
             if token.get('LinOtp.TokenSerialnumber') == 'F722363':
-                self.assertEqual(token.get('LinOtp.FailCount', -1), 9)
+                assert token.get('LinOtp.FailCount', -1) == 9
             if token.get('LinOtp.TokenSerialnumber') == 'F722364':
-                self.assertEqual(token.get('LinOtp.FailCount', -1), 19)
+                assert token.get('LinOtp.FailCount', -1) == 19
 
         # check if we did see any token
-        self.assertEqual(tokens, 3, response)
+        assert tokens == 3, response
 
         self.delete_token("F722364")
         self.delete_token("F722363")
@@ -1197,11 +1197,11 @@ class TestValidateController(TestController):
         # we change the pin of the 3. token to be different to the other ones
         parameters = {"serial": "F722364", 'pin': 'Pin3!'}
         response = self.make_admin_request('set', params=parameters)
-        self.assertTrue('"set pin": 1' in response, response)
+        assert '"set pin": 1' in response, response
 
         parameters = {"user": "root", "pass": "pin123456"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         parameters = {"user": "root"}
         response = self.make_admin_request('show', params=parameters)
@@ -1212,16 +1212,16 @@ class TestValidateController(TestController):
 
         for token in tokens:
             if token.get('LinOtp.TokenSerialnumber') == 'F722362':
-                self.assertEqual(token.get('LinOtp.FailCount', -1), 1)
+                assert token.get('LinOtp.FailCount', -1) == 1
             if token.get('LinOtp.TokenSerialnumber') == 'F722363':
-                self.assertEqual(token.get('LinOtp.FailCount', -1), 1)
+                assert token.get('LinOtp.FailCount', -1) == 1
             if token.get('LinOtp.TokenSerialnumber') == 'F722364':
-                self.assertEqual(token.get('LinOtp.FailCount', -1), 0)
+                assert token.get('LinOtp.FailCount', -1) == 0
 
         # check all 3 tokens - one of them matches an resets all fail counter
         parameters = {"user": "root", "pass": "Pin3!280395"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"user": "root"}
         response = self.make_admin_request('show', params=parameters)
@@ -1231,11 +1231,11 @@ class TestValidateController(TestController):
 
         for token in tokens:
             if token.get('LinOtp.TokenSerialnumber') == 'F722362':
-                self.assertEqual(token.get('LinOtp.FailCount', -1), 0)
+                assert token.get('LinOtp.FailCount', -1) == 0
             if token.get('LinOtp.TokenSerialnumber') == 'F722363':
-                self.assertEqual(token.get('LinOtp.FailCount', -1), 0)
+                assert token.get('LinOtp.FailCount', -1) == 0
             if token.get('LinOtp.TokenSerialnumber') == 'F722364':
-                self.assertEqual(token.get('LinOtp.FailCount', -1), 0)
+                assert token.get('LinOtp.FailCount', -1) == 0
 
         self.delete_token("F722364")
         self.delete_token("F722363")
@@ -1250,24 +1250,24 @@ class TestValidateController(TestController):
 
         parameters = {"serial": "T2", "otp1": "719818", "otp2": "204809"}
         response = self.make_admin_request('resync', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": "T2"}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.Count": 40' in response, response)
+        assert '"LinOtp.Count": 40' in response, response
 
         parameters = {"user": "root", "pass": "T2PIN204809"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         # 957690
         parameters = {"user": "root", "pass": "T2PIN957690"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": "T2"}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.Count": 41' in response, response)
+        assert '"LinOtp.Count": 41' in response, response
 
         self.delete_token("T2")
 
@@ -1281,36 +1281,36 @@ class TestValidateController(TestController):
 
         parameters = {"user": "root", "pass": "T2PIN204809"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         parameters = {"user": "root", "otp1": "719818", "otp2": "204809"}
         response = self.make_admin_request('resync', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": "T2"}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.Count": 40' in response, response)
+        assert '"LinOtp.Count": 40' in response, response
 
         parameters = {"serial": "T3"}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.Count": 40' in response, response)
+        assert '"LinOtp.Count": 40' in response, response
 
         parameters = {"serial": "T3", "pin": "T3PIN"}
         response = self.make_admin_request('set', params=parameters)
-        self.assertTrue('"set pin": 1' in response, response)
+        assert '"set pin": 1' in response, response
 
         parameters = {"user": "root", "pass": "T2PIN204809"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         # 957690
         parameters = {"user": "root", "pass": "T2PIN957690"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": "T2"}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.Count": 41' in response, response)
+        assert '"LinOtp.Count": 41' in response, response
 
         self.delete_token("T2")
         self.delete_token("T3")
@@ -1340,26 +1340,26 @@ class TestValidateController(TestController):
         # test resync of token 2
         parameters = {"AutoResync": "true"}
         response = self.make_system_request('setConfig', params=parameters)
-        self.assertTrue('setConfig AutoResync:true": true' in response,
-                        response)
+        assert 'setConfig AutoResync:true": true' in response, \
+                        response
 
         # 35
         parameters = {"user": "root", "pass": "T2PIN732866"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         # 36
         parameters = {"user": "root", "pass": "T2PIN920079"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"user": "root", "pass": "T2PIN732866"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         parameters = {"user": "root", "pass": "T2PIN957690"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         self.delete_token("T2")
 
@@ -1372,18 +1372,18 @@ class TestValidateController(TestController):
         # test resync of token 2
         parameters = {"AutoResync": "true"}
         response = self.make_system_request('setConfig', params=parameters)
-        self.assertTrue('setConfig AutoResync:true": true' in response,
-                        response)
+        assert 'setConfig AutoResync:true": true' in response, \
+                        response
 
         # 35
         parameters = {"user": "root", "pass": "T2PIN732866"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         # 37
         parameters = {"user": "root", "pass": "T2PIN328973"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         self.delete_token("T2")
 
@@ -1396,18 +1396,18 @@ class TestValidateController(TestController):
         # test resync of token 2
         parameters = {"AutoResync": "false"}
         response = self.make_system_request('setConfig', params=parameters)
-        self.assertTrue('setConfig AutoResync:false": true' in response,
-                        response)
+        assert 'setConfig AutoResync:false": true' in response, \
+                        response
 
         # 35
         parameters = {"user": "root", "pass": "T2PIN732866"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         # 36
         parameters = {"user": "root", "pass": "T2PIN920079"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         self.delete_token("T2")
 
@@ -1417,15 +1417,15 @@ class TestValidateController(TestController):
 
         parameters = {"serial": "M722362"}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.FailCount": 0' in response, response)
+        assert '"LinOtp.FailCount": 0' in response, response
 
         parameters = {"user": "root", "pass": "pin7215e7"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         parameters = {"serial": "M722362"}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.FailCount": 1' in response, response)
+        assert '"LinOtp.FailCount": 1' in response, response
 
         # we use a fixed date to check if the otp calc is still okay
         old_day = datetime(year=2018, month=12, day=12,
@@ -1436,7 +1436,7 @@ class TestValidateController(TestController):
             parameters = {"user": "root", "pass": "pin488ccf"}
             response = self.make_validate_request('check', params=parameters)
 
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
         self.delete_token("M722362")
 
@@ -1539,18 +1539,18 @@ class TestValidateController(TestController):
         response = self.make_admin_request('show', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"LinOtp.FailCount": 0' in response, response)
+        assert '"LinOtp.FailCount": 0' in response, response
 
         parameters = {"user": "root", "pass": "pin12345678"}
         response = self.make_validate_request('check', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         parameters = {"serial": "TOTP"}
         response = self.make_admin_request('show', params=parameters)
         log.info("1 response /admin/hhow %s\n" % response)
-        self.assertTrue('"LinOtp.FailCount": 1' in response, response)
+        assert '"LinOtp.FailCount": 1' in response, response
 
         #
         #    only in selfTest mode, it's allowed to set
@@ -1565,7 +1565,7 @@ class TestValidateController(TestController):
             parameters = {"user": "root", "pass": "pin94287082"}
             response = self.make_validate_request('check', params=parameters)
 
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
 
         # second test value
@@ -1580,7 +1580,7 @@ class TestValidateController(TestController):
                           "init": "1111111109"}
             response = self.make_validate_request('check', params=parameters)
 
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
         # one more test value
         # 1234567890 |  2009-02-13  | 000000000273EF07 | 89005924 |  SHA1  |
@@ -1593,7 +1593,7 @@ class TestValidateController(TestController):
             response = self.make_validate_request(
                                     'check', params=parameters)
 
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
         self.delete_token("TOTP")
 
@@ -1613,7 +1613,7 @@ class TestValidateController(TestController):
             parameters = {"user": "root", "pass": "pin46119246", "init": "59"}
             response = self.make_validate_request('check', params=parameters)
 
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
         self.delete_token("TOTP")
 
@@ -1631,7 +1631,7 @@ class TestValidateController(TestController):
 
             parameters = {"user": "root", "pass": "pin90693936", "init": "59"}
             response = self.make_validate_request('check', params=parameters)
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
         self.delete_token("TOTP")
 
@@ -1648,25 +1648,25 @@ class TestValidateController(TestController):
 
         parameters = {"serial": "TOTP"}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.FailCount": 0' in response, response)
+        assert '"LinOtp.FailCount": 0' in response, response
 
         parameters = {"DefaultSyncWindow": "200"}
         response = self.make_system_request('setDefault', params=parameters)
-        self.assertTrue('"set DefaultSyncWindow": true' in response, response)
+        assert '"set DefaultSyncWindow": true' in response, response
 
         parameters = {"AutoResync": "true"}
         response = self.make_system_request('setConfig', params=parameters)
-        self.assertTrue('setConfig AutoResync:true": true' in response,
-                        response)
+        assert 'setConfig AutoResync:true": true' in response, \
+                        response
 
         parameters = {"user": "root", "pass": "pin12345678"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         parameters = {"serial": "TOTP"}
         response = self.make_admin_request('show', params=parameters)
         # log.error("response %s\n", response)
-        self.assertTrue('"LinOtp.FailCount": 1' in response, response)
+        assert '"LinOtp.FailCount": 1' in response, response
 
         #
         #    now test TOTP resync - backward lookup
@@ -1696,7 +1696,7 @@ class TestValidateController(TestController):
 
         parameters = {"user": "root", "otp1": otp1, "otp2": otp2}
         response = self.make_admin_request('resync', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         self.delete_token("TOTP")
 
@@ -1707,12 +1707,12 @@ class TestValidateController(TestController):
 
         parameters = {"DefaultSyncWindow": "200"}
         response = self.make_system_request('setDefault', params=parameters)
-        self.assertTrue('"set DefaultSyncWindow": true' in response, response)
+        assert '"set DefaultSyncWindow": true' in response, response
 
         parameters = {"AutoResync": "true"}
         response = self.make_system_request('setConfig', params=parameters)
-        self.assertTrue('setConfig AutoResync:true": true' in response,
-                        response)
+        assert 'setConfig AutoResync:true": true' in response, \
+                        response
 
         try:
             self.delete_token("TOTP")
@@ -1744,40 +1744,40 @@ class TestValidateController(TestController):
 
         parameters = {"serial": "F722362", "MaxFailCount": "15"}
         response = self.make_admin_request('set', params=parameters)
-        self.assertTrue('"set MaxFailCount": 1' in response, response)
+        assert '"set MaxFailCount": 1' in response, response
 
         parameters = {"user": "root", "pass": "pin870581"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": "F722362"}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.FailCount": 0' in response, response)
+        assert '"LinOtp.FailCount": 0' in response, response
 
         # Test if FailCount increments and in case of a valid OTP is resetted
 
         for _i in range(0, 14):
             parameters = {"user": "root", "pass": "pin123456"}
             response = self.make_validate_request('check', params=parameters)
-            self.assertTrue('"value": false' in response, response)
+            assert '"value": false' in response, response
 
         parameters = {"serial": "F722362"}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.FailCount": 14' in response, response)
+        assert '"LinOtp.FailCount": 14' in response, response
 
         # check all 3 tokens - the last one is it
         parameters = {"user": "root", "pass": "pin818771"}
         response = self.make_validate_request('check', params=parameters)
 
         # Test response...
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": "F722362"}
         response = self.make_admin_request('show', params=parameters)
 
         # Test response...
-        self.assertTrue('"LinOtp.Count": 5' in response, response)
-        self.assertTrue('"LinOtp.FailCount": 0' in response, response)
+        assert '"LinOtp.Count": 5' in response, response
+        assert '"LinOtp.FailCount": 0' in response, response
 
         # Test if FailCount increments and in case of a maxFailCount
         # could not be reseted by a valid OTP
@@ -1785,37 +1785,37 @@ class TestValidateController(TestController):
         for _i in range(0, 15):
             parameters = {"user": "root", "pass": "pin123456"}
             response = self.make_validate_request('check', params=parameters)
-            self.assertTrue('"value": false' in response, response)
+            assert '"value": false' in response, response
 
         parameters = {"serial": "F722362"}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.Count": 5' in response, response)
-        self.assertTrue('"LinOtp.FailCount": 15' in response, response)
+        assert '"LinOtp.Count": 5' in response, response
+        assert '"LinOtp.FailCount": 15' in response, response
 
         # the reset by a valid OTP must fail and
         # the OTP Count must be incremented anyway
 
         parameters = {"user": "root", "pass": "pin250710"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         parameters = {"serial": "F722362"}
         response = self.make_admin_request('show', params=parameters)
 
         # TODO: post merge: verify the real counts
-        self.assertTrue('"LinOtp.Count": 5' in response, response)
-        self.assertTrue('"LinOtp.FailCount": 16' in response, response)
+        assert '"LinOtp.Count": 5' in response, response
+        assert '"LinOtp.FailCount": 16' in response, response
 
         parameters = {"serial": "F722362"}
         response = self.make_admin_request('reset', params=parameters)
-        self.assertTrue('"value": 1' in response, response)
+        assert '"value": 1' in response, response
 
         parameters = {"serial": "F722362"}
         response = self.make_admin_request('show', params=parameters)
 
         # TODO: post merge: verify the real counts
-        self.assertTrue('"LinOtp.Count": 5' in response, response)
-        self.assertTrue('"LinOtp.FailCount": 0' in response, response)
+        assert '"LinOtp.Count": 5' in response, response
+        assert '"LinOtp.FailCount": 0' in response, response
 
         self.delete_token("F722362")
 
@@ -1832,15 +1832,15 @@ class TestValidateController(TestController):
         }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"allowSamlAttributes": "True"}
         response = self.make_system_request('setConfig', params=parameters)
 
         parameters = {"user": "root", "pass": "test"}
         response = self.make_validate_request('samlcheck', params=parameters)
-        self.assertTrue('"auth": true' in response, response)
-        self.assertTrue('"username": "root"' in response, response)
+        assert '"auth": true' in response, response
+        assert '"username": "root"' in response, response
 
         self.delete_token("saml0001")
 
@@ -1874,18 +1874,18 @@ class TestValidateController(TestController):
                                         'user': 'root',
                                         'pin': 'topSecret',
                                         'serial': serial})
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         response = self.make_validate_request('simplecheck',
                                 params={'user': 'root',
                                         'pass': 'topSecret'})
 
-        self.assertTrue(':-)' in response, response)
+        assert ':-)' in response, response
 
         response = self.make_validate_request('simplecheck',
                                 params={'user': 'root',
                                         'pass': 'wrongPW'})
-        self.assertTrue(':-(' in response, response)
+        assert ':-(' in response, response
 
         self.delete_token(serial)
         return
@@ -1914,29 +1914,29 @@ class TestValidateController(TestController):
         params = {'user': user,
                   'pass': pin + otp}
         response = self.make_validate_request('check', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         jresp = json.loads(response.body)
 
         auth_info = jresp.get('detail', {}).get('auth_info', None)
-        self.assertTrue(auth_info is None, response)
+        assert auth_info is None, response
 
         otp = otps[1]
         params = {'user': user,
                   'pass': pin + otp,
                   'auth_info': True}
         response = self.make_validate_request('check', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         jresp = json.loads(response.body)
 
         pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
-        self.assertTrue("pin_length" in pin_list, response)
-        self.assertTrue(pin_list[1] == len(pin), response)
+        assert "pin_length" in pin_list, response
+        assert pin_list[1] == len(pin), response
 
         otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
-        self.assertTrue("otp_length" in otp_list, response)
-        self.assertTrue(otp_list[1] == 6, response)
+        assert "otp_length" in otp_list, response
+        assert otp_list[1] == 6, response
 
         self.delete_token(serial)
 
@@ -1947,13 +1947,13 @@ class TestValidateController(TestController):
                   'auth_info': True}
         response = self.make_validate_request('check', params=params)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         jresp = json.loads(response.body)
 
         pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
-        self.assertTrue("pin_length" in pin_list, response)
-        self.assertTrue(pin_list[1] == len(pin), response)
+        assert "pin_length" in pin_list, response
+        assert pin_list[1] == len(pin), response
 
         self.delete_token(serial)
 
@@ -1969,17 +1969,17 @@ class TestValidateController(TestController):
                   }
         response = self.make_validate_request('check', params=params)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         jresp = json.loads(response.body)
 
         pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
-        self.assertTrue("pin_length" in pin_list, response)
-        self.assertTrue(pin_list[1] == len(u_pin), response)
+        assert "pin_length" in pin_list, response
+        assert pin_list[1] == len(u_pin), response
 
         otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
-        self.assertTrue("otp_length" in otp_list, response)
-        self.assertTrue(otp_list[1] == len(otpkey), response)
+        assert "otp_length" in otp_list, response
+        assert otp_list[1] == len(otpkey), response
 
         self.delete_token(serial)
 
@@ -1999,40 +1999,40 @@ class TestValidateController(TestController):
                   }
         response = self.make_validate_request('check', params=params)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         jresp = json.loads(response.body)
 
         pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
-        self.assertTrue("pin_length" in pin_list, response)
-        self.assertTrue(pin_list[1] == 0, response)
+        assert "pin_length" in pin_list, response
+        assert pin_list[1] == 0, response
 
         otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
-        self.assertTrue("otp_length" in otp_list, response)
-        self.assertTrue(otp_list[1] == len(otps[0]), response)
+        assert "otp_length" in otp_list, response
+        assert otp_list[1] == len(otps[0]), response
 
         params = {'user': user,
                   'pin': pin,
                   }
         response = self.make_admin_request('set', params=params)
-        self.assertTrue('"set pin": ' in response, response)
+        assert '"set pin": ' in response, response
 
         params = {'user': user,
                   'pass': pin + otps[1],
                   'auth_info': True
                   }
         response = self.make_validate_request('check', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         jresp = json.loads(response.body)
 
         pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
-        self.assertTrue("pin_length" in pin_list, response)
-        self.assertTrue(pin_list[1] == len(pin), response)
+        assert "pin_length" in pin_list, response
+        assert pin_list[1] == len(pin), response
 
         otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
-        self.assertTrue("otp_length" in otp_list, response)
-        self.assertTrue(otp_list[1] == len(otps[0]), response)
+        assert "otp_length" in otp_list, response
+        assert otp_list[1] == len(otps[0]), response
 
         self.delete_token(serial)
 
@@ -2063,17 +2063,17 @@ class TestValidateController(TestController):
                   }
         response = self.make_validate_request('check_s', params=params)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         jresp = json.loads(response.body)
 
         pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
-        self.assertTrue("pin_length" in pin_list, response)
-        self.assertTrue(pin_list[1] == len(pin), response)
+        assert "pin_length" in pin_list, response
+        assert pin_list[1] == len(pin), response
 
         otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
-        self.assertTrue("otp_length" in otp_list, response)
-        self.assertTrue(otp_list[1] == len(otps[0]), response)
+        assert "otp_length" in otp_list, response
+        assert otp_list[1] == len(otps[0]), response
 
         self.delete_token(remote_serial)
 
@@ -2094,19 +2094,19 @@ class TestValidateController(TestController):
                   }
         response = self.make_validate_request('check_s', params=params)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         auth_info = jresp.get('detail', {}).get('auth_info', [])
 
-        self.assertTrue(len(auth_info) == 2, response)
+        assert len(auth_info) == 2, response
 
         pin_list = auth_info[0]
-        self.assertTrue("pin_length" in pin_list, response)
-        self.assertTrue(pin_list[1] == len(pin), response)
+        assert "pin_length" in pin_list, response
+        assert pin_list[1] == len(pin), response
 
         otp_list = auth_info[1]
-        self.assertTrue("otp_length" in otp_list, response)
-        self.assertTrue(otp_list[1] == len(otps[0]), response)
+        assert "otp_length" in otp_list, response
+        assert otp_list[1] == len(otps[0]), response
 
         self.delete_token(target_serial)
         self.delete_token(remote_serial)
@@ -2138,17 +2138,17 @@ class TestValidateController(TestController):
                   }
         response = self.make_validate_request('check_s', params=params)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         jresp = json.loads(response.body)
 
         pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
-        self.assertTrue("pin_length" in pin_list, response)
-        self.assertTrue(pin_list[1] == len(pin), response)
+        assert "pin_length" in pin_list, response
+        assert pin_list[1] == len(pin), response
 
         otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
-        self.assertTrue("otp_length" in otp_list, response)
-        self.assertTrue(otp_list[1] == len(otps[0]), response)
+        assert "otp_length" in otp_list, response
+        assert otp_list[1] == len(otps[0]), response
 
         self.delete_token(target_serial)
         self.delete_token(remote_serial)

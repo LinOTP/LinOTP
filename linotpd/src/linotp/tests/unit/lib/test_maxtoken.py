@@ -46,16 +46,16 @@ class MaxTokenPolicyTest(unittest.TestCase):
         try:
             _checkTokenAssigned(None)
         except PolicyException:
-            self.assertFalse(True, '_checkTokenAssigned: None as argument '
-                                   'should return without exception')
+            assert not True, '_checkTokenAssigned: None as argument ' \
+                                   'should return without exception'
 
         empty_user = User('')
 
         try:
             _checkTokenAssigned(empty_user)
         except PolicyException:
-            self.assertFalse(True, '_checkTokenAssigned: empty user as '
-                                   'argument should return without exception')
+            assert not True, '_checkTokenAssigned: empty user as ' \
+                                   'argument should return without exception'
 
     @patch('linotp.lib.token.getTokens4UserOrSerial')
     def test_no_tokens(self, mocked_getTokens4UserOrSerial):
@@ -70,8 +70,8 @@ class MaxTokenPolicyTest(unittest.TestCase):
         try:
             _checkTokenAssigned(fake_user)
         except PolicyException:
-            self.assertFalse(True, '_checkTokenAssigned: on empty token list '
-                                   'function should return without exception')
+            assert not True, '_checkTokenAssigned: on empty token list ' \
+                                   'function should return without exception'
 
     @patch('linotp.lib.policy.context', new=fake_context)
     @patch('linotp.lib.policy.get_client_policy', new=fake_get_client_policy)
@@ -99,8 +99,8 @@ class MaxTokenPolicyTest(unittest.TestCase):
         try:
             _checkTokenAssigned(fake_user)
         except PolicyException:
-            self.assertFalse(True, '_checkTokenAssigned: Exception raised, but '
-                                   'token count was still in boundaries')
+            assert not True, '_checkTokenAssigned: Exception raised, but ' \
+                                   'token count was still in boundaries'
 
         # third token exceeds maxtoken in fake_get_client_policy
 
@@ -114,8 +114,8 @@ class MaxTokenPolicyTest(unittest.TestCase):
             exception_raised = True
 
         if not exception_raised:
-            self.assertFalse(True, '_checkTokenAssigned: Token count was not '
-                                   'in boundaries but no exception was raised')
+            assert not True, '_checkTokenAssigned: Token count was not ' \
+                                   'in boundaries but no exception was raised'
 
         # second push token exceeds maxtokenPUSH in fake_get_client_policy
 
@@ -128,6 +128,6 @@ class MaxTokenPolicyTest(unittest.TestCase):
             exception_raised = True
 
         if not exception_raised:
-            self.assertFalse(True, '_checkTokenAssigned: Token count of PUSH '
-                                   'was not in boundaries but no exception was '
-                                   'raised')
+            assert not True, '_checkTokenAssigned: Token count of PUSH ' \
+                                   'was not in boundaries but no exception was ' \
+                                   'raised'

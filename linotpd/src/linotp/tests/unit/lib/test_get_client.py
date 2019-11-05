@@ -81,8 +81,8 @@ class TestGetClientCase(unittest.TestCase):
         request = Request(environ)
         client = _get_client_from_request(request)
 
-        self.assertTrue(client is not None)
-        self.assertTrue(client == '127.0.0.1')
+        assert client is not None
+        assert client == '127.0.0.1'
 
         # ------------------------------------------------------------------ --
 
@@ -107,7 +107,7 @@ class TestGetClientCase(unittest.TestCase):
         request = Request(environ)
         client = _get_client_from_request(request)
 
-        self.assertTrue(client == '123.234.123.234')
+        assert client == '123.234.123.234'
 
         # 2.b
 
@@ -118,7 +118,7 @@ class TestGetClientCase(unittest.TestCase):
         request = Request(environ)
         client = _get_client_from_request(request)
 
-        self.assertTrue(client == '11.22.33.44')
+        assert client == '11.22.33.44'
 
         # 2.c
 
@@ -129,7 +129,7 @@ class TestGetClientCase(unittest.TestCase):
         request = Request(environ)
         client = _get_client_from_request(request)
 
-        self.assertTrue(client == '11.22.33.44')
+        assert client == '11.22.33.44'
 
         # 3 wrong proxy format
 
@@ -141,7 +141,7 @@ class TestGetClientCase(unittest.TestCase):
 
         # with self.assertRaises(Exception) as exx:
         client = _get_client_from_request(request)
-        self.assertTrue(client == '11.22.33.44')
+        assert client == '11.22.33.44'
 
         LinConfig = {
             'client.X_FORWARDED_FOR': 'true',
@@ -151,7 +151,7 @@ class TestGetClientCase(unittest.TestCase):
 
         # with self.assertRaises(Exception) as exx:
         client = _get_client_from_request(request)
-        self.assertTrue(client == '11.22.33.44')
+        assert client == '11.22.33.44'
 
         return
 
@@ -193,7 +193,7 @@ class TestGetClientCase(unittest.TestCase):
             request = Request(environ)
             client = _get_client_from_request(request)
 
-            self.assertTrue(client == forward_test_string[1], client)
+            assert client == forward_test_string[1], client
 
     def test_ipaddr_value(self):
         """ unit test for get_ip_address """

@@ -431,8 +431,8 @@ class TestRandompinController(TestController):
             params['user'] = user.encode('utf-8')
         response = self.make_admin_request('init', params=params)
         content = response.json
-        self.assertTrue(content['result']['status'])
-        self.assertTrue(content['result']['value'])
+        assert content['result']['status']
+        assert content['result']['value']
         token['serial'] = content['detail']['serial']
         self.token_for_deletion.add(token['serial'])
         return
@@ -505,17 +505,17 @@ class TestRandompinController(TestController):
                 content
                 )
         if expected == 'success':
-            self.assertTrue(content['result']['status'], err_msg)
-            self.assertTrue(content['result']['value'], err_msg)
+            assert content['result']['status'], err_msg
+            assert content['result']['value'], err_msg
         elif expected == 'value-false':
-            self.assertTrue(content['result']['status'], err_msg)
-            self.assertFalse(content['result']['value'], err_msg)
+            assert content['result']['status'], err_msg
+            assert not content['result']['value'], err_msg
         elif expected == 'status-false':
-            self.assertFalse(content['result']['status'], err_msg)
-            self.assertTrue(content['result']['value'], err_msg)
+            assert not content['result']['status'], err_msg
+            assert content['result']['value'], err_msg
         elif expected == 'both-false':
-            self.assertFalse(content['result']['status'], err_msg)
-            self.assertFalse(content['result']['value'], err_msg)
+            assert not content['result']['status'], err_msg
+            assert not content['result']['value'], err_msg
         else:
             self.fail("Unknown 'expected' %s" % expected)
         return content
@@ -534,8 +534,8 @@ class TestRandompinController(TestController):
             }
         response = self.make_admin_request('assign', params=params)
         content = response.json
-        self.assertTrue(content['result']['status'])
-        self.assertTrue(content['result']['value'])
+        assert content['result']['status']
+        assert content['result']['value']
         return
 
     def _set_pin_in_selfservice(self, user, pwd, serial, pin):
@@ -557,11 +557,11 @@ class TestRandompinController(TestController):
                                                  auth_user=(login, password))
 
         content = response.json
-        self.assertTrue(content['result']['status'])
+        assert content['result']['status']
         expected = {
             "set userpin": 1
             }
-        self.assertDictEqual(expected, content['result']['value'])
+        assert expected == content['result']['value']
         return
 
     def _set_pin(self, serial, pin):
@@ -574,8 +574,8 @@ class TestRandompinController(TestController):
             }
         response = self.make_admin_request('set', params=params)
         content = response.json
-        self.assertTrue(content['result']['status'])
-        self.assertTrue(content['result']['value'])
+        assert content['result']['status']
+        assert content['result']['value']
         return
 
     def _set_token_realm(self, serial, realm):
@@ -589,6 +589,6 @@ class TestRandompinController(TestController):
         }
         response = self.make_admin_request('tokenrealm', params=params)
         content = response.json
-        self.assertTrue(content['result']['status'])
-        self.assertEqual(1, content['result']['value'])
+        assert content['result']['status']
+        assert 1 == content['result']['value']
         return

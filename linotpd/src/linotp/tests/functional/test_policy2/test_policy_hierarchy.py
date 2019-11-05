@@ -73,12 +73,12 @@ class TestPolicyHierarchy(TestController):
         response = self.make_authenticated_request(controller='admin',
                                                    action='init',
                                                    params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         if active is False:
             response = self.make_authenticated_request(
                 controller='admin', action='disable', params={'serial': serial})
 
-            self.assertTrue('"value": 1' in response, response)
+            assert '"value": 1' in response, response
         return serial
 
     def test_lostToken_policy_hierarchy_1(self):
@@ -118,7 +118,7 @@ class TestPolicyHierarchy(TestController):
             controller='admin', action='losttoken', params=token)
         resp = losetoken.json
         values = resp.get('result').get('value')
-        self.assertEqual(values.get('end_date'), validity_special, resp)
+        assert values.get('end_date') == validity_special, resp
 
     def test_lostToken_policy_hierarchy_2(self):
         """
@@ -157,7 +157,7 @@ class TestPolicyHierarchy(TestController):
             controller='admin', action='losttoken', params=token)
         resp = losetoken.json
         values = resp.get('result').get('value')
-        self.assertEqual(values.get('end_date'), validity_special, resp)
+        assert values.get('end_date') == validity_special, resp
 
     def test_lostToken_policy_hierarchy_3(self):
         """
@@ -196,7 +196,7 @@ class TestPolicyHierarchy(TestController):
             controller='admin', action='losttoken', params=token)
         resp = losetoken.json
         values = resp.get('result').get('value')
-        self.assertTrue(validity_special in values.get('end_date'), resp)
+        assert validity_special in values.get('end_date'), resp
 
 # eof #
 

@@ -87,7 +87,7 @@ class TestPolicyPassthrough(TestController):
         response = self.make_validate_request('check', params,
                                               client='127.0.0.1')
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         # test that passonNoToken works - now with active policy
 
@@ -100,7 +100,7 @@ class TestPolicyPassthrough(TestController):
         response = self.make_validate_request('check', params,
                                               client='127.0.0.1')
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
 
         # test that authentication with wrong password
@@ -112,7 +112,7 @@ class TestPolicyPassthrough(TestController):
         response = self.make_validate_request('check', params,
                                               client='192.168.13.14')
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         # test that authentication with valid password
         # from client 192.168.13.14 is ok
@@ -123,7 +123,7 @@ class TestPolicyPassthrough(TestController):
         response = self.make_validate_request('check', params,
                                               client='192.168.13.14')
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         return
 

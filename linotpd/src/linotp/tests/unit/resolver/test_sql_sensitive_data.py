@@ -97,10 +97,10 @@ class TestSQLResolverSensitiveData(TestCase):
         resolver = self.load_resolver()
 
         res = resolver.getUserId("user1")
-        self.assertTrue(res == 1)
+        assert res == 1
 
         user_info = resolver.getUserInfo(res)
-        self.assertTrue('password' not in user_info)
+        assert 'password' not in user_info
 
         return
 
@@ -114,7 +114,7 @@ class TestSQLResolverSensitiveData(TestCase):
         users = resolver.getUserList({'username': '*'})
 
         for user_info in users:
-            self.assertTrue('password' not in user_info)
+            assert 'password' not in user_info
 
         return
 
@@ -125,10 +125,10 @@ class TestSQLResolverSensitiveData(TestCase):
         '''
         resolver = self.load_resolver()
 
-        self.assertTrue(resolver.checkPass(
+        assert resolver.checkPass(
             resolver.getUserId("user1"),
-            "password"))
-        self.assertTrue(resolver.checkPass(
+            "password")
+        assert resolver.checkPass(
             resolver.getUserId("user2"),
-            "password"))
+            "password")
         return

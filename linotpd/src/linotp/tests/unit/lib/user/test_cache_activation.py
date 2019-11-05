@@ -65,21 +65,21 @@ class TestCacheActivation(unittest.TestCase):
         resolver_spec = 'linotp.sqlresolver.mysql'
 
         ret = _get_user_lookup_cache(resolver_spec)
-        self.assertTrue('cache' in ret)
+        assert 'cache' in ret
 
         mocked_context['Config']['linotp.user_lookup_cache.enabled'] = 'False'
         mocked_context['Config']['linotp.user_lookup_cache.expiration'] = '1d'
 
         ret = _get_user_lookup_cache(resolver_spec)
-        self.assertTrue(ret is None)
+        assert ret is None
 
         mocked_context['Config']['linotp.user_lookup_cache.enabled'] = 'True'
         del mocked_context['Config']['linotp.user_lookup_cache.expiration']
 
         ret = _get_user_lookup_cache(resolver_spec)
-        self.assertTrue('cache' in ret)
+        assert 'cache' in ret
 
         mocked_cache_manager = mocked_context['CacheManager']
-        self.assertTrue(mocked_cache_manager.expiretime == 36 * 3600)
+        assert mocked_cache_manager.expiretime == 36 * 3600
 
         return

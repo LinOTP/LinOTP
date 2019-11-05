@@ -65,7 +65,7 @@ class TestAdminController(TestController):
                       }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def createToken2(self, serial="F722362"):
         parameters = {
@@ -75,7 +75,7 @@ class TestAdminController(TestController):
                       }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         return serial
 
     def createTokenSHA256(self, serial="SHA256"):
@@ -86,7 +86,7 @@ class TestAdminController(TestController):
                       "hashlib" : "sha256"
                       }
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         return serial
 
     def createSPASS(self, serial="LSSP0001", pin="1test@pin!42"):
@@ -96,7 +96,7 @@ class TestAdminController(TestController):
                       "pin"    : pin
                       }
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         return serial
 
     def createToken(self):
@@ -109,7 +109,7 @@ class TestAdminController(TestController):
                       }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {
                       "serial": "F722363",
@@ -120,7 +120,7 @@ class TestAdminController(TestController):
                       }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {
                       "serial": "F722364",
@@ -131,7 +131,7 @@ class TestAdminController(TestController):
                       }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         ## test the update
         parameters = {
@@ -144,7 +144,7 @@ class TestAdminController(TestController):
 
         response = self.make_admin_request('init', params=parameters)
         #log.error("response %s\n",response)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def removeTokenByUser(self, user):
         ### final delete all tokens of user root
@@ -232,11 +232,11 @@ class TestAdminController(TestController):
 
         response = self.make_admin_request('set', params=parameters)
         #log.debug("response %s",response)
-        self.assertTrue('"set pin": 1' in response, response)
-        self.assertTrue('"set SyncWindow": 1' in response, response)
-        self.assertTrue('"set OtpLen": 1' in response, response)
-        self.assertTrue('"set MaxFailCount": 1' in response, response)
-        self.assertTrue('"set hashlib": 1' in response, response)
+        assert '"set pin": 1' in response, response
+        assert '"set SyncWindow": 1' in response, response
+        assert '"set OtpLen": 1' in response, response
+        assert '"set MaxFailCount": 1' in response, response
+        assert '"set hashlib": 1' in response, response
 
         parameters = {
                       "user": "root",
@@ -248,14 +248,14 @@ class TestAdminController(TestController):
 
         response = self.make_admin_request('set', params=parameters)
         #log.error("response %s",response)
-        self.assertTrue('"set pin": 3' in response, response)
-        self.assertTrue('"set SyncWindow": 3' in response, response)
-        self.assertTrue('"set OtpLen": 3' in response, response)
-        self.assertTrue('"set MaxFailCount": 3' in response, response)
+        assert '"set pin": 3' in response, response
+        assert '"set SyncWindow": 3' in response, response
+        assert '"set OtpLen": 3' in response, response
+        assert '"set MaxFailCount": 3' in response, response
 
         self.delete_token("F722362")
         response = self.removeTokenByUser("root")
-        self.assertTrue('"value": 2' in response, response)
+        assert '"value": 2' in response, response
 
     def test_remove(self):
         self.createToken()
@@ -273,10 +273,10 @@ class TestAdminController(TestController):
         parameters = {"username": "*"}
         response = self.make_admin_request('userlist',
                                 params=parameters)
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
         resp = json.loads(response.body)
         values = resp.get('result', {}).get('value', [])
-        self.assertTrue(len(values) > 15, "not enough users returned %r" % resp)
+        assert len(values) > 15, "not enough users returned %r" % resp
 
     @pytest.mark.xfail
     def test_userlist_paged(self):
@@ -295,25 +295,25 @@ class TestAdminController(TestController):
         parameters = {"username": "*", "rp": 5, "page": 2}
         response = self.make_admin_request('userlist',
                                 params=parameters)
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
         resp = json.loads(response.body)
 
         entries = parameters['rp']
         values = resp.get('result', {}).get('value', [])
-        self.assertEqual(len(values), parameters['rp'], resp)
+        assert len(values) == parameters['rp'], resp
 
         num = parameters['rp'] * (parameters['page'] + 1)
         queried = resp.get('result', {}).get('queried', 0)
-        self.assertEqual(queried, num, resp)
+        assert queried == num, resp
 
         # test for optional pagesize, which falls back to the pagesize of 15
         parameters = {"username": "*", "page": 0}
         response = self.make_admin_request('userlist',
                                 params=parameters)
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
         resp = json.loads(response.body)
         values = resp.get('result', {}).get('value', [])
-        self.assertEqual(len(values), 15, resp)
+        assert len(values) == 15, resp
 
         # test for ValueError Exception if page or rp is not of int
         # though the returned data is a json response
@@ -321,11 +321,11 @@ class TestAdminController(TestController):
         response = self.make_admin_request('userlist',
                                 params=parameters)
         # check that status is false
-        self.assertTrue('"status": false,' in response, response)
+        assert '"status": false,' in response, response
         # check for valid json
         resp = json.loads(response.body)
         value = resp.get('result', {}).get('error', {}).get("code", 0)
-        self.assertEqual(value, 9876, resp)
+        assert value == 9876, resp
 
         return
 
@@ -333,23 +333,23 @@ class TestAdminController(TestController):
         self.createToken()
         parameters = {"serial": "F722364"}
         response = self.make_admin_request('disable', params=parameters)
-        self.assertTrue('"value": 1' in response, response)
+        assert '"value": 1' in response, response
 
         parameters = {"serial": "F722364"}
         response = self.make_admin_request('show', params=parameters)
 
-        self.assertTrue('false' in response, response)
-        self.assertTrue('F722364' in response, response)
+        assert 'false' in response, response
+        assert 'F722364' in response, response
 
         parameters = {"serial": "F722364"}
         response = self.make_admin_request('enable', params=parameters)
-        self.assertTrue('"value": 1' in response, response)
+        assert '"value": 1' in response, response
 
         parameters = {"serial": "F722364"}
         response = self.make_admin_request('show', params=parameters)
 
-        self.assertTrue('true' in response, response)
-        self.assertTrue('F722364' in response, response)
+        assert 'true' in response, response
+        assert 'F722364' in response, response
 
         self.removeTokenByUser("root")
 
@@ -361,14 +361,14 @@ class TestAdminController(TestController):
         parameters = {"user": "root", "otp1": "359864", "otp2": "348449" }
         response = self.make_admin_request('resync', params=parameters)
         #log.error("response %s\n",response)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
 
         parameters = {"user": "root", "otp1": "359864", "otp2": "348448" }
         response = self.make_admin_request('resync', params=parameters)
         # Test response...
         log.error("response %s\n", response)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
 
         self.delete_token("F722364")
@@ -381,7 +381,7 @@ class TestAdminController(TestController):
         parameters = {"serial":"SHA256", "otp1":"778729" , "otp2":"094573" }
         response = self.make_admin_request("resync", params=parameters)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         self.delete_token("SHA256")
 
 
@@ -393,8 +393,8 @@ class TestAdminController(TestController):
         response = self.make_admin_request('setPin', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"set sopin": 1' in response, response)
-        self.assertTrue('"set userpin": 1' in response, response)
+        assert '"set sopin": 1' in response, response
+        assert '"set userpin": 1' in response, response
 
         self.delete_token("003e808e")
 
@@ -414,35 +414,35 @@ class TestAdminController(TestController):
         response = self.make_admin_request('assign', params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         ## test initial assign update
         parameters = {"serial": serial, "user": "root", "pin":"NewPin" }
         response = self.make_admin_request('assign', params=parameters)
         #log.error("response %s\n",response)
         # Test response...
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('show')
         #log.error("response %s\n",response)
-        self.assertTrue('"User.userid": "0", ' in response, response)
+        assert '"User.userid": "0", ' in response, response
 
 
         ## test initial assign update
         parameters = {"serial": serial , "user": "root"}
         response = self.make_admin_request('unassign', params=parameters)
         #log.error("response %s\n",response)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         ## test wrong assign
         parameters = {"serial": serial, "user": "NoBody" }
         response = self.make_admin_request('assign', params=parameters)
         #log.error("response %s\n",response)
-        self.assertTrue('getUserId failed: no user >NoBody< found!' in response, response)
+        assert 'getUserId failed: no user >NoBody< found!' in response, response
 
         response = self.make_admin_request('show')
         #log.error("response %s\n",response)
-        self.assertTrue('"User.userid": "",' in response, response)
+        assert '"User.userid": "",' in response, response
 
 
 
@@ -453,7 +453,7 @@ class TestAdminController(TestController):
 
         parameters = {"serial": "umlauttoken", "user": "kölbel"}
         response = self.make_admin_request("assign", params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         self.delete_token("umlauttoken")
         return
@@ -477,11 +477,11 @@ class TestAdminController(TestController):
 
         parameters = {"serial": token_name, "user": "hans"}
         response = self.make_admin_request("assign", params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": token_name, 'type': "email"}
         response = self.make_admin_request("losttoken", params=parameters)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         resp = json.loads(response.body)
         lost_token_name = resp.get('result', {}).get('value', {}).get('serial')
@@ -489,28 +489,28 @@ class TestAdminController(TestController):
         # first check if old token is not active
         parameters = {"serial": token_name}
         response = self.make_admin_request("show", params=parameters)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
         resp = json.loads(response.body)
         data = resp.get("result", {}).get('value', {}).get('data', [{}])[0]
         active = data.get("LinOtp.Isactive", True)
-        self.assertFalse(active, response)
+        assert not active, response
         user = data.get("User.username", '')
-        self.assertEqual(user, 'hans', response)
+        assert user == 'hans', response
 
         # second check if new token is active
         parameters = {"serial": lost_token_name}
         response = self.make_admin_request("show", params=parameters)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
         resp = json.loads(response.body)
         data = resp.get("result", {}).get('value', {}).get('data', [{}])[0]
         active = data.get("LinOtp.Isactive", False)
-        self.assertTrue(active, response)
+        assert active, response
 
         user = data.get("User.username", '')
-        self.assertEqual(user, 'hans', response)
+        assert user == 'hans', response
 
         ttype = data.get("LinOtp.TokenType", '')
-        self.assertEqual(ttype, 'email', response)
+        assert ttype == 'email', response
 
         self.delete_token(token_name)
         self.delete_token(lost_token_name)
@@ -535,11 +535,11 @@ class TestAdminController(TestController):
 
         parameters = {"serial": token_name, "user": "hans"}
         response = self.make_admin_request("assign", params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": token_name, 'type': "sms"}
         response = self.make_admin_request("losttoken", params=parameters)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         resp = json.loads(response.body)
         lost_token_name = resp.get('result', {}).get('value', {}).get('serial')
@@ -547,28 +547,28 @@ class TestAdminController(TestController):
         # first check if old token is not active
         parameters = {"serial": token_name}
         response = self.make_admin_request("show", params=parameters)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
         resp = json.loads(response.body)
         data = resp.get("result", {}).get('value', {}).get('data', [{}])[0]
         active = data.get("LinOtp.Isactive", True)
-        self.assertFalse(active, response)
+        assert not active, response
         user = data.get("User.username", '')
-        self.assertEqual(user, 'hans', response)
+        assert user == 'hans', response
 
         # second check if new token is active
         parameters = {"serial": lost_token_name}
         response = self.make_admin_request("show", params=parameters)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
         resp = json.loads(response.body)
         data = resp.get("result", {}).get('value', {}).get('data', [{}])[0]
         active = data.get("LinOtp.Isactive", False)
-        self.assertTrue(active, response)
+        assert active, response
 
         user = data.get("User.username", '')
-        self.assertEqual(user, 'hans', response)
+        assert user == 'hans', response
 
         ttype = data.get("LinOtp.TokenType", '')
-        self.assertEqual(ttype, 'sms', response)
+        assert ttype == 'sms', response
 
         self.delete_token(token_name)
         self.delete_token(lost_token_name)
@@ -594,11 +594,11 @@ class TestAdminController(TestController):
 
         parameters = {"serial": token_name, "user": user_name}
         response = self.make_admin_request("assign", params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": token_name, 'type': "sms"}
         response = self.make_admin_request("losttoken", params=parameters)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         resp = json.loads(response.body)
         lost_token_name = resp.get('result', {}).get('value', {}).get('serial')
@@ -606,28 +606,28 @@ class TestAdminController(TestController):
         # first check if old token is not active
         parameters = {"serial": token_name}
         response = self.make_admin_request("show", params=parameters)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
         resp = json.loads(response.body)
         data = resp.get("result", {}).get('value', {}).get('data', [{}])[0]
         active = data.get("LinOtp.Isactive", True)
-        self.assertFalse(active, response)
+        assert not active, response
         user = data.get("User.username", '')
-        self.assertEqual(user, user_name, response)
+        assert user == user_name, response
 
         # second check if new token is active
         parameters = {"serial": lost_token_name}
         response = self.make_admin_request("show", params=parameters)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
         resp = json.loads(response.body)
         data = resp.get("result", {}).get('value', {}).get('data', [{}])[0]
         active = data.get("LinOtp.Isactive", False)
-        self.assertTrue(active, response)
+        assert active, response
 
         user = data.get("User.username", '')
-        self.assertEqual(user, user_name, response)
+        assert user == user_name, response
 
         ttype = data.get("LinOtp.TokenType", '')
-        self.assertEqual(ttype, 'pw', response)
+        assert ttype == 'pw', response
 
         self.delete_token(token_name)
         self.delete_token(lost_token_name)
@@ -652,21 +652,21 @@ class TestAdminController(TestController):
         spass_pin  = "initial_pin"
 
         new_serial = self.createSPASS(serial=token_name, pin=spass_pin)
-        self.assertTrue(token_name == new_serial)
+        assert token_name == new_serial
 
         parameters = {"serial": token_name, "user": "hans"}
         response = self.make_admin_request("assign", params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # check if this spass validates
         response = self.make_validate_request('check_s',
                                 params={'serial': token_name,
                                         'pass': spass_pin})
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": token_name, 'type': "spass"}
         response = self.make_admin_request("losttoken", params=parameters)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         resp = json.loads(response.body)
         temp_token_name = resp.get('result', {}).get('value', {}).get('serial')
@@ -675,38 +675,38 @@ class TestAdminController(TestController):
         # first check if old token is not active
         parameters = {"serial": token_name}
         response = self.make_admin_request("show", params=parameters)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
         resp = json.loads(response.body)
         data = resp.get("result", {}).get('value', {}).get('data', [{}])[0]
         active = data.get("LinOtp.Isactive", True)
-        self.assertFalse(active, response)
+        assert not active, response
         user = data.get("User.username", '')
-        self.assertEqual(user, 'hans', response)
+        assert user == 'hans', response
 
         # second check if new token is active and properly assigned
         parameters = {"serial": temp_token_name}
         response = self.make_admin_request("show", params=parameters)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
         resp = json.loads(response.body)
         data = resp.get("result", {}).get('value', {}).get('data', [{}])[0]
         active = data.get("LinOtp.Isactive", False)
-        self.assertTrue(active, response)
+        assert active, response
 
         user = data.get("User.username", '')
-        self.assertEqual(user, 'hans', response)
+        assert user == 'hans', response
 
         ttype = data.get("LinOtp.TokenType", '')
-        self.assertEqual(ttype, 'pw', response)
+        assert ttype == 'pw', response
 
         # finally, check if old spass is blocked and new one works without previous pin
         response = self.make_validate_request('check_s',
                                 params={'serial': token_name,
                                         'pass': spass_pin})
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
         response = self.make_validate_request('check_s',
                                 params={'serial': temp_token_name,
                                         'pass': temp_token_pass})
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # all fine, clean up
         self.delete_token(token_name)
@@ -723,7 +723,7 @@ class TestAdminController(TestController):
                       "user" : "kölbel"
                       }
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         self.delete_token("umlauttoken")
 
     def test_session(self):
@@ -736,7 +736,7 @@ class TestAdminController(TestController):
                                 params={})
 
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         session = None
 
@@ -756,7 +756,7 @@ class TestAdminController(TestController):
         response = self.make_admin_request('dropsession',
                                 params={'session': session})
 
-        self.assertTrue('' in response, response)
+        assert '' in response, response
 
         session = None
 
@@ -777,19 +777,19 @@ class TestAdminController(TestController):
                                 params={"serial" : 'unique_serial_001',
                                         "type" : 'spass'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('check_serial',
                                 params={'serial' : 'unique_serial_002'})
 
-        self.assertTrue('"unique": true' in response, response)
-        self.assertTrue('"new_serial": "unique_serial_002"' in response, response)
+        assert '"unique": true' in response, response
+        assert '"new_serial": "unique_serial_002"' in response, response
 
         response = self.make_admin_request('check_serial',
                                 params={'serial' : 'unique_serial_001'})
 
-        self.assertTrue('"unique": false' in response, response)
-        self.assertTrue('"new_serial": "unique_serial_001_01"' in response, response)
+        assert '"unique": false' in response, response
+        assert '"new_serial": "unique_serial_001_01"' in response, response
 
     def test_setPin_empty(self):
         '''
@@ -799,20 +799,20 @@ class TestAdminController(TestController):
                                 params={'serial': 'setpin_01',
                                         'type': 'spass'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('setPin',
                                 params={'serial': 'setpin_01'})
 
-        self.assertTrue('"status": false' in response, response)
-        self.assertTrue('"code": 77' in response, response)
+        assert '"status": false' in response, response
+        assert '"code": 77' in response, response
 
         response = self.make_admin_request('setPin',
                                 params={'serial': 'setpin_01',
                                         'sopin' : 'geheim'})
 
 
-        self.assertTrue('"set sopin": 1' in response, response)
+        assert '"set sopin": 1' in response, response
 
     def test_set_misc(self):
         '''
@@ -822,7 +822,7 @@ class TestAdminController(TestController):
                                 params={'serial': 'token_set_misc',
                                         'type': 'spass'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('set',
                                 params={'serial': 'token_set_misc',
@@ -832,10 +832,10 @@ class TestAdminController(TestController):
                                         'timeShift': '0'})
 
 
-        self.assertTrue('set CounterWindow": 1' in response, response)
-        self.assertTrue('"set timeShift": 1' in response, response)
-        self.assertTrue('"set timeWindow": 1' in response, response)
-        self.assertTrue('"set timeStep": 1' in response, response)
+        assert 'set CounterWindow": 1' in response, response
+        assert '"set timeShift": 1' in response, response
+        assert '"set timeWindow": 1' in response, response
+        assert '"set timeStep": 1' in response, response
 
     def test_set_count(self):
         '''
@@ -845,7 +845,7 @@ class TestAdminController(TestController):
                                 params={'serial': 'token_set_count',
                                         'type': 'spass'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('set',
                                 params={'serial': 'token_set_count',
@@ -855,10 +855,10 @@ class TestAdminController(TestController):
                                         'countAuthSuccessMax': '10'})
 
 
-        self.assertTrue('"set countAuthSuccess": 1' in response, response)
-        self.assertTrue('"set countAuthSuccessMax": 1' in response, response)
-        self.assertTrue('"set countAuth": 1' in response, response)
-        self.assertTrue('"set countAuthMax": 1' in response, response)
+        assert '"set countAuthSuccess": 1' in response, response
+        assert '"set countAuthSuccessMax": 1' in response, response
+        assert '"set countAuth": 1' in response, response
+        assert '"set countAuthMax": 1' in response, response
 
         return
 
@@ -870,7 +870,7 @@ class TestAdminController(TestController):
                                 params={'serial': 'token_set_validity',
                                         'type': 'spass'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('set',
                                 params={'serial': 'token_set_validity',
@@ -879,8 +879,8 @@ class TestAdminController(TestController):
                                         })
 
 
-        self.assertTrue('"status": false' in response, response)
-        self.assertTrue('does not match format' in response, response)
+        assert '"status": false' in response, response
+        assert 'does not match format' in response, response
 
         response = self.make_admin_request('set',
                                 params={'serial': 'token_set_validity',
@@ -889,9 +889,9 @@ class TestAdminController(TestController):
                                         })
 
 
-        self.assertTrue('"status": true' in response, response)
-        self.assertTrue('"set validityPeriodStart": 1' in response, response)
-        self.assertTrue('"set validityPeriodEnd": 1' in response, response)
+        assert '"status": true' in response, response
+        assert '"set validityPeriodStart": 1' in response, response
+        assert '"set validityPeriodEnd": 1' in response, response
 
     def test_set_validity_interface(self):
         '''
@@ -905,13 +905,13 @@ class TestAdminController(TestController):
                                 params={'serial': token_serial_1,
                                         'type': 'spass'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('init',
                                 params={'serial': token_serial_2,
                                         'type': 'spass'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('setValidity',
                                 params={
@@ -924,9 +924,9 @@ class TestAdminController(TestController):
                                      },
                                 content_type='application/json')
 
-        self.assertTrue('"status": false' in response, response)
+        assert '"status": false' in response, response
         msg = "invalid literal for int() with base 10: '2012-10-12'"
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         response = self.make_admin_request(
                                 action='setValidity',
@@ -941,20 +941,17 @@ class TestAdminController(TestController):
                                 content_type="application/json"
                                 )
 
-        self.assertTrue(
-            response.json['result']['status'],
-            'Expected response.result.status to be True in response: "{}"'
-                .format(response.json))
+        assert response.json['result']['status'], \
+            'Expected response.result.status to be True in response: "{}"' \
+                .format(response.json)
 
-        self.assertTrue(
-            token_serial_1 in response.json['result']['value'],
-            'Expected response.result.value to contain token id "{}" in response: "{}"'
-                .format(token_serial_1, response.json))
+        assert token_serial_1 in response.json['result']['value'], \
+            'Expected response.result.value to contain token id "{}" in response: "{}"' \
+                .format(token_serial_1, response.json)
 
-        self.assertTrue(
-            token_serial_2 in response.json['result']['value'],
-            'Expected response.result.value to contain token id "{}" in response: "{}"'
-                .format(token_serial_2, response.json))
+        assert token_serial_2 in response.json['result']['value'], \
+            'Expected response.result.value to contain token id "{}" in response: "{}"' \
+                .format(token_serial_2, response.json)
 
     def test_set_empty(self):
         '''
@@ -964,15 +961,15 @@ class TestAdminController(TestController):
                                 params={'serial': 'token_set_empty',
                                         'type': 'spass'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('set',
                                 params={'serial': 'token_set_empty',
                                         })
 
 
-        self.assertTrue('"status": false' in response, response)
-        self.assertTrue('"code": 77' in response, response)
+        assert '"status": false' in response, response
+        assert '"code": 77' in response, response
 
 
     def test_copy_token_pin(self):
@@ -987,38 +984,38 @@ class TestAdminController(TestController):
                                         'type': 'spass',
                                         'pin': '1234'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_validate_request('check_s',
                                 params={'serial': 'copy_token_1',
                                         'pass': '1234'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('init',
                                 params={'serial': 'copy_token_2',
                                         'type': 'spass',
                                         'pin': 'otherPassword'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_validate_request('check_s',
                                 params={'serial': 'copy_token_2',
                                         'pass': 'otherPassword'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('copyTokenPin',
                                 params={'from': 'copy_token_1',
                                         'to': 'copy_token_2'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_validate_request('check_s',
                                 params={'serial': 'copy_token_2',
                                         'pass': '1234'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def test_copy_token_user(self):
         '''
@@ -1030,32 +1027,32 @@ class TestAdminController(TestController):
                                         'pin': 'copyTokenUser',
                                         'user': 'root'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_validate_request('check',
                                 params={'user': 'root',
                                         'pass': 'copyTokenUser'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('init',
                                 params={'serial': 'copy_user_2',
                                         'type': 'spass',
                                         'pin': 'unknownSecret'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('copyTokenUser',
                                 params={'from': 'copy_user_1',
                                         'to': 'copy_user_2'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_validate_request('check',
                                 params={'user': 'root',
                                         'pass': 'unknownSecret'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def test_enroll_token_twice(self):
         '''
@@ -1066,7 +1063,7 @@ class TestAdminController(TestController):
                                         'type' : 'hmac',
                                         'otpkey' : '123456'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # enrolling the token of the same type is possible
         response = self.make_admin_request('init',
@@ -1074,7 +1071,7 @@ class TestAdminController(TestController):
                                         'type' : 'hmac',
                                         'otpkey' : '567890'})
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # enrolling of another type is not possible
         response = self.make_admin_request('init',
@@ -1082,14 +1079,14 @@ class TestAdminController(TestController):
                                         'type' : 'spass',
                                         'otpkey' : '123456'})
 
-        self.assertTrue("already exist with type" in response, response)
-        self.assertTrue("Can not initialize token with new type" in response, response)
+        assert "already exist with type" in response, response
+        assert "Can not initialize token with new type" in response, response
 
         # clean up
         response = self.make_admin_request('remove',
                                 params={'serial' : 'token01'})
 
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
 def test_host(adminclient):
     adminclient.cookie_jar.clear_session_cookies()

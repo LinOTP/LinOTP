@@ -90,7 +90,7 @@ class TestPolicySetrealm(TestController):
             'scope': 'authorization'}
 
         response = self.make_system_request('setPolicy', params)
-        self.assertTrue('"active": true,' in response, response)
+        assert '"active": true,' in response, response
 
         params = {
             'name': 'passthru',
@@ -100,7 +100,7 @@ class TestPolicySetrealm(TestController):
             'scope': 'authentication'}
 
         response = self.make_system_request('setPolicy', params)
-        self.assertTrue('"active": true,' in response, response)
+        assert '"active": true,' in response, response
 
     def test_setrealm_policy_negative(self):
         """ test setrealm with resolver selector """
@@ -118,7 +118,7 @@ class TestPolicySetrealm(TestController):
                   'pin': token_pin}
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"otpkey"' in response, response)
+        assert '"otpkey"' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -129,13 +129,13 @@ class TestPolicySetrealm(TestController):
                   'pass': user_pass}
 
         response = self.make_validate_request('check', params)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         params = {'user': user,
                   'pass': token_pin}
 
         response = self.make_validate_request('check', params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         return
 
@@ -155,7 +155,7 @@ class TestPolicySetrealm(TestController):
                   'pin': token_pin}
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"otpkey"' in response, response)
+        assert '"otpkey"' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -166,7 +166,7 @@ class TestPolicySetrealm(TestController):
                   'pass': user_pass}
 
         response = self.make_validate_request('check', params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         return
 

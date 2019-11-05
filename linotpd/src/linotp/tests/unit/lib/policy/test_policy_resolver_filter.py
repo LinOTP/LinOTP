@@ -63,7 +63,7 @@ class TestCompare(unittest.TestCase):
 
         res = _user_filter(Policies, userObj, scope='authorization')
 
-        self.assertTrue(res == {}, res)
+        assert res == {}, res
 
         return
 
@@ -90,7 +90,7 @@ class TestCompare(unittest.TestCase):
 
         res = _user_filter(Policies, userObj, scope='authorization')
 
-        self.assertTrue('set_realm_test' in res, res)
+        assert 'set_realm_test' in res, res
 
         return
 

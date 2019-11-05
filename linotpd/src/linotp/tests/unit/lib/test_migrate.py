@@ -113,6 +113,6 @@ class TestMigrate(unittest.TestCase):
             # decypt the real value
 
             out_value = crypter.decrypt(enc_value, just_mac=key + value)
-            self.assertTrue(value == out_value)
+            assert value == out_value
 
         return

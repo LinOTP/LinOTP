@@ -92,7 +92,7 @@ class TestUserPrincipalController(TestController):
 
         # Create test token...
         response = self.make_admin_request('init', params=params)
-        self.assertTrue(serial in response, response)
+        assert serial in response, response
 
         # although not needed, we assign token...
         params = {
@@ -101,14 +101,14 @@ class TestUserPrincipalController(TestController):
             'realm': realm
             }
         response = self.make_admin_request('assign', params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         params = {
             'serial': serial,
             }
 
         response = self.make_admin_request('enable', params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         # test user-principal authentication
         params = {

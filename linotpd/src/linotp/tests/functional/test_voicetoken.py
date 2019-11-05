@@ -117,7 +117,7 @@ class TestVoiceToken(TestController):
 
         response = self.make_admin_request('init', params)
         response_dict = json.loads(response.body)
-        self.assertIn('detail', response_dict)
+        assert 'detail' in response_dict
 
         # trigger voice challenge
 
@@ -133,14 +133,14 @@ class TestVoiceToken(TestController):
         value = result.get('value')
         detail = response_dict.get('detail', {})
         transaction_id = detail.get('transactionid')
-        self.assertIsNotNone(transaction_id)
+        assert transaction_id is not None
 
-        self.assertTrue(status)
-        self.assertFalse(value)
+        assert status
+        assert not value
 
         _, call_kwargs = mocked_submit_method.call_args
         callee_number = call_kwargs.get('calleeNumber')
-        self.assertEqual(callee_number, token_phone_number)
+        assert callee_number == token_phone_number
         otp = call_kwargs.get('otp')
 
         # respond to challenge with correct otp
@@ -155,8 +155,8 @@ class TestVoiceToken(TestController):
         status = result.get('status')
         value = result.get('value')
 
-        self.assertTrue(status)
-        self.assertTrue(value)
+        assert status
+        assert value
 
         # trigger another voice challenge
 
@@ -172,14 +172,14 @@ class TestVoiceToken(TestController):
         value = result.get('value')
         detail = response_dict.get('detail', {})
         transaction_id = detail.get('transactionid')
-        self.assertIsNotNone(transaction_id)
+        assert transaction_id is not None
 
-        self.assertTrue(status)
-        self.assertFalse(value)
+        assert status
+        assert not value
 
         _, call_kwargs = mocked_submit_method.call_args
         callee_number = call_kwargs.get('calleeNumber')
-        self.assertEqual(callee_number, token_phone_number)
+        assert callee_number == token_phone_number
         otp = call_kwargs.get('otp')
 
         # respond to challenge with a wrong otp
@@ -198,8 +198,8 @@ class TestVoiceToken(TestController):
         status = result.get('status')
         value = result.get('value')
 
-        self.assertTrue(status)
-        self.assertFalse(value)
+        assert status
+        assert not value
 
         # trigger another voice challenge for check with pin+otp
 
@@ -215,14 +215,14 @@ class TestVoiceToken(TestController):
         value = result.get('value')
         detail = response_dict.get('detail', {})
         transaction_id = detail.get('transactionid')
-        self.assertIsNotNone(transaction_id)
+        assert transaction_id is not None
 
-        self.assertTrue(status)
-        self.assertFalse(value)
+        assert status
+        assert not value
 
         _, call_kwargs = mocked_submit_method.call_args
         callee_number = call_kwargs.get('calleeNumber')
-        self.assertEqual(callee_number, token_phone_number)
+        assert callee_number == token_phone_number
         otp = call_kwargs.get('otp')
 
         # respond to challenge with pin+otp and without
@@ -237,5 +237,5 @@ class TestVoiceToken(TestController):
         status = result.get('status')
         value = result.get('value')
 
-        self.assertTrue(status)
-        self.assertTrue(value)
+        assert status
+        assert value

@@ -127,4 +127,4 @@ class TestProviderTestCase(unittest.TestCase):
             raise Exception('Error was: %r, calls were: %r' % (
                 aserror.message, call_args_list))
 
-        self.assertEqual(res, (True, {}))
+        assert res == (True, {})

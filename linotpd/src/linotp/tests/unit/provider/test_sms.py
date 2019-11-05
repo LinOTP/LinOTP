@@ -32,6 +32,7 @@ import asyncore
 
 from linotp.provider.smsprovider import getSMSProviderClass
 from linotp.provider import ProviderNotAvailable
+import pytest
 
 
 class CustomSMTPServer(smtpd.SMTPServer):
@@ -81,7 +82,7 @@ class TestSMS(TestCase):
         sms = getSMSProviderClass("SmtpSMSProvider", "SmtpSMSProvider")()
         sms.loadConfig(smtp_config)
 
-        with self.assertRaises(ProviderNotAvailable):
+        with pytest.raises(ProviderNotAvailable):
             sms.submitMessage(phone, message)
 
         smtp_config = {'mailserver': 'localhost:1025',
@@ -95,12 +96,12 @@ class TestSMS(TestCase):
 
         sms.loadConfig(smtp_config)
         ret = sms.submitMessage(phone, message)
-        self.assertTrue(ret is False, ret)
+        assert ret is False, ret
 
         smtp_config['raise_exception'] = True
         sms.loadConfig(smtp_config)
 
-        with self.assertRaisesRegex(Exception, "Connection refused|Cannot assign requested address"):
+        with pytest.raises(Exception, match="Connection refused|Cannot assign requested address"):
             sms.submitMessage(phone, message)
 
     def test_02_http(self):
@@ -154,15 +155,15 @@ class TestSMS(TestCase):
 
         msg = ("Failed to send SMS")
 
-        with self.assertRaisesRegex(Exception, msg):
+        with pytest.raises(Exception, match=msg):
             sms.loadConfig(clickatell_config)
             ret = sms.submitMessage(phone, message)
-        self.assertFalse(ret)
+        assert not ret
 
-        with self.assertRaisesRegex(Exception, msg):
+        with pytest.raises(Exception, match=msg):
             sms.loadConfig(config)
             ret = sms.submitMessage(phone, message)
-        self.assertFalse(ret)
+        assert not ret
 
 
 def main():

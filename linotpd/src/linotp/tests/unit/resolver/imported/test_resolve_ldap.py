@@ -73,7 +73,7 @@ class LDAPResolverTest(unittest.TestCase):
         res = obj.getUserList(arg)
         for item in res:
             for key, val in item.items():
-                self.assertNotIn('-ERR', str(val))
+                assert '-ERR' not in str(val)
         return res
 
     @mock.patch.object(LDAPResolver, 'bind', autospec=True)
@@ -95,7 +95,7 @@ class LDAPConnectTests(LDAPResolverTest):
     def test_ldap_testconnection_invalid_parameter(self):
         self.ldap_test_param['linotp.ldapresolver.TIMEOUT'] = 'qwerty'
         (status, desc) = LDAPResolver.IdResolver.testconnection(self.ldap_test_param)
-        self.assertEqual(status, "error")
+        assert status == "error"
 
 class LDAPInProcessTests(LDAPResolverTest):
 
@@ -120,18 +120,18 @@ class LDAPInProcessTests(LDAPResolverTest):
 
         # Check with result
         res = self.mocked_ldap_getuserid('maxwell', adret)
-        self.assertNotEqual(res, "")
+        assert res != ""
 
         # This time, only return federated values
         res = self.mocked_ldap_getuserid('nouser', adret[1:])
-        self.assertEqual(res, "")
+        assert res == ""
 
     def test_ldap_getuserid_ldap_notfound(self):
         '''
         LDAP: test handling of user with empty result
         '''
         res = self.mocked_ldap_getuserid('nouser', [])
-        self.assertEqual(res, "")
+        assert res == ""
 
     def test_ldap_getuserid_ldap_found(self):
         '''
@@ -141,7 +141,7 @@ class LDAPInProcessTests(LDAPResolverTest):
                     'dc=corp,dc=lsexperts,dc=de',
                     {'entryUUID': ['ef50cce4-1df9-1033-90e7-713823084e1f']})]
         res = self.mocked_ldap_getuserid('bach', ldapret)
-        self.assertEqual(res, ldapret[0][0])
+        assert res == ldapret[0][0]
 
     def test_start_tls_connect_exception(self):
         '''
@@ -166,13 +166,12 @@ class LDAPInProcessTests(LDAPResolverTest):
 
                 self.ldap_y.connect('ldap://localhost', caller)
                 # mock_start_tls.assert_called_once()
-                self.assertEqual(mock_ldap_init.call_count, 2,
-                                 "ldap.initialize should have been called "
-                                 "twice (with starttls, without starttls)."
+                assert mock_ldap_init.call_count == 2, \
+                                 "ldap.initialize should have been called " \
+                                 "twice (with starttls, without starttls)." \
                                  "\nException:%s\nCalls:%s".format(
                                      effect,
                                      mock_ldap_init.call_args_list)
-                                 )
 
 
 class LDAPResolverExtTest(LDAPResolverTest):
@@ -201,7 +200,7 @@ class LDAPResolverExtTest(LDAPResolverTest):
                  "./tinyldap-64bit"],
                 cwd="%s/data" % current_directory)
 
-            self.assertIsNotNone(self.proc)
+            assert self.proc is not None
 
         except OSError as e:
             if e.errno == os.errno.ENOENT:
@@ -225,8 +224,8 @@ class LDAPResolverExtTest(LDAPResolverTest):
         res1 = self.ldap_y.getUserId("user1")
         res2 = self.ldap_y.getUserId("user2")
 
-        self.assertTrue(res1 == "cn=user1,o=linotp,c=org")
-        self.assertTrue(res2 == "cn=user2,o=linotp,c=org")
+        assert res1 == "cn=user1,o=linotp,c=org"
+        assert res2 == "cn=user2,o=linotp,c=org"
 
     def test_ldap_checkpass(self):
         '''
@@ -237,8 +236,8 @@ class LDAPResolverExtTest(LDAPResolverTest):
 
         r1 = self.ldap_y.checkPass(self.ldap_y.getUserId("user1"), "geheim")
         r2 = self.ldap_y.checkPass(self.ldap_y.getUserId("user2"), "geheim")
-        self.assertTrue(r1)
-        self.assertTrue(r2)
+        assert r1
+        assert r2
 
     def test_ldap_getUserId_unicode(self):
         '''
@@ -252,7 +251,7 @@ class LDAPResolverExtTest(LDAPResolverTest):
         # res4 = self.ldap_y.getUserId("weiß")
         # print "uid (weiß): ", res4
 
-        self.assertTrue(res3 == "cn=kölbel,o=linotp,c=org")
+        assert res3 == "cn=kölbel,o=linotp,c=org"
 
     def test_ldap_getUserList(self):
         '''
@@ -263,7 +262,7 @@ class LDAPResolverExtTest(LDAPResolverTest):
 
         # all users are two users
         user_list = self.ldap_y.getUserList({})
-        self.assertTrue(len(user_list) == 4)
+        assert len(user_list) == 4
 
     def test_ldap_getUsername(self):
         '''
@@ -276,8 +275,8 @@ class LDAPResolverExtTest(LDAPResolverTest):
         r2 = self.ldap_y.getUsername("cn=kölbel,o=linotp,c=org")
         r3 = self.ldap_y.getUsername("cn=niemand,o=linotp,c=org")
 
-        self.assertTrue(r1 == "user1")
-        self.assertTrue(r2 == "kölbel")
-        self.assertTrue(r3 == "")
+        assert r1 == "user1"
+        assert r2 == "kölbel"
+        assert r3 == ""
 
 # eof #

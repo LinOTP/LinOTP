@@ -31,6 +31,7 @@ Test lib challenge methods
 import unittest
 from mock import patch
 from linotp.lib.challenges import Challenges
+import pytest
 
 
 class TestChallengesTransactionidLength(unittest.TestCase):
@@ -40,10 +41,9 @@ class TestChallengesTransactionidLength(unittest.TestCase):
         with patch('linotp.lib.challenges.context') as mock_context:
             mock_context.get.return_value = {}
             transid_length = Challenges.get_tranactionid_length()
-            self.assertAlmostEqual(
-                transid_length, Challenges.DefaultTransactionIdLength)
+            assert round(abs(transid_length-Challenges.DefaultTransactionIdLength), 7) == 0
 
-            with self.assertRaises(Exception) as wrong_range:
+            with pytest.raises(Exception) as wrong_range:
                 too_short_length = 7
 
                 wrong_range_message = \

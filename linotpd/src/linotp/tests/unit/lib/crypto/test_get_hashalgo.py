@@ -31,6 +31,7 @@ from hashlib import sha1
 
 from linotp.lib.crypto.utils import Hashlib_map
 from linotp.lib.crypto.utils import get_hashalgo_from_description
+import pytest
 
 
 class TestGetHashAlgoFromDescription(unittest.TestCase):
@@ -46,21 +47,21 @@ class TestGetHashAlgoFromDescription(unittest.TestCase):
         # first test the beaking case, where description was None
 
         hash_algo = get_hashalgo_from_description(None)
-        self.assertTrue(hash_algo == sha1)
+        assert hash_algo == sha1
 
         # invalid hash function name but valid fallback
 
         hash_algo = get_hashalgo_from_description('blub')
-        self.assertTrue(hash_algo == sha1)
+        assert hash_algo == sha1
 
         # invalid hash function name and invalid fallback
 
-        with self.assertRaises(Exception) as exx:
+        with pytest.raises(Exception) as exx:
             hash_algo = get_hashalgo_from_description('blub', fallback='blah')
 
         message = 'unsupported hash function'
         exx_message = "%r" % exx.exception
-        self.assertTrue(message in exx_message, exx)
+        assert message in exx_message, exx
 
         return
 
@@ -72,7 +73,7 @@ class TestGetHashAlgoFromDescription(unittest.TestCase):
         for description, hash_function in list(Hashlib_map.items()):
 
             hash_algo = get_hashalgo_from_description(description)
-            self.assertTrue(hash_algo == hash_function)
+            assert hash_algo == hash_function
 
         return
 

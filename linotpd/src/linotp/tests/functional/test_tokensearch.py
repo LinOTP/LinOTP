@@ -60,7 +60,7 @@ class TestTokensearch(TestController):
         for serial in self.serials:
             param = {"serial": serial}
             response = self.make_admin_request('remove', params=param)
-            self.assertTrue('value' in response)
+            assert 'value' in response
 
         return
 
@@ -87,14 +87,14 @@ class TestTokensearch(TestController):
 
         msg = '"setConfig splitAtSign:false": true'
 
-        self.assertTrue(msg in response)
+        assert msg in response
 
         # create token
         params = {'type': 'spass',
                   'user': 'pass.thru@example.com'}
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('serial' in response)
+        assert 'serial' in response
 
         jresp = json.loads(response.body)
         serial = jresp.get('detail', {}).get('serial', '')
@@ -104,12 +104,12 @@ class TestTokensearch(TestController):
         # search for token which belong to a certain user
         params = {'user': 'pass.thru@example.com'}
         response = self.make_admin_request('show', params=params)
-        self.assertTrue(serial in response)
+        assert serial in response
 
         # search with wildcard for token which belong to a certain user
         params = {'user': 'pass*thru@example.com'}
         response = self.make_admin_request('show', params=params)
-        self.assertTrue(serial in response)
+        assert serial in response
 
         # ----------------------------------------------------------------- --
 

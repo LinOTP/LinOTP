@@ -64,7 +64,7 @@ class PairingUnitTestCase(unittest.TestCase):
                                        serial='QRfoo',
                                        callback_url='foo')
 
-            self.assertTrue(url.startswith('lseqr://'))
+            assert url.startswith('lseqr://')
 
         # -------------------------------------------------------------------- -
 
@@ -75,4 +75,4 @@ class PairingUnitTestCase(unittest.TestCase):
                                        serial='QRfoo',
                                        callback_url='foo')
 
-            self.assertTrue(url.startswith('yolo://'))
+            assert url.startswith('yolo://')

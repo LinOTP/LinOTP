@@ -94,7 +94,7 @@ class SQLResolverTest(SQLTestController):
         }
         response = self.make_admin_request('init', params=params)
 
-        self.assertTrue('false' not in response.body, response)
+        assert 'false' not in response.body, response
 
         # ------------------------------------------------------------------ --
 
@@ -109,7 +109,7 @@ class SQLResolverTest(SQLTestController):
             }
 
         response = self.make_system_request('setPolicy', params=params)
-        self.assertTrue('false' not in response.body)
+        assert 'false' not in response.body
 
         # ------------------------------------------------------------------ --
 
@@ -121,7 +121,7 @@ class SQLResolverTest(SQLTestController):
             }
 
         response = self.make_validate_request('check', params=params)
-        self.assertTrue('"value": false' in response)
+        assert '"value": false' in response
 
         # ------------------------------------------------------------------ --
 
@@ -137,7 +137,7 @@ class SQLResolverTest(SQLTestController):
             'result', {}).get(
                 'value', {}).get(
                     'data',[{}])[0]
-        self.assertTrue(token_info.get( "LinOtp.FailCount", -1) == 1)
+        assert token_info.get( "LinOtp.FailCount", -1) == 1
 
         # ------------------------------------------------------------------ --
 
@@ -154,7 +154,7 @@ class SQLResolverTest(SQLTestController):
                                                      auth_user=auth_user,
                                                      new_auth_cookie=True)
 
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -170,7 +170,7 @@ class SQLResolverTest(SQLTestController):
             'result', {}).get(
                 'value', {}).get(
                     'data',[{}])[0]
-        self.assertTrue(token_info.get( "LinOtp.FailCount", -1) == 0)
+        assert token_info.get( "LinOtp.FailCount", -1) == 0
 
         return
 

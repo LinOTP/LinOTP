@@ -57,16 +57,16 @@ class TestAuditEntryCase(unittest.TestCase):
             action_detail=audit_entry.get('action_detail', msg),
             tokens=[])
 
-        self.assertTrue('action_detail' in mocked_context['audit'])
-        self.assertTrue(msg in mocked_context['audit']['action_detail'])
+        assert 'action_detail' in mocked_context['audit']
+        assert msg in mocked_context['audit']['action_detail']
 
         # 1.b Test  - previous 'action detail' is default
 
         msg = "Failcounter exceeded!"
         finish_tokens.create_audit_entry(action_detail=msg, tokens=[])
 
-        self.assertTrue('action_detail' in mocked_context['audit'])
-        self.assertTrue(msg in mocked_context['audit']['action_detail'])
+        assert 'action_detail' in mocked_context['audit']
+        assert msg in mocked_context['audit']['action_detail']
 
         # 2. Test  - previous 'action detail' is default
 
@@ -74,8 +74,8 @@ class TestAuditEntryCase(unittest.TestCase):
         msg = "no sun, no fun"
         finish_tokens.create_audit_entry(msg, tokens=[])
 
-        self.assertTrue('action_detail' in mocked_context['audit'])
-        self.assertTrue(msg in mocked_context['audit']['action_detail'])
+        assert 'action_detail' in mocked_context['audit']
+        assert msg in mocked_context['audit']['action_detail']
 
         # 3. Test  - previous 'action detail' is default
 
@@ -83,9 +83,9 @@ class TestAuditEntryCase(unittest.TestCase):
         finish_tokens.create_audit_entry(audit_entry['action_detail'],
                                          tokens=[])
 
-        self.assertTrue('action_detail' in mocked_context['audit'])
-        self.assertTrue("no sun, no fun" in
-                        mocked_context['audit']['action_detail'])
+        assert 'action_detail' in mocked_context['audit']
+        assert "no sun, no fun" in \
+                        mocked_context['audit']['action_detail']
 
         # 4. Test  - no parameter, falling back to 'no token found!'
 
@@ -93,8 +93,8 @@ class TestAuditEntryCase(unittest.TestCase):
         msg = "no token found!"
         finish_tokens.create_audit_entry(tokens=[])
 
-        self.assertTrue('action_detail' in mocked_context['audit'])
-        self.assertTrue(msg in
-                        mocked_context['audit']['action_detail'])
+        assert 'action_detail' in mocked_context['audit']
+        assert msg in \
+                        mocked_context['audit']['action_detail']
 
         return

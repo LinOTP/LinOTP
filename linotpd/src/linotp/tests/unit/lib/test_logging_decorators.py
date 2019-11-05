@@ -83,7 +83,7 @@ class TestLoggingDecorators(unittest.TestCase):
         returnvalue = decorated(2, 1)
 
         asserted_returnvalue = {'list': [2, 1], 'rev_list': [1, 2]}
-        self.assertEqual(returnvalue, asserted_returnvalue)
+        assert returnvalue == asserted_returnvalue
 
         # ----------------------------------------------------------------------
 
@@ -94,7 +94,7 @@ class TestLoggingDecorators(unittest.TestCase):
             'function_kwargs': {}
         }
 
-        self.assertEqual(fake_logger.extras[0], enter_extras)
+        assert fake_logger.extras[0] == enter_extras
 
         # ----------------------------------------------------------------------
 
@@ -104,7 +104,7 @@ class TestLoggingDecorators(unittest.TestCase):
             'function_returnvalue': asserted_returnvalue
         }
 
-        self.assertEqual(fake_logger.extras[1], exit_extras)
+        assert fake_logger.extras[1] == exit_extras
 
     # --------------------------------------------------------------------------
 
@@ -121,10 +121,10 @@ class TestLoggingDecorators(unittest.TestCase):
         # ----------------------------------------------------------------------
 
         extras = fake_logger.extras[0]
-        self.assertIn('type', extras)
-        self.assertIn('function_name', extras)
-        self.assertIn('timedelta', extras)
+        assert 'type' in extras
+        assert 'function_name' in extras
+        assert 'timedelta' in extras
 
-        self.assertEqual(extras['type'], 'function_timedelta')
-        self.assertEqual(extras['function_name'], 'func')
-        self.assertGreater(extras['timedelta'], 0)
+        assert extras['type'] == 'function_timedelta'
+        assert extras['function_name'] == 'func'
+        assert extras['timedelta'] > 0

@@ -640,7 +640,7 @@ class TestSelfserviceController(TestController):
                                 params={'serial':'token01',
                                         'type': 'hmac'})
 
-        self.assertTrue('"message": "valid types are \'oathtoken\' and \'googleauthenticator\' and \'googleauthenticator_time\'. You provided hmac",' in response,response)
+        assert '"message": "valid types are \'oathtoken\' and \'googleauthenticator\' and \'googleauthenticator_time\'. You provided hmac",' in response,response
 
         response = self.make_userselfservice_request('webprovision',
                                 auth_user=auth_user,
@@ -648,7 +648,7 @@ class TestSelfserviceController(TestController):
                                         'type': 'googleauthenticator'
                                         })
 
-        self.assertTrue('"message": "ERR410: The policy settings do not allow you to issue this request!"' in response,response)
+        assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response,response
 
         self.createPolicy('webprovisionGOOGLE')
 
@@ -657,20 +657,20 @@ class TestSelfserviceController(TestController):
                                 params={'prefix':'LSGO',
                                         'type': 'googleauthenticator'
                                         })
-        self.assertTrue('"url": "otpauth://hotp/LinOTP:LSGO' in response,
-                        response)
+        assert '"url": "otpauth://hotp/LinOTP:LSGO' in response, \
+                        response
 
         # test
         response = self.make_admin_request(
                     'show', params={'user': 'passthru_user1@myDefRealm'})
-        self.assertTrue('"LinOtp.TokenSerialnumber": "LSGO' in response,response)
-        self.assertTrue('"LinOtp.Isactive": true' in response, response)
+        assert '"LinOtp.TokenSerialnumber": "LSGO' in response,response
+        assert '"LinOtp.Isactive": true' in response, response
 
         # UI
 
         response = self.make_selfservice_request('webprovisiongoogletoken',
                                 auth_user=auth_user)
-        self.assertTrue("googletokenform" in response.body, response)
+        assert "googletokenform" in response.body, response
 
         return
 
@@ -708,4 +708,4 @@ class TestSelfserviceController(TestController):
         response_dict = json.loads(response.body)
 
         user = response_dict['user']
-        self.assertEqual(user, 'passthru_user1')
+        assert user == 'passthru_user1'
