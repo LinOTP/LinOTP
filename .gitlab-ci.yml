@@ -135,7 +135,6 @@ unit-test:
   stage: test
   variables:
     DEBIAN_RELEASE_NAME: buster
-  allow_failure: true
   script:
     - make -C $CI_PROJECT_DIR unittests
 
