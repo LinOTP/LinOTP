@@ -37,7 +37,7 @@ except ImportError as exx:
     from linotp.useridresolver.SQLIdResolver import IdResolver as SQLResolver
 
 
-class TestSQLResolver(TestCase):
+class TestSQLResolverSensitiveData(TestCase):
 
     resolver = None
 
@@ -68,7 +68,7 @@ class TestSQLResolver(TestCase):
                         "email": "email"})
             },
             "config2_map": json.dumps({
-                            "username": "username",
+                "username": "username",
                             "userid": "username",
                             "password": "password",
                             "givenname": "givenname",
@@ -90,7 +90,7 @@ class TestSQLResolver(TestCase):
 
     def test_sql_getUserInfo(self):
         '''
-        SQL: test the userinfo does not return sensitiv data
+        SQL: test the userinfo does not return sensitive data
         '''
         resolver = self.load_resolver()
 
@@ -104,7 +104,7 @@ class TestSQLResolver(TestCase):
 
     def test_sql_getUserList(self):
         '''
-        SQL: test the userinfo does not return sensitiv data
+        SQL: test the userinfo does not return sensitive data
         '''
         resolver = self.load_resolver()
 
@@ -122,11 +122,9 @@ class TestSQLResolver(TestCase):
         resolver = self.load_resolver()
 
         self.assertTrue(resolver.checkPass(
-                                    resolver.getUserId("user1"),
-                                    "password"))
+            resolver.getUserId("user1"),
+            "password"))
         self.assertTrue(resolver.checkPass(
-                                    resolver.getUserId("user2"),
-                                    "password"))
+            resolver.getUserId("user2"),
+            "password"))
         return
-
-# eof #
