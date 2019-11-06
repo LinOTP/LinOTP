@@ -655,8 +655,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         Daher muss die data ein vielfaches von 16 sein und der IV im Falle von
         CBC auch 16 byte lang.
         '''
-        handle = int(self.handles.get(id))
-        handle = CK_OBJECT_HANDLE(handle)
+        handle = CK_OBJECT_HANDLE(self.handles.get(id))
         output("debug", "[encrypt] encrypting with handle %s" % str(handle))
         data = self.pad(data)
 
