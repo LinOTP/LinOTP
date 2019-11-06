@@ -45,17 +45,7 @@ from pysodium import crypto_scalarmult_curve25519 as calc_dh
 
 from Cryptodome.Cipher import AES
 
-from linotp.lib.crypto.utils import libcrypt_password
-from linotp.lib.crypto.utils import get_hashalgo_from_description
-from linotp.lib.crypto.utils import hash_digest
-from linotp.lib.crypto.utils import hmac_digest
-from linotp.lib.crypto.utils import encryptPin
-from linotp.lib.crypto.utils import decryptPin
-from linotp.lib.crypto.utils import encrypt
-from linotp.lib.crypto.utils import decrypt
-from linotp.lib.crypto.utils import zerome
-from linotp.lib.crypto.utils import geturandom
-from linotp.lib.crypto.utils import get_dh_secret_key
+from linotp.lib.crypto import utils
 
 
 log = logging.getLogger(__name__)
@@ -94,7 +84,7 @@ class SecretObj(object):
 
     def getKey(self):
         log.debug('Warning: Requesting secret key as plaintext.')
-        return decrypt(self.val, self.iv, hsm=self.hsm)
+        return utils.decrypt(self.val, self.iv, hsm=self.hsm)
 
     def calc_dh(self, partition, data):
         """
@@ -106,16 +96,16 @@ class SecretObj(object):
         :param partition: the id of the server secret key
         :param :
         """
-        server_secret_key = get_dh_secret_key(partition)
+        server_secret_key = utils.get_dh_secret_key(partition)
         hmac_secret = calc_dh(server_secret_key, data)
 
-        zerome(server_secret_key)
+        utils.zerome(server_secret_key)
 
         return hmac_secret
 
     def compare(self, key):
         bhOtpKey = binascii.unhexlify(key)
-        enc_otp_key = encrypt(bhOtpKey, self.iv, hsm=self.hsm)
+        enc_otp_key = utils.encrypt(bhOtpKey, self.iv, hsm=self.hsm)
         otpKeyEnc = binascii.hexlify(enc_otp_key)
 
         return (otpKeyEnc == self.val)
@@ -146,7 +136,7 @@ class SecretObj(object):
             # as the self.val is binary, we have to convert the
             # string result of libcrypt as well toByte
 
-            crypted_password = libcrypt_password(
+            crypted_password = utils.libcrypt_password(
                 password, self.val.decode('utf-8')
                 ).encode('utf-8')
 
@@ -160,7 +150,7 @@ class SecretObj(object):
 
         # the legacy comparison: compare the ecrypted password
 
-        enc_otp_key = encrypt(password, self.iv, hsm=self.hsm)
+        enc_otp_key = utils.encrypt(password, self.iv, hsm=self.hsm)
 
         return binascii.hexlify(enc_otp_key) == binascii.hexlify(self.val)
 
@@ -174,9 +164,9 @@ class SecretObj(object):
         data = data_input
 
         if not hash_algo:
-            hash_algo = get_hashalgo_from_description('sha1')
+            hash_algo = utils.get_hashalgo_from_description('sha1')
 
-        h_digest = hmac_digest(bkey=b_key, data_input=data,
+        h_digest = utils.hmac_digest(bkey=b_key, data_input=data,
                                hsm=self.hsm, hash_algo=hash_algo)
 
         if not bkey:
@@ -198,22 +188,22 @@ class SecretObj(object):
         return msg_bin
 
     @staticmethod
-    def encrypt(seed: bytes, iv=None, hsm=None):
+    def encrypt(seed: str, iv=None, hsm=None):
         if not iv:
-            iv = geturandom(16)
-        enc_seed = encrypt(seed, iv, hsm=hsm)
+            iv = utils.geturandom(16)
+        enc_seed = utils.encrypt(seed, iv, hsm=hsm)
         return iv, enc_seed
 
     @staticmethod
     def decrypt(enc_seed, iv=None, hsm=None):
-        dec_seed = decrypt(enc_seed, iv=iv, hsm=hsm)
+        dec_seed = utils.decrypt(enc_seed, iv=iv, hsm=hsm)
         return dec_seed
 
     @staticmethod
     def hash_pin(pin, iv=None, hsm=None):
         if not iv:
-            iv = geturandom(16)
-        hashed_pin = hash_digest(pin, iv, hsm=hsm)
+            iv = utils.geturandom(16)
+        hashed_pin = utils.hash_digest(pin, iv, hsm=hsm)
         return iv, hashed_pin
 
     @staticmethod
@@ -222,18 +212,18 @@ class SecretObj(object):
         returns a concatenated 'iv:crypt'
         """
         if not iv:
-            iv = geturandom(16)
-        enc_pin = encryptPin(pin, iv=iv, hsm=hsm)
+            iv = utils.geturandom(16)
+        enc_pin = utils.encryptPin(pin, iv=iv, hsm=hsm)
         return enc_pin
 
     @staticmethod
     def decrypt_pin(pin, hsm=None):
-        dec_pin = decryptPin(pin, hsm=hsm)
+        dec_pin = utils.decryptPin(pin, hsm=hsm)
         return dec_pin
 
     def encryptPin(self):
         self._setupKey_()
-        res = encryptPin(self.bkey)
+        res = utils.encryptPin(self.bkey)
         self._clearKey_(preserve=self.preserve)
         return res
 
@@ -257,7 +247,7 @@ class SecretObj(object):
                 self.bkey = None
 
             if self.bkey is not None:
-                zerome(self.bkey)
+                utils.zerome(self.bkey)
                 del self.bkey
 
     def __del__(self):
