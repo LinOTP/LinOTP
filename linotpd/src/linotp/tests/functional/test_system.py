@@ -303,6 +303,9 @@ class TestSystemController(TestController):
         '''
         Test: system/setConfig with typing
         '''
+        response = self.make_system_request(action='getConfig')
+        self.assertTrue("secretkey" not in response, response)
+
         params = {'secretkey': 'test123',
                   'secretkey.type': 'password'}
         response = self.make_system_request(action='setConfig', params=params)
