@@ -116,7 +116,7 @@ build-test-environment:debian-buster:
     DEPENDENCY_GPG_KEYID: ""
     DEBIAN_RELEASE_NAME: buster
 
-.test-debian:
+.unit-test-base:
   image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
   before_script:
     - python3 --version
@@ -130,16 +130,16 @@ build-test-environment:debian-buster:
 #  artifacts:
 #    paths:
 #      - coverage/${DEBIAN_RELEASE_NAME}
-
-unit-test:
-  extends: .test-debian
-  stage: test
-  variables:
-    DEBIAN_RELEASE_NAME: buster
   script:
     - make unittests
 
-.functional-test:
+unit-test:
+  extends: .unit-test-base
+  stage: test
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+
+.functional-test-base:
   stage: test
   image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
   services:
@@ -153,8 +153,10 @@ unit-test:
     MYSQL_HOST: mysql
     SHELL: /bin/bash
   before_script:
+    - python3 --version
     - cd linotpd/src
     - pip3 install -e ".[test]"
+    - cd ${CI_PROJECT_DIR}
 #    - mkdir /tmp/config
 #    - cp config/dictionary /tmp/config
 #    - rm test.ini
@@ -174,28 +176,27 @@ unit-test:
 #    - cat func_chunk_04
 #    - cat func_chunk_05
   script:
-#    - bash -c "find linotp/tests/functional -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
-    - make -C $CI_PROJECT_DIR functionaltests
+    - make functionaltests
 #  artifacts:
 #    paths:
 #      - coverage/${DEBIAN_RELEASE_NAME}/
 
-# .functional-special-test:
-#   extends: .functional-test
+# .functional-special-test-base:
+#   extends: .functional-test-base
 #   stage: test
 #   variables:
 #     COVERAGE_PREFIX: func-special
 #   script:
 #     - bash -c "find linotp/tests/functional_special -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
 
-functional-test:buster:
-  extends: .functional-test
+functional-test:
+  extends: .functional-test-base
   allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
-# functional-special-test:buster:
-#   extends: .functional-special-test
+# functional-special-test:
+#   extends: .functional-special-test-base
 #   allow_failure: true
 #   variables:
 #     DEBIAN_RELEASE_NAME: buster
@@ -214,7 +215,7 @@ functional-test:buster:
 #     paths:
 #       - coverage/${DEBIAN_RELEASE_NAME}
 
-# coverage-report:buster:
+# coverage-report:
 #   extends: .coverage-report
 #   allow_failure: true
 #   variables:
