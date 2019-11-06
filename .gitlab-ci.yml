@@ -31,7 +31,7 @@ stages:
 
 .lint:
   stage: lint
-  image: python:2.7
+  image: python:3
   allow_failure: true
   before_script:
     - pip install pylint
@@ -116,32 +116,30 @@ build-test-environment:debian-buster:
     DEPENDENCY_GPG_KEYID: ""
     DEBIAN_RELEASE_NAME: buster
 
-.test-debian:
+.unit-test-base:
   image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
   before_script:
+    - python3 --version
     - cd linotpd/src
-    - python --version
-    - pip install -e ".[test]"
-    - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
-    - python tools/linotp-create-enckey -f test.ini
-    - python tools/linotp-create-auditkeys -f test.ini
+    - pip3 install -e ".[test]"
+    - cd ${CI_PROJECT_DIR}
+#    - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
 #    - export PYTEST_COVER_DIR=${CI_PROJECT_DIR}/coverage/${DEBIAN_RELEASE_NAME}/
 #    - export COVERAGE_FILE=${PYTEST_COVER_DIR}/unit
 #    - mkdir -p ${PYTEST_COVER_DIR}
 #  artifacts:
 #    paths:
 #      - coverage/${DEBIAN_RELEASE_NAME}
+  script:
+    - make unittests
 
-unit-test:debian-buster:
-  extends: .test-debian
+unit-test:
+  extends: .unit-test-base
   stage: test
   variables:
     DEBIAN_RELEASE_NAME: buster
-  allow_failure: true
-  script:
-    - make -C $CI_PROJECT_DIR unittests
 
-.functional-test:
+.functional-test-base:
   stage: test
   image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
   services:
@@ -155,14 +153,13 @@ unit-test:debian-buster:
     MYSQL_HOST: mysql
     SHELL: /bin/bash
   before_script:
+    - python3 --version
     - cd linotpd/src
-    - pip install -e ".[test]"
-    - python tools/linotp-create-enckey -f test.ini
-    - python tools/linotp-create-auditkeys -f test.ini
-    - cp encKey public.pem private.pem /tmp/
-    - mkdir /tmp/config
-    - cp config/dictionary /tmp/config
-    - rm test.ini
+    - pip3 install -e ".[test]"
+    - cd ${CI_PROJECT_DIR}
+#    - mkdir /tmp/config
+#    - cp config/dictionary /tmp/config
+#    - rm test.ini
 #    - test "$CI_PIPELINE_SOURCE" != "schedule" && export NOSE_ATTRS='!nightly'
 #    - export PYTEST_COVER_DIR=${CI_PROJECT_DIR}/coverage/${DEBIAN_RELEASE_NAME}/
 #    - mkdir -p ${PYTEST_COVER_DIR}
@@ -179,28 +176,27 @@ unit-test:debian-buster:
 #    - cat func_chunk_04
 #    - cat func_chunk_05
   script:
-#    - bash -c "find linotp/tests/functional -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
-    - make -C $CI_PROJECT_DIR functionaltests
+    - make functionaltests
 #  artifacts:
 #    paths:
 #      - coverage/${DEBIAN_RELEASE_NAME}/
 
-# .functional-special-test:
-#   extends: .functional-test
+# .functional-special-test-base:
+#   extends: .functional-test-base
 #   stage: test
 #   variables:
 #     COVERAGE_PREFIX: func-special
 #   script:
 #     - bash -c "find linotp/tests/functional_special -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
 
-functional-test:buster:
-  extends: .functional-test
+functional-test:
+  extends: .functional-test-base
   allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
-# functional-special-test:buster:
-#   extends: .functional-special-test
+# functional-special-test:
+#   extends: .functional-special-test-base
 #   allow_failure: true
 #   variables:
 #     DEBIAN_RELEASE_NAME: buster
@@ -209,7 +205,7 @@ functional-test:buster:
 #   stage: coverage-report
 #   image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
 #   script:
-#     - pip install coverage
+#     - pip3 install coverage
 #     - cd coverage/${DEBIAN_RELEASE_NAME}
 #     - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
 #     - coverage combine *
@@ -219,7 +215,7 @@ functional-test:buster:
 #     paths:
 #       - coverage/${DEBIAN_RELEASE_NAME}
 
-# coverage-report:buster:
+# coverage-report:
 #   extends: .coverage-report
 #   allow_failure: true
 #   variables:

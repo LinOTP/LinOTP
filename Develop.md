@@ -38,12 +38,12 @@ Notes:
 
 Consider setting up a dedicated virtual environment now. This allows you to install the packages locally (without administrative rights) and prevents pollution of your host system.
 
-    virtualenv --system-site-packages linotp_dev_venv
+    virtualenv linotp_dev_venv
     source linotp_dev_venv/bin/activate
 
 Then go to the *source code directory* and install the development dependencies:
 
-    cd linotpd/src/linotp
+    cd linotpd/src
     pip install -e .
 
 In order to run tests you must also install the test dependencies:
@@ -60,7 +60,7 @@ The file linotpd/src/linotp/settings.py contains a basic set of configuration "e
 Run LinOTP
 ----------
 
-To run LinOTP execute flask from the *source code directory* (linotpd/src/linotp/) as follows:
+To run LinOTP execute flask from the *linotp module directory* (linotpd/src/linotp/) as follows:
 
     FLASK_APP=linotpapp flask run
 

@@ -22,41 +22,28 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-"""
-
-"""
-
-import unittest
 
 from linotp.lib.crypto import SecretObj
 from linotp.lib.crypto.utils import libcrypt_password
 
 
-class TestComparePassword(unittest.TestCase):
+def test_compare_password():
     """
-    unit test to verify the new password comparison in secret object
+    test to verify the new password comparison in secret object
+    used in the pw and lost token.
     """
 
-    def test_compare_password(self):
-        """
-        test the new compare passwords - used in the pw and lost token
-        """
+    # init the SecretObject
 
-        # init the SecretObject
+    sec_obj = SecretObj(val=libcrypt_password(
+        'password').encode('utf-8'), iv=b':1:')
 
-        sec_obj = SecretObj(val=libcrypt_password('password'), iv=':1:')
+    # run the comparison tests - positive test
 
-        # run the comparison tests - positive test
+    res = sec_obj.compare_password('password')
+    assert res
 
-        res = sec_obj.compare_password('password')
-        self.assertTrue(res)
+    # negative test
 
-        # negative test
-
-        res = sec_obj.compare_password('Password')
-        self.assertFalse(res)
-
-        return
-
-# eof #
-
+    res = sec_obj.compare_password('Password')
+    assert not res
