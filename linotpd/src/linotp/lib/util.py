@@ -148,13 +148,13 @@ def uniquify(doubleList):
     return uniqueList
 
 
-def generate_otpkey(key_size=20):
+def generate_otpkey(key_size:int = 20) -> str:
     '''
     generates the HMAC key of keysize. Should be 20 or 32
     THe key is returned as a hexlified string
     '''
     log.debug("generating key of size %s" % key_size)
-    return binascii.hexlify(geturandom(key_size))
+    return geturandom(key_size).hex()
 
 
 def generate_password(size=6, characters=None):
