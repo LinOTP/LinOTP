@@ -1528,8 +1528,8 @@ class SystemController(BaseController):
 
             # the contents of filestring needs to be parsed and
             # stored as policies.
-
-            policies = ConfigObj(fileString.split('\n'), encoding="UTF-8")
+            config = fileString.decode('utf-8').split('\n')
+            policies = ConfigObj(config)
             log.info("[importPolicy] read the following policies: %r",
                      policies)
 
