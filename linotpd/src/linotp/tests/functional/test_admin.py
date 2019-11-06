@@ -421,12 +421,12 @@ class TestAdminController(TestController):
         response = self.make_admin_request('assign', params=parameters)
         #log.error("response %s\n",response)
         # Test response...
-        assert '"value": true' in response, response
+        assert response.json['result']['value'] == True, response
 
         response = self.make_admin_request('show')
         #log.error("response %s\n",response)
-        assert '"User.userid": "0", ' in response, response
-
+        assert len(response.json['result']['value']['data']) == 1, response
+        assert response.json['result']['value']['data'][0]['LinOtp.Userid'] == '0', response
 
         ## test initial assign update
         parameters = {"serial": serial , "user": "root"}

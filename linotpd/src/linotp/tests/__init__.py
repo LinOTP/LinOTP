@@ -130,6 +130,9 @@ class CompatibleTestResponse(Response):
     def __str__(self, *args, **kwargs):
         return self.body
 
+    def __repr__(self, *args, **kwargs):
+        return f"{super().__repr__()} {self.body}"
+
 
 class ConfigWrapper:
     """
