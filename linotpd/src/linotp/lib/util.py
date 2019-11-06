@@ -538,6 +538,6 @@ def int_from_bytes(bytes_, byteorder='little'):
     res = 0
     for byte in bytes_[::order]:
         res *= 256
-        res += ord(byte)
+        res += byte
 
     return res
