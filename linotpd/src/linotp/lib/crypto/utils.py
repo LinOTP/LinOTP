@@ -331,7 +331,7 @@ def encrypt(data: str, iv: bytes, id: int=0, hsm=None) -> bytes:
     """
 
     hsm_obj = _get_hsm_obj_from_context(hsm)
-    return hsm_obj.encrypt(data, iv, id)
+    return hsm_obj.encrypt(data.encode('utf-8'), iv, id)
 
 
 def decrypt(input, iv, id=0, hsm=None):
