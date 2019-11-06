@@ -25,23 +25,23 @@
 #
 """create responses"""
 
-import qrcode
-import io
 import base64
-import urllib.request, urllib.parse, urllib.error
-
+import io
 import json
+import logging
+import urllib.error
+import urllib.parse
+import urllib.request
 
-from flask import current_app, Response, jsonify, request as flask_request
+import qrcode
+from flask import Response, current_app, jsonify
+from flask import request as flask_request
 
-from linotp.flap import request, tmpl_context as c
-
+from linotp.flap import request
+from linotp.flap import tmpl_context as c
+from linotp.lib.context import request_context, request_context_safety
 from linotp.lib.error import LinotpError
-from linotp.lib.util import get_version
-from linotp.lib.util import get_api_version
-
-from linotp.lib.context import request_context_safety
-from linotp.lib.context import request_context
+from linotp.lib.util import get_api_version, get_version
 
 optional = True
 required = False
@@ -74,7 +74,6 @@ resp = """
 </html>
 """
 
-import logging
 log = logging.getLogger(__name__)
 
 
