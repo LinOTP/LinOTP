@@ -577,31 +577,19 @@ class TokenIterator(object):
             if uInfo is not None and len(uInfo) > 0:
                 if "description" in uInfo:
                     description = uInfo.get("description")
-                    if isinstance(description, str):
-                        userInfo["User.description"] = description.decode(ENCODING)
-                    else:
-                        userInfo["User.description"] = description
+                    userInfo["User.description"] = description
 
                 if "userid" in uInfo:
                     userid = uInfo.get("userid")
-                    if isinstance(userid, str):
-                        userInfo["User.userid"] = userid.decode(ENCODING)
-                    else:
-                        userInfo["User.userid"] = userid
+                    userInfo["User.userid"] = userid
 
                 if "username" in uInfo:
                     username = uInfo.get("username")
-                    if isinstance(username, str):
-                        userInfo["User.username"] = username.decode(ENCODING)
-                    else:
-                        userInfo["User.username"] = username
+                    userInfo["User.username"] = username
 
                 for field in self.user_fields:
                     fieldvalue = uInfo.get(field, "")
-                    if isinstance(fieldvalue, str):
-                        userInfo["User.%s" % field] = fieldvalue.decode(ENCODING)
-                    else:
-                        userInfo["User.%s" % field] = fieldvalue
+                    userInfo["User.%s" % field] = fieldvalue
 
         return (userInfo, uInfo)
 
