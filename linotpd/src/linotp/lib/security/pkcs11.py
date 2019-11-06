@@ -647,7 +647,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         s = self.unpad(s)
         return s
 
-    def encrypt(self, data, iv, id=0):
+    def encrypt(self, data: bytes, iv: bytes, id: int = 0) -> bytes:
         '''
         encrypts the given input data
 
