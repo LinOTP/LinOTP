@@ -64,7 +64,7 @@ class TestTokenlist(TestController):
                   'user': "%s@%s" % (login_name, realm)}
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('serial' in response)
+        assert 'serial' in response
 
         jresp = json.loads(response.body)
         serial = jresp.get('detail', {}).get('serial', '')
@@ -88,7 +88,7 @@ class TestTokenlist(TestController):
                 "value", {}).get(
                     "rows", [{}])[0].get('id')
 
-        self.assertTrue(serial == token_id, response)
+        assert serial == token_id, response
 
         # ----------------------------------------------------------------- --
 
@@ -109,7 +109,7 @@ class TestTokenlist(TestController):
                 "value", {}).get(
                     "rows", [{}])[0].get('id')
 
-        self.assertTrue(serial == token_id, response)
+        assert serial == token_id, response
 
         # ----------------------------------------------------------------- --
 
@@ -130,7 +130,7 @@ class TestTokenlist(TestController):
                 "value", {}).get(
                     "rows", [{}])[0].get('id')
 
-        self.assertTrue(serial == token_id, response)
+        assert serial == token_id, response
 
         # ----------------------------------------------------------------- --
 
@@ -151,6 +151,6 @@ class TestTokenlist(TestController):
                 "value", {}).get(
                     "rows", [{}])[0].get('id')
 
-        self.assertTrue(serial == token_id, response)
+        assert serial == token_id, response
 
         return

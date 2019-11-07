@@ -32,6 +32,7 @@ import unittest
 
 from linotp.lib.type_utils import parse_duration
 from linotp.lib.type_utils import DurationParsingException
+import pytest
 
 
 class DurationTestCase(unittest.TestCase):
@@ -93,7 +94,7 @@ class DurationTestCase(unittest.TestCase):
 
         for duration, _seconds in list(test_vector.items()):
 
-            with self.assertRaises(DurationParsingException):
+            with pytest.raises(DurationParsingException):
                 parse_duration(duration)
 
         return

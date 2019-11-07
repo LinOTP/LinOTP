@@ -29,6 +29,7 @@ import unittest
 from linotp.lib.crypto.utils import libcrypt_password
 from linotp.lib.tools.set_password import SetPasswordHandler
 from linotp.lib.tools.set_password import DataBaseContext
+import pytest
 
 
 class TestSetPasswordTool(unittest.TestCase):
@@ -45,12 +46,12 @@ class TestSetPasswordTool(unittest.TestCase):
         """
         check that an exception with the message will be raised
         """
-        with self.assertRaises(exception) as exx:
+        with pytest.raises(exception) as exx:
             pw_handler.set_password(username,
                                     old_password,
                                     new_password)
 
-        self.assertTrue(message in str(exx.exception))
+        exx.match(message)
 
     def test_set_password(self):
 

@@ -130,6 +130,9 @@ class CompatibleTestResponse(Response):
     def __str__(self, *args, **kwargs):
         return self.body
 
+    def __repr__(self, *args, **kwargs):
+        return f"{super().__repr__()} {self.body}"
+
 
 class ConfigWrapper:
     """
@@ -731,8 +734,8 @@ class TestController(TestCase):
                 "delConfig", params, auth_user=auth_user
             )
             content = response.json
-            self.assertTrue(content["result"]["status"])
-            self.assertTrue("delConfig selfTest" in response, response)
+            assert content["result"]["status"]
+            assert "delConfig selfTest" in response, response
             self.isSelfTest = False
 
         else:
@@ -741,13 +744,9 @@ class TestController(TestCase):
                 "setConfig", params, auth_user=auth_user
             )
             content = response.json
-            self.assertTrue(content["result"]["status"])
-            self.assertTrue(
-                "setConfig selfTest:True" in content["result"]["value"]
-            )
-            self.assertTrue(
-                content["result"]["value"]["setConfig selfTest:True"]
-            )
+            assert content["result"]["status"]
+            assert "setConfig selfTest:True" in content["result"]["value"]
+            assert content["result"]["value"]["setConfig selfTest:True"]
             self.isSelfTest = True
 
         # *********************************************************************** #
@@ -798,7 +797,7 @@ class TestController(TestCase):
         )
         content = response.json
         err_msg = "Error getting all policies. Response %s" % (content)
-        self.assertTrue(content["result"]["status"], err_msg)
+        assert content["result"]["status"], err_msg
         policies = content.get("result", {}).get("value", {})
 
         # first check which are the system policies with write rigts
@@ -835,14 +834,12 @@ class TestController(TestCase):
             ["name", "scope", "action", "user", "realm", "client", "time"]
         )
         diff_set = expected_keys - set(lparams.keys())
-        self.assertTrue(
-            len(diff_set) == 0,
-            "Some key is missing to create a policy %r" % diff_set,
-        )
+        assert len(diff_set) == 0, \
+            "Some key is missing to create a policy %r" % diff_set
 
         response = self.make_system_request("setPolicy", lparams)
         content = response.json
-        self.assertTrue(content["result"]["status"])
+        assert content["result"]["status"]
         expected_value = {
             "setPolicy %s"
             % params["name"]: {
@@ -855,7 +852,7 @@ class TestController(TestCase):
                 "scope": True,
             }
         }
-        self.assertDictEqual(expected_value, content["result"]["value"])
+        assert expected_value == content["result"]["value"]
 
     def delete_license(self):
         ''' delete the current installed license '''
@@ -863,12 +860,12 @@ class TestController(TestCase):
         params = {'key': 'license'}
         response = self.make_system_request('delConfig', params)
         msg = '"delConfig license": true'
-        self.assertTrue(msg in response)
+        assert msg in response
 
         params = {'key': 'license_duration'}
         response = self.make_system_request('delConfig', params)
         msg = '"delConfig license_duration": true'
-        self.assertTrue(msg in response)
+        assert msg in response
 
 
     def delete_config(self, prefix):
@@ -915,8 +912,8 @@ class TestController(TestCase):
                 }
             }
         }
-        self.assertTrue(content["result"]["status"])
-        self.assertDictEqual(expected_value, content["result"]["value"])
+        assert content["result"]["status"]
+        assert expected_value == content["result"]["value"]
 
     def delete_all_token(self):
         """
@@ -928,7 +925,7 @@ class TestController(TestCase):
         content = response.json
 
         err_msg = "Error getting token list. Response %s" % (content)
-        self.assertTrue(content["result"]["status"], err_msg)
+        assert content["result"]["status"], err_msg
         data = content["result"]["value"]["data"]
         for entry in data:
             serials.add(entry["LinOtp.TokenSerialnumber"])
@@ -945,8 +942,8 @@ class TestController(TestCase):
         response = self.make_admin_request("remove", params=params)
         content = response.json
         err_msg = "Error deleting token %s. Response %s" % (serial, content)
-        self.assertTrue(content["result"]["status"], err_msg)
-        self.assertEqual(1, content["result"]["value"], err_msg)
+        assert content["result"]["status"], err_msg
+        assert 1 == content["result"]["value"], err_msg
 
     def create_common_resolvers(self):
         """
@@ -980,8 +977,8 @@ class TestController(TestCase):
             params = resolver_params[resolver_name]
             response = self.create_resolver(name=resolver_name, params=params)
             content = response.json
-            self.assertTrue(content["result"]["status"])
-            self.assertTrue(content["result"]["value"])
+            assert content["result"]["status"]
+            assert content["result"]["value"]
 
     def create_resolver(self, name, params):
         param = copy.deepcopy(params)
@@ -1017,35 +1014,35 @@ class TestController(TestCase):
             realm="myDefRealm", resolvers=self.resolvers["myDefRes"]
         )
         content = response.json
-        self.assertTrue(content["result"]["status"])
-        self.assertTrue(content["result"]["value"])
+        assert content["result"]["status"]
+        assert content["result"]["value"]
 
         # Create 'myOtherRealm' realm
         response = self.create_realm(
             realm="myOtherRealm", resolvers=self.resolvers["myOtherRes"]
         )
         content = response.json
-        self.assertTrue(content["result"]["status"])
-        self.assertTrue(content["result"]["value"])
+        assert content["result"]["status"]
+        assert content["result"]["value"]
 
         # Create mixed realm
         response = self.create_realm(
             realm="myMixRealm", resolvers=",".join(list(self.resolvers.values()))
         )
         content = response.json
-        self.assertTrue(content["result"]["status"])
-        self.assertTrue(content["result"]["value"])
+        assert content["result"]["status"]
+        assert content["result"]["value"]
 
         # Assert 'myDefRealm' is default
         response = self.make_system_request("getRealms", {})
         content = response.json
 
-        self.assertTrue(content["result"]["status"])
+        assert content["result"]["status"]
         realms = content["result"]["value"]
-        self.assertEqual(len(realms), 3)
-        self.assertIn("mydefrealm", realms)
-        self.assertIn("default", realms["mydefrealm"])
-        self.assertTrue(realms["mydefrealm"]["default"])
+        assert len(realms) == 3
+        assert "mydefrealm" in realms
+        assert "default" in realms["mydefrealm"]
+        assert realms["mydefrealm"]["default"]
 
     def _user_service_init(self, auth_user, password, otp=None):
 

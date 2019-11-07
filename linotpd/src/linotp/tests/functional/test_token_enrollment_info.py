@@ -62,8 +62,8 @@ class TestTokenEnrollmentInfo(TestController):
                   'user': '*'}
 
         response = self.make_system_request('setPolicy', params=params)
-        self.assertTrue('setPolicy push_enrollment' in response)
-        self.assertTrue('false' not in response)
+        assert 'setPolicy push_enrollment' in response
+        assert 'false' not in response
 
         params = {
             'type': 'push',
@@ -72,7 +72,7 @@ class TestTokenEnrollmentInfo(TestController):
             'user': 'passthru_user1'
         }
         response = self.make_admin_request('init', params)
-        self.assertTrue('my_push' in response)
+        assert 'my_push' in response
 
         # check via admin/show the token status
         params = {'serial': 'my_push', 'tokeninfo_format': 'json'}
@@ -81,7 +81,7 @@ class TestTokenEnrollmentInfo(TestController):
         jresp = json.loads(response.body)
         for token in jresp.get('result', {}).get('value', {}).get('data', []):
             state = token.get('LinOtp.TokenInfo', {}).get('state')
-            self.assertTrue(state == 'unpaired')
+            assert state == 'unpaired'
 
         # check via userserice/usertokenlist the token status
         auth_user = ('passthru_user1@myDefRealm', 'geheim1')
@@ -93,8 +93,8 @@ class TestTokenEnrollmentInfo(TestController):
         jresp = json.loads(response.body)
         for token in jresp.get('result', {}).get('value', []):
             enrollment = token.get('Enrollment')
-            self.assertTrue('not completed' in enrollment.get('status'))
-            self.assertTrue('unpaired' in enrollment.get('detail'))
+            assert 'not completed' in enrollment.get('status')
+            assert 'unpaired' in enrollment.get('detail')
 
         return
 
@@ -111,8 +111,8 @@ class TestTokenEnrollmentInfo(TestController):
         }
 
         response = self.make_system_request('setPolicy', params=params)
-        self.assertTrue('setPolicy qr_enrollment' in response)
-        self.assertTrue('false' not in response)
+        assert 'setPolicy qr_enrollment' in response
+        assert 'false' not in response
 
         params = {
             'type': 'qr',
@@ -121,7 +121,7 @@ class TestTokenEnrollmentInfo(TestController):
             'user': 'passthru_user1'
         }
         response = self.make_admin_request('init', params)
-        self.assertTrue('my_qr' in response)
+        assert 'my_qr' in response
 
         # check via admin/show the token status
         params = {'serial': 'my_qr', 'tokeninfo_format': 'json'}
@@ -130,7 +130,7 @@ class TestTokenEnrollmentInfo(TestController):
         jresp = json.loads(response.body)
         for token in jresp.get('result', {}).get('value', {}).get('data', []):
             state = token.get('LinOtp.TokenInfo', {}).get('state')
-            self.assertTrue(state == 'pairing_url_sent')
+            assert state == 'pairing_url_sent'
 
         # check via userserice/usertokenlist the token status
         auth_user = ('passthru_user1@myDefRealm', 'geheim1')
@@ -142,8 +142,8 @@ class TestTokenEnrollmentInfo(TestController):
         jresp = json.loads(response.body)
         for token in jresp.get('result', {}).get('value', []):
             enrollment = token.get('Enrollment')
-            self.assertTrue('not completed' in enrollment.get('status'))
-            self.assertTrue('pairing_url_sent' in enrollment.get('detail'))
+            assert 'not completed' in enrollment.get('status')
+            assert 'pairing_url_sent' in enrollment.get('detail')
 
         return
 
@@ -160,8 +160,8 @@ class TestTokenEnrollmentInfo(TestController):
         )
 
         response = self.make_system_request('setPolicy', params=params)
-        self.assertTrue('setPolicy ocra2_enrollment' in response)
-        self.assertTrue('false' not in response)
+        assert 'setPolicy ocra2_enrollment' in response
+        assert 'false' not in response
 
         params = {
             "serial": 'my_ocra2',
@@ -174,7 +174,7 @@ class TestTokenEnrollmentInfo(TestController):
             }
 
         response = self.make_admin_request('init', params)
-        self.assertTrue('false' not in response)
+        assert 'false' not in response
 
         # check via admin/show the token status
         params = {'serial': 'my_ocra2', 'tokeninfo_format': 'json'}
@@ -183,8 +183,8 @@ class TestTokenEnrollmentInfo(TestController):
         jresp = json.loads(response.body)
         for token in jresp.get('result', {}).get('value', {}).get('data', []):
             info = token.get('LinOtp.TokenInfo', {})
-            self.assertTrue('rollout' in info)
-            self.assertTrue('ocrasuite' in info)
+            assert 'rollout' in info
+            assert 'ocrasuite' in info
 
         # check via userserice/usertokenlist the token status
         auth_user = ('passthru_user1@myDefRealm', 'geheim1')
@@ -196,8 +196,8 @@ class TestTokenEnrollmentInfo(TestController):
         jresp = json.loads(response.body)
         for token in jresp.get('result', {}).get('value', []):
             enrollment = token.get('Enrollment')
-            self.assertTrue('not completed' in enrollment.get('status'))
-            self.assertTrue('rollout' in enrollment)
+            assert 'not completed' in enrollment.get('status')
+            assert 'rollout' in enrollment
 
         return
 

@@ -59,18 +59,18 @@ class TestOtppinPolicy(unittest.TestCase):
         mocked_get_pin_policies.return_value = [3]
 
         res = check_pin(token, 'QUATSCH', userObj, options={})
-        self.assertTrue(res)
+        assert res
 
         res = check_pin(token, '', userObj, options={})
-        self.assertTrue(res)
+        assert res
 
         token.type = 'spass'
         res = check_pin(token, 'bad', userObj, options={})
-        self.assertFalse(res)
+        assert not res
 
         token.type = 'spass'
         res = check_pin(token, 'good', userObj, options={})
-        self.assertTrue(res)
+        assert res
 
         return
 

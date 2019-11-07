@@ -107,8 +107,8 @@ class TestEmailtokenController(TestController):
                                 params={'user': 'root',
                                         'pass': self.pin + otp})
         response_json = response.json
-        self.assertTrue(response_json['result']['status'])
-        self.assertTrue(response_json['result']['value'])
+        assert response_json['result']['status']
+        assert response_json['result']['value']
 
         #
         # check: wrong pin should fail
@@ -121,8 +121,8 @@ class TestEmailtokenController(TestController):
                                 params={'user': 'root',
                                         'pass': "4321" + otp})
         response_json = response.json
-        self.assertTrue(response_json['result']['status'])
-        self.assertFalse(response_json['result']['value'])
+        assert response_json['result']['status']
+        assert not response_json['result']['value']
 
         #
         # replay with correct pin should fail
@@ -133,8 +133,8 @@ class TestEmailtokenController(TestController):
                                 params={'user': 'root',
                                         'pass': self.pin + otp})
         response_json = response.json
-        self.assertTrue(response_json['result']['status'])
-        self.assertFalse(response_json['result']['value'])
+        assert response_json['result']['status']
+        assert not response_json['result']['value']
 
         #
         # check with wrong otp should fail as well
@@ -147,8 +147,8 @@ class TestEmailtokenController(TestController):
                                 params={'user': 'root',
                                         'pass': self.pin + "123456"})
         response_json = response.json
-        self.assertTrue(response_json['result']['status'])
-        self.assertFalse(response_json['result']['value'])
+        assert response_json['result']['status']
+        assert not response_json['result']['value']
 
         #
         # check with correct otp and pin should be ok
@@ -161,8 +161,8 @@ class TestEmailtokenController(TestController):
                                 params={'user': 'root',
                                         'pass': self.pin + otp})
         response_json = response.json
-        self.assertTrue(response_json['result']['status'])
-        self.assertTrue(response_json['result']['value'])
+        assert response_json['result']['status']
+        assert response_json['result']['value']
 
         return
 
@@ -207,8 +207,8 @@ class TestEmailtokenController(TestController):
         response = self.make_validate_request('check',
                                     params=params)
         response = response.json
-        self.assertTrue(response['result']['status'])
-        self.assertTrue(response['result']['value'])
+        assert response['result']['status']
+        assert response['result']['value']
 
     def test_timeout(self):
         """
@@ -220,8 +220,8 @@ class TestEmailtokenController(TestController):
         response = self.make_validate_request('check',
                                 params={'user': 'root', 'pass': self.pin + otp})
         response = response.json
-        self.assertTrue(response['result']['status'])
-        self.assertFalse(response['result']['value'], "Challenge should have timed out")
+        assert response['result']['status']
+        assert not response['result']['value'], "Challenge should have timed out"
 
     def test_otp_not_reused(self):
 
@@ -232,7 +232,7 @@ class TestEmailtokenController(TestController):
         __, otp1 = self._trigger_challenge()
         __, otp2 = self._trigger_challenge()
 
-        self.assertNotEqual(otp1, otp2, "OTP counter not working properly")
+        assert otp1 != otp2, "OTP counter not working properly"
 
     def test_blocking(self):
         """
@@ -250,7 +250,7 @@ class TestEmailtokenController(TestController):
 
         # Trigger 2nd challenge (should send no e-mail)
         response, _ = self._trigger_challenge()
-        self.assertEqual("e-mail with otp already submitted", response['detail']['message'])
+        assert "e-mail with otp already submitted" == response['detail']['message']
 
         time.sleep(5)  # wait for blocking timeout to pass
 
@@ -261,8 +261,8 @@ class TestEmailtokenController(TestController):
         response = self.make_validate_request('check',
                                 params={'user': 'root', 'pass': self.pin + otp})
         response_json = response.json
-        self.assertTrue(response_json['result']['status'])
-        self.assertTrue(response_json['result']['value'])
+        assert response_json['result']['status']
+        assert response_json['result']['value']
 
         time.sleep(5)  # wait again to prevent problems with other tests
 
@@ -297,7 +297,7 @@ class TestEmailtokenController(TestController):
         # response = response_string.json
         # expected_error = "error sending e-mail %r" % exception_to_raise
         # self.assertEqual(expected_error, response['detail']['message'], "Error message does not match")
-        self.assertTrue('"value": false' in response_string, response_string)
+        assert '"value": false' in response_string, response_string
 
         # Get new challenges
         response_string = self.make_admin_request('checkstatus', {'user': 'root'})
@@ -306,8 +306,8 @@ class TestEmailtokenController(TestController):
         new_challenges = values.get(self.token_serial, {}).get('challenges', {})
 
         # Verify that no challenge was created (the exception should have prevented it)
-        self.assertTrue(existing_challenges == new_challenges,
-                        "No new challenges should have been created.")
+        assert existing_challenges == new_challenges, \
+                        "No new challenges should have been created."
 
     def _trigger_challenge(self):
         """
@@ -318,20 +318,20 @@ class TestEmailtokenController(TestController):
         """
         response = self.make_validate_request('check',
                                 params={'user': 'root', 'pass': self.pin})
-        self.assertTrue(self.mock_smtp_instance.sendmail.call_count >= 1,
-                        "smtplib.SMTP.sendmail() should have been called at least once")
+        assert self.mock_smtp_instance.sendmail.call_count >= 1, \
+                        "smtplib.SMTP.sendmail() should have been called at least once"
         call_args = self.mock_smtp_instance.sendmail.call_args
         ordered_args = call_args[0]
         email_from = ordered_args[0]
         email_to = ordered_args[1]
         message = ordered_args[2]
-        self.assertEqual("linotp@example.com", email_from)
-        self.assertEqual(self.default_email_address, email_to)
+        assert "linotp@example.com" == email_from
+        assert self.default_email_address == email_to
 
         matches = re.search('\d{6}', message)
-        self.assertTrue(matches is not None)
+        assert matches is not None
         otp = matches.group(0)
-        self.assertEqual(6, len(otp))
+        assert 6 == len(otp)
         return response.json, otp
 
     def _assert_email_sent(self, response):
@@ -342,6 +342,6 @@ class TestEmailtokenController(TestController):
         :param response: The response returned by validate/check
         :response type: dict
         """
-        self.assertEqual("e-mail sent successfully", response['detail']['message'])
-        self.assertTrue(response['result']['status'])
-        self.assertFalse(response['result']['value'])
+        assert "e-mail sent successfully" == response['detail']['message']
+        assert response['result']['status']
+        assert not response['result']['value']

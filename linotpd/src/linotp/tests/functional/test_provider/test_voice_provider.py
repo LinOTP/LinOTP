@@ -39,6 +39,7 @@ from mock import patch
 from linotp.tests import TestController
 from linotp.provider.voiceprovider.custom_voice_provider import (
                                             CustomVoiceProvider)
+import pytest
 
 VALID_REQUEST = 'You received an authentication request.'
 
@@ -117,7 +118,7 @@ class TestVoiceProviderController(TestController):
         # verify server url check
         #
 
-        with self.assertRaises(requests.exceptions.InvalidSchema):
+        with pytest.raises(requests.exceptions.InvalidSchema):
             configDict['server_url'] = "hXXXs://vcs.keyidentity.com:8800/send"
             voice_provider.loadConfig(configDict)
 
@@ -138,7 +139,7 @@ class TestVoiceProviderController(TestController):
         # extended option: proxy with wrong url scheme
         #
 
-        with self.assertRaises(requests.exceptions.InvalidSchema):
+        with pytest.raises(requests.exceptions.InvalidSchema):
             configDict['proxy'] = "hXXXs://proxy.keyidentity.com:8800/"
             voice_provider.loadConfig(configDict)
 
@@ -158,7 +159,7 @@ class TestVoiceProviderController(TestController):
         # invalid timeout format: "invalid literal for float()"
         #
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             configDict['Timeout'] = '30s'
             voice_provider.loadConfig(configDict)
 
@@ -170,7 +171,7 @@ class TestVoiceProviderController(TestController):
         # 'required authenticating client cert could not be found'
         #
 
-        with self.assertRaises(IOError):
+        with pytest.raises(IOError):
             cert_file_name = os.path.join(self.fixture_path, 'non_exist.pem')
             configDict['access_certificate'] = cert_file_name
             voice_provider.loadConfig(configDict)
@@ -187,7 +188,7 @@ class TestVoiceProviderController(TestController):
         configDict['access_certificate'] = cert_file_name
 
         # check if missing server_url is as well detected
-        with self.assertRaises(KeyError):
+        with pytest.raises(KeyError):
             del configDict['server_url']
             voice_provider.loadConfig(configDict)
 
@@ -203,7 +204,7 @@ class TestVoiceProviderController(TestController):
         configDict['server_certificate'] = server_cert_file_name
         voice_provider.loadConfig(configDict)
 
-        with self.assertRaises(IOError):
+        with pytest.raises(IOError):
             server_cert_file_name = '/abc/ssl/certs'
             configDict['server_certificate'] = server_cert_file_name
             voice_provider.loadConfig(configDict)
@@ -248,13 +249,13 @@ class TestVoiceProviderController(TestController):
                                             otp,
                                             locale)
 
-        self.assertEqual(status, True)
-        self.assertTrue(VALID_REQUEST in response)
+        assert status == True
+        assert VALID_REQUEST in response
 
         request_json = json.loads(response)
 
         target_url = 'https://vcs.keyidentity.com/v1/twilio/call'
-        self.assertTrue(target_url in request_json.get('url'))
+        assert target_url in request_json.get('url')
 
         # compare the request dictionary, with the expected structure
 
@@ -270,7 +271,7 @@ class TestVoiceProviderController(TestController):
                     'voice': 'alice',
                     'callerNumber': '+4989231234567'}}}
 
-        self.assertTrue(cmp(request_json.get('body'), cmp_content) == 0)
+        assert cmp(request_json.get('body'), cmp_content) == 0
 
         return
 

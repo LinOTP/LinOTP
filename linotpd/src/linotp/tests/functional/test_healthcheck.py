@@ -42,7 +42,7 @@ class TestHealthcheck(TestController):
         )
 
         # Old style assert
-        self.assertTrue('"alive"' in response, response)
+        assert '"alive"' in response, response
 
         # Json assert
         assert response.json['status'] == 'alive'

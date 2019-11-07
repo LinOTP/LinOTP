@@ -44,6 +44,6 @@ class TestDPWToken(unittest.TestCase):
             day_otp = dpw.getOtp()
             res = dpw.checkOtp(anOtpVal=day_otp)
 
-        self.assertTrue(res)
+        assert res
 
 # eof #

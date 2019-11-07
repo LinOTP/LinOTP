@@ -138,7 +138,7 @@ class TestRestSmsController(TestSpecialController):
                   }
 
         response = self.make_system_request('setProvider', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -153,7 +153,7 @@ class TestRestSmsController(TestSpecialController):
 
         response = self.make_system_request(action='setPolicy',
                                             params=params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         parameters = {'serial': 'SMS_4_REST',
                       'realm': 'myDefRealm',
@@ -164,7 +164,7 @@ class TestRestSmsController(TestSpecialController):
                       }
         response = self.make_admin_request('init', params=parameters)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         params = {
             'user': 'passthru_user1',
@@ -172,8 +172,8 @@ class TestRestSmsController(TestSpecialController):
         }
         response = self.make_validate_request('check', params=params)
 
-        self.assertTrue('"value": false' in response, response)
-        self.assertTrue('transactionid' in response, response)
+        assert '"value": false' in response, response
+        assert 'transactionid' in response, response
 
         return
 
@@ -207,7 +207,7 @@ class TestRestSmsController(TestSpecialController):
                   }
 
         response = self.make_system_request('setProvider', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -222,7 +222,7 @@ class TestRestSmsController(TestSpecialController):
 
         response = self.make_system_request(action='setPolicy',
                                             params=params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         parameters = {'serial': 'SMS_4_REST',
                       'realm': 'myDefRealm',
@@ -233,7 +233,7 @@ class TestRestSmsController(TestSpecialController):
                       }
         response = self.make_admin_request('init', params=parameters)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         params = {
             'user': 'passthru_user1',
@@ -248,13 +248,13 @@ class TestRestSmsController(TestSpecialController):
 
         response = self.make_validate_request('check', params=params)
 
-        self.assertTrue('this is your otp' in REQUEST_BODY.get('text', ''),
-                        REQUEST_BODY)
+        assert 'this is your otp' in REQUEST_BODY.get('text', ''), \
+                        REQUEST_BODY
 
-        self.assertTrue('Authorization' in REQUEST_HEADERS, REQUEST_HEADERS)
+        assert 'Authorization' in REQUEST_HEADERS, REQUEST_HEADERS
 
-        self.assertTrue('"value": false' in response, response)
-        self.assertTrue('transactionid' in response, response)
+        assert '"value": false' in response, response
+        assert 'transactionid' in response, response
 
         return
 
@@ -279,7 +279,7 @@ class TestRestSmsController(TestSpecialController):
 
         response = self.make_admin_request('init', params=parameters)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -310,7 +310,7 @@ class TestRestSmsController(TestSpecialController):
                   }
 
         response = self.make_system_request('setProvider', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -325,7 +325,7 @@ class TestRestSmsController(TestSpecialController):
 
         response = self.make_system_request(action='setPolicy',
                                             params=params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -342,7 +342,7 @@ class TestRestSmsController(TestSpecialController):
 
         response = self.make_system_request(action='setPolicy',
                                             params=params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         params = {
             'user': 'passthru_user1',
@@ -354,12 +354,12 @@ class TestRestSmsController(TestSpecialController):
 
         response = self.make_validate_request('check', params=params)
 
-        self.assertTrue('this is your otp' not in
-                        REQUEST_BODY.get('text', 'this is your otp'),
-                        REQUEST_BODY)
+        assert 'this is your otp' not in \
+                        REQUEST_BODY.get('text', 'this is your otp'), \
+                        REQUEST_BODY
 
-        self.assertTrue('"value": false' in response, response)
-        self.assertTrue('transactionid' in response, response)
+        assert '"value": false' in response, response
+        assert 'transactionid' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -373,7 +373,7 @@ class TestRestSmsController(TestSpecialController):
 
         response = self.make_system_request(action='setPolicy',
                                             params=params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         params = {
             'user': 'passthru_user1',
@@ -387,14 +387,14 @@ class TestRestSmsController(TestSpecialController):
 
             response = self.make_validate_request('check', params=params)
 
-            self.assertTrue('no data' in REQUEST_BODY.get('text', ''),
-                                                                REQUEST_BODY)
-            self.assertTrue('this is your otp' not in
-                            REQUEST_BODY.get('text', 'this is your otp'),
-                            REQUEST_BODY)
+            assert 'no data' in REQUEST_BODY.get('text', ''), \
+                                                                REQUEST_BODY
+            assert 'this is your otp' not in \
+                            REQUEST_BODY.get('text', 'this is your otp'), \
+                            REQUEST_BODY
 
-            self.assertTrue('"value": false' in response, response)
-            self.assertTrue('transactionid' in response, response)
+            assert '"value": false' in response, response
+            assert 'transactionid' in response, response
 
         return
 
@@ -428,7 +428,7 @@ class TestRestSmsController(TestSpecialController):
                   }
 
         response = self.make_system_request('setProvider', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -443,7 +443,7 @@ class TestRestSmsController(TestSpecialController):
 
         response = self.make_system_request(action='setPolicy',
                                             params=params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         parameters = {'serial': 'SMS_4_REST',
                       'realm': 'myDefRealm',
@@ -454,7 +454,7 @@ class TestRestSmsController(TestSpecialController):
                       }
         response = self.make_admin_request('init', params=parameters)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         global REQUEST_BODY
         REQUEST_BODY = {}
@@ -465,10 +465,10 @@ class TestRestSmsController(TestSpecialController):
         }
         response = self.make_validate_request('check', params=params)
 
-        self.assertTrue('"value": false' in response, response)
-        self.assertTrue('transactionid' in response, response)
+        assert '"value": false' in response, response
+        assert 'transactionid' in response, response
 
-        self.assertTrue('016012345678' in REQUEST_BODY.get('to',[])[0])
+        assert '016012345678' in REQUEST_BODY.get('to',[])[0]
 
         return
 

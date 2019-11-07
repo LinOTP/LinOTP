@@ -105,7 +105,7 @@ class TestSMSToken(unittest.TestCase):
 
         mobile = sms_token.get_mobile_number(fake_user)
 
-        self.assertTrue(mobile == user_mobile)
+        assert mobile == user_mobile
 
         # ------------------------------------------------------------------ --
 
@@ -116,7 +116,7 @@ class TestSMSToken(unittest.TestCase):
 
         mobile = sms_token.get_mobile_number(fake_user)
 
-        self.assertTrue(mobile == token_mobile)
+        assert mobile == token_mobile
 
         # ------------------------------------------------------------------ --
 
@@ -126,7 +126,7 @@ class TestSMSToken(unittest.TestCase):
 
         mobile = sms_token.get_mobile_number(fake_user)
 
-        self.assertTrue(mobile == token_mobile)
+        assert mobile == token_mobile
 
         # ------------------------------------------------------------------ --
 
@@ -136,7 +136,7 @@ class TestSMSToken(unittest.TestCase):
 
         mobile = sms_token.get_mobile_number(None)
 
-        self.assertTrue(mobile == token_mobile)
+        assert mobile == token_mobile
 
         return
 

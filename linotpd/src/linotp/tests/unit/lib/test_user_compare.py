@@ -65,7 +65,7 @@ class TestUserCompare(unittest.TestCase):
 
         result = th.isTokenOwner('TokenSerial', user)
 
-        self.assertTrue(result)
+        assert result
 
         # ----------------------------------------------------------------- --
 
@@ -78,7 +78,7 @@ class TestUserCompare(unittest.TestCase):
 
         result = th.isTokenOwner('TokenSerial', user)
 
-        self.assertFalse(result)
+        assert not result
 
         return
 

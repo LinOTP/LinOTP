@@ -71,7 +71,7 @@ class AuditIteratorTestCase(unittest.TestCase):
         audit_query = AuditQuery(param, audit)
         audit_iterator = iter(audit_query.get_query_result())
 
-        self.assertEqual(len(list(audit_iterator)), 0)
+        assert len(list(audit_iterator)) == 0
         audit.searchQuery.assert_called_once_with(
             {'serial': ''},
             rp_dict={
@@ -102,7 +102,7 @@ class AuditIteratorTestCase(unittest.TestCase):
         audit_query = AuditQuery(param, audit)
         audit_iterator = iter(audit_query.get_query_result())
 
-        self.assertEqual(len(list(audit_iterator)), 0)
+        assert len(list(audit_iterator)) == 0
         audit.searchQuery.assert_called_once_with(
             {'realm': 'se_test_auth'},
             rp_dict={
@@ -133,7 +133,7 @@ class AuditIteratorTestCase(unittest.TestCase):
         audit_query = AuditQuery(param, audit)
         audit_iterator = iter(audit_query.get_query_result())
 
-        self.assertEqual(len(list(audit_iterator)), 0)
+        assert len(list(audit_iterator)) == 0
         audit.searchQuery.assert_called_once_with(
             {'user': 'حافظ'},
             rp_dict={
@@ -163,7 +163,7 @@ class AuditIteratorTestCase(unittest.TestCase):
         audit_query = AuditQuery(param, audit)
         audit_iterator = iter(audit_query.get_query_result())
 
-        self.assertEqual(len(list(audit_iterator)), 0)
+        assert len(list(audit_iterator)) == 0
         audit.searchQuery.assert_called_once_with(
             {
                 'action': 'audit/search',
@@ -195,7 +195,7 @@ class AuditIteratorTestCase(unittest.TestCase):
             audit_query.get_entry(row)
             rows = rows + 1
 
-        self.assertEqual(rows, 2)
+        assert rows == 2
         audit.searchQuery.assert_called_once_with(
             {},
             rp_dict={
@@ -227,7 +227,7 @@ class AuditIteratorTestCase(unittest.TestCase):
             )
         audit_iterator = iter(audit_query.get_query_result())
 
-        self.assertEqual(len(list(audit_iterator)), 0)
+        assert len(list(audit_iterator)) == 0
         audit.searchQuery.assert_called_once_with(
             {
                 'action': 'audit/search',
@@ -339,7 +339,7 @@ class AuditIteratorTestCase(unittest.TestCase):
    ],
    "id": 764
 }], "total": 2 }"""
-        self.assertEqual(json.loads(result_json), json.loads(expected_json))
+        assert json.loads(result_json) == json.loads(expected_json)
 
     def test_CSVAuditIterator(self):
         """
@@ -399,7 +399,7 @@ class AuditIteratorTestCase(unittest.TestCase):
         result_csv = ""
         for value in csv_audit_iterator:
             result_csv += value
-        self.assertEqual(expected_csv, result_csv,
-                         "%r \n\n%r" % (expected_csv, result_csv))
+        assert expected_csv == result_csv, \
+                         "%r \n\n%r" % (expected_csv, result_csv)
 
         return

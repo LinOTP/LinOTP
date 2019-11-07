@@ -30,6 +30,7 @@ from unittest import TestCase
 
 from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 from linotp.useridresolver.PasswdIdResolver import IdResolver as PasswdResolver
+import pytest
 
 
 class TestPasswdResolver(TestCase):
@@ -63,7 +64,7 @@ user2:.4UO1mxvTmdM6:11:11:User Zwei:Irgendwas:Nochmal
         msg = ("File '/dev/shm/this_file_does_not_exist' does not "
                "exist or is not accesible")
 
-        with self.assertRaisesRegex(ResolverLoadConfigError, msg):
+        with pytest.raises(ResolverLoadConfigError, match=msg):
 
             self.y = PasswdResolver()
             self.y.loadConfig(pw_config, "my")
@@ -71,21 +72,21 @@ user2:.4UO1mxvTmdM6:11:11:User Zwei:Irgendwas:Nochmal
     def test_getUserId(self):
         '''test the existance of the user1 and user2'''
         res = self.y.getUserId("user1")
-        self.assertTrue(res == "10")
+        assert res == "10"
 
-        self.assertTrue(self.y.getUserInfo(res).get("surname") == "Eins")
+        assert self.y.getUserInfo(res).get("surname") == "Eins"
 
         res = self.y.getUserId("user2")
-        self.assertTrue(res == "11")
+        assert res == "11"
 
-        self.assertTrue(self.y.getUserInfo(res).get("surname") == "Zwei")
+        assert self.y.getUserInfo(res).get("surname") == "Zwei"
 
     def test_checkpass(self):
         '''
         Check the password of user1 and user 2
         '''
-        self.assertTrue(self.y.checkPass(self.y.getUserId("user1"), "pwU1"))
-        self.assertTrue(self.y.checkPass(self.y.getUserId("user2"), "pwU2"))
+        assert self.y.checkPass(self.y.getUserId("user1"), "pwU1")
+        assert self.y.checkPass(self.y.getUserId("user2"), "pwU2")
 
     def test_getUserList(self):
         '''
@@ -93,18 +94,18 @@ user2:.4UO1mxvTmdM6:11:11:User Zwei:Irgendwas:Nochmal
         '''
         # all users are two users
         user_list = self.y.getUserList({})
-        self.assertTrue(len(user_list) == 2)
+        assert len(user_list) == 2
 
         # there is only one user that ends with '1'
         user_list = self.y.getUserList({"username": "*1"})
-        self.assertTrue(len(user_list) == 1)
+        assert len(user_list) == 1
 
     def test_getUsername(self):
         '''
         testing getting the username
         '''
-        self.assertTrue(self.y.getUsername("10"))
-        self.assertTrue(self.y.getUsername("11"))
-        self.assertFalse(self.y.getUsername("9"))
+        assert self.y.getUsername("10")
+        assert self.y.getUsername("11")
+        assert not self.y.getUsername("9")
 
 # eof #

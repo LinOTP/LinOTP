@@ -70,7 +70,7 @@ class TestSelfserviceAuthController(TestController):
             }
         params = resolver_params['adminResolver']
         response = self.create_resolver(name='adminResolver', params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
     def createPolicy(self, param=None):
         policy = {'name': 'self01',
@@ -86,8 +86,8 @@ class TestSelfserviceAuthController(TestController):
         name = policy['name']
 
         response = self.make_system_request('setPolicy', params=policy)
-        self.assertTrue('"status": true' in response, response)
-        self.assertTrue(('"setPolicy %s": {' % name) in response, response)
+        assert '"status": true' in response, response
+        assert ('"setPolicy %s": {' % name) in response, response
 
 ###############################################################################
 
@@ -115,7 +115,7 @@ class TestSelfserviceAuthController(TestController):
         response = self.make_userservice_request('enroll',
                                                  params=params,
                                                  auth_user=auth_user)
-        self.assertTrue('"img": "<img ' in response, response)
+        assert '"img": "<img ' in response, response
 
         # check for not beeing part of this resolver
         auth_user = ('other_user@myotherrealm', 'geheim2')
@@ -125,7 +125,7 @@ class TestSelfserviceAuthController(TestController):
                                                  params=params,
                                                  auth_user=auth_user)
         msg = "policy settings do not allow you to issue this request!"
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         policy = {'name': 'T1',
                   'action': 'enrollHMAC',
@@ -142,7 +142,7 @@ class TestSelfserviceAuthController(TestController):
         response = self.make_userservice_request('enroll',
                                                  params=params,
                                                  auth_user=auth_user)
-        self.assertTrue('"img": "<img ' in response, response)
+        assert '"img": "<img ' in response, response
 
         self.delete_policy('T1')
         self.delete_token('hmac123')
@@ -165,7 +165,7 @@ class TestSelfserviceAuthController(TestController):
         response = self.make_userservice_request('enroll',
                                                  params=params,
                                                  auth_user=auth_user)
-        self.assertTrue('"img": "<img ' in response, response)
+        assert '"img": "<img ' in response, response
 
         # check for not beeing part of this resolver
         auth_user = ('other_user@myotherrealm', 'geheim2')
@@ -175,7 +175,7 @@ class TestSelfserviceAuthController(TestController):
                                                  params=params,
                                                  auth_user=auth_user)
         msg = "policy settings do not allow you to issue this request!"
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         self.delete_policy('T1')
         self.delete_token('hmac123')
@@ -198,7 +198,7 @@ class TestSelfserviceAuthController(TestController):
         response = self.make_userservice_request('enroll',
                                                  params=params,
                                                  auth_user=auth_user)
-        self.assertTrue('"img": "<img ' in response, response)
+        assert '"img": "<img ' in response, response
 
         # check for not beeing part of this resolver
         auth_user = ('other_user@myotherrealm', 'geheim2')
@@ -208,7 +208,7 @@ class TestSelfserviceAuthController(TestController):
                                                  params=params,
                                                  auth_user=auth_user)
         msg = "policy settings do not allow you to issue this request!"
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         self.delete_policy('T1')
         self.delete_token('hmac123')
@@ -239,14 +239,14 @@ class TestSelfserviceAuthController(TestController):
         response = self.make_userservice_request('enroll',
                                                  params=params,
                                                  auth_user=auth_user)
-        self.assertTrue('"img": "<img ' in response, response)
+        assert '"img": "<img ' in response, response
 
         params = {'page': '1', 'pg': '3'}
         response = self.make_userservice_request('history',
                                                  params=params,
                                                  auth_user=auth_user)
         msg = "policy settings do not allow you to issue this request!"
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         policy = {'name': 'T1',
                   'action': 'enrollHMAC, history ',
@@ -260,7 +260,7 @@ class TestSelfserviceAuthController(TestController):
                                                  params=params,
                                                  auth_user=auth_user)
 
-        self.assertTrue('"rows": [' in response, response)
+        assert '"rows": [' in response, response
 
         self.delete_policy('T1')
         self.delete_token('hmac123')
@@ -289,7 +289,7 @@ class TestSelfserviceAuthController(TestController):
         response = self.make_userservice_request('enroll',
                                                  params=params,
                                                  auth_user=auth_user)
-        self.assertTrue('"img": "<img ' in response, response)
+        assert '"img": "<img ' in response, response
 
         # for passthru_user1 do check if policy is defined
         auth_user = ('passthru_user1@myDefRealm', 'geheim1')
@@ -298,7 +298,7 @@ class TestSelfserviceAuthController(TestController):
         response = self.make_userservice_request('enroll',
                                                  params=params,
                                                  auth_user=auth_user)
-        self.assertTrue('"img": "<img ' in response, response)
+        assert '"img": "<img ' in response, response
 
         self.delete_policy('T1')
         self.delete_token('hmac123')
@@ -324,7 +324,7 @@ class TestSelfserviceAuthController(TestController):
         response = self.make_userservice_request('enroll',
                                                  params=params,
                                                  auth_user=auth_user)
-        self.assertTrue('"img": "<img ' in response, response)
+        assert '"img": "<img ' in response, response
 
         # for passthru_user1 do check if policy is defined
         auth_user = ('shakespeare@myDefRealm', 'shakespeare1')
@@ -334,7 +334,7 @@ class TestSelfserviceAuthController(TestController):
                                                  params=params,
                                                  auth_user=auth_user)
         msg = "policy settings do not allow you to issue this request!"
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         self.delete_policy('T1')
         self.delete_token('hmac123')
@@ -361,7 +361,7 @@ class TestSelfserviceAuthController(TestController):
         response = self.make_userservice_request('enroll',
                                                  params=params,
                                                  auth_user=auth_user)
-        self.assertTrue('"img": "<img ' in response, response)
+        assert '"img": "<img ' in response, response
 
         # for passthru_user1 do check if policy is defined
         auth_user = ('shakespeare@myDefRealm', 'shakespeare1')
@@ -371,7 +371,7 @@ class TestSelfserviceAuthController(TestController):
                                                  params=params,
                                                  auth_user=auth_user)
         msg = "policy settings do not allow you to issue this request!"
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         self.delete_policy('T1')
         self.delete_token('hmac123')
@@ -399,7 +399,7 @@ class TestSelfserviceAuthController(TestController):
                                                  params=params,
                                                  auth_user=auth_user)
         msg = "policy settings do not allow you to issue this request!"
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         self.delete_policy('T1')
 

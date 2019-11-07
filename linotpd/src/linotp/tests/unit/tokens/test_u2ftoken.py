@@ -38,6 +38,7 @@ else:
     import unittest
 
 from mock import MagicMock, Mock, patch
+import pytest
 
 
 class U2FTokenClassTestCase(unittest.TestCase):
@@ -73,10 +74,10 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value=(256 ** 4) - 500)
         self.u2f_token.token.LinOtpIsactive = True
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.u2f_token._verifyCounterValue((256 ** 4) - 1000)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('counter', None)
-        self.assertFalse(self.u2f_token.token.LinOtpIsactive)
+        assert not self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_equal_in_overflow_range(self):
         """
@@ -84,10 +85,10 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value=(256 ** 4) - 500)
         self.u2f_token.token.LinOtpIsactive = True
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.u2f_token._verifyCounterValue((256 ** 4) - 500)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('counter', None)
-        self.assertFalse(self.u2f_token.token.LinOtpIsactive)
+        assert not self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_increase_in_overflow_range(self):
         """
@@ -99,7 +100,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token._verifyCounterValue((256 ** 4) - 400)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('counter', None)
         self.u2f_token.addToTokenInfo.assert_called_once_with('counter', (256 ** 4) - 400)
-        self.assertTrue(self.u2f_token.token.LinOtpIsactive)
+        assert self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_overflow_out_of_range1(self):
         """
@@ -107,10 +108,10 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value=(256 ** 4) - 500)
         self.u2f_token.token.LinOtpIsactive = True
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.u2f_token._verifyCounterValue(1001)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('counter', None)
-        self.assertFalse(self.u2f_token.token.LinOtpIsactive)
+        assert not self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_overflow_out_of_range2(self):
         """
@@ -118,10 +119,10 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value=(256 ** 4) - 1001)
         self.u2f_token.token.LinOtpIsactive = True
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.u2f_token._verifyCounterValue(0)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('counter', None)
-        self.assertFalse(self.u2f_token.token.LinOtpIsactive)
+        assert not self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_legal_overflow(self):
         """
@@ -133,7 +134,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token._verifyCounterValue(1000)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('counter', None)
         self.u2f_token.addToTokenInfo.assert_called_once_with('counter', 1000)
-        self.assertTrue(self.u2f_token.token.LinOtpIsactive)
+        assert self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_decreased1(self):
         """
@@ -141,10 +142,10 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value=500)
         self.u2f_token.token.LinOtpIsactive = True
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.u2f_token._verifyCounterValue(499)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('counter', None)
-        self.assertFalse(self.u2f_token.token.LinOtpIsactive)
+        assert not self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_decreased2(self):
         """
@@ -152,10 +153,10 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value=500)
         self.u2f_token.token.LinOtpIsactive = True
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.u2f_token._verifyCounterValue(0)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('counter', None)
-        self.assertFalse(self.u2f_token.token.LinOtpIsactive)
+        assert not self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_equal(self):
         """
@@ -163,10 +164,10 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value=500)
         self.u2f_token.token.LinOtpIsactive = True
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.u2f_token._verifyCounterValue(500)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('counter', None)
-        self.assertFalse(self.u2f_token.token.LinOtpIsactive)
+        assert not self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_increased1(self):
         """
@@ -178,7 +179,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token._verifyCounterValue(501)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('counter', None)
         self.u2f_token.addToTokenInfo.assert_called_once_with('counter', 501)
-        self.assertTrue(self.u2f_token.token.LinOtpIsactive)
+        assert self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_increased2(self):
         """
@@ -190,7 +191,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token._verifyCounterValue(5000)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('counter', None)
         self.u2f_token.addToTokenInfo.assert_called_once_with('counter', 5000)
-        self.assertTrue(self.u2f_token.token.LinOtpIsactive)
+        assert self.u2f_token.token.LinOtpIsactive
 
     #
     # Test the update function
@@ -202,7 +203,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value=None)
         param = dict(description=None, phase='some_unknown_phase')
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             self.u2f_token.update(param)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
 
@@ -212,7 +213,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value='registration')
         param = dict(description=None, phase='some_unknown_phase')
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             self.u2f_token.update(param)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
 
@@ -222,7 +223,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value='authentication')
         param = dict(description=None, phase='some_unknown_phase')
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             self.u2f_token.update(param)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
 
@@ -236,7 +237,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token.update(param)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
         self.u2f_token.addToTokenInfo.assert_called_once_with('phase', 'registration')
-        self.assertFalse(self.u2f_token.token.LinOtpIsactive)
+        assert not self.u2f_token.token.LinOtpIsactive
 
     def test_update_requested_phase_registration1_current_phase_registration(self):
         """
@@ -244,7 +245,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value='registration')
         param = dict(description=None, phase='registration1')
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             self.u2f_token.update(param)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
 
@@ -254,7 +255,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value='authentication')
         param = dict(description=None, phase='registration1')
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             self.u2f_token.update(param)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
 
@@ -264,7 +265,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value=None)
         param = dict(description=None, phase='registration2')
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             self.u2f_token.update(param)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
 
@@ -293,7 +294,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         check_pin_mock = patcher.start()
         check_pin_mock.return_value = False
         param = dict(description=None, phase='registration2', pin='test!pin')
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.u2f_token.update(param)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
         check_pin_mock.assert_called_once_with(self.u2f_token, 'test!pin')
@@ -305,7 +306,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value='authentication')
         param = dict(description=None, phase='registration2')
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             self.u2f_token.update(param)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
 
@@ -315,7 +316,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value=None)
         param = dict(description=None, phase=None)
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             self.u2f_token.update(param)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
 
@@ -325,7 +326,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value='registration')
         param = dict(description=None, phase=None)
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             self.u2f_token.update(param)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
 
@@ -335,7 +336,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value='authentication')
         param = dict(description=None, phase=None)
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             self.u2f_token.update(param)
         self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
 

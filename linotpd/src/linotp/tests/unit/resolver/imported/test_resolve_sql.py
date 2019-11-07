@@ -102,7 +102,7 @@ class TestSQLResolver(TestCase):
         res = obj.getUserList(arg)
         for item in res:
             for _key, val in item.items():
-                self.assertNotIn('-ERR', str(val))
+                assert '-ERR' not in str(val)
         return res
 
     def test_sql_getUserId(self):
@@ -111,83 +111,83 @@ class TestSQLResolver(TestCase):
         '''
         res = self.y.getUserId("user1")
         print("uid (user1): ", res)
-        self.assertTrue(res == 1)
+        assert res == 1
 
-        self.assertTrue(self.y.getUserInfo(res).get("surname") == "Eins")
+        assert self.y.getUserInfo(res).get("surname") == "Eins"
 
         res = self.y.getUserId("user2")
         print("uid (user2): ", res)
-        self.assertTrue(res == 2)
+        assert res == 2
 
-        self.assertTrue(self.y.getUserInfo(res).get("surname") == "Zwo")
+        assert self.y.getUserInfo(res).get("surname") == "Zwo"
 
         res = self.z.getUserId("user2")
-        self.assertTrue(res == 'user2')
+        assert res == 'user2'
 
     def test_sql_checkpass(self):
         '''
         SQL: Check the password of user1 and user 2
         '''
-        self.assertTrue(self.y.checkPass(self.y.getUserId("user1"),
-                                         "password"))
-        self.assertTrue(self.y.checkPass(self.y.getUserId("user2"),
-                                         "password"))
+        assert self.y.checkPass(self.y.getUserId("user1"),
+                                         "password")
+        assert self.y.checkPass(self.y.getUserId("user2"),
+                                         "password")
 
     def test_sql_checkpass_wo_salt(self):
         '''
         SQL: Check the password of user1 and user 2 without column SALT
         '''
-        self.assertTrue(self.z.checkPass(self.z.getUserId("user1"),
-                                         "password"))
-        self.assertTrue(self.z.checkPass(self.z.getUserId("user2"),
-                                         "password"))
+        assert self.z.checkPass(self.z.getUserId("user1"),
+                                         "password")
+        assert self.z.checkPass(self.z.getUserId("user2"),
+                                         "password")
 
     def test_get_search_fields(self):
         '''
         SQL: Check the search field detection.
         '''
         search_fields = self.y.getSearchFields()
-        self.assertEqual(set(search_fields.keys()),
+        assert set(search_fields.keys()) == \
                          set(['username', 'userid', 'password', 'salt',
-                              'givenname', 'surname', 'email']))
-        self.assertEqual(set(search_fields.values()), set(['numeric', 'text']))
+                              'givenname', 'surname', 'email'])
+        assert set(search_fields.values()) == set(['numeric', 'text'])
 
     def test_sql_search_escapes(self):
         '''
         SQL: Check that the SQL wildcards are correctly escaped.
         '''
         res1 = self.getUserList(self.y, {'givenname': 'Pro%ent'})
-        self.assertEqual(len(res1), 1)
-        self.assertEqual(res1[0]['username'], 'user_3')
+        assert len(res1) == 1
+        assert res1[0]['username'] == 'user_3'
 
         res2 = self.getUserList(self.y, {'username': 'user_3'})
-        self.assertEqual(len(res2), 1)
-        self.assertEqual(res2[0]['username'], 'user_3')
+        assert len(res2) == 1
+        assert res2[0]['username'] == 'user_3'
 
         res3 = self.getUserList(self.y, {'username': 'user.3'})
-        self.assertEqual(len(res3), 2)
-        self.assertEqual(set(s['username'] for s in res3),
-                         set(['user_3', 'userx3']))
+        assert len(res3) == 2
+        assert set(s['username'] for s in res3) == \
+                         set(['user_3', 'userx3'])
 
         res4 = self.getUserList(self.y, {'username': 'user*'})
-        self.assertEqual(len(res4), 4)
+        assert len(res4) == 4
 
         res5 = self.getUserList(self.y, {'surname': '....'})
-        self.assertEqual(set(s['userid'] for s in res5), set([1, 3]))
+        assert set(s['userid'] for s in res5) == set([1, 3])
 
     def test_sql_complex_search(self):
         '''
         SQL: test more complex search queries
         '''
         res1 = self.getUserList(self.y, {'userid': '> 2'})
-        self.assertEqual(len(res1), 2)
-        self.assertEqual(set(s['userid'] for s in res1), set((3, 4)))
+        assert len(res1) == 2
+        assert set(s['userid'] for s in res1) == set((3, 4))
 
         res2 = self.getUserList(self.y, {'userid': '  <=   3  '})
-        self.assertEqual(len(res2), 3)
+        assert len(res2) == 3
 
         res3 = self.getUserList(self.y, {'userid': '>77'})
-        self.assertEqual(res3, [])
+        assert res3 == []
 
     def test_sql_where(self):
         '''
@@ -195,17 +195,17 @@ class TestSQLResolver(TestCase):
         users with IDs > 2.
         '''
         res1 = self.getUserList(self.w, {})
-        self.assertEqual(set(s['username'] for s in res1),
-                         set(('user_3', 'userx3')))
-        self.assertEqual(self.w.getUsername(1), "")
-        self.assertEqual(self.w.getUsername(2), "")
-        self.assertEqual(self.w.getUsername(3), "user_3")
-        self.assertEqual(self.w.getUsername(4), "userx3")
-        self.assertEqual(self.w.getUsername(5), "")
+        assert set(s['username'] for s in res1) == \
+                         set(('user_3', 'userx3'))
+        assert self.w.getUsername(1) == ""
+        assert self.w.getUsername(2) == ""
+        assert self.w.getUsername(3) == "user_3"
+        assert self.w.getUsername(4) == "userx3"
+        assert self.w.getUsername(5) == ""
 
-        self.assertTrue(self.w.checkPass(self.w.getUserId('user_3'), 'test'))
-        self.assertFalse(self.w.checkPass(self.w.getUserId('user_3'),
-                                          'falsch'))
+        assert self.w.checkPass(self.w.getUserId('user_3'), 'test')
+        assert not self.w.checkPass(self.w.getUserId('user_3'),
+                                          'falsch')
 
     def test_sql_getUserList(self):
         '''
@@ -213,24 +213,24 @@ class TestSQLResolver(TestCase):
         '''
         # all users are two users
         user_list = self.getUserList(self.y, {})
-        self.assertTrue(len(user_list) == 4)
+        assert len(user_list) == 4
 
         # there is only one user that ends with '1'
         user_list = self.getUserList(self.y, {"username": "*1"})
-        self.assertTrue(len(user_list) == 1)
+        assert len(user_list) == 1
 
     def test_sql_getUsername(self):
         '''
         SQL: testing getting the username
         '''
-        self.assertTrue(self.y.getUsername(1) == "user1")
-        self.assertTrue(self.y.getUsername(2) == "user2")
-        self.assertTrue(self.y.getUsername(5) == "")
+        assert self.y.getUsername(1) == "user1"
+        assert self.y.getUsername(2) == "user2"
+        assert self.y.getUsername(5) == ""
 
         # also test in the resolver with id as strings
 
-        self.assertTrue(self.z.getUsername("user1") == "user1")
-        self.assertTrue(self.z.getUsername("user2") == "user2")
-        self.assertTrue(self.z.getUsername("user5") == "")
+        assert self.z.getUsername("user1") == "user1"
+        assert self.z.getUsername("user2") == "user2"
+        assert self.z.getUsername("user5") == ""
 
 # eof #

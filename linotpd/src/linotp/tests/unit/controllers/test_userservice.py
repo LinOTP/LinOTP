@@ -89,8 +89,8 @@ class TestUserservice(unittest.TestCase):
         except UnboundLocalError as exx:
             unboundLocalError_raised = exx
 
-        self.assertFalse(unboundLocalError_raised, unboundLocalError_raised)
-        self.assertTrue(result == 'ok')
+        assert not unboundLocalError_raised, unboundLocalError_raised
+        assert result == 'ok'
 
         return
 

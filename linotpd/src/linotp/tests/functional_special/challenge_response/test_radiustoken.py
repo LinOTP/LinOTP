@@ -154,10 +154,10 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         cookies = {"admin_session": self.session}
 
         response = self.make_system_request("setPolicy", params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         response = self.make_system_request("getPolicy", params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         self.policies.append(name)
         return response
@@ -200,7 +200,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
                      ]
         for params in params_list:
             response = self.make_admin_request(action='init', params=params)
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
             serials.append(params.get("serial"))
 
         return serials
@@ -218,7 +218,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         # now switch policy on for challenge_response for hmac token
         response = self.setPinPolicy(name="ch_resp", realm='*',
                                 action='challenge_response=radius')
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         # define validation function
         def check_func1(params):
@@ -240,11 +240,11 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         # 1.1 now trigger a challenge
         params = {"user": user, "pass": "test"}
         response = self.make_validate_request('check', params=params)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         body = json.loads(response.body)
         state = body.get('detail', {}).get('transactionid', '')
-        self.assertTrue(state != '', response)
+        assert state != '', response
 
         # 1.2 check the challenge
 
@@ -267,7 +267,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         response = self.make_validate_request('check', params=params)
 
         # hey, if this ok, we are done for the remote pin check
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         for serial in serials:
             self.delete_token(serial)
@@ -289,7 +289,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         # now switch policy on for challenge_response for hmac token
         response = self.setPinPolicy(name="ch_resp", realm='*',
                                 action='challenge_response=radius')
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         # 1.1 now trigger a challenge
         # define validation function
@@ -311,11 +311,11 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
 
         params = {"user": user, "pass": "local"}
         response = self.make_validate_request('check', params=params)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         body = json.loads(response.body)
         state = body.get('detail', {}).get('transactionid', '')
-        self.assertTrue(state != '', response)
+        assert state != '', response
 
         # 1.2 check the challenge
         def check_func2(params):
@@ -334,7 +334,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         params = {"user": user, "pass": otp, "state": state}
         response = self.make_validate_request('check', params=params)
         # hey, if this ok, we are done for the remote pin check
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         for serial in serials:
             self.delete_token(serial)

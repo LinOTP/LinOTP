@@ -205,7 +205,7 @@ class TestHttpSmsController(TestSpecialController):
             parameters = {'serial': serial}
             response = self.make_admin_request('remove', params=parameters,
                                                auth_user='superadmin')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
     def initTokens(self):
         '''
@@ -224,7 +224,7 @@ class TestHttpSmsController(TestSpecialController):
         response = self.make_admin_request('init', params=parameters,
                                            auth_user='superadmin')
 
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         parameters = {'serial': self.serials[1],
                       'otpkey': '1234567890123456789012345678901234567890' +
@@ -238,7 +238,7 @@ class TestHttpSmsController(TestSpecialController):
         response = self.make_admin_request('init', params=parameters,
                                            auth_user='superadmin')
 
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         for serial in self.serials[2:self.max]:
             parameters = {'serial': serial,
@@ -252,7 +252,7 @@ class TestHttpSmsController(TestSpecialController):
             response = self.make_admin_request('init', params=parameters,
                                                auth_user='superadmin')
 
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
         return self.serials
 
@@ -266,7 +266,7 @@ class TestHttpSmsController(TestSpecialController):
         response = self.make_system_request('setConfig', params=parameters,
                                             auth_user='superadmin')
 
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
     def last_audit(self, num=3, page=1):
         '''
@@ -311,7 +311,7 @@ class TestHttpSmsController(TestSpecialController):
                                     params={'key': 'SMSProviderConfig'},
                                     auth_user='superadmin')
 
-            self.assertNotIn(self.sms_url, response, response)
+            assert self.sms_url not in response, response
 
             # check the saved configuration:
             # getProvider will show the decrypted configuration
@@ -321,7 +321,7 @@ class TestHttpSmsController(TestSpecialController):
                             params={'name': 'test_missing_param', 'type': 'sms'},
                             auth_user='superadmin')
 
-            self.assertIn(self.sms_url, response, response)
+            assert self.sms_url in response, response
 
             response = self.make_validate_request(
                     'smspin', params={'user': 'user1', 'pass': '1234'})
@@ -331,7 +331,7 @@ class TestHttpSmsController(TestSpecialController):
             # but wont contain the following message anymore
             #    'Failed to send SMS. We received a'
             #                'Failed to send SMS.'
-            self.assertTrue('"value": false' in response, response)
+            assert '"value": false' in response, response
 
             # check last audit entry
             response = self.last_audit()
@@ -347,7 +347,7 @@ class TestHttpSmsController(TestSpecialController):
                         val = cell[idx + 1]
                         break
 
-            self.assertTrue(val == "0", response)
+            assert val == "0", response
 
         return
 
@@ -378,9 +378,9 @@ class TestHttpSmsController(TestSpecialController):
             response = self.make_validate_request(
                 'smspin', params={'user': 'user1', 'pass': '1234'})
 
-            self.assertTrue('"state":' in response,
-                            "Expecting 'state' as challenge inidcator %r"
-                            % response)
+            assert '"state":' in response, \
+                            "Expecting 'state' as challenge inidcator %r" \
+                            % response
 
             # check last audit entry
             response2 = self.last_audit()
@@ -396,13 +396,13 @@ class TestHttpSmsController(TestSpecialController):
                         val = cell[idx + 1]
                         break
 
-            self.assertTrue(val == "1", response2)
+            assert val == "1", response2
 
             # test authentication
             response = self.make_validate_request(
                 'check', params={'user': 'user1', 'pass': '1234973532'})
 
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
         return
 
@@ -431,19 +431,19 @@ class TestHttpSmsController(TestSpecialController):
                         'check', params={'user': 'user1', 'pass': '1234'})
 
             # authentication fails but sms is sent
-            self.assertTrue('"value": false' in response, response)
+            assert '"value": false' in response, response
 
             # check last audit entry
             response2 = self.last_audit()
             # must be success == 1
             if '"total": null' not in response2:
-                self.assertTrue('''challenge created''' in response2, response2)
+                assert '''challenge created''' in response2, response2
 
             # test authentication
             response = self.make_validate_request(
                 'check', params={'user': 'user1', 'pass': '1234973532'})
 
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
     def test_successful_SMS(self):
         '''
@@ -464,13 +464,13 @@ class TestHttpSmsController(TestSpecialController):
         response = self.make_system_request('setConfig', params=parameters,
                                             auth_user='superadmin')
 
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         response = self.make_validate_request('smspin',
                                               params={'user': 'user1',
                                                       'pass': '1234'})
 
-        self.assertTrue('"state"' in response, response)
+        assert '"state"' in response, response
 
         return
 
@@ -500,21 +500,21 @@ class TestHttpSmsController(TestSpecialController):
                                 'pass': '1234',
                                 'message': 'Täst<otp>'})
 
-            self.assertTrue('"message": "sms submitted"' in response, response)
-            self.assertTrue('"state"' in response, response)
+            assert '"message": "sms submitted"' in response, response
+            assert '"state"' in response, response
 
             with open(filename, 'r') as f:
                 line = f.read()
 
             line = str2unicode(line)
-            self.assertTrue('Täst' in line, "'Täst' not found in line")
+            assert 'Täst' in line, "'Täst' not found in line"
 
             _left, otp = line.split('Täst')
             response = self.make_validate_request('check',
                                                   params={'user': 'user1',
                                                           'pass': '1234%s' % otp})
 
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
             import os
             os.remove(filename)
@@ -550,7 +550,7 @@ class TestHttpSmsController(TestSpecialController):
                                                   params={'user': 'user1',
                                                           'pass': '1234'})
 
-            self.assertTrue('"value": false' in response, response)
+            assert '"value": false' in response, response
 
             # due to security fix to prevent information leakage the response
             # of validate/check will be only true or false
@@ -575,7 +575,7 @@ class TestHttpSmsController(TestSpecialController):
                 if found:
                     break
 
-            self.assertTrue(found, "no entry 'SMS could not be sent' found")
+            assert found, "no entry 'SMS could not be sent' found"
 
         return
 
@@ -626,9 +626,9 @@ class TestHttpSmsController(TestSpecialController):
             params = {'serial': self.serials[2], 'pass': ''}
             response = self.make_validate_request('check_s', params=params)
 
-            self.assertTrue('"state":' in response,
-                            "Expecting 'state' as challenge inidcator %r"
-                            % response)
+            assert '"state":' in response, \
+                            "Expecting 'state' as challenge inidcator %r" \
+                            % response
 
 
         provider_conf = self.setSMSProvider(
@@ -640,9 +640,9 @@ class TestHttpSmsController(TestSpecialController):
 
             params = {'serial': self.serials[3], 'pass': ''}
             response = self.make_validate_request('check_s', params=params)
-            self.assertTrue('"state":' in response,
-                            "Expecting 'state' as challenge inidcator %r"
-                            % response)
+            assert '"state":' in response, \
+                            "Expecting 'state' as challenge inidcator %r" \
+                            % response
 
     def test_httpsmsprovider_urllib(self):
         '''
@@ -656,9 +656,9 @@ class TestHttpSmsController(TestSpecialController):
 
             params = {'serial': self.serials[4], 'pass': ''}
             response = self.make_validate_request('check_s', params=params)
-            self.assertTrue('"state":' in response,
-                            "Expecting 'state' as challenge inidcator %r"
-                            % response)
+            assert '"state":' in response, \
+                            "Expecting 'state' as challenge inidcator %r" \
+                            % response
 
         provider_config = self.setSMSProvider(
             preferred_httplib='urllib', method='GET')
@@ -667,9 +667,9 @@ class TestHttpSmsController(TestSpecialController):
 
             params = {'serial': self.serials[5], 'pass': ''}
             response = self.make_validate_request('check_s', params=params)
-            self.assertTrue('"state":' in response,
-                            "Expecting 'state' as challenge inidcator %r"
-                            % response)
+            assert '"state":' in response, \
+                            "Expecting 'state' as challenge inidcator %r" \
+                            % response
 
         return
 
@@ -700,9 +700,9 @@ class TestHttpSmsController(TestSpecialController):
 
             params = {'serial': self.serials[6], 'pass': ''}
             response = self.make_validate_request('check_s', params=params)
-            self.assertTrue('"state":' in response,
-                            "Expecting 'state' as challenge inidcator %r"
-                            % response)
+            assert '"state":' in response, \
+                            "Expecting 'state' as challenge inidcator %r" \
+                            % response
 
         provider_config = self.setSMSProvider(
             preferred_httplib='requests', method='GET')
@@ -711,9 +711,9 @@ class TestHttpSmsController(TestSpecialController):
 
             params = {'serial': self.serials[7], 'pass': ''}
             response = self.make_validate_request('check_s', params=params)
-            self.assertTrue('"state":' in response,
-                            "Expecting 'state' as challenge inidcator %r"
-                            % response)
+            assert '"state":' in response, \
+                            "Expecting 'state' as challenge inidcator %r" \
+                            % response
 
         return
 
@@ -741,9 +741,9 @@ class TestHttpSmsController(TestSpecialController):
 
             params = {'serial': self.serials[i], 'pass': ''}
             response = self.make_validate_request('check_s', params=params)
-            self.assertTrue('"state":' in response,
-                            "Expecting 'state' %d: %r"
-                            % (i, response))
+            assert '"state":' in response, \
+                            "Expecting 'state' %d: %r" \
+                            % (i, response)
 
             parameters = {"account": "twilio", "username": "fail"}
             arguments = {'return_check': {"RETURN_FAIL_REGEX":
@@ -755,9 +755,9 @@ class TestHttpSmsController(TestSpecialController):
             i = i + 1
             params = {'serial': self.serials[i], 'pass': ''}
             response = self.make_validate_request('check_s', params=params)
-            self.assertTrue('predefined error from the SMS Gateway'
-                            in response,
-                            "Expecting error %d: %r" % (i, response))
+            assert 'predefined error from the SMS Gateway' \
+                            in response, \
+                            "Expecting error %d: %r" % (i, response)
 
         return
 
@@ -786,9 +786,9 @@ class TestHttpSmsController(TestSpecialController):
 
             params = {'serial': self.serials[i], 'pass': ''}
             response = self.make_validate_request('check_s', params=params)
-            self.assertTrue('"state":' in response,
-                            "Expecting 'state' %d: %r"
-                            % (i, response))
+            assert '"state":' in response, \
+                            "Expecting 'state' %d: %r" \
+                            % (i, response)
 
             parameters = {"account": "twilio", "username": "fail"}
             arguments = {'return_check': {"RETURN_FAIL_REGEX":
@@ -800,9 +800,9 @@ class TestHttpSmsController(TestSpecialController):
             i = i + 1
             params = {'serial': self.serials[i], 'pass': ''}
             response = self.make_validate_request('check_s', params=params)
-            self.assertTrue('predefined error from the SMS Gateway'
-                            in response,
-                            "Expecting error %d: %r" % (i, response))
+            assert 'predefined error from the SMS Gateway' \
+                            in response, \
+                            "Expecting error %d: %r" % (i, response)
 
         return
 
@@ -846,9 +846,9 @@ class TestHttpSmsController(TestSpecialController):
             self.setSMSProvider(**arguments)
             params = {'serial': self.serials[i], 'pass': ''}
             response = self.make_validate_request('check_s', params=params)
-            self.assertTrue('"state":' in response,
-                            "Expecting 'state' %d: %r"
-                            % (i, response))
+            assert '"state":' in response, \
+                            "Expecting 'state' %d: %r" \
+                            % (i, response)
 
             parameters = {"account": "twilio", "username": "fail"}
             arguments = {'return_check': {"RETURN_FAIL_REGEX":
@@ -860,9 +860,9 @@ class TestHttpSmsController(TestSpecialController):
             i = i + 1
             params = {'serial': self.serials[i], 'pass': ''}
             response = self.make_validate_request('check_s', params=params)
-            self.assertTrue('predefined error from the SMS Gateway'
-                            in response,
-                            "Expecting error %d: %r" % (i, response))
+            assert 'predefined error from the SMS Gateway' \
+                            in response, \
+                            "Expecting error %d: %r" % (i, response)
 
         return
 

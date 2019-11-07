@@ -83,15 +83,15 @@ class BaseClass:
                     popen_mock.return_value.returncode = expected_gnokii_status
                 self.return_code = sms.submitMessage(self.phone, self.message)
                 if config.get("CONFIGFILE"):
-                    self.assertEqual(popen_mock.call_count, 1, "SMS command should be called")
+                    assert popen_mock.call_count == 1, "SMS command should be called"
                     args, kwargs = popen_mock.call_args
                     self.gnokii_args = args
                 else:
-                    self.assertEqual(popen_mock.call_count, 0, "SMS command should not be called")
+                    assert popen_mock.call_count == 0, "SMS command should not be called"
 
         def check_result(self, expected_result=True, expected_gnokii_call=True):
 
-            self.assertEqual(expected_result, self.return_code, "Unexpected result from sms.submitMessage")
+            assert expected_result == self.return_code, "Unexpected result from sms.submitMessage"
 
             if expected_gnokii_call:
                 gnokki_cmd = "gnokii --config %s --sendsms %s" % (self.config["CONFIGFILE"], self.phone)
@@ -99,7 +99,7 @@ class BaseClass:
                 if "SMSC" in self.config:
                     gnokki_cmd += " --smsc %s" % self.config["SMSC"]
 
-                self.assertEqual(" ".join(self.gnokii_args[0]), gnokki_cmd)
+                assert " ".join(self.gnokii_args[0]) == gnokki_cmd
 
         def test_01_default(self):
             self.do_send(self.default_config)

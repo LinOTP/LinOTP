@@ -160,26 +160,26 @@ class TestResolver(TestController):
 
         params = {'BINDPW': 'Test123!'}
         response, params = self.define_ldap_resolver('LDA1', params=params)
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         #
         # and check if its available
 
         response = self.make_system_request('getResolvers', params=params)
-        self.assertTrue("LDA1" in response, response)
+        assert "LDA1" in response, response
 
         #
         # now try to define resolver LDA2 w.o. the required BINDPW
 
         response, params = self.define_ldap_resolver('LDA2')
         msg = "Missing parameter: ['BINDPW']"
-        self.assertIn(msg, response, response)
+        assert msg in response, response
 
         #
         # and check that it is not available
 
         response = self.make_system_request('getResolvers', params={})
-        self.assertFalse("LDA2" in response, response)
+        assert not ("LDA2" in response), response
 
         return
 
@@ -192,29 +192,29 @@ class TestResolver(TestController):
         response = self.make_system_request('getResolver', params=params)
         jresp = json.loads(response.body)
         data = jresp.get('result', {}).get('value', {}).get('data', {})
-        self.assertIn('fileName', data, response)
+        assert 'fileName' in data, response
 
         response = self.make_system_request('getConfig')
         jresp = json.loads(response.body)
         value = jresp.get('result', {}).get('value', {})
-        self.assertIn('passwdresolver.fileName.myDefRes', value, response)
+        assert 'passwdresolver.fileName.myDefRes' in value, response
 
         response, _defi = self.define_sql_resolver(name='myDefRes')
         msg = "Cound not create resolver, resolver u'myDefRes' already exists!"
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         response = self.make_system_request('getConfig')
         jresp = json.loads(response.body)
         value = jresp.get('result', {}).get('value', {})
-        self.assertIn('passwdresolver.fileName.myDefRes', value, response)
-        self.assertNotIn('sqlresolver.Limit.myDefRes', value, response)
+        assert 'passwdresolver.fileName.myDefRes' in value, response
+        assert 'sqlresolver.Limit.myDefRes' not in value, response
 
         params = {'resolver': 'myDefRes'}
         response = self.make_system_request('getResolver', params=params)
         jresp = json.loads(response.body)
         data = jresp.get('result', {}).get('value', {}).get('data', {})
-        self.assertIn('fileName', data, response)
-        self.assertNotIn('Server', data, response)
+        assert 'fileName' in data, response
+        assert 'Server' not in data, response
 
         return
 
@@ -228,7 +228,7 @@ class TestResolver(TestController):
 
         params = {'BINDPW': 'Test123!'}
         response, params = self.define_ldap_resolver('LdapX', params=params)
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         #
         # rename resolver LdapX to LdapZ w.o. password
@@ -236,11 +236,11 @@ class TestResolver(TestController):
 
         params = {'previous_name': 'LdapX'}
         response, params = self.define_ldap_resolver('LdapZ', params=params)
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         response = self.make_system_request('getResolvers')
-        self.assertNotIn('LdapX', response, response)
-        self.assertIn('LdapZ', response, response)
+        assert 'LdapX' not in response, response
+        assert 'LdapZ' in response, response
 
     def test_update_critical_data_ldap(self):
         """
@@ -252,7 +252,7 @@ class TestResolver(TestController):
 
         params = {'BINDPW': 'Test123!'}
         response, params = self.define_ldap_resolver('LdapX', params=params)
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         #
         # rename resolver LDA1 to LDB with critical changes
@@ -262,11 +262,11 @@ class TestResolver(TestController):
                   'BINDDN': 'ou=roundabout, '
                             'cn=administrator,dc=yourdomain,dc=tld', }
         response, params = self.define_ldap_resolver('LdapZ', params=params)
-        self.assertTrue('"status": false,' in response, response)
+        assert '"status": false,' in response, response
 
         response = self.make_system_request('getResolvers')
-        self.assertNotIn('LdapZ', response, response)
-        self.assertIn('LdapX', response, response)
+        assert 'LdapZ' not in response, response
+        assert 'LdapX' in response, response
 
         #
         # rename resolver LDA1 to LDB with critical changes
@@ -278,11 +278,11 @@ class TestResolver(TestController):
                             'cn=administrator,dc=yourdomain,dc=tld', }
 
         response, params = self.define_ldap_resolver('LdapZ', params=params)
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         response = self.make_system_request('getResolvers')
-        self.assertNotIn('LdapX', response, response)
-        self.assertIn('LdapZ', response, response)
+        assert 'LdapX' not in response, response
+        assert 'LdapZ' in response, response
 
     def test_update_critical_data_sql(self):
         """
@@ -294,7 +294,7 @@ class TestResolver(TestController):
 
         params = {"Password": "Test123!", }
         response, params = self.define_sql_resolver('SqlX', params=params)
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         #
         # rename resolver SqlX to SqlZ with critical changes
@@ -304,11 +304,11 @@ class TestResolver(TestController):
                   'User': 'dummy_user', }
 
         response, params = self.define_sql_resolver('SqlZ', params=params)
-        self.assertTrue('"status": false,' in response, response)
+        assert '"status": false,' in response, response
 
         response = self.make_system_request('getResolvers')
-        self.assertNotIn('SqlZ', response, response)
-        self.assertIn('SqlX', response, response)
+        assert 'SqlZ' not in response, response
+        assert 'SqlX' in response, response
 
         #
         # rename resolver SqlX to SqlZ with critical changes
@@ -319,11 +319,11 @@ class TestResolver(TestController):
                   'Password': 'Test123!'}
 
         response, params = self.define_sql_resolver('SqlZ', params=params)
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         response = self.make_system_request('getResolvers')
-        self.assertNotIn('SqlX', response, response)
-        self.assertIn('SqlZ', response, response)
+        assert 'SqlX' not in response, response
+        assert 'SqlZ' in response, response
 
     def test_rename_resolver_in_realms(self):
 
@@ -334,7 +334,7 @@ class TestResolver(TestController):
 
         for name in ['AAAA', 'BBBB', 'CCCC', 'DDDD']:
             response = self.create_resolver(name, resolver_param)
-            self.assertTrue('"value": true' in response.body)
+            assert '"value": true' in response.body
 
         resolver_list = []
         resolver_base = 'useridresolver.PasswdIdResolver.IdResolver.'
@@ -342,10 +342,10 @@ class TestResolver(TestController):
             resolver_list.append(resolver_base + name)
 
         response = self.create_realm('eins', resolver_list)
-        self.assertTrue('"value": true' in response.body)
+        assert '"value": true' in response.body
 
         response = self.create_realm('zwei', resolver_list)
-        self.assertTrue('"value": true' in response.body)
+        assert '"value": true' in response.body
 
         # now we change the resolver name BBBB to ZZZZ
 
@@ -353,7 +353,7 @@ class TestResolver(TestController):
         zzzz_resolver_param.update(resolver_param)
         zzzz_resolver_param['previous_name'] = 'BBBB'
         response = self.create_resolver('ZZZZ', zzzz_resolver_param)
-        self.assertTrue('"value": true' in response.body)
+        assert '"value": true' in response.body
 
         # finally we have to check the realm definition
 
@@ -399,14 +399,14 @@ class TestResolver(TestController):
 
         params = {'BINDPW': bind_pw}
         response, params = self.define_ldap_resolver(ldap_name, params=params)
-        self.assertTrue('"value": true' in response.body)
+        assert '"value": true' in response.body
 
         params = {
             'resolvers':
                 'useridresolver.LDAPIdResolver.IdResolver.' + ldap_name,
             'realm': 'lino'}
         response = self.make_system_request('setRealm', params=params)
-        self.assertTrue('"value": true' in response.body)
+        assert '"value": true' in response.body
 
         # ------------------------------------------------------------------ --
 
@@ -420,19 +420,19 @@ class TestResolver(TestController):
 
             params = {'realm': 'lino'}
             response = self.make_admin_request('userlist', params=params)
-            self.assertTrue('"queried" : 0' in response.body)
+            assert '"queried" : 0' in response.body
 
             # finally the test that the decryption was sucessful
 
-            self.assertTrue(mock_lobj.pw == bind_pw)
+            assert mock_lobj.pw == bind_pw
 
         params = {'realm': 'lino'}
         response = self.make_system_request('delRealm', params)
-        self.assertTrue('"result": true' in response.body)
+        assert '"result": true' in response.body
 
         params = {'resolver': 'fake_ldap'}
         response = self.make_system_request('delResolver', params)
-        self.assertTrue('"value": true' in response.body)
+        assert '"value": true' in response.body
 
         return
 

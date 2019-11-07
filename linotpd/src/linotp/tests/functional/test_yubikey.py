@@ -96,7 +96,7 @@ class TestYubikeyController(TestController):
             params['public_uid'] = public_uid
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, "Response: %r" % response)
+        assert '"value": true' in response, "Response: %r" % response
 
         # setup the otp values, that we check against
         self.init_otps(public_uid)
@@ -119,14 +119,14 @@ class TestYubikeyController(TestController):
             for otp in self.valid_otps:
                 params = {'serial': serial, 'pass': otp}
                 response = self.make_validate_request('check_s', params=params)
-                self.assertTrue('"value": true' in response, "Response: %r" % response)
+                assert '"value": true' in response, "Response: %r" % response
 
             # Repeat an old (therefore invalid) OTP value
             invalid_otp = public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
             params = {'serial': serial, 'pass': invalid_otp}
             response = self.make_validate_request('check_s', params=params)
-            self.assertTrue('"value": false' in response, "Response: %r"
-                            % response)
+            assert '"value": false' in response, "Response: %r" \
+                            % response
 
         return
 
@@ -149,7 +149,7 @@ class TestYubikeyController(TestController):
             'session': self.session,
             }
         response = self.make_admin_request('resync', params=params)
-        self.assertTrue('"value": true' in response, "Response: %r" % response)
+        assert '"value": true' in response, "Response: %r" % response
 
         params = {
             'serial': serial,
@@ -158,7 +158,7 @@ class TestYubikeyController(TestController):
             'session': self.session,
             }
         response = self.make_admin_request('resync', params=params)
-        self.assertTrue('"value": false' in response, "Response: %r" % response)
+        assert '"value": false' in response, "Response: %r" % response
 
         return
 
@@ -189,14 +189,14 @@ class TestYubikeyController(TestController):
                 }
             response = self.make_admin_request('getSerialByOtp', params=params)
 
-            self.assertTrue('"status": true' in response,
-                            "Response: %r" % response)
+            assert '"status": true' in response, \
+                            "Response: %r" % response
 
             # now access the data / serial number
             resp = json.loads(response.body)
             data = resp.get("result", {}).get('value', {})
             get_serial = data.get('serial')
-            self.assertEqual(get_serial, "", resp)
+            assert get_serial == "", resp
 
         return
 
@@ -220,14 +220,14 @@ class TestYubikeyController(TestController):
                 response = self.make_admin_request('getSerialByOtp',
                                                     params=params)
 
-                self.assertTrue('"status": true' in response,
-                                "Response: %r" % response)
+                assert '"status": true' in response, \
+                                "Response: %r" % response
 
                 # now access the data / serial number
                 resp = json.loads(response.body)
                 data = resp.get("result", {}).get('value', {})
                 get_serial = data.get('serial')
-                self.assertEqual(serial, get_serial, resp)
+                assert serial == get_serial, resp
 
         return
 
@@ -259,7 +259,7 @@ class TestYubikeyController(TestController):
             'otpkey': pw_password
         }
         response = self.make_admin_request('init', params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -292,7 +292,7 @@ class TestYubikeyController(TestController):
                 'realm': '*',
                 }
             response = self.make_system_request('setPolicy', params=params)
-            self.assertTrue('false' not in response, response)
+            assert 'false' not in response, response
 
             # -------------------------------------------------------------- --
 
@@ -312,7 +312,7 @@ class TestYubikeyController(TestController):
                 'pass': pin + otp
                 }
             response = self.make_validate_request('check', params=params)
-            self.assertTrue('"value": true' in response, otppin_mode)
+            assert '"value": true' in response, otppin_mode
 
             # -------------------------------------------------------------- --
 
@@ -323,7 +323,7 @@ class TestYubikeyController(TestController):
                 'pass': pin + otp
                 }
             response = self.make_validate_request('check', params=params)
-            self.assertFalse('"value": true' in response, response)
+            assert not ('"value": true' in response), response
 
             # -------------------------------------------------------------- --
 
@@ -334,7 +334,7 @@ class TestYubikeyController(TestController):
                 'pass': pin + pw_password
                 }
             response = self.make_validate_request('check', params=params)
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
         return
 

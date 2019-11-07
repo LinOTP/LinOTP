@@ -60,8 +60,7 @@ class TestInactivePolicy(TestController):
 
         params = {'key': 'NewPolicyEvaluation'}
         response = self.make_system_request('getConfig', params=params)
-        self.assertTrue(
-            '"getConfig NewPolicyEvaluation"' in response, response)
+        assert '"getConfig NewPolicyEvaluation"' in response, response
 
         jresp = json.loads(response.body)
 
@@ -81,17 +80,15 @@ class TestInactivePolicy(TestController):
                     params = {'NewPolicyEvaluation': 'True'}
                     response = self.make_system_request('setConfig',
                                                         params=params)
-                    self.assertTrue(
-                        '"setConfig NewPolicyEvaluation:True"' in response,
-                        response)
+                    assert '"setConfig NewPolicyEvaluation:True"' in response, \
+                        response
 
                 if policy_engine_version == 'old':
                     params = {'key': 'NewPolicyEvaluation'}
                     response = self.make_system_request('delConfig',
                                                         params=params)
-                    self.assertTrue(
-                        '"delConfig NewPolicyEvaluation"' in response,
-                        response)
+                    assert '"delConfig NewPolicyEvaluation"' in response, \
+                        response
 
                 self.run_inactive_policy_verifcation()
 
@@ -138,7 +135,7 @@ class TestInactivePolicy(TestController):
         jresp = json.loads(response.body)
 
         serial = jresp.get('detail', {}.get('serial'))
-        self.assertIsNotNone(serial, response)
+        assert serial is not None, response
 
         # ----------------------------------------------------------------- --
 
@@ -151,7 +148,7 @@ class TestInactivePolicy(TestController):
 
         jresp = json.loads(response.body)
         value = jresp.get('result', {}).get('value')
-        self.assertTrue(value, response)
+        assert value, response
 
         # ----------------------------------------------------------------- --
 
@@ -173,7 +170,7 @@ class TestInactivePolicy(TestController):
             'result', {}).get(
                 'value', {}).get(
                     "setPolicy %s" % policy.get('name'))
-        self.assertIsNotNone(p_loaded, response)
+        assert p_loaded is not None, response
 
         # ----------------------------------------------------------------- --
 
@@ -187,7 +184,7 @@ class TestInactivePolicy(TestController):
 
         jresp = json.loads(response.body)
         value = jresp.get('result', {}).get('value')
-        self.assertTrue(value, response)
+        assert value, response
 
         # ----------------------------------------------------------------- --
 
@@ -209,7 +206,7 @@ class TestInactivePolicy(TestController):
             'result', {}).get(
                 'value', {}).get(
                     "setPolicy %s" % policy.get('name'))
-        self.assertIsNotNone(p_loaded, response)
+        assert p_loaded is not None, response
 
         # ----------------------------------------------------------------- --
 
@@ -224,7 +221,7 @@ class TestInactivePolicy(TestController):
 
         jresp = json.loads(response.body)
         value = jresp.get('result', {}).get('value')
-        self.assertFalse(value, response)
+        assert not value, response
 
         # ----------------------------------------------------------------- --
 
@@ -237,7 +234,7 @@ class TestInactivePolicy(TestController):
 
         jresp = json.loads(response.body)
         value = jresp.get('result', {}).get('value')
-        self.assertTrue(value, response)
+        assert value, response
 
         return
 

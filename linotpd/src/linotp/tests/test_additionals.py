@@ -50,34 +50,32 @@ class PBKDF2(TestCase):
                          10: "3c28a7f09aa19108a17d",
                          100: "303155b866685ad279fa" }
         for key_length in list(expected_key.keys()):
-            key = binascii.hexlify(pbkdf2("my password", "salt", 10, key_length))
+            key = pbkdf2("my password", "salt", 10, key_length).hex()
             print(key, expected_key[key_length])
             assert key == expected_key[key_length]
 
 
-class TestUtils(TestCase):
-
-    def test_get_config(self):
-        '''
-        Test get_config
-        '''
-        ini_file = '''
+def test_get_config(tmp_path):
+    '''
+    Test get_config
+    '''
+    ini_file = '''
 [section1]
 key1 = value1
 key2 = value2
 [section2]
 key3 = value3
 '''
-        t = tempfile.NamedTemporaryFile(delete=False)
 
-        t.write(ini_file)
-        t.close()
-        print("section1,key1:", config_get("section1", "key1", ini_file=t.name))
-        assert config_get("section1", "key1", ini_file=t.name) == "value1"
-        assert config_get("section1", "key2", ini_file=t.name) == "value2"
-        assert config_get("section2", "key3", ini_file=t.name) == "value3"
-        assert config_get("section3", "key4", default="Hallo", ini_file=t.name) == "Hallo"
-        assert config_get("section2", "key4", default="Bubu", ini_file=t.name) == "Bubu"
+    ini_path = tmp_path / 'test_get_config.ini'
+    ini_path.write(ini_file)
+
+    print("section1,key1:", config_get("section1", "key1", ini_file=ini_path.name))
+    assert config_get("section1", "key1", ini_file=ini_path.name) == "value1"
+    assert config_get("section1", "key2", ini_file=ini_path.name) == "value2"
+    assert config_get("section2", "key3", ini_file=ini_path.name) == "value3"
+    assert config_get("section3", "key4", default="Hallo", ini_file=ini_path.name) == "Hallo"
+    assert config_get("section2", "key4", default="Bubu", ini_file=ini_path.name) == "Bubu"
 
 
 class TestPSKC(TestCase):
@@ -320,9 +318,9 @@ class TestPSKC(TestCase):
         res = parsePSKCdata(self.XML1, 	do_checkserial=False)
         print(res)
         assert len(res) == 1
-        assert res.get('12345678')
-        assert res.get('12345678').get('otplen') == 8
-        assert res.get('12345678').get('hmac_key') == '3132333435363738393031323334353637383930'
+        assert res.get('987654321')
+        assert res.get('987654321').get('otplen') == 8
+        assert res.get('987654321').get('hmac_key') == '3132333435363738393031323334353637383930'
 
     def test_03_xml2(self):
         '''

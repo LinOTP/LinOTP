@@ -182,7 +182,7 @@ class TestEngineActivation(unittest.TestCase):
         mocked_LOG_error.assert_any_call(*call1)
         mocked_LOG_error.assert_any_call(*call2)
 
-        self.assertTrue('old' in return_value)
+        assert 'old' in return_value
 
         mocked_new_getAuthorization.reset_mock()
         mocked_legacy_getAuthorization.reset_mock()
@@ -332,7 +332,7 @@ class TestEngineActivation(unittest.TestCase):
         call = ('old: new %r <> %r', old_pols, new_pols)
         mocked_LOG_error.assert_any_call(*call)
 
-        self.assertTrue('old' in return_value)
+        assert 'old' in return_value
 
         mocked_new_has_client_policy.reset_mock()
         mocked_legacy_get_client_policy.reset_mock()
@@ -484,7 +484,7 @@ class TestEngineActivation(unittest.TestCase):
         call = ('old: new %r <> %r', old_pols, new_pols)
         mocked_LOG_error.assert_any_call(*call)
 
-        self.assertTrue('old' in return_value)
+        assert 'old' in return_value
 
         mocked_new_get_client_policy.reset_mock()
         mocked_legacy_get_client_policy.reset_mock()
@@ -619,7 +619,7 @@ class TestEngineActivation(unittest.TestCase):
         call = ('old: new %r <> %r', old_pols, new_pols)
         mocked_LOG_error.assert_any_call(*call)
 
-        self.assertTrue('old' in return_value)
+        assert 'old' in return_value
 
         mocked_new_getPolicy.reset_mock()
         mocked_legacy_getPolicy.reset_mock()
@@ -754,7 +754,7 @@ class TestEngineActivation(unittest.TestCase):
         call = ('old: new %r <> %r', old_pols, new_pols)
         mocked_LOG_error.assert_any_call(*call)
 
-        self.assertTrue('old' in return_value)
+        assert 'old' in return_value
 
         mocked_new_search_policy.reset_mock()
         mocked_legacy_getPolicy.reset_mock()

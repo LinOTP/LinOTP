@@ -107,14 +107,14 @@ class TestReportingController(TestController):
         response = self.make_authenticated_request(controller='admin',
                                                    action='init',
                                                    params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         if active is False:
             response = self.make_authenticated_request(controller='admin',
                                                        action='disable',
                                                        params={
                                                            'serial': serial})
 
-            self.assertTrue('"value": 1' in response, response)
+            assert '"value": 1' in response, response
         return serial
 
     def delete_all_reports(self):
@@ -128,7 +128,7 @@ class TestReportingController(TestController):
 
         resp = json.loads(response.body)
         values = resp.get('result')
-        self.assertEqual(values.get('status'), True, response)
+        assert values.get('status') == True, response
 
 # --------------------------------------------------------------------------- --
     # Tests
@@ -147,7 +147,7 @@ class TestReportingController(TestController):
 
         with DBSession() as session:
             table_content = session.query(Reporting).count()
-            self.assertEqual(table_content, 1, table_content)
+            assert table_content == 1, table_content
 
     def test_reporting_status_active(self):
         # set policy:
@@ -170,7 +170,7 @@ class TestReportingController(TestController):
         with DBSession() as session:
             # check if new entry was created in reporting table
             table_content = session.query(Reporting).count()
-            self.assertEqual(table_content, 12, table_content)
+            assert table_content == 12, table_content
 
         parameters = {'user': 'hans'}
         self.make_authenticated_request(controller='admin',
@@ -181,7 +181,7 @@ class TestReportingController(TestController):
             # check if new entry was created in reporting table
             table_content = session.query(Reporting).filter(
                 Reporting.parameter == 'active')
-            self.assertEqual(table_content.count(), 7, table_content)
+            assert table_content.count() == 7, table_content
 
     def test_multi_actions_in_reporting_policy(self):
 
@@ -203,7 +203,7 @@ class TestReportingController(TestController):
         with DBSession() as session:
             # check if new entry was created in reporting table
             table_content = session.query(Reporting).count()
-            self.assertEqual(table_content, 3, table_content)
+            assert table_content == 3, table_content
 
     def test_del_before(self):
         """
@@ -246,7 +246,7 @@ class TestReportingController(TestController):
         with DBSession() as session:
             # check if reports are in database
             table_content = session.query(Reporting).count()
-            self.assertEqual(table_content, 3, table_content)
+            assert table_content == 3, table_content
 
         # delete reports
         yest = yesterday.strftime("%Y-%m-%d")
@@ -256,15 +256,15 @@ class TestReportingController(TestController):
                                                    params=parameter)
         resp = json.loads(response.body)
         values = resp.get('result')
-        self.assertEqual(values.get('status'), True, response)
-        self.assertEqual(values.get('value'), 1, response)
+        assert values.get('status') == True, response
+        assert values.get('value') == 1, response
 
     def test_delete_all_reports(self):
 
         with DBSession() as session:
             # check if table is empty
             table_content = session.query(Reporting).count()
-            self.assertEqual(table_content, 0, table_content)
+            assert table_content == 0, table_content
 
         # create table entries
         today = datetime.now()
@@ -288,7 +288,7 @@ class TestReportingController(TestController):
         with DBSession() as session:
             # check if reports are in database
             table_content = session.query(Reporting).count()
-            self.assertEqual(table_content, 2, table_content)
+            assert table_content == 2, table_content
 
         # delete reports
         response = self.make_authenticated_request(
@@ -298,13 +298,13 @@ class TestReportingController(TestController):
 
         resp = json.loads(response.body)
         values = resp.get('result')
-        self.assertEqual(values.get('status'), True, response)
-        self.assertEqual(values.get('value'), 2, response)
+        assert values.get('status') == True, response
+        assert values.get('value') == 2, response
 
         with DBSession() as session:
             # check if database table is empty
             table_content = session.query(Reporting).count()
-            self.assertEqual(table_content, 0, table_content)
+            assert table_content == 0, table_content
 
     def test_selfservice(self):
         # set policies:
@@ -326,9 +326,9 @@ class TestReportingController(TestController):
 
         resp = json.loads(response.body)
         values = resp.get('result')
-        self.assertEqual(values.get('status'), True, response)
-        self.assertEqual(values.get('value').get(
-            'setPolicy self01').get('action'), True, response)
+        assert values.get('status') == True, response
+        assert values.get('value').get(
+            'setPolicy self01').get('action') == True, response
 
         # do userservice request
         self.make_userservice_request(
@@ -342,7 +342,7 @@ class TestReportingController(TestController):
         with DBSession() as session:
             # check if new entry was created in reporting table
             table_content = session.query(Reporting).count()
-            self.assertEqual(table_content, 1, table_content)
+            assert table_content == 1, table_content
 
     def test_reporting_maximum(self):
         """
@@ -375,10 +375,10 @@ class TestReportingController(TestController):
 
         resp = json.loads(response.body)
         values = resp.get('result')
-        self.assertEqual(values.get('status'), True, response)
+        assert values.get('status') == True, response
         value = values.get('value')
-        self.assertEqual(value.get('mydefrealm').get('total'), 4, response)
-        self.assertEqual(value.get('mymixrealm').get('total'), 1, response)
+        assert value.get('mydefrealm').get('total') == 4, response
+        assert value.get('mymixrealm').get('total') == 1, response
 
     def test_reporting_access_policy(self):
         policy_params = {'name': 'test_report_policy',
@@ -392,8 +392,8 @@ class TestReportingController(TestController):
                                                    action='maximum')
         resp = json.loads(response.body)
         values = resp.get('result')
-        self.assertEqual(values.get('status'), False, response)
-        self.assertEqual(values.get('error').get('code'), 410, response)
+        assert values.get('status') == False, response
+        assert values.get('error').get('code') == 410, response
 
     def test_reporting_show(self):
         # set reporting policy:
@@ -425,19 +425,19 @@ class TestReportingController(TestController):
         response = self.make_authenticated_request(controller='reporting',
                                                    action='show')
         resp = json.loads(response.body)
-        self.assertEqual(resp.get('detail').get('report_rows'), 3, response)
-        self.assertEqual(resp.get('result').get('status'), True, response)
+        assert resp.get('detail').get('report_rows') == 3, response
+        assert resp.get('result').get('status') == True, response
         values = resp.get('result').get('value')
-        self.assertEqual(values[2].get('count'), 1, response)
+        assert values[2].get('count') == 1, response
 
         # test csv output
 
         response = self.make_authenticated_request(controller='reporting',
                                                    action='show',
                                                    params={'outform': 'csv'})
-        self.assertTrue('1, "myotherrealm", "", ' in response, response)
-        self.assertTrue('"", "", "", "total", "token_init", ' in response,
-                        response)
+        assert '1, "myotherrealm", "", ' in response, response
+        assert '"", "", "", "total", "token_init", ' in response, \
+                        response
 
     def test_reporting_show_paging(self):
         # set reporting policy:
@@ -476,14 +476,14 @@ class TestReportingController(TestController):
                                                    action='show',
                                                    params=parameter)
         resp = json.loads(response.body)
-        self.assertEqual(resp.get('detail').get('report_rows'), 50, response)
-        self.assertEqual(resp.get('detail').get('page'), page_value, response)
-        self.assertEqual(resp.get('detail').get('pagesize'), pagesize_value,
-                         response)
+        assert resp.get('detail').get('report_rows') == 50, response
+        assert resp.get('detail').get('page') == page_value, response
+        assert resp.get('detail').get('pagesize') == pagesize_value, \
+                         response
 
-        self.assertEqual(resp.get('result').get('status'), True, response)
+        assert resp.get('result').get('status') == True, response
         values = resp.get('result').get('value')
-        self.assertEqual(values[2].get('count'), 14, response)
+        assert values[2].get('count') == 14, response
 
         timestamp = values[10].get('timestamp')
 
@@ -494,9 +494,9 @@ class TestReportingController(TestController):
                                                    params=parameter)
         line = '18, "mydefrealm", "", "%s", "", "", "", "total",' \
                ' "token_init"' % str(timestamp)
-        self.assertTrue(line in response, response)
+        assert line in response, response
         resp = response.body.splitlines()
-        self.assertTrue(len(resp) is pagesize_value + 1)
+        assert len(resp) is pagesize_value + 1
 
     def test_token_user_license(self):
         """
@@ -519,8 +519,8 @@ class TestReportingController(TestController):
             upload_files = [("license", "linotp2.token_user.pem", license_data)]
             response = self.make_system_request("setSupport",
                                                 upload_files=upload_files)
-            self.assertTrue('"status": true' in response)
-            self.assertTrue('"value": true' in response)
+            assert '"status": true' in response
+            assert '"value": true' in response
 
             response = self.make_system_request("getSupportInfo")
             jresp = json.loads(response.body)

@@ -87,7 +87,7 @@ class TestResourceScheduler(unittest.TestCase):
             for uri in next(res_sched):
                 uris.append(uri)
 
-            self.assertTrue(len(uris) == 0)
+            assert len(uris) == 0
 
         # one minute later
         with freeze_time("2012-01-14 12:01:00"):
@@ -100,9 +100,9 @@ class TestResourceScheduler(unittest.TestCase):
             for uri in next(res_sched):
                 uris.append(uri)
 
-            self.assertTrue('uri://1' in uris)
-            self.assertTrue('uri://2' in uris)
-            self.assertTrue('uri://3' in uris)
+            assert 'uri://1' in uris
+            assert 'uri://2' in uris
+            assert 'uri://3' in uris
 
         return
 
@@ -135,7 +135,7 @@ class TestResourceScheduler(unittest.TestCase):
         for uri in next(res_sched):
             uris.append(uri)
 
-        self.assertTrue(len(uris) == 9)
+        assert len(uris) == 9
 
         # -------------------------------------------------------------- --
 
@@ -144,9 +144,9 @@ class TestResourceScheduler(unittest.TestCase):
         for _key, val in list(res_sched.resource_registry.registry.items()):
             value, b_ind, b_count = val
 
-            self.assertTrue(value is None)
-            self.assertTrue(b_ind == 0 )
-            self.assertTrue(b_count == 0)
+            assert value is None
+            assert b_ind == 0
+            assert b_count == 0
 
         return
 
@@ -189,13 +189,13 @@ class TestResourceScheduler(unittest.TestCase):
             for uri in next(res_sched):
                 uris.append(uri)
 
-            self.assertTrue(the_blocked_one not in uris)
+            assert the_blocked_one not in uris
 
             # -------------------------------------------------------------- --
 
             # verify that the retry is done 3 times for the other two
 
-            self.assertTrue(len(uris) == 6)
+            assert len(uris) == 6
 
             # -------------------------------------------------------------- --
 
@@ -205,12 +205,12 @@ class TestResourceScheduler(unittest.TestCase):
                 value, b_ind, b_count = val
 
                 if key == the_blocked_one:
-                    self.assertTrue(value is not None)
-                    self.assertTrue(b_ind == 1)
-                    self.assertTrue(b_count == 0)
+                    assert value is not None
+                    assert b_ind == 1
+                    assert b_count == 0
 
                 else:
-                    self.assertTrue(value is None)
+                    assert value is None
 
         # one minute later
 
@@ -224,7 +224,7 @@ class TestResourceScheduler(unittest.TestCase):
 
             # verify that the former blocked one is now not more blocked
 
-            self.assertTrue(the_blocked_one in uris)
+            assert the_blocked_one in uris
 
             # -------------------------------------------------------------- --
 
@@ -233,7 +233,7 @@ class TestResourceScheduler(unittest.TestCase):
 
             for _key, val in list(res_sched.resource_registry.registry.items()):
                 value, _b_ind, _b_count = val
-                self.assertTrue(value is None)
+                assert value is None
 
         return
 

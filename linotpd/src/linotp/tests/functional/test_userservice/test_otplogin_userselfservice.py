@@ -86,8 +86,8 @@ class TestUserserviceAuthController(TestController):
         name = policy['name']
 
         response = self.make_system_request('setPolicy', params=policy)
-        self.assertTrue('"status": true' in response, response)
-        self.assertTrue(('"setPolicy %s": {' % name) in response, response)
+        assert '"status": true' in response, response
+        assert ('"setPolicy %s": {' % name) in response, response
 
         return
 
@@ -109,7 +109,7 @@ class TestUserserviceAuthController(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"img": "<img ' in response, response)
+        assert '"img": "<img ' in response, response
 
         policy = {
             'name': 'T1',
@@ -166,8 +166,8 @@ class TestUserserviceAuthController(TestController):
                                                      auth_user=auth_user,
                                                      new_auth_cookie=True)
 
-        self.assertTrue('additional authentication parameter required'
-                        in response)
+        assert 'additional authentication parameter required' \
+                        in response
 
         auth_user['otp'] = self.otps.pop()
 
@@ -177,14 +177,14 @@ class TestUserserviceAuthController(TestController):
                                                      auth_user=auth_user,
                                                      new_auth_cookie=True)
 
-        self.assertTrue('"img": "<img ' in response, response)
+        assert '"img": "<img ' in response, response
 
         params = {'serial': 'hmac123'}
         response = self.make_userselfservice_request('delete',
                                                      params=params,
                                                      auth_user=auth_user)
 
-        self.assertTrue('"delete token": 1' in response, response)
+        assert '"delete token": 1' in response, response
 
         return
 
@@ -205,7 +205,7 @@ class TestUserserviceAuthController(TestController):
                                                      auth_user=auth_user,
                                                      new_auth_cookie=True)
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         # ----------------------------------------------------------------- ---
 
@@ -231,8 +231,8 @@ class TestUserserviceAuthController(TestController):
             if failed_auth_msg in entry:
                 failed_auth_found = True
 
-        self.assertTrue(unbound_not_found, entries)
-        self.assertTrue(failed_auth_found, entries)
+        assert unbound_not_found, entries
+        assert failed_auth_found, entries
 
         return
 
@@ -278,12 +278,12 @@ class TestUserserviceAuthController(TestController):
         params = {}
         params['session'] = auth_cookie
 
-        with self.assertRaises(Exception) as app_error:
+        with pytest.raises(Exception) as app_error:
 
             response = self.client.post(url(controller='userservice',
                                             action='history'), data=params)
 
-        self.assertTrue("No valid session" in app_error.exception)
+        assert "No valid session" in app_error.exception
 
         TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
 
@@ -293,7 +293,7 @@ class TestUserserviceAuthController(TestController):
                                         action='usertokenlist'), data=params)
 
         response.body = response.data.decode("utf-8")
-        self.assertTrue('LoginToken' in response, response)
+        assert 'LoginToken' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -307,8 +307,8 @@ class TestUserserviceAuthController(TestController):
                                         action='login'), data=params)
 
         response.body = response.data.decode("utf-8")
-        self.assertTrue('"Please enter your otp value: "' in response,
-                        response)
+        assert '"Please enter your otp value: "' in response, \
+                        response
 
         # response should contain the challenge information
 
@@ -329,7 +329,7 @@ class TestUserserviceAuthController(TestController):
                                         action='login'), data=params)
 
         response.body = response.data.decode("utf-8")
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         cookies = TestController.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
@@ -343,7 +343,7 @@ class TestUserserviceAuthController(TestController):
                                         action='history'), data=params)
 
         response.body = response.data.decode("utf-8")
-        self.assertTrue('"rows": [' in response, response)
+        assert '"rows": [' in response, response
 
         return
 

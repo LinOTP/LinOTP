@@ -112,7 +112,7 @@ class TestSetAdminPassword(TestController):
                                            auth_user='admin')
 
         msg = '"detail": "password updated for \'admin\'"'
-        self.assertTrue(msg in response)
+        assert msg in response
 
         return
 

@@ -133,7 +133,7 @@ class DefaultSecurityModule(SecurityModule):
 
         return secret
 
-    def setup_module(self, param):
+    def setup_module(self, params):
         '''
         callback, which is called during the runtime to
         initialze the security module
@@ -146,7 +146,7 @@ class DefaultSecurityModule(SecurityModule):
         '''
         if self.crypted is False:
             return
-        if 'password' not in param:
+        if 'password' not in params:
             raise Exception("missing password")
 
         # if we have a crypted file and a password, we take all keys
@@ -175,7 +175,7 @@ class DefaultSecurityModule(SecurityModule):
 
         return os.urandom(len)
 
-    def encrypt(self, data: str, iv=None, id=0) -> bytes:
+    def encrypt(self, data: bytes, iv: bytes, id: int = 0) -> bytes:
         '''
         security module methods: encrypt
 
@@ -216,7 +216,7 @@ class DefaultSecurityModule(SecurityModule):
             del key
         return res
 
-    def decrypt(self, input, iv=None, id=0):
+    def decrypt(self, value: bytes, iv: bytes, id: int = 0) -> bytes:
         '''
         security module methods: decrypt
 
@@ -238,7 +238,7 @@ class DefaultSecurityModule(SecurityModule):
 
         key = self.getSecret(id)
         aes = AES.new(key, AES.MODE_CBC, iv)
-        output = aes.decrypt(input)
+        output = aes.decrypt(value)
 
         eof = len(output) - 1
         if eof == -1:
@@ -287,7 +287,7 @@ class DefaultSecurityModule(SecurityModule):
 
         return self._decryptValue(cryptPin, TOKEN_KEY)
 
-    def encryptPassword(self, password):
+    def encryptPassword(self, cryptPass: str) -> str:
         '''
         dedicated security module methods: encryptPassword
         which used one slot id to encrypt a string
@@ -298,9 +298,9 @@ class DefaultSecurityModule(SecurityModule):
         :return: encrypted data - leading iv, seperated by the ':'
         :rtype:  byte string
         '''
-        return self._encryptValue(password, CONFIG_KEY)
+        return self._encryptValue(cryptPass, CONFIG_KEY)
 
-    def encryptPin(self, pin, iv=None):
+    def encryptPin(self, cryptPin, iv=None) -> str:
         '''
         dedicated security module methods: encryptPin
         which used one slot id to encrypt a string
@@ -314,7 +314,7 @@ class DefaultSecurityModule(SecurityModule):
         :return: encrypted data - leading iv, seperated by the ':'
         :rtype:  byte string
         '''
-        return self._encryptValue(pin, TOKEN_KEY, iv=iv)
+        return self._encryptValue(cryptPin, TOKEN_KEY, iv=iv)
 
     # base methods for pin and password
     def _encryptValue(self, value, keyNum, iv=None):

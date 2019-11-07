@@ -209,7 +209,7 @@ class TestConfigController(TestController):
             param = {config_entry: config_data}
             response = self.make_system_request('setConfig', params=param)
 
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             param = {'key': config_entry}
             response = self.make_system_request('getConfig', params=param)
@@ -218,7 +218,7 @@ class TestConfigController(TestController):
             entry_name = "getConfig %s" % config_entry
             data = jresp.get('result', {}).get('value', {}).get(entry_name)
 
-            self.assertEqual(config_data, data, 'error while comparing data')
+            assert config_data == data, 'error while comparing data'
 
         self.delete_config(prefix='longBase64ConfigEntry')
 
@@ -241,7 +241,7 @@ class TestConfigController(TestController):
             param = {config_entry: config_data}
             response = self.make_system_request('setConfig', params=param)
 
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             param = {'key': config_entry}
             response = self.make_system_request('getConfig', params=param)
@@ -250,7 +250,7 @@ class TestConfigController(TestController):
             entry_name = "getConfig %s" % config_entry
             data = jresp.get('result', {}).get('value', {}).get(entry_name)
 
-            self.assertEqual(config_data, data, 'error while comparing data')
+            assert config_data == data, 'error while comparing data'
 
         self.delete_config(prefix='longHexConfigEntry')
 
@@ -277,7 +277,7 @@ class TestConfigController(TestController):
             param = {config_entry: u8_config_data}
             response = self.make_system_request('setConfig', params=param)
 
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             param = {'key': config_entry}
             response = self.make_system_request('getConfig', params=param)
@@ -293,18 +293,18 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                self.assertEqual(config_data, data,
-                                 'error while comparing data: %r  %r' %
+                assert config_data == data, \
+                                 'error while comparing data: %r  %r' % \
                                  (config_data[it - 3:it + 1],
-                                  data[it - 3:it + 1]))
+                                  data[it - 3:it + 1])
 
             if len(config_data) != len(data):
-                self.assertEqual(config_data, data,
-                                 'error while comparing length: %r  %r' %
+                assert config_data == data, \
+                                 'error while comparing length: %r  %r' % \
                                  (config_data[len(data):],
-                                  data[len(config_data):]))
+                                  data[len(config_data):])
 
-            self.assertEqual(config_data, data, 'error while comparing data')
+            assert config_data == data, 'error while comparing data'
 
         self.delete_config(prefix='longUnicodeConfigEntry')
 
@@ -333,12 +333,12 @@ class TestConfigController(TestController):
             config_entry = 'longUnicodeConfigEntry%d' % i
             param = {config_entry: u8_config_data}
             response = self.make_system_request('setConfig', params=param)
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # error occures on update read, so we write a second time
             # to update this entry
             response = self.make_system_request('setConfig', params=param)
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             param = {'key': config_entry}
             response = self.make_system_request('getConfig', params=param)
@@ -354,18 +354,18 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                self.assertEqual(config_data, data,
-                                 'error while comparing data: %r  %r' %
+                assert config_data == data, \
+                                 'error while comparing data: %r  %r' % \
                                  (config_data[it - 3:it + 1],
-                                  data[it - 3:it + 1]))
+                                  data[it - 3:it + 1])
 
             if len(config_data) != len(data):
-                self.assertEqual(config_data, data,
-                                 'error while comparing length: %r  %r' %
+                assert config_data == data, \
+                                 'error while comparing length: %r  %r' % \
                                  (config_data[len(data):],
-                                  data[len(config_data):]))
+                                  data[len(config_data):])
 
-            self.assertEqual(config_data, data, 'error while comparing data')
+            assert config_data == data, 'error while comparing data'
 
         self.delete_config(prefix='longUnicodeConfigEntry')
 
@@ -391,13 +391,13 @@ class TestConfigController(TestController):
 
             param = {config_entry: u8_config_data}
             response = self.make_system_request('setConfig', params=param)
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # on the second setConfig an update is made, which is the read
             # of the broken utf-8 string and will fail
             param = {config_entry: u8_config_data}
             response = self.make_system_request('setConfig', params=param)
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             param = {'key': config_entry}
             response = self.make_system_request('getConfig', params=param)
@@ -413,18 +413,18 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                self.assertEqual(config_data, data,
-                                 'error while comparing data: %r  %r' %
+                assert config_data == data, \
+                                 'error while comparing data: %r  %r' % \
                                  (config_data[it - 3:it + 1],
-                                  data[it - 3:it + 1]))
+                                  data[it - 3:it + 1])
 
             if len(config_data) != len(data):
-                self.assertEqual(config_data, data,
-                                 'error while comparing length: %r  %r' %
+                assert config_data == data, \
+                                 'error while comparing length: %r  %r' % \
                                  (config_data[len(data):],
-                                  data[len(config_data):]))
+                                  data[len(config_data):])
 
-            self.assertEqual(config_data, data, 'error while comparing data')
+            assert config_data == data, 'error while comparing data'
 
         self.delete_config(prefix='longUtf8ConfigEntry')
 
@@ -454,7 +454,7 @@ class TestConfigController(TestController):
                 config_entry + '.type': 'password'}
 
             response = self.make_system_request('setConfig', params=param)
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # on the second setConfig an update is made, which is the read
             # of the broken utf-8 string and will fail
@@ -463,7 +463,7 @@ class TestConfigController(TestController):
                 config_entry + '.type': 'password'}
 
             response = self.make_system_request('setConfig', params=param)
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             param = {'key': config_entry}
             response = self.make_system_request('getConfig', params=param)
@@ -473,7 +473,7 @@ class TestConfigController(TestController):
             data = jresp.get('result', {}).get('value', {}).get(entry_name)
 
             # we can't compare the result, as it is the encrypted data
-            self.assertNotEqual(data, config_data, response)
+            assert data != config_data, response
 
         return
 
@@ -494,7 +494,7 @@ class TestConfigController(TestController):
             param = {config_entry: config_data}
             response = self.make_system_request('setConfig', params=param)
 
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             param = {'key': config_entry}
             response = self.make_system_request('getConfig', params=param)
@@ -510,18 +510,18 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                self.assertEqual(config_data, data,
-                                 'error while comparing data: %r  %r' %
+                assert config_data == data, \
+                                 'error while comparing data: %r  %r' % \
                                  (config_data[it - 3:it + 1],
-                                  data[it - 3:it + 1]))
+                                  data[it - 3:it + 1])
 
             if len(config_data) != len(data):
-                self.assertEqual(config_data, data,
-                                 'error while comparing length: %r  %r' %
+                assert config_data == data, \
+                                 'error while comparing length: %r  %r' % \
                                  (config_data[len(data):],
-                                  data[len(config_data):]))
+                                  data[len(config_data):])
 
-            self.assertEqual(config_data, data, 'error while comparing data')
+            assert config_data == data, 'error while comparing data'
 
         self.delete_config(prefix='longHexlifyConfigEntry')
 
@@ -545,7 +545,7 @@ class TestConfigController(TestController):
             param = {config_entry: config_data}
             response = self.make_system_request('setConfig', params=param)
 
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             param = {'key': config_entry}
             response = self.make_system_request('getConfig', params=param)
@@ -561,18 +561,18 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                self.assertEqual(config_data, data,
-                                 'error while comparing data: %r  %r' %
+                assert config_data == data, \
+                                 'error while comparing data: %r  %r' % \
                                  (config_data[it - 3:it + 1],
-                                  data[it - 3:it + 1]))
+                                  data[it - 3:it + 1])
 
             if len(config_data) != len(data):
-                self.assertEqual(config_data, data,
-                                 'error while comparing length: %r  %r' %
+                assert config_data == data, \
+                                 'error while comparing length: %r  %r' % \
                                  (config_data[len(data):],
-                                  data[len(config_data):]))
+                                  data[len(config_data):])
 
-            self.assertEqual(config_data, data, 'error while comparing data')
+            assert config_data == data, 'error while comparing data'
 
         self.delete_config(prefix='longB64ConfigEntry')
 
@@ -642,7 +642,7 @@ class TestConfigController(TestController):
                     error_message = jresp.get('result', {}).get(
                                               'error', {}).get(
                                               'message', '')
-                    self.assertNotIn(msg, error_message, check_result.response)
+                    assert msg not in error_message, check_result.response
 
                 except (ValueError, TypeError) as _exx:
                     log.info("Failed to set Config %r", check_result.response)
