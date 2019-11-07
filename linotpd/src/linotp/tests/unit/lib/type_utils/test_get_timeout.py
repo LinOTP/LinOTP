@@ -31,16 +31,16 @@ class GetTimeoutTest(unittest.TestCase):
         with pytest.raises(ValueError) as exx:
             get_timeout(datetime.now())
 
-        assert "Unsupported timeout input type" in exx.exception.args[0]
+        exx.match("Unsupported timeout input type")
 
     def test_get_timeout_fail_string(self):
 
         with pytest.raises(ValueError) as exx:
             get_timeout("5 , , ,")
 
-        assert "Failed to convert timeout" in str(exx.exception)
+        exx.match("Failed to convert timeout")
 
         with pytest.raises(ValueError) as exx:
             get_timeout("5 , 3.0,     ,")
 
-        assert "Failed to convert timeout" in str(exx.exception)
+        exx.match("Failed to convert timeout")

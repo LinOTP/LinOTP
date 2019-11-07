@@ -58,12 +58,7 @@ class TestGetHashAlgoFromDescription(unittest.TestCase):
 
         with pytest.raises(Exception) as exx:
             hash_algo = get_hashalgo_from_description('blub', fallback='blah')
-
-        message = 'unsupported hash function'
-        exx_message = "%r" % exx.exception
-        assert message in exx_message, exx
-
-        return
+        exx.match('unsupported hash function')
 
     def test_get_valid_hashalgo_from_descrition(self):
         """

@@ -51,7 +51,7 @@ class TestSetPasswordTool(unittest.TestCase):
                                     old_password,
                                     new_password)
 
-        assert message in str(exx.exception)
+        exx.match(message)
 
     def test_set_password(self):
 
