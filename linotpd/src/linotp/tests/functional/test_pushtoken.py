@@ -71,11 +71,12 @@ def u64_to_transaction_id(u64_int):
     # HACK! counterpart to transaction_id_to_u64 in
     # tokens.qrtokenclass
     rest = u64_int % 100
+    before = u64_int // 100
+
     if rest == 0:
-        return str(u64_int / 100)
+        return str(before)
     else:
-        before = u64_int // 100
-        return '%s.%s' % (str(before), str(rest))
+        return '%d.%02d' % (before, rest)
 
 # -------------------------------------------------------------------------- --
 
