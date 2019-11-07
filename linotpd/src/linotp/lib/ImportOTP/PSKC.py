@@ -398,7 +398,7 @@ def parsePSKCdata(xml , preshared_key_hex=None, password=None,
                         HMAC_KEY_bin = aes_decrypt(KD_cipher_b64, ENCRYPTION_KEY_hex, serial)
 
                         if MAC_digest_b64 == KD_mac_b64:
-                            TOKENS[serial] = { 'hmac_key' : binascii.hexlify(HMAC_KEY_bin),
+                            TOKENS[serial] = { 'hmac_key' : HMAC_KEY_bin.hex(),
                                         'counter' : KD_counter, 'type' : TOKEN_TYPE,
                                         'timeStep' : KD_TimeInterval, 'otplen' : KD_otplen,
                                         'hashlib' : KD_hashlib,
@@ -414,7 +414,7 @@ def parsePSKCdata(xml , preshared_key_hex=None, password=None,
                         log.warning("At the moment we only support hmac-sha1. We found %s" % MAC_Method)
 
                 elif KD_hmac_key_b64:
-                    TOKENS[serial] = { 'hmac_key' : binascii.hexlify(base64.b64decode(KD_hmac_key_b64)),
+                    TOKENS[serial] = { 'hmac_key' : base64.b64decode(KD_hmac_key_b64).hex(),
                                         'counter' : KD_counter, 'type' : TOKEN_TYPE,
                                         'timeStep' : KD_TimeInterval, 'otplen' : KD_otplen,
                                         'hashlib' : KD_hashlib,
