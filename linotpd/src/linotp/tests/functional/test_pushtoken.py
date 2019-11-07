@@ -452,11 +452,12 @@ class TestPushToken(TestController):
         # save token data for later use
 
         user_token_id = len(self.tokens)
-        self.tokens[user_token_id] = {'serial': token_serial,
-                                      'server_public_key': server_public_key,
-                                      'partition': partition,
-                                      'callback_url': callback_url,
-                                      'pin': pin}
+        self.tokens[user_token_id] = {
+            'serial': token_serial.decode(),
+            'server_public_key': server_public_key,
+            'partition': partition,
+            'callback_url': callback_url.decode(),
+            'pin': pin}
 
         # ------------------------------------------------------------------ --
 
@@ -588,25 +589,25 @@ class TestPushToken(TestController):
 
         if content_type == CONTENT_TYPE_PAIRING:
 
-            serial, callback_url, __ = plaintext[offset:].split('\x00')
-            challenge['serial'] = serial
+            serial, callback_url, __ = plaintext[offset:].split(b'\x00')
+            challenge['serial'] = serial.decode()
 
         elif content_type == CONTENT_TYPE_SIGNREQ:
 
-            message, callback_url, __ = plaintext[offset:].split('\x00')
-            challenge['message'] = message
+            message, callback_url, __ = plaintext[offset:].split(b'\x00')
+            challenge['message'] = message.decode()
 
         elif content_type == CONTENT_TYPE_LOGIN:
 
-            login, host, callback_url, __ = plaintext[offset:].split('\x00')
-            challenge['login'] = login
-            challenge['host'] = host
+            login, host, callback_url, __ = plaintext[offset:].split(b'\x00')
+            challenge['login'] = login.decode()
+            challenge['host'] = host.decode()
 
         # ------------------------------------------------------------------ --
 
         # prepare the parsed challenge data
 
-        challenge['callback_url'] = callback_url
+        challenge['callback_url'] = callback_url.decode()
         challenge['transaction_id'] = transaction_id
         challenge['user_token_id'] = user_token_id
 
@@ -614,7 +615,7 @@ class TestPushToken(TestController):
 
         sig_base = (
             struct.pack('<b', CHALLENGE_URL_VERSION) +
-            b'%s\0' % action +
+            b'%s\0' % action.encode('utf-8') +
             server_signature + plaintext)
 
         sig = crypto_sign_detached(sig_base, self.secret_key)
@@ -661,7 +662,7 @@ class TestPushToken(TestController):
         pairing_response += self.public_key
 
         pairing_response += token_serial.encode('utf8') + b'\x00\x00'
-        pairing_response += self.gda + b'\x00'
+        pairing_response += self.gda.encode('utf-8') + b'\x00'
 
         signature = crypto_sign_detached(pairing_response, self.secret_key)
         pairing_response += signature
