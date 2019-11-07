@@ -477,7 +477,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # the server must send a hmac based signature with the
         # response
 
-        sig = ''
+        sig = b''
         sec_obj = self._get_secret_object()
 
         if flags & CHALLENGE_HAS_SIGNATURE:
@@ -496,7 +496,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         # ------------------------------------------------------------------- --
 
-        user_message = nonce + pt_header + sig.encode('utf-8') + data_package
+        user_message = nonce + pt_header + sig + data_package
 
         user_sig = sec_obj.hmac_digest(data_input=user_message,
                                        bkey=skB,
