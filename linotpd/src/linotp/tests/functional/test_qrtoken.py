@@ -413,10 +413,10 @@ class TestQRToken(TestController):
 
         # check if returned callbacks are correct
 
-        callback_url = challenge['callback_url']
+        callback_url = challenge['callback_url'].decode()
         assert callback_url == '/bar/baz/url'
 
-        callback_sms = challenge['callback_sms']
+        callback_sms = challenge['callback_sms'].decode()
         assert callback_sms == '5678'
 
 # --------------------------------------------------------------------------- --
@@ -597,7 +597,7 @@ class TestQRToken(TestController):
 
         user_token_id = challenge['user_token_id']
         serial = self.tokens[user_token_id]['serial']
-        assert challenge['message'] == serial
+        assert challenge['message'].decode() == serial
 
         # ------------------------------------------------------------------- --
 
@@ -684,12 +684,13 @@ class TestQRToken(TestController):
         # save token data for later use
 
         user_token_id = len(self.tokens)
-        self.tokens[user_token_id] = {'serial': token_serial,
-                                      'server_public_key': server_public_key,
-                                      'partition': partition,
-                                      'callback_url': callback_url,
-                                      'callback_sms': callback_sms,
-                                      'pin': pin}
+        self.tokens[user_token_id] = {
+            'serial': token_serial.decode(),
+            'server_public_key': server_public_key,
+            'partition': partition,
+            'callback_url': callback_url.decode(),
+            'callback_sms': callback_sms.decode(),
+            'pin': pin}
 
         # ------------------------------------------------------------------- --
 
@@ -2131,7 +2132,7 @@ class TestQRToken(TestController):
         assert user_token_id == received_user_token_id
 
         public_key = offline_info.get('public_key')
-        assert public_key == b64encode(self.public_key)
+        assert public_key.encode('utf-8') == b64encode(self.public_key)
 
         # we run the test until one of the tans start with a '0'
 
