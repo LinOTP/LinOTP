@@ -47,9 +47,9 @@ class PairingUnitTestCase(unittest.TestCase):
         test if pairing urls get generated with correct custom protocol ids
         """
 
-        mocked_get_secret_key.return_value = 'X' * 64
-        mocked_get_dh_secret_key.return_value = 'X' * 64
-        mocked_get_public_key.return_value = 'X' * 32
+        mocked_get_secret_key.return_value = b'X' * 64
+        mocked_get_dh_secret_key.return_value = b'X' * 64
+        mocked_get_public_key.return_value = b'X' * 32
 
         with patch.dict(config):
 
