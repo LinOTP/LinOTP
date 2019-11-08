@@ -725,12 +725,11 @@ $(document).ready(function() {
                 event.preventDefault();
             }
             else {
-                ui.jqXHR.success(function() {
-                    ui.tab.data ( "loaded", true );
+                ui.jqXHR.then(function () {
                 });
                 // Following replaces ajaxOptions error function. ajaxOptions was
                 // removed in jQuery UI 1.10
-                ui.jqXHR.error(function( jqXHR ){
+                ui.jqXHR.fail(function (jqXHR) {
                     if (jqXHR.status == LOGIN_CODE) {
                         alert(i18n.gettext("Your session has expired!"));
                         location.reload();
