@@ -466,7 +466,7 @@ def get_secret_key(partition):
     if not secret_key_b64:
         raise ConfigAdminError('No secret key found for %d' % partition)
 
-    secret_key = base64.b64decode(secret_key_b64.decode('utf-8'))
+    secret_key = base64.b64decode(secret_key_b64)
 
     # TODO: key type checking
 
@@ -493,7 +493,7 @@ def get_public_key(partition):
     if not public_key_b64:
         raise ConfigAdminError('No public key found for %d' % partition)
 
-    public_key = base64.b64decode(public_key_b64.decode('utf-8'))
+    public_key = base64.b64decode(public_key_b64)
 
     # TODO: key type checking
 

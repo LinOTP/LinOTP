@@ -244,7 +244,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         self.ensure_state('pairing_url_sent')
 
         self.addToTokenInfo('user_token_id', user_token_id)
-        b64_user_public_key = b64encode(user_public_key)
+        b64_user_public_key = b64encode(user_public_key).decode()
         self.addToTokenInfo('user_public_key', b64_user_public_key)
 
         self.change_state('pairing_response_received')
@@ -477,7 +477,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # the server must send a hmac based signature with the
         # response
 
-        sig = ''
+        sig = b''
         sec_obj = self._get_secret_object()
 
         if flags & CHALLENGE_HAS_SIGNATURE:

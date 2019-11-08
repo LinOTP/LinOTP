@@ -287,7 +287,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
             self.addToTokenInfo('user_token_id', user_token_id)
             b64_user_dsa_public_key = b64encode(user_dsa_public_key)
-            self.addToTokenInfo('user_dsa_public_key', b64_user_dsa_public_key)
+            self.addToTokenInfo(
+                'user_dsa_public_key', b64_user_dsa_public_key.decode())
             self.addToTokenInfo('user_login', user_login)
             self.addToTokenInfo('gda', gda)
 
@@ -458,7 +459,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # checkOtp to verify the signature
 
         b64_sig_base = b64encode(sig_base)
-        data = {'sig_base': b64_sig_base}
+        data = {'sig_base': b64_sig_base.decode()}
 
         if self.current_state == 'pairing_response_received':
             self.change_state('pairing_challenge_sent')

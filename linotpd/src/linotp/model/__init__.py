@@ -1049,7 +1049,11 @@ class Challenge(object):
         self.challenge = challenge.encode('utf8')
 
     def getChallenge(self):
-        return self.challenge.decode('utf8')
+
+        if not isinstance(self.challenge, str):
+            return self.challenge.decode()
+
+        return self.challenge
 
     def setTanStatus(self, received=False, valid=False, increment=True):
         self.received_tan = received
@@ -1138,7 +1142,7 @@ class Challenge(object):
         descr = {}
         descr['id'] = self.id
         descr['transid'] = self.transid
-        descr['challenge'] = self.challenge
+        descr['challenge'] = self.getChallenge()
         descr['tokenserial'] = self.tokenserial
         descr['data'] = self.getData()
         if save is True:

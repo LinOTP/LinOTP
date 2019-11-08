@@ -140,9 +140,6 @@ class LinOTPApp(Flask):
 
         l_config = getLinotpConfig()
 
-        # initialize the elliptic curve secret + public key for the qrtoken
-        self.secret_key = l_config.get('SecretKey.Partition.0', False)
-
         resolver_setup_done = config.get('resolver_setup_done', False)
         if resolver_setup_done is False:
             try:
@@ -374,11 +371,13 @@ class LinOTPApp(Flask):
 
         # ------------------------------------------------------------------ --
 
-        # for the setup of encrypted data, we require the hsm is instatiated
-        # and available in the request context
+        # setup the SecretKey for the elliptic curve if it is not already done
+        # elliptic curve are working with one partition (0) which is one
+        # public / private key pair
 
-        if not self.secret_key:
-            init_key_partition(linotp_config, partition=0)
+        partition = 0
+        if 'SecretKey.Partition.%d' % partition not in linotp_config:
+            init_key_partition(linotp_config, partition=partition)
 
     def getRadiusDictionaryPath(self):
         """

@@ -384,7 +384,9 @@ class DefaultSecurityModule(SecurityModule):
 
         try:
             sign_key = self.getSecret(slot_id)
-            hex_mac = hmac.new(sign_key, message, method).hexdigest()
+            hex_mac = hmac.new(
+                sign_key, message.encode('utf-8'), method
+                ).hexdigest()
         finally:
             if sign_key:
                 zerome(sign_key)
@@ -410,8 +412,10 @@ class DefaultSecurityModule(SecurityModule):
 
         try:
             sign_key = self.getSecret(slot_id)
-            hmac_obj = hmac.new(sign_key, message, method)
-            sign_mac = hmac.new(sign_key, message, method).hexdigest()
+            hmac_obj = hmac.new(
+                sign_key, message.encode('utf-8'), method)
+            sign_mac = hmac.new(
+                sign_key, message.encode('utf-8'), method).hexdigest()
 
             res = 0
             # as we compare on hex, we have to multiply by 2

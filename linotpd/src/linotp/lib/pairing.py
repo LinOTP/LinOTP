@@ -223,7 +223,7 @@ def generate_pairing_url(token_type,
             raise InvalidFunctionParameter('server_public_key',
                                            'Public key must be 32 bytes long')
 
-        data += server_public_key.encode()
+        data += server_public_key
 
     # ---------------------------------------------------------------------- --
 
@@ -443,7 +443,8 @@ def decrypt_pairing_response(enc_pairing_response):
     #  size     |     1      |    ?    |
     #            -------------------- --
 
-    token_type = struct.unpack('<b', plaintext[0])[0]
+    # the first byte defines the token type
+    token_type = int(plaintext[0])
 
     if token_type not in SUPPORTED_TOKEN_TYPES:
         raise ValueError('unsupported token type %d, supported types '

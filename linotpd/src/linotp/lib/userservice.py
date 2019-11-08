@@ -175,8 +175,9 @@ def create_auth_cookie(user, client, state='authenticated', state_data=None):
     # build the cache data
 
     data = [user, client, expiration, state, state_data]
+    hash_data = ("%r" % data).encode('utf-8')
 
-    digest = hmac.new(key, "%r" % data, digestmod=hashlib.sha256).digest()
+    digest = hmac.new(key, hash_data, digestmod=hashlib.sha256).digest()
     auth_cookie = base64.urlsafe_b64encode(digest).decode().strip("=")
 
     Cookie_Cache[auth_cookie] = data
@@ -445,7 +446,7 @@ def add_dynamic_selfservice_enrollment(config, actions):
                     tab = service.get('title')
                     c.scope = tab.get('scope')
                     t_file = tab.get('html')
-                    t_html = render(t_file)
+                    t_html = render(t_file).decode()
                     ''' remove empty lines '''
                     t_html = '\n'.join([line for line in t_html.split('\n') if line.strip() != ''])
                     e_name = "%s.%s.%s" % (tok, 'selfservice', 'enroll')
@@ -463,7 +464,7 @@ def add_dynamic_selfservice_enrollment(config, actions):
                             tab = service.get('title')
                             c.scope = tab.get('scope')
                             t_file = tab.get('html')
-                            t_html = render(t_file)
+                            t_html = render(t_file).decode()
                             ''' remove empty lines '''
                             t_html = '\n'.join([line for line in t_html.split('\n') if line.strip() != ''])
                             e_name = "%s.%s.%s" % (tok, 'selfservice', action)
