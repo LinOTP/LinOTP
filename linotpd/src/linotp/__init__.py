@@ -67,5 +67,5 @@ __product__ = "LinOTP"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
 __email__ = "linotp@keyidentity.com"
-__version__ = '2.11rc2'
+__version__ = '2.11rc3'
 __api__ = "2.0802"

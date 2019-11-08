@@ -39,7 +39,8 @@
 	<link type="text/css" rel="stylesheet" href="/selfservice/auth.css">
 	<link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
 
-	<script type="text/javascript" src="/js/jquery-1.12.4.min.js"></script>
+	<script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+	<script type="text/javascript" src="/js/jquery-migrate-3.1.0.min.js"></script>
 
 	<!-- jQuery UI -->
 	<link type="text/css" href="/css/jquery-ui/jquery-ui.min.css" rel="stylesheet">
