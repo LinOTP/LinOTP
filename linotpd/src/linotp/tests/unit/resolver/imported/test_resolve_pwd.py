@@ -26,86 +26,92 @@
 #    Support: www.keyidentity.com
 #
 
-from unittest import TestCase
+import pytest
+import tempfile
 
 from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 from linotp.useridresolver.PasswdIdResolver import IdResolver as PasswdResolver
-import pytest
 
 
-class TestPasswdResolver(TestCase):
+@pytest.fixture
+def passwd_resolver():
+    content = '''user1:0DM4AJtW/rTYY:10:10:User Eins:Irgendwas:Nochmal
+user2:.4UO1mxvTmdM6:11:11:User Zwei:Irgendwas:Nochmal'''
 
-    y = None
-
-    def setUp(self):
-        '''
-        initalize the config into a shared memory file
-        '''
-
-        pw_file = "/dev/shm/test_users.txt"
-        content = '''user1:0DM4AJtW/rTYY:10:10:User Eins:Irgendwas:Nochmal
-user2:.4UO1mxvTmdM6:11:11:User Zwei:Irgendwas:Nochmal
-'''
-        f = open(pw_file, 'w')
+    with tempfile.NamedTemporaryFile(mode='w+') as f:
         f.write(content)
-        f.close()
+        f.flush()
+
+        pw_file = f.name
 
         pw_config = {'linotp.passwdresolver.fileName.my': pw_file}
-        self.y = PasswdResolver()
-        self.y.loadConfig(pw_config, 'my')
+        y = PasswdResolver()
+        y.loadConfig(pw_config, 'my')
 
-    def test_resolver_fail(self):
-        '''
-        Test to use a file, that does not exist
-        '''
-        pw_config = {'linotp.passwdresolver.fileName.my':
-                     '/dev/shm/this_file_does_not_exist'}
+        yield y
 
-        msg = ("File '/dev/shm/this_file_does_not_exist' does not "
-               "exist or is not accesible")
 
-        with pytest.raises(ResolverLoadConfigError, match=msg):
+def test_getUserId(passwd_resolver):
+    '''test the existance of the user1 and user2'''
+    y = passwd_resolver
 
-            self.y = PasswdResolver()
-            self.y.loadConfig(pw_config, "my")
+    res = y.getUserId("user1")
+    assert res == "10"
 
-    def test_getUserId(self):
-        '''test the existance of the user1 and user2'''
-        res = self.y.getUserId("user1")
-        assert res == "10"
+    assert y.getUserInfo(res).get("surname") == "Eins"
 
-        assert self.y.getUserInfo(res).get("surname") == "Eins"
+    res = y.getUserId("user2")
+    assert res == "11"
 
-        res = self.y.getUserId("user2")
-        assert res == "11"
+    assert y.getUserInfo(res).get("surname") == "Zwei"
 
-        assert self.y.getUserInfo(res).get("surname") == "Zwei"
 
-    def test_checkpass(self):
-        '''
-        Check the password of user1 and user 2
-        '''
-        assert self.y.checkPass(self.y.getUserId("user1"), "pwU1")
-        assert self.y.checkPass(self.y.getUserId("user2"), "pwU2")
+def test_resolver_fail():
+    '''
+    Test to use a file, that does not exist
+    '''
+    pw_config = {'linotp.passwdresolver.fileName.my':
+                 '/dev/shm/this_file_does_not_exist'}
 
-    def test_getUserList(self):
-        '''
-        testing the userlist
-        '''
-        # all users are two users
-        user_list = self.y.getUserList({})
-        assert len(user_list) == 2
+    msg = ("File '/dev/shm/this_file_does_not_exist' does not "
+           "exist or is not accesible")
 
-        # there is only one user that ends with '1'
-        user_list = self.y.getUserList({"username": "*1"})
-        assert len(user_list) == 1
+    with pytest.raises(ResolverLoadConfigError, match=msg):
 
-    def test_getUsername(self):
-        '''
-        testing getting the username
-        '''
-        assert self.y.getUsername("10")
-        assert self.y.getUsername("11")
-        assert not self.y.getUsername("9")
+        y = PasswdResolver()
+        y.loadConfig(pw_config, "my")
+
+
+def test_checkpass(passwd_resolver):
+    '''
+    Check the password of user1 and user 2
+    '''
+    y = passwd_resolver
+    assert y.checkPass(y.getUserId("user1"), "pwU1")
+    assert y.checkPass(y.getUserId("user2"), "pwU2")
+
+
+def test_getUserList(passwd_resolver):
+    '''
+    testing the userlist
+    '''
+    # all users are two users
+    y = passwd_resolver
+    user_list = y.getUserList({})
+    assert len(user_list) == 2
+
+    # there is only one user that ends with '1'
+    user_list = y.getUserList({"username": "*1"})
+    assert len(user_list) == 1
+
+
+def test_getUsername(passwd_resolver):
+    '''
+    testing getting the username
+    '''
+    y = passwd_resolver
+    assert y.getUsername("10")
+    assert y.getUsername("11")
+    assert not y.getUsername("9")
 
 # eof #
