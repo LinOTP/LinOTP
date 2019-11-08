@@ -444,11 +444,9 @@ def modhex_encode(s: str) -> str:
 def modhex_decode(m: str) -> str:
     return ''.join([mod2HexDict[c] for c in m])
 
-
-def checksum(msg):
+def checksum(msg: bytes) -> int:
     crc = 0xffff
-    for i in range(0, len(msg) / 2):
-        b = int(msg[i * 2] + msg[(i * 2) + 1], 16)
+    for b in msg:
         crc = crc ^ (b & 0xff)
         for _j in range(0, 8):
             n = crc & 1
