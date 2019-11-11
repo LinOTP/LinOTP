@@ -131,22 +131,8 @@ class SecretObj(object):
 
         if self.iv == b':1:':
 
-            # get a hashed password by the same hashed method,
-            # which is in the crypted pw prefix
-            # as the self.val is binary, we have to convert the
-            # string result of libcrypt as well toByte
-
-            crypted_password = utils.libcrypt_password(
-                password, self.val.decode('utf-8')
-                ).encode('utf-8')
-
-            # do a position independend string comparison
-
-            result = True
-            for tup1, tup2 in zip(crypted_password, self.val):
-                result = result and (tup1 == tup2)
-
-            return result
+            return utils.compare_password(
+                password, self.val.decode('utf-8'))
 
         # the legacy comparison: compare the ecrypted password
 

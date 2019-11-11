@@ -45,7 +45,7 @@ from linotp.useridresolver.SQLIdResolver import IdResolver as sql_resolver
 from linotp.lib.resolver import defineResolver
 
 from linotp.lib.tools.import_user.ImportHandler import ImportHandler
-from linotp.lib.crypto.utils import libcrypt_password
+from linotp.lib.crypto import utils
 
 log = logging.getLogger(__name__)
 
@@ -417,7 +417,7 @@ class SQLImportHandler(ImportHandler):
             """
             create a password hash entry from a given plaintext password
             """
-            self.password = libcrypt_password(plain_password)
+            self.password = utils.encrypt_password(plain_password)
             self._pw_gen = True
 
         def __eq__(self, user):

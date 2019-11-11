@@ -37,7 +37,7 @@ from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy.exc import ProgrammingError
 
-from linotp.lib.crypto.utils import libcrypt_password
+from linotp.lib.crypto import utils
 from linotp.lib.tools.set_password import SetPasswordHandler
 from linotp.lib.tools.set_password import DataBaseContext
 
@@ -90,9 +90,9 @@ class TestSetAdminPassword(TestController):
 
         SetPasswordHandler.create_table(db_context)
         SetPasswordHandler.create_admin_user(
-                                db_context,
-                                username='admin',
-                                crypted_password=libcrypt_password('nimda'))
+                        db_context,
+                        username='admin',
+                        crypted_password=utils.encrypt_password('nimda'))
 
     def test_set_simple_password(self):
         """
