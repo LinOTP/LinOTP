@@ -302,7 +302,8 @@ def parseYubicoCSV(csv):
                     log.warning("No public ID in line %r" % line)
                     serial_int = int(binascii.hexlify(os.urandom(4)), 16)
                 else:
-                    serial_int = int(binascii.hexlify(modhex_decode(public_id)), 16)
+                    mh = modhex_decode(public_id).encode('utf-8')[:8]
+                    serial_int = int(mh, 16)
 
                 if typ.lower() == "yubico otp":
                     ttype = "yubikey"
