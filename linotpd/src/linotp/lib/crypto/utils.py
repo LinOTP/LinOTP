@@ -123,7 +123,7 @@ def encrypt_password(password):
     return sha512_crypt.hash(password)
 
 
-def pi_compare(one, two):
+def compare(one, two):
     """
     position independend comparison of values
 

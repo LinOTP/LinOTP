@@ -51,6 +51,7 @@ from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
 from linotp.lib.crypto import SecretObj
 from linotp.lib.crypto.utils import get_hashalgo_from_description
+from linotp.lib.crypto.utils import compare
 
 from linotp.lib.error import ParameterError
 from linotp.lib.error import TokenAdminError
@@ -1298,32 +1299,29 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         :return: boolean
 
         '''
-        res = False
 
         if self.token.isPinEncrypted():
 
             # for comparison we encrypt the pin and do the comparison
+
             iv, encrypted_token_pin = self.token.get_encrypted_pin()
 
-            res = SecretObj.check_encrypted_pin(
+            return SecretObj.check_encrypted_pin(
                         pin, encrypted_token_pin, iv)
 
-        else:
+        # hashed pin comparison
 
-            # for hashed pins we re-do the hash and compare the hashes
-            iv, hashed_token_pin = self.token.get_hashed_pin()
+        iv, hashed_token_pin = self.token.get_hashed_pin()
+        iv, hashed_pin = SecretObj.hash_pin(pin or '', iv, hsm=hsm)
 
-            # special case of empty pin, where pin has never been set
-            # especially in case of lost token with the pw token
-            if len(hashed_token_pin) == 0 and len(pin) == 0:
-                res = True
+        # special case of empty pin, where pin has never been set
+        # especially in case of lost token with the pw token
+        if len(hashed_token_pin) == 0 and len(pin) == 0:
+            return True
 
-            else:
-
-                res = SecretObj.check_hashed_pin(
+        return SecretObj.check_hashed_pin(
                              pin or '', hashed_token_pin, iv)
 
-        return res
 
     @staticmethod
     def copy_pin(src, target):

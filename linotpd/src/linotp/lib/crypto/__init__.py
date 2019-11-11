@@ -23,6 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+from linotp.lib.crypto.utils import compare
 '''
 Declare the SecretObject to encapsulate security aspects
 '''
@@ -138,7 +139,9 @@ class SecretObj(object):
 
         enc_otp_key = utils.encrypt(password, self.iv, hsm=self.hsm)
 
-        return binascii.hexlify(enc_otp_key) == binascii.hexlify(self.val)
+        return compare(
+            binascii.hexlify(enc_otp_key),binascii.hexlify(self.val))
+
 
     def hmac_digest(self, data_input, hash_algo=None, bkey=None):
 
