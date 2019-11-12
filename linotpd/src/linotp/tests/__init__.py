@@ -1044,16 +1044,20 @@ class TestController(TestCase):
         assert "default" in realms["mydefrealm"]
         assert realms["mydefrealm"]["default"]
 
-    def _user_service_init(self, auth_user, password, otp=None):
+    def _user_service_init(self, auth_user:str, password:str, otp:str=None):
+
+        auth_user = auth_user.encode('utf-8')
+        password = password.encode('utf-8')
 
         if otp:
+            otp = otp.encode('utf-8')
+
             passw = (
-                str(base64.b32encode(otp.encode('utf-8')), 'utf-8') + ":"
-                + str(base64.b32encode(password.encode('utf-8')), 'utf-8')
+                base64.b32encode(otp).decode() + ":"
+                + base64.b32encode(password).decode()
             )
         else:
-            passw = ":" + str(base64.b32encode(password.encode('utf-8')),
-                              'utf-8')
+            passw = ":" + base64.b32encode(password).decode()
 
         params = {"login": auth_user, "password": passw}
         response = self.client.post(

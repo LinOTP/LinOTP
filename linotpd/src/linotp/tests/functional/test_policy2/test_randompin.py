@@ -551,10 +551,9 @@ class TestRandompinController(TestController):
             'serial': serial,
             'userpin': pin,
             }
-        login = user.encode('utf-8')
-        password = pwd.encode('utf-8')
+
         response = self.make_userservice_request('setpin', params,
-                                                 auth_user=(login, password))
+                                                 auth_user=(user, pwd))
 
         content = response.json
         assert content['result']['status']
