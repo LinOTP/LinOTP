@@ -152,7 +152,7 @@ class AdminController(BaseController):
 
             audit = config.get('audit')
             request_context['Audit'] = audit
-            return request
+            return None
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r", action, exx)
@@ -1432,7 +1432,7 @@ class AdminController(BaseController):
             * timeStep      - optional - set the timestep for timebased tokens (usually 30 or 60 seconds)
             * timeShift     - optional - set the shift or timedrift of this token
             * countAuthSuccessMax    - optional    - set the maximum allowed successful authentications
-            * countAuthSuccess\      - optional    - set the counter of the successful authentications
+            * countAuthSuccess       - optional    - set the counter of the successful authentications
             * countAuth        - optional - set the counter of authentications
             * countAuthMax     - optional - set the maximum allowed authentication tries
             * validityPeriodStart    - optional - set the start date of the validity period. The token can not be used before this date
