@@ -1510,7 +1510,7 @@ class SystemController(BaseController):
 
             if isinstance(policy_file, FileStorage):
                 log.debug("[importPolicy] Field storage file: %s", policy_file)
-                fileString = policy_file.read()
+                fileString = policy_file.read().decode()
 
                 sendResultMethod = sendXMLResult
                 sendErrorMethod = sendXMLError
@@ -1528,7 +1528,7 @@ class SystemController(BaseController):
 
             # the contents of filestring needs to be parsed and
             # stored as policies.
-            config = fileString.decode('utf-8').split('\n')
+            config = fileString.split('\n')
             policies = ConfigObj(config)
             log.info("[importPolicy] read the following policies: %r",
                      policies)
