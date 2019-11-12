@@ -1047,9 +1047,13 @@ class TestController(TestCase):
     def _user_service_init(self, auth_user, password, otp=None):
 
         if otp:
-            passw = base64.b32encode(otp) + ":" + base64.b32encode(password)
+            passw = (
+                str(base64.b32encode(otp.encode('utf-8')), 'utf-8') + ":"
+                + str(base64.b32encode(password.encode('utf-8')), 'utf-8')
+            )
         else:
-            passw = ":" + base64.b32encode(password)
+            passw = ":" + str(base64.b32encode(password.encode('utf-8')),
+                              'utf-8')
 
         params = {"login": auth_user, "password": passw}
         response = self.client.post(
