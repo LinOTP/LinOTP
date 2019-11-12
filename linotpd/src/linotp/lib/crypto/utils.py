@@ -257,7 +257,7 @@ def encryptPassword(password):
     return hsm_obj.encryptPassword(password)
 
 
-def encryptPin(cryptPin, iv=None, hsm=None):
+def encryptPin(cryptPin: bytes, iv=None, hsm=None):
     """Encrypt pin (i.e. token pin)
 
     :param cryptPin: pin to encrypt

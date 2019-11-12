@@ -85,7 +85,7 @@ class ForwardServerPolicy(object):
             # finally we found the query parameters
             if 'secret' in params:
                 secret = params['secret']
-                params['encsecret'] = encryptPin(secret)
+                params['encsecret'] = encryptPin(secret.encode('utf-8'))
                 del params['secret']
 
             # build the server url with the encrypted param:
