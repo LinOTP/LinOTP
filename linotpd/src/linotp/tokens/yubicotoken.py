@@ -221,7 +221,7 @@ class YubicoTokenClass(TokenClass):
         if timeout:
             pparams['timeout']= parse_timeout(timeout)
 
-        nonce = binascii.hexlify(os.urandom(20))
+        nonce = binascii.hexlify(os.urandom(20)).decode()
 
         p = urllib.parse.urlencode({
             'nonce': nonce,
@@ -244,7 +244,7 @@ class YubicoTokenClass(TokenClass):
 
                 if response.ok:
                     return self._check_yubico_response(
-                                nonce, apiKey, response.content)
+                        nonce, apiKey, response.content.decode())
 
                 log.info("Failed to validate yubico request %r", response)
 
@@ -326,11 +326,12 @@ class YubicoTokenClass(TokenClass):
 
         sec_obj = self._get_secret_object()
 
-        h_digest = sec_obj.hmac_digest(data_input=hash_input,
-                                       bkey=binascii.a2b_base64(apiKey),
-                                       hash_algo=sha1)
+        h_digest = sec_obj.hmac_digest(
+            data_input=hash_input.encode('utf-8'),
+            bkey=binascii.a2b_base64(apiKey),
+            hash_algo=sha1)
 
-        hashed_data = binascii.b2a_base64(h_digest)[:-1]
+        hashed_data = binascii.b2a_base64(h_digest)[:-1].decode()
 
         if hashed_data != return_hash:
             log.error("[checkOtp] The hash of the return from the Yubico Cloud"

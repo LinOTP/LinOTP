@@ -108,7 +108,6 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         setattr(self.yubikey_token, '_get_secret_object', _get_secret_object)
         model_token.setType.assert_called_once_with("yubikey")
 
-    @pytest.mark.xfail
     def test_checkotp_positive(self):
         """
         Verify that correct OTP values are decrypted and accepted
@@ -152,7 +151,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         assert counter_expected == counter_actual, \
                          "OTP: " + otp + " should no longer be accepted."
 
-    @pytest.mark.xfail
+
     def test_checkotp_with_wrong_prefix(self):
         """
         check: if no prefix has been enrolled, the token will not complain about any prefix
@@ -232,7 +231,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
 
         logger.disabled = False
 
-    @pytest.mark.xfail
+
     def test_checkotp_wrong_crc(self):
         """
         Verify that an OTP with corrupt data is not accepted
@@ -248,7 +247,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         assert counter_expected == counter_actual, \
                          "CRC verification for OTP: " + otp + " should fail."
 
-    @pytest.mark.xfail
+
     def test_checkotp_no_tokenid(self):
         """
         Verify that if the yubikey.tokenid is not set, then the corresponding function for
@@ -262,7 +261,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         expected_tokeninfo = '' + '{\n"yubikey.tokenid": "' + self.private_uid + '"\n}'
         self.model_token.setInfo.assert_called_once_with(expected_tokeninfo)
 
-    @pytest.mark.xfail
+
     def test_checkotp_wrong_tokenid(self):
         """
         Verify that if the stored uid differs from the one contained in the OTP then an error
@@ -313,7 +312,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
                 ret="some_random_value"
                 )
 
-    @pytest.mark.xfail
+
     def test_check_otp_exist(self):
         """
         Test method check_otp_exist()

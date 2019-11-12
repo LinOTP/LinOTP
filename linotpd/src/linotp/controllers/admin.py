@@ -2373,7 +2373,7 @@ class AdminController(BaseController):
 
             if isinstance(tokenFile, FileStorage):
                 log.debug("[loadtokens] Field storage file: %s", tokenFile)
-                fileString = tokenFile.read()
+                fileString = tokenFile.read().decode()
                 sendResultMethod = sendXMLResult
                 sendErrorMethod = sendXMLError
             else:
