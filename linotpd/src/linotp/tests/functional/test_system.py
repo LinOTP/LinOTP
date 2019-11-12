@@ -423,7 +423,7 @@ scope = authentication
                                             upload_files=upload_files)
 
         assert '<status>False</status>' in response, response
-        assert 'may only contain the characters'in response, response
+        assert 'may only contain the characters' in response, response
 
         # Now check the policies, that we imported...
         response = self.make_system_request(action='getPolicy', method='POST',
