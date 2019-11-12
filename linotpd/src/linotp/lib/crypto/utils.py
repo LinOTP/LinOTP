@@ -553,10 +553,7 @@ class urandom(object):
         :return: float value
         """
         # get a binary random string
-        randbin = geturandom(urandom.precision)
-
-        # convert to string
-        randstr = randbin.hex()
+        randstr = geturandom(urandom.precision).hex()
 
         # convert this to an integer
         randi = int(randstr, 16)
