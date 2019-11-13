@@ -76,10 +76,10 @@ def create_unicode_alphabet():
     return alphabeth
 
 
-def create_long_unicode(alphabeth, length):
+def create_long_unicode(alphabet, length):
     """
     create a string of length with unicode characters
-    from a given alphabeth
+    from a given alphabet
 
     :param alphabet: list of unicode characters to select from
     :param length: the number of uchars in the result string
@@ -89,7 +89,7 @@ def create_long_unicode(alphabeth, length):
 
     res = []
     while len(res) < length:
-        uchar = random.choice(alphabeth)
+        uchar = random.choice(alphabet)
         res.append(uchar)
 
     return ''.join(res)
@@ -175,8 +175,6 @@ class TestConfigController(TestController):
     """
     test for large Config entries
     """
-
-    alphabeth = None
 
     def setUp(self):
         self.set_config_selftest()
@@ -264,14 +262,14 @@ class TestConfigController(TestController):
         entry should be split up into 40 parts
         '''
 
-        alphabeth = create_unicode_alphabet()
+        alphabet = create_unicode_alphabet()
 
         for i in range(1, 10):
 
             length = 1000 * i + random.randint(0, 1000)
 
             config_entry = 'longUnicodeConfigEntry%d' % i
-            config_data = create_long_unicode(alphabeth, length)
+            config_data = create_long_unicode(alphabet, length)
             u8_config_data = config_data.encode('utf-8')
 
             param = {config_entry: u8_config_data}
@@ -310,7 +308,7 @@ class TestConfigController(TestController):
 
         return
 
-    def test_UFT8_alphabeth_config(self):
+    def test_UFT8_alphabet_config(self):
         '''
         test long config entries with all unicode chars
 
@@ -318,15 +316,15 @@ class TestConfigController(TestController):
         so we check the correct wrapping from 1980 to 2020
         '''
 
-        alphabeth = create_unicode_alphabet()
+        alphabet = create_unicode_alphabet()
         config_data_base = base64.b64encode(create_long_entries(1990))
 
         chunk_len = 2000
         i = -1
         pos = 0
-        for pos in range(0, len(alphabeth), chunk_len):
+        for pos in range(0, len(alphabet), chunk_len):
             i = i + 1
-            config_data_array = alphabeth[pos:pos + chunk_len]
+            config_data_array = alphabet[pos:pos + chunk_len]
             config_data = config_data_base + ''.join(config_data_array)
             u8_config_data = config_data.encode('utf-8')
 
@@ -379,14 +377,14 @@ class TestConfigController(TestController):
         so we check the correct wrapping from 1980 to 2020
         '''
 
-        alphabeth = create_unicode_alphabet()
+        alphabet = create_unicode_alphabet()
 
         for i in range(1, 40):
 
             length = 1980 + i
 
             config_entry = 'longUtf8ConfigEntry%d' % i
-            config_data = create_long_unicode(alphabeth, length)
+            config_data = create_long_unicode(alphabet, length)
             u8_config_data = config_data.encode('utf-8')
 
             param = {config_entry: u8_config_data}
@@ -438,14 +436,14 @@ class TestConfigController(TestController):
         so we check the correct wrapping from 1980 to 2020
         '''
 
-        alphabeth = create_unicode_alphabet()
+        alphabet = create_unicode_alphabet()
 
         for i in range(1, 40):
 
             length = 1980 + i
 
             config_entry = 'longUtf8ConfigEntry%d' % i
-            config_data = create_long_unicode(alphabeth, length)
+            config_data = create_long_unicode(alphabet, length)
             u8_config_data = config_data.encode('utf-8')
 
             # set as type password
