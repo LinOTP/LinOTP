@@ -46,10 +46,6 @@ import threading
 
 
 def create_unicode_alphabet():
-    try:
-        get_char = chr
-    except NameError:
-        get_char = chr
 
     # Update this to include code point ranges to be sampled
     include_ranges = [
@@ -68,12 +64,10 @@ def create_unicode_alphabet():
         (0x038C, 0x038C),
     ]
 
-    alphabeth = []
-    for current_range in include_ranges:
-        for code_point in range(current_range[0], current_range[1] + 1):
-            alphabeth.append(get_char(code_point))
-
-    return alphabeth
+    return [
+        chr(code_point)
+        for r in include_ranges for code_point in range(r[0], r[1]+1)
+    ]
 
 
 def create_long_unicode(alphabet, length):
@@ -177,12 +171,9 @@ class TestConfigController(TestController):
     """
 
     def setUp(self):
-        self.set_config_selftest()
         TestController.setUp(self)
-        return
 
     def tearDown(self):
-        self.set_config_selftest(unset=True)
         TestController.tearDown(self)
 
 
