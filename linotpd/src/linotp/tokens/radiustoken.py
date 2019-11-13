@@ -147,7 +147,7 @@ class RadiusTokenClass(RemoteTokenClass):
 
         TokenClass.update(self, param)
         # We need to write the secret!
-        self.setOtpKey(binascii.hexlify(self.radiusSecret))
+        self.setOtpKey(self.radiusSecret.encode('utf-8').hex())
 
         self.addToTokenInfo("radius.server", self.radiusServer)
         self.addToTokenInfo("radius.local_checkpin", self.radiusLocal_checkpin)

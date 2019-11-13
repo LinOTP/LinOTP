@@ -276,27 +276,18 @@ class RemoteTokenClass(TokenClass):
 
         :return: Tuple of (success, otp_count= -1 or 0, reply=remote response)
         """
-        otpval = passw.encode("utf-8")
+        otpval = passw
 
         remoteServer = self.getFromTokenInfo("remote.server") or ""
-        remoteServer = remoteServer.encode("utf-8")
 
         # in preparation of the ability to reloacte linotp urls,
         # we introduce the remote url path
         remotePath = self.getFromTokenInfo("remote.path") or ""
-        remotePath = remotePath.strip().encode('utf-8')
 
         remoteSerial = self.getFromTokenInfo("remote.serial") or ""
-        remoteSerial = remoteSerial.encode('utf-8')
-
         remoteUser = self.getFromTokenInfo("remote.user") or ""
-        remoteUser = remoteUser.encode('utf-8')
-
         remoteRealm = self.getFromTokenInfo("remote.realm") or ""
-        remoteRealm = remoteRealm.encode('utf-8')
-
         remoteResConf = self.getFromTokenInfo("remote.resConf") or ""
-        remoteResConf = remoteResConf.encode('utf-8')
 
         ssl_verify_config = getFromConfig("remote.verify_ssl_certificate",
                                           "False")
