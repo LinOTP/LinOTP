@@ -207,7 +207,9 @@ class TestConfigController(TestController):
             entry_name = "getConfig %s" % config_entry
             data = jresp.get('result', {}).get('value', {}).get(entry_name)
 
-            assert config_data == data, 'error while comparing data'
+            assert (
+                config_data.decode('utf-8') == data
+            ), 'error while comparing data'
 
         self.delete_config(prefix='longBase64ConfigEntry')
 
@@ -239,7 +241,9 @@ class TestConfigController(TestController):
             entry_name = "getConfig %s" % config_entry
             data = jresp.get('result', {}).get('value', {}).get(entry_name)
 
-            assert config_data == data, 'error while comparing data'
+            assert (
+                config_data.decode('utf-8') == data
+            ), 'error while comparing data'
 
         self.delete_config(prefix='longHexConfigEntry')
 
@@ -308,8 +312,8 @@ class TestConfigController(TestController):
         '''
 
         alphabet = create_unicode_alphabet()
-        config_data_base = base64.b64encode(create_long_entries(1990))
-
+        config_data_base = str(base64.b64encode(create_long_entries(1990)),
+                               'utf-8')
         chunk_len = 2000
         i = -1
         pos = 0
@@ -499,7 +503,7 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                assert config_data == data, \
+                assert config_data.decode('utf-8') == data, \
                                  'error while comparing data: %r  %r' % \
                                  (config_data[it - 3:it + 1],
                                   data[it - 3:it + 1])
@@ -510,7 +514,9 @@ class TestConfigController(TestController):
                                  (config_data[len(data):],
                                   data[len(config_data):])
 
-            assert config_data == data, 'error while comparing data'
+            assert (
+                config_data.decode('utf-8') == data
+            ), 'error while comparing data'
 
         self.delete_config(prefix='longHexlifyConfigEntry')
 
@@ -550,7 +556,7 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                assert config_data == data, \
+                assert config_data.decode('utf-8') == data, \
                                  'error while comparing data: %r  %r' % \
                                  (config_data[it - 3:it + 1],
                                   data[it - 3:it + 1])
@@ -561,7 +567,9 @@ class TestConfigController(TestController):
                                  (config_data[len(data):],
                                   data[len(config_data):])
 
-            assert config_data == data, 'error while comparing data'
+            assert (
+                config_data.decode('utf-8') == data
+            ), 'error while comparing data'
 
         self.delete_config(prefix='longB64ConfigEntry')
 
