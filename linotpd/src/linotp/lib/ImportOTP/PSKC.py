@@ -48,7 +48,7 @@ def checkSerial(serial):
 
 def getEncMethod(elem):
     algo = elem.get("Algorithm")
-    m = re.search("\#(.*)$", algo)
+    m = re.search(r"#(.*)$", algo)
     if m:
         algo = m.group(1)
     if "aes128-cbc" != algo:
@@ -58,7 +58,7 @@ def getEncMethod(elem):
 
 def getMacMethod(elem):
     meth = elem.get("Algorithm")
-    m = re.search("\#(.*)$", meth)
+    m = re.search(r"#(.*)$", meth)
     if m:
         meth = m.group(1)
     if "hmac-sha1" != meth:
@@ -179,7 +179,7 @@ def parsePSKCdata(xml , preshared_key_hex=None, password=None,
                 if "KeyDerivationMethod" == getTagName(e):
 
                     deriv_algo = e.get("Algorithm")
-                    m = re.search("\#(.*)$", deriv_algo)
+                    m = re.search(r"#(.*)$", deriv_algo)
                     PBE_DERIVE_ALGO = m.group(1)
                     log.debug("Algorithm of the PBE: %s" % PBE_DERIVE_ALGO)
                     if "pbkdf2" == PBE_DERIVE_ALGO:
