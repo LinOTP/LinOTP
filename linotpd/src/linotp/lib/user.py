@@ -25,6 +25,7 @@
 #
 """ contains user - related functions """
 
+import base64
 import logging
 import re
 import json
@@ -623,7 +624,7 @@ def getUserFromRequest(request, config=None):
 
             if hdr.startswith('Basic '):
 
-                a_auth = bytes.fromhex(hdr[5:])
+                a_auth = base64.b64decode(hdr[5:])
 
                 login, _junk, _junk = a_auth.partition(b':')
                 d_auth['login'] = login.decode('utf-8')
