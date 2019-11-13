@@ -353,7 +353,10 @@ class TestController(TestCase):
             pw = "randompwd"
 
         # Authorization: Basic d2lraTpwZWRpYQ==
-        return "Basic %s" % base64.b64encode(login + ":" + pw)
+        auth_info = login + ":" + pw
+        return "Basic %s" % str(
+            base64.b64encode(auth_info.encode('utf-8')),
+            'utf-8')
 
     @staticmethod
     def get_http_digest_header(username="admin", method="GET"):
