@@ -89,7 +89,8 @@ class TestManageController(TestController):
         params = {
             'serial': 'token1',
             'type': 'pw',
-            'pin': 'secret',
+            'pin': 'otppin',
+            'otpkey': 'secret',
             'user': 'heinz',
             'realm': 'realm1'
         }
@@ -99,7 +100,8 @@ class TestManageController(TestController):
         params = {
             'serial': 'token2',
             'type': 'pw',
-            'pin': 'secret',
+            'pin': 'otppin',
+            'otpkey': 'secret',
             'user': 'nick',
             'realm': 'realm1'
         }
@@ -108,8 +110,9 @@ class TestManageController(TestController):
 
         params = {
             'serial': 'token3',
-            'type': 'spass',
-            'pin': 'secret',
+            'type': 'pw',
+            'pin': 'otppin',
+            'otpkey': 'secret',
             'user': 'renate',
             'realm': 'realm2'
         }
