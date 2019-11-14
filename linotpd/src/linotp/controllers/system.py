@@ -1944,7 +1944,7 @@ class SystemController(BaseController):
 
             license_txt = getFromConfig('license', '')
             try:
-                licString = binascii.unhexlify(license_txt)
+                licString = binascii.unhexlify(license_txt).decode()
             except TypeError:
                 licString = license_txt
 
@@ -1955,7 +1955,7 @@ class SystemController(BaseController):
                 res, msg = setDemoSupportLicense()
                 Session.flush()
                 license_txt = getFromConfig('license', '')
-                licString = binascii.unhexlify(license_txt)
+                licString = binascii.unhexlify(license_txt).decode()
 
             (res, msg,
              lic_info) = isSupportLicenseValid(licString)
@@ -2015,10 +2015,10 @@ class SystemController(BaseController):
             # FieldStorage
             if isinstance(licField, FileStorage):
                 log.debug("[setSupport] Field storage: %s", licField)
-                support_description = licField.read()
+                support_description = licField.read().decode()
             else:
                 # we got UTF-8!
-                support_description = licField.encode('utf-8')
+                support_description = licField.decode()
             log.debug("[setSupport] license %s", support_description)
 
             res, msg = setSupportLicense(support_description)
