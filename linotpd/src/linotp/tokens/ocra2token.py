@@ -524,7 +524,7 @@ class Ocra2TokenClass(TokenClass):
             info = {}
             uInfo = {}
 
-            info['sharedsecret'] = key
+            info['sharedsecret'] = str(key, 'utf-8')
             uInfo['sh'] = key
 
             info['ocrasuite'] = self.getOcraSuiteSuite()
@@ -534,7 +534,6 @@ class Ocra2TokenClass(TokenClass):
             uInfo['se'] = self.getSerial()
 
             callback = self._prepare_callback_url(params, qrtanurl_init)
-            callback = callback.encode('utf-8')
 
             if callback:
                 uInfo['u'] = callback
@@ -1704,4 +1703,3 @@ class Ocra2TokenClass(TokenClass):
 
 
 #eof###########################################################################
-
