@@ -446,7 +446,7 @@ class Audit(AuditBase):
 
         at = AuditTable(
                     serial=param.get('serial'),
-                    action=param.get('action'),
+                    action=param.get('action').lstrip('/'),
                     success=1 if param.get('success') else 0,
                     tokentype=param.get('token_type'),
                     user=param.get('user'),
