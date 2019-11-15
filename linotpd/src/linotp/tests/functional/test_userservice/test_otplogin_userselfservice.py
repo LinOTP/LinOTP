@@ -215,8 +215,8 @@ class TestUserserviceAuthController(TestController):
         unbound_msg = ('UnboundLocalError("local variable \'reply\' '
                        'referenced before assignment",)')
 
-        failed_auth_msg = ("User User(login=u'passthru_user1', "
-                           "realm=u'mydefrealm', conf='' ::resolverUid:{}, "
+        failed_auth_msg = ("User User(login='passthru_user1', "
+                           "realm='mydefrealm', conf='' ::resolverUid:{}, "
                            "resolverConf:{}) failed to authenticate!")
 
         unbound_not_found = True
