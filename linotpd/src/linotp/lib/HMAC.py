@@ -39,13 +39,13 @@ log = logging.getLogger(__name__)
 
 class HmacOtp():
 
-    def __init__(self, secObj=None, counter=0, digits=6, hashfunc=sha1):
+    def __init__(self, secObj=None, counter: int = 0, digits: int = 6, hashfunc=sha1):
         self.secretObj = secObj
         self.counter = counter
         self.digits = digits
         self.hashfunc = hashfunc
 
-    def hmac(self, counter=None, key=None):
+    def hmac(self, counter: int = None, key=None):
         counter = counter or self.counter
 
         data_input = struct.pack(">Q", counter)
@@ -68,7 +68,7 @@ class HmacOtp():
 
         return binary % (10 ** self.digits)
 
-    def generate(self, counter=None, inc_counter=True, key=None):
+    def generate(self, counter: int = None, inc_counter=True, key=None):
 
         counter = counter or self.counter
 
