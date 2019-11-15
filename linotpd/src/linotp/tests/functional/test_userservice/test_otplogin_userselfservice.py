@@ -236,7 +236,7 @@ class TestUserserviceAuthController(TestController):
 
         return
 
-    @pytest.mark.skip(reason="requires the audit controller")
+
     def test_login_with_challenge_response(self):
         """
         test authentication with challenge response
