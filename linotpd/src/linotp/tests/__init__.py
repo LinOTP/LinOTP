@@ -353,7 +353,10 @@ class TestController(TestCase):
             pw = "randompwd"
 
         # Authorization: Basic d2lraTpwZWRpYQ==
-        return "Basic %s" % base64.b64encode(login + ":" + pw)
+        auth_info = login + ":" + pw
+        return "Basic %s" % str(
+            base64.b64encode(auth_info.encode('utf-8')),
+            'utf-8')
 
     @staticmethod
     def get_http_digest_header(username="admin", method="GET"):
@@ -1044,12 +1047,20 @@ class TestController(TestCase):
         assert "default" in realms["mydefrealm"]
         assert realms["mydefrealm"]["default"]
 
-    def _user_service_init(self, auth_user, password, otp=None):
+    def _user_service_init(self, auth_user:str, password:str, otp:str=None):
+
+        auth_user = auth_user.encode('utf-8')
+        password = password.encode('utf-8')
 
         if otp:
-            passw = base64.b32encode(otp) + ":" + base64.b32encode(password)
+            otp = otp.encode('utf-8')
+
+            passw = (
+                base64.b32encode(otp).decode() + ":"
+                + base64.b32encode(password).decode()
+            )
         else:
-            passw = ":" + base64.b32encode(password)
+            passw = ":" + base64.b32encode(password).decode()
 
         params = {"login": auth_user, "password": passw}
         response = self.client.post(

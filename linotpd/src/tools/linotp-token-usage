@@ -97,7 +97,7 @@ def token_usage(SQL_URL, AUDIT_URL, AUDIT_PREFIX):
     max_token = None
     for row in rows:
         month = None
-        m = re.match("(\d\d\d\d-\d\d)-\d\d.*", row.timestamp)
+        m = re.match(r"(\d\d\d\d-\d\d)-\d\d.*", row.timestamp)
         if m:
             month = m.group(1)
         if month != current_month:
@@ -113,7 +113,7 @@ def token_usage(SQL_URL, AUDIT_URL, AUDIT_PREFIX):
             print("----------------------")
 
         tnum = None
-        m = re.match("tokennum = (\d*)", row.action_detail)
+        m = re.match(r"tokennum = (\d*)", row.action_detail)
         if m:
             tnum = int(m.group(1))
             if not min_token or tnum < min_token:

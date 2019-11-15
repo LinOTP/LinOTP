@@ -257,7 +257,7 @@ class TestValidateController(TestController):
         try:
             if T0 is None:
                 T0 = time.time() - shift
-            counter = int((T0 / timeStepping) + 0.5)
+            counter = int((T0 // timeStepping) + 0.5)
             ret = hmac_func.generate(counter)
 
         except Exception as e:

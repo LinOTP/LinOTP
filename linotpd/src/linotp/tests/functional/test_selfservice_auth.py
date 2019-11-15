@@ -213,7 +213,6 @@ class TestSelfserviceAuthController(TestController):
         self.delete_policy('T1')
         self.delete_token('hmac123')
 
-    @pytest.mark.skip(reason="requires the audit controller")
     def test_selfservice_enable_disable_service(self):
         '''
         Selfservice Authorization: test of attribute in policies to enables service
@@ -402,4 +401,3 @@ class TestSelfserviceAuthController(TestController):
         assert msg in response, response
 
         self.delete_policy('T1')
-

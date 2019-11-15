@@ -260,7 +260,7 @@ class LinOtpConfig(dict):
         '''
         # has_key is required here, as we operate on the dict class
 
-        if key not in self and not key.startswith('linotp.'):
+        if not key.startswith('linotp.') and 'linotp.' + key in self:
             key = 'linotp.' + key
 
         # return default only if key does not exist
@@ -293,11 +293,11 @@ class LinOtpConfig(dict):
         '''
         Key = key
 
-        if key in self:
-            Key = key
-
-        elif 'linotp.' + key in self:
+        if 'linotp.' + key in self:
             Key = 'linotp.' + key
+
+        elif key in self:
+            Key = key
 
         res = super().__delitem__(Key)
 

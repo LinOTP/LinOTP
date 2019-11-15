@@ -49,8 +49,8 @@ class TestgetUserFromRequest(unittest.TestCase):
         self.run_and_assert(request)
 
     def test_basic_authentification(self):
-        basicstring = ("Basic %s" %
-            (self.login + ':' + self.password).encode('utf-8').hex())
+        auth_info = (self.login + ':' + self.password).encode('utf-8')
+        basicstring = "Basic %s" % str(base64.b64encode(auth_info), 'utf-8')
         request = self.Request({'HTTP_AUTHORIZATION': basicstring})
         self.run_and_assert(request)
 

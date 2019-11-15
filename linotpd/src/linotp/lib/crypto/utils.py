@@ -257,7 +257,7 @@ def encryptPassword(password):
     return hsm_obj.encryptPassword(password)
 
 
-def encryptPin(cryptPin, iv=None, hsm=None):
+def encryptPin(cryptPin: bytes, iv=None, hsm=None):
     """Encrypt pin (i.e. token pin)
 
     :param cryptPin: pin to encrypt
@@ -553,10 +553,7 @@ class urandom(object):
         :return: float value
         """
         # get a binary random string
-        randbin = geturandom(urandom.precision)
-
-        # convert to string
-        randstr = randbin.hex()
+        randstr = geturandom(urandom.precision).hex()
 
         # convert this to an integer
         randi = int(randstr, 16)

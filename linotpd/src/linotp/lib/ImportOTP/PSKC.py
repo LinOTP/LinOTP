@@ -48,7 +48,7 @@ def checkSerial(serial):
 
 def getEncMethod(elem):
     algo = elem.get("Algorithm")
-    m = re.search("\#(.*)$", algo)
+    m = re.search(r"#(.*)$", algo)
     if m:
         algo = m.group(1)
     if "aes128-cbc" != algo:
@@ -58,7 +58,7 @@ def getEncMethod(elem):
 
 def getMacMethod(elem):
     meth = elem.get("Algorithm")
-    m = re.search("\#(.*)$", meth)
+    m = re.search(r"#(.*)$", meth)
     if m:
         meth = m.group(1)
     if "hmac-sha1" != meth:
@@ -72,7 +72,7 @@ def aes_decrypt(transport_b64, key_hex, serial=""):
 
     def hack(data, serial=""):
         bsize = 16
-        a = ord(data[-1])
+        a = data[-1]
         # safety check if padding is bigger than blocksize
         #TODO: Fix: padding has to be elaborated with
         #                                  backward compatibility in mind
@@ -80,7 +80,7 @@ def aes_decrypt(transport_b64, key_hex, serial=""):
             return data
 
         padding = data[len(data) - a:]
-        if not (chr(a) * a == padding):
+        if not (bytes([a]) * a == padding):
             # it seems not to be padded
             return data
 
@@ -179,7 +179,7 @@ def parsePSKCdata(xml , preshared_key_hex=None, password=None,
                 if "KeyDerivationMethod" == getTagName(e):
 
                     deriv_algo = e.get("Algorithm")
-                    m = re.search("\#(.*)$", deriv_algo)
+                    m = re.search(r"#(.*)$", deriv_algo)
                     PBE_DERIVE_ALGO = m.group(1)
                     log.debug("Algorithm of the PBE: %s" % PBE_DERIVE_ALGO)
                     if "pbkdf2" == PBE_DERIVE_ALGO:
@@ -389,7 +389,7 @@ def parsePSKCdata(xml , preshared_key_hex=None, password=None,
                     if "hmac-sha1" == MAC_Method:
 
                         MAC_digest_bin = hmac.new(MACKEY_bin, base64.b64decode(KD_cipher_b64), sha).digest()
-                        MAC_digest_b64 = base64.b64encode(MAC_digest_bin)
+                        MAC_digest_b64 = base64.b64encode(MAC_digest_bin).decode()
                         log.debug("AES128-CBC secret cipher: %s" % KD_cipher_b64)
                         log.debug("calculated MAC value    : %s" % MAC_digest_b64)
                         log.debug("read MAC value          : %s" % KD_mac_b64)

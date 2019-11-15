@@ -143,7 +143,7 @@ class mTimeOtp(object):
         if key is None:
             key = self.key
 
-        vhash = "%d%s%s" % (counter, key, pin)
+        vhash = b"%d%b%b" % (counter, key, pin)
         motp = md5(vhash).hexdigest()[:self.digits]
         return motp
 

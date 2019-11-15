@@ -41,7 +41,6 @@ class TestSelfserviceController(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        self.set_config_selftest()
         self.create_common_resolvers()
         self.create_common_realms()
 
@@ -223,7 +222,7 @@ class TestSelfserviceController(TestController):
         response = self.make_userselfservice_request('setmpin',
                                 auth_user=auth_user)
         print(response)
-        assert 'Missing parameter: \'pin\'' in response
+        assert "Missing parameter: ''pin''" in response
         assert '"code": 905' in response
 
 
@@ -279,7 +278,7 @@ class TestSelfserviceController(TestController):
         response = self.make_userselfservice_request('setpin',
                                 auth_user=auth_user)
         print(response)
-        assert 'Missing parameter: \'userpin\'' in response
+        assert "Missing parameter: ''userpin''" in response
         assert '"code": 905' in response
 
 
@@ -325,7 +324,7 @@ class TestSelfserviceController(TestController):
                                         'otp': '885497'})
         print(response)
         assert '"status": false' in response
-        assert '"message": "ERR410: The policy settings do not allow you to request a serial by OTP!",' in response
+        assert '"message": "ERR410: The policy settings do not allow you to request a serial by OTP!"' in response
 
         response = self.make_admin_request('init',
                                 params={'serial':'token01',
@@ -404,7 +403,7 @@ class TestSelfserviceController(TestController):
                                 auth_user=auth_user,
                                 params={'serial': 'token01'})
         print(response)
-        assert '"message": "ERR410: The policy settings do not allow you to issue this request!",' in response
+        assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response
 
         self.createPolicy("unassign")
         response = self.make_userselfservice_request('unassign',
@@ -488,7 +487,7 @@ class TestSelfserviceController(TestController):
                                 auth_user=auth_user,
                                 params={'serial': 'token01'})
         print(response)
-        assert '"message": "ERR410: The policy settings do not allow you to issue this request!",' in response
+        assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response
 
         self.createPolicy("disable")
         response = self.make_userselfservice_request('disable',
@@ -640,7 +639,9 @@ class TestSelfserviceController(TestController):
                                 params={'serial':'token01',
                                         'type': 'hmac'})
 
-        assert '"message": "valid types are \'oathtoken\' and \'googleauthenticator\' and \'googleauthenticator_time\'. You provided hmac",' in response,response
+        message = ("valid types are \'oathtoken\' and \'googleauthenticator\' "
+                   "and \'googleauthenticator_time\'. You provided hmac")
+        assert response.json['result']['error']['message'] == message, response
 
         response = self.make_userselfservice_request('webprovision',
                                 auth_user=auth_user,
