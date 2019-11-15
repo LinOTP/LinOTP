@@ -102,7 +102,7 @@ class TestAuditSearch(object):
 
         # THEN the operation is logged and can be read by audit/search
         response = search()
-        assert response.json['rows'][-1]['cell'][4] == '/system/getConfig'
+        assert response.json['rows'][-1]['cell'][4] == 'system/getConfig'
 
 # class TestAuditRecord(object):
 #     """
