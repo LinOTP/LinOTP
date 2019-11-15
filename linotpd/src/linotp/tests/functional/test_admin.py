@@ -197,6 +197,7 @@ class TestAdminController(TestController):
         response = self.make_admin_request('show', params=params)
 
         counter = 0
+        serial_column = 0
         for line in response.body.split('\n'):
 
             if not line:
@@ -206,11 +207,17 @@ class TestAdminController(TestController):
 
             # cvs has a header line
             if counter == 0:
-                assert entries[4].strip() == "'LinOtp.TokenSerialnumber'"
+
+                assert "'LinOtp.TokenSerialnumber'" in line
+
+                for entry in entries:
+                    if entry.strip() == "'LinOtp.TokenSerialnumber'":
+                        break
+                    serial_column +=1
 
             # and one data line
             if counter == 1:
-                assert entries[4].strip() == "'F722362'"
+                assert entries[serial_column].strip() == "'F722362'"
 
             # but no more than one line
             assert counter < 2

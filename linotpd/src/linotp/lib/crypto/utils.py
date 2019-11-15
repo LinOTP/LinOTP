@@ -555,11 +555,14 @@ class urandom(object):
         # get a binary random string
         randbin = geturandom(urandom.precision)
 
+        # convert to string
+        randstr = randbin.hex()
+
         # convert this to an integer
-        randi = int(randbin.encode('hex'), 16) * 1.0
+        randi = int(randstr, 16)
 
         # get the max integer
-        intmax = 2 ** (8 * urandom.precision) * 1.0
+        intmax = 2 ** (8 * urandom.precision)
 
         # scale the integer to an float between 0.0 and 1.0
         randf = randi / intmax
