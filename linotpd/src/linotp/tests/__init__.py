@@ -203,13 +203,31 @@ class TestController(TestCase):
         return
 
     @staticmethod
-    def set_cookie(app_client, key, value):
+    def set_cookie(app_client, key, value, expires=None, max_age=None):
         """
         Sets a cookie on the test client
 
+        by setting the expires to 0 and the max_age to 0 the cookie will
+        not be valid anymore
+
         :param client: the flask test client
+        :param key: the cookie name
+        :param value: the cookie value
+        :param expires: the expiration date
+        :param max_age: the maximum age of the copkie
         """
-        app_client.set_cookie('.localhost', key, value)
+        app_client.set_cookie(
+            '.localhost', key, value, expires=expires, max_age=max_age)
+
+    @staticmethod
+    def delete_cookie(app_client, key):
+        """
+        Delete a cookie from the test client
+
+        :param client: the flask test client
+        :param key: the key of the cookie
+        """
+        app_client.delete_cookie('.localhost', key)
         return
 
     @staticmethod
