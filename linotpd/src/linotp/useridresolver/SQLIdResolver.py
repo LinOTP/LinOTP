@@ -592,12 +592,6 @@ class IdResolver(UserIdResolver):
         log.info("[checkPass] checking password for user %s" % uid)
         userInfo = self.getUserInfo(uid, suppress_password=False)
 
-        # adapt the encoding of the password to the encoding of the database
-        if len(self.sqlEncoding) > 0:
-            # FIXME: this fails at the moment
-            #password = password.encode(self.sqlEncoding)
-            pass
-
         # get the crypted password and the salt from the database
         # for doing crypt.crypt( "password", "salt" )
 
@@ -770,10 +764,13 @@ class IdResolver(UserIdResolver):
 
         userInfo = l_config["Map"].strip("'").strip('"')
         try:
+
             self.sqlUserInfo = json.loads(userInfo)
+
         except ValueError as exx:
             raise ResolverLoadConfigError("Invalid userinfo - no json "
                                           "document: %s %r" % (userInfo, exx))
+
         except Exception as exx:
             raise Exception("linotp.sqlresolver.Map: %r" % exx)
 
@@ -832,8 +829,6 @@ class IdResolver(UserIdResolver):
         :rtype:  string
         '''
 
-        if len(self.sqlEncoding) > 0:
-            loginName = loginName.encode(self.sqlEncoding)
 
         log.debug("[getUserId] %s[%s]" % (loginName, type(loginName)))
         userId = ""
@@ -1051,9 +1046,6 @@ class IdResolver(UserIdResolver):
             else:
                 retString = "%s%s" % (retString, i)
 
-        if len(self.sqlEncoding) > 0:
-            retString = retString. encode(self.sqlEncoding)
-
         return retString
 
     def __getUserInfo(self, dbObj, row, suppress_password=True):
@@ -1075,23 +1067,6 @@ class IdResolver(UserIdResolver):
             try:
                 value = row[colName]
                 log.debug("[__getUserInfo] %r:%r" % (value, type(value)))
-
-                if isinstance(value, str) and self.sqlEncoding != "":
-                    value = value.decode(self.sqlEncoding)
-                    log.debug("[__getUserInfo] convert %r to <%r>" %
-                              (row[colName], value))
-
-            except UnicodeEncodeError as exx:
-                # here we use a fallback if conversion fails:
-                # the upper layer has to deal with this native string
-                log.warning("[__getUserInfo] decodeing error: %r " % exx)
-                value = row[colName]
-
-            except UnicodeDecodeError as e:
-                log.warning("[__getUserInfo] encoding error: can not convert "
-                                      "column %r of %r:%r" % (colName, row, e))
-                log.warning("[__getUserInfo] %s" % traceback.format_exc())
-                value = "-ERR: encoding-"
 
             except NoSuchColumnError as  e:
                 log.exception("[__getUserInfo]")
