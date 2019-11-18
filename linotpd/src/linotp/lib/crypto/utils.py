@@ -223,13 +223,21 @@ def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
     return key
 
 
-def hash_digest(val, seed, algo=None, hsm=None):
+def hash_digest(val: bytes, seed:bytes, algo=None, hsm=None):
+    """
+    hash_digest - hmac digest, lower level api
+
+    - operating on byte level
+    - calling level to the hsm module
+
+
+    """
     hsm_obj = _get_hsm_obj_from_context(hsm)
 
     if algo is None:
         algo = get_hashalgo_from_description('sha256')
 
-    h = hsm_obj.hash_digest(val.encode('utf-8'), seed, algo)
+    h = hsm_obj.hash_digest(val, seed, algo)
 
     return h
 

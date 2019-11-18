@@ -200,21 +200,70 @@ class SecretObj(object):
         return dec_seed
 
     @staticmethod
-    def hash_pin(pin, iv=None, hsm=None):
-        if not iv:
-            iv = utils.geturandom(16)
-        hashed_pin = utils.hash_digest(pin, iv, hsm=hsm)
+    def hash_pin(pin):
+        """
+        hash a given pin
+
+        :param pin:
+        :return: a concatenated 'iv:hashed_pin'
+        """
+
+        iv = utils.geturandom(16)
+        hashed_pin = utils.hash_digest(pin.encode('utf-8'), iv)
         return iv, hashed_pin
 
     @staticmethod
-    def encrypt_pin(pin, iv=None, hsm=None):
+    def check_hashed_pin(pin: str, hashed_pin: bytes, iv: bytes) -> bool:
         """
-        returns a concatenated 'iv:crypt'
+        check a hashed against a given pin
+
+        :param hashed_pin: hex binary
+        :param iv: hex binary iv from former decryption step
+        :param pin: string
+        :return: boolean
         """
-        if not iv:
-            iv = utils.geturandom(16)
-        enc_pin = utils.encryptPin(pin, iv=iv, hsm=hsm)
+
+        hash_pin = utils.hash_digest(pin.encode('utf-8'), iv)
+
+        # TODO: position independend compare
+        if hashed_pin == hash_pin:
+            return True
+
+        return False
+
+    @staticmethod
+    def encrypt_pin(pin: str):
+        """
+        encrypt a given pin
+
+        :param pin:
+        :return: a concatenated 'iv:crypt'
+        """
+
+        iv = utils.geturandom(16)
+        enc_pin = utils.encryptPin(pin.encode('utf-8'), iv=iv)
+
         return enc_pin
+
+    @staticmethod
+    def check_encrypted_pin(pin:str, encrypted_pin:bytes, iv:bytes) -> bool:
+        """
+        check an encrypted against a given pin
+
+        :param encrypted_pin: hex binary
+        :param iv: hex binary iv from former decryption step
+        :param pin: string
+        :return: boolean
+        """
+
+        enc_pin = utils.encryptPin(
+            pin.encode('utf-8'), iv=binascii.unhexlify(iv))
+
+        # TODO: position independend compare
+        if encrypted_pin == enc_pin.encode('utf-8'):
+            return True
+
+        return False
 
     @staticmethod
     def decrypt_pin(pin, hsm=None):
