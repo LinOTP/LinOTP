@@ -1140,12 +1140,13 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
             storeHashed = False
 
         if storeHashed is True:
-            iv, hashed_pin = SecretObj.hash_pin(pin, hsm=hsm)
+            iv, hashed_pin = SecretObj.hash_pin(pin)
             self.token.set_hashed_pin(hashed_pin, iv)
         else:
-            enc_pin = SecretObj.encrypt_pin(pin, hsm=hsm)
+            enc_pin = SecretObj.encrypt_pin(pin)
             iv = enc_pin.split(':')[0]
-            self.token.set_encrypted_pin(enc_pin, binascii.unhexlify(iv))
+            self.token.set_encrypted_pin(
+                enc_pin.encode('utf-8'), iv.encode('utf-8'))
 
     def getPin(self):
         """
@@ -1299,24 +1300,28 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         '''
         res = False
 
-        hsm = context['hsm']
         if self.token.isPinEncrypted():
+
             # for comparison we encrypt the pin and do the comparison
             iv, encrypted_token_pin = self.token.get_encrypted_pin()
-            encrypted_pin = SecretObj.encrypt_pin(pin, iv=iv, hsm=hsm)
-            if encrypted_token_pin == encrypted_pin:
-                res = True
+
+            res = SecretObj.check_encrypted_pin(
+                        pin, encrypted_token_pin, iv)
+
         else:
+
             # for hashed pins we re-do the hash and compare the hashes
             iv, hashed_token_pin = self.token.get_hashed_pin()
-            iv, hashed_pin = SecretObj.hash_pin(pin or '', iv, hsm=hsm)
-            if hashed_pin == hashed_token_pin:
-                res = True
 
             # special case of empty pin, where pin has never been set
             # especially in case of lost token with the pw token
             if len(hashed_token_pin) == 0 and len(pin) == 0:
                 res = True
+
+            else:
+
+                res = SecretObj.check_hashed_pin(
+                             pin or '', hashed_token_pin, iv)
 
         return res
 
