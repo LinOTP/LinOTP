@@ -1477,17 +1477,14 @@ class TestValidateController(TestController):
                        ],
         }
 
-        try:
-            for hashAlgo in list(testVector.keys()):
-                totp = self.createTOtpToken(hashAlgo)
-                arry = testVector.get(hashAlgo)
-                for tupp in arry:
-                    (T0, otp) = tupp
-                    val = self.createTOtpValue(totp, T0)
-                    assert otp == val
-        except Exception as e:
-            log.exception("Error in TOTP algorithm!!")
-            raise Exception(e)
+        for hashAlgo in list(testVector.keys()):
+            totp = self.createTOtpToken(hashAlgo)
+            arry = testVector.get(hashAlgo)
+            for tupp in arry:
+                (T0, otp) = tupp
+                val = self.createTOtpValue(totp, T0)
+                assert otp == val, "otp verification failed %r " % tupp
+
         return
 
     def test_checkTOtp(self):
@@ -1508,7 +1505,7 @@ class TestValidateController(TestController):
 
         parameters = {"serial": "TOTP"}
         response = self.make_admin_request('show', params=parameters)
-        log.info("1 response /admin/hhow %s\n" % response)
+
         assert '"LinOtp.FailCount": 1' in response, response
 
         #
@@ -1598,10 +1595,12 @@ class TestValidateController(TestController):
 
     def test_totp_resync(self):
 
+        # delete the 'TOTP' token if it exists
+
         try:
             self.delete_token("TOTP")
-        except Exception as exx:
-            log.debug("Token does not existed: %r" % exx)
+        except Exception as _exx:
+            pass
 
         totp = self.createTOtpToken("SHA1")
 
@@ -1673,10 +1672,11 @@ class TestValidateController(TestController):
         assert 'setConfig AutoResync:true": true' in response, \
                         response
 
+        # delete 'TOTP' token if it exists
         try:
             self.delete_token("TOTP")
-        except Exception as exx:
-            log.debug("Token does not existed: %r" % exx)
+        except AssertionError as _exx:
+            pass
 
         totp = self.createTOtpToken("SHA512")
 
