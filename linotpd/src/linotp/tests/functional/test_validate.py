@@ -49,8 +49,8 @@ from datetime import datetime
 from pyrad.client import Client
 from pyrad.packet import AccessAccept
 
-from linotp.tests import TestController, url
-log = logging.getLogger(__name__)
+from linotp.lib.HMAC import HmacOtp as LinHmac
+from linotp.tests import TestController
 
 
 class Response(object):
@@ -85,7 +85,7 @@ def mocked_http_request(HttpObject,  *argparams, **kwparams):
     return resp, json.dumps(content)
 
 
-class HmacOtp():
+class HmacOtp(LinHmac):
 
     def __init__(self, secret, counter=0, digits=6, hashfunc=hashlib.sha1):
         self.secret = secret
@@ -120,48 +120,6 @@ class HmacOtp():
             return hashlib.sha512
         else:
             return hashlib.sha1
-
-    def calcHmac(self, counter=None):
-        # log.error("hmacSecret()")
-        counter = counter or self.counter
-
-        # # retrieve the unicode key
-        akey = self.secret
-
-        # log.debug("[hmac] key: %s", akey)
-
-        # # and convert it to binary    from linotp.lib.crypto import SecretObj
-        key = binascii.unhexlify(akey)
-        msg = struct.pack(">Q", counter)
-        dige = hmac.new(key, msg, self.hashfunc)
-
-        digStr = str(dige.digest())
-
-        del akey
-        del key
-        del dige
-
-        return digStr
-
-    def truncate(self, digest):
-        offset = ord(digest[-1:]) & 0x0f
-
-        binary = (ord(digest[offset + 0]) & 0x7f) << 24
-        binary |= (ord(digest[offset + 1]) & 0xff) << 16
-        binary |= (ord(digest[offset + 2]) & 0xff) << 8
-        binary |= (ord(digest[offset + 3]) & 0xff)
-
-        return binary % (10 ** self.digits)
-
-    def generate(self, counter=None):
-        counter = counter or self.counter
-        myHmac = self.calcHmac(counter)
-        otp = str(self.truncate(myHmac))
-
-        #  fill in the leading zeros
-        sotp = (self.digits - len(otp)) * "0" + otp
-        self.counter = counter + 1
-        return sotp
 
 
 @pytest.mark.usefixtures('client_class')
@@ -258,7 +216,8 @@ class TestValidateController(TestController):
             if T0 is None:
                 T0 = time.time() - shift
             counter = int((T0 // timeStepping) + 0.5)
-            ret = hmac_func.generate(counter)
+            ret = hmac_func.generate(
+                counter, key=binascii.unhexlify(hmac_func.secret))
 
         except Exception as e:
             raise e
