@@ -300,7 +300,7 @@ class DefaultSecurityModule(SecurityModule):
         '''
         return self._encryptValue(cryptPass, CONFIG_KEY)
 
-    def encryptPin(self, cryptPin, iv=None) -> str:
+    def encryptPin(self, cryptPin: bytes, iv: bytes=None) -> str:
         '''
         dedicated security module methods: encryptPin
         which used one slot id to encrypt a string
@@ -317,7 +317,7 @@ class DefaultSecurityModule(SecurityModule):
         return self._encryptValue(cryptPin, TOKEN_KEY, iv=iv)
 
     # base methods for pin and password
-    def _encryptValue(self, value, keyNum, iv=None):
+    def _encryptValue(self, value:bytes, keyNum, iv:bytes=None):
         '''
         _encryptValue - base method to encrypt a value
         - uses one slot id to encrypt a string
