@@ -29,8 +29,7 @@ import logging
 
 import urllib.request, urllib.parse, urllib.error
 
-from linotp.lib.crypto.utils import encryptPin
-from linotp.lib.crypto.utils import decryptPin
+from linotp.lib.crypto import SecretObj
 
 from linotp.lib.request import HttpRequest
 from linotp.lib.request import RadiusRequest
@@ -85,7 +84,7 @@ class ForwardServerPolicy(object):
             # finally we found the query parameters
             if 'secret' in params:
                 secret = params['secret']
-                params['encsecret'] = encryptPin(secret.encode('utf-8'))
+                params['encsecret'] = SecretObj.encrypt_pin(secret)
                 del params['secret']
 
             # build the server url with the encrypted param:
@@ -127,7 +126,7 @@ class ForwardServerPolicy(object):
                 params[key] = entry[0]
 
             if 'encsecret' in params:
-                params['secret'] = decryptPin(params['encsecret'])
+                params['secret'] = SecretObj.decrypt_pin(params['encsecret'])
                 del params['encsecret']
 
             parsed_list = list(parsed_server[:])
