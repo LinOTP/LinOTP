@@ -271,8 +271,7 @@ class TestVoiceProviderController(TestController):
                     'voice': 'alice',
                     'callerNumber': '+4989231234567'}}}
 
-        assert cmp(request_json.get('body'), cmp_content) == 0
+        assert request_json.get('body') == cmp_content
 
-        return
 
 # eof #
