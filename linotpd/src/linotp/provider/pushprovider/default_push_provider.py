@@ -369,7 +369,7 @@ class DefaultPushProvider(IPushProvider):
         log.error('non of the resources %r available!', self.push_server_urls)
 
         if last_exception:
-            log.error("Last Exception was %r", exx)
+            log.error("Last Exception was %r", last_exception)
             raise last_exception
 
         raise AllResourcesUnavailable('non of the resources %r available!' %
