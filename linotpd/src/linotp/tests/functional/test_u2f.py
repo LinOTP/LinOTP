@@ -136,6 +136,12 @@ class TestU2FController(TestController):
         self.delete_all_resolvers()
         TestController.tearDown(self)
 
+    def get_json_body(self, response):
+        """
+        Returns a JSON-decoded response body
+        """
+        return json.loads(response.body)
+
     def _registration1(self, pin=None):
         """
         Performs the first registration step
