@@ -29,7 +29,7 @@ import base64
 import struct
 import binascii
 import re
-from M2Crypto import X509, m2
+from M2Crypto import X509, m2, Err
 from hashlib import sha256
 
 from linotp.lib.auth.validate import check_otp
@@ -838,10 +838,11 @@ class U2FTokenClass(TokenClass):
                             "or higher is required for the U2F token.")
 
         if certPubKey.verify_final(signature) != 1:
+            ssl_error = Err.get_error()
             raise Exception("Signature verification failed! Maybe someone is doing "
                             "something nasty! However, this error could possibly also be "
                             "related to missing ECDSA support for the NIST P-256 curve in "
-                            "OpenSSL.")
+                            "OpenSSL.\n\nOpenSSL says:\n{}".format(ssl_error))
 
     def getInitDetail(self, params, user=None):
         """
