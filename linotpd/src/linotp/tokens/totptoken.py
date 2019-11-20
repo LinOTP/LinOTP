@@ -92,7 +92,7 @@ Internet-Draft                HOTPTimeBased               September 2010
 
 """
 
-def time2counter(T0, timeStepping):
+def time2counter(T0: Union[float, int], timeStepping: int) -> int:
     counter = int(T0 // timeStepping)
     return counter
 

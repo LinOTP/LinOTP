@@ -271,7 +271,7 @@ def get_cookie_secret():
     config = request_context['Config']
 
     if not config.get('selfservice_auth_secret'):
-        secret = binascii.hexlify(os.urandom(SECRET_LEN))
+        secret = binascii.hexlify(os.urandom(SECRET_LEN)).decode()
         config['selfservice_auth_secret'] = secret
 
     return config.get('selfservice_auth_secret')

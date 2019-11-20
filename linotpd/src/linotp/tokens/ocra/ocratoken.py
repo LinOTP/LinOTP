@@ -55,8 +55,6 @@ import linotp
 
 from linotp.lib.config import getFromConfig
 from linotp.lib.crypto.utils import createNonce
-from linotp.lib.crypto.utils import decryptPin
-from linotp.lib.crypto.utils import encryptPin
 from linotp.lib.crypto.utils import kdf2
 from linotp.lib.crypto.utils import urandom
 from linotp.lib.crypto import SecretObj
@@ -307,7 +305,7 @@ class OcraTokenClass(TokenClass):
             # preserve the current key as sharedSecret
             secObj = self._get_secret_object()
             key = secObj.getKey()
-            encSharedSecret = encryptPin(key)
+            encSharedSecret = SecretObj.encrypt_pin(key)
             self.addToTokenInfo('sharedSecret', encSharedSecret)
 
             info = {}
@@ -364,7 +362,7 @@ class OcraTokenClass(TokenClass):
                 raise Exception('missing shared secret of initialition'
                                 ' for token %r' % (self.getSerial()))
 
-            sharedSecret = decryptPin(encSharedSecret)
+            sharedSecret = SecretObj.decrypt_pin(encSharedSecret)
 
             #  we generate a nonce, which in the end is a challenge
             nonce = createNonce()

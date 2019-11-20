@@ -182,7 +182,7 @@ class TotpToken(object):
 
         return
 
-    def getOtp(self, counter= -1, offset=0, jitter=0, seconds=None):
+    def getOtp(self, counter: int = -1, offset=0, jitter=0, seconds=None):
         '''
             @note: we require the ability to set the counter directly
                 to validate the hmac token against the defined test vectors

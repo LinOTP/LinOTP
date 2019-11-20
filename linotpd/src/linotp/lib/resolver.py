@@ -47,8 +47,7 @@ from linotp.lib.type_utils import boolean
 from linotp.useridresolver import resolver_registry
 from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
-from linotp.lib.crypto.utils import encryptPassword
-
+from linotp.lib.crypto.encrypted_data import EncryptedData
 # -------------------------------------------------------------------------- --
 
 # on module load integrate the parser function for resolver config
@@ -404,8 +403,15 @@ def getResolverInfo(resolvername, passwords=False):
 
         # should passwords be displayed?
         if key in resolver_cls.crypted_parameters:
-            if not passwords:
-                res_conf[key] = encryptPassword(res_conf[key])
+
+            # we have to be sure that we only have encrypted data objects for
+            # secret data
+            if not isinstance(res_conf[key], EncryptedData):
+                    raise Exception('Encrypted Data Object expected')
+
+            # if parameter password is True, we need to unencrypt
+            if passwords:
+                res_conf[key] = res_conf[key].get_unencrypted()
 
         # as we have in the resolver config typed values, this might
         # lead to some trouble. so we prepare for output comparison

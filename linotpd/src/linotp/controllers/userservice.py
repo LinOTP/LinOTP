@@ -643,7 +643,7 @@ class UserserviceController(BaseController):
                                         state='challenge_triggered',
                                         state_data=reply)
 
-                self.reponse.set_cookie(
+                self.response.set_cookie(
                     'user_selfservice',
                     value=cookie_value,
                     secure=secure_cookie(),

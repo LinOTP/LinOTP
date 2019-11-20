@@ -215,8 +215,8 @@ class TestUserserviceAuthController(TestController):
         unbound_msg = ('UnboundLocalError("local variable \'reply\' '
                        'referenced before assignment",)')
 
-        failed_auth_msg = ("User User(login=u'passthru_user1', "
-                           "realm=u'mydefrealm', conf='' ::resolverUid:{}, "
+        failed_auth_msg = ("User User(login='passthru_user1', "
+                           "realm='mydefrealm', conf='' ::resolverUid:{}, "
                            "resolverConf:{}) failed to authenticate!")
 
         unbound_not_found = True
@@ -236,7 +236,7 @@ class TestUserserviceAuthController(TestController):
 
         return
 
-    @pytest.mark.skip(reason="requires the audit controller")
+
     def test_login_with_challenge_response(self):
         """
         test authentication with challenge response
@@ -269,21 +269,19 @@ class TestUserserviceAuthController(TestController):
 
         cookies = TestController.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
 
         # ------------------------------------------------------------------ --
 
         # verify that 'history' could not be called in this status
 
         params = {}
-        params['session'] = auth_cookie
+        params['session'] = 'void'
 
-        with pytest.raises(Exception) as app_error:
+        response = self.client.post(url(controller='userservice',
+                                        action='history'), data=params)
 
-            response = self.client.post(url(controller='userservice',
-                                            action='history'), data=params)
-
-        assert "No valid session" in app_error.exception
+        assert response.status_code == 403
+        assert "No valid session" in response.data.decode()
 
         TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
 

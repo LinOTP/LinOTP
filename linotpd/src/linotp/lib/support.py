@@ -155,7 +155,7 @@ class InvalidLicenseException(Exception):
         self.type = type
 
 
-def parseSupportLicense(licString):
+def parseSupportLicense(licString:str):
     """
     parse the support subscription license
 
@@ -260,7 +260,7 @@ def check_license_restrictions():
     if not license_str:
         return False
 
-    licString = binascii.unhexlify(license_str)
+    licString = binascii.unhexlify(license_str).decode()
     lic_dict, lic_sign = parseSupportLicense(licString)
     res, reason = verifyLicenseInfo(lic_dict, lic_sign,
                                     raiseException=False)
@@ -403,9 +403,11 @@ def getSupportLicenseInfo():
 
     try:
         licString = getFromConfig("license", '')
+
         if licString:
-            licBin = binascii.unhexlify(licString)
-            lic_dict, lic_sign = parseSupportLicense(licBin)
+
+            lic_text = binascii.unhexlify(licString.encode('utf-8')).decode()
+            lic_dict, lic_sign = parseSupportLicense(lic_text)
             lic_dict['expire'] = get_expiration_date(lic_dict)
 
     except InvalidLicenseException as exx:
@@ -494,10 +496,10 @@ def setSupportLicenseInfo(lic_dict, lic_sign):
     licTemp += lic_str
     licTemp += "-----END LICENSE-----\n"
     licTemp += "-----BEGIN LICENSE SIGNATURE-----\n"
-    licTemp += base64.b64encode(lic_sign)
+    licTemp += base64.b64encode(lic_sign).decode()
     licTemp += "\n-----END LICENSE SIGNATURE-----"
 
-    storeConfig("license", binascii.hexlify(licTemp))
+    storeConfig("license", binascii.hexlify(licTemp.encode('utf-8')).decode())
     log.info("License saved.")
 
     return True
@@ -561,7 +563,7 @@ def set_duration(lic_dict, raiseException=False):
     expires_str = expires.strftime(date_format)
 
     # we take only some bytes as it is encrypted afterwards
-    signature = base64.b64encode(lic_sign)[:500]
+    signature = base64.b64encode(lic_sign)[:500].decode()
     license_expire = "%s:%s" % (signature, expires_str)
 
     enc_license_expire = EncryptedData.from_unencrypted(license_expire)
@@ -690,13 +692,13 @@ def _verify_signature(pub_keys, lic_str, lic_sign):
     for pub_key_name, pub_key in list(pub_keys.items()):
 
         # some M2Crypto magic
-        bio = M2Crypto.BIO.MemoryBuffer(pub_key)
+        bio = M2Crypto.BIO.MemoryBuffer(pub_key.encode('utf-8'))
         rsa = M2Crypto.RSA.load_pub_key_bio(bio)
         pubkey = M2Crypto.EVP.PKey()
         pubkey.assign_rsa(rsa)
         pubkey.reset_context(md="sha256")
         pubkey.verify_init()
-        pubkey.verify_update(lic_str)
+        pubkey.verify_update(lic_str.encode('utf-8'))
 
         if (pubkey.verify_final(lic_sign) == 1):
             ret = pub_key_name
@@ -891,7 +893,8 @@ def check_duration(expire, lic_info):
         expiration_date = datetime.datetime.strptime(date, date_format)
 
         # only check the current license
-        if base64.b64encode(lic_sign)[:500] == signature:
+        current_license_signature = base64.b64encode(lic_sign)[:500].decode()
+        if current_license_signature == signature:
             now = datetime.datetime.now()
             expiration_date = datetime.datetime.strptime(date, date_format)
 
