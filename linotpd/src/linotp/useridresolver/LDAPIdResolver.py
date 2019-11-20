@@ -1778,10 +1778,15 @@ class IdResolver(UserIdResolver):
             while not done:
 
                 if limit_size and results_size >= self.sizelimit:
-                    raise StopIteration()
+                    break
+
+                lres = l_obj.result3(msgid)
+
+                if not lres:
+                    break
 
                 (result_type, result_data,
-                 _rmsgid, serverctrls) = l_obj.result3(msgid)
+                 _rmsgid, serverctrls) = lres
 
                 # shift the cursor to the next page
                 (msgid,
@@ -1808,10 +1813,6 @@ class IdResolver(UserIdResolver):
 
         except ldap.LDAPError as exce:
             log.exception("LDAP error: %r", exce)
-            raise exce
-
-        except StopIteration as exce:
-            log.info("page size reached: (%r) %r", results_size, exce)
             raise exce
 
         except Exception as exce:
