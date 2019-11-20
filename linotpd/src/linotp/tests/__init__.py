@@ -93,7 +93,6 @@ def xfail_if_unported(controller, action):
         'error',
         'maintenance',
         'migrate',
-        'monitoring',
         'ocra',
         'openid',
         'reporting',
