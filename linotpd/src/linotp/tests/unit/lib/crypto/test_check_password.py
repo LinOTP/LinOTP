@@ -24,7 +24,7 @@
 #
 
 from linotp.lib.crypto import SecretObj
-from linotp.lib.crypto.utils import libcrypt_password
+from linotp.lib.crypto import utils
 
 
 def test_compare_password():
@@ -35,8 +35,8 @@ def test_compare_password():
 
     # init the SecretObject
 
-    sec_obj = SecretObj(val=libcrypt_password(
-        'password').encode('utf-8'), iv=b':1:')
+    enc_password = utils.encrypt_password('password').encode('utf-8')
+    sec_obj = SecretObj(val=enc_password, iv=b':1:')
 
     # run the comparison tests - positive test
 

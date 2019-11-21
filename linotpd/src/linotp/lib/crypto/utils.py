@@ -29,7 +29,7 @@ Cryptographic utility functions
 
 import base64
 import binascii
-from crypt import crypt as libcrypt
+
 import ctypes
 import hmac
 import json
@@ -55,6 +55,13 @@ from linotp.lib.error import HSMException
 from linotp.lib.error import ProgrammingError
 from linotp.lib.error import ValidateError
 
+
+from passlib.hash import (
+    sha512_crypt, sha256_crypt, sha1_crypt, md5_crypt, bcrypt, bcrypt_sha256)
+
+PW_HASHES = [
+    sha512_crypt, sha256_crypt, sha1_crypt, md5_crypt, bcrypt, bcrypt_sha256]
+
 log = logging.getLogger(__name__)
 
 Hashlib_map = {'md5': md5, 'sha1': sha1,
@@ -62,43 +69,74 @@ Hashlib_map = {'md5': md5, 'sha1': sha1,
                'sha384': sha384, 'sha512': sha512}
 
 
-def libcrypt_password(password, crypted_password=None):
+def compare_password(password, crypted_password):
     """
+    comparing passwords
+
+    for password comparison the passwords crypt algorithms are supported,
+    which are indicated by the "$ID$" prefix :
+
+      ID  | Method
+      ─────────────────────────────────────────────────────────
+      1   | MD5
+      2a  | Blowfish (not in mainline glibc; added in some
+          | Linux distributions)
+      5   | SHA-256 (since glibc 2.7)
+      6   | SHA-512 (since glibc 2.7)
+
+    to upport passowrds on a broad range of platforms the passlib library
+    is used:
+
+        https://passlib.readthedocs.io/en/stable/index.html
+
+    algorithm:
+    we iterate over supported list of passlib modules to identify the
+    hashing algorithm (s.o.) and do the comparison with the matching one.
+
+    :param password: the plain text password
+    :param crypted_password: the encrypted password
+
+    :return: boolean - for the password comparison result
+    """
+
+    for pw_hash in PW_HASHES:
+
+        if not pw_hash.identify(crypted_password):
+            continue
+
+        return pw_hash.verify(password, crypted_password)
+
+    return False
+
+
+def encrypt_password(password):
+    """
+    generate a new crypted password from a given password
+
     we use crypt type sha512, which is a secure and standard according to:
     http://security.stackexchange.com/questions/20541/\
                      insecure-versions-of-crypt-hashes
 
-    :param password: the plain text password
-    :param crypted_password: optional - the encrypted password
-
-                    if the encrypted password is provided the salt and
-                    the hash algo is taken from it, so that same password
-                    will result in same output - which is used for password
-                    comparison
-
+    :param password: the plaintext password
     :return: the encrypted password
     """
+    return sha512_crypt.hash(password)
 
-    if crypted_password:
-        return libcrypt(password, crypted_password)
 
-    ctype = '6'
-    salt_len = 20
+def compare(one, two):
+    """
+    position independend comparison of values
 
-    b_salt = os.urandom(3 * ((salt_len + 3) // 4))
+    :param one: first value
+    :param two: second value
+    :return: boolean
 
-    # we use base64 charset for salt chars as it is nearly the same
-    # charset, if '+' is changed to '.' and the fillchars '=' are
-    # striped off
+    """
+    res = True
+    for tup1, tup2 in zip(one, two):
+        res = res and (tup1 == tup2)
 
-    salt = base64.b64encode(b_salt).strip(b"=").replace(b'+', b'.').decode('utf-8')
-
-    # now define the password format by the salt definition
-
-    insalt = '$%s$%s$' % (ctype, salt[0:salt_len])
-    encryptedPW = libcrypt(password, insalt)
-
-    return encryptedPW
+    return res
 
 
 def get_hashalgo_from_description(description, fallback='sha1'):

@@ -32,7 +32,7 @@ set password handler -
 import logging
 
 from linotp.lib.tools import ToolsHandler
-from linotp.lib.crypto.utils import libcrypt_password
+from linotp.lib.crypto import utils
 
 from sqlalchemy import schema, types
 from sqlalchemy.engine import create_engine
@@ -229,12 +229,10 @@ class SetPasswordHandler(ToolsHandler):
 
             crypted_password = admin_user.password
 
-            if libcrypt_password(
-                    old_password, crypted_password) != crypted_password:
-
+            if not utils.compare_password(old_password, crypted_password):
                 raise Exception("old password missmatch!")
 
-            admin_user.password = libcrypt_password(new_password)
+            admin_user.password = utils.encrypt_password(new_password)
 
             session.add(admin_user)
 

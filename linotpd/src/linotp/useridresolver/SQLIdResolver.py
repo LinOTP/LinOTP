@@ -46,6 +46,8 @@ from passlib.hash import atlassian_pbkdf2_sha1
 from passlib.hash import bcrypt as passlib_bcrypt
 from passlib.hash import phpass as passlib_phpass
 
+from passlib.hash import sha256_crypt, sha1_crypt, sha512_crypt
+
 # from sqlalchemy.event import listen
 
 from sqlalchemy import create_engine
@@ -65,6 +67,9 @@ from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
 from linotp.lib.type_utils import encrypted_data
 from linotp.lib.type_utils import text
+
+
+PW_HASHES = [sha256_crypt, sha1_crypt, sha512_crypt]
 
 
 DEFAULT_ENCODING = "utf-8"
@@ -634,14 +639,23 @@ class IdResolver(UserIdResolver):
             #
             # s. https://en.wikipedia.org/wiki/Crypt_%28C%29
 
-            if crypt.crypt(password, userInfo["password"]) == userInfo["password"]:
+            result = False
 
+            for pw_hash in PW_HASHES:
+                if not pw_hash.identify(userInfo["password"]):
+                    continue
+
+                result = pw_hash.verify(password, userInfo["password"])
+                break
+
+            if result:
                 log.info("[checkPass] successfully authenticated "
                          "user uid %s", uid)
                 return True
-            else:
-                log.warning("[checkPass] user %s failed to authenticate.", uid)
-                return False
+
+            log.warning("[checkPass] user %s failed to authenticate.", uid)
+
+            return result
 
         else:
             # ------------------------------------------------------------- --

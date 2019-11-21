@@ -23,6 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+from linotp.lib.crypto.utils import compare
 '''
 Declare the SecretObject to encapsulate security aspects
 '''
@@ -131,28 +132,16 @@ class SecretObj(object):
 
         if self.iv == b':1:':
 
-            # get a hashed password by the same hashed method,
-            # which is in the crypted pw prefix
-            # as the self.val is binary, we have to convert the
-            # string result of libcrypt as well toByte
-
-            crypted_password = utils.libcrypt_password(
-                password, self.val.decode('utf-8')
-                ).encode('utf-8')
-
-            # do a position independend string comparison
-
-            result = True
-            for tup1, tup2 in zip(crypted_password, self.val):
-                result = result and (tup1 == tup2)
-
-            return result
+            return utils.compare_password(
+                password, self.val.decode('utf-8'))
 
         # the legacy comparison: compare the ecrypted password
 
         enc_otp_key = utils.encrypt(password, self.iv, hsm=self.hsm)
 
-        return binascii.hexlify(enc_otp_key) == binascii.hexlify(self.val)
+        return compare(
+            binascii.hexlify(enc_otp_key),binascii.hexlify(self.val))
+
 
     def hmac_digest(self, data_input, hash_algo=None, bkey=None):
 

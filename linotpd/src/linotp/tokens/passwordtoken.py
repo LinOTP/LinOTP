@@ -32,7 +32,7 @@ from linotp.tokens.base import TokenClass
 from linotp.tokens.hmactoken import HmacTokenClass
 from linotp.tokens import tokenclass_registry
 from linotp.lib.error import ParameterError
-from linotp.lib.crypto.utils import libcrypt_password
+from linotp.lib.crypto import utils
 
 log = logging.getLogger(__name__)
 
@@ -148,7 +148,7 @@ class PasswordTokenClass(HmacTokenClass):
         :param reset_failcount: boolean, if the failcounter should be reseted
         """
 
-        password_hash = libcrypt_password(otpKey).encode('utf-8')
+        password_hash = utils.encrypt_password(otpKey).encode('utf-8')
 
         self.token.set_encrypted_seed(password_hash, b":1:",
                                       reset_failcount=reset_failcount)

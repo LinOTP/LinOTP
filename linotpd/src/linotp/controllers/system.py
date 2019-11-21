@@ -117,7 +117,7 @@ from linotp.provider import setDefaultProvider
 
 from linotp.lib.type_utils import boolean
 
-from linotp.lib.crypto.utils import libcrypt_password
+from linotp.lib.crypto import utils
 
 from cgi import escape
 
@@ -2081,7 +2081,7 @@ class SystemController(BaseController):
 
                 password = params['managed']
 
-                params['managed'] = libcrypt_password(password)
+                params['managed'] = utils.encrypt_password(password)
 
             if provider_def and 'Managed' in provider_def[name]:
 
@@ -2092,8 +2092,7 @@ class SystemController(BaseController):
                 password = params['managed']
                 crypt_password = provider_def[name]['Managed']
 
-                if libcrypt_password(
-                        password, crypt_password) != crypt_password:
+                if not utils.compare_password(password, crypt_password):
 
                     raise Exception('Not allowed to overwrite the '
                                     'configuration of a managed provider')
@@ -2249,9 +2248,7 @@ class SystemController(BaseController):
                 password = self.request_params['managed']
                 crypt_password = provider_def[provider_name]['Managed']
 
-                if libcrypt_password(
-                        password, crypt_password) != crypt_password:
-
+                if not utils.compare_password(password, crypt_password):
                     raise Exception('Not allowed to delete the '
                                     'managed provider')
 
