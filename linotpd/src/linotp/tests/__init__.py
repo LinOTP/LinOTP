@@ -669,8 +669,6 @@ class TestController(TestCase):
         """
         Makes an authenticated request to /admin/'action'
         """
-        self.set_config_selftest()
-
         if not params:
             params = {}
         res = self.make_authenticated_request(
@@ -682,9 +680,6 @@ class TestController(TestCase):
             upload_files=upload_files,
             client=client,
         )
-        # unset the selftest after using the testing interface
-        self.set_config_selftest(unset=True)
-
         return res
 
     def make_tools_request(
