@@ -55,6 +55,7 @@ from linotp.lib.error import HSMException
 from linotp.lib.error import ProgrammingError
 from linotp.lib.error import ValidateError
 
+from crypt import crypt as libcrypt
 
 from passlib.hash import (
     sha512_crypt, sha256_crypt, sha1_crypt, md5_crypt, bcrypt, bcrypt_sha256)
@@ -99,12 +100,22 @@ def compare_password(password, crypted_password):
     :return: boolean - for the password comparison result
     """
 
+    hash_method_found = False
     for pw_hash in PW_HASHES:
 
         if not pw_hash.identify(crypted_password):
             continue
 
+        hash_method_found = True
         return pw_hash.verify(password, crypted_password)
+
+    # compatibilty case:
+    # the rare case for the broken system crypto libs like on macos
+
+    if not hash_method_found:
+
+        new_crypted_passw = libcrypt(password, crypted_password)
+        return compare(new_crypted_passw, crypted_password)
 
     return False
 
