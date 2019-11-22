@@ -175,6 +175,11 @@ class TestSystemController(TestController):
                                             params=params)
         assert '"value": true'in response, response
 
+        response = self.make_system_request(action='getDefaultRealm')
+        value = response.json['result']['value']
+        assert 'myotherrealm' in value
+        assert 'true' in value['myotherrealm']['default']
+
         # now check for the different users in the different realms
         params = {"username": "root"}  # check in default
 
@@ -227,6 +232,11 @@ class TestSystemController(TestController):
                                             params=params)
         assert '"value": true'in response, response
 
+        response = self.make_system_request(action='getDefaultRealm')
+        value = response.json['result']['value']
+        assert 'mydefrealm' in value
+        assert 'true' in value['mydefrealm']['default']
+
         # now check for the different users in the different realms
         params = {"username": "def"}  # check in default
 
@@ -240,6 +250,11 @@ class TestSystemController(TestController):
         response = self.make_system_request(action='setDefaultRealm',
                                             params=params)
         assert '"value": true'in response, response
+
+        response = self.make_system_request(action='getDefaultRealm')
+        value = response.json['result']['value']
+        assert 'mymixrealm' in value
+        assert 'true' in value['mymixrealm']['default']
 
         # now check for the different users in the different realms
         params = {"username": "root"}  # check in default
@@ -255,6 +270,11 @@ class TestSystemController(TestController):
         response = self.make_system_request(action='setDefaultRealm',
                                             params=params)
         assert '"value": false'in response, response
+
+        response = self.make_system_request(action='getDefaultRealm')
+        value = response.json['result']['value']
+        assert 'mymixrealm' in value
+        assert 'true' in value['mymixrealm']['default']
 
         # now check for the different users in the different realms
         params = {"username": "def",  # check in default
