@@ -37,16 +37,7 @@ import hashlib
 import urllib.request, urllib.parse, urllib.error
 import json
 
-import traceback
 import logging
-
-import crypt
-
-from passlib.hash import atlassian_pbkdf2_sha1
-from passlib.hash import bcrypt as passlib_bcrypt
-from passlib.hash import phpass as passlib_phpass
-
-from passlib.hash import sha256_crypt, sha1_crypt, sha512_crypt
 
 # from sqlalchemy.event import listen
 
@@ -68,36 +59,108 @@ from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 from linotp.lib.type_utils import encrypted_data
 from linotp.lib.type_utils import text
 
+# ------------------------------------------------------------------------- --
 
-PW_HASHES = [sha256_crypt, sha1_crypt, sha512_crypt]
+# establish the passlib crypt context different password formats
 
+from passlib.context import CryptContext
+
+# format like {ssha1}adsadasdad - from the RFC 2307
+Ldap_crypt_schemes = [
+    "ldap_sha1", "ldap_salted_sha1", "ldap_sha1_crypt",
+    "ldap_sha256_crypt", "ldap_sha512_crypt",
+    "ldap_bcrypt", "ldap_des_crypt" , "ldap_bsdi_crypt",
+    "ldap_md5_crypt", "ldap_md5", "ldap_salted_md5",
+]
+
+# format like {ssha1}adsadasdad but not in the RFC 2307
+Ldap_similar_crypt_schemes = [
+    "atlassian_pbkdf2_sha1", "fshp"
+    ]
+
+# format like $identifier$content - MCF: modular crypt format
+MCF_crypt_schemes = [
+    "md5_crypt", "bcrypt", "bsd_nthash",
+    "sha512_crypt", "sha256_crypt", "sha1_crypt", "sun_md5_crypt"
+    ]
+
+# other application related password formats
+Other_crypt_schemes = [
+    "bcrypt_sha256", "phpass" # "argon2" # requires extra install
+    ]
+
+# db related password formats
+DB_crypt_schemes = [
+    "mssql2000", "mssql2005",
+    "mysql323", "mysql41", # "postgres_md5", # requires extra install
+    "oracle11",
+    ]
+
+# legacy password schemes partialy without identifier
+Archaic_crypt_schemes = [
+    "des_crypt", "bsdi_crypt", "bigcrypt"
+    ]
+
+
+LdapCrypt = CryptContext(
+    schemes=Ldap_crypt_schemes + Ldap_similar_crypt_schemes)
+
+MCFCrypt = CryptContext(schemes=MCF_crypt_schemes)
+
+OtherCrypt = CryptContext(schemes=Other_crypt_schemes)
+
+DBCrypt = CryptContext(schemes=DB_crypt_schemes)
+
+ArchaicCrypt = CryptContext(schemes=Archaic_crypt_schemes)
+
+# ------------------------------------------------------------------------- --
 
 DEFAULT_ENCODING = "utf-8"
 
 log = logging.getLogger(__name__)
 
-def check_bcypt_password(password, stored_hash):
-    """
-    check bcrypt passwords, which starts with $2$, $2a$, $2b$, $2x$ or $2y$
 
-    :param password: the new, to be verified password
-    :param stored_hash: the previously used password in a hashed form
+def check_password(password, crypted_password, salt=None):
+    """
+    check the crypted password and the optional salt
+    for various passsword schemes defining a passlib crypto context
+
+    - {id}pwdata - LDAP format
+    - $id$pwdata - modular crypt format
+    - other format like the atlasian or php passwords
+    - support db format
+    - support for archaic formats like Des
+
+    the defintions of the crypto context is made above in the schema lists
+
+    the algorithm iterates over the crypto contexti to identify the type
+    of the password and, if salt is provided, tries to verify with or
+    without salt.
+
+    :param password: plaintext password
+    :param crypted_password: the crypted password
+    :param salt: optional
     :return: boolean
     """
 
-    return passlib_bcrypt.verify(password, stored_hash)
+    for pw_hash in [LdapCrypt, MCFCrypt, OtherCrypt, DBCrypt, ArchaicCrypt]:
 
+        if not pw_hash.identify(crypted_password):
+            continue
 
-def check_php_password(password, stored_hash):
-    """
-    from phppass: check certain kinds of phppassowrds
+        try:
+            if salt:
+                return pw_hash.using(salt=salt, relaxed=True
+                                     ).verify(password, crypted_password)
+            else:
+                return pw_hash.verify(password, crypted_password)
 
-    :param password: the new, to be verified password
-    :param stored_hash: the previously used password in a hashed form
-    :return: boolean
-    """
+        except ValueError as exx:
+            log.error("Error while comparing password! %r", exx)
+            return False
 
-    return passlib_phpass.verify(password, stored_hash)
+    log.info("password does not match any password schema!")
+    return False
 
 
 def make_connect(driver, user, pass_, server, port, db, conParams=""):
@@ -319,95 +382,6 @@ def call_on_connect(dbapi_con, connection_record):
     return
 
 
-def _check_hash_type(password, hash_type, hash_value, salt=None):
-    '''
-    Checks, if the password matches the given hash.
-
-    :param password: The user password in clear text
-    :type password: string
-    :param hash_type: possible values are sha, ssha, sha256, ssha256
-    :type hash_type: string
-    :param hash_value: The hash value, base64 encoded
-    :type hash_value: string
-    :return: True or False
-    '''
-    log.debug("[_check_hash_type] hash type %r, hash_value %r" % (hash_type,
-                                                                  hash_value))
-    res = False
-    if hash_type.lower() == "sha":
-        hash_type = "sha1"
-    if hash_type.lower() == "ssha":
-        hash_type = "ssha1"
-
-    if (hash_type.lower()[0:3] == "sha"):
-        log.debug("[_check_hash_type] found a non-salted hash.")
-        try:
-            H = hashlib.new(hash_type)
-            H.update(password)
-            hashed_password = base64.b64encode(H.digest())
-            res = (hashed_password == hash_value)
-        except ValueError:
-            log.exception("[_check_hash_type] Unsupported Hash type: %r",
-                          hash_type)
-
-    elif (hash_type.lower()[0:4] == "ssha"):
-        log.debug("[_check_hash_type] found a salted hash.")
-        try:
-            new_hash_type = hash_type[1:]
-            # decode the base64 hash value to binary
-            bin_value = base64.b64decode(hash_value)
-
-            H = hashlib.new(new_hash_type)
-            hash_len = H.digest_size
-
-            # Carefully check for ASP.NET format (salt separated from hash)
-            if salt and len(bin_value) == hash_len:
-                # Salt separated from hash - probably ASP.NET format
-                # For ASP.NET the format is 'hash(salt + password)' with
-                # 'password' being a UTF-16 little-endian string
-                bin_hash = bin_value
-                password = password.encode('utf-16-le')
-                bin_salt = base64.b64decode(salt)
-                H.update(bin_salt + password)
-            else:
-                # split the hashed password from the binary salt
-                bin_hash = bin_value[:hash_len]
-                bin_salt = bin_value[hash_len:]
-                H.update(password + bin_salt)
-
-            bin_hashed_password = H.digest()
-            res = (bin_hashed_password == bin_hash)
-        except ValueError:
-            log.exception("[_check_hash_type] Unsupported Hash type: %r",
-                          hash_type)
-
-    elif hash_type == 'PKCS5S2':
-        # ------------------------------------------------------------------ --
-
-        # support the atlasion pkdf sha1 password hashes
-        # s. https://passlib.readthedocs.io/en/stable/lib/\
-        #                    passlib.hash.atlassian_pbkdf2_sha1.html
-
-        try:
-
-            pw_hash = "{%s}%s" % (hash_type, hash_value)
-            return atlassian_pbkdf2_sha1.verify(password, pw_hash)
-
-        except (TypeError, ValueError) as exx:
-
-            # raised for example if the padding of the hash of the
-            # sql entry is broken
-
-            log.exception("problem checking atlassian_pbkdf2_sha1")
-            return False
-
-        except Exception as exx:
-            log.exception("unknown problem checking atlassian_pbkdf2_sha1")
-            raise exx
-
-    return res
-
-
 def testconnection(params):
     """
     provide the old interface for backward compatibility
@@ -597,86 +571,20 @@ class IdResolver(UserIdResolver):
         log.info("[checkPass] checking password for user %s" % uid)
         userInfo = self.getUserInfo(uid, suppress_password=False)
 
-        # get the crypted password and the salt from the database
-        # for doing crypt.crypt( "password", "salt" )
-
-        if "password" not in userInfo:
+        if not userInfo["password"]:
             log.error("[checkPass] password is not defined in SQL mapping!")
             return False
 
-        # check if we have something like SHA or salted SHA
+        result = check_password(
+            password, userInfo["password"], userInfo.get("salt"))
 
-        m = re.match(r"^\{(.*)\}(.*)", userInfo["password"])
-
-        if m:
-            # The password field contains something like
-            # {SHA256}abcdfef123456
-            hash_type = m.group(1)
-            hash_value = m.group(2)
-
-            # Check for salt field in case the db splits salt from hash:
-            salt = None
-            if 'salt' in userInfo:
-                salt = userInfo['salt']
-            return _check_hash_type(password, hash_type, hash_value, salt=salt)
-
-        elif passlib_phpass.identify(userInfo["password"]):
-            # The Password field contains something like
-            # '$P$BPC00gOTHbTWl6RH6ZyfYVGWkX3Wec.'
-            return check_php_password(password, userInfo["password"])
-
-        elif passlib_bcrypt.identify(userInfo["password"]):
-            # password starts with $2$, $2a$, $2b$, $2b$, $2x$ or $2y$
-            return check_bcypt_password(password, userInfo["password"])
-
-        elif userInfo["password"][0] == '$':
-
-            # ----------------------------------------------------------- --
-
-            # check the Modular Crypt Format (MCF):
-            #
-            #  $<id>[$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
-            #
-            # s. https://en.wikipedia.org/wiki/Crypt_%28C%29
-
-            result = False
-
-            for pw_hash in PW_HASHES:
-                if not pw_hash.identify(userInfo["password"]):
-                    continue
-
-                result = pw_hash.verify(password, userInfo["password"])
-                break
-
-            if result:
-                log.info("[checkPass] successfully authenticated "
+        if result:
+            log.info("[checkPass] successfully authenticated "
                          "user uid %s", uid)
-                return True
+            return True
 
-            log.warning("[checkPass] user %s failed to authenticate.", uid)
-
-            return result
-
-        else:
-            # ------------------------------------------------------------- --
-
-            # old style with dedicated salt from the database for doing
-            #       crypt.crypt( "password", "salt" )
-
-            salt = userInfo["password"][0:2]
-            if "salt" in userInfo:
-                salt = userInfo["salt"]
-
-            npw = crypt.crypt(password, salt)
-            if npw == userInfo["password"]:
-                log.info("[checkPass] user %s authenticated successfully.",
-                         uid)
-                return True
-
-            log.warning("[checkPass] user %s failed to authenticate.",
-                        uid)
-
-            return False
+        log.warning("[checkPass] user %s failed to authenticate.", uid)
+        return False
 
 
     @classmethod
@@ -1232,37 +1140,6 @@ class IdResolver(UserIdResolver):
 
 
 if __name__ == "__main__":
-
-    print("SQLIdResolver - password hashing test")
-
-    assert _check_hash_type("password", "sha", "W6ph5Mm5Pz8GgiULbPgzG37mj9g=")
-
-    assert _check_hash_type("password", "sha1",
-                            "W6ph5Mm5Pz8GgiULbPgzG37mj9g=")
-    assert _check_hash_type("password", "sha224",
-                            "1j3JGeIB17xMglYw0s8l/ck9Sy8NRnBtKQONAQ==")
-    assert _check_hash_type("password", "sha256",
-                            "XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=")
-    assert _check_hash_type("password", "sha512",
-                            "sQnzu7wkTrgkQZF+0G1hi5AI3Qmzvv0bXgc5THBqi7mAsdd"
-                            "4Xll27ASbRt9fEyavWi6m0QP9B8lThf+rDKy8hg==")
-
-    assert _check_hash_type("password", "ssha",
-                            "5ravvW12u10gQVQtfS4/rFuwVZMxMjM0")
-    assert _check_hash_type("password", "ssha1",
-                            "5ravvW12u10gQVQtfS4/rFuwVZMxMjM0")
-    assert _check_hash_type("password", "ssha224",
-                            "K2vvsx1noFJ/vCE1Bj6vsT4K2ghAb3MYIGt+ijEyMzQ=")
-    assert _check_hash_type("password", "ssha256",
-                            "uclQZA4bN0DpisuT5mnGV2b2Zw3RYJupH/QQUrpIxvMxMjM0")
-    assert _check_hash_type("password", "ssha512",
-                            "jHydFieKxgoZd28gTzEJscL8eC/4tnH0JCaoXPcrECGIfdnk"
-                            "/r5CDc0hW6SZ/xLiMNr2ev/96L+Evv6GeogixDEyMzQ=")
-
-    assert _check_hash_type("wrong password", "sha",
-                            "W6ph5Mm5Pz8GgiULbPgzG37mj9g=") == False
-    assert _check_hash_type("wrong password", "ssha",
-                            "5ravvW12u10gQVQtfS4/rFuwVZMxMjM0") == False
 
     print("SQLIdResolver - IdResolver class test ")
 
