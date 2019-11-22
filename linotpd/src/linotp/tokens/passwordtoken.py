@@ -148,7 +148,7 @@ class PasswordTokenClass(HmacTokenClass):
         :param reset_failcount: boolean, if the failcounter should be reseted
         """
 
-        password_hash = utils.encrypt_password(otpKey).encode('utf-8')
+        password_hash = utils.crypt_password(otpKey).encode('utf-8')
 
         self.token.set_encrypted_seed(password_hash, b":1:",
                                       reset_failcount=reset_failcount)

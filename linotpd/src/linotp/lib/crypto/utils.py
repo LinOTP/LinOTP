@@ -111,7 +111,7 @@ def compare_password(password, crypted_password):
     return compare(new_crypted_passw, crypted_password)
 
 
-def encrypt_password(password):
+def crypt_password(password):
     """
     generate a new crypted hashed password from a given password
 

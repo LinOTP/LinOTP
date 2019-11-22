@@ -2081,7 +2081,7 @@ class SystemController(BaseController):
 
                 password = params['managed']
 
-                params['managed'] = utils.encrypt_password(password)
+                params['managed'] = utils.crypt_password(password)
 
             if provider_def and 'Managed' in provider_def[name]:
 

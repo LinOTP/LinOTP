@@ -232,7 +232,7 @@ class SetPasswordHandler(ToolsHandler):
             if not utils.compare_password(old_password, crypted_password):
                 raise Exception("old password missmatch!")
 
-            admin_user.password = utils.encrypt_password(new_password)
+            admin_user.password = utils.crypt_password(new_password)
 
             session.add(admin_user)
 

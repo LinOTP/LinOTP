@@ -59,8 +59,8 @@ class TestSetPasswordTool(unittest.TestCase):
         SetPasswordHandler.create_table(self.db_context)
 
         admin_user = 'admin'
-        admin_pw = utils.encrypt_password('admin_password')
 
+        admin_pw = utils.crypt_password('admin_password')
         # setup the inital user and it's password
 
         SetPasswordHandler.create_admin_user(self.db_context,
@@ -138,7 +138,7 @@ class TestSetPasswordTool(unittest.TestCase):
         SetPasswordHandler.create_table(self.db_context)
 
         admin_user = 'admin'
-        admin_pw = utils.encrypt_password('admin_password')
+        admin_pw = utils.crypt_password('admin_password')
 
         # setup the inital user and it's password
 
@@ -147,7 +147,7 @@ class TestSetPasswordTool(unittest.TestCase):
                                              crypted_password=admin_pw)
 
         admin_user = 'admin'
-        admin_pw = utils.encrypt_password('password_of_admin')
+        admin_pw = utils.crypt_password('password_of_admin')
 
         # setup the inital user and try to set it's password a second time
         # - this will fail as the user could only be set once

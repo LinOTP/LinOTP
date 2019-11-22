@@ -92,7 +92,7 @@ class TestSetAdminPassword(TestController):
         SetPasswordHandler.create_admin_user(
                         db_context,
                         username='admin',
-                        crypted_password=utils.encrypt_password('nimda'))
+                        crypted_password=utils.crypt_password('nimda'))
 
     def test_set_simple_password(self):
         """
