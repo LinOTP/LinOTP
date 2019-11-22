@@ -628,4 +628,10 @@ scope = gettoken
 
         return
 
+    def test_get_policy_def(self):
+        ''' Just verify that the endpoint works '''
+        response = self.make_system_request(action='getPolicyDef')
+
+        assert '"status": true' in response, response
+
 # eof ########################################################################
