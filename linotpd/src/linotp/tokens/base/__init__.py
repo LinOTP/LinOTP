@@ -1312,7 +1312,6 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         # hashed pin comparison
 
         iv, hashed_token_pin = self.token.get_hashed_pin()
-        iv, hashed_pin = SecretObj.hash_pin(pin or '', iv, hsm=hsm)
 
         # special case of empty pin, where pin has never been set
         # especially in case of lost token with the pw token
