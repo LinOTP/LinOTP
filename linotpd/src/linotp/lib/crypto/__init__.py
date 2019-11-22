@@ -245,11 +245,10 @@ class SecretObj(object):
         :return: boolean
         """
 
-        enc_pin = utils.encryptPin(
-            pin.encode('utf-8'), iv=binascii.unhexlify(iv))
+        crypted_pin = utils.encryptPin(pin.encode('utf-8'), iv)
 
         # TODO: position independend compare
-        if encrypted_pin == enc_pin.encode('utf-8'):
+        if encrypted_pin == crypted_pin.encode('utf-8'):
             return True
 
         return False

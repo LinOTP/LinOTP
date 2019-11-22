@@ -1147,7 +1147,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
             enc_pin = SecretObj.encrypt_pin(pin)
             iv = enc_pin.split(':')[0]
             self.token.set_encrypted_pin(
-                enc_pin.encode('utf-8'), iv.encode('utf-8'))
+                enc_pin.encode('utf-8'), binascii.unhexlify(iv))
 
     def getPin(self):
         """
@@ -1303,7 +1303,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         if self.token.isPinEncrypted():
 
             # for comparison we encrypt the pin and do the comparison
-
+            # iv is binary, while encrypted_token_pin is hexlified
             iv, encrypted_token_pin = self.token.get_encrypted_pin()
 
             return SecretObj.check_encrypted_pin(
