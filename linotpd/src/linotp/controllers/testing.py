@@ -29,14 +29,13 @@ testing controller - for testing purposes
 
 import logging
 
-from linotp.flap import request, response
+from linotp.flap import response
 from linotp.controllers.base import BaseController
 
 from linotp.lib.error import ParameterError
 
 from linotp.lib.reply import sendResult, sendError
 
-from linotp.lib.selftest import isSelfTest
 from linotp.lib.policy import get_auth_AutoSMSPolicy
 
 from linotp.lib.crypto.utils import urandom
@@ -135,11 +134,6 @@ class TestingController(BaseController):
         '''
 
         try:
-            if isSelfTest() is False:
-                Session.rollback()
-                return sendError(response, "The testing controller can only"
-                                 " be used in SelfTest mode!", 0)
-
             if "user" not in self.request_params:
                 raise ParameterError("Missing parameter: 'user'")
 

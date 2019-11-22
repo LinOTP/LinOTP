@@ -96,7 +96,6 @@ def xfail_if_unported(controller, action):
         'ocra',
         'openid',
         'reporting',
-        'testing',
         'u2f',
     ]
 
