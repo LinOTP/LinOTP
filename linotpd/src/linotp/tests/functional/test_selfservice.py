@@ -58,9 +58,10 @@ class TestSelfserviceController(TestController):
                                         'action' : policy,
                                         'selftest_admin' : 'superadmin'
                                         })
-        print response
         assert '"status": true' in response
         assert '"setPolicy self01": {' in response
+
+        return response
 
     def deleteToken(self, serial):
         response = self.app.get(url(controller='admin', action='remove'),
@@ -709,3 +710,38 @@ class TestSelfserviceController(TestController):
 
         user = response_dict['user']
         self.assertEqual(user, 'passthru_user1')
+
+    def test_setdescription(self):
+        '''
+        selfservice: testing set token description as normal user
+        '''
+
+        user = 'passthru_user1@myDefRealm'
+        selfservice_user = {
+            'login': user,
+            'password': 'geheim1'
+        }
+
+        serial = 'set_description_token'
+        params = {
+            'type': 'hmac',
+            'serial': serial,
+            'genkey': 1,
+            'user': user
+            }
+
+        response = self.make_admin_request('init', params=params)
+        assert "googleurl" in response, response
+
+        params={
+            'serial': serial,
+            'description': 'my super token'
+        }
+
+        response = self.make_userselfservice_request(
+            'setdescription', params=params, auth_user=selfservice_user)
+
+        assert '"set description": 1' in response
+
+        response = self.make_admin_request('show', params={'serial': serial})
+        assert 'my super token' in response
