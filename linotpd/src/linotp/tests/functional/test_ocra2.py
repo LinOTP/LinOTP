@@ -2301,7 +2301,7 @@ class OcraTest(TestController):
 
         return (otp1, transid1, challenge1)
 
-    def get_challenge(self, serial, user=None, challenge_data=None,
+    def get_challenge(self, serial, user=None, challenge_data='',
                       params=None):
         p = {}
         if params:
