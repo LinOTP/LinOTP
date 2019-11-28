@@ -632,7 +632,7 @@ class OcraSuite():
 
         # callculate the start for the timer based tokens
         if self.T is not None:
-            ttime = datetime.now()
+            ttime = datetime.utcnow()
             ftime = ttime.strftime("%s")
             otime = int(ftime) + timeshift
 

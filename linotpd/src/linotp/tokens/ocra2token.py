@@ -783,7 +783,7 @@ class Ocra2TokenClass(TokenClass):
             param['P'] = pin
             param['S'] = session
             if ocraSuite.T is not None:
-                now = datetime.datetime.now()
+                now = datetime.datetime.utcnow()
                 stime = now.strftime("%s")
                 itime = int(stime)
                 param['T'] = itime
@@ -970,7 +970,7 @@ class Ocra2TokenClass(TokenClass):
             param['P'] = pin
             param['S'] = session
             if ocraSuite.T is not None:
-                now = datetime.datetime.now()
+                now = datetime.datetime.utcnow()
                 stime = now.strftime("%s")
                 itime = int(stime)
                 param['T'] = itime
@@ -1599,7 +1599,7 @@ class Ocra2TokenClass(TokenClass):
                             date = datetime.datetime.fromtimestamp(count_2)
                             log.info('[resync] syncing token to new timestamp: %r' % (date))
 
-                            now = datetime.datetime.now()
+                            now = datetime.datetime.utcnow()
                             stime = now.strftime("%s")
                             timeShift = count_2 - int(stime)
                             self.addToTokenInfo('timeShift', timeShift)

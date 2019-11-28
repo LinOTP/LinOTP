@@ -190,7 +190,7 @@ class OcraOtp(TestController):
         if self.ocra.T is not None:
             # Default value for G is 1M, i.e., time-step size is one minute and
             # the T represents the number of minutes since epoch time [UT].
-            now = datetime.now()
+            now = datetime.utcnow()
             stime = now.strftime("%s")
             itime = int(stime)
             param['T'] = itime
@@ -726,7 +726,7 @@ class OcraTest(TestController):
         ocra = OcraSuite(ocrasuite)
         params = {'Q': '000000'}
         result = '335862'
-        now = datetime.now()
+        now = datetime.utcnow()
         nowtime = now
         for t in range(1, 24 * 60 * 60):
             nowtime = now - timedelta(minutes=t)
@@ -778,7 +778,7 @@ class OcraTest(TestController):
         if ocra.T is not None:
             # Default value for G is 1M, i.e., time-step size is one minute and
             # the T represents the number of minutes since epoch time [UT].
-            now = datetime.now()
+            now = datetime.utcnow()
             stime = now.strftime("%s")
             itime = int(stime)
             param['T'] = itime
@@ -1071,7 +1071,7 @@ class OcraTest(TestController):
         if ocra.T is not None:
             # Default value for G is 1M, i.e., time-step size is one minute and
             # the T represents the number of minutes since epoch time [UT].
-            now = datetime.now()
+            now = datetime.utcnow()
             stime = now.strftime("%s")
             itime = int(stime)
             param['T'] = itime
@@ -1111,7 +1111,7 @@ class OcraTest(TestController):
                 # minute and the T represents the number of minutes since
                 # epoch time [UT].
 
-                now = datetime.now()
+                now = datetime.utcnow()
                 stime = now.strftime("%s")
                 itime = int(stime)
                 param['T'] = itime
@@ -1240,7 +1240,7 @@ class OcraTest(TestController):
             # Default value for G is 1M, i.e., time-step size is one minute and
             # the T represents the number of minutes since epoch time [UT].
 
-            now = datetime.now()
+            now = datetime.utcnow()
             stime = now.strftime("%s")
             itime = int(stime)
             param['T'] = itime
@@ -1278,7 +1278,7 @@ class OcraTest(TestController):
                 # Default value for G is 1M, i.e., time-step size is one minute
                 # and the T represents the number of minutes since
                 # epoch time [UT].
-                now = datetime.now()
+                now = datetime.utcnow()
                 stime = now.strftime("%s")
                 itime = int(stime)
                 param['T'] = itime
@@ -1415,7 +1415,7 @@ class OcraTest(TestController):
         if ocra.T is not None:
             # Default value for G is 1M, i.e., time-step size is one minute and
             # the T represents the number of minutes since epoch time [UT].
-            now = datetime.now()
+            now = datetime.utcnow()
             stime = now.strftime("%s")
             itime = int(stime)
             param['T'] = itime
@@ -1499,7 +1499,7 @@ class OcraTest(TestController):
         if ocra.T is not None:
             # Default value for G is 1M, i.e., time-step size is one minute and
             # the T represents the number of minutes since epoch time [UT].
-            now = datetime.now()
+            now = datetime.utcnow()
             stime = now.strftime("%s")
             itime = int(stime)
             param['T'] = itime
@@ -1593,7 +1593,7 @@ class OcraTest(TestController):
                     # Default value for G is 1M, i.e., time-step size is one
                     # minute and the T represents the number of minutes since
                     # epoch time [UT].
-                    now = datetime.now()
+                    now = datetime.utcnow()
                     stime = now.strftime("%s")
                     itime = int(stime)
                     param['T'] = itime
@@ -1696,7 +1696,7 @@ class OcraTest(TestController):
                     # Default value for G is 1M, i.e., time-step size is one
                     # minute and the T represents the number of minutes since
                     # epoch time [UT].
-                    now = datetime.now()
+                    now = datetime.utcnow()
                     stime = now.strftime("%s")
                     itime = int(stime)
                     param['T'] = itime
@@ -1863,7 +1863,7 @@ class OcraTest(TestController):
                     # Default value for G is 1M, i.e., time-step size is one
                     # minute and the T represents the number of minutes since
                     # epoch time [UT].
-                    now = datetime.now()
+                    now = datetime.utcnow()
                     stime = now.strftime("%s")
                     itime = int(stime)
                     param['T'] = itime
@@ -2053,7 +2053,7 @@ class OcraTest(TestController):
                     # Default value for G is 1M, i.e., time-step size is one
                     # minute and the T represents the number of minutes since
                     # epoch time [UT].
-                    now = datetime.now()
+                    now = datetime.utcnow()
                     stime = now.strftime("%s")
                     itime = int(stime)
                     param['T'] = itime
@@ -2086,7 +2086,7 @@ class OcraTest(TestController):
                     # Default value for G is 1M, i.e., time-step size is one
                     # minute and the T represents the number of minutes since
                     # epoch time [UT].
-                    now = datetime.now()
+                    now = datetime.utcnow()
                     stime = now.strftime("%s")
                     itime = int(stime)
                     param['T'] = itime
@@ -2187,7 +2187,7 @@ class OcraTest(TestController):
                     # Default value for G is 1M, i.e., time-step size is one
                     # minute and the T represents the number of minutes since
                     # epoch time [UT].
-                    now = datetime.now()
+                    now = datetime.utcnow()
                     stime = now.strftime("%s")
                     itime = int(stime)
                     param['T'] = itime
@@ -2220,7 +2220,7 @@ class OcraTest(TestController):
                     # Default value for G is 1M, i.e., time-step size is one
                     # minute and the T represents the number of minutes since
                     # epoch time [UT].
-                    now = datetime.now()
+                    now = datetime.utcnow()
                     stime = now.strftime("%s")
                     itime = int(stime)
                     param['T'] = itime
@@ -2281,7 +2281,7 @@ class OcraTest(TestController):
         challenge1 = str(jresp.get('detail', {}).get('challenge'))
         transid1 = str(jresp.get('detail', {}).get('transactionid'))
 
-        now = datetime.now()
+        now = datetime.utcnow()
         if ttime is not None:
             now = ttime
         stime = now.strftime("%s")
@@ -2465,7 +2465,7 @@ class OcraTest(TestController):
         parameters = {"AutoResync": "true"}
         response = self.make_system_request('setConfig', params=parameters)
 
-        now = datetime.now()
+        now = datetime.utcnow()
         time1 = now + timedelta(minutes=20)
         (otp1, _transid1, _challenge1) = self._getChallenge(ocrasuite,
                                                             bkey, serial,
@@ -2543,7 +2543,7 @@ class OcraTest(TestController):
                                            params=parameters)
         assert '"value": true' in response, response
 
-        time1 = datetime.now() + timedelta(minutes=20)
+        time1 = datetime.utcnow() + timedelta(minutes=20)
         (otp1, _transid1, _chall1) = self._getChallenge(ocrasuite,
                                                         bkey, serial,
                                                         ocrapin=ocrapin,
@@ -2555,12 +2555,12 @@ class OcraTest(TestController):
 
         assert '"value": false' in response, response
 
-        time1 = datetime.now() + timedelta(minutes=21)
+        time1 = datetime.utcnow() + timedelta(minutes=21)
         (otp1, _transid1, _chall1) = self._getChallenge(ocrasuite,
                                                         bkey, serial,
                                                         ocrapin=ocrapin,
                                                         ttime=time1)
-        time1 = datetime.now() + timedelta(minutes=22)
+        time1 = datetime.utcnow() + timedelta(minutes=22)
         (otp2, _transid2, _chall2) = self._getChallenge(ocrasuite,
                                                         bkey, serial,
                                                         ocrapin=ocrapin,
@@ -2573,14 +2573,14 @@ class OcraTest(TestController):
 
         assert '"value": true' in response, response
 
-        time1 = datetime.now() + timedelta(minutes=22)
-        (otp1, transid1, _chall1) = self._getChallenge(ocrasuite,
+        time3 = datetime.utcnow() + timedelta(minutes=23)
+        (otp3, transid1, _chall1) = self._getChallenge(ocrasuite,
                                                        bkey, serial,
                                                        ocrapin=ocrapin,
-                                                       ttime=time1)
+                                                       ttime=time3)
 
         # verify the token works
-        parameters = {"transactionid": transid1, "pass": 'pin' + otp1}
+        parameters = {"transactionid": transid1, "pass": 'pin' + otp3}
         response = self.make_validate_request('check_t', params=parameters)
 
         assert '"value": true' in response, response
@@ -2778,7 +2778,7 @@ class OcraTest(TestController):
         if ocra.T is not None:
             # Default value for G is 1M, i.e., time-step size is one minute and
             # theT represents the number of minutes since epoch time [UT].
-            now = datetime.now()
+            now = datetime.utcnow()
             stime = now.strftime("%s")
             itime = int(stime)
             param['T'] = itime
