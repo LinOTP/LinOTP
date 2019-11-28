@@ -34,9 +34,6 @@ from linotp.flap import config
 from linotp.tests import TestController
 
 
-from linotp.lib.context import request_context_safety
-from linotp.lib.context import request_context as context
-
 from linotp.lib.support import getSupportLicenseInfo
 from linotp.lib.support import setSupportLicenseInfo
 from linotp.lib.support import removeSupportLicenseInfo
@@ -74,10 +71,8 @@ class TestMonitoringController(TestController):
         """
         try:
             # Test current license...
-            with request_context_safety():
-                context['translate'] = lambda x: x
-                getSupportLicenseInfo()
-                return 1
+            getSupportLicenseInfo()
+            return 1
         except InvalidLicenseException as err:
             if err.type != 'UNLICENSED':
                 # support license is invalid
@@ -88,27 +83,20 @@ class TestMonitoringController(TestController):
 
     def getCurrentLicense(self):
         # Test current license...
-        with request_context_safety():
-            context['translate'] = lambda x: x
-            lic, sig = getSupportLicenseInfo()
-            isSupportLicenseValid(lic_dict=lic, lic_sign=sig,
-                                  raiseException=True)
-            return lic, sig
+        lic, sig = getSupportLicenseInfo()
+        isSupportLicenseValid(lic_dict=lic, lic_sign=sig,
+                                raiseException=True)
+        return lic, sig
 
     def setCurrentLicense(self, old_lic, old_sig):
-        with request_context_safety():
-            context['translate'] = lambda x: x
-            if old_lic is None and old_sig is None:
-                removeSupportLicenseInfo()
-            else:
-                setSupportLicenseInfo(old_lic, old_sig)
+        if old_lic is None and old_sig is None:
+            removeSupportLicenseInfo()
+        else:
+            setSupportLicenseInfo(old_lic, old_sig)
 
     def installLicense(self, licfile):
-        with request_context_safety():
-            context['translate'] = lambda x: x
-            new_lic, new_sig = readLicenseInfo(licfile)
-            setSupportLicenseInfo(new_lic, new_sig)
-            return
+        new_lic, new_sig = readLicenseInfo(licfile)
+        setSupportLicenseInfo(new_lic, new_sig)
 
     def create_token(self, serial="1234567", realm=None, user=None,
                      active=True):
@@ -358,9 +346,7 @@ class TestMonitoringController(TestController):
                 self.skipTest('Path to test license file is not configured, '
                               'check your configuration (test.ini)!')
 
-            with request_context_safety():
-                context['translate'] = lambda x: x
-                lic_dict, lic_sig = readLicenseInfo(licfile)
+            lic_dict, lic_sig = readLicenseInfo(licfile)
 
             self.installLicense(licfile)
 

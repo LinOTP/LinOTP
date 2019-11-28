@@ -417,7 +417,7 @@ class SQLImportHandler(ImportHandler):
             """
             create a password hash entry from a given plaintext password
             """
-            self.password = utils.encrypt_password(plain_password)
+            self.password = utils.crypt_password(plain_password)
             self._pw_gen = True
 
         def __eq__(self, user):

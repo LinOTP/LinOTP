@@ -29,15 +29,15 @@
   using a demo certificate and a hard-coded key handle
 """
 
-from linotp.tests import TestController, url
+from linotp.tests import TestController
 from hashlib import sha256
 from M2Crypto import EC, BIO, m2
 import json
 import binascii
 import base64
-import struct
 import sys
 import re
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -135,6 +135,12 @@ class TestU2FController(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
+
+    def get_json_body(self, response):
+        """
+        Returns a JSON-decoded response body
+        """
+        return json.loads(response.body)
 
     def _registration1(self, pin=None):
         """
@@ -234,13 +240,15 @@ class TestU2FController(TestController):
         return client_data_object_JSON
 
     def _createRegistrationResponseMessage(self,
-                                           client_data,
+                                           client_data: str,
                                            key_set=None,
                                            correct=True
                                            ):
         """
         Create a registration response message according to the FIDO U2F specification
         """
+        client_data = client_data.encode('utf-8')
+
         if not key_set:
             raise ValueError("Unknown key number requested!")
         (key_handle_hex, ecc_key) = key_set
@@ -248,29 +256,30 @@ class TestU2FController(TestController):
         #
         # Create the registration_data object
         #
-        registration_data = chr(0x05)  # First byte must be 0x05
+        registration_data = bytearray([5])  # First byte must be 0x05
 
         # The public key length is set to a fixed length of 65 characters in the U2F specification
-        public_key = str(ecc_key.pub().get_der())[-65:]
+        public_key = ecc_key.pub().get_der()[-65:]
         registration_data += public_key
 
-        key_handle = binascii.unhexlify(key_handle_hex)
-        registration_data += chr(len(key_handle))
+        key_handle = bytearray.fromhex(key_handle_hex)
+        registration_data += len(key_handle).to_bytes(1, sys.byteorder)
         registration_data += key_handle
 
-        attestation_cert_der = binascii.unhexlify(self.ATTESTATION_CERT_HEX)
+        attestation_cert_der = bytearray.fromhex(self.ATTESTATION_CERT_HEX)
         registration_data += attestation_cert_der
 
         # Create the ECDSA signature
         digest = sha256()
-        digest.update(chr(0x00) +
-                      sha256(self.origin).digest() +
+        digest.update(b'\x00' +
+                      sha256(self.origin.encode('utf-8')).digest() +
                       sha256(client_data).digest() +
                       key_handle +
                       public_key
                       )
 
-        cert_private_key = EC.load_key_bio(BIO.MemoryBuffer(self.ATTESTATION_PRIVATE_KEY_PEM))
+        cert_private_key = EC.load_key_bio(BIO.MemoryBuffer(
+            self.ATTESTATION_PRIVATE_KEY_PEM.encode('ascii')))
         signature = cert_private_key.sign_dsa_asn1(digest.digest())
 
         if correct is False:
@@ -283,14 +292,14 @@ class TestU2FController(TestController):
         # Create the registration_response
         #
         registration_response = {
-            'registrationData': base64.urlsafe_b64encode(registration_data),
-            'clientData': base64.urlsafe_b64encode(client_data)
+            'registrationData': base64.urlsafe_b64encode(registration_data).decode('ascii'),
+            'clientData': base64.urlsafe_b64encode(client_data).decode('ascii')
         }
 
         return json.dumps(registration_response)
 
     def _createAuthenticationResponseMessage(self,
-                                             client_data,
+                                             client_data: str,
                                              key_handle,
                                              ecc_key=None,
                                              correct=True
@@ -302,20 +311,22 @@ class TestU2FController(TestController):
         if not ecc_key:
             raise ValueError("Unknown key handle received.")
 
+        client_data = client_data.encode('utf-8')
+
         #
         # Create the signatureData object
         #
-        authentication_data = chr(0x01)  # User presence byte
+        authentication_data = bytearray([1])  # User presence byte
 
         # counter
         self.counter += 1
-        authentication_data += struct.pack('>I', self.counter)
+        authentication_data += self.counter.to_bytes(4, byteorder='big')
 
         # signature
         digest = sha256()
-        digest.update(sha256(self.origin).digest() +
-                      chr(0x01) +
-                      struct.pack('>I', self.counter) +
+        digest.update(sha256(self.origin.encode('utf-8')).digest() +
+                      b'\x01' +
+                      self.counter.to_bytes(4, byteorder='big') +
                       sha256(client_data).digest()
                       )
         signature = ecc_key.sign_dsa_asn1(digest.digest())
@@ -329,16 +340,12 @@ class TestU2FController(TestController):
         #
         # Create the signResponse object
         #
-        key_handle_index = 1
         # Remove trailing '=' characters
-        while key_handle[-key_handle_index] == '=':
-            key_handle_index = key_handle_index + 1
-        if key_handle_index > 1:
-            key_handle = key_handle[:-(key_handle_index - 1)]
+        key_handle = key_handle.rstrip(b'=')
         sign_response = {
-            'keyHandle': key_handle,
-            'signatureData': base64.urlsafe_b64encode(authentication_data),
-            'clientData': base64.urlsafe_b64encode(client_data)
+            'keyHandle': key_handle.decode('ascii'),
+            'signatureData': base64.urlsafe_b64encode(authentication_data).decode('ascii'),
+            'clientData': base64.urlsafe_b64encode(client_data).decode('ascii')
         }
 
         return json.dumps(sign_response)
@@ -535,7 +542,7 @@ class TestU2FController(TestController):
         key_handle_authentication = \
             key_handle_authentication + ('=' * (4 - (len(key_handle_authentication) % 4)))
         key_handle_authentication = key_handle_authentication.encode('ascii')
-        assert binascii.hexlify(base64.urlsafe_b64decode(key_handle_authentication)) in \
+        assert binascii.hexlify(base64.urlsafe_b64decode(key_handle_authentication)).decode('ascii') in \
                         [self.KEY_HANDLE_HEX1, self.KEY_HANDLE_HEX2], \
                         "signrequest: %r" % signrequest_authentication
 
@@ -544,7 +551,7 @@ class TestU2FController(TestController):
                                                                   challenge_authentication,
                                                                   )
 
-        key_handle_hex = binascii.hexlify(base64.urlsafe_b64decode(key_handle_authentication))
+        key_handle_hex = binascii.hexlify(base64.urlsafe_b64decode(key_handle_authentication)).decode('ascii')
         ecc_key = self.key_handle_set.get(key_handle_hex, None)
 
         authentication_response_message = \
@@ -554,6 +561,7 @@ class TestU2FController(TestController):
                                                       correct=correct
                                                       )
         # Complete the token authentication
+        # breakpoint()
         response_authentication2 = self.get_json_body(
             self._authentication2(transactionid_authentication,
                                   authentication_response_message,
@@ -595,7 +603,8 @@ class TestU2FController(TestController):
         # support for the NIST P-256 elliptic curve (as of March 2015),
         # this command will fail with a NULL pointer exception on these systems
         try:
-            EC.load_key_bio(BIO.MemoryBuffer(self.ATTESTATION_PRIVATE_KEY_PEM))
+            EC.load_key_bio(BIO.MemoryBuffer(
+                self.ATTESTATION_PRIVATE_KEY_PEM.encode('utf-8')))
         except ValueError:
             has_ec_support = False
 
@@ -680,7 +689,6 @@ class TestU2FController(TestController):
                 "Probably no OpenSSL support for the needed NIST P-256 curve!"
                 )
         self._registration(correct=False)
-        return
 
     def test_u2f_registration_and_authentication_with_pin(self):
         """
@@ -765,7 +773,6 @@ class TestU2FController(TestController):
                 )
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin=pin, correct=False)
-        return
 
     def test_u2f_unsupported_openssl_version(self):
         """
@@ -880,7 +887,9 @@ class TestU2FController(TestController):
             if match.group('version')[0] != '0':
                 # Only run test on missing NIST P-256 curve support
                 try:
-                    EC.load_key_bio(BIO.MemoryBuffer(self.ATTESTATION_PRIVATE_KEY_PEM))
+                    EC.load_key_bio(
+                        BIO.MemoryBuffer(
+                            self.ATTESTATION_PRIVATE_KEY_PEM.encode('utf-8')))
                 except ValueError:
                     skip_test = False
 

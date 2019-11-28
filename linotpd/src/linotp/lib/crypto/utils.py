@@ -55,12 +55,14 @@ from linotp.lib.error import HSMException
 from linotp.lib.error import ProgrammingError
 from linotp.lib.error import ValidateError
 
+from crypt import crypt as libcrypt
 
-from passlib.hash import (
-    sha512_crypt, sha256_crypt, sha1_crypt, md5_crypt, bcrypt, bcrypt_sha256)
+from passlib.context import CryptContext
 
-PW_HASHES = [
-    sha512_crypt, sha256_crypt, sha1_crypt, md5_crypt, bcrypt, bcrypt_sha256]
+PasslibHashes = CryptContext(schemes=[
+    "sha512_crypt", "sha256_crypt", "sha1_crypt",
+    "md5_crypt", "bcrypt", "bcrypt_sha256"
+])
 
 log = logging.getLogger(__name__)
 
@@ -99,28 +101,32 @@ def compare_password(password, crypted_password):
     :return: boolean - for the password comparison result
     """
 
-    for pw_hash in PW_HASHES:
+    if PasslibHashes.identify(crypted_password):
+        return PasslibHashes.verify(password, crypted_password)
 
-        if not pw_hash.identify(crypted_password):
-            continue
+    # compatibilty case:
+    # the rare case for the broken system crypto libs like on macos
 
-        return pw_hash.verify(password, crypted_password)
+    new_crypted_passw = libcrypt(password, crypted_password)
+    return compare(new_crypted_passw, crypted_password)
 
-    return False
 
-
-def encrypt_password(password):
+def crypt_password(password):
     """
-    generate a new crypted password from a given password
+    generate a new crypted hashed password from a given password
 
     we use crypt type sha512, which is a secure and standard according to:
     http://security.stackexchange.com/questions/20541/\
                      insecure-versions-of-crypt-hashes
 
+    sha512 is selected be the first position in the PasslibHashes schemes
+
     :param password: the plaintext password
     :return: the encrypted password
     """
-    return sha512_crypt.hash(password)
+
+    log.debug("hashing password schema %r", PasslibHashes.default_scheme())
+    return PasslibHashes.hash(password)
 
 
 def compare(one, two):

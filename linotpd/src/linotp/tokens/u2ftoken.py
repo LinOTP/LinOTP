@@ -29,7 +29,7 @@ import base64
 import struct
 import binascii
 import re
-from M2Crypto import X509, m2
+from M2Crypto import X509, m2, Err
 from hashlib import sha256
 
 from linotp.lib.auth.validate import check_otp
@@ -264,7 +264,7 @@ class U2FTokenClass(TokenClass):
         appId = self._get_app_id()
 
         data = {
-            'challenge': "%s" % challenge,
+            'challenge': challenge.decode('ascii'),
             'version': 'U2F_V2',
             'keyHandle': keyHandle,
             'appId': appId
@@ -531,7 +531,7 @@ class U2FTokenClass(TokenClass):
                                      authentication response
         """
         # add ASN1 prefix
-        PUB_KEY_ASN1_PREFIX = "3059301306072a8648ce3d020106082a8648ce3d030107034200".decode('hex')
+        PUB_KEY_ASN1_PREFIX = bytes.fromhex("3059301306072a8648ce3d020106082a8648ce3d030107034200")
         publicKey = PUB_KEY_ASN1_PREFIX + publicKey
 
         # Check for OpenSSL version 1.0.0 or higher
@@ -712,7 +712,7 @@ class U2FTokenClass(TokenClass):
             # verification of the registration signature
 
             appId = self._get_app_id()
-            applicationParameter = sha256(appId).digest()
+            applicationParameter = sha256(appId.encode('utf-8')).digest()
             challengeParameter = sha256(clientData).digest()
             publicKey = base64.urlsafe_b64decode(
                 self.getFromTokenInfo('publicKey', None).encode('ascii'))
@@ -825,7 +825,7 @@ class U2FTokenClass(TokenClass):
         certPubKey = cert.get_pubkey()
         certPubKey.reset_context('sha256')
         certPubKey.verify_init()
-        if certPubKey.verify_update(chr(0x00) +
+        if certPubKey.verify_update(b'\x00' +
                                     applicationParameter +
                                     challengeParameter +
                                     keyHandle +
@@ -838,10 +838,11 @@ class U2FTokenClass(TokenClass):
                             "or higher is required for the U2F token.")
 
         if certPubKey.verify_final(signature) != 1:
+            ssl_error = Err.get_error()
             raise Exception("Signature verification failed! Maybe someone is doing "
                             "something nasty! However, this error could possibly also be "
                             "related to missing ECDSA support for the NIST P-256 curve in "
-                            "OpenSSL.")
+                            "OpenSSL.\n\nOpenSSL says:\n{}".format(ssl_error))
 
     def getInitDetail(self, params, user=None):
         """
@@ -865,7 +866,7 @@ class U2FTokenClass(TokenClass):
             # We create a 32 bytes otp key (from urandom)
             # which is used as the registration challenge
             challenge = base64.urlsafe_b64encode(binascii.unhexlify(self._genOtpKey_(32)))
-            self.addToTokenInfo('challenge', challenge)
+            self.addToTokenInfo('challenge', challenge.decode('ascii'))
 
             # save the appId to the TokenInfo
             # An appId passed as parameter is preferred over an appId defined in a policy
@@ -903,7 +904,7 @@ class U2FTokenClass(TokenClass):
 
             # create U2F RegisterRequest object and append it to the response as 'message'
             appId = self._get_app_id()
-            register_request = {'challenge': challenge,
+            register_request = {'challenge': challenge.decode('ascii'),
                                 'version': 'U2F_V2',
                                 'appId': appId
                                 }
@@ -955,7 +956,7 @@ class U2FTokenClass(TokenClass):
                 # prepare the applicationParameter and challengeParameter needed for
                 # verification of the registration signature
                 appId = self._get_app_id()
-                applicationParameter = sha256(appId).digest()
+                applicationParameter = sha256(appId.encode('utf-8')).digest()
                 challengeParameter = sha256(clientData).digest()
 
                 # verify the registration signature
@@ -969,8 +970,12 @@ class U2FTokenClass(TokenClass):
 
                 # save the key handle and the user public key in the Tokeninfo field for
                 # future use
-                self.addToTokenInfo('keyHandle', base64.urlsafe_b64encode(keyHandle))
-                self.addToTokenInfo('publicKey', base64.urlsafe_b64encode(userPublicKey))
+                self.addToTokenInfo(
+                    'keyHandle',
+                    base64.urlsafe_b64encode(keyHandle).decode('ascii'))
+                self.addToTokenInfo(
+                    'publicKey',
+                    base64.urlsafe_b64encode(userPublicKey).decode('ascii'))
                 self.addToTokenInfo('counter', '0')
                 self.addToTokenInfo('phase', 'authentication')
                 # remove the registration challenge from the token info
@@ -995,4 +1000,3 @@ class U2FTokenClass(TokenClass):
                 'key_handle': key_handle,
                 'counter': counter,
                 'app_id': app_id}
-
