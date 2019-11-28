@@ -117,8 +117,8 @@ class OcraOtp(TestController):
         if self.ocra is None:
             self._setup_()
 
-        signature = self.ocra.signData(data, key=self.bkey)
-        if si == signature:
+        signature = self.ocra.signData(data.encode('utf-8'), key=self.bkey)
+        if si.encode('utf-8') == signature:
             return True
 
         return False
@@ -735,7 +735,7 @@ class OcraTest(TestController):
             params['T'] = itime
 
             data = ocra.combineData(**params)
-            otp = ocra.compute(data, key.decode('hex'))
+            otp = ocra.compute(data, binascii.unhexlify(key))
             if otp == result:
                 print((" time for otp %s : %s" % (result, str(nowtime))))
                 break
@@ -787,7 +787,7 @@ class OcraTest(TestController):
 
         ocra = OcraSuite(ocrasuite)
         data = ocra.combineData(**param)
-        otp = ocra.compute(data, key.decode('hex'))
+        otp = ocra.compute(data, binascii.unhexlify(key))
 
         # -3.b- verify the otp value
         parameters = {"transactionid": transid, "pass": 'pin' + otp, }
@@ -1616,6 +1616,7 @@ class OcraTest(TestController):
 
                     _response2 = self.make_validate_request(
                                     'check_t', params=parameters)
+
                     assert '"value": true' in response, response
 
                 # -4- check the transaction status
@@ -3201,7 +3202,7 @@ class OcraTest(TestController):
         activationkey = createActivationCode()
         while True:
             wrongactivationkey = self.randOTP(activationkey)
-            checksum = check(str(wrongactivationkey))
+            checksum = check(wrongactivationkey.encode('utf-8'))
             if checksum != wrongactivationkey[-2:]:
                 break
 
@@ -3550,10 +3551,10 @@ class OcraTest(TestController):
 
         for test in testsig:
             ocra = OcraSuite(test['ocrasuite'])
-            key = test.get('key')
+            key = test.get('key').encode('utf-8')
             for v in test.get('vectors'):
-                url = v.get('url')
-                sig = v.get('signature')
+                url = v.get('url').encode('utf-8')
+                sig = v.get('signature').encode('utf-8')
                 res = ocra.signData(url, key)
                 assert res == sig, "%r != %r" % (res, sig)
 
