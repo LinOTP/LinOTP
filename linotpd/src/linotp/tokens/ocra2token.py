@@ -516,7 +516,7 @@ class Ocra2TokenClass(TokenClass):
             ##  preseerver the current key as sharedSecret
             secObj = self._get_secret_object()
             key = secObj.getKey()
-            encSharedSecret = SecretObj.encrypt_pin(key)
+            encSharedSecret = SecretObj.encrypt_pin(key.decode())
             self.addToTokenInfo('sharedSecret', encSharedSecret)
 
             info = {}
@@ -661,7 +661,7 @@ class Ocra2TokenClass(TokenClass):
                 key_len = 64
 
             newkey = kdf2(sharedSecret, nonce, activationcode, key_len)
-            self.setOtpKey(binascii.hexlify(newkey))
+            self.setOtpKey(newkey.hex())
 
             ##  generate challenge, which is part of the app_import
             message = params.get('message', None)
@@ -689,12 +689,12 @@ class Ocra2TokenClass(TokenClass):
             info['challenge'] = challenge
             uInfo['ch'] = challenge
             if message is not None:
-                uInfo['me'] = str(message.encode("utf-8"))
+                uInfo['me'] = message
 
-            ustr = urllib.parse.urlencode({'u': str(url.encode("utf-8"))})
+            ustr = urllib.parse.urlencode({'u': url})
             if ustr[2:]:
                 uInfo['u'] = ustr[2:]
-                info['url'] = str(url.encode("utf-8"))
+                info['url'] = url
 
             app_import = 'lseqr://nonce?%s' % (urllib.parse.urlencode(uInfo))
 
@@ -702,8 +702,8 @@ class Ocra2TokenClass(TokenClass):
             signature = {'si': self.signData(app_import)}
             info['signature'] = signature.get('si')
 
-            info['app_import'] = "%s&%s" % (app_import,
-                                             urllib.parse.urlencode(signature))
+            info['app_import'] = "%s&%s" % (
+                app_import, urllib.parse.urlencode(signature))
             self.info = info
 
             ##  setup new state
@@ -752,9 +752,9 @@ class Ocra2TokenClass(TokenClass):
 
         secObj = self._get_secret_object()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
-        signature = ocraSuite.signData(data)
+        signature = ocraSuite.signData(data.encode('utf-8'))
 
-        return signature
+        return signature.decode()
 
     def verify_challenge_is_valid(self, challenge, session):
         '''
@@ -857,9 +857,8 @@ class Ocra2TokenClass(TokenClass):
         #       token.getQRImageData(opt=details)
 
         # do we have a callback url, that will receive the otp value
-        callback = self._prepare_callback_url(options, qrtan_url,
-                                          transactionid=state)
-        callback = callback.encode('utf-8')
+        callback = self._prepare_callback_url(
+            options, qrtan_url, transactionid=state)
 
         store_data["url"] = callback
 
@@ -885,29 +884,28 @@ class Ocra2TokenClass(TokenClass):
         '''
 
         url = data.get("url")
-        u = (str(urllib.parse.urlencode({'u': '%s' % url})))
-        u = urllib.parse.urlencode({'u': "%s" % (url.encode("utf-8"))})
+        u = urllib.parse.urlencode({'u': url})
 
         challenge = data.get('challenge')
         input_data = data.get('input')
 
         uInfo = {'tr': transId,
                  'ch': challenge,
-                 'me': str(input_data.encode("utf-8")),
+                 'me': input_data,
                  }
         if url:
             uInfo['u'] = str(u[2:])
-        detail = {'request': str(input_data.encode("utf-8")),
-                  'url': str(url.encode("utf-8")),
+        detail = {'request': input_data,
+                  'url': url,
                  }
 
         ## create the app_url from the data
-        dataobj = 'lseqr://req?%s' % (str(urllib.parse.urlencode(uInfo)))
+        dataobj = 'lseqr://req?%s' % urllib.parse.urlencode(uInfo)
 
         ## append the signature to the url
         signature = {'si': self.signData(dataobj)}
         uInfo['si'] = signature
-        dataobj = '%s&%s' % (dataobj, str(urllib.parse.urlencode(signature)))
+        dataobj = '%s&%s' % (dataobj, urllib.parse.urlencode(signature))
 
         detail["data"] = dataobj
         detail["ocraurl"] = {
@@ -1254,7 +1252,7 @@ class Ocra2TokenClass(TokenClass):
         timeShift = 0
         if  ocraSuite.T is not None:
             defTimeWindow = int(getFromConfig("ocra.timeWindow", 180))
-            window = int(self.getFromTokenInfo('timeWindow', defTimeWindow)) / ocraSuite.T
+            window = int(self.getFromTokenInfo('timeWindow', defTimeWindow)) // ocraSuite.T
             defTimeShift = int(getFromConfig("ocra.timeShift", 0))
             timeShift = int(self.getFromTokenInfo("timeShift", defTimeShift))
 
@@ -1340,7 +1338,7 @@ class Ocra2TokenClass(TokenClass):
         counter = self.token.getOtpCounter()
         syncWindow = self.token.getSyncWindow()
         if  ocraSuite.T is not None:
-            syncWindow = syncWindow / 10
+            syncWindow = syncWindow // 10
 
 
         ## set the ocra token pin
@@ -1369,7 +1367,9 @@ class Ocra2TokenClass(TokenClass):
             count_0 = -1
             try:
                 otp0 = passw
-                count_0 = ocraSuite.checkOtp(otp0, counter, syncWindow, challenge, pin=ocraPin, timeshift=timeShift)
+                count_0 = ocraSuite.checkOtp(
+                                otp0, counter, syncWindow, challenge,
+                                pin=ocraPin, timeshift=timeShift)
             except Exception as ex:
                 log.exception(' error during autosync0 %r' % (ex))
 
@@ -1559,7 +1559,7 @@ class Ocra2TokenClass(TokenClass):
 
         syncWindow = self.token.getSyncWindow()
         if  ocraSuite.T is not None:
-            syncWindow = syncWindow / 10
+            syncWindow = syncWindow // 10
 
         counter = self.token.getOtpCounter()
 

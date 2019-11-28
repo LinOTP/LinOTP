@@ -2278,8 +2278,8 @@ class OcraTest(TestController):
         # -2b- from the response get the challenge
         jresp = json.loads(response.body)
         assert 'detail' in jresp, response.body
-        challenge1 = str(jresp.get('detail', {}).get('challenge'))
-        transid1 = str(jresp.get('detail', {}).get('transactionid'))
+        challenge1 = jresp.get('detail', {}).get('challenge')
+        transid1 = jresp.get('detail', {}).get('transactionid')
 
         now = datetime.utcnow()
         if ttime is not None:
