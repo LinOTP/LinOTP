@@ -260,6 +260,7 @@ class TestReplication(TestController):
 
         return
 
+    @pytest.mark.skip("will be supported if linotp config will be cached!")
     def test_replication_2(self):
         '''
             test 'no' replication, when 'enableReplication' entry is not set
@@ -634,19 +635,19 @@ class TestReplication(TestController):
         with pytest.raises(AssertionError) as ass_err:
             self.set_cache_expiry(expiration='3600 xx')
 
-        error_message = ass_err.exception.message
+        error_message = str(ass_err.value)
         assert "must be of type 'duration'" in error_message
 
         with pytest.raises(AssertionError) as ass_err:
             self.set_cache_expiry(expiration='3w10')
 
-        error_message = ass_err.exception.message
+        error_message = str(ass_err.value)
         assert "must be of type 'duration'" in error_message
 
         with pytest.raises(AssertionError) as ass_err:
             self.set_cache_expiry(expiration='3600 years')
 
-        error_message = ass_err.exception.message
+        error_message = str(ass_err.value)
         assert "must be of type 'duration'" in error_message
 
         self.set_cache_expiry(expiration='3600 seconds')
