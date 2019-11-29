@@ -312,104 +312,98 @@ def sendResultIterator(obj, id=1, opt=None, rp=None, page=None,
         :return: generator of response data (yield)
     '''
 
-    if request_context_copy is None:
-        request_context_copy = {}
 
     # establish the request context within the pylons middleware
 
-    with request_context_safety():
+    api_version = get_api_version()
+    linotp_version = get_version()
 
-        for key, value in list(request_context_copy.items()):
-            request_context[key] = value
+    res = {"jsonrpc": api_version,
+            "result": {"status": True,
+                       "value": "[DATA]",
+                      },
+           "version": linotp_version,
+           "id": id}
 
-        api_version = get_api_version()
-        linotp_version = get_version()
-
-        res = {"jsonrpc": api_version,
-                "result": {"status": True,
-                           "value": "[DATA]",
-                          },
-               "version": linotp_version,
-               "id": id}
-
-        err = {"jsonrpc": api_version,
-                "result":
-                    {"status": False,
-                     "error": {},
-                    },
-                "version": linotp_version,
-                "id": id
-            }
+    err = {"jsonrpc": api_version,
+            "result":
+                {"status": False,
+                 "error": {},
+                },
+            "version": linotp_version,
+            "id": id
+        }
 
 
-        start_at = 0
-        stop_at = 0
+    start_at = 0
+    stop_at = 0
+    if page:
+        if not rp:
+            rp = 16
+        try:
+            start_at = int(page) * int(rp)
+            stop_at = start_at + int(rp)
+        except ValueError as exx:
+            err['result']['error'] = {
+                            "code": 9876,
+                            "message": "%r" % exx,
+                            }
+            log.exception("failed to convert paging request parameters: %r"
+                          % exx)
+            yield json.dumps(err)
+            # finally we signal end of error result
+            return
+
+    typ = "%s" % type(obj)
+    if 'generator' not in typ and 'iterator' not in typ:
+        raise Exception('no iterator method for object %r' % obj)
+
+    res = {"jsonrpc": api_version,
+            "result": {"status": True,
+                       "value": "[DATA]",
+                      },
+           "version": linotp_version,
+           "id": id}
+    if page:
+        res['result']['page'] = int(page)
+
+    if opt is not None and len(opt) > 0:
+        res["detail"] = opt
+
+
+    surrounding = json.dumps(res)
+    prefix, postfix = surrounding.split('"[DATA]"')
+
+    # first return the opening
+    yield prefix + " ["
+
+
+    sep = ""
+    counter = 0
+    for next_one in obj:
+        # next_one = json.dumps(next_entry)
+        counter = counter + 1
+        # are we running in paging mode?
         if page:
-            if not rp:
-                rp = 16
-            try:
-                start_at = int(page) * int(rp)
-                stop_at = start_at + int(rp)
-            except ValueError as exx:
-                err['result']['error'] = {
-                                "code": 9876,
-                                "message": "%r" % exx,
-                                }
-                log.exception("failed to convert paging request parameters: %r"
-                              % exx)
-                yield json.dumps(err)
-                # finally we signal end of error result
-                raise StopIteration()
-
-        typ = "%s" % type(obj)
-        if 'generator' not in typ and 'iterator' not in typ:
-            raise Exception('no iterator method for object %r' % obj)
-
-        res = {"jsonrpc": api_version,
-                "result": {"status": True,
-                           "value": "[DATA]",
-                          },
-               "version": linotp_version,
-               "id": id}
-        if page:
-            res['result']['page'] = int(page)
-
-        if opt is not None and len(opt) > 0:
-            res["detail"] = opt
-
-
-        surrounding = json.dumps(res)
-        prefix, postfix = surrounding.split('"[DATA]"')
-
-        # first return the opening
-        yield prefix + " ["
-
-
-        sep = ""
-        counter = 0
-        for next_one in obj:
-            counter = counter + 1
-            # are we running in paging mode?
-            if page:
-                if counter >= start_at and counter < stop_at:
-                    res = "%s%s\n" % (sep, next_one)
-                    sep = ','
-                    yield res
-                if counter >= stop_at:
-                    # stop iterating if we reached the last one of the page
-                    break
-            else:
-                # no paging - no limit
+            if counter >= start_at and counter < stop_at:
                 res = "%s%s\n" % (sep, next_one)
                 sep = ','
                 yield res
+            if counter >= stop_at:
+                # stop iterating if we reached the last one of the page
+                break
+        else:
+            # no paging - no limit
+            res = "%s%s\n" % (sep, next_one)
+            sep = ','
+            yield res
 
-        # we add the amount of queried objects
-        total = '"queried" : %d' % counter
-        postfix = ', %s %s' % (total, postfix)
+    # we add the amount of queried objects
+    total = '"queried" : %d' % counter
+    postfix = ', %s %s' % (total, postfix)
 
-        # last return the closing
-        yield "] " + postfix
+    # last return the closing
+    yield "] " + postfix
 
 
 def sendCSVResult(response, obj, flat_lines=False,
