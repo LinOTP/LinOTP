@@ -927,8 +927,8 @@ class TestController(TestCase):
                 }
             }
         }
-        assert content["result"]["status"]
-        assert expected_value == content["result"]["value"]
+        assert content["result"]["status"], response
+        assert expected_value == content["result"]["value"], response
 
     def delete_all_token(self):
         """
