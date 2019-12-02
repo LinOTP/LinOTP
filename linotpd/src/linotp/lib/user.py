@@ -1656,15 +1656,27 @@ def getUserListIterators(param, search_user):
 
 
 def getUserInfo(userid, resolver, resolver_spec):
+    """
+    get the user info for an given user, identified by the
+    userid + resolver/resolver_spec
+
+    :param userid: the unique user identifier
+    :param resolver: the resolver (optional)
+    :param resolver_spec: the resolver identifier + name
+    :return: dictionary, which is empty, if no user info could be retreived
+    """
+
     log.debug("[getUserInfo] uid:%r resolver:%r class:%r",
               userid, resolver, resolver_spec)
-    userInfo = {}
 
-    if not(userid):
-        return userInfo
+    if not userid:
+        return {}
 
     _login, _user_id, userInfo = lookup_user_in_resolver(
                                                 None, userid, resolver_spec)
+
+    if not userInfo:
+        return {}
 
     return userInfo
 
