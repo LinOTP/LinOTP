@@ -35,6 +35,10 @@ import json
 from mock import patch
 import logging
 
+import pytest
+
+from linotp.tests.conftest import Base_App_Config as BAC
+
 from linotp.tests.functional.test_orphaned import OrphandTestHelpers
 from linotp.tests import TestController
 
@@ -200,6 +204,8 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
 
         return
 
+    @pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
+                        reason="non sqlite database required for this test!")
     def test_testresolver_for_sql(self):
         '''
         run the admin testresolver api for the sql resolver definition
