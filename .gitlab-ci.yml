@@ -191,7 +191,6 @@ unit-test:
 
 functional-test:
   extends: .functional-test-base
-  allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
