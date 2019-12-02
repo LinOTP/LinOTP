@@ -39,6 +39,7 @@ from linotp.lib.config import getLinotpConfig
 from linotp.lib.policy.util import parse_policies
 from linotp.lib.policy import get_qrtan_url
 
+from linotp.tests.conftest import Base_App_Config as BAC
 
 from . import TestPoliciesBase
 from linotp.lib.context import request_context_safety
@@ -47,6 +48,8 @@ from linotp.lib.context import request_context as context
 log = logging.getLogger(__name__)
 
 
+@pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
+                    reason="non sqlite database required for this test!")
 class TestPolicies(TestPoliciesBase):
 
     def setUp(self):
