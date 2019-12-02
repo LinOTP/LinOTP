@@ -89,6 +89,8 @@ build-test-environment:debian-buster:
   before_script:
     - cd linotpd/src
     - python --version
+    - pip install --upgrade pip
+    - apt-get remove --yes python-pip; hash -d pip
     - pip install --upgrade setuptools
     - pip install wheel
     - pip install freezegun
@@ -153,6 +155,8 @@ unit-test:debian-buster:
     - test "${DEBIAN_RELEASE_NAME}" != "buster" && apt-get install --yes --no-install-recommends parallel mysql-client python-mysqldb python-imaging || apt-get install --yes --no-install-recommends python-pil default-mysql-client python-mysqldb
     - test "${DEBIAN_RELEASE_NAME}" == "jessie" && apt-get install --yes --no-install-recommends libmysqlclient-dev || apt-get install  --yes --no-install-recommends default-libmysqlclient-dev
     - cd linotpd/src
+    - pip install --upgrade pip
+    - apt-get remove --yes python-pip; hash -d pip
     - pip install --upgrade setuptools
     - pip install wheel
     - pip install freezegun
@@ -221,7 +225,7 @@ func:stretch:
     - bash -c "cat func_chunk_0$CI_NODE_INDEX | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
   variables:
     DEBIAN_RELEASE_NAME: stretch
-  
+
 functional-test:buster:
   extends: .functional-test
   allow_failure: true
