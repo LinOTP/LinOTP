@@ -39,15 +39,18 @@ from linotp.lib.config import getLinotpConfig
 from linotp.lib.policy.util import parse_policies
 from linotp.lib.policy import get_qrtan_url
 
+from linotp.tests.conftest import Base_App_Config as BAC
 
-from linotp.tests import TestController, url
+from . import TestPoliciesBase
 from linotp.lib.context import request_context_safety
 from linotp.lib.context import request_context as context
 
 log = logging.getLogger(__name__)
 
 
-class TestPolicies(TestController):
+@pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
+                    reason="non sqlite database required for this test!")
+class TestPolicies(TestPoliciesBase):
 
     def setUp(self):
         '''
@@ -57,7 +60,7 @@ class TestPolicies(TestController):
         we loose the information how many tokens are within a realm!
         '''
 
-        TestController.setUp(self)
+        TestPoliciesBase.setUp(self)
         return
 
     def tearDown(self):
@@ -70,7 +73,7 @@ class TestPolicies(TestController):
         '''
         Policy 00: Init the tests....
         '''
-        self.delete_all_policies()
+        self.delete_all_policies(auth_user='superadmin')
         self.delete_all_token()
 
         self.create_common_resolvers()
@@ -2955,36 +2958,6 @@ class TestPolicies(TestController):
 
         return
 
-    def test_708_tokencount(self):
-        '''
-        Policy 708: Import token into a realm, that is already full. This is done by and admin, who only has rights in this realm. Will fail!
-        '''
-        parameters = {'name': 'realmadmin',
-                      'scope': 'admin',
-                      'realm': 'mydefrealm',
-                      'user': 'realmadmin',
-                      'action': 'import, importcsv',
-                      }
-        auth_user = 'superadmin'
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters,
-                                            auth_user=auth_user)
-
-        assert '"status": true' in response, response
-
-        parameters = {'type': 'oathcsv', 'file': 'import0001, 1234123412345'}
-        auth_user = 'realmadmin'
-        response = self.make_admin_request(
-                                    method='PUT',
-                                    action='loadtokens',
-                                    params=parameters,
-                                    auth_user=auth_user)
-
-        assert "The maximum number of allowed tokens in realm" \
-                        in response, response
-
-        return
-
     def test_709_maxtoken_with_user(self):
         '''
         Policy 709: Testing maxtoken per user. Policy will be applied for defined user, not for not defined user
@@ -3563,6 +3536,7 @@ class TestPolicies(TestController):
 
         return
 
+
     def test_713_losttoken_for_users(self):
         '''
         Policy 713: Testing scope=enrollment, losttoken for different users.
@@ -3630,7 +3604,7 @@ class TestPolicies(TestController):
                                            auth_user=auth_user)
 
         # check for password length 10
-        assert re.search('"password": "\S{8}"',
+        assert re.search(r'"password": "\S{8}"',
                                   str(response)) is not None, response
 
         params = {"serial": "token2"}
@@ -3640,7 +3614,7 @@ class TestPolicies(TestController):
                                            auth_user=auth_user)
 
         # check for password length 10
-        assert re.search('"password": "\S{20}"',
+        assert re.search(r'"password": "\S{20}"',
                                   str(response)) is not None, response
 
         # delete the tokens of the user
@@ -3976,9 +3950,9 @@ class TestPolicies(TestController):
         response = self.make_validate_request(action='check', params=params)
 
         assert '"value": true' in response, response
-        assert '"serial": "detail01",' in response, response
-        assert '"realm": "myMixRealm",' in response, response
-        assert '"user": "detail_user",' in response, response
+        assert '"serial": "detail01"' in response, response
+        assert '"realm": "myMixRealm"' in response, response
+        assert '"user": "detail_user"' in response, response
         assert '"tokentype": "spass"' in response, response
 
         # check failed validation

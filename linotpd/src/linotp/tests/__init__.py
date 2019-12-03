@@ -819,7 +819,8 @@ class TestController(TestCase):
         sys_policies = []
         for policy_name, policy_def in list(policies.items()):
             if policy_def['scope'] == 'system':
-                if 'write' in policy_def['action']:
+                action = policy_def['action']
+                if 'write' in action or '*' in action:
                     sys_policies.append(policy_name)
 
         # first delete all non-system policies
@@ -926,8 +927,8 @@ class TestController(TestCase):
                 }
             }
         }
-        assert content["result"]["status"]
-        assert expected_value == content["result"]["value"]
+        assert content["result"]["status"], response
+        assert expected_value == content["result"]["value"], response
 
     def delete_all_token(self):
         """

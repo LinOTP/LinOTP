@@ -32,10 +32,17 @@ import logging
 from linotp.tests import TestController
 import copy
 
+
 import json
 from sqlalchemy.engine import create_engine
 import sqlalchemy
+
 import unittest
+import pytest
+from ..conftest import Base_App_Config as BAC
+
+
+
 
 log = logging.getLogger(__name__)
 
@@ -376,7 +383,8 @@ class OrphandTestHelpers(object):
         assert '"status": true,' in response, response
         return response
 
-
+@pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
+                    reason="non sqlite database required for this test!")
 class TestOrphandTokens(TestController, OrphandTestHelpers):
 
     def setUp(self):

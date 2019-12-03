@@ -30,12 +30,17 @@ sql resolver tests
 
 import logging
 import json
+import pytest
+
+from linotp.tests.conftest import Base_App_Config as BAC
 
 from sql_test_controller import SQLTestController
 
 log = logging.getLogger(__name__)
 
 
+@pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
+                    reason="non sqlite database required for this test!")
 class SQLResolverTest(SQLTestController):
 
     def setUp(self):

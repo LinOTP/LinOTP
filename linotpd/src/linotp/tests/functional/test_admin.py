@@ -285,7 +285,6 @@ class TestAdminController(TestController):
         values = resp.get('result', {}).get('value', [])
         assert len(values) > 15, "not enough users returned %r" % resp
 
-    @pytest.mark.xfail
     def test_userlist_paged(self):
         """
         test the admin/userlist for iteration paging

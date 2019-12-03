@@ -42,6 +42,13 @@ from . import TestController
 from flask.testing import FlaskClient
 
 
+Base_App_Config = {
+    'TESTING': True,
+    'SQLALCHEMY_DATABASE_URI':
+                os.environ.get('SQLALCHEMY_DATABASE_URI', "sqlite:///{}")
+    }
+
+
 def pytest_configure(config):
     config.addinivalue_line(
         "markers", "nightly: mark test to run only nightly",
@@ -58,23 +65,35 @@ def base_app():
     use the `app` fixture instead
     """
 
-    # create a temporary file to isolate the database for each test
-    db_fd, db_path = tempfile.mkstemp()
+    base_app_config = dict(Base_App_Config)
+
+    # in case of sqlite we use create a temporary file to isolate
+    # the database for each test
+
+    db_fd = None
+    db_path = None
+
+    db_type = base_app_config['SQLALCHEMY_DATABASE_URI']
+
+    if db_type == "sqlite:///{}":
+
+        db_fd, db_path = tempfile.mkstemp()
+        base_app_config['SQLALCHEMY_DATABASE_URI'] = db_type.format(db_path)
+
 
     # create the app with common test config
-    app = create_app(
-        'testing',
-        {
-            'TESTING': True,
-            'SQLALCHEMY_DATABASE_URI': "sqlite:///{}".format(db_path),
-        }
-    )
+    app = create_app('testing', base_app_config)
 
     yield app
 
-    # close and remove the temporary database
-    os.close(db_fd)
-    os.unlink(db_path)
+    # in case of sqlite, close and remove the temporary database
+
+    if db_fd:
+        os.close(db_fd)
+
+    if db_path:
+        os.unlink(db_path)
+
 
 from linotp import app as app_py
 

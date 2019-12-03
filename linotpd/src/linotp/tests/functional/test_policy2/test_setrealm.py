@@ -90,7 +90,7 @@ class TestPolicySetrealm(TestController):
             'scope': 'authorization'}
 
         response = self.make_system_request('setPolicy', params)
-        assert '"active": true,' in response, response
+        assert '"active": true' in response, response
 
         params = {
             'name': 'passthru',
@@ -100,7 +100,7 @@ class TestPolicySetrealm(TestController):
             'scope': 'authentication'}
 
         response = self.make_system_request('setPolicy', params)
-        assert '"active": true,' in response, response
+        assert '"active": true' in response, response
 
     def test_setrealm_policy_negative(self):
         """ test setrealm with resolver selector """

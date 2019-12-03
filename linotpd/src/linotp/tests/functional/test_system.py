@@ -213,8 +213,8 @@ class TestSystemController(TestController):
         params = {"username": "def"}  # check in default
 
         response = self.make_admin_request(action='userlist', params=params)
-
-        assert '"value": []'in response, response
+        value = response.json['result']['value']
+        assert value == [], response
 
         # now check for the different users in the different realms
         params = {"username": "def",  # check in default

@@ -35,6 +35,7 @@ from binascii import hexlify
 from flask import Response, after_this_request
 
 from werkzeug.datastructures import FileStorage
+from flask import stream_with_context
 
 import json
 
@@ -1836,13 +1837,30 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        users = []
+
         param = self.request_params.copy()
 
         # check admin authorization
         # check if we got a realm or resolver, that is ok!
         try:
+
+            # TODO:
+            # check if admin is allowed to see the useridresolvers
+            # as users_iters is (user_iterator, resolvername)
+            # we could simply check if the admin is allowed to view the
+            # resolver
+            # hint:
+            # done by getting the list of realm the admin is allowed to view
+            # and add this as paramter list to the getUserListIterators
+            # (s. helpdesk api)
+
             realm = param.get("realm")
+
+
+            # Here we need to list the users, that are only visible in the
+            # realm!! we could also only list the users in the realm, if the
+            # admin got the right "userlist".
+
             checkPolicyPre('admin', 'userlist', param)
 
             up = 0
@@ -1855,9 +1873,6 @@ class AdminController(BaseController):
             if (len(user.resolver_config_identifier) > 0):
                 up = up + 1
 
-            # Here we need to list the users, that are only visible in the
-            # realm!! we could also only list the users in the realm, if the
-            # admin got the right "userlist".
 
             if len(param) == up:
                 usage = {"usage": "list available users matching the "
@@ -1867,61 +1882,37 @@ class AdminController(BaseController):
                 Session.commit()
                 return sendResult(response, res)
 
-            else:
-                list_params = {}
-                list_params.update(param)
-                if 'session' in list_params:
-                    del list_params['session']
+            list_params = {}
+            list_params.update(param)
 
-                rp = None
-                if "rp" in list_params:
-                    rp = list_params['rp']
-                    del list_params['rp']
+            if 'session' in list_params:
+                del list_params['session']
 
-                page = None
-                if "page" in list_params:
-                    page = list_params['page']
-                    del list_params['page']
+            rp = None
+            if "rp" in list_params:
+                rp = int(list_params['rp'])
+                del list_params['rp']
 
-                users_iters = getUserListIterators(list_params, user)
-                # TODO: check if admin is allowed to see the useridresolvers
-                # as users_iters is (user_iterator, resolvername)
-                # we could simply check if the admin is allowed to view the
-                # resolver
+            page = None
+            if "page" in list_params:
+                page = list_params['page']
+                del list_params['page']
 
-                c.audit['success'] = True
-                c.audit['info'] = "realm: %s" % realm
+            users_iters = getUserListIterators(list_params, user)
 
-                Session.commit()
+            c.audit['success'] = True
+            c.audit['info'] = "realm: %s" % realm
 
-                result = []
-                for user_result in iterate_users(users_iters):
-                    result.append(json.loads(user_result))
+            Session.commit()
 
-                return sendResult(response, result)
+            return Response(
+                stream_with_context(
+                    sendResultIterator(
+                        iterate_users(users_iters), rp=rp, page=page)
+                ), mimetype='application/json'
+            )
 
-                # response.content_type = 'application/json'
-
-                # ---------------------------------------------------------- --
-
-                # the result iterator is called in the middle of the
-                # pylons middleware. Thus the request_context has been
-                # terminated already and we have no request context available
-                # within the respons iterations. Therefore we make copy the
-                # request context to establish a new request context from
-                # the given parameter within the response iterator
-
-                request_context_copy = {}
-
-                for key, value in list(request_context.items()):
-                    request_context_copy[key] = value
-
-                return sendResultIterator(
-                        iterate_users(users_iters),
-                        rp=rp, page=page,
-                        request_context_copy=request_context_copy)
-
-                # ---------------------------------------------------------- --
+            # ---------------------------------------------------------- --
 
         except PolicyException as pe:
             log.exception('[userlist] policy failed %r' % pe)

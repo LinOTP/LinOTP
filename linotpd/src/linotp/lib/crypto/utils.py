@@ -185,7 +185,7 @@ def check(st):
     return res.upper()
 
 
-def createActivationCode(acode=None, checksum=True):
+def createActivationCode(acode:str=None, checksum=True):
     """
     create the activation code
 
@@ -195,12 +195,15 @@ def createActivationCode(acode=None, checksum=True):
     """
     if acode is None:
         acode = geturandom(20)
+    else:
+        acode =acode.encode('utf-8')
+
     activationcode = base64.b32encode(acode)
     if checksum is True:
         chsum = check(acode)
-        activationcode = '' + activationcode + chsum
+        activationcode = b'' + activationcode + chsum.encode('utf-8')
 
-    return activationcode
+    return activationcode.decode()
 
 
 def createNonce(len=64):
@@ -210,7 +213,7 @@ def createNonce(len=64):
     :return: hext string
     """
     key = os.urandom(len)
-    return binascii.hexlify(key)
+    return binascii.hexlify(key).decode()
 
 
 def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
@@ -259,10 +262,17 @@ def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
             raise Exception('[crypt:kdf2] activation code checksum error.'
                             ' [%s]%s:%s' % (acode, veriCode, checkCode))
 
-    activ = binascii.hexlify(bcode)
+    activ = binascii.hexlify(bcode).decode()
+
+    if not isinstance(sharedsecret, str):
+        sharedsecret = sharedsecret.decode()
+
     passphrase = '' + sharedsecret + activ + nonce[:-salt_len]
-    keyStream = PBKDF2(binascii.unhexlify(passphrase), bSalt,
-                       iterations=iterations, digestmodule=digestmodule)
+
+    keyStream = PBKDF2(
+        binascii.unhexlify(passphrase.encode('utf-8')),
+        bSalt, iterations=iterations, digestmodule=digestmodule)
+
     key = keyStream.read(len)
     return key
 
