@@ -310,6 +310,16 @@ class UserserviceController(BaseController):
 
         self.authUser = identity
 
+        # we put the authenticated user in the `request_context['AuthUser']`
+        # which is normaly filled by the getUserFromRequest
+        # as we require the authenticated user in the __after__ method for
+        # audit and reporting
+
+        request_context['AuthUser'] = {
+            'login': self.authUser.login,
+            'realm': self.authUser.realm
+            }
+
         c.user = identity.login
         c.realm = identity.realm
 
@@ -351,7 +361,8 @@ class UserserviceController(BaseController):
         '''
 
         action = request_context['action']
-        authUser = request_context.get('authUser')
+
+        authUser = request_context['AuthUser']
 
         try:
             if c.audit['action'] not in ['userservice/context',
@@ -360,12 +371,8 @@ class UserserviceController(BaseController):
                                          'userservice/load_form'
                                          ]:
 
-                if authUser and not authUser.is_empty:
-                    c.audit['user'] = authUser.login
-                    c.audit['realm'] = authUser.realm
-                else:
-                    c.audit['user'] = ''
-                    c.audit['realm'] = ''
+                c.audit['user'] = authUser.get('login', '')
+                c.audit['realm'] = authUser.get('realm','')
 
                 log.debug("[__after__] authenticating as %s in realm %s!"
                           % (c.audit['user'], c.audit['realm']))
