@@ -33,6 +33,9 @@ import logging
 
 from datetime import datetime
 
+from flask import Response, stream_with_context
+from werkzeug.datastructures import Headers
+
 from linotp.flap import request, response, config, tmpl_context as c
 from linotp.controllers.base import BaseController
 from linotp.lib.context import request_context
@@ -395,13 +398,19 @@ class ReportingController(BaseController):
             Session.commit()
 
             if output_format == 'csv':
-                response.content_type = "application/force-download"
-                response.headers['Content-disposition'] = \
-                    'attachment; filename=linotp-reports.csv'
-                return sendCSVIterator(reports.iterate_reports())
+                headers = Headers()
+                headers.add('Content-Disposition', 'attachment',
+                            filename='linotp-reports.csv')
+                return Response(
+                    stream_with_context(
+                        sendCSVIterator(reports.iterate_reports())),
+                    mimetype='text/csv', headers=headers)
             else:
-                response.content_type = 'application/json'
-                return sendResultIterator(reports.iterate_reports(), opt=info)
+                return Response(
+                    stream_with_context(
+                        sendResultIterator(reports.iterate_reports(),
+                                           opt=info)),
+                    mimetype='application/json')
 
         except PolicyException as policy_exception:
             log.exception(policy_exception)
