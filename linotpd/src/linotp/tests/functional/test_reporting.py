@@ -435,9 +435,9 @@ class TestReportingController(TestController):
         response = self.make_authenticated_request(controller='reporting',
                                                    action='show',
                                                    params={'outform': 'csv'})
-        assert '1, "myotherrealm", "", ' in response, response
-        assert '"", "", "", "total", "token_init", ' in response, \
-                        response
+        assert \
+            '"token_init", "myotherrealm", "total", "", 1, ' in response, \
+            response
 
     def test_reporting_show_paging(self):
         # set reporting policy:
@@ -492,8 +492,10 @@ class TestReportingController(TestController):
         response = self.make_authenticated_request(controller='reporting',
                                                    action='show',
                                                    params=parameter)
-        line = '18, "mydefrealm", "", "%s", "", "", "", "total",' \
-               ' "token_init"' % str(timestamp)
+        line = (
+            '"%s", "token_init", "mydefrealm", "total", "", 18, "", "", ""'
+            % (str(timestamp),)
+        )
         assert line in response, response
         resp = response.body.splitlines()
         assert len(resp) is pagesize_value + 1
