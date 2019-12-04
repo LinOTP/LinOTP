@@ -403,7 +403,7 @@ class UserserviceController(BaseController):
         except Exception as acc:
             # the exception, when an abort() is called if forwarded
             log.exception("[__after__::%r] webob.exception %r" % (action, acc))
-            raise sendError(response, acc, context='__after__')
+            return sendError(response, acc, context='__after__')
 
     def _identify_user(self, params):
         """
