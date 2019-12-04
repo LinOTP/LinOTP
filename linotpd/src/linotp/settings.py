@@ -14,7 +14,7 @@ class Config:
 
     CONTROLLERS = ("admin audit auth gettoken manage selfservice system "
                    "test testing tools maintenance monitoring validate "
-                   "userservice")
+                   "userservice reporting")
 
     # List all enabled token support modules. If this parameter is
     # empty, all available token modules will be loaded.
