@@ -33,7 +33,7 @@ from freezegun import freeze_time
 from datetime import datetime
 from datetime import timedelta
 from linotp.flap import config
-from sqlalchemy import engine_from_config
+from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from linotp.model import Reporting
@@ -47,7 +47,7 @@ class DBSession(object):
     ''' db session with  context manager '''
 
     def __init__(self):
-        self.engine = engine_from_config(config, 'sqlalchemy.')
+        self.engine = create_engine(config.get('SQLALCHEMY_DATABASE_URI'))
 
     def __enter__(self):
         self.session = scoped_session(sessionmaker(autocommit=False,
