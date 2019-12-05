@@ -488,12 +488,13 @@ class IdResolver(UserIdResolver):
             if trace_level != 0:
                 ldap.set_option(ldap.OPT_DEBUG_LEVEL, 4095)
 
+            failed = None
+
             for s_uri in uri.split(','):
 
                 log.info("testing connection with uri %r", s_uri)
 
                 try:
-                    failed = None
 
                     l_obj = IdResolver.connect(s_uri, caller,
                                                trace_level=trace_level)
@@ -516,7 +517,7 @@ class IdResolver(UserIdResolver):
                     failed = exx
 
             if failed is not None:
-                raise exx
+                raise failed
 
             # get a userlist:
             searchFilter = "(&" + l_config['LDAPSEARCHFILTER'] + ")"
