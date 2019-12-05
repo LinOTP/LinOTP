@@ -684,15 +684,7 @@ class IdResolver(UserIdResolver):
         log.debug("[getUserId] resolving userid for %r: %r",
                   type(loginname), loginname)
 
-        if type(loginname) == str:
-            # we are called from external by an unicode string
-            LoginName = loginname.encode(ENCODING)
-
-        elif type(loginname) == str:
-            # we might be called internaly, so the loginname is of utf-8 str
-            LoginName = loginname
-
-        else:
+        if not isinstance(loginname, str):
             log.error("[getUserId] Unsopported type of loginname (%r): %s",
                       loginname, type(loginname))
             return ''
@@ -700,10 +692,8 @@ class IdResolver(UserIdResolver):
         if len(loginname) == 0:
             return ''
 
-        log.debug("[getUserId] type of LoginName %s", type(LoginName))
         ufilter = self._replace_macros(self.filter)
-        fil = ldap.filter.filter_format(ufilter,
-                                        [LoginName.decode(ENCODING)])
+        fil = ldap.filter.filter_format(ufilter,[loginname])
         fil = fil.encode(ENCODING)
         l_obj = self.bind()
 
@@ -717,7 +707,7 @@ class IdResolver(UserIdResolver):
 
         attrlist = []
         if self.uidType.lower() != "dn":
-            attrlist.append(self.uidType.encode(ENCODING))
+            attrlist.append(self.uidType)
 
         # ----------------------------------------------------------------- --
 
@@ -1500,17 +1490,16 @@ class IdResolver(UserIdResolver):
 
                 attrlist = []
                 for ukey, uval in self.userinfo.items():
-                    attrlist.append(uval.encode(ENCODING))
+                    attrlist.append(uval)
 
                 if self.uidType.lower() != "dn":
-                    attrlist.append(self.uidType.encode(ENCODING))
+                    attrlist.append(self.uidType)
 
                 # ---------------------------------------------------------- --
 
-                searchFilterStr = searchFilter.encode(ENCODING)
                 ldap_result_id = l_obj.search_ext(self.base,
                                                   ldap.SCOPE_SUBTREE,
-                                                  filterstr=searchFilterStr,
+                                                  filterstr=searchFilter,
                                                   sizelimit=self.sizelimit,
                                                   attrlist=attrlist,
                                                   timeout=self.response_timeout
@@ -1693,7 +1682,7 @@ class IdResolver(UserIdResolver):
         # submit search request
         msgid = l_obj.search_ext(self.base,
                                  ldap.SCOPE_SUBTREE,
-                                 filterstr=searchFilter.encode(ENCODING),
+                                 filterstr=searchFilter,
                                  attrlist=attrlist,
                                  serverctrls=[lc],
                                  timeout=self.response_timeout
@@ -1819,7 +1808,7 @@ class IdResolver(UserIdResolver):
             return {}
 
         if self.uidType.lower() == "dn":
-            userdata["userid"] = str(account_dn, ENCODING)
+            userdata["userid"] = account_dn
 
         elif self.uidType.lower() == "objectguid":
             userid = None
