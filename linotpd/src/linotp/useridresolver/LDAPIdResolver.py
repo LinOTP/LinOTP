@@ -1308,12 +1308,10 @@ class IdResolver(UserIdResolver):
                         case the Uid is not the DN
         '''
 
-        # Patch:
-        #   simple bind allows anonymous authentication which raises no
-        #   exception, so we return immediately if no password is given
-        #
-
         log.debug("[checkPass]")
+
+        # simple bind allows anonymous authentication which raises no
+        # exception, so we return immediately if no password is given
 
         if password is None or len(password) == 0:
             return False
@@ -1738,21 +1736,20 @@ class IdResolver(UserIdResolver):
 
         attrlist = []
         for _ukey, uval in self.userinfo.items():
-            attrlist.append(uval.encode(ENCODING))
+            attrlist.append(uval)
 
         # add the requested unique identifier if it is not the dn
 
         if self.uidType.lower() != "dn":
-            attrlist.append(self.uidType.encode(ENCODING))
+            attrlist.append(self.uidType)
 
         # ------------------------------------------------------------------ --
 
         # replace the method pointer to the right place
         api_ver = self._api_version()
 
-        (msgid, l_obj, lc) = self._set_cursor(searchFilter,
-                                              attrlist,
-                                              api_ver=api_ver)
+        (msgid, l_obj, lc) = self._set_cursor(
+                        searchFilter, attrlist, api_ver=api_ver)
 
         done = False
         results_size = 0
@@ -1769,16 +1766,12 @@ class IdResolver(UserIdResolver):
                 if not lres:
                     break
 
-                (result_type, result_data,
-                 _rmsgid, serverctrls) = lres
+                (result_type, result_data, _rmsgid, serverctrls) = lres
 
                 # shift the cursor to the next page
-                (msgid,
-                 l_obj, lc) = self._set_cursor(searchFilter,
-                                               attrlist,
-                                               l_obj=l_obj, lc=lc,
-                                               serverctrls=serverctrls,
-                                               api_ver=api_ver)
+                (msgid, l_obj, lc) = self._set_cursor(
+                                 searchFilter, attrlist, l_obj=l_obj, lc=lc,
+                                 serverctrls=serverctrls, api_ver=api_ver)
 
                 if not msgid:
                     done = True
@@ -1789,9 +1782,12 @@ class IdResolver(UserIdResolver):
                 # process the result into array of dict
                 user_list = []
                 for result_entry in result_data:
+
                     user_info = self._process_result(result_entry)
+
                     if user_info:
                         user_list.append(user_info)
+
                 results_size = results_size + len(user_list)
                 yield user_list
 
@@ -1820,7 +1816,7 @@ class IdResolver(UserIdResolver):
 
         # in case of no DN - we skip the object
         if not account_dn:
-            return userdata
+            return {}
 
         if self.uidType.lower() == "dn":
             userdata["userid"] = str(account_dn, ENCODING)
