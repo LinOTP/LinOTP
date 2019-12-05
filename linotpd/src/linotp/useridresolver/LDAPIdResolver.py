@@ -501,12 +501,10 @@ class IdResolver(UserIdResolver):
                     # try to authenticate to server:
                     # this will establish the first connection
 
-                    dn_encode = l_config['BINDDN'].encode(ENCODING)
+                    bind_dn = l_config['BINDDN']
+                    bind_pw = l_config['BINDPW'].get_unencrypted()
 
-                    passwd = l_config['BINDPW'].get_unencrypted()
-                    pw_encode = passwd.encode(ENCODING)
-
-                    l_obj.simple_bind_s(dn_encode, pw_encode)
+                    l_obj.simple_bind_s(bind_dn, bind_pw)
 
                     # simple_bind will raise an exception if the server
                     # could not be reached or an error occurs - thus the
@@ -644,12 +642,8 @@ class IdResolver(UserIdResolver):
             try:
                 l_obj = IdResolver.connect(uri, caller=self)
 
-                dn_encode = self.binddn.encode(ENCODING)
-
-                passwd = self.bindpw.get_unencrypted()
-                pw_encode = passwd.encode(ENCODING)
-
-                l_obj.simple_bind_s(dn_encode, pw_encode)
+                l_obj.simple_bind_s(
+                    self.binddn, self.bindpw.get_unencrypted())
 
                 self.l_obj = l_obj
                 return l_obj
@@ -1325,20 +1319,11 @@ class IdResolver(UserIdResolver):
         if password is None or len(password) == 0:
             return False
 
-        if type(password) == str:
-            password = password.encode(ENCODING)
-
-        if type(uid) == str:
-            uid = uid.encode(ENCODING)
-
         log.debug("[checkPass] uidType: %r", self.uidType)
         if self.uidType.lower() == 'dn':
             DN = uid
         else:
             DN = self._getUserDN(uid)
-
-        if type(DN) == str:
-            DN = DN.encode(ENCODING)
 
         log.debug("[checkPass] DN: %r", DN)
 
