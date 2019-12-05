@@ -681,8 +681,6 @@ class IdResolver(UserIdResolver):
         :rtype:  string
         '''
 
-        userid = ''
-
         log.debug("[getUserId] resolving userid for %r: %r",
                   type(loginname), loginname)
 
@@ -697,10 +695,10 @@ class IdResolver(UserIdResolver):
         else:
             log.error("[getUserId] Unsopported type of loginname (%r): %s",
                       loginname, type(loginname))
-            return userid
+            return ''
 
         if len(loginname) == 0:
-            return userid
+            return ''
 
         log.debug("[getUserId] type of LoginName %s", type(LoginName))
         ufilter = self._replace_macros(self.filter)
@@ -710,7 +708,7 @@ class IdResolver(UserIdResolver):
         l_obj = self.bind()
 
         if not l_obj:
-            return userid
+            return ''
 
         # ----------------------------------------------------------------- --
 
@@ -744,7 +742,7 @@ class IdResolver(UserIdResolver):
 
         if not resultList:
             log.info("[getUserId] : empty result ")
-            return userid
+            return ''
 
         #
         # AD returns an result set where the first entry of the tuple is None
@@ -759,7 +757,7 @@ class IdResolver(UserIdResolver):
 
         if not relevant_entries:
             log.info("[getUserId] : empty result ")
-            return userid
+            return ''
 
         log.debug("[getUserId] : resultList :%r: ", resultList)
         log.debug('[getUserId] : uidType: %r ', self.uidType)
