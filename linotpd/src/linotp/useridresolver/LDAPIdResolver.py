@@ -1657,7 +1657,7 @@ class IdResolver(UserIdResolver):
         page_size = 100
         # we take the sizelimit as hint for the page size
         if hasattr(self, "sizelimit"):
-            page_size = self.sizelimit / 4
+            page_size = self.sizelimit // 4
 
         # first request: if lc is not set, we are initializing
         if lc is None:
