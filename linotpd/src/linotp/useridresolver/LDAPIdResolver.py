@@ -1827,8 +1827,12 @@ class IdResolver(UserIdResolver):
         else:
             # suport for arbitrary object identifyier like
             # entryUUID, GUID, objectGUID
-            userdata["userid"] = \
-                account_info[self.uidType][0]
+            uid = account_info[self.uidType][0]
+
+            if isinstance(uid, bytes):
+                uid = uid.decode('utf-8')
+
+            userdata["userid"] = uid
 
         # finally add all existing userinfos (wrt the mapping)
         for ukey, uval in self.userinfo.items():
