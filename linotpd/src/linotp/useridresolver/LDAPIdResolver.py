@@ -1723,9 +1723,7 @@ class IdResolver(UserIdResolver):
         # prepare the list of attributes that we wish to recieve
         # Remark: the elememnts each must be of type string utf-8
 
-        attrlist = []
-        for _ukey, uval in self.userinfo.items():
-            attrlist.append(uval)
+        attrlist = list(self.userinfo.values())
 
         # add the requested unique identifier if it is not the dn
 
