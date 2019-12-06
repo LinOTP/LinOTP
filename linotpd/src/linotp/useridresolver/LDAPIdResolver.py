@@ -684,12 +684,7 @@ class IdResolver(UserIdResolver):
         log.debug("[getUserId] resolving userid for %r: %r",
                   type(loginname), loginname)
 
-        if not isinstance(loginname, str):
-            log.error("[getUserId] Unsopported type of loginname (%r): %s",
-                      loginname, type(loginname))
-            return ''
-
-        if len(loginname) == 0:
+        if not loginname:
             return ''
 
         ufilter = self._replace_macros(self.filter)
@@ -791,8 +786,6 @@ class IdResolver(UserIdResolver):
                      loginname, self.uidType.lower())
         else:
             log.debug("[getUserId] userid: %r:%r", type(userid), userid)
-            uname_hash = sha1(userid.encode("utf-8")).digest()
-            log.debug(binascii.hexlify(uname_hash))
 
         return userid
 
@@ -969,9 +962,14 @@ class IdResolver(UserIdResolver):
         """
         log.debug("[getUserInfo]")
 
+        user = self.getUserLDAPInfo(userid)
+
+        if not user:
+            return {}
+
         ret = {}
 
-        user = self.getUserLDAPInfo(userid)
+        ret['userid'] = userid
 
         if len(user) > 0:
             ret['userid'] = userid
