@@ -1815,7 +1815,7 @@ class IdResolver(UserIdResolver):
             for key in account_info:
                 if key.lower() == self.uidType.lower():
                     res = account_info.get(key)[0]
-                    userid = self.guid2str(res)
+                    userid = self.guid2str(res).decode('utf-8')
                     break
             if userid:
                 userdata["userid"] = userid
@@ -1834,17 +1834,22 @@ class IdResolver(UserIdResolver):
 
         # finally add all existing userinfos (wrt the mapping)
         for ukey, uval in self.userinfo.items():
+
             if uval in account_info:
                 # An attribute can hold more than 1 value
                 # So we only take the first one at the moment
                 #   result_data[0][1][v][0]
                 # If we want to get all
                 #   result_data[0][1][v] gives us a list
-                rdata = account_info[uval][0]
-                try:
-                    udata = rdata.decode(ENCODING)
-                except:
-                    udata = rdata
+
+                udata = account_info[uval][0]
+
+                if isinstance(udata, bytes):
+                    try:
+                        udata = udata.decode()
+                    except:
+                        pass
+
                 userdata[ukey] = udata
         return userdata
 
