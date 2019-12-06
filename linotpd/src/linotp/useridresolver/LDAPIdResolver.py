@@ -763,7 +763,8 @@ class IdResolver(UserIdResolver):
                 for key in res:
                     if key.lower() == self.uidType.lower():
                         guid = res.get(key)[0]
-                        userid = self.guid2str(guid)
+                        userid = self.guid2str(guid).decode()
+
                 if userid is None:
                     # should never be reached:
                     raise Exception('[getUserId] - objectguid: no userid '
@@ -964,14 +965,22 @@ class IdResolver(UserIdResolver):
 
         ret['userid'] = userid
 
-        if len(user) > 0:
-            ret['userid'] = userid
-            # we will add all userinfo fields!
-            for f in self.userinfo:
-                if self.userinfo[f] in user:
-                    ret[f] = user[self.userinfo[f]][0]
-                else:
-                    ret[f] = ''
+        # we will add all userinfo fields!
+
+        for f in self.userinfo:
+
+            val = ''
+            if self.userinfo[f] in user:
+
+                val = user[self.userinfo[f]][0]
+
+                if isinstance(val, bytes):
+                    try:
+                        val = val.decode()
+                    except:
+                        log.info('unable to decode bytes %r', val)
+
+            ret[f] = val
 
         return ret
 
