@@ -689,7 +689,6 @@ class IdResolver(UserIdResolver):
 
         ufilter = self._replace_macros(self.filter)
         fil = ldap.filter.filter_format(ufilter,[loginname])
-        fil = fil.encode(ENCODING)
         l_obj = self.bind()
 
         if not l_obj:
@@ -827,9 +826,6 @@ class IdResolver(UserIdResolver):
         """
         log.debug("[getUserLDAPInfo]")
 
-        # change unicode to utf-8 str
-        UserId = userid.encode(ENCODING)
-
         resultList = {}
 
         l_id = 0
@@ -838,19 +834,19 @@ class IdResolver(UserIdResolver):
         if l_obj:
             try:
                 if self.uidType.lower() == "dn":
-                    l_id = l_obj.search_ext(UserId,
+                    l_id = l_obj.search_ext(userid,
                                             ldap.SCOPE_BASE,
                                             filterstr="ObjectClass=*",
                                             sizelimit=self.sizelimit)
 
                 elif self.uidType.lower() == "objectguid":
                     if not self.proxy:
-                        l_id = l_obj.search_ext("<guid=%s>" % (UserId),
+                        l_id = l_obj.search_ext("<guid=%s>" % (userid),
                                                 ldap.SCOPE_BASE,
                                                 sizelimit=self.sizelimit,
                                                 timeout=self.response_timeout)
                     else:
-                        e_u = escape_filter_chars(binascii.unhexlify(UserId))
+                        e_u = escape_filter_chars(binascii.unhexlify(userid))
 
                         filterstr = "(ObjectGUID=%s)" % (e_u)
                         l_id = l_obj.search_ext(self.base,
@@ -866,10 +862,7 @@ class IdResolver(UserIdResolver):
                     # we have to build up the search filter which must end up
                     # in an uft-8 encoding
 
-                    filterstr = ("(%s=%s)" % (
-                                        self.uidType,
-                                        UserId.decode(ENCODING))
-                                ).encode(ENCODING)
+                    filterstr = "(%s=%s)" % (self.uidType,userid)
 
                     l_id = l_obj.search_ext(
                                         self.base,
