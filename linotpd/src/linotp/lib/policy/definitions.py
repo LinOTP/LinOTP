@@ -227,6 +227,10 @@ def getPolicyDefinitions(scope=""):
                           "rollout token is removed.")},
             },
         'notification': {
+            'autoenrollment': {
+                'type': 'str',
+                'description': ('provider to be used for '
+                                'enrollment notification')},
             'enrollment': {
                 'type': 'str',
                 'description': ('provider to be used for '
