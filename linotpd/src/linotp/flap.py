@@ -82,6 +82,14 @@ class RequestContextProxy(object):
     def setdefault(self, key, value):
         return flask.g.request_context.setdefault(key, value)
 
+    def items(self):
+        return flask.g.request_context.items()
+
+    def __repr__(self, *_args, **_kwargs):
+        repr_dict = {}
+        for key, value in flask.g.request_context.items():
+            repr_dict[key] = value
+        return "%r" % repr_dict
 
 tmpl_context = RequestContextProxy()
 
