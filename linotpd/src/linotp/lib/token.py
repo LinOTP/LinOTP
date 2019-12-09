@@ -332,9 +332,11 @@ class TokenHandler(object):
                 raise Exception(error)
 
         except Exception as exx:
-            log.exception("%r", exx)
+            log.exception("Failed to create challenge!")
+
             # we have to commit our token delete as the rollback
             # on exception does not :-(
+
             Session.delete(tokenObj.token)
             Session.commit()
             raise exx
