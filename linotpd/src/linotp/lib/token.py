@@ -214,7 +214,6 @@ class TokenHandler(object):
         '''
 
         # check if autoenrollt is configured
-        auto = False
         try:
             auto, token_type = linotp.lib.policy.get_auto_enrollment(user)
         except Exception as exx:
