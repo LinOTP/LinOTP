@@ -234,6 +234,95 @@ class TestHelpdeskEnrollment(TestController):
             res = re.match(user_search, email)
             assert res
 
+    def test_autoenrollment(self):
+        """verify that an email will be submitted on autoenrollment"""
+
+        # ------------------------------------------------------------------ --
+
+        # define the email provider
+
+        email_config = {
+            "SMTP_SERVER": "mail.example.com",
+            "SMTP_USER": "secret_user",
+            "SMTP_PASSWORD": "secret_pasword",
+            "EMAIL_FROM": "linotp@example.com",
+            "EMAIL_SUBJECT": "Your requested otp"
+        }
+
+        params = {
+            'name': 'enrollmentProvider',
+            'class': 'linotp.provider.emailprovider.SMTPEmailProvider',
+            'timeout': '120',
+            'type': 'email',
+            'config': json.dumps(email_config)
+        }
+
+        self.make_system_request('setProvider', params=params)
+
+        # ------------------------------------------------------------------ --
+
+        # define the notification provider policy
+
+        policy = {
+            'name': 'notify_autoenrollement',
+            'action': 'autoenrollment=email::enrollmentProvider ',
+            'scope': 'notification',
+            'active': True,
+            'realm': '*',
+            'user': '*',
+            'client': '*',
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response
+
+        policy = {
+            'name': 'email_autoenrollment',
+            'action': 'autoenrollment=email',
+            'scope': 'enrollment',
+            'active': True,
+            'realm': '*',
+            'user': '*',
+            'client': '*',
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response
+
+        # ------------------------------------------------------------------ --
+
+        # enroll email token for hans with given pin
+        # verify that message contains given pin
+
+        with MockedSMTP() as mock_smtp_instance:
+
+            mock_smtp_instance.sendmail.return_value = []
+
+            user = 'passthru_user1@myDefRealm'
+            params = {
+                'user': user,
+                'pass': 'geheim1',
+                }
+            response = self.make_validate_request('check', params)
+            assert 'false' in response, response
+
+            # the sendmail api is called twice: for enrollment and for otp
+            assert mock_smtp_instance.sendmail.call_count == 2
+
+            call_args_list = mock_smtp_instance.sendmail.call_args_list
+
+            # first call is the enrollment notification
+
+            _email_from, email_to, email_message = call_args_list[0].args
+            assert email_to == 'pass.true@example.com'
+            assert 'Subject: New email token enrolled' in email_message
+            assert "with pin 'geheim1!" not in email_message
+
+            # second call is the otp notification
+
+            _email_from, email_to, email_message = call_args_list[1].args
+            assert email_to == 'pass.true@example.com'
+            assert 'Subject: Your requested otp' in email_message
+
+
     def test_enrollment(self):
         """verify that an email token will be enrolled"""
 
