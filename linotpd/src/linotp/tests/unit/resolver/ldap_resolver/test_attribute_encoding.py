@@ -58,22 +58,11 @@ class TestLDAPResolverAttributes(unittest.TestCase):
                 if attrlist:
                     for attr in attrlist:
 
-                        # check if attribute is not a python unicode str
-                        if isinstance(attr, str):
-                            raise Exception('Unicode character recieved')
+                        # invalid utf-8 will raise an exception
+                        attr.encode('utf-8')
 
-                        # invalid utf-8 will raise an exception too
-                        attr.decode('utf-8')
-
-                # check if filterstr is not a python unicode str
-                if isinstance(filterstr, str):
-                    raise Exception('Unicode character recieved')
-
-                # val could be str with ascii or non ascii (str.encode(utf-8).
-                # If the str could converted back from utf-8 it is ensured
-                # that we have the correct encoding
-
-                filterstr.decode('utf-8')
+                # invalid utf-8 will raise an exception
+                filterstr.encode('utf-8')
 
                 return True
 
