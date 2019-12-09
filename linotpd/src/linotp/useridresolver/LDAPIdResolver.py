@@ -1187,7 +1187,7 @@ class IdResolver(UserIdResolver):
         return self
 
     @classmethod
-    def register_certificate(cls, cacertificate):
+    def register_certificate(cls, cacertificate: str):
         """
         add a certificate to the certificate store (file)
 
@@ -1199,7 +1199,7 @@ class IdResolver(UserIdResolver):
         if not cacertificate:
             return
 
-        cert_hash = sha1(cacertificate).hexdigest()
+        cert_hash = sha1(cacertificate.encode('utf-8')).hexdigest()
 
         # get last modified of local cert file
         try:
