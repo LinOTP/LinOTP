@@ -71,6 +71,10 @@ from linotp.tokens import tokenclass_registry
 
 from linotp.lib.policy import get_autoassignment_from_realm
 from linotp.lib.policy import get_autoassignment_without_pass
+from linotp.lib.policy import createRandomPin
+
+from linotp.provider.notification import notify_user
+from linotp.provider.notification import NotificationException
 
 import linotp.model.meta
 
@@ -276,8 +280,47 @@ class TokenHandler(object):
             log.error(msg)
             return False, {'error': msg}
 
+        initDetail = tokenObj.getInitDetail(token_init, user)
+
+        # ------------------------------------------------------------------ --
+
+        # auto enrollment notification:
+
+        # in case of the autoenrollment notification, we can set a new pin
+        # but only if the user received the enrollment notification
+        # containing the pin message
+
+        try:
+
+            new_pin = createRandomPin(user, min_pin_length=6)
+
+            message = ("A new ${tokentype} token (${serial}) "
+                       "with pin '${Pin}' "
+                       "for ${givenname} ${surname} has been enrolled.")
+            info = {
+                'message': message,
+                'Subject': 'New %s token enrolled' % tokenObj.type,
+                'Pin': new_pin,
+                'tokentype': tokenObj.type
+            }
+
+            info.update(initDetail)
+
+            notified = notify_user(user, 'autoenrollment', info, required=True)
+
+            if notified:
+                tokenObj.setPin(new_pin)
+
+        except NotificationException:
+            log.exception('Failed to autoenroll notify user!')
+
+        # ------------------------------------------------------------------ --
+
+        # now trigger a challenge so the user can login
+
         # we have to use a try except as challenge creation might raise
         # exception and we have to drop the created token
+
         try:
             # trigger challenge for user
             (_res, reply) = Challenges.create_challenge(tokenObj,
