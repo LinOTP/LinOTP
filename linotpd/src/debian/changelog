@@ -1,3 +1,10 @@
+linotp (2.11.0+custom01-1) jessie; urgency=low
+
+  Feature:
+  * Server: add support for autoenrollment enrollment notification
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 09 Dec 2019 15:02:16 +0200
+
 linotp (2.11-1) jessie; urgency=low
 
   Feature:
