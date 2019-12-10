@@ -245,7 +245,7 @@ class IdResolver(UserIdResolver):
                        "-----END CERTIFICATE-----" in cacertificate):
                         cert = cacertificate.strip().replace('\r\n', '\n')
                         if cert:
-                            key = sha1(cert).hexdigest()
+                            key = sha1(cert.encode('utf-8')).hexdigest()
                             cls.ca_certs_dict[key] = cert
                             ca_resolvers.add(entry.split('.')[3])
 
@@ -831,6 +831,9 @@ class IdResolver(UserIdResolver):
 
         l_id = 0
         l_obj = self.bind()
+
+        if isinstance(userid, bytes):
+            userid = userid.decode('utf-8')
 
         if l_obj:
             try:

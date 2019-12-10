@@ -57,7 +57,7 @@ def calculate_motp(epoch, key, pin, digits=6):
     """
     from hashlib import md5
     vhash = "%d%s%s" % (epoch / 10, key, pin)
-    motp = md5(vhash).hexdigest()[:digits]
+    motp = md5(vhash.encode('utf-8')).hexdigest()[:digits]
     return motp
 
 
