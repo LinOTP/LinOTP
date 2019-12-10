@@ -948,6 +948,7 @@ function token_operation(tokens, url, params) {
         var promise = clientUrlFetch(url, params)
         requests.push(promise);
     }
+
     // By using the 'when' function (that takes a list of promises/deferreds as
     // input) we make sure 'reset_buttons()' is execute ONCE after ALL the
     // deletion requests have finished.
@@ -965,9 +966,46 @@ function token_operation(tokens, url, params) {
     });
 }
 
+/*
+ * Performs one operation on a list of tokens
+ *
+ * tokens is a list of tokens (serial numbers)
+ * url is the operation to perform. For example "/admin/remove"
+ * params are any parameters required for the requests. You DON'T need to
+ * pass in the session.
+ */
+function tokens_operation(tokens, url, params) {
+    if (!('session' in params)) {
+        // To make the operation a tiny bit more efficient we fetch the session
+        // once instead of in every request (as clientUrlFetch would do).
+        params['session'] = getsession();
+    }
+    var requests = Array();
+    params['serial'] = tokens;
+    var promise = clientUrlFetch(url, params)
+    requests.push(promise);
+
+    // By using the 'when' function (that takes a list of promises/deferreds as
+    // input) we make sure 'reset_buttons()' is execute ONCE after ALL the
+    // deletion requests have finished.
+    var defer = $.when.apply($, requests);
+    defer.done(function(){
+        var responses = [];
+        if (requests.length == 1) {
+            // "arguments" will be the array of response information for the request
+            responses = [arguments];
+        }
+        else {
+            responses = arguments;
+        }
+        token_operations_callback(responses);
+    });
+}
+
+
 function token_delete(){
     var tokens = get_selected_tokens();
-    token_operation(tokens, "/admin/remove", {});
+    tokens_operation(tokens, "/admin/remove", {});
 }
 
 function token_unassign(){
