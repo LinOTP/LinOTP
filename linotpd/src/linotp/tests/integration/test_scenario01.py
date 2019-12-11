@@ -287,7 +287,7 @@ class TestScenario01(TestCase):
         new_motp_pin = "5588"
 
         selfservice.login("mozart", "Test123!", test1_realm)
-        selfservice.set_motp_pin(token, new_motp_pin)
+        selfservice.set_motp_pin(serial_token_mozart, new_motp_pin)
         selfservice.logout()
 
         time.sleep(10)  # otherwise next mOTP value might not be valid
