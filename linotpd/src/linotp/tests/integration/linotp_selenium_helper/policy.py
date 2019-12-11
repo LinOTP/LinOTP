@@ -70,7 +70,19 @@ class PolicyManager(ManageTab):
 
         p: WebElement of policy line
         """
+        # Clear policy name field
+        policy_name_element = self.find_by_id("policy_name")
+        policy_name_element.clear()
+
+        def policy_name_empty(_):
+            return policy_name_element.get_attribute('value') == ""
+        WebDriverWait(self.driver, 10).until(policy_name_empty)
+
+        # Select policy to delete
         p.click()
+        WebDriverWait(self.driver, 10).until_not(policy_name_empty)
+
+        # Delete the policy
         self.find_by_id(self.policy_delete_button_id).click()
         self.wait_for_grid_loading()
         info = self.manage.alert_box_handler
