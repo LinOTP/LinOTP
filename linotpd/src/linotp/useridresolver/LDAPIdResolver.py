@@ -787,6 +787,9 @@ class IdResolver(UserIdResolver):
         else:
             log.debug("[getUserId] userid: %r:%r", type(userid), userid)
 
+        if isinstance(userid, bytes):
+            userid = userid.decode()
+
         return userid
 
     def getUsername(self, userid):
