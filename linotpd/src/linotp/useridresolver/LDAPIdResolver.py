@@ -1303,7 +1303,7 @@ class IdResolver(UserIdResolver):
                     log.warning("[getUserList] Unknown searchkey: %r", skey)
 
             # finaly embedd the filter in the ldap query string
-            searchFilter = "(& %s )" % searchFilter
+            searchFilter = "(&%s)" % searchFilter
             log.debug("[getUserList] searchfilter: %r", searchFilter)
         except Exception as exep:
             log.exception("[getUserList] Error creating searchFilter: %r",
