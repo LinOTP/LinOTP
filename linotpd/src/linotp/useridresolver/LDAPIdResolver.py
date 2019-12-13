@@ -1483,57 +1483,17 @@ class IdResolver(UserIdResolver):
                     userdata = {}
 
                     (result_type,
-                     result_data) = l_obj.result(ldap_result_id, 0,
-                                                 timeout=self.response_timeout)
+                     result_data) = l_obj.result(
+                         ldap_result_id, 0, timeout=self.response_timeout)
 
-                    # print result_type, ldap.RES_SEARCH_ENTRY, result_data
-                    if (result_data == []):
+                    if result_type != ldap.RES_SEARCH_ENTRY or not result_data:
                         break
-                    else:
-                        if result_type == ldap.RES_SEARCH_ENTRY:
-                            # compose response as we like it
-                            if self.uidType.lower() == "dn":
-                                userdata["userid"] = \
-                                        str(result_data[0][0], ENCODING)
-                            elif self.uidType.lower() == "objectguid":
-                                # res =
-                                # result_data[0][1].get(self.uidType,[None])[0]
-                                userid = None
-                                # resDN  = result_data[0][0]
-                                resData = result_data[0][1]
-                                # in case of objectguid, we have to
-                                # check case insensitiv!!!
-                                for key in resData:
-                                    if key.lower() == self.uidType.lower():
-                                        res = resData.get(key)[0]
-                                        userid = self.guid2str(res)
 
-                                if userid is not None:
-                                    userdata["userid"] = userid
-                                else:
-                                    # should never be reached!!
-                                    raise Exception('No Userid found')
-                            else:
-                                # Ticket #754
-                                userdata["userid"] = \
-                                 result_data[0][1].get(self.uidType, [None])[0]
+                    userdata = self._process_result(result_data[0])
 
-                            for ukey, uval in self.userinfo.items():
-                                if uval in result_data[0][1]:
-                                    # An attribute can hold more than 1 value
-                                    # So we only take the first one at the
-                                    # moment
-                                    #   result_data[0][1][v][0]
-                                    # If we want to get all
-                                    #   result_data[0][1][v] gives us a list
-                                    rdata = result_data[0][1][uval][0]
-                                    try:
-                                        udata = rdata.decode(ENCODING)
-                                    except:
-                                        udata = rdata
-                                    userdata[ukey] = udata
+                    if userdata:
+                        resultList.append(userdata)
 
-                            resultList.append(userdata)
             except ldap.LDAPError as exce:
                 log.exception("[getUserList] LDAP error: %r", exce)
 
