@@ -1795,6 +1795,62 @@ class IdResolver(UserIdResolver):
 
         # we do no unbind here, as this is done at the request end
 
+    @staticmethod
+    def _get_uid_from_result(result, uidType):
+        """
+        extract the uid from the ldap result
+
+        the uid type is defined in the resolver defintion
+        which in normal case could be: dn, objectguid, entryUUID or uPn
+
+        the ldap result is a tuple of dn and an atrribute dict, where in
+        the dict the value are of type list
+
+        :param result: the ldap result entry
+        :param uidType: the specified uid type of the resolver
+        :return: uid as string
+        """
+
+        result_dn = result[0]
+        result_data = result[1]
+
+        # ------------------------------------------------------------------ --
+
+        # the dn is always the first entry in the result tuple and is
+        # not of type list
+
+        if uidType.lower() == "dn":
+            userid = result_dn
+
+            if isinstance(userid, bytes):
+                userid = userid.decode()
+
+            return userid
+
+        # ------------------------------------------------------------------ --
+
+        # other uid types like entryUUID or userPrincipalname ar part of the
+        # result_data dict, where we do a case insensitve search for the
+        # userid type especially for the objectguid or the userPrincipalName
+
+        userid = None
+        for entry_key in result_data.keys():
+            if uidType.lower() == entry_key.lower():
+                userid = result_data.get(entry_key)[0]
+
+        if not userid:
+            raise Exception('No Userid found')
+
+        # objectguid requires a special conversion to become readable
+
+        if uidType.lower() == "objectguid":
+            return IdResolver.guid2str(userid).decode()
+
+        if isinstance(userid, bytes):
+            userid = userid.decode()
+
+        return userid
+
     def _process_result(self, result_data):
         """
         process the result of the iterator request into a user info dict
