@@ -1201,52 +1201,6 @@ class IdResolver(UserIdResolver):
         log.debug("[getSearchFields]")
         return self.searchFields
 
-    def searchLDAPUserList(self, key, value):
-        """
-        finds the user objects, that have the term 'value' in the
-                user object field 'key'
-
-        :param key: The key may be an ldap attribute like 'loginname'
-                      or 'email'.
-        :type  key: string
-        :param value: The value is a regular expression.
-        :type value:string
-
-        :return:  a list of dictionaries (each dictionary contains a
-                    user object) or an empty string if no object is found.
-        :rtype: list
-        """
-
-        log.debug("[searchLDAPUserList]")
-
-        searchFilter = key + "=" + value
-        resultList = []
-        l_obj = self.bind()
-        if l_obj:
-            try:
-                ldap_result_id = l_obj.search_ext(self.base,
-                                                  ldap.SCOPE_SUBTREE,
-                                                  filterstr=searchFilter,
-                                                  sizelimit=self.sizelimit,
-                                                  timeout=self.response_timeout
-                                                  )
-                while 1:
-                    (result_type,
-                     result_data) = l_obj.result(ldap_result_id, 0,
-                                                 timeout=self.response_timeout)
-                    if (result_data == []):
-                        break
-                    else:
-                        if result_type == ldap.RES_SEARCH_ENTRY:
-                            resultList.append(result_data)
-            except ldap.LDAPError as exc:
-                log.exception("[searchLDAPUserList] LDAP error: %r", exc)
-
-            self.unbind(l_obj)
-            if resultList:
-                return resultList
-        return resultList
-
     def _getUserDN(self, uid):
         '''
         This function takes the UID and returns the DN of the user object
