@@ -796,109 +796,112 @@ class IdResolver(UserIdResolver):
         """
         log.debug("[getUserLDAPInfo]")
 
-        resultList = {}
+        if isinstance(userid, bytes):
+            userid = userid.decode('utf-8')
 
         l_id = 0
         l_obj = self.bind()
 
-        if isinstance(userid, bytes):
-            userid = userid.decode('utf-8')
 
-        if l_obj:
-            try:
-                if self.uidType.lower() == "dn":
-                    l_id = l_obj.search_ext(userid,
+        if not l_obj:
+            return {}
+
+        resultList = {}
+
+        try:
+            if self.uidType.lower() == "dn":
+                l_id = l_obj.search_ext(userid,
+                                        ldap.SCOPE_BASE,
+                                        filterstr="ObjectClass=*",
+                                        sizelimit=self.sizelimit)
+
+            elif self.uidType.lower() == "objectguid":
+                if not self.proxy:
+                    l_id = l_obj.search_ext("<guid=%s>" % (userid),
                                             ldap.SCOPE_BASE,
-                                            filterstr="ObjectClass=*",
-                                            sizelimit=self.sizelimit)
-
-                elif self.uidType.lower() == "objectguid":
-                    if not self.proxy:
-                        l_id = l_obj.search_ext("<guid=%s>" % (userid),
-                                                ldap.SCOPE_BASE,
-                                                sizelimit=self.sizelimit,
-                                                timeout=self.response_timeout)
-                    else:
-                        e_u = escape_filter_chars(binascii.unhexlify(userid))
-
-                        filterstr = "(ObjectGUID=%s)" % (e_u)
-                        l_id = l_obj.search_ext(self.base,
-                                                ldap.SCOPE_SUBTREE,
-                                                filterstr=filterstr,
-                                                sizelimit=self.sizelimit,
-                                                timeout=self.response_timeout)
+                                            sizelimit=self.sizelimit,
+                                            timeout=self.response_timeout)
                 else:
-                    # ------------------------------------------------------ --
+                    e_u = escape_filter_chars(binascii.unhexlify(userid))
 
-                    # any other uid type ends up here
+                    filterstr = "(ObjectGUID=%s)" % (e_u)
+                    l_id = l_obj.search_ext(self.base,
+                                            ldap.SCOPE_SUBTREE,
+                                            filterstr=filterstr,
+                                            sizelimit=self.sizelimit,
+                                            timeout=self.response_timeout)
+            else:
+                # ------------------------------------------------------ --
 
-                    # we have to build up the search filter which must end up
-                    # in an uft-8 encoding
+                # any other uid type ends up here
 
-                    filterstr = "(%s=%s)" % (self.uidType,userid)
+                # we have to build up the search filter which must end up
+                # in an uft-8 encoding
 
-                    l_id = l_obj.search_ext(
-                                        self.base,
-                                        ldap.SCOPE_SUBTREE,
-                                        filterstr=filterstr,
-                                        sizelimit=self.sizelimit,
-                                        timeout=self.response_timeout)
+                filterstr = "(%s=%s)" % (self.uidType,userid)
 
-                    # ------------------------------------------------------ --
+                l_id = l_obj.search_ext(
+                                    self.base,
+                                    ldap.SCOPE_SUBTREE,
+                                    filterstr=filterstr,
+                                    sizelimit=self.sizelimit,
+                                    timeout=self.response_timeout)
 
-                r = l_obj.result(l_id, all=1)[1]
+                # ------------------------------------------------------ --
 
-                if r:
-                    resList = r[0][1]
-                    resList["dn"] = [r[0][0]]
+            r = l_obj.result(l_id, all=1)[1]
 
-                    resultList = {}
+            if r:
+                resList = r[0][1]
+                resList["dn"] = [r[0][0]]
 
-                    # now convert the resList to unicode:
-                    #   dict of list(UTF-8)
-                    for key in resList:
-                        val = resList.get(key)
-                        rval = val
+                resultList = {}
 
-                        if type(val) == list:
-                            # val should be a list of utf str
-                            rval = []
-                            for v in val:
-                                try:
-                                    if type(v) == str:
-                                        rval.append(v.decode(ENCODING))
-                                    else:
-                                        rval.append(v)
-                                except:
-                                    rval.append(v)
-                                    log.debug('[getUserLDAPInfo] failed to '
-                                              'decode data type %r: %r',
-                                              type(v), v)
+                # now convert the resList to unicode:
+                #   dict of list(UTF-8)
+                for key in resList:
+                    val = resList.get(key)
+                    rval = val
 
-                        elif type(val) == str:
-                            # or val might be a direct utf-8 str
+                    if type(val) == list:
+                        # val should be a list of utf str
+                        rval = []
+                        for v in val:
                             try:
-                                rval = val.decode(ENCODING)
+                                if type(v) == str:
+                                    rval.append(v.decode(ENCODING))
+                                else:
+                                    rval.append(v)
                             except:
-                                rval = val
-                                log.debug('[getUserLDAPInfo] failed to decode '
-                                          'data type %r: %r', type(val), val)
-                        else:
-                            # this should not be reached -
-                            # so anything different is treated as unknown
+                                rval.append(v)
+                                log.debug('[getUserLDAPInfo] failed to '
+                                          'decode data type %r: %r',
+                                          type(v), v)
+
+                    elif type(val) == str:
+                        # or val might be a direct utf-8 str
+                        try:
+                            rval = val.decode(ENCODING)
+                        except:
                             rval = val
-                            log.warning('[getUserLDAPInfo] unknown and '
-                                        'unsupported LDAP return data type'
-                                        ' %r: %r', type(val), val)
+                            log.debug('[getUserLDAPInfo] failed to decode '
+                                      'data type %r: %r', type(val), val)
+                    else:
+                        # this should not be reached -
+                        # so anything different is treated as unknown
+                        rval = val
+                        log.warning('[getUserLDAPInfo] unknown and '
+                                    'unsupported LDAP return data type'
+                                    ' %r: %r', type(val), val)
 
-                        resultList[key] = rval
+                    resultList[key] = rval
 
-            except ldap.LDAPError as error:
-                log.exception("[getUserLDAPInfo] LDAP error: %r", error)
+        except ldap.LDAPError as error:
+            log.exception("[getUserLDAPInfo] LDAP error: %r", error)
 
-            finally:
-                if l_obj is not None:
-                    self.unbind(l_obj)
+        finally:
+            if l_obj is not None:
+                self.unbind(l_obj)
 
         return resultList
 
