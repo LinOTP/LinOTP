@@ -1449,62 +1449,64 @@ class IdResolver(UserIdResolver):
         resultList = []
         l_obj = self.bind()
 
-        if l_obj:
-            try:
-                log.debug("[getUserList] doing search with filter %r",
-                          searchFilter)
-                log.debug("[getUserList] type of searchfilter: %r",
-                          type(searchFilter))
+        if not l_obj:
+            return []
 
-                # ---------------------------------------------------------- --
+        try:
+            log.debug("[getUserList] doing search with filter %r",
+                      searchFilter)
+            log.debug("[getUserList] type of searchfilter: %r",
+                      type(searchFilter))
 
-                # prepare the list of attributes that we wish to recieve
-                # Remark: the elememnts each must be of type string utf-8
+            # ---------------------------------------------------------- --
 
-                attrlist = []
-                for ukey, uval in self.userinfo.items():
-                    attrlist.append(uval)
+            # prepare the list of attributes that we wish to recieve
+            # Remark: the elememnts each must be of type string utf-8
 
-                if self.uidType.lower() != "dn":
-                    attrlist.append(self.uidType)
+            attrlist = []
+            for ukey, uval in self.userinfo.items():
+                attrlist.append(uval)
 
-                # ---------------------------------------------------------- --
+            if self.uidType.lower() != "dn":
+                attrlist.append(self.uidType)
 
-                ldap_result_id = l_obj.search_ext(self.base,
-                                                  ldap.SCOPE_SUBTREE,
-                                                  filterstr=searchFilter,
-                                                  sizelimit=self.sizelimit,
-                                                  attrlist=attrlist,
-                                                  timeout=self.response_timeout
-                                                  )
+            # ---------------------------------------------------------- --
 
-                log.debug('[getUserList] uidType: %r', self.uidType)
-                while 1:
-                    userdata = {}
+            ldap_result_id = l_obj.search_ext(self.base,
+                                              ldap.SCOPE_SUBTREE,
+                                              filterstr=searchFilter,
+                                              sizelimit=self.sizelimit,
+                                              attrlist=attrlist,
+                                              timeout=self.response_timeout
+                                              )
 
-                    (result_type,
-                     result_data) = l_obj.result(
-                         ldap_result_id, 0, timeout=self.response_timeout)
+            log.debug('[getUserList] uidType: %r', self.uidType)
+            while 1:
+                userdata = {}
 
-                    if result_type != ldap.RES_SEARCH_ENTRY or not result_data:
-                        break
+                (result_type,
+                 result_data) = l_obj.result(
+                     ldap_result_id, 0, timeout=self.response_timeout)
 
-                    userdata = self._process_result(result_data[0])
+                if result_type != ldap.RES_SEARCH_ENTRY or not result_data:
+                    break
 
-                    if userdata:
-                        resultList.append(userdata)
+                userdata = self._process_result(result_data[0])
 
-            except ldap.LDAPError as exce:
-                log.exception("[getUserList] LDAP error: %r", exce)
+                if userdata:
+                    resultList.append(userdata)
 
-            except Exception as exce:
-                log.exception("[getUserList] error during LDAP access: %r",
-                              exce)
+        except ldap.LDAPError as exce:
+            log.exception("[getUserList] LDAP error: %r", exce)
 
-            self.unbind(l_obj)
+        except Exception as exce:
+            log.exception("[getUserList] error during LDAP access: %r",
+                          exce)
 
-            if resultList:
-                return resultList
+        self.unbind(l_obj)
+
+        if resultList:
+            return resultList
 
         return ""
 
