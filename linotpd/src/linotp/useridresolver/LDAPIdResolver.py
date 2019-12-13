@@ -805,7 +805,10 @@ class IdResolver(UserIdResolver):
         if not l_obj:
             return {}
 
+        result_data = None
+
         try:
+
             if self.uidType.lower() == "dn":
                 l_id = l_obj.search_ext(userid,
                                         ldap.SCOPE_BASE,
@@ -844,66 +847,44 @@ class IdResolver(UserIdResolver):
                                     sizelimit=self.sizelimit,
                                     timeout=self.response_timeout)
 
-                # ------------------------------------------------------ --
-
-            r = l_obj.result(l_id, all=1)[1]
+            result_data = l_obj.result(l_id, all=1)[1]
 
         except ldap.LDAPError as error:
-            log.exception("[getUserLDAPInfo] LDAP error: %r", error)
+            log.exception("[getUserLDAPInfo] LDAP error")
+            return {}
 
         finally:
             if l_obj is not None:
                 self.unbind(l_obj)
 
-        if not r:
+        if not result_data:
             return {}
 
-        resList = r[0][1]
-        resList["dn"] = [r[0][0]]
+        # ------------------------------------------------------------------ --
 
-        resultList = {}
+        # process result and put it in the userinfo dict
 
-        # now convert the resList to unicode:
-        #   dict of list(UTF-8)
-        for key in resList:
-            val = resList.get(key)
-            rval = val
+        userinfo = {}
 
-            if type(val) == list:
-                # val should be a list of utf str
-                rval = []
-                for v in val:
-                    try:
-                        if type(v) == str:
-                            rval.append(v.decode(ENCODING))
-                        else:
-                            rval.append(v)
-                    except:
-                        rval.append(v)
-                        log.debug('[getUserLDAPInfo] failed to '
-                                  'decode data type %r: %r',
-                                  type(v), v)
+        result = result_data[0]
 
-            elif type(val) == str:
-                # or val might be a direct utf-8 str
-                try:
-                    rval = val.decode(ENCODING)
-                except:
-                    rval = val
-                    log.debug('[getUserLDAPInfo] failed to decode '
-                              'data type %r: %r', type(val), val)
-            else:
-                # this should not be reached -
-                # so anything different is treated as unknown
-                rval = val
-                log.warning('[getUserLDAPInfo] unknown and '
-                            'unsupported LDAP return data type'
-                            ' %r: %r', type(val), val)
+        # add the dn which is the first entry
+        userinfo['dn'] = [result[0]]
 
-            resultList[key] = rval
+        # add the the other key, [values] from the second result entry
+        for key, uval in result[1].items():
 
+            entries = []
+            for udata in uval:
 
-        return resultList
+                if isinstance(udata, bytes):
+                    udata = udata.decode()
+
+                entries.append(udata)
+
+            userinfo[key] = entries
+
+        return userinfo
 
     def getUserInfo(self, userid):
         """
