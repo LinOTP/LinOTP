@@ -1446,17 +1446,17 @@ class IdResolver(UserIdResolver):
                           exep)
             raise exep
 
-        resultList = []
+
         l_obj = self.bind()
 
         if not l_obj:
             return []
 
+        log.debug("[getUserList] doing search with filter %r", searchFilter)
+        log.debug("[getUserList] type of searchfilter: %r", type(searchFilter))
+
+        resultList = []
         try:
-            log.debug("[getUserList] doing search with filter %r",
-                      searchFilter)
-            log.debug("[getUserList] type of searchfilter: %r",
-                      type(searchFilter))
 
             # ---------------------------------------------------------- --
 
@@ -1464,7 +1464,7 @@ class IdResolver(UserIdResolver):
             # Remark: the elememnts each must be of type string utf-8
 
             attrlist = []
-            for ukey, uval in self.userinfo.items():
+            for _ukey, uval in self.userinfo.items():
                 attrlist.append(uval)
 
             if self.uidType.lower() != "dn":
@@ -1472,20 +1472,18 @@ class IdResolver(UserIdResolver):
 
             # ---------------------------------------------------------- --
 
-            ldap_result_id = l_obj.search_ext(self.base,
-                                              ldap.SCOPE_SUBTREE,
-                                              filterstr=searchFilter,
-                                              sizelimit=self.sizelimit,
-                                              attrlist=attrlist,
-                                              timeout=self.response_timeout
-                                              )
+            ldap_result_id = l_obj.search_ext(
+                        self.base, ldap.SCOPE_SUBTREE,
+                        filterstr=searchFilter, sizelimit=self.sizelimit,
+                        attrlist=attrlist, timeout=self.response_timeout)
 
             log.debug('[getUserList] uidType: %r', self.uidType)
+
             while 1:
+
                 userdata = {}
 
-                (result_type,
-                 result_data) = l_obj.result(
+                result_type, result_data = l_obj.result(
                      ldap_result_id, 0, timeout=self.response_timeout)
 
                 if result_type != ldap.RES_SEARCH_ENTRY or not result_data:
