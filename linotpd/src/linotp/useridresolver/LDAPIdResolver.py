@@ -1494,19 +1494,16 @@ class IdResolver(UserIdResolver):
                 if userdata:
                     resultList.append(userdata)
 
-        except ldap.LDAPError as exce:
-            log.exception("[getUserList] LDAP error: %r", exce)
+        except ldap.LDAPError as _exce:
+            log.exception("[getUserList] LDAP error")
 
-        except Exception as exce:
-            log.exception("[getUserList] error during LDAP access: %r",
-                          exce)
+        except Exception as _exce:
+            log.exception("[getUserList] error during LDAP access")
 
-        self.unbind(l_obj)
+        finally:
+            self.unbind(l_obj)
 
-        if resultList:
-            return resultList
-
-        return ""
+        return resultList
 
     def _prepare_searchFilter(self, searchDict):
         '''
