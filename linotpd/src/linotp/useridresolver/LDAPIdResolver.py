@@ -1360,7 +1360,8 @@ class IdResolver(UserIdResolver):
         raise ResolverNotAvailable("unable to bind to servers %r" % urilist)
 
 
-    def guid2str(self, guid):
+    @staticmethod
+    def guid2str(guid):
         '''
         convert the binary MS AD GUID to something that could be displayed
           http://support.microsoft.com/kb/325649
