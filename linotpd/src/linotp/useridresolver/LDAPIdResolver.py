@@ -802,11 +802,8 @@ class IdResolver(UserIdResolver):
         l_id = 0
         l_obj = self.bind()
 
-
         if not l_obj:
             return {}
-
-        resultList = {}
 
         try:
             if self.uidType.lower() == "dn":
@@ -851,57 +848,60 @@ class IdResolver(UserIdResolver):
 
             r = l_obj.result(l_id, all=1)[1]
 
-            if r:
-                resList = r[0][1]
-                resList["dn"] = [r[0][0]]
-
-                resultList = {}
-
-                # now convert the resList to unicode:
-                #   dict of list(UTF-8)
-                for key in resList:
-                    val = resList.get(key)
-                    rval = val
-
-                    if type(val) == list:
-                        # val should be a list of utf str
-                        rval = []
-                        for v in val:
-                            try:
-                                if type(v) == str:
-                                    rval.append(v.decode(ENCODING))
-                                else:
-                                    rval.append(v)
-                            except:
-                                rval.append(v)
-                                log.debug('[getUserLDAPInfo] failed to '
-                                          'decode data type %r: %r',
-                                          type(v), v)
-
-                    elif type(val) == str:
-                        # or val might be a direct utf-8 str
-                        try:
-                            rval = val.decode(ENCODING)
-                        except:
-                            rval = val
-                            log.debug('[getUserLDAPInfo] failed to decode '
-                                      'data type %r: %r', type(val), val)
-                    else:
-                        # this should not be reached -
-                        # so anything different is treated as unknown
-                        rval = val
-                        log.warning('[getUserLDAPInfo] unknown and '
-                                    'unsupported LDAP return data type'
-                                    ' %r: %r', type(val), val)
-
-                    resultList[key] = rval
-
         except ldap.LDAPError as error:
             log.exception("[getUserLDAPInfo] LDAP error: %r", error)
 
         finally:
             if l_obj is not None:
                 self.unbind(l_obj)
+
+        if not r:
+            return {}
+
+        resList = r[0][1]
+        resList["dn"] = [r[0][0]]
+
+        resultList = {}
+
+        # now convert the resList to unicode:
+        #   dict of list(UTF-8)
+        for key in resList:
+            val = resList.get(key)
+            rval = val
+
+            if type(val) == list:
+                # val should be a list of utf str
+                rval = []
+                for v in val:
+                    try:
+                        if type(v) == str:
+                            rval.append(v.decode(ENCODING))
+                        else:
+                            rval.append(v)
+                    except:
+                        rval.append(v)
+                        log.debug('[getUserLDAPInfo] failed to '
+                                  'decode data type %r: %r',
+                                  type(v), v)
+
+            elif type(val) == str:
+                # or val might be a direct utf-8 str
+                try:
+                    rval = val.decode(ENCODING)
+                except:
+                    rval = val
+                    log.debug('[getUserLDAPInfo] failed to decode '
+                              'data type %r: %r', type(val), val)
+            else:
+                # this should not be reached -
+                # so anything different is treated as unknown
+                rval = val
+                log.warning('[getUserLDAPInfo] unknown and '
+                            'unsupported LDAP return data type'
+                            ' %r: %r', type(val), val)
+
+            resultList[key] = rval
+
 
         return resultList
 
