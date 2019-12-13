@@ -748,40 +748,9 @@ class IdResolver(UserIdResolver):
 
         # [0][0] is the distinguished name
 
-        res = None
+        userid = self._get_uid_from_result(resultList[0], self.uidType)
 
-        if self.uidType.lower() == "dn":
-            res = resultList[0][0]
-            if res is not None:
-                userid = str(res, ENCODING)
-
-        elif self.uidType.lower() == "objectguid":
-            res = resultList[0][1]
-            if res is not None:
-                userid = None
-                # we have to check the objectguid key case insentitiv !!!
-                for key in res:
-                    if key.lower() == self.uidType.lower():
-                        guid = res.get(key)[0]
-                        userid = self.guid2str(guid).decode()
-
-                if userid is None:
-                    # should never be reached:
-                    raise Exception('[getUserId] - objectguid: no userid '
-                                    'found %r' % (res))
-        else:
-            # Ticket #754
-            if len(resultList) == 0:
-                log.info("[getUserId] resultList is empty")
-            else:
-                res = resultList[0][1]
-                if res is not None:
-                    for key in res:
-
-                        if key.lower() == self.uidType.lower():
-                            userid = res.get(key)[0]
-
-        if res is None or not userid:
+        if not userid:
             log.info("[getUserId] : empty result for  %r - uidtype: %r",
                      loginname, self.uidType.lower())
         else:
@@ -1868,32 +1837,8 @@ class IdResolver(UserIdResolver):
         if not account_dn:
             return {}
 
-        if self.uidType.lower() == "dn":
-            userdata["userid"] = account_dn
-
-        elif self.uidType.lower() == "objectguid":
-            userid = None
-            # in case of objectguid, we have to
-            # check case insensitiv if objectGUID is in dict
-            for key in account_info:
-                if key.lower() == self.uidType.lower():
-                    res = account_info.get(key)[0]
-                    userid = self.guid2str(res).decode('utf-8')
-                    break
-            if userid:
-                userdata["userid"] = userid
-            else:
-                # should never be reached!!
-                raise Exception('No Userid found')
-        else:
-            # suport for arbitrary object identifyier like
-            # entryUUID, GUID, objectGUID
-            uid = account_info[self.uidType][0]
-
-            if isinstance(uid, bytes):
-                uid = uid.decode('utf-8')
-
-            userdata["userid"] = uid
+        userdata["userid"] = self._get_uid_from_result(
+                                            result_data, self.uidType)
 
         # finally add all existing userinfos (wrt the mapping)
         for ukey, uval in self.userinfo.items():
