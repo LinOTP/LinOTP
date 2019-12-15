@@ -1740,26 +1740,30 @@ class IdResolver(UserIdResolver):
                                             result_data, self.uidType)
 
         # finally add all existing userinfos (wrt the mapping)
-        for ukey, uval in self.userinfo.items():
+        for user_key, ldap_key in self.userinfo.items():
 
-            if uval in account_info:
+            if ldap_key in account_info:
                 # An attribute can hold more than 1 value
                 # So we only take the first one at the moment
                 #   result_data[0][1][v][0]
                 # If we want to get all
                 #   result_data[0][1][v] gives us a list
 
-                udata = account_info[uval][0]
+                udata = account_info[ldap_key][0]
+
+                if ldap_key == 'objectGUID':
+                    udata = self.guid2str(udata)
 
                 if isinstance(udata, bytes):
                     try:
                         udata = udata.decode()
                     except:
-                        pass
+                        log.warning('Failed to convert entry %r: %r',
+                                    ldap_key, udata)
 
-                userdata[ukey] = udata
+                userdata[user_key] = udata
+
         return userdata
-
 
 def getLdapUsers(params):
 
