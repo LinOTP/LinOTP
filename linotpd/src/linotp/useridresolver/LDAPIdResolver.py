@@ -877,8 +877,15 @@ class IdResolver(UserIdResolver):
             entries = []
             for udata in uval:
 
+                if key == 'objectGUID':
+                    udata = self.guid2str(udata)
+
                 if isinstance(udata, bytes):
-                    udata = udata.decode()
+                    try:
+                        udata = udata.decode()
+                    except Exception as _exx:
+                        log.warning('Failed to convert entry %r: %r',
+                                    key, udata)
 
                 entries.append(udata)
 
