@@ -425,6 +425,8 @@ class ManageController(BaseController):
             # If we have chosen a page to big!
             lines = []
             for tok in c.tokenArray:
+                uid = tok['LinOtp.Userid']
+                uid = uid.decode('utf-8') if isinstance(uid, bytes) else uid
                 lines.append(
                     {'id' : tok['LinOtp.TokenSerialnumber'],
                      'cell': [
@@ -439,7 +441,7 @@ class ManageController(BaseController):
                             tok['LinOtp.OtpLen'],
                             tok['LinOtp.CountWindow'],
                             tok['LinOtp.SyncWindow'],
-                            tok['LinOtp.Userid'],
+                            uid,
                             tok['LinOtp.IdResClass'].split('.')[-1],
                             ]
                     }

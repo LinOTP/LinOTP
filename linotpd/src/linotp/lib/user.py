@@ -1186,6 +1186,8 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
     # ---------------------------------------------------------------------- --
 
+    if isinstance(user_id, bytes):
+        user_id = user_id.decode('utf-8')
     key = {'login': login,
            'user_id': user_id,
            'resolver_spec': resolver_spec}

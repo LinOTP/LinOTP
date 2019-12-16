@@ -380,9 +380,12 @@ class TestResolver(TestController):
 
         class Mock_lObj():
 
+            pw = None
+            dn = None
+
             def simple_bind_s(self, dn_encode, pw_encode):
-                self.pw = pw_encode.decode()
-                self.dn = dn_encode.decode()
+                self.pw = pw_encode
+                self.dn = dn_encode
 
             def result3(self, *args, **kwargs):
                 return

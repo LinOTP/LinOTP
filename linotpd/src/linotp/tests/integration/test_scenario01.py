@@ -57,7 +57,7 @@ def calculate_motp(epoch, key, pin, digits=6):
     """
     from hashlib import md5
     vhash = "%d%s%s" % (epoch / 10, key, pin)
-    motp = md5(vhash).hexdigest()[:digits]
+    motp = md5(vhash.encode('utf-8')).hexdigest()[:digits]
     return motp
 
 
@@ -287,7 +287,7 @@ class TestScenario01(TestCase):
         new_motp_pin = "5588"
 
         selfservice.login("mozart", "Test123!", test1_realm)
-        selfservice.set_motp_pin(token, new_motp_pin)
+        selfservice.set_motp_pin(serial_token_mozart, new_motp_pin)
         selfservice.logout()
 
         time.sleep(10)  # otherwise next mOTP value might not be valid

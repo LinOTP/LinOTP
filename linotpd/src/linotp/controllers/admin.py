@@ -498,35 +498,51 @@ class AdminController(BaseController):
         param = self.request_params
 
         try:
-            serial = param.get("serial")
+            serials = param.get("serial", [])
+            if serials and not isinstance(serials, list):
+                serials = [serials]
+
             user = getUserFromParam(param)
 
             c.audit['user'] = user.login
+            c.audit['realm'] = user.realm or ""
 
-            if user.is_empty:
-                c.audit['realm'] = getTokenRealms(serial)
-            else:
-                c.audit['realm'] = user.realm
-                if c.audit['realm'] == "":
-                    realms = set()
-                    for tokenserial in getTokens4UserOrSerial(user, serial):
-                        realms.union(tokenserial.getRealms())
-                    c.audit['realm'] = realms
+            if not serials and not user:
+                raise ParameterError('missing parameter user or serial!')
+
+            if user:
+                tokens = getTokens4UserOrSerial(user)
+                for token in tokens:
+                    serials.append(token.getSerial())
+
+            realms = set()
+            for serial in set(serials):
+                realms.union(getTokenRealms(serial))
+
+            c.audit['realm'] = "%r" % realms
 
             # check admin authorization
             checkPolicyPre('admin', 'remove', param)
 
+            log.info("[remove] removing token with serial %r for user %r",
+                     serials, user.login)
+
             th = TokenHandler()
-            log.info("[remove] removing token with serial %s for user %s", serial, user.login)
-            ret = th.removeToken(user, serial)
+            for serial in set(serials):
+                ret = th.removeToken(user, serial)
 
             c.audit['success'] = ret
 
             opt_result_dict = {}
-            if ret == 0 and serial:
-                opt_result_dict['message'] = "No token with serial %s" % serial
-            elif ret == 0 and user and not user.is_empty:
-                opt_result_dict['message'] = "No tokens for this user"
+
+            # if not token could be removed, create a response detailed
+            if ret == 0:
+                if user:
+                    msg = "No tokens for this user %r" % user.login
+                else:
+                    msg = "No token with serials %r" % serials
+
+                opt_result_dict['message'] = msg
 
             Session.commit()
             return sendResult(response, ret, opt=opt_result_dict)
