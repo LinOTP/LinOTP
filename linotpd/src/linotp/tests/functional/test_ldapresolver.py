@@ -327,10 +327,94 @@ class TestLDAPResolver(TestController):
         assert '"value": true' in response
 
     @pytest.mark.usefixtures("ldap_realm_test")
-    def test_ldap_userlist(self):
-        params = {
-            'realm': 'eins'
-        }
+    def test_ldap_dn(self):
+        """ search in ldapresolver pointing to ad with uid type: dn"""
+
+        realm = 'test'
+        user = 'charlie.chaplin'
+
+        params = {'realm': realm}
         response = self.make_admin_request('userlist', params=params)
+
         usernames = [u['username'] for u in response.json['result']['value']]
-        assert 'hugo' in usernames
+
+        assert user in usernames
+        assert len(usernames) == 13
+
+        params = {
+            'user': user,
+            'type': 'pw',
+            'otpkey': 'geheim1',
+            'realm': realm
+        }
+
+        response = self.make_admin_request('init', params=params)
+        assert 'detail' in response
+
+        params = {
+            'name': 'pin_policy',
+            'scope': 'authentication',
+            'active': True,
+            'client': '*',
+            'realm': '*',
+            'user': '*',
+            'action': 'otppin=password'
+        }
+        response = self.make_system_request('setPolicy', params=params)
+        assert 'false' not in response
+
+        params = {
+            'user': user,
+            'realm': realm,
+            'pass': 'Test123!geheim1'
+        }
+        response = self.make_validate_request('check', params=params)
+        assert 'false' not in response
+
+        return
+
+    @pytest.mark.usefixtures("ldap_realm_corp")
+    def test_ldap_objectGUID(self):
+        """ search in ldapresolver pointing to ad with uid type: objectGUID"""
+
+        realm = 'corp'
+        user = 'maxwell'
+
+        params = {'realm': realm}
+        response = self.make_admin_request('userlist', params=params)
+
+        usernames = [u['username'] for u in response.json['result']['value']]
+
+        assert user in usernames
+        assert len(usernames) == 4
+
+        params = {
+            'user': user,
+            'type': 'pw',
+            'otpkey': 'geheim1',
+            'realm': realm
+        }
+        response = self.make_admin_request('init', params=params)
+        assert 'detail' in response
+
+        params = {
+            'name': 'pin_policy',
+            'scope': 'authentication',
+            'active': True,
+            'client': '*',
+            'realm': '*',
+            'user': '*',
+            'action': 'otppin=password'
+        }
+        response = self.make_system_request('setPolicy', params=params)
+        assert 'false' not in response
+
+        params = {
+            'user': user,
+            'realm': realm,
+            'pass': 'Test123!geheim1'
+        }
+        response = self.make_validate_request('check', params=params)
+        assert 'false' not in response
+
+        return
