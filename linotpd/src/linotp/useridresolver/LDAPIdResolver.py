@@ -653,14 +653,14 @@ class IdResolver(UserIdResolver):
 
         username = ''
 
-        # getUserLDAPInfo returns (now) a list of unicode values
-        l_user = self.getUserLDAPInfo(userid)
+        l_user = self.getUserLDAPInfo(
+            userid, attrlist=[self.loginnameattribute])
 
         if self.loginnameattribute in l_user:
             username = l_user[self.loginnameattribute]
         return username
 
-    def getUserLDAPInfo(self, userid):
+    def getUserLDAPInfo(self, userid, attrlist=None):
         """
         getUserLDAPInfo(UserId)
 
@@ -671,68 +671,70 @@ class IdResolver(UserIdResolver):
         :param userid: user identifier (in unicode)
         :type  userid: unicode or str
 
+        :param attrlist: the list of attributes, which should be returned
+                         if None, the attributes are not filtered on the server
+                         side and all are returned
+        :type attrlist: list
+
         :return: user info dict
         :rtype: dict
 
         """
         log.debug("[getUserLDAPInfo]")
 
-        if isinstance(userid, bytes):
-            userid = userid.decode('utf-8')
+        if attrlist:
+            attrlist.append(self.uidType)
 
-        l_id = 0
-        l_obj = self.bind()
+        # -------------------------------------------------------------- --
 
-        if not l_obj:
-            return {}
+        # setup the search parameters
 
-        result_data = None
+        s_base = self.base
+        s_scope = SCOPE_SUBTREE
+        s_filter = "(%s=%s)" % (self.uidType, userid)
+
+        if self.uidType.lower() == "dn":
+
+            s_base = userid
+            s_scope = ldap.SCOPE_BASE
+            s_filter = None
+
+        elif self.uidType.lower() == "objectguid":
+
+            s_base = "<guid=%s>" % (userid)
+            s_scope = ldap.SCOPE_BASE
+            s_filter = None
+
+            if self.proxy:
+
+                s_base = self.base
+                s_scope = SCOPE_SUBTREE
+                s_filter = "(objectGuid=%s)" % escape_hex_for_search(userid)
+
+        # ------------------------------------------------------------------ --
+
+        # do the search
 
         try:
 
-            if self.uidType.lower() == "dn":
-                l_id = l_obj.search_ext(userid,
-                                        ldap.SCOPE_BASE,
-                                        filterstr="ObjectClass=*",
-                                        sizelimit=self.sizelimit)
+            l_obj = self.bind()
 
-            elif self.uidType.lower() == "objectguid":
-                if not self.proxy:
-                    l_id = l_obj.search_ext("<guid=%s>" % (userid),
-                                            ldap.SCOPE_BASE,
-                                            sizelimit=self.sizelimit,
-                                            timeout=self.response_timeout)
-                else:
-                    e_u = escape_hex_for_search(userid)
+            if not l_obj:
+                return {}
 
-                    filterstr = "(ObjectGUID=%s)" % (e_u)
-                    l_id = l_obj.search_ext(self.base,
-                                            ldap.SCOPE_SUBTREE,
-                                            filterstr=filterstr,
-                                            sizelimit=self.sizelimit,
-                                            timeout=self.response_timeout)
-            else:
-                # ------------------------------------------------------ --
-
-                # any other uid type ends up here
-
-                # we have to build up the search filter which must end up
-                # in an uft-8 encoding
-
-                filterstr = "(%s=%s)" % (self.uidType, userid)
-
-                l_id = l_obj.search_ext(
-                    self.base,
-                    ldap.SCOPE_SUBTREE,
-                    filterstr=filterstr,
-                    sizelimit=self.sizelimit,
-                    timeout=self.response_timeout)
+            l_id = l_obj.search_ext(
+                s_base, s_scope, filterstr=s_filter, attrlist=attrlist,
+                sizelimit=self.sizelimit, timeout=self.response_timeout)
 
             result_data = l_obj.result(l_id, all=1)[1]
 
-        except ldap.LDAPError as error:
+        except ldap.LDAPError as _error:
             log.exception("[getUserLDAPInfo] LDAP error")
             return {}
+
+        except Exception as exx:
+            log.exception("[getUserLDAPInfo] LDAP error")
+            raise exx
 
         finally:
             if l_obj is not None:
@@ -759,14 +761,14 @@ class IdResolver(UserIdResolver):
             for udata in uval:
 
                 if key == 'objectGUID':
-                    udata = self.guid2str(udata)
+                    udata = udata.hex()
 
                 if isinstance(udata, bytes):
                     try:
                         udata = udata.decode()
                     except Exception as _exx:
-                        log.warning('Failed to convert entry %r: %r',
-                                    key, udata)
+                        log.info('Failed to decode entry %r: %r',
+                                 key, udata)
 
                 entries.append(udata)
 
@@ -800,7 +802,8 @@ class IdResolver(UserIdResolver):
         """
         log.debug("[getUserInfo]")
 
-        user = self.getUserLDAPInfo(userid)
+        user = self.getUserLDAPInfo(
+            userid, attrlist=list(self.userinfo.values()))
 
         if not user:
             return {}
@@ -1038,8 +1041,8 @@ class IdResolver(UserIdResolver):
         '''
         This function takes the UID and returns the DN of the user object
         '''
-        DN = self.getUserLDAPInfo(uid).get("dn")[0]
-        return DN
+        user_info = self.getUserLDAPInfo(uid, attrlist=['dn'])
+        return user_info['dn'][0]
 
     def checkPass(self, uid, password):
         '''
