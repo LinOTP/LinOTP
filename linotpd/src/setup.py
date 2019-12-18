@@ -72,6 +72,7 @@ test_requirements = [
     'pytest-selenium',
     'pytest-testconfig',
     'mock',
+    'mockldap',
     'freezegun',
     'coverage',
     'pylint',
