@@ -81,23 +81,6 @@ BIND_NOT_POSSIBLE_TIMEOUT = 30
 TIMEOUT_NO_LIMIT = -1
 
 
-def escape_filter_chars(filterstr):
-    """
-    Replace all special characters found in filterstr by quoted notation
-    - used especially for search with guid - which consists of binary data
-    from http://sourceforge.net/p/python-ldap/feature-requests/7/
-
-    :param filterstr: the unescaped filte string
-    :return: escaped filter string
-    """
-    ret = []
-    for c in filterstr:
-        if c < '0' or c > 'z' or c in "\\*()":
-            c = "\\%02x" % ord(c)
-        ret.append(c)
-    return ''.join(ret)
-
-
 # -------------------------------------------------------------------------- --
 
 def escape_hex_for_search(hex_value: str) -> str:
@@ -1115,22 +1098,6 @@ class IdResolver(UserIdResolver):
 
         raise ResolverNotAvailable("unable to bind to servers %r" % urilist)
 
-    @staticmethod
-    def guid2str(guid):
-        '''
-        convert the binary MS AD GUID to something that could be displayed
-          http://support.microsoft.com/kb/325649
-
-        :param guid: binary value
-        :type  guid: binary
-
-        :return: string representation of the guid
-        :rtype:  string
-        '''
-        log.debug("[guid2str] converting MS AD GUID: %r", guid)
-        res = binascii.hexlify(guid)
-        return res
-
     def _is_ad(self):
         """
         this is a heuristic approach to check if we are running against an AD
@@ -1513,9 +1480,6 @@ class IdResolver(UserIdResolver):
         if uidType.lower() == "dn":
             userid = result_dn
 
-            if isinstance(userid, bytes):
-                userid = userid.decode()
-
             return userid
 
         # ------------------------------------------------------------------ --
@@ -1532,10 +1496,10 @@ class IdResolver(UserIdResolver):
         if not userid:
             raise Exception('No Userid found')
 
-        # objectguid requires a special conversion to become readable
+        # objectguid is converted to hex
 
         if uidType.lower() == "objectguid":
-            return IdResolver.guid2str(userid).decode()
+            return userid.hex()
 
         if isinstance(userid, bytes):
             userid = userid.decode()
@@ -1575,7 +1539,7 @@ class IdResolver(UserIdResolver):
                 udata = account_info[ldap_key][0]
 
                 if ldap_key == 'objectGUID':
-                    udata = self.guid2str(udata)
+                    udata = udata.hex()
 
                 if isinstance(udata, bytes):
                     try:
