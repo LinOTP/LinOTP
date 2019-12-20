@@ -52,7 +52,6 @@
 
 from struct import pack
 import linotp.lib.crypto
-import string
 import sys
 
 import hmac
@@ -85,7 +84,7 @@ if sys.version_info[0] == 2:
         return "".join([chr(ord(x) ^ ord(y)) for (x, y) in zip(a, b)])
 
     def b64encode(data, chars="+/"):
-        tt = string.maketrans("+/", chars)
+        tt = str.maketrans("+/", chars)
         return data.encode('base64').replace("\n", "").translate(tt)
     from binascii import b2a_hex
 
@@ -158,7 +157,7 @@ class PBKDF2(object):
         return self.__macmodule.new(key=key, msg=msg,
             digestmod=self.__digestmodule).digest()
 
-    def read(self, bytes):
+    def read(self, _bytes):
         """Read the specified number of key bytes."""
         if self.closed:
             raise ValueError("file-like object is closed")
@@ -166,7 +165,7 @@ class PBKDF2(object):
         size = len(self.__buf)
         blocks = [self.__buf]
         i = self.__blockNum
-        while size < bytes:
+        while size < _bytes:
             i += 1
             if i > _0xffffffffL or i < 1:
                 # We could return "" here, but
@@ -175,8 +174,8 @@ class PBKDF2(object):
             blocks.append(block)
             size += len(block)
         buf = b("").join(blocks)
-        retval = buf[:bytes]
-        self.__buf = buf[bytes:]
+        retval = buf[:_bytes]
+        self.__buf = buf[_bytes:]
         self.__blockNum = i
         return retval
 
