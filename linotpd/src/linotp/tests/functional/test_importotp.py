@@ -30,10 +30,13 @@
 import json
 
 from linotp.tests import TestController
-
-from linotp.lib.ImportOTP import eTokenDat, PSKC, parseYubicoCSV, parseSafeNetXML
+from linotp.lib.ImportOTP import eTokenDat
+from linotp.lib.ImportOTP import PSKC
+from linotp.lib.ImportOTP.yubico import parseYubicoCSV
+from linotp.lib.ImportOTP.safenet import parseSafeNetXML
 
 import os
+
 
 class TestImportOTP(TestController):
 
@@ -121,8 +124,8 @@ class TestImportOTP(TestController):
         '''
 
         params = {
-            'type':'dat',
-            'startdate':'1.1.2000'}
+            'type': 'dat',
+            'startdate': '1.1.2000'}
 
         response = self.upload_tokens("safework_tokens.dat", params=params)
 
@@ -145,8 +148,8 @@ class TestImportOTP(TestController):
         # test for upload empty file data
 
         params = {
-            'type':'dat',
-            'startdate':'1.1.2000'}
+            'type': 'dat',
+            'startdate': '1.1.2000'}
 
         response = self.upload_tokens("safework_tokens.dat",
                                       data="",
@@ -175,8 +178,8 @@ class TestImportOTP(TestController):
         # test: no startdate
 
         params = {
-            'file':data,
-            'type':'dat'}
+            'file': data,
+            'type': 'dat'}
 
         response = self.upload_tokens("safework_tokens.dat",
                                       params=params)
@@ -189,12 +192,11 @@ class TestImportOTP(TestController):
         # test: wrong startdate
 
         params = {
-            'type':'dat',
+            'type': 'dat',
             'startdate': '2000-12-12', }
 
         response = self.upload_tokens("safework_tokens.dat",
                                       params=params)
-
 
         error_msg = '<imported>2</imported>'
         assert error_msg in response, response
@@ -209,8 +211,8 @@ class TestImportOTP(TestController):
         xml = self._read_data("ocra_pskc_tokens.xml")
 
         TOKENS = PSKC.parsePSKCdata(xml,
-                 preshared_key_hex="4A057F6AB6FCB57AB5408E46A9835E68",
-                 do_checkserial=False)
+                                    preshared_key_hex="4A057F6AB6FCB57AB5408E46A9835E68",
+                                    do_checkserial=False)
 
         assert len(TOKENS) == 3, TOKENS
         assert TOKENS.get("306EUO4-00954") is not None, TOKENS
@@ -227,8 +229,8 @@ class TestImportOTP(TestController):
         pskc_xml = self._read_data("pskc_tokens.xml")
 
         TOKENS = PSKC.parsePSKCdata(
-                                                    pskc_xml,
-                                                    do_checkserial=False)
+            pskc_xml,
+            do_checkserial=False)
 
         assert len(TOKENS) == 6, TOKENS
 
@@ -262,7 +264,7 @@ class TestImportOTP(TestController):
         test to import token data
         '''
 
-        params = {'type':'oathcsv'}
+        params = {'type': 'oathcsv'}
 
         response = self.upload_tokens("oath_tokens.csv", params=params)
 
@@ -275,7 +277,7 @@ class TestImportOTP(TestController):
         test to import token data sha256 seeds
         '''
 
-        params = {'type':'oathcsv'}
+        params = {'type': 'oathcsv'}
 
         response = self.upload_tokens("oath_tokens_sha256.csv", params=params)
         assert '<imported>8</imported>' in response, response
@@ -330,7 +332,7 @@ class TestImportOTP(TestController):
         test to import token data with sha512 seeds
         '''
 
-        params = {'type':'oathcsv'}
+        params = {'type': 'oathcsv'}
 
         response = self.upload_tokens("oath_tokens_sha512.csv", params=params)
         assert '<imported>8</imported>' in response, response
@@ -386,7 +388,7 @@ class TestImportOTP(TestController):
         '''
 
         params = {
-            'type':'pskc',
+            'type': 'pskc',
             'pskc_type': 'plain',
             'pskc_password': "",
             'pskc_preshared': ""}
@@ -396,7 +398,7 @@ class TestImportOTP(TestController):
         assert '<imported>6</imported>' in response, response
 
         params = {
-            'type':'pskc',
+            'type': 'pskc',
             'pskc_type': 'plain',
             'pskc_password': "",
             'pskc_preshared': "",
@@ -414,7 +416,7 @@ class TestImportOTP(TestController):
         '''
 
         params = {
-            'type':'pskc',
+            'type': 'pskc',
             'pskc_type': 'plain',
             'pskc_password': "",
             'pskc_preshared': ""}
@@ -423,7 +425,7 @@ class TestImportOTP(TestController):
 
         assert '<status>False</status>' in response, response
         assert 'Error loading tokens. File' \
-                        ' or Type empty!' in response, response
+            ' or Type empty!' in response, response
 
         return
 
@@ -432,7 +434,7 @@ class TestImportOTP(TestController):
         Test to import unknown type
         '''
 
-        params = {'type':'XYZ'}
+        params = {'type': 'XYZ'}
         response = self.upload_tokens("pskc_tokens.xml", params=params)
 
         assert '<status>False</status>' in response, response
@@ -445,7 +447,7 @@ class TestImportOTP(TestController):
         Test to import XML data
         '''
 
-        params = {'type':'aladdin-xml'}
+        params = {'type': 'aladdin-xml'}
         response = self.upload_tokens("safenet_tokens.dat", params=params)
 
         assert '<imported>2</imported>' in response, response
@@ -457,7 +459,7 @@ class TestImportOTP(TestController):
         Test to import Yubikey CSV
         '''
 
-        params = {'type':'yubikeycsv'}
+        params = {'type': 'yubikeycsv'}
         response = self.upload_tokens("yubi_tokens.csv", params=params)
 
         assert '<imported>5</imported>' in response, response
@@ -639,7 +641,7 @@ class TestImportOTP(TestController):
         # 1. negative test: hugo is not allowed to load tokens
 
         params = {
-            'type':'oathcsv'}
+            'type': 'oathcsv'}
 
         response = self.upload_tokens("oath_tokens.csv", params=params,
                                       auth_user='hugo')
@@ -652,7 +654,7 @@ class TestImportOTP(TestController):
         # 2. negative test: as target realm only 'mydefrealm' is allowed
 
         params = {
-            'type':'oathcsv',
+            'type': 'oathcsv',
             'targetrealm': 'myOtherRealm'}
 
         response = self.upload_tokens("oath_tokens.csv", params=params,
@@ -666,7 +668,7 @@ class TestImportOTP(TestController):
         # 3. positiv test: allowed target realm 'mydefrealm' for user 'admin'
 
         params = {
-            'type':'oathcsv',
+            'type': 'oathcsv',
             'targetrealm': 'mydefrealm'}
 
         response = self.upload_tokens("oath_tokens.csv", params=params,
