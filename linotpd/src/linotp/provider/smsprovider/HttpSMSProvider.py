@@ -95,7 +95,7 @@ class HttpSMSProvider(ISMSProvider):
 
         try:
 
-            return requests(url, parameter, username, password, method)
+            return self.request(url, parameter, username, password, method)
 
         except Exception as exx:
             log.warning("Failed to access the HTTP SMS Service %r", exx)
@@ -184,8 +184,8 @@ class HttpSMSProvider(ISMSProvider):
                           "definition")
         return True
 
-    def requests_request(self, url, parameter,
-                         username=None, password=None, method='GET'):
+    def request(self, url, parameter,
+                username=None, password=None, method='GET'):
 
         try:
             pparams = {}
