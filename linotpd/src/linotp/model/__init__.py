@@ -42,7 +42,6 @@ Common rules
 
 """
 
-
 import binascii
 import logging
 import traceback
@@ -64,8 +63,7 @@ from linotp.model.meta import MetaData
 
 from linotp.lib.crypto.utils import geturandom
 from linotp.lib.crypto.utils import hash_digest
-# from linotp.lib.crypto import encryptPin
-# from linotp.lib.crypto import decryptPin
+
 from linotp.lib.crypto.utils import get_rand_digit_str
 
 Session = meta.Session
