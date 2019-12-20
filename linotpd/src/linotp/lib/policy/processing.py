@@ -41,217 +41,12 @@ import logging
 
 from linotp.lib.policy.util import _getAuthenticatedUser
 from linotp.lib.policy.util import get_policies
-from linotp.lib.policy.util import are_the_same
-
 from linotp.lib.policy.evaluate import PolicyEvaluator
-from linotp.lib.policy.legacy import legacy_get_client_policy
-from linotp.lib.policy.legacy import legacy_getPolicy
-from linotp.lib.policy.legacy import legacy_getAuthorization
-
-from linotp.lib.context import request_context as context
-from linotp.lib.type_utils import boolean
 
 LOG = logging.getLogger(__name__)
 
 
-def _getAuthorization(scope, action):
-    """
-    migration stub for the new policy engine
-    """
-
-    use_new_one = boolean(context['Config'].get(
-                                    'NewPolicyEvaluation', False))
-    compare = boolean(context['Config'].get(
-                                    'NewPolicyEvaluation.compare', False))
-
-    if use_new_one or compare:
-        new_pols = new_getAuthorization(scope, action)
-
-    if not use_new_one or compare:
-        old_pols = legacy_getAuthorization(scope, action)
-
-    if use_new_one:
-        return_policies = new_pols
-    else:
-        return_policies = old_pols
-
-    if not compare:
-        return return_policies
-
-    if not are_the_same(old_pols, new_pols):
-
-        LOG.error('PolicyEvaluation is not the same for params %r,%r',
-                  scope, action)
-        LOG.error('old: new %r <> %r', old_pols, new_pols)
-
-    return return_policies
-
-
-def has_client_policy(client, scope=None, action=None, realm=None, user=None,
-                      find_resolver=True, userObj=None, active_only=True):
-    """
-    migration stub for the new policy engine
-
-    Remark:
-    has_client_policy is different to the method get_client_policy
-    as the filters for the has_client_policy are reseted after usage
-    """
-
-    use_new_one = boolean(context['Config'].get(
-                                    'NewPolicyEvaluation', False))
-    compare = boolean(context['Config'].get(
-                                    'NewPolicyEvaluation.compare', False))
-
-    if use_new_one or compare:
-        new_pols = new_has_client_policy(client, scope=scope,
-                                         action=action,
-                                         realm=realm, user=user,
-                                         find_resolver=find_resolver,
-                                         userObj=userObj,
-                                         active_only=active_only)
-
-    if not use_new_one or compare:
-        old_pols = legacy_get_client_policy(client, scope=scope,
-                                            action=action,
-                                            realm=realm, user=user,
-                                            find_resolver=find_resolver,
-                                            userObj=userObj)
-
-    if use_new_one:
-        return_policies = new_pols
-    else:
-        return_policies = old_pols
-
-    if not compare:
-        return return_policies
-
-    if not are_the_same(old_pols, new_pols):
-
-        LOG.error('PolicyEvaluation is not the same for params %r', client)
-        LOG.error('old: new %r <> %r', old_pols, new_pols)
-
-    return return_policies
-
-
-def get_client_policy(client, scope=None, action=None, realm=None, user=None,
-                      find_resolver=True, userObj=None, active_only=True):
-    """
-    migration stub for the new policy engine
-    """
-    use_new_one = boolean(context['Config'].get(
-                                    'NewPolicyEvaluation', False))
-    compare = boolean(context['Config'].get(
-                                    'NewPolicyEvaluation.compare', False))
-
-    if use_new_one or compare:
-        pols_new = new_get_client_policy(client, scope=scope,
-                                         action=action,
-                                         realm=realm, user=user,
-                                         find_resolver=find_resolver,
-                                         userObj=userObj,
-                                         active_only=active_only)
-
-    if not use_new_one or compare:
-        pols_old = legacy_get_client_policy(client, scope=scope,
-                                            action=action,
-                                            realm=realm, user=user,
-                                            find_resolver=find_resolver,
-                                            userObj=userObj)
-
-    if use_new_one:
-        return_policies = pols_new
-    else:
-        return_policies = pols_old
-
-    if not compare:
-        return return_policies
-
-    if not are_the_same(pols_old, pols_new):
-
-        LOG.error('PolicyEvaluation is not the same for params %r', client)
-        LOG.error('old: new %r <> %r', pols_old, pols_new)
-
-    return return_policies
-
-
-def getPolicy(param, only_active=True):
-    """
-    migration method for the getPolicy old and new
-    """
-
-    use_new_one = boolean(context['Config'].get(
-                                    'NewPolicyEvaluation', False))
-    compare = boolean(context['Config'].get(
-                                    'NewPolicyEvaluation.compare', False))
-
-    if use_new_one or compare:
-
-        pols_new = new_getPolicy(param,
-                                 only_active=only_active)
-
-    if not use_new_one or compare:
-
-        pols_old = legacy_getPolicy(param,
-                                    only_active=only_active)
-
-    if use_new_one:
-        return_policies = pols_new
-    else:
-        return_policies = pols_old
-
-    if return_policies:
-        pass
-
-    if not compare:
-        return return_policies
-
-    if not are_the_same(pols_old, pols_new):
-
-        LOG.error('PolicyEvaluation is not the same for params %r', param)
-        LOG.error('old: new %r <> %r', pols_old, pols_new)
-
-    return return_policies
-
-
 def search_policy(param, only_active=True):
-    """
-    migration stub for the new policy engine
-    """
-
-    use_new_one = boolean(context['Config'].get(
-                                    'NewPolicyEvaluation', False))
-    compare = boolean(context['Config'].get(
-                                    'NewPolicyEvaluation.compare', False))
-
-    if use_new_one or compare:
-        pols_new = new_search_policy(param,
-                                     only_active=only_active)
-
-    if not use_new_one or compare:
-        pols_old = legacy_getPolicy(param,
-                                    only_active=only_active)
-
-    if use_new_one:
-        return_policies = pols_new
-    else:
-        return_policies = pols_old
-
-    if not compare:
-        return return_policies
-
-    if not are_the_same(pols_old, pols_new):
-
-        LOG.error('PolicyEvaluation is not the same for params %r', param)
-        LOG.error('old: new %r <> %r', pols_old, pols_new)
-
-    return return_policies
-
-# -------------------------------------------------------------------------- --
-
-# interfaces to the new policy engine
-
-
-def new_search_policy(param, only_active=True):
     '''
     Function to retrieve the list of policies.
 
@@ -293,7 +88,7 @@ def new_search_policy(param, only_active=True):
     return new_pols
 
 
-def new_getPolicy(param, only_active=True):
+def getPolicy(param, only_active=True):
     '''
     Function to retrieve the list of policies.
 
@@ -339,7 +134,7 @@ def new_getPolicy(param, only_active=True):
     return new_pols
 
 
-def new_getAuthorization(scope, action):
+def _getAuthorization(scope, action):
     """
     This internal function returns the Authrorizaition within some
     the scope=system(or audit, monitoring, tools). for the currently
@@ -394,7 +189,7 @@ def new_getAuthorization(scope, action):
             'admin': admin_user['login']}
 
 
-def new_get_client_policy(client, scope=None, action=None, realm=None,
+def get_client_policy(client, scope=None, action=None, realm=None,
                           user=None, find_resolver=True, userObj=None,
                           active_only=True):
     '''
@@ -443,7 +238,7 @@ def new_get_client_policy(client, scope=None, action=None, realm=None,
     return policies
 
 
-def new_has_client_policy(client, scope=None, action=None, realm=None,
+def has_client_policy(client, scope=None, action=None, realm=None,
                           user=None, find_resolver=True, userObj=None,
                           active_only=True):
     '''
