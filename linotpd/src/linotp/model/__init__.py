@@ -60,7 +60,6 @@ from sqlalchemy.orm import relation
 import linotp
 
 from linotp.model import meta
-from linotp.model.meta import Session
 from linotp.model.meta import MetaData
 
 from linotp.lib.crypto.utils import geturandom
@@ -69,6 +68,7 @@ from linotp.lib.crypto.utils import hash_digest
 # from linotp.lib.crypto import decryptPin
 from linotp.lib.crypto.utils import get_rand_digit_str
 
+Session = meta.Session
 
 from linotp.flap import config
 log = logging.getLogger(__name__)
@@ -104,65 +104,67 @@ def init_model(engine):
 
     return
 
-token_table = sa.Table('Token', meta.metadata,
-                       sa.Column('LinOtpTokenId', sa.types.Integer(), sa.Sequence(
-                           'token_seq_id', optional=True), primary_key=True, nullable=False),
-                       sa.Column(
-                           'LinOtpTokenDesc', sa.types.Unicode(80), default=''),
-                       sa.Column('LinOtpTokenSerialnumber', sa.types.Unicode(
-                           40), default='', unique=True, nullable=False, index=True),
 
-                       sa.Column(
-                           'LinOtpTokenType', sa.types.Unicode(30), default='HMAC', index=True),
-                       sa.Column(
-                           'LinOtpTokenInfo', sa.types.Unicode(2000), default=''),
-                       # # encrypt
-                       sa.Column(
-                           'LinOtpTokenPinUser', sa.types.Unicode(512), default=''),
-                       # # encrypt
-                       sa.Column(
-                           'LinOtpTokenPinUserIV', sa.types.Unicode(32), default=''),
-                       # # encrypt
-                       sa.Column(
-                           'LinOtpTokenPinSO', sa.types.Unicode(512), default=''),
-                       # # encrypt
-                       sa.Column(
-                           'LinOtpTokenPinSOIV', sa.types.Unicode(32), default=''),
+token_table = sa.Table(
+    'Token', meta.metadata,
+    sa.Column('LinOtpTokenId', sa.types.Integer(), sa.Sequence(
+        'token_seq_id', optional=True), primary_key=True, nullable=False),
+    sa.Column(
+        'LinOtpTokenDesc', sa.types.Unicode(80), default=''),
+    sa.Column('LinOtpTokenSerialnumber', sa.types.Unicode(
+        40), default='', unique=True, nullable=False, index=True),
 
-                       sa.Column(
-                           'LinOtpIdResolver', sa.types.Unicode(120), default='', index=True),
-                       sa.Column(
-                           'LinOtpIdResClass', sa.types.Unicode(120), default=''),
-                       sa.Column(
-                           'LinOtpUserid', sa.types.Unicode(320), default='', index=True),
+    sa.Column(
+        'LinOtpTokenType', sa.types.Unicode(30), default='HMAC', index=True),
+    sa.Column(
+        'LinOtpTokenInfo', sa.types.Unicode(2000), default=''),
+    # # encrypt
+    sa.Column(
+        'LinOtpTokenPinUser', sa.types.Unicode(512), default=''),
+    # # encrypt
+    sa.Column(
+        'LinOtpTokenPinUserIV', sa.types.Unicode(32), default=''),
+    # # encrypt
+    sa.Column(
+        'LinOtpTokenPinSO', sa.types.Unicode(512), default=''),
+    # # encrypt
+    sa.Column(
+        'LinOtpTokenPinSOIV', sa.types.Unicode(32), default=''),
+
+    sa.Column(
+        'LinOtpIdResolver', sa.types.Unicode(120), default='', index=True),
+    sa.Column(
+        'LinOtpIdResClass', sa.types.Unicode(120), default=''),
+    sa.Column(
+        'LinOtpUserid', sa.types.Unicode(320), default='', index=True),
 
 
-                       sa.Column(
-                           'LinOtpSeed', sa.types.Unicode(32), default=''),
-                       sa.Column(
-                           'LinOtpOtpLen', sa.types.Integer(), default=6),
-                       # # hashed
-                       sa.Column(
-                           'LinOtpPinHash', sa.types.Unicode(512), default=''),
-                       # # encrypt
-                       sa.Column(
-                           'LinOtpKeyEnc', sa.types.Unicode(1024), default=''),
-                       sa.Column(
-                           'LinOtpKeyIV', sa.types.Unicode(32), default=''),
+    sa.Column(
+        'LinOtpSeed', sa.types.Unicode(32), default=''),
+    sa.Column(
+        'LinOtpOtpLen', sa.types.Integer(), default=6),
+    # # hashed
+    sa.Column(
+        'LinOtpPinHash', sa.types.Unicode(512), default=''),
+    # # encrypt
+    sa.Column(
+        'LinOtpKeyEnc', sa.types.Unicode(1024), default=''),
+    sa.Column(
+        'LinOtpKeyIV', sa.types.Unicode(32), default=''),
 
-                       sa.Column(
-                           'LinOtpMaxFail', sa.types.Integer(), default=10),
-                       sa.Column(
-                           'LinOtpIsactive', sa.types.Boolean(), default=True),
-                       sa.Column(
-                           'LinOtpFailCount', sa.types.Integer(), default=0),
-                       sa.Column('LinOtpCount', sa.types.Integer(), default=0),
-                       sa.Column(
-                           'LinOtpCountWindow', sa.types.Integer(), default=10),
-                       sa.Column(
-                           'LinOtpSyncWindow', sa.types.Integer(), default=1000),
-                       implicit_returning=implicit_returning,
-                       )
+    sa.Column(
+        'LinOtpMaxFail', sa.types.Integer(), default=10),
+    sa.Column(
+        'LinOtpIsactive', sa.types.Boolean(), default=True),
+    sa.Column(
+        'LinOtpFailCount', sa.types.Integer(), default=0),
+    sa.Column('LinOtpCount', sa.types.Integer(), default=0),
+    sa.Column(
+        'LinOtpCountWindow', sa.types.Integer(), default=10),
+    sa.Column(
+        'LinOtpSyncWindow', sa.types.Integer(), default=1000),
+    implicit_returning=implicit_returning,
+)
 
 TOKEN_ENCODE = ["LinOtpTokenDesc", "LinOtpTokenSerialnumber",
                 "LinOtpTokenInfo", "LinOtpUserid", "LinOtpIdResClass",
@@ -280,7 +282,8 @@ class Token(object):
     def setHashedPin(self, pin):
         seed = geturandom(16)
         self.LinOtpSeed = binascii.hexlify(seed).decode('utf-8')
-        self.LinOtpPinHash = binascii.hexlify(hash_digest(pin, seed)).decode('utf-8')
+        self.LinOtpPinHash = binascii.hexlify(
+            hash_digest(pin, seed)).decode('utf-8')
         return self.LinOtpPinHash
 
     def getHashedPin(self, pin):
@@ -311,7 +314,7 @@ class Token(object):
         # is deleteted via foreign key relation
         # so we delete it explicitly
         token_realm_entries = Session.query(TokenRealm).filter(
-                            TokenRealm.token_id == self.LinOtpTokenId).all()
+            TokenRealm.token_id == self.LinOtpTokenId).all()
 
         for token_realm_entry in token_realm_entries:
             Session.delete(token_realm_entry)
@@ -485,6 +488,7 @@ def createToken(serial):
     return token
 
 ###############################################################################
+
 
 config_table = sa.Table('Config', meta.metadata,
                         sa.Column(
@@ -945,7 +949,7 @@ class Challenge(object):
             Session.add(self)
             Session.flush()
 
-        except Exception as exce:
+        except Exception as _exce:
             log.exception('[save]Error during saving challenge')
 
         return self.transid
@@ -963,7 +967,8 @@ class Challenge(object):
         descr['tokenserial'] = self.tokenserial
         descr['data'] = self.getData()
         if save is True:
-            descr['timestamp'] = "%s" % self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            descr['timestamp'] = "%s" % self.timestamp.strftime(
+                '%Y-%m-%d %H:%M:%S')
         else:
             descr['timestamp'] = self.timestamp
         descr['received_tan'] = self.received_tan
@@ -977,7 +982,7 @@ class Challenge(object):
                 session_info = json.loads(self.session)
                 if 'mac' in session_info:
                     del session_info['mac']
-            except Exception as exx:
+            except Exception as _exx:
                 pass
 
         descr['session'] = session_info
@@ -1020,7 +1025,8 @@ reporting_table =\
              sa.Column('R_ID', sa.types.Integer(),
                        sa.Sequence('reporting_seq_id', optional=True),
                        primary_key=True, nullable=False),
-             sa.Column('R_TIMESTAMP', sa.types.DateTime, default=datetime.now()),
+             sa.Column('R_TIMESTAMP', sa.types.DateTime,
+                       default=datetime.now()),
              sa.Column('R_EVENT', sa.types.Unicode(250), default=''),
              sa.Column('R_REALM', sa.types.Unicode(250), default=''),
              sa.Column('R_PARAMETER', sa.types.Unicode(250), default=''),
@@ -1064,6 +1070,7 @@ class Reporting(object):
 
         return ret
 
+
 reporting_mapping = {}
 reporting_mapping['id'] = reporting_table.c.R_ID
 reporting_mapping['session'] = reporting_table.c.R_SESSION
@@ -1098,6 +1105,7 @@ class LoggingConfig(object):
     def __init__(self, name, level):
         self.name = name
         self.level = level
+
 
 logging_config_mapping = {}
 logging_config_mapping['name'] = logging_config_table.c.name
