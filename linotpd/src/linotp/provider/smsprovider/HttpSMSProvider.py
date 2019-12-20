@@ -110,17 +110,17 @@ class HttpSMSProvider(ISMSProvider):
         # transfer the phone key
         phoneKey = self.config.get('SMS_PHONENUMBER_KEY', "phone")
         urldata[phoneKey] = phone
-        log.debug("[getParameters] urldata: %s" % urldata)
+        log.debug("[getParameters] urldata: %s", urldata)
 
         # transfer the sms key
         messageKey = self.config.get('SMS_TEXT_KEY', "sms")
         urldata[messageKey] = message
-        log.debug("[getParameters] urldata: %s" % urldata)
+        log.debug("[getParameters] urldata: %s", urldata)
 
         params = self.config.get('PARAMETER', {})
         urldata.update(params)
 
-        log.debug("[getParameters] urldata: %s" % urldata)
+        log.debug("[getParameters] urldata: %s", urldata)
 
         return urldata
 
@@ -135,8 +135,8 @@ class HttpSMSProvider(ISMSProvider):
         :return: True or raises an Exception
         '''
 
-        log.debug("[_check_success] entering with config %s" % self.config)
-        log.debug("[_check_success] entering with reply %s" % reply)
+        log.debug("[_check_success] entering with config %r", self.config)
+        log.debug("[_check_success] entering with reply %r", reply)
 
         if "RETURN_SUCCESS_REGEX" in self.config:
             ret = re.search(self.config["RETURN_SUCCESS_REGEX"], reply)
@@ -162,7 +162,7 @@ class HttpSMSProvider(ISMSProvider):
 
         elif "RETURN_SUCCESS" in self.config:
             success = self.config.get("RETURN_SUCCESS")
-            log.debug("[_check_success] success: %s" % success)
+            log.debug("[_check_success] success: %r", success)
             if reply[:len(success)] == success:
                 log.debug("[_check_success] sending SMS success")
             else:
@@ -173,7 +173,7 @@ class HttpSMSProvider(ISMSProvider):
 
         elif "RETURN_FAIL" in self.config:
             fail = self.config.get("RETURN_FAIL")
-            log.debug("[_check_success] fail: %s" % fail)
+            log.debug("[_check_success] fail: %r", fail)
             if reply[:len(fail)] == fail:
                 log.warning("[_check_success] sending SMS fail")
                 raise Exception("We received a predefined error from the "
@@ -183,7 +183,6 @@ class HttpSMSProvider(ISMSProvider):
                           "The reply does not match the RETURN_FAIL "
                           "definition")
         return True
-
 
     def requests_request(self, url, parameter,
                          username=None, password=None, method='GET'):
@@ -200,7 +199,7 @@ class HttpSMSProvider(ISMSProvider):
                     proxy_defintion = {
                         "http": self.config['PROXY'],
                         "https": self.config['PROXY']
-                        }
+                    }
 
                 elif isinstance(self.config['PROXY'], dict):
                     proxy_defintion = self.config['PROXY']
@@ -232,7 +231,7 @@ class HttpSMSProvider(ISMSProvider):
 
             reply = response.text
             # some providers like clickatell have no response.status!
-            log.debug("HttpSMSProvider >>%s...%s<<", reply[:20], reply[-20:])
+            log.debug("HttpSMSProvider >>%r...%r<<", reply[:20], reply[-20:])
             ret = self._check_success(reply)
 
         except (requests.exceptions.ConnectTimeout,
