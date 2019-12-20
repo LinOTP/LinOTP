@@ -41,14 +41,6 @@ def m_get_client_match():
 def m_get_client_no_match():
     return "172.111.1.14"
 
-
-mocked_context = {
-    'Config': {
-        'NewPolicyEvaluation': False,
-        'NewPolicyEvaluation.compare': False,
-    }
-}
-
 def m_get_policies():
     policies = {
     'qrtoken_local': {
@@ -82,8 +74,7 @@ class TestGetClientPolicy(unittest.TestCase):
     Policy test
     """
 
-    @patch('linotp.lib.policy.processing.context', new=mocked_context)
-    def test_get_single_auth_policy_new_pe(self):
+    def test_get_single_auth_policy_pe(self):
         """
         verify that (more specific) policy which refers to a client is selected
 
@@ -101,11 +92,7 @@ class TestGetClientPolicy(unittest.TestCase):
 
             # ------------------------------------------------------------------ --
 
-            # the new policy engine is by defining this in the config
-
-            mocked_context['Config']['NewPolicyEvaluation'] = True
-
-            # and calls the get_policies function which must be mocked
+            # call the get_policies function which must be mocked
 
             with patch.object(
                 linotp.lib.policy.processing, 'get_policies',  autospec=True) \
@@ -129,50 +116,5 @@ class TestGetClientPolicy(unittest.TestCase):
 
                 assert 'client' not in action_value
 
-
-    @patch('linotp.lib.policy.processing.context', new=mocked_context)
-    def test_get_single_auth_policy_old_pe(self):
-        """
-        verify that (more specific) policy which refers to a client is selected
-
-        this is the first one of a series to test that policy evaluation
-        supports the filtering by client, now focusing on the function
-              get_single_auth_policy
-        which is used by the QRToken and the PushToken to retrieve the pairing
-        and callback urls from the policy defintions
-
-        """
-
-        with patch.object(
-            linotp.lib.policy, '_get_client', autospec=True) \
-            as mock_get_client:
-
-            # ------------------------------------------------------------------ --
-
-            # the oldpolicy engine is by defining this in the config
-
-            mocked_context['Config']['NewPolicyEvaluation'] = False
-
-            with patch.object(
-                linotp.lib.policy.legacy, 'get_copy_of_policies',
-                autospec=True) as mock_get_policies:
-
-                # ---------------------------------------------------------- --
-
-                # setup the to be called  mocked functions
-
-                mock_get_policies.side_effect = m_get_policies
-                mock_get_client.side_effect = m_get_client_match
-
-                action_value = get_single_auth_policy(
-                    'qrtoken_pairing_callback_url', realms=['*'])
-
-                assert 'client' in action_value
-
-                mock_get_client.side_effect = m_get_client_no_match
-                action_value = get_single_auth_policy(
-                    'qrtoken_pairing_callback_url', realms=['*'])
-
-                assert 'client' not in action_value
 
 # eof #
