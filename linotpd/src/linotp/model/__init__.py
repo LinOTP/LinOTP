@@ -194,46 +194,6 @@ class Token(object):
         # will be assigned automaticaly
         # self.LinOtpTokenId      = 0
 
-    def __setattr__(self, name, value):
-        """
-        to support unicode on all backends, we use the json encoder with
-        the ASCII encode default
-
-        :param name: db column name or class member
-        :param value: the corresponding value
-
-        :return: - nothing -
-        """
-        if name in TOKEN_ENCODE:
-            # # encode data
-            if value:
-                value = linotp.lib.crypto.utils.uencode(value)
-        super(Token, self).__setattr__(name, value)
-
-    def __getattribute__(self, name):
-        """
-        to support unicode on all backends, we use the json decoder with
-        the ASCII decode default
-
-        :param name: db column name or class member
-
-        :return: the corresponding value
-        """
-        # Default behaviour
-        value = object.__getattribute__(self, name)
-        if name in TOKEN_ENCODE:
-            if value:
-                value = linotp.lib.crypto.utils.udecode(value)
-            else:
-                value = ""
-        # port of the 2.6. resolver to 2.7
-        if name in ['LinOtpIdResClass']:
-            if value[:len('useridresolveree.')] == 'useridresolveree.':
-                value = "useridresolver.%s" % value[
-                    len('useridreseolveree.') - 1:]
-
-        return value
-
     def _fix_spaces(self, data):
         '''
         On MS SQL server empty fields ("") like the LinOtpTokenInfo
@@ -552,44 +512,8 @@ class Config(object):
         self.Type = str(Type)
         self.Description = str(Description)
 
-
     def __unicode__(self):
         return self.Description
-
-    def __setattr__(self, name, value):
-        """
-        to support unicode on all backends, we use the json encoder with
-        the ASCII encode default
-
-        :param name: db column name or class member
-        :param value: the corresponding value
-
-        :return: - nothing -
-        """
-        if name in CONFIG_ENCODE:
-            # # encode data
-            if value:
-                value = linotp.lib.crypto.utils.uencode(value)
-        super(Config, self).__setattr__(name, value)
-
-    def __getattribute__(self, name):
-        """
-        to support unicode on all backends, we use the json decoder with
-        the ASCII decode default
-
-        :param name: db column name or class member
-
-        :return: the corresponding value
-        """
-        # Default behaviour
-        value = object.__getattribute__(self, name)
-        if name in CONFIG_ENCODE:
-            if value:
-                value = linotp.lib.crypto.utils.udecode(value)
-            else:
-                value = ""
-
-        return value
 
     __str__ = __unicode__
 
@@ -628,41 +552,6 @@ REALM_ENCODE = ["name", "option"]
 
 
 class Realm(object):
-
-    def __setattr__(self, name, value):
-        """
-        to support unicode on all backends, we use the json encoder with
-        the ASCII encode default
-
-        :param name: db column name or class member
-        :param value: the corresponding value
-
-        :return: - nothing -
-        """
-        if name in REALM_ENCODE:
-            # # encode data
-            if value:
-                value = linotp.lib.crypto.utils.uencode(value)
-        super(Realm, self).__setattr__(name, value)
-
-    def __getattribute__(self, name):
-        """
-        to support unicode on all backends, we use the json decoder with
-        the ASCII decode default
-
-        :param name: db column name or class member
-
-        :return: the corresponding value
-        """
-        # Default behaviour
-        value = object.__getattribute__(self, name)
-        if name in REALM_ENCODE:
-            if value:
-                value = linotp.lib.crypto.utils.udecode(value)
-            else:
-                value = ""
-
-        return value
 
     def __init__(self, realm):
         self.name = realm
@@ -725,42 +614,6 @@ class OcraChallenge(object):
         self.received_count = 0
         self.received_tan = False
         self.valid_tan = False
-
-
-    def __setattr__(self, name, value):
-        """
-        to support unicode on all backends, we use the json encoder with
-        the ASCII encode default
-
-        :param name: db column name or class member
-        :param value: the corresponding value
-
-        :return: - nothing -
-        """
-        if name in OCRA_ENCODE:
-            # # encode data
-            if value:
-                value = linotp.lib.crypto.utils.uencode(value)
-        super(OcraChallenge, self).__setattr__(name, value)
-
-    def __getattribute__(self, name):
-        """
-        to support unicode on all backends, we use the json decoder with
-        the ASCII decode default
-
-        :param name: db column name or class member
-
-        :return: the corresponding value
-        """
-        # Default behaviour
-        value = object.__getattribute__(self, name)
-        if name in OCRA_ENCODE:
-            if value:
-                value = linotp.lib.crypto.utils.udecode(value)
-            else:
-                value = ""
-
-        return value
 
     def setData(self, data):
         self.data = str(data)
@@ -893,42 +746,6 @@ class Challenge(object):
         self.received_count = 0
         self.received_tan = False
         self.valid_tan = False
-
-
-    def __setattr__(self, name, value):
-        """
-        to support unicode on all backends, we use the json encoder with
-        the ASCII encode default
-
-        :param name: db column name or class member
-        :param value: the corresponding value
-
-        :return: - nothing -
-        """
-        if name in CHALLENGE_ENCODE:
-            # # encode data
-            if value:
-                value = linotp.lib.crypto.utils.uencode(value)
-        super(Challenge, self).__setattr__(name, value)
-
-    def __getattribute__(self, name):
-        """
-        to support unicode on all backends, we use the json decoder with
-        the ASCII decode default
-
-        :param name: db column name or class member
-
-        :return: the corresponding value
-        """
-        # Default behaviour
-        value = object.__getattribute__(self, name)
-        if name in CHALLENGE_ENCODE:
-            if value:
-                value = linotp.lib.crypto.utils.udecode(value)
-            else:
-                value = ""
-
-        return value
 
     @classmethod
     def createTransactionId(cls, length=20):
