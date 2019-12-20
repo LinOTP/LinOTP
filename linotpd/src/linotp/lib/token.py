@@ -1625,7 +1625,7 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
         if read_for_update:
             try:
 
-                sqlQuery = sqlQuery.with_lockmode('update').all()
+                sqlQuery = sqlQuery.with_for_update('update').all()
 
             except ResourceClosedError as exx:
                 log.warning("Token already locked for update: %r", exx)
@@ -1676,7 +1676,7 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
 
                     try:
 
-                        sqlQuery = sqlQuery.with_lockmode('update').all()
+                        sqlQuery = sqlQuery.with_for_update('update').all()
 
                     except ResourceClosedError as exx:
                         log.warning("Token already locked for update: %r", exx)
