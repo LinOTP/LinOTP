@@ -144,7 +144,7 @@ def getPolicyActionValue(policies, action, max=True,
     """
     results = {}
 
-    for _polname, pol in list(policies.items()):
+    for _polname, pol in sorted(list(policies.items())):
         action_key = action
         action_value = pol['action'].strip()
 
@@ -435,7 +435,7 @@ def parse_policies(lConfig):
     #  "empty values are treated as wildcards"
     # by replacing these empty values by '*'
 
-    for name, policy in list(Policies.items()):
+    for name, policy in sorted(list(Policies.items())):
 
         # time has not been used before, so we can define the empty as wildcard
 

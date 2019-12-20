@@ -2967,7 +2967,7 @@ def check_token_reporting(realm):
     report_policies = getPolicy({'scope': 'reporting', 'realm': realm})
     actions = []
 
-    for polname, policy in list(report_policies.items()):
+    for polname, policy in sorted(list(report_policies.items())):
         action = policy.get('action', '')
         action = str(action)
         action = action.split(',')

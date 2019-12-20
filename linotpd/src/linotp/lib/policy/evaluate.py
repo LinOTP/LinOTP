@@ -153,7 +153,7 @@ class PolicyEvaluator(object):
         if not self.filters:
             return all_policies
 
-        for p_name, p_dict in list(all_policies.items()):
+        for p_name, p_dict in sorted(list(all_policies.items())):
 
             #
             # special case: for filtering of policies by name:
@@ -196,7 +196,7 @@ class PolicyEvaluator(object):
 
         for key in ['user', 'client', 'realm']:
             entry = []
-            for name, policy in list(matching_policies.items()):
+            for name, policy in sorted(list(matching_policies.items())):
                 conditions = [x.strip() for x in policy[key].split(',')]
                 if '*' not in conditions:
                     entry.append(name)
