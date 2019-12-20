@@ -28,43 +28,12 @@ parses XML data of a Aladdin/SafeNet XML
 """
 
 import logging
-import re
 
 import xml.etree.ElementTree as etree
 
+from linotp.lib.ImportOTP import getTagName, ImportException
 
 log = logging.getLogger(__name__)
-
-
-def getKnownTypes():
-    return ["feitian", "pskc", "dpw", 'dat', "vasco"]
-
-
-def getImportText():
-    return {'feitian': 'Feitian XML',
-            'pskc': 'OATH compliant PSKC',
-            'dpw': 'Tagespasswort Token File',
-            'dat': 'eToken DAT File',
-            'vasco': 'Vasco DPX'}
-
-
-class ImportException(Exception):
-    def __init__(self, description):
-        #self.auth_scope = scope
-        #self.auth_action = action
-        #self.auth_action_desc = action_desc
-        self.description = description
-
-    def __str__(self):
-        return ('%s' % self.description)
-
-
-def getTagName(elem):
-    match = re.match("^({.*?})(.*)$", elem.tag)
-    if match:
-        return match.group(2)
-    else:
-        return elem.tag
 
 
 def parseSafeNetXML(xml):
