@@ -24,10 +24,11 @@
 #    Support: www.keyidentity.com
 #
 
+import flask
+
 from linotp.lib.registry import ClassRegistry
 from linotp.lib.error import TokenTypeNotSupportedError
-from linotp.config.environment import get_activated_token_modules
-from os import path, listdir, walk
+from os import path, walk
 import logging
 
 log = logging.getLogger(__name__)
@@ -51,14 +52,10 @@ def reload_classes():
 
     # if there is a list of predefined tokens in the linotp.ini
 
-    activated_modules = get_activated_token_modules()
-
+    activated_modules = flask.current_app.config.get("TOKEN_MODULES", "")
     if activated_modules:
-
-        for activated_module in activated_modules:
-
+        for activated_module in activated_modules.split():
             load_module(activated_module)
-
         return
 
     # ---------------------------------------------------------------------- --
@@ -113,4 +110,3 @@ def load_module(mod_rel):
         log.warning('unable to load token module : %r (%r)', mod_rel, exx)
 
     return False
-
