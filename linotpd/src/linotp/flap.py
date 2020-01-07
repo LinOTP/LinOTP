@@ -14,8 +14,6 @@ from werkzeug.exceptions import Forbidden as HTTPForbidden
 from werkzeug.exceptions import Unauthorized as HTTPUnauthorized
 from werkzeug.local import LocalProxy
 
-from .lib import helpers
-
 log = logging.getLogger(__name__)
 
 config = LocalProxy(lambda: flask.g.request_context['config'])
@@ -101,7 +99,6 @@ def set_config():
     flask.g.request_context = {
         'config': {             # This must die, die, die!!!
             'linotp.root': os.path.dirname(os.path.abspath(__file__)),
-            'pylons.h': helpers,  # This can probably go away
         },
     }
 
