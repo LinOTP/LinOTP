@@ -219,25 +219,16 @@ class AdminController(BaseController):
             Session.close()
 
     def logout(self):
-        # see http://docs.pylonsproject.org/projects/pyramid/1.0/narr/webob.html
         c.audit['action_detail'] = "logout"
-        # response.status = "401 Not authenticated"
 
         nonce = request.environ.get("nonce")
         realm = request.environ.get("realm")
         detail = "401 Unauthorized"
-        # return HTTPUnauthorized(request=request)
         raise HTTPUnauthorized(
              str(detail),
-             [('WWW-Authenticate', 'Digest realm="%s", nonce="%s", qop="auth"' % (realm, nonce))]
-            )
-
-        # raise exc.HTTPUnauthorized(
-        #                           str(detail),
-        #                           [('WWW-Authenticate', 'Basic realm="%s"' % realm)]
-        #                          )
-        # abort(401, "You are not authenticated")
-
+             [('WWW-Authenticate',
+               'Digest realm="%s", nonce="%s", qop="auth"' % (realm, nonce))]
+        )
 
     def getsession(self):
         '''
