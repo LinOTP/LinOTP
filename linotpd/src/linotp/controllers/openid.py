@@ -200,7 +200,7 @@ class OpenidController(BaseController):
             storage.session.close()
 
 
-    def id(self):
+    def id(self, id=None):
         '''
         This method is used by the consumer to authenticate like this:
         https://server/openid/id/<user>
@@ -216,7 +216,8 @@ class OpenidController(BaseController):
             -> POST /openid/openidserver -> checkid setup
 
         '''
-        user = request.environ['pylons.routes_dict'].get('id')
+        # This needs to be fixed if this is ever to run under Flask.
+        user = id  # request.environ['pylons.routes_dict'].get('id')
         log.debug("[id] requesting access for user %s" % user)
 
         baseurl = self.BASEURL
@@ -237,8 +238,9 @@ class OpenidController(BaseController):
         return head
 
 
-    def yadis(self):
-        user = request.environ['pylons.routes_dict'].get('id')
+    def yadis(self, id=None):
+        # This needs to be fixed if this is ever to run under Flask.
+        user = id  # request.environ['pylons.routes_dict'].get('id')
         response.content_type = 'application/xrds+xml'
 
         endpoint_url = self.BASEURL + "/openid/openidserver"

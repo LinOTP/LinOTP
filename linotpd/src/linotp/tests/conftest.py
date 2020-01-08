@@ -36,7 +36,6 @@ import tempfile
 
 from linotp.app import create_app
 from linotp.flap import set_config, tmpl_context as c
-from linotp.config.environment import load_environment
 from linotp.model import meta
 from . import TestController
 from flask.testing import FlaskClient

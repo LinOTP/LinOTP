@@ -75,8 +75,7 @@ from .model import meta
 
 from . import __version__
 from .flap import LanguageError, config, set_config, set_lang, tmpl_context as c, request, _ as translate
-from .config.defaults import set_defaults
-from .config.environment import load_environment
+from .defaults import set_defaults
 from .settings import configs
 from .tokens import reload_classes as reload_token_classes
 from .lib.audit.base import getAudit

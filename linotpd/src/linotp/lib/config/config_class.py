@@ -36,7 +36,6 @@ from datetime import datetime
 
 from flask import current_app
 
-from linotp.config import environment as env
 from linotp.lib.config.util import expand_here
 
 from linotp.lib.config.db_api import _removeConfigDB
