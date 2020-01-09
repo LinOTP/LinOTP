@@ -28,7 +28,7 @@ import os
 
 import unittest
 
-from linotp.lib.ImportOTP import parseOATHcsv
+from linotp.lib.ImportOTP.oath import parseOATHcsv
 
 
 class TestCacheActivation(unittest.TestCase):
