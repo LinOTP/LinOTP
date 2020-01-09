@@ -123,6 +123,7 @@ build-test-environment:debian-buster:
     - cd linotpd/src
     - pip3 install -e ".[test]"
     - cd ${CI_PROJECT_DIR}
+    - pip3 install pytest-test-groups
 #    - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
 #    - export PYTEST_COVER_DIR=${CI_PROJECT_DIR}/coverage/${DEBIAN_RELEASE_NAME}/
 #    - export COVERAGE_FILE=${PYTEST_COVER_DIR}/unit
@@ -130,14 +131,16 @@ build-test-environment:debian-buster:
 #  artifacts:
 #    paths:
 #      - coverage/${DEBIAN_RELEASE_NAME}
-  script:
-    - make unittests
 
 unit-test:
   extends: .unit-test-base
   stage: test
+  parallel: 4
   variables:
     DEBIAN_RELEASE_NAME: buster
+  script:
+    - make unittests PYTESTARGS="--test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX"
+
 
 .functional-test-base:
   stage: test
@@ -156,6 +159,7 @@ unit-test:
     - python3 --version
     - cd linotpd/src
     - pip3 install -e ".[test]"
+    - pip3 install pytest-test-groups
     - cd ${CI_PROJECT_DIR}
 #    - mkdir /tmp/config
 #    - cp config/dictionary /tmp/config
@@ -175,8 +179,7 @@ unit-test:
 #    - cat func_chunk_03
 #    - cat func_chunk_04
 #    - cat func_chunk_05
-  script:
-    - make functionaltests
+
 #  artifacts:
 #    paths:
 #      - coverage/${DEBIAN_RELEASE_NAME}/
@@ -191,8 +194,11 @@ unit-test:
 
 functional-test:
   extends: .functional-test-base
+  parallel: 6
   variables:
     DEBIAN_RELEASE_NAME: buster
+  script:
+    - make functionaltests PYTESTARGS="--test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX"
 
 # functional-special-test:
 #   extends: .functional-special-test-base
