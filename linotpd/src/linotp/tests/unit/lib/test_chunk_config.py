@@ -419,7 +419,7 @@ class TestConfigStoreCase(unittest.TestCase):
         entry = entries[0]
         assert entry.Key == key
         assert entry.Value == value
-        assert entry.Description == ''  # None is converted to ''
+        assert entry.Description == description
         assert entry.Type == typ
 
 # eof #
