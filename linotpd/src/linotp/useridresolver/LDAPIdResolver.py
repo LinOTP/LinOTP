@@ -45,6 +45,12 @@ import sys
 from datetime import datetime
 from hashlib import sha1
 
+try:
+    from ldap import LDAP_CONTROL_PAGE_OID
+    ldap_api_version = 2.3
+except ImportError:
+    ldap_api_version = 2.4
+
 import ldap.filter
 from ldap.controls import SimplePagedResultsControl
 
@@ -62,6 +68,8 @@ from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 from linotp.useridresolver import resolver_registry
 
 log = logging.getLogger(__name__)
+
+log.info('using the %r cursoring api.' % ldap_api_version)
 
 # here some defaults are defined
 
@@ -1312,7 +1320,7 @@ class IdResolver(UserIdResolver):
         return searchFilter
 
     def _set_cursor(self, searchFilter, attrlist, l_obj=None, lc=None,
-                    serverctrls=None, api_ver=2.4):
+                    serverctrls=None):
         """
         helper function to setup the paging query and shift the cursor
 
@@ -1321,7 +1329,6 @@ class IdResolver(UserIdResolver):
         :param l_obj: the ldap connection object - if none, we bind() it
         :param lc: the page result controller
         :param serverctrls: the srv.ctrl response of the ldap.result3
-        :param api_ver: either 2.3 or 2.4, the ldap api changed in between :-(
         :return: tupple of (message id, ldap connection object and page
                  controller)
         """
@@ -1333,26 +1340,26 @@ class IdResolver(UserIdResolver):
         # first request: if lc is not set, we are initializing
         if lc is None:
             l_obj = self.bind()
-            if api_ver == 2.4:
+            if ldap_api_version == 2.4:
                 lc = SimplePagedResultsControl(True, size=page_size, cookie='')
-            elif api_ver == 2.3:
-                PAGE_OID = ldap.LDAP_CONTROL_PAGE_OID
+            elif ldap_api_version == 2.3:
+                PAGE_OID = LDAP_CONTROL_PAGE_OID
                 lc = SimplePagedResultsControl(PAGE_OID, True, (page_size, ''))
 
         else:
             cookie = None
             pctrls = []
 
-            if api_ver == 2.4:
+            if ldap_api_version == 2.4:
                 for c in serverctrls:
                     if c.controlType == SimplePagedResultsControl.controlType:
                         pctrls.append(c)
                         cookie = c.cookie
                         lc.cookie = cookie
 
-            elif api_ver == 2.3:
+            elif ldap_api_version == 2.3:
                 for c in serverctrls:
-                    if c.controlType == ldap.LDAP_CONTROL_PAGE_OID:
+                    if c.controlType == LDAP_CONTROL_PAGE_OID:
                         pctrls.append(c)
                         cookie = c.controlValue[1]
                         lc.controlValue = (page_size, cookie)
@@ -1373,21 +1380,6 @@ class IdResolver(UserIdResolver):
             )
 
         return (msgid, l_obj, lc)
-
-    def _api_version(self):
-        """
-        helper method to detect if the python ldap module supports cursoring
-         * debian python-ldap==2.3.11 has support, while pip python-ldap-2.4.19
-           has not :-(
-        :return: True or False
-        """
-        ret = 2.3
-        try:
-            _PAGE_OID = ldap.LDAP_CONTROL_PAGE_OID
-        except AttributeError as _exx:
-            log.info('using the 2.4 cursoring api.')
-            ret = 2.4
-        return ret
 
     def getUserListIterator(self, searchDict, limit_size=True):
         """
@@ -1416,11 +1408,7 @@ class IdResolver(UserIdResolver):
 
         # ------------------------------------------------------------------ --
 
-        # replace the method pointer to the right place
-        api_ver = self._api_version()
-
-        (msgid, l_obj, lc) = self._set_cursor(
-                        searchFilter, attrlist, api_ver=api_ver)
+        (msgid, l_obj, lc) = self._set_cursor(searchFilter, attrlist)
 
         done = False
         results_size = 0
@@ -1442,7 +1430,7 @@ class IdResolver(UserIdResolver):
                 # shift the cursor to the next page
                 (msgid, l_obj, lc) = self._set_cursor(
                                  searchFilter, attrlist, l_obj=l_obj, lc=lc,
-                                 serverctrls=serverctrls, api_ver=api_ver)
+                                 serverctrls=serverctrls)
 
                 if not msgid:
                     done = True
