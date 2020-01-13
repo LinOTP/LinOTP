@@ -110,7 +110,6 @@ class AuditController(BaseController):
         return response
 
     def search(self):
-
         '''
         This functions searches within the audit trail
         It returns the audit information for the given search pattern
@@ -150,7 +149,8 @@ class AuditController(BaseController):
                 if key in search_params:
                     del search_params[key]
 
-            output_format = self.request_params.get("outform", 'json') or 'json'
+            output_format = self.request_params.get(
+                "outform", 'json') or 'json'
 
             streamed_response = None
 
@@ -159,18 +159,22 @@ class AuditController(BaseController):
 
             if output_format == "csv":
                 delimiter = self.request_params.get('delimiter', ',') or ','
-                audit_iterator = CSVAuditIterator(audit_query, delimiter)
-                # TODO: Use stream_with_context instead of list
-                streamed_response = Response(list(audit_iterator),
-                                    content_type="text/csv")
-                filename = "linotp-audit.csv"
-                streamed_response.headers['Content-disposition'] = (
-                                        'attachment; filename=%s' % filename)
+
+                streamed_response = Response(
+                    stream_with_context(
+                        CSVAuditIterator(audit_query, delimiter)
+                    ), mimetype='text/csv'
+                )
+                streamed_response.headers.set(
+                    'Content-disposition',
+                    'attachment', filename='linotp-audit.csv')
+
             else:
-                audit_iterator = JSONAuditIterator(audit_query)
-                # TODO: Use stream_with_context instead of list
-                streamed_response = Response(list(audit_iterator),
-                                    content_type="application/json")
+                streamed_response = Response(
+                    stream_with_context(
+                        JSONAuditIterator(audit_query)
+                    ), mimetype='application/json'
+                )
 
             c.audit['success'] = True
             Session.commit()

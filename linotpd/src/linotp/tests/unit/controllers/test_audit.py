@@ -29,13 +29,14 @@
 import pytest
 
 from linotp.lib.audit.SQLAudit import AuditTable
+from linotp.tests.conftest import Base_App_Config as BAC
 
 
 @pytest.fixture
 def auditparams():
     """
     Audit parameter set
-    
+
     Fixture that provides parameters that can be used to construct
     a test audit log entry
     """
@@ -55,12 +56,14 @@ def auditparams():
     )
     return params
 
+
 @pytest.fixture
 def auditrec(auditparams):
     """
     Fixture that provides a test audit entry that can be logged
     """
     return AuditTable(**auditparams)
+
 
 @pytest.fixture
 def search(adminclient):
@@ -81,6 +84,9 @@ def search(adminclient):
 
     return _search
 
+
+@pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
+                    reason="non sqlite database required for this test!")
 class TestAuditSearch(object):
     def test_audit_json_empty(self, search):
         response = search()

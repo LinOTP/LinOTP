@@ -30,6 +30,8 @@ import pytest
 import logging
 import json
 
+from linotp.tests.conftest import Base_App_Config as BAC
+
 from linotp.tests import TestController, url
 
 log = logging.getLogger(__name__)
@@ -188,6 +190,8 @@ class TestUserserviceAuthController(TestController):
 
         return
 
+    @pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
+                        reason="non sqlite database required for this test!")
     def test_login_with_false_password(self):
         """
         check that the login generate a cookie, which does not require
