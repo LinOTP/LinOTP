@@ -166,14 +166,6 @@ unit-test:
 #    paths:
 #      - coverage/${DEBIAN_RELEASE_NAME}/
 
-# .functional-special-test-base:
-#   extends: .functional-test-base
-#   stage: test
-#   variables:
-#     COVERAGE_PREFIX: func-special
-#   script:
-#     - bash -c "find linotp/tests/functional_special -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
-
 functional-test:
   extends: .functional-test-base
   parallel: 6
@@ -181,6 +173,15 @@ functional-test:
     DEBIAN_RELEASE_NAME: buster
   script:
     - make functionaltests PYTESTARGS="--test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX"
+
+
+# .functional-special-test-base:
+#   extends: .functional-test-base
+#   stage: test
+#   variables:
+#     COVERAGE_PREFIX: func-special
+#   script:
+#     - bash -c "find linotp/tests/functional_special -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
 
 # functional-special-test:
 #   extends: .functional-special-test-base
