@@ -71,7 +71,7 @@ log = logging.getLogger(__name__)
 
 log.info('using the %r cursoring api.' % ldap_api_version)
 
-# here some defaults are defined
+# resolver config default / fallback values
 
 DEFAULT_UID_TYPE = "DN"  # can be entryUUID, GUID, objectGUID or DN
 ENCODING = 'utf-8'
@@ -98,6 +98,34 @@ def escape_filter_chars(filterstr):
     return ''.join(ret)
 
 
+# -------------------------------------------------------------------------- --
+
+def escape_hex_for_search(hex_value: str) -> str:
+    """
+    transform an hex string for a byte search in ldap, especially used for objectGUID
+
+    From: https://ldapwiki.com/wiki/ObjectGUID
+
+    ObjectGUID LDAP in SearchFilters
+
+    In order to form an LDAP SearchFilter that searches based on an ObjectGUID,
+    the GUID value must be entered in a special syntax in the filter - where
+    each byte in the hexadecimal representation of the GUID must be escaped
+    with a Backslash (\) symbol.
+
+    To provide an example, in order to search for an object with hexadecimal
+        GUID "90395F191AB51B4A9E9686C66CB18D11",
+    the corresponding filter should be set as:
+        (objectGUID=\90\39\5F\19\1A\B5\1B\4A\9E\96\86\C6\6C\B1\8D\11)
+
+    :param hex_value: e.g. the objectGuid in hex representation
+    :return: str escaped hex representation, to be used for search
+    """
+
+    return '\\' + '\\'.join([hex_value[idx:idx+2] for idx in range(0, len(hex_value), 2)])
+# -------------------------------------------------------------------------- --
+
+
 @resolver_registry.class_entry('useridresolver.LDAPIdResolver.IdResolver')
 @resolver_registry.class_entry('useridresolveree.LDAPIdResolver.IdResolver')
 @resolver_registry.class_entry('useridresolver.ldapresolver')
@@ -115,23 +143,23 @@ class IdResolver(UserIdResolver):
     # stored in self.userinfo
 
     fields = {
-          "username": 1,
-          "userid": 1,
-          "description": 0,
-          "phone": 0,
-          "mobile": 0,
-          "email": 0,
-          "givenname": 0,
-          "surname": 0,
-          "gender": 0}
+        "username": 1,
+        "userid": 1,
+        "description": 0,
+        "phone": 0,
+        "mobile": 0,
+        "email": 0,
+        "givenname": 0,
+        "surname": 0,
+        "gender": 0}
 
     searchFields = {
-          "username": "text",
-          "userid": "text",
-          "description": "text",
-          "email": "text",
-          "givenname": "text",
-          "surname": "text"}
+        "username": "text",
+        "userid": "text",
+        "description": "text",
+        "email": "text",
+        "givenname": "text",
+        "surname": "text"}
 
     critical_parameters = ['LDAPBASE', 'BINDDN', 'LDAPURI']
 
@@ -157,7 +185,7 @@ class IdResolver(UserIdResolver):
         "TIMEOUT": (False, TIMEOUT_NO_LIMIT, text),
         "SIZELIMIT": (False, DEFAULT_SIZELIMIT, int),
 
-        }
+    }
 
     resolver_parameters.update(UserIdResolver.resolver_parameters)
 
@@ -188,7 +216,6 @@ class IdResolver(UserIdResolver):
         '''
 
         log.info("[setup] Setting up the LDAPResolver")
-
         return
 
     @classmethod
@@ -515,7 +542,6 @@ class IdResolver(UserIdResolver):
 
         raise ResolverNotAvailable("Unable to bind to servers %r" % urilist)
 
-
     def unbind(self, lobj):
         """
         unbind() - this function formarly freed the ldap connection
@@ -544,7 +570,7 @@ class IdResolver(UserIdResolver):
             return ''
 
         ufilter = self._replace_macros(self.filter)
-        fil = ldap.filter.filter_format(ufilter,[loginname])
+        fil = ldap.filter.filter_format(ufilter, [loginname])
         l_obj = self.bind()
 
         if not l_obj:
@@ -591,8 +617,8 @@ class IdResolver(UserIdResolver):
         relevant_entries = False
         for entry in resultList:
             if (isinstance(entry, tuple) and
-               len(entry) > 0 and
-               entry[0] is not None):
+                len(entry) > 0 and
+                    entry[0] is not None):
                 relevant_entries = True
 
         if not relevant_entries:
@@ -624,7 +650,6 @@ class IdResolver(UserIdResolver):
         :return: loginname
         :rtype:  string
         '''
-
 
         username = ''
 
@@ -678,7 +703,7 @@ class IdResolver(UserIdResolver):
                                             sizelimit=self.sizelimit,
                                             timeout=self.response_timeout)
                 else:
-                    e_u = escape_filter_chars(binascii.unhexlify(userid))
+                    e_u = escape_hex_for_search(userid)
 
                     filterstr = "(ObjectGUID=%s)" % (e_u)
                     l_id = l_obj.search_ext(self.base,
@@ -694,14 +719,14 @@ class IdResolver(UserIdResolver):
                 # we have to build up the search filter which must end up
                 # in an uft-8 encoding
 
-                filterstr = "(%s=%s)" % (self.uidType,userid)
+                filterstr = "(%s=%s)" % (self.uidType, userid)
 
                 l_id = l_obj.search_ext(
-                                    self.base,
-                                    ldap.SCOPE_SUBTREE,
-                                    filterstr=filterstr,
-                                    sizelimit=self.sizelimit,
-                                    timeout=self.response_timeout)
+                    self.base,
+                    ldap.SCOPE_SUBTREE,
+                    filterstr=filterstr,
+                    sizelimit=self.sizelimit,
+                    timeout=self.response_timeout)
 
             result_data = l_obj.result(l_id, all=1)[1]
 
@@ -1087,7 +1112,6 @@ class IdResolver(UserIdResolver):
 
         raise ResolverNotAvailable("unable to bind to servers %r" % urilist)
 
-
     @staticmethod
     def guid2str(guid):
         '''
@@ -1113,7 +1137,7 @@ class IdResolver(UserIdResolver):
         ret = False
         if ('sAMAccountName' in self.loginnameattribute or
             'sAMAccountName' in self.searchfilter or
-           'sAMAccountName' in self.filter):
+                'sAMAccountName' in self.filter):
             ret = True
         return ret
 
@@ -1208,7 +1232,6 @@ class IdResolver(UserIdResolver):
                           exep)
             raise exep
 
-
         l_obj = self.bind()
 
         if not l_obj:
@@ -1235,9 +1258,9 @@ class IdResolver(UserIdResolver):
             # ---------------------------------------------------------- --
 
             ldap_result_id = l_obj.search_ext(
-                        self.base, ldap.SCOPE_SUBTREE,
-                        filterstr=searchFilter, sizelimit=self.sizelimit,
-                        attrlist=attrlist, timeout=self.response_timeout)
+                self.base, ldap.SCOPE_SUBTREE,
+                filterstr=searchFilter, sizelimit=self.sizelimit,
+                attrlist=attrlist, timeout=self.response_timeout)
 
             log.debug('[getUserList] uidType: %r', self.uidType)
 
@@ -1246,7 +1269,7 @@ class IdResolver(UserIdResolver):
                 userdata = {}
 
                 result_type, result_data = l_obj.result(
-                     ldap_result_id, 0, timeout=self.response_timeout)
+                    ldap_result_id, 0, timeout=self.response_timeout)
 
                 if result_type != ldap.RES_SEARCH_ENTRY or not result_data:
                     break
@@ -1377,7 +1400,7 @@ class IdResolver(UserIdResolver):
                                  attrlist=attrlist,
                                  serverctrls=[lc],
                                  timeout=self.response_timeout
-            )
+                                 )
 
         return (msgid, l_obj, lc)
 
@@ -1429,8 +1452,8 @@ class IdResolver(UserIdResolver):
 
                 # shift the cursor to the next page
                 (msgid, l_obj, lc) = self._set_cursor(
-                                 searchFilter, attrlist, l_obj=l_obj, lc=lc,
-                                 serverctrls=serverctrls)
+                    searchFilter, attrlist, l_obj=l_obj, lc=lc,
+                    serverctrls=serverctrls)
 
                 if not msgid:
                     done = True
@@ -1534,7 +1557,7 @@ class IdResolver(UserIdResolver):
             return {}
 
         userdata["userid"] = self._get_uid_from_result(
-                                            result_data, self.uidType)
+            result_data, self.uidType)
 
         # finally add all existing userinfos (wrt the mapping)
         for user_key, ldap_key in self.userinfo.items():
@@ -1561,6 +1584,7 @@ class IdResolver(UserIdResolver):
                 userdata[user_key] = udata
 
         return userdata
+
 
 def getLdapUsers(params):
 
@@ -1810,6 +1834,7 @@ def main():
         resolver_request(params)
 
 # -- --------------------------------------------------------------------- --
+
 
 if __name__ == "__main__":
     main()
