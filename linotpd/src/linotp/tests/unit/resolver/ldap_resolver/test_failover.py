@@ -35,6 +35,7 @@ from ldap import INVALID_CREDENTIALS
 
 from linotp.lib.resources import ResourceScheduler, DictResourceRegistry
 
+from linotp.useridresolver import LDAPIdResolver as ldap_resolver_module
 from linotp.useridresolver.LDAPIdResolver import IdResolver as LDAPResolver
 from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
@@ -117,21 +118,17 @@ class TestLDAPResolverFailover(unittest.TestCase):
     tests the ldap bind with failover using the Resource Scheduler
     """
 
-    def setUp(self):
-        """ initialize the test """
-
-        unittest.TestCase.setUp(self)
-
-        # ------------------------------------------------------------------ --
-
-        # reset the class static registry and the class static called list
-
+    @pytest.fixture(autouse=True)
+    def mocked_ldap(self, monkeypatch):
         FakeLdapResolver.called = []
         MockedResourceRegistry.registry = {}
 
+        monkeypatch.setattr(LDAPResolver, 'connect',
+                            FakeLdapResolver.m_connect)
 
-    @patch('linotp.useridresolver.LDAPIdResolver.ResourceScheduler',
-           MockedResourceScheduler)
+        monkeypatch.setattr(ldap_resolver_module, 'ResourceScheduler',
+                            MockedResourceScheduler)
+
     def test_bind_with_failover(self):
         """
         test the failover in the bind handling
@@ -146,10 +143,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
         # the mocked resolver loads the derived mocked ResouceSchduler with
         # the mocked Registry so that we can access the calling data
 
-        IDRS = LDAPResolver
-        IDRS.connect = FakeLdapResolver.m_connect
-
-        myldap = IDRS()
+        myldap = LDAPResolver()
         myldap.ldapuri = ("ldap://fail_bind1.psw.de, "
                         "ldap://fail_bind2.psw.de, "
                         "ldap://ok_bind3.psw.de, "
@@ -195,8 +189,6 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         return
 
-    @patch('linotp.useridresolver.LDAPIdResolver.ResourceScheduler',
-           MockedResourceScheduler)
     def test_bind_with_fail(self):
         """
         test the failover in the bind handling
@@ -211,10 +203,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
         # the mocked resolver loads the derived mocked ResouceSchduler with
         # the mocked Registry so that we can access the calling data
 
-        IDRS = LDAPResolver
-        IDRS.connect = FakeLdapResolver.m_connect
-
-        myldap = IDRS()
+        myldap = LDAPResolver()
         myldap.ldapuri = ("ldap://fail_bind1.psw.de, "
                         "ldap://fail_bind2.psw.de, "
                         "ldap://fail_bind3.psw.de, "
@@ -324,8 +313,6 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         return
 
-    @patch('linotp.useridresolver.LDAPIdResolver.ResourceScheduler',
-           MockedResourceScheduler)
     def test_checkPass_with_failover(self):
         """
         test the failover in the checkPass handling - pw check has no impact
@@ -340,10 +327,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
         # the mocked resolver loads the derived mocked ResouceSchduler with
         # the mocked Registry so that we can access the calling data
 
-        IDRS = LDAPResolver
-        IDRS.connect = FakeLdapResolver.m_connect
-
-        myldap = IDRS()
+        myldap = LDAPResolver()
         myldap.ldapuri = ("ldap://fail_bind1.psw.de, "
                           "ldap://fail_bind2.psw.de, "
                           "ldap://ok_bind3.psw.de, "
