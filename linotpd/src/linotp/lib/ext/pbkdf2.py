@@ -52,7 +52,6 @@
 
 from struct import pack
 import linotp.lib.crypto
-import string
 import sys
 
 import hmac
@@ -85,7 +84,7 @@ if sys.version_info[0] == 2:
         return "".join([chr(ord(x) ^ ord(y)) for (x, y) in zip(a, b)])
 
     def b64encode(data, chars="+/"):
-        tt = string.maketrans("+/", chars)
+        tt = str.maketrans("+/", chars)
         return data.encode('base64').replace("\n", "").translate(tt)
     from binascii import b2a_hex
 
@@ -156,9 +155,9 @@ class PBKDF2(object):
     def _pseudorandom(self, key, msg):
         """Pseudorandom function.  e.g. HMAC-SHA1"""
         return self.__macmodule.new(key=key, msg=msg,
-            digestmod=self.__digestmodule).digest()
+                                    digestmod=self.__digestmodule).digest()
 
-    def read(self, bytes):
+    def read(self, _bytes):
         """Read the specified number of key bytes."""
         if self.closed:
             raise ValueError("file-like object is closed")
@@ -166,7 +165,7 @@ class PBKDF2(object):
         size = len(self.__buf)
         blocks = [self.__buf]
         i = self.__blockNum
-        while size < bytes:
+        while size < _bytes:
             i += 1
             if i > _0xffffffffL or i < 1:
                 # We could return "" here, but
@@ -175,8 +174,8 @@ class PBKDF2(object):
             blocks.append(block)
             size += len(block)
         buf = b("").join(blocks)
-        retval = buf[:bytes]
-        self.__buf = buf[bytes:]
+        retval = buf[:_bytes]
+        self.__buf = buf[_bytes:]
         self.__blockNum = i
         return retval
 
@@ -185,7 +184,7 @@ class PBKDF2(object):
         assert 1 <= i <= _0xffffffffL
         U = self.__prf(self.__passphrase, self.__salt + pack("!L", i))
         result = U
-        for j in range(2, 1 + self.__iterations):
+        for _j in range(2, 1 + self.__iterations):
             U = self.__prf(self.__passphrase, U)
             result = binxor(result, U)
         return result
@@ -240,6 +239,7 @@ class PBKDF2(object):
             del self.__buf
             self.closed = True
 
+
 def crypt(word, salt=None, iterations=None):
     """PBKDF2-based unix crypt(3) replacement.
 
@@ -261,7 +261,8 @@ def crypt(word, salt=None, iterations=None):
     else:
         raise TypeError("salt must be a string")
 
-    # word must be a string or unicode (in the latter case, we convert to UTF-8)
+    # word must be a string or unicode (in the latter case, we convert to
+    # UTF-8)
     if isunicode(word):
         word = word.encode("UTF-8")
     elif not isbytes(word):
@@ -294,10 +295,12 @@ def crypt(word, salt=None, iterations=None):
     rawhash = PBKDF2(word, salt, iterations).read(24)
     return salt + "$" + b64encode(rawhash, "./")
 
+
 # Add crypt as a static method of the PBKDF2 class
 # This makes it easier to do "from PBKDF2 import PBKDF2" and still use
 # crypt.
-PBKDF2.crypt = staticmethod(crypt) #type: ignore
+PBKDF2.crypt = staticmethod(crypt)  # type: ignore
+
 
 def _makesalt():
     """Return a 48-bit pseudorandom salt for crypt().
@@ -305,7 +308,10 @@ def _makesalt():
     This function is not suitable for generating cryptographic secrets.
     """
     binarysalt = b("").join(
-        [pack("@H", linotp.lib.crypto.utils.urandom.randint(0, 0xffff)) for i in range(3)])
+        [pack("@H",
+              linotp.lib.crypto.utils.urandom.randint(0, 0xffff))
+         for _i in range(3)
+         ])
     return b64encode(binarysalt, "./")
 
 # vim:set ts=4 sw=4 sts=4 expandtab:
