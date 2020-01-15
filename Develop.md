@@ -60,7 +60,7 @@ The file linotpd/src/linotp/settings.py contains a basic set of configuration "e
 Run LinOTP
 ----------
 
-To run LinOTP execute flask from the *linotp module directory* (linotpd/src/linotp/) as follows:
+To run LinOTP execute flask from the *linotp source directory* (linotpd/src/) as follows:
 
     FLASK_APP=linotpapp flask run
 
