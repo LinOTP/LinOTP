@@ -25,13 +25,15 @@
 #
 """Contains TokenImport class"""
 
-from manage_ui import ManageDialog
+from .manage_ui import ManageDialog
 from linotp_selenium_helper.manage_ui import MsgType
 
 import tempfile
 import os
 import subprocess
 
+class TokenImportError(RuntimeError):
+    pass
 
 class TokenImport(ManageDialog):
     """
@@ -66,6 +68,7 @@ class TokenImport(ManageDialog):
 
         :param file_content: xml string with Token import details
         :param file_path: the file path of provided xml token file
+        :raises TokenImportError if the import failed
         """
         if(not file_content and not file_path):
             raise Exception("""Wrong test implementation. TokenImport.do_import
@@ -108,7 +111,7 @@ class TokenImport(ManageDialog):
             self.file_name_lineedit).send_keys(self.file_path)
 
         self.driver.find_element_by_id(self.load_button_id).click()
-        self.driver.find_element_by_id("logo").click()
+        self.manage.wait_for_waiting_finished()
 
         # delete the temp file if necessary
         if(not file_path):
@@ -120,8 +123,9 @@ class TokenImport(ManageDialog):
                 pass
 
         # Check the alert boxes on the top of the LinOTP UI
-        return self.manage.alert_box_handler.check_message(
-            'Failed to import token', MsgType.Error)
+        info = self.manage.alert_box_handler.last_line
+        if info.type != 'info' or not info.text.startswith('Token import result:'):
+            raise TokenImportError('Import failure:{}'.format(info))
 
 
 class TokenImportAladdin(TokenImport):

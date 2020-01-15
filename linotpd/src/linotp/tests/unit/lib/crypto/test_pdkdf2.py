@@ -103,7 +103,7 @@ class TestComparePDKDF(unittest.TestCase):
             salt = testvector['S']
             iterations = testvector['c']
             dk_length = testvector['dkLen']
-            expected_result = testvector['DK']
+            expected_result = testvector['DK'].encode('utf-8')
 
             rawhash1 = pbkdf2(password, salt, dk_length, iterations, hashfunc)
             assert(expected_result == binascii.hexlify(rawhash1))

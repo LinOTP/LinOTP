@@ -35,6 +35,7 @@ from requests.exceptions import ConnectionError
 from linotp.tests import TestController
 from linotp.provider.pushprovider.default_push_provider \
         import DefaultPushProvider
+import pytest
 
 
 """
@@ -91,7 +92,7 @@ class TestPushProviderController(TestController):
         """
 
         push_prov = DefaultPushProvider()
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             push_prov.loadConfig(dict(timeout='-1', push_url='https://x'))
 
 
@@ -101,16 +102,16 @@ class TestPushProviderController(TestController):
         """
 
         push_prov = DefaultPushProvider()
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             push_prov.loadConfig(dict(timeout='1,', push_url='https://x'))
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             push_prov.loadConfig(dict(timeout='1,2,3', push_url='https://x'))
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             push_prov.loadConfig(dict(timeout='1,2,3,', push_url='https://x'))
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             push_prov.loadConfig(dict(timeout='1,2,3,4', push_url='https://x'))
 
     def test_timeout_doesnt_accept_strings(self):
@@ -122,18 +123,17 @@ class TestPushProviderController(TestController):
         push_prov = DefaultPushProvider()
 
         for s in ['invalid timeout', 'invalid,timeout', '1,timeout', 'invalid,1']:
-            for t in [str, unicode]:
-                v = t(s)
-                with self.assertRaises(ValueError):
-                    push_prov.loadConfig(dict(timeout=v, push_url='https://x'))
+            v = str(s)
+            with pytest.raises(ValueError):
+                push_prov.loadConfig(dict(timeout=v, push_url='https://x'))
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             push_prov.loadConfig(dict(timeout='invalid,timeout', push_url='https://x'))
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             push_prov.loadConfig(dict(timeout='1,timeout', push_url='https://x'))
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             push_prov.loadConfig(dict(timeout='invalid,1', push_url='https://x'))
 
     def test_read_config(self):
@@ -165,13 +165,13 @@ class TestPushProviderController(TestController):
 
         configDict['Timeout'] = '3,10'
         push_prov.loadConfig(configDict)
-        self.assertEqual(push_prov.timeout, (3.0, 10.0))
+        assert push_prov.timeout == (3.0, 10.0)
 
         #
         # verify server url check
         #
 
-        with self.assertRaises(requests.exceptions.InvalidSchema):
+        with pytest.raises(requests.exceptions.InvalidSchema):
             configDict['push_url'] = "hXXXs://proxy.keyidentity.com:8800/send"
             push_prov.loadConfig(configDict)
 
@@ -179,7 +179,7 @@ class TestPushProviderController(TestController):
         # verify that multiple urls are also being checked
         #
 
-        with self.assertRaises(requests.exceptions.InvalidSchema):
+        with pytest.raises(requests.exceptions.InvalidSchema):
             configDict['push_url'] = [
                     "https://proxy.keyidentity.com:8800/send",
                     "hXXXs://proxy.keyidentity.com:8800/send"
@@ -206,7 +206,7 @@ class TestPushProviderController(TestController):
         # extended option: proxy with wrong url scheme
         #
 
-        with self.assertRaises(requests.exceptions.InvalidSchema):
+        with pytest.raises(requests.exceptions.InvalidSchema):
             configDict['proxy'] = "hXXXs://proxy.keyidentity.com:8800/"
             push_prov.loadConfig(configDict)
 
@@ -226,7 +226,7 @@ class TestPushProviderController(TestController):
         # invalid timeout format: "invalid literal for float()"
         #
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             configDict['Timeout'] = '30s'
             push_prov.loadConfig(configDict)
 
@@ -238,7 +238,7 @@ class TestPushProviderController(TestController):
         # 'required authenticating client cert could not be found'
         #
 
-        with self.assertRaises(IOError):
+        with pytest.raises(IOError):
             cert_file_name = os.path.join(self.fixture_path, 'non_exist.pem')
             configDict['access_certificate'] = cert_file_name
             push_prov.loadConfig(configDict)
@@ -248,7 +248,7 @@ class TestPushProviderController(TestController):
         configDict['access_certificate'] = cert_file_name
 
         # check if missing push_url is as well detected
-        with self.assertRaises(KeyError):
+        with pytest.raises(KeyError):
             del configDict['push_url']
             push_prov.loadConfig(configDict)
 
@@ -264,7 +264,7 @@ class TestPushProviderController(TestController):
         configDict['server_certificate'] = server_cert_file_name
         push_prov.loadConfig(configDict)
 
-        with self.assertRaises(IOError):
+        with pytest.raises(IOError):
             server_cert_file_name = '/abc/ssl/certs'
             configDict['server_certificate'] = server_cert_file_name
             push_prov.loadConfig(configDict)
@@ -299,8 +299,8 @@ class TestPushProviderController(TestController):
                                             gda=gda,
                                             transactionId='012345678901234')
 
-        self.assertEquals(status, True)
-        self.assertEquals(response, VALID_REQUEST)
+        assert status == True
+        assert response == VALID_REQUEST
 
         return
 
@@ -341,8 +341,8 @@ class TestPushProviderFailover(TestController):
                                             gda=gda,
                                             transactionId='012345678901234')
 
-        self.assertEquals(status, True)
-        self.assertEquals(response, VALID_REQUEST)
+        assert status == True
+        assert response == VALID_REQUEST
 
     @patch.object(requests, 'post', cond_failing_http_response)
     def test_single_server(self):
@@ -357,7 +357,7 @@ class TestPushProviderFailover(TestController):
         """
         verify that a single faiiling server should return failure
         """
-        with self.assertRaises(ConnectionError):
+        with pytest.raises(ConnectionError):
             self._test_servers(["https://failing.server/"])
 
     @patch.object(requests, 'post', cond_failing_http_response)

@@ -152,4 +152,7 @@ clean:
 
 
 test:
-	./test.sh
+	$(MAKE) -C linotp/tests/unit $@
+	$(MAKE) -C linotp/tests/functional $@
+
+.PHONY: test

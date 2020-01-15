@@ -103,8 +103,8 @@ class mTimeOtp(object):
 
 
         for i in range(otime - window, otime + window):
-            otp = unicode(self.calcOtp(i, key, pin))
-            if unicode(anOtpVal) == otp:
+            otp = str(self.calcOtp(i, key, pin))
+            if str(anOtpVal) == otp:
                 res = i
                 break
 
@@ -143,7 +143,7 @@ class mTimeOtp(object):
         if key is None:
             key = self.key
 
-        vhash = "%d%s%s" % (counter, key, pin)
+        vhash = b"%d%b%b" % (counter, key, pin)
         motp = md5(vhash).hexdigest()[:self.digits]
         return motp
 
@@ -167,9 +167,9 @@ def motp_test():
         sotp = motp1.calcOtp(e, key, pin)
 
         if sotp != otp:
-            print "error"
+            print("error")
         else:
-            print "ok"
+            print("ok")
 
         i = i + 1
 
@@ -180,7 +180,7 @@ def motp_test():
     timeOtp2 = mTimeOtp(key=key, pin=pin)
     ntime = timeOtp2.checkOtp("7215e7", 18, options={'iniTime':126753360})
     #expecting true
-    print "result: ", ntime, " should be 126753370"
+    print("result: ", ntime, " should be 126753370")
 
     return
 

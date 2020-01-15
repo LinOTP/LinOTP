@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -37,8 +37,8 @@ import copy
 import datetime
 
 
-import ConfigParser
-import urllib2
+import configparser
+import urllib.request, urllib.error, urllib.parse
 import random
 
 CONFIGFILE = "python-totp.cfg"
@@ -200,7 +200,7 @@ def usage():
 
 '''
 
-    print info
+    print(info)
 
 def disclaimer():
     """
@@ -208,7 +208,7 @@ def disclaimer():
     """
     disc = \
     "## HMAC time based token - from the LinOTP open source otp solution ##"
-    print disc
+    print(disc)
 
 def genkey(keylen=20):
     '''
@@ -220,9 +220,9 @@ def genkey(keylen=20):
     '''
 
     key = binascii.hexlify(os.urandom(keylen))
-    print "Your OTP Key:\n"
-    print "    ", key
-    print
+    print("Your OTP Key:\n")
+    print("    ", key)
+    print()
     return key
 
 def getpath():
@@ -239,7 +239,7 @@ def getpath():
         config_path = os.path.join(os.getenv("HOMEDRIVE"),
                                    os.getenv("HOMEPATH"), CONFIGFILE)
     else:
-        print "I do not know your operating system"
+        print("I do not know your operating system")
         sys.exit(1)
     return config_path
 
@@ -250,7 +250,7 @@ def readconfig():
     '''
     token_config = {}
 
-    config = ConfigParser.SafeConfigParser()
+    config = configparser.SafeConfigParser()
     config.read(getpath())
     # print "CONFIG:" , config.items("TOTP")
     for (key, value) in config.items("TOTP"):
@@ -265,18 +265,18 @@ def saveconfig(param):
     :param param: dict of parameters, which should be saved
     '''
     c_file = getpath()
-    print "Config File: %s " % c_file
+    print("Config File: %s " % c_file)
 
-    config = ConfigParser.SafeConfigParser()
+    config = configparser.SafeConfigParser()
     config.add_section('TOTP')
-    for key, value in param.items():
+    for key, value in list(param.items()):
 
-        if type(value) == unicode:
+        if type(value) == str:
             value = value.encode('utf-8')
-        if type(value) not in [str, unicode]:
+        if type(value) not in [str, str]:
             value = "%r" % value
 
-        print "%s\t%s" % (key, value)
+        print("%s\t%s" % (key, value))
         config.set('TOTP', key, value)
 
     with open(c_file, 'wb') as configfile:
@@ -293,13 +293,13 @@ def main():
     try:
         (the_config, params) = get_configuration_args(sys.argv[1:])
     except GetoptError:
-        print >> sys.stderr, "There is an error in your parameter syntax:"
+        print("There is an error in your parameter syntax:", file=sys.stderr)
         usage()
         sys.exit(1)
     except IOError as io_err:
-        print >> sys.stderr, ":: Error reading or writing your configuration:"
-        print >> sys.stderr, (":: Please try to re-create a new configuration! "
-                              "%r" % io_err)
+        print(":: Error reading or writing your configuration:", file=sys.stderr)
+        print((":: Please try to re-create a new configuration! "
+                              "%r" % io_err), file=sys.stderr)
         sys.exit(1)
 
     token = create_token(the_config)
@@ -325,8 +325,8 @@ def get_configuration_args(the_args):
 
     try:
         the_config = readconfig()
-    except ConfigParser.NoSectionError as conf_err:
-        print ":: Error reading your configuration: %r" % conf_err
+    except configparser.NoSectionError as conf_err:
+        print(":: Error reading your configuration: %r" % conf_err)
 
     for opt, arg in opts:
 
@@ -375,7 +375,7 @@ def get_configuration_args(the_args):
         elif opt in ('-c', "--check"):
             params['check'] = True
 
-    if params.has_key('gen_key') and  params.get('gen_key') == True:
+    if 'gen_key' in params and  params.get('gen_key') == True:
         keylen = 20
         algo = the_config.get('algo', 'sha1')
         if algo == 'sha256':
@@ -385,7 +385,7 @@ def get_configuration_args(the_args):
         the_config['algo'] = algo
         the_config['key'] = genkey(keylen)
 
-    if the_config.has_key("url"):
+    if "url" in the_config:
         params['url'] = the_config.get("url")
 
     saveconfig(the_config)
@@ -420,7 +420,7 @@ def run_request(token, params):
     :param token: the token object
     :param params: the request parameters
     '''
-    if params.has_key('range'):
+    if 'range' in params:
         start = 0
         end = 0
         query = params.get('query', None)
@@ -447,7 +447,7 @@ def simple_check(token, check):
     (otp, counter) = token.generate()
     check_date = token.get_time4counter(counter)
 
-    print ("\nYour OTP [%s] (%d) is: %s" % (str(check_date), counter, otp))
+    print(("\nYour OTP [%s] (%d) is: %s" % (str(check_date), counter, otp)))
 
     url = token.get_url()
     if url is not None and check is True:
@@ -458,14 +458,14 @@ def simple_check(token, check):
         else:
             request_url = "%s%s" % (url, otp)
 
-        print "  Requesting %s" % request_url
+        print("  Requesting %s" % request_url)
         try:
-            response = urllib2.urlopen(request_url)
-            print response.read()
-        except urllib2.URLError as urr:
-            print ("  Sorry, there is a connection problem with \n\t %r" % urr)
+            response = urllib.request.urlopen(request_url)
+            print(response.read())
+        except urllib.error.URLError as urr:
+            print(("  Sorry, there is a connection problem with \n\t %r" % urr))
 
-    print "Happy Authenticating!\n"
+    print("Happy Authenticating!\n")
     return
 
 def range_check(token, window=None, start=0, end=0, query=None):
@@ -489,8 +489,8 @@ def range_check(token, window=None, start=0, end=0, query=None):
     beg_dt = token.get_time4counter(start)
     end_dt = token.get_time4counter(end)
 
-    print >> sys.stderr, ("searching in time frame: [%s - %s]"
-          % (str(beg_dt), str(end_dt)))
+    print(("searching in time frame: [%s - %s]"
+          % (str(beg_dt), str(end_dt))), file=sys.stderr)
 
     found = False
     i = start
@@ -499,7 +499,7 @@ def range_check(token, window=None, start=0, end=0, query=None):
     if query is None:
         while i < end:
             (now_dt, _count, otp) = token.get_totp_info(counter=i)
-            print '%s : c:%d : otp %r' % (str(now_dt), _count, otp)
+            print('%s : c:%d : otp %r' % (str(now_dt), _count, otp))
             i = i + 1
     else:
         while i < end:
@@ -507,14 +507,14 @@ def range_check(token, window=None, start=0, end=0, query=None):
             if otp == query:
                 for count in range(-1, 2):
                     l_count = i + count
-                    print l_count
+                    print(l_count)
                     (now_dt, _count, otp) = token.get_totp_info(counter=l_count)
-                    print '%s : c:%d : otp %r' % (str(now_dt), _count, otp)
+                    print('%s : c:%d : otp %r' % (str(now_dt), _count, otp))
                 found = True
             i = i + 1
 
     if query != None and found == False:
-        print "Sorry, nothing found!"
+        print("Sorry, nothing found!")
 
 
 def selftest():
@@ -575,7 +575,7 @@ def selftest():
                             Table 1: TOTP Table
     """
 
-    print desc
+    print(desc)
 
     tests = [{'key' : "3132333435363738393031323334353637383930",
             'hash' : 'sha1',
@@ -618,17 +618,17 @@ def selftest():
         values = test.get('values')
         conf = copy.deepcopy(test)
         del conf['values']
-        print "\ntest %r:\n" % conf
+        print("\ntest %r:\n" % conf)
         for value in values:
             counter = int((value[0] / timestep) + 0.5)
             c_otp = value[1]
             (otp, count) = token.generate(counter=counter)
-            print ("verify for time \t %12d T: counter %12d  \ttotp: %s"
-                    % (value[0], counter, c_otp))
+            print(("verify for time \t %12d T: counter %12d  \ttotp: %s"
+                    % (value[0], counter, c_otp)))
             try:
                 assert otp == c_otp
             except AssertionError as ass:
-                print "returned values are %r:%r " % (count, otp)
+                print("returned values are %r:%r " % (count, otp))
                 raise ass
 
 

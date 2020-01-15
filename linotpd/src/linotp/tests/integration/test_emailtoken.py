@@ -28,7 +28,7 @@
 from subprocess import check_output, CalledProcessError
 import logging
 import re
-import unittest
+import pytest
 
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.user_view import UserView
@@ -45,9 +45,8 @@ logger = logging.getLogger(__name__)
 
 class TestEmailToken(TestCase):
 
+    @pytest.fixture(autouse=True)
     def setUp(self):
-        TestCase.setUp(self)
-
         self.realm_name = "SE_emailtoken"
         self.username = "hans"
 
@@ -91,19 +90,19 @@ class TestEmailTokenEnroll(TestEmailToken):
         token_info = self.token_view.get_token_info(email_token.serial)
         description = "Rolled out by Selenium"
         expected_description = expected_email_address + " " + description
-        self.assertEqual(expected_email_address, token_info['LinOtp.TokenInfo']['email_address'],
-                         "Wrong e-mail address was set for e-mail token.")
-        self.assertEqual(expected_description, token_info['LinOtp.TokenDesc'],
-                         "Token description doesn't match")
+        assert expected_email_address == token_info['LinOtp.TokenInfo']['email_address'], \
+                         "Wrong e-mail address was set for e-mail token."
+        assert expected_description == token_info['LinOtp.TokenDesc'], \
+                         "Token description doesn't match"
 
 
 class TestEmailTokenAuth(TestEmailToken):
 
-    def setUp(self):
-        TestEmailToken.setUp(self)
+    @pytest.fixture(autouse=True)
+    def enrolled_email_token(self, setUp):
         self.enroll_email_token()
 
-    @unittest.skipIf(is_radius_disabled(), "Radius is disabled.")
+    @pytest.mark.skipif(is_radius_disabled(), reason="Radius is disabled.")
     def test_radius_auth(self):
 
         def radius_auth(username, realm_name,
@@ -120,7 +119,7 @@ class TestEmailTokenAuth(TestEmailToken):
             logger.debug("Executing %s" % ' '.join(call_array))
             try:
                 return check_output(call_array)
-            except CalledProcessError, e:
+            except CalledProcessError as e:
                 assert e.returncode == 0, \
                     "radius auth process exit code %s. Command:%s Ouptut:%s" % \
                     (e.returncode, ' '.join(e.cmd), e.output)
@@ -138,8 +137,8 @@ class TestEmailTokenAuth(TestEmailToken):
                 self.email_token_pin,
                 radius_secret, radius_server)
             m = re.search(r"State:\['(\d+)'\]", rad1)
-            self.assertTrue(m is not None,
-                            "'State' not found in linotp-auth-radius output. %r" % rad1)
+            assert m is not None, \
+                            "'State' not found in linotp-auth-radius output. %r" % rad1
             state = m.group(1)
             logger.debug("State: %s" % state)
 
@@ -149,8 +148,8 @@ class TestEmailTokenAuth(TestEmailToken):
             self.username, self.realm_name,
             otp, radius_secret,
             radius_server, state)
-        self.assertTrue("Access granted to user " + self.username in rad2,
-                        "Access not granted to user. %r" % rad2)
+        assert "Access granted to user " + self.username in rad2, \
+                        "Access not granted to user. %r" % rad2
 
     def test_web_api_auth(self):
 
@@ -162,19 +161,19 @@ class TestEmailTokenAuth(TestEmailToken):
                                 self.http_password)
             access_granted, validate_resp = validate.validate(user=self.username + "@" + self.realm_name,
                                                               password=self.email_token_pin)
-            self.assertFalse(access_granted,
-                             "Should return false because this request only triggers the challenge.")
+            assert not access_granted, \
+                             "Should return false because this request only triggers the challenge."
             try:
                 message = validate_resp['detail']['message']
             except KeyError:
                 self.fail("detail.message should be present %r" %
                           validate_resp)
-            self.assertEqual(message,
-                             "e-mail sent successfully",
-                             "Wrong validate response %r" % validate_resp)
+            assert message == \
+                             "e-mail sent successfully", \
+                             "Wrong validate response %r" % validate_resp
             otp = smtpsvc.get_otp()
 
         access_granted, validate_resp = validate.validate(user=self.username + "@" + self.realm_name,
                                                           password=self.email_token_pin + otp)
-        self.assertTrue(access_granted,
-                        "Could not authenticate user %s %r" % (self.username, validate_resp))
+        assert access_granted, \
+                        "Could not authenticate user %s %r" % (self.username, validate_resp)

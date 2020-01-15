@@ -79,7 +79,7 @@ class TestForwardServer(TestController):
         response = self.make_system_request('setPolicy', params=params)
 
         name = params['name']
-        self.assertTrue('setPolicy ' + name in response, response)
+        assert 'setPolicy ' + name in response, response
 
     def define_all_forward(self):
 
@@ -97,7 +97,7 @@ class TestForwardServer(TestController):
         response = self.make_system_request('setPolicy', params=params)
 
         name = params['name']
-        self.assertTrue('setPolicy ' + name in response, response)
+        assert 'setPolicy ' + name in response, response
 
     @patch('linotp.lib.auth.validate.ForwardServerPolicy',
            MockForwardServerPolicy)
@@ -120,7 +120,7 @@ class TestForwardServer(TestController):
 
         _response = self.make_validate_request(action='check', params=params)
 
-        self.assertTrue('127.0.0.1' in Rad_Serv, Rad_Serv)
+        assert '127.0.0.1' in Rad_Serv, Rad_Serv
 
         params = {
             'user': 'passthru_user2',
@@ -128,7 +128,7 @@ class TestForwardServer(TestController):
 
         _response = self.make_validate_request(action='check', params=params)
 
-        self.assertTrue('127.0.0.1' not in Rad_Serv, Rad_Serv)
+        assert '127.0.0.1' not in Rad_Serv, Rad_Serv
 
         return
 
@@ -153,7 +153,7 @@ class TestForwardServer(TestController):
 
         _response = self.make_validate_request(action='check', params=params)
 
-        self.assertTrue('127.0.0.1' in Rad_Serv, Rad_Serv)
+        assert '127.0.0.1' in Rad_Serv, Rad_Serv
 
         params = {
             'user': 'passthru_user2',
@@ -161,7 +161,7 @@ class TestForwardServer(TestController):
 
         _response = self.make_validate_request(action='check', params=params)
 
-        self.assertTrue('127.0.0.1' not in Rad_Serv, Rad_Serv)
+        assert '127.0.0.1' not in Rad_Serv, Rad_Serv
 
         return
 
@@ -189,7 +189,7 @@ class TestForwardServer(TestController):
             'scope': 'authentication'}
 
         response = self.make_system_request('setPolicy', params=params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -204,7 +204,7 @@ class TestForwardServer(TestController):
             }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         # ----------------------------------------------------------------- --
 
@@ -218,8 +218,8 @@ class TestForwardServer(TestController):
             'pass': 'pintest123!'}
 
         response = self.make_validate_request(action='check', params=params)
-        self.assertTrue('false' not in response, response)
-        self.assertTrue(Rad_Serv is None, Rad_Serv)
+        assert 'false' not in response, response
+        assert Rad_Serv is None, Rad_Serv
 
         # ----------------------------------------------------------------- --
 
@@ -229,7 +229,7 @@ class TestForwardServer(TestController):
             'serial': 'my_pw_token'
             }
         response = self.make_admin_request('disable', params=params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         # ----------------------------------------------------------------- --
 
@@ -240,8 +240,8 @@ class TestForwardServer(TestController):
             'pass': 'geheim1'}
 
         response = self.make_validate_request(action='check', params=params)
-        self.assertTrue('false' in response, response)
-        self.assertTrue(Rad_Serv is None, Rad_Serv)
+        assert 'false' in response, response
+        assert Rad_Serv is None, Rad_Serv
 
         # ----------------------------------------------------------------- --
 
@@ -251,7 +251,7 @@ class TestForwardServer(TestController):
             'serial': 'my_pw_token'
             }
         response = self.make_admin_request('remove', params=params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         # ----------------------------------------------------------------- --
 
@@ -262,7 +262,7 @@ class TestForwardServer(TestController):
             'pass': 'geheim1'}
 
         _response = self.make_validate_request(action='check', params=params)
-        self.assertTrue('127.0.0.1' in Rad_Serv, Rad_Serv)
+        assert '127.0.0.1' in Rad_Serv, Rad_Serv
 
         return
 

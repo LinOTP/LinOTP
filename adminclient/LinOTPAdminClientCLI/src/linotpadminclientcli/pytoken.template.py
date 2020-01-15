@@ -71,7 +71,7 @@ def main():
     elif system == "Windows":
         counter_file = os.path.join(os.getenv("HOMEDRIVE"), os.getenv("HOMEPATH"), "\pytoken-counter")
     else:
-        print "I do not know your operating system"
+        print("I do not know your operating system")
         sys.exit(1)
 
 
@@ -85,8 +85,8 @@ def main():
     key = binascii.a2b_hex(hexkey)
     otp = HmacOtp(key, counter=counter).generate()
 
-    print "Your OTP with number %d is %06d." % (counter, otp)
-    print "Happy Authenticating!"
+    print("Your OTP with number %d is %06d." % (counter, otp))
+    print("Happy Authenticating!")
 
     file(counter_file, 'w').write(str(counter))
 

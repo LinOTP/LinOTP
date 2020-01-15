@@ -27,25 +27,33 @@
     helper to manage the pylons global object
 """
 
-from linotp.config import environment as env
+from flask import g as flask_g
 
-global_object = env.config.get('pylons.app_globals', env.config.get(
-                                'pylons.g'))
-
+from linotp.lib.app_globals import Globals
 
 def getGlobalObject():
-    return global_object
+
+    return flask_g.app_globals
+
+def initGlobalObject():
+    """
+    Initialise global object and save to the global context
+    """
+    flask_g.app_globals = Globals()
 
 
 def _getConfigReadLock():
-    getGlobalObject().setConfigReadLock()
+    # getGlobalObject().setConfigReadLock()
+    pass
 
 
 def _getConfigWriteLock():
-    getGlobalObject().setConfigWriteLock()
+    # getGlobalObject().setConfigWriteLock()
+    pass
 
 
 def _releaseConfigLock():
-    getGlobalObject().releaseConfigLock()
+    # getGlobalObject().releaseConfigLock()
+    pass
 
 # eof #

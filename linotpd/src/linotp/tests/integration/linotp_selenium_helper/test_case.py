@@ -43,9 +43,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.file_detector import UselessFileDetector
 
-from helper import get_from_tconfig, load_tconfig_from_file
-from manage_ui import ManageUi
-from validate import Validate
+from .helper import get_from_tconfig, load_tconfig_from_file
+from .manage_ui import ManageUi
+from .validate import Validate
 from unittest.case import SkipTest
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -69,7 +69,7 @@ def is_flaky_exception(err, *args):
 
 
 @flaky(rerun_filter=is_flaky_exception)
-class TestCase(unittest.TestCase):
+class TestCase(object):
     """Basic LinOTP TestCase class"""
 
     implicit_wait_time = 5
@@ -81,7 +81,7 @@ class TestCase(unittest.TestCase):
     _manage = None  # Manage UI
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """Initializes the base_url and sets the driver -
         called from unit tests"""
         cls.loadClsConfig()
@@ -137,8 +137,8 @@ class TestCase(unittest.TestCase):
             if selenium_driver == 'chrome':
                 try:
                     driver = webdriver.Chrome(
-                        chrome_options=_get_chrome_options())
-                except WebDriverException, e:
+                        options=_get_chrome_options())
+                except WebDriverException as e:
                     logger.error("Error creating Chrome driver. Maybe you need to install"
                                  " 'chromedriver'. If you wish to use another browser please"
                                  " adapt your configuratiion file. Error message: %s" % str(e))
@@ -185,7 +185,7 @@ class TestCase(unittest.TestCase):
         return driver
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         if cls.driver:
             cls.driver.quit()
 
@@ -197,7 +197,7 @@ class TestCase(unittest.TestCase):
 
     def tearDown(self):
         """Closes the driver and displays all errors"""
-        self.assertEqual([], self.verification_errors)
+        assert [] == self.verification_errors
 
     def disableFileUploadForSendKeys(self):
         self.driver.file_detector = UselessFileDetector()
@@ -316,8 +316,7 @@ class TestCase(unittest.TestCase):
         self.useridresolver_manager.clear_resolvers_via_api()
 
         if resolver:
-            self.useridresolver_manager.create_resolver(resolver)
-            self.useridresolver_manager.close()
+            self.useridresolver_manager.create_resolver_via_api(resolver)
 
             if realm:
                 self.realm_manager.open()
@@ -328,7 +327,7 @@ class TestCase(unittest.TestCase):
 
     def close_alert_and_get_its_text(self):
         try:
-            alert = self.driver.switch_to_alert()
+            alert = self.driver.switch_to.alert
             alert_text = alert.text
             if self.accept_next_alert:
                 alert.accept()

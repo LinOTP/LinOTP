@@ -35,6 +35,10 @@ import json
 from mock import patch
 import logging
 
+import pytest
+
+from linotp.tests.conftest import Base_App_Config as BAC
+
 from linotp.tests.functional.test_orphaned import OrphandTestHelpers
 from linotp.tests import TestController
 
@@ -57,7 +61,7 @@ class MockedResolver():
         param = argparams[1]
         passwd = param.get('BINDPW')
 
-        PASSWORD = passwd.get_unencrypted()
+        PASSWORD = passwd
 
         desc = {'desc': "Can't contact LDAP server"}
         status = 'error'
@@ -94,11 +98,11 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
             'UIDTYPE': 'objectGUID',
             'BINDPW': 'Test123!',
             'USERINFO': json.dumps(u_map),
-            'TIMEOUT': u'5',
-            'SIZELIMIT': u'500',
-            'NOREFERRALS': u'True',
-            'type': u'ldapresolver',
-            'EnforceTLS': u'True'}
+            'TIMEOUT': '5',
+            'SIZELIMIT': '500',
+            'NOREFERRALS': 'True',
+            'type': 'ldapresolver',
+            'EnforceTLS': 'True'}
 
         response = self.make_system_request('setResolver', params=params)
 
@@ -122,7 +126,7 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
            'CACERTIFICATE': 'ldap_certificate'}
 
         transform = {}
-        for key, value in defintion.items():
+        for key, value in list(defintion.items()):
             if key in mapping:
                 transform[mapping[key]] = value
 
@@ -148,7 +152,7 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         # the ldap resolver
 
         response, defintion = self.define_ldap_resolver(resolver_name)
-        self.assertTrue('"value": true' in response)
+        assert '"value": true' in response
 
         params = {}
         params.update(self._transform_(defintion))
@@ -164,7 +168,7 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         del params['ldap_password']
 
         response = self.make_admin_request('testresolver', params=params)
-        self.assertTrue(PASSWORD == 'Test123!', PASSWORD)
+        assert PASSWORD == 'Test123!', PASSWORD
 
         # rename
         # use different name - so that no password will be added
@@ -172,7 +176,7 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         params['name'] = resolver_name + "_dummy"
         params['previous_name'] = resolver_name
         response = self.make_admin_request('testresolver', params=params)
-        self.assertTrue(PASSWORD == 'Test123!', PASSWORD)
+        assert PASSWORD == 'Test123!', PASSWORD
 
         #
         # use same resolver name but the URI is different => no password
@@ -184,8 +188,8 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
 
         response = self.make_admin_request('testresolver', params=params)
 
-        self.assertTrue("Missing parameter: ['BINDPW']" in response,
-                        response)
+        assert "Missing parameter: ['BINDPW']" in response, \
+                        response
 
         #
         # use same resolver name but different URI and password => password
@@ -196,10 +200,12 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         params['ldap_uri'] = 'ttt' + ldap_uri
 
         response = self.make_admin_request('testresolver', params=params)
-        self.assertTrue(PASSWORD == 'Test123!', PASSWORD)
+        assert PASSWORD == 'Test123!', PASSWORD
 
         return
 
+    @pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
+                        reason="non sqlite database required for this test!")
     def test_testresolver_for_sql(self):
         '''
         run the admin testresolver api for the sql resolver definition
@@ -225,7 +231,7 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         params['url'] = self.sqlconnect
 
         response = self.make_admin_request('testresolver', params=params)
-        self.assertTrue('"rows": 12' in response)
+        assert '"rows": 12' in response
 
         #
         # the connection test even works, if the password is missing
@@ -236,7 +242,7 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         del params['Password']
         params['previous_name'] = resolverName
         response = self.make_admin_request('testresolver', params=params)
-        self.assertTrue('"rows": 12' in response)
+        assert '"rows": 12' in response
 
         #
         # in case of an undefined resolver no password could be retrieved and
@@ -246,7 +252,7 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         params['name'] = 'undefined'
         del params['previous_name']
         response = self.make_admin_request('testresolver', params=params)
-        self.assertTrue("Missing parameter: ['Password']" in response)
+        assert "Missing parameter: ['Password']" in response
 
         self.delSqlRealm(realmName)
         self.delSqlResolver(resolverName)

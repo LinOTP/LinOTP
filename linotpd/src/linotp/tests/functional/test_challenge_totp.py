@@ -95,7 +95,7 @@ class TestChallengeResponseController(TestController):
             'session': self.session,
         }
         response = self.make_admin_request(action='init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         return serial
 
     def setPolicy(self, name='otpPin', realm='ldap_realm',
@@ -115,10 +115,10 @@ class TestChallengeResponseController(TestController):
         }
 
         response = self.make_system_request("setPolicy", params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         response = self.make_system_request("getPolicy", params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         return response
 
@@ -148,7 +148,7 @@ class TestChallengeResponseController(TestController):
             params = {"user": user, "pass": pin + otp}
             response = self.make_validate_request(action='check',
                                                   params=params)
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
             # -------------------------------------------------------------- --
 
@@ -158,7 +158,7 @@ class TestChallengeResponseController(TestController):
             params = {"user": user, "pass": pin, }
             response = self.make_validate_request(action='check',
                                                   params=params)
-            self.assertTrue('"value": false' in response, response)
+            assert '"value": false' in response, response
 
             # -------------------------------------------------------------- --
 
@@ -172,7 +172,7 @@ class TestChallengeResponseController(TestController):
             response = self.make_validate_request(action='check',
                                                   params=params)
 
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
             # -------------------------------------------------------------- --
 
@@ -183,7 +183,7 @@ class TestChallengeResponseController(TestController):
             response = self.make_validate_request(action='check',
                                                   params=params)
 
-            self.assertTrue('"value": false' in response, response)
+            assert '"value": false' in response, response
 
             body = json.loads(response.body)
             state = body.get('detail').get('transactionid')
@@ -201,7 +201,7 @@ class TestChallengeResponseController(TestController):
             response = self.make_validate_request(action='check',
                                                   params=params)
 
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
             # -------------------------------------------------------------- --
 
@@ -212,7 +212,7 @@ class TestChallengeResponseController(TestController):
             response = self.make_validate_request(action='check',
                                                   params=params)
 
-            self.assertTrue('"value": false' in response, response)
+            assert '"value": false' in response, response
 
             # -------------------------------------------------------------- --
 
@@ -226,7 +226,7 @@ class TestChallengeResponseController(TestController):
             response = self.make_validate_request(action='check',
                                                   params=params)
 
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
         return
 
@@ -243,7 +243,7 @@ class TestChallengeResponseController(TestController):
         # now switch policy on for challenge_response
         response = self.setPolicy(name="ch_resp", realm='myDefRealm',
                                   action='challenge_response=hmac totp,')
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         self.do_auth("shortpin")
 
@@ -262,11 +262,11 @@ class TestChallengeResponseController(TestController):
         # now switch policy on for challenge_response
         response = self.setPolicy(name="ch_resp", realm='myDefRealm',
                                   action='challenge_response=hmac totp,')
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         # with otppin==1 the pin should be the same as the password
         response = self.setPolicy(realm='myDefRealm', action='otppin=1, ')
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         self.do_auth("geheim1")
 
@@ -285,11 +285,11 @@ class TestChallengeResponseController(TestController):
         # now switch policy on for challenge_response
         response = self.setPolicy(name="ch_resp", realm='myDefRealm',
                                   action='challenge_response=hmac totp,')
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         # with otppin==2 the pin should be the same as the password
         response = self.setPolicy(realm='myDefRealm', action='otppin=2, ')
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         self.do_auth("")
 

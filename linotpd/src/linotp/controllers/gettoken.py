@@ -29,13 +29,13 @@ gettoken controller - to retrieve OTP values
 
 import logging
 
-from pylons import tmpl_context as c
-from pylons import request, response
-from pylons import config
-from pylons.templating import render_mako as render
+from linotp.flap import (
+    config, render_mako as render, request, response,
+    tmpl_context as c,
+)
 
 import linotp.model
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 
 from linotp.lib.util import getParam, check_session
 from linotp.lib.util import get_client
@@ -56,7 +56,6 @@ from linotp.lib.context import request_context
 
 Session = linotp.model.Session
 
-audit = config.get('audit')
 
 optional = True
 required = False
@@ -80,7 +79,16 @@ class GettokenController(BaseController):
     The functions are described below in more detail.
     '''
 
-    def __before__(self, action):
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        action = request_context['action']
 
         try:
             c.audit = request_context['audit']
@@ -93,13 +101,25 @@ class GettokenController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
-    def __after__(self):
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
         c.audit['administrator'] = getUserFromRequest(request).get("login")
-        if 'serial' in self.request_params:
-            serial = self.request_params['serial']
+        if 'serial' in request.params:
+            serial = request.params['serial']
             c.audit['serial'] = serial
             c.audit['token_type'] = getTokenType(serial)
+
+        audit = config.get('audit')
         audit.log(c.audit)
+
+        return response
 
     def getmultiotp(self):
         '''
@@ -119,8 +139,8 @@ class GettokenController(BaseController):
             JSON response
         '''
 
-        getotp_active = config.get("linotpGetotp.active")
-        if "True" != getotp_active:
+        getotp_active = config.get("GETOTP_ENABLED")
+        if not getotp_active:
             return sendError(response, "getotp is not activated.", 0)
 
         param = self.request_params
@@ -150,14 +170,14 @@ class GettokenController(BaseController):
 
             if view:
                 c.ret = ret
-                return render('/manage/multiotp_view.mako')
+                return render('/manage/multiotp_view.mako').decode('utf-8')
             else:
                 return sendResult(response, ret, 0)
 
         except PolicyException as pe:
             log.exception("[getotp] gettoken/getotp policy failed: %r", pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[getmultiotp] gettoken/getmultiotp failed: %r", exx)
@@ -187,8 +207,8 @@ class GettokenController(BaseController):
             JSON response
         '''
 
-        getotp_active = config.get("linotpGetotp.active")
-        if "True" != getotp_active:
+        getotp_active = config.get("GETOTP_ENABLED")
+        if not getotp_active:
             return sendError(response, "getotp is not activated.", 0)
 
         param = self.request_params
@@ -277,13 +297,13 @@ class GettokenController(BaseController):
         except PolicyException as pe:
             log.exception("[getotp] gettoken/getotp policy failed: %r", pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[getotp] gettoken/getotp failed: %r", exx)
             Session.rollback()
             return sendError(response, "gettoken/getotp failed: %s" %
-                             unicode(exx), 0)
+                             exx, 0)
 
         finally:
             Session.close()

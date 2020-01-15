@@ -29,13 +29,13 @@ Cryptographic utility functions
 
 import base64
 import binascii
-from crypt import crypt as libcrypt
+
 import ctypes
 import hmac
 import json
 import logging
 import os
-from pylons.configuration import config as env
+from linotp.flap import config as env
 from pysodium import sodium as c_libsodium
 from pysodium import __check as __libsodium_check
 from pysodium import crypto_sign_keypair as gen_dsa_keypair
@@ -55,6 +55,15 @@ from linotp.lib.error import HSMException
 from linotp.lib.error import ProgrammingError
 from linotp.lib.error import ValidateError
 
+from crypt import crypt as libcrypt
+
+from passlib.context import CryptContext
+
+PasslibHashes = CryptContext(schemes=[
+    "sha512_crypt", "sha256_crypt", "sha1_crypt",
+    "md5_crypt", "bcrypt", "bcrypt_sha256"
+])
+
 log = logging.getLogger(__name__)
 
 Hashlib_map = {'md5': md5, 'sha1': sha1,
@@ -62,43 +71,78 @@ Hashlib_map = {'md5': md5, 'sha1': sha1,
                'sha384': sha384, 'sha512': sha512}
 
 
-def libcrypt_password(password, crypted_password=None):
+def compare_password(password, crypted_password):
     """
+    comparing passwords
+
+    for password comparison the passwords crypt algorithms are supported,
+    which are indicated by the "$ID$" prefix :
+
+      ID  | Method
+      ─────────────────────────────────────────────────────────
+      1   | MD5
+      2a  | Blowfish (not in mainline glibc; added in some
+          | Linux distributions)
+      5   | SHA-256 (since glibc 2.7)
+      6   | SHA-512 (since glibc 2.7)
+
+    to upport passowrds on a broad range of platforms the passlib library
+    is used:
+
+        https://passlib.readthedocs.io/en/stable/index.html
+
+    algorithm:
+    we iterate over supported list of passlib modules to identify the
+    hashing algorithm (s.o.) and do the comparison with the matching one.
+
+    :param password: the plain text password
+    :param crypted_password: the encrypted password
+
+    :return: boolean - for the password comparison result
+    """
+
+    if PasslibHashes.identify(crypted_password):
+        return PasslibHashes.verify(password, crypted_password)
+
+    # compatibilty case:
+    # the rare case for the broken system crypto libs like on macos
+
+    new_crypted_passw = libcrypt(password, crypted_password)
+    return compare(new_crypted_passw, crypted_password)
+
+
+def crypt_password(password):
+    """
+    generate a new crypted hashed password from a given password
+
     we use crypt type sha512, which is a secure and standard according to:
     http://security.stackexchange.com/questions/20541/\
                      insecure-versions-of-crypt-hashes
 
-    :param password: the plain text password
-    :param crypted_password: optional - the encrypted password
+    sha512 is selected be the first position in the PasslibHashes schemes
 
-                    if the encrypted password is provided the salt and
-                    the hash algo is taken from it, so that same password
-                    will result in same output - which is used for password
-                    comparison
-
+    :param password: the plaintext password
     :return: the encrypted password
     """
 
-    if crypted_password:
-        return libcrypt(password, crypted_password)
+    log.debug("hashing password schema %r", PasslibHashes.default_scheme())
+    return PasslibHashes.hash(password)
 
-    ctype = '6'
-    salt_len = 20
 
-    b_salt = os.urandom(3 * ((salt_len + 3) // 4))
+def compare(one, two):
+    """
+    position independend comparison of values
 
-    # we use base64 charset for salt chars as it is nearly the same
-    # charset, if '+' is changed to '.' and the fillchars '=' are
-    # striped off
+    :param one: first value
+    :param two: second value
+    :return: boolean
 
-    salt = base64.b64encode(b_salt).strip("=").replace('+', '.')
+    """
+    res = True
+    for tup1, tup2 in zip(one, two):
+        res = res and (tup1 == tup2)
 
-    # now define the password format by the salt definition
-
-    insalt = '$%s$%s$' % (ctype, salt[0:salt_len])
-    encryptedPW = libcrypt(password, insalt)
-
-    return encryptedPW
+    return res
 
 
 def get_hashalgo_from_description(description, fallback='sha1'):
@@ -141,7 +185,7 @@ def check(st):
     return res.upper()
 
 
-def createActivationCode(acode=None, checksum=True):
+def createActivationCode(acode:str=None, checksum=True):
     """
     create the activation code
 
@@ -151,12 +195,15 @@ def createActivationCode(acode=None, checksum=True):
     """
     if acode is None:
         acode = geturandom(20)
+    else:
+        acode =acode.encode('utf-8')
+
     activationcode = base64.b32encode(acode)
     if checksum is True:
         chsum = check(acode)
-        activationcode = u'' + activationcode + chsum
+        activationcode = b'' + activationcode + chsum.encode('utf-8')
 
-    return activationcode
+    return activationcode.decode()
 
 
 def createNonce(len=64):
@@ -166,7 +213,7 @@ def createNonce(len=64):
     :return: hext string
     """
     key = os.urandom(len)
-    return binascii.hexlify(key)
+    return binascii.hexlify(key).decode()
 
 
 def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
@@ -192,7 +239,7 @@ def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
     byte_len = 2
     salt_len = 8 * byte_len
 
-    salt = u'' + nonce[-salt_len:]
+    salt = '' + nonce[-salt_len:]
     bSalt = binascii.unhexlify(salt)
     activationcode = activationcode.replace('-', '')
 
@@ -215,21 +262,36 @@ def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
             raise Exception('[crypt:kdf2] activation code checksum error.'
                             ' [%s]%s:%s' % (acode, veriCode, checkCode))
 
-    activ = binascii.hexlify(bcode)
-    passphrase = u'' + sharedsecret + activ + nonce[:-salt_len]
-    keyStream = PBKDF2(binascii.unhexlify(passphrase), bSalt,
-                       iterations=iterations, digestmodule=digestmodule)
+    activ = binascii.hexlify(bcode).decode()
+
+    if not isinstance(sharedsecret, str):
+        sharedsecret = sharedsecret.decode()
+
+    passphrase = '' + sharedsecret + activ + nonce[:-salt_len]
+
+    keyStream = PBKDF2(
+        binascii.unhexlify(passphrase.encode('utf-8')),
+        bSalt, iterations=iterations, digestmodule=digestmodule)
+
     key = keyStream.read(len)
     return key
 
 
-def hash_digest(val, seed, algo=None, hsm=None):
+def hash_digest(val: bytes, seed:bytes, algo=None, hsm=None):
+    """
+    hash_digest - hmac digest, lower level api
+
+    - operating on byte level
+    - calling level to the hsm module
+
+
+    """
     hsm_obj = _get_hsm_obj_from_context(hsm)
 
     if algo is None:
         algo = get_hashalgo_from_description('sha256')
 
-    h = hsm_obj.hash_digest(val.encode('utf-8'), seed, algo)
+    h = hsm_obj.hash_digest(val, seed, algo)
 
     return h
 
@@ -257,7 +319,7 @@ def encryptPassword(password):
     return hsm_obj.encryptPassword(password)
 
 
-def encryptPin(cryptPin, iv=None, hsm=None):
+def encryptPin(cryptPin: bytes, iv=None, hsm=None):
     """Encrypt pin (i.e. token pin)
 
     :param cryptPin: pin to encrypt
@@ -316,7 +378,7 @@ def decryptPin(cryptPin, hsm=None):
     return hsm_obj.decryptPin(cryptPin)
 
 
-def encrypt(data, iv, id=0, hsm=None):
+def encrypt(data: str, iv: bytes, id: int=0, hsm=None) -> bytes:
     """
     encrypt a variable from the given input with an initialization vector
 
@@ -331,7 +393,7 @@ def encrypt(data, iv, id=0, hsm=None):
     """
 
     hsm_obj = _get_hsm_obj_from_context(hsm)
-    return hsm_obj.encrypt(data, iv, id)
+    return hsm_obj.encrypt(data.encode('utf-8'), iv, id)
 
 
 def decrypt(input, iv, id=0, hsm=None):
@@ -361,8 +423,7 @@ def uencode(value):
     """
     ret = value
 
-    if ("linotp.uencode_data" in env
-            and env["linotp.uencode_data"].lower() == 'true'):
+    if (env.get("linotp.uencode_data", "").lower() == 'true'):
         try:
             ret = json.dumps(value)[1:-1]
         except Exception as exx:
@@ -438,13 +499,13 @@ def init_key_partition(config, partition, key_type='ed25519'):
     import linotp.lib.config
 
     public_key, secret_key = gen_dsa_keypair()
-    secret_key_entry = base64.b64encode(secret_key)
+    secret_key_entry = base64.b64encode(secret_key).decode('utf-8')
 
     linotp.lib.config.storeConfig(key='SecretKey.Partition.%d' % partition,
                                   val=secret_key_entry,
                                   typ='encrypted_data')
 
-    public_key_entry = base64.b64encode(public_key)
+    public_key_entry = base64.b64encode(public_key).decode('utf-8')
 
     linotp.lib.config.storeConfig(key='PublicKey.Partition.%d' % partition,
                                   val=public_key_entry,
@@ -554,13 +615,13 @@ class urandom(object):
         :return: float value
         """
         # get a binary random string
-        randbin = geturandom(urandom.precision)
+        randstr = geturandom(urandom.precision).hex()
 
         # convert this to an integer
-        randi = int(randbin.encode('hex'), 16) * 1.0
+        randi = int(randstr, 16)
 
         # get the max integer
-        intmax = 2 ** (8 * urandom.precision) * 1.0
+        intmax = 2 ** (8 * urandom.precision)
 
         # scale the integer to an float between 0.0 and 1.0
         randf = randi / intmax
@@ -650,7 +711,7 @@ class urandom(object):
             stop = start
             start = 0
         # see python definition of randrange
-        res = urandom.choice(range(start, stop, step))
+        res = urandom.choice(list(range(start, stop, step)))
         return res
 
 
@@ -680,7 +741,7 @@ def extract_tan(signature, digits):
     tan = "%d" % (itan % 10**digits)
 
     # fill up the tan with leading zeros
-    stan = u"%s%s" % ('0' * (digits - len(tan)), tan)
+    stan = "%s%s" % ('0' * (digits - len(tan)), tan)
 
     return stan
 

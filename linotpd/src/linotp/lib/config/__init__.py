@@ -30,7 +30,7 @@
 import logging
 import copy
 
-from pylons import tmpl_context as c
+from linotp.flap import tmpl_context as c
 
 from linotp.lib.config.parsing import parse_config
 from linotp.lib.config.config_class import LinOtpConfig
@@ -42,9 +42,12 @@ from linotp.lib.config.type_definition import type_definitions
 
 log = logging.getLogger(__name__)
 
+# A global object containing the complete configuration from the
+# database as a dict. See _retrieveAllConfigDB() for the format
 linotp_config = None
-linotp_config_tree = None
 
+# Complete configuration tree in a hierarchical style
+linotp_config_tree = None
 
 def refresh_config():
 
@@ -65,7 +68,18 @@ def refresh_config():
 def getLinotpConfig():
 
     '''
-    return the thread local dict with all entries
+    Get the complete configuration and store in context
+
+    Calling this function results in a number of operations:
+    * Retrieve the complete configuration from the database
+    * Parse into a hierarchical format
+    * Make available in application context (flap.config)
+
+    The resulting class can be found under c.linotpConfig,
+    but is more generally accessed using the symbol `config`:
+
+    from linotp.flap import config
+    foo = config['foo']
 
     :return: local config dict
     :rtype: dict
@@ -77,6 +91,7 @@ def getLinotpConfig():
     # TODO: replication
 
     if linotp_config is None:
+        # Read all the configuration from the database
         refresh_config()
 
     if linotp_config_tree is None:
@@ -92,8 +107,8 @@ def getLinotpConfig():
             try:
                 c.linotpConfig = LinOtpConfig()
             except Exception as exx:
-                log.exception("Could not add LinOTP configuration to pylons "
-                              "tmpl_context. Exception was: %r", exx)
+                log.exception("Could not add LinOTP configuration to Flask "
+                              "application context. Exception was: %r", exx)
                 raise exx
         ret = c.linotpConfig
 
@@ -161,7 +176,7 @@ def updateConfig(confi):
     entries = {}
     update_entries = {}
 
-    for entry in confi.keys():
+    for entry in list(confi.keys()):
 
         if entry.endswith('.type') or entry.endswith('.desc'):
             key = entry[:-len('.type')]
@@ -180,7 +195,7 @@ def updateConfig(confi):
                             confi.get(key + '.type'),
                             confi.get(key + '.desc'))
 
-    for key, data_tuple in entries.items():
+    for key, data_tuple in list(entries.items()):
 
         val, typ, desc = data_tuple
 
@@ -246,22 +261,22 @@ def removeFromConfig(key, iCase=False):
 
 # several config functions to follow
 def setDefaultMaxFailCount(maxFailCount):
-    return storeConfig(u"DefaultMaxFailCount", maxFailCount)
+    return storeConfig("DefaultMaxFailCount", maxFailCount)
 
 
 def setDefaultSyncWindow(syncWindowSize):
-    return storeConfig(u"DefaultSyncWindow", syncWindowSize)
+    return storeConfig("DefaultSyncWindow", syncWindowSize)
 
 
 def setDefaultCountWindow(countWindowSize):
-    return storeConfig(u"DefaultCountWindow", countWindowSize)
+    return storeConfig("DefaultCountWindow", countWindowSize)
 
 
 def setDefaultOtpLen(otpLen):
-    return storeConfig(u"DefaultOtpLen", otpLen)
+    return storeConfig("DefaultOtpLen", otpLen)
 
 
 def setDefaultResetFailCount(resetFailCount):
-    return storeConfig(u"DefaultResetFailCount", resetFailCount)
+    return storeConfig("DefaultResetFailCount", resetFailCount)
 
 # eof #########################################################################

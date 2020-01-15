@@ -30,7 +30,6 @@ Test when policies defined for certain realms apply and when not. This depends
 on the 'realm context' during the request.
 """
 
-import unittest2
 from collections import deque
 
 from linotp.tests import TestController
@@ -168,7 +167,7 @@ class TestRealmContextController(TestController):
         # Assign to user in 'realm_no_default'
         self._assign(
             self.token['serial'],
-            u'molière@realm_no_default',
+            'molière@realm_no_default',
             )
 
         # validate PIN+OTP -> fails
@@ -219,7 +218,7 @@ class TestRealmContextController(TestController):
         # Assign to user in 'realm_no_default'
         self._assign(
             self.token['serial'],
-            u'molière@realm_no_default',
+            'molière@realm_no_default',
         )
 
         # Set token realm 'realm_default' (user is in 'realm_no_default')
@@ -243,7 +242,7 @@ class TestRealmContextController(TestController):
         # validate/check PIN+OTP -> fails (because when using check the user
         # realm is relevant and for 'realm_no_default' the policy is set)
         self._validate(
-            u'molière@realm_no_default',
+            'molière@realm_no_default',
             'mypin' + self.token['otps'].popleft(),
             action='check',
             expected='value-false',
@@ -256,7 +255,7 @@ class TestRealmContextController(TestController):
         # That is: A token either has 0-N token realms or a user (including his
         # realm).
         self._validate(
-            u'molière@realm_no_default',
+            'molière@realm_no_default',
             self.token['otps'].popleft(),
             action='check',
             expected='value-false',
@@ -288,13 +287,13 @@ class TestRealmContextController(TestController):
         # user realm is relevant. Since the user realm is 'realm_no_default'
         # and for that realm no policy is set, it succeeds)
         self._validate(
-            u'molière@realm_no_default',
+            'molière@realm_no_default',
             'mypin' + self.token['otps'].popleft(),
             action='check',
             )
         # validate/check_s OTP -> succeeds
         self._validate(
-            u'molière@realm_no_default',
+            'molière@realm_no_default',
             self.token['otps'].popleft(),
             action='check',
             expected='value-false',
@@ -341,9 +340,9 @@ class TestRealmContextController(TestController):
             "otplen": token['otplen'],
             }
         response = self.make_admin_request('init', params=params)
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertTrue(content['result']['value'])
+        content = response.json
+        assert content['result']['status']
+        assert content['result']['value']
         token['serial'] = content['detail']['serial']
         self.token_for_deletion.add(token['serial'])
 
@@ -353,9 +352,9 @@ class TestRealmContextController(TestController):
             'pin': 'mypin',
             }
         response = self.make_admin_request('set', params=params)
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertTrue(content['result']['value'])
+        content = response.json
+        assert content['result']['status']
+        assert content['result']['value']
         return token
 
     def _set_token_realm(self, serial, realm):
@@ -367,9 +366,9 @@ class TestRealmContextController(TestController):
             'realms': realm,
             }
         response = self.make_admin_request('tokenrealm', params=params)
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertTrue(content['result']['value'])
+        content = response.json
+        assert content['result']['status']
+        assert content['result']['value']
 
     def _setup_realms(self):
         """
@@ -381,19 +380,19 @@ class TestRealmContextController(TestController):
                 realm=realm,
                 resolvers=self.resolvers['myDefRes'],
                 )
-            content = TestController.get_json_body(response)
-            self.assertTrue(content['result']['status'])
-            self.assertTrue(content['result']['value'])
+            content = response.json
+            assert content['result']['status']
+            assert content['result']['value']
 
         # Assert 'realm_default' is default
         response = self.make_system_request('getRealms', {})
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
+        content = response.json
+        assert content['result']['status']
         realms = content['result']['value']
-        self.assertEqual(len(realms), 2)
-        self.assertIn('realm_default', realms)
-        self.assertIn('default', realms['realm_default'])
-        self.assertTrue(realms['realm_default']['default'])
+        assert len(realms) == 2
+        assert 'realm_default' in realms
+        assert 'default' in realms['realm_default']
+        assert realms['realm_default']['default']
 
     def _delete_realms(self):
         """
@@ -404,10 +403,10 @@ class TestRealmContextController(TestController):
                 "realm": realm,
                 }
             response = self.make_system_request('delRealm', params)
-            content = TestController.get_json_body(response)
-            self.assertTrue(content['result']['status'])
-            expected_value = {u'delRealm': {u'result': True}}
-            self.assertDictEqual(expected_value, content['result']['value'])
+            content = response.json
+            assert content['result']['status']
+            expected_value = {'delRealm': {'result': True}}
+            assert expected_value == content['result']['value']
 
     def _validate(self, user_or_serial, pwd, expected='success', err_msg=None, action='check'):
         """
@@ -431,7 +430,7 @@ class TestRealmContextController(TestController):
             self.fail("Action %s not implemented" % action)
 
         response = self.make_validate_request(action, params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         if not err_msg:
             err_msg = "validate/%s failed for %r. Response: %r" % (
                 action,
@@ -439,17 +438,17 @@ class TestRealmContextController(TestController):
                 content,
                 )
         if expected == 'success':
-            self.assertTrue(content['result']['status'], err_msg)
-            self.assertTrue(content['result']['value'], err_msg)
+            assert content['result']['status'], err_msg
+            assert content['result']['value'], err_msg
         elif expected == 'value-false':
-            self.assertTrue(content['result']['status'], err_msg)
-            self.assertFalse(content['result']['value'], err_msg)
+            assert content['result']['status'], err_msg
+            assert not content['result']['value'], err_msg
         elif expected == 'status-false':
-            self.assertFalse(content['result']['status'], err_msg)
-            self.assertTrue(content['result']['value'], err_msg)
+            assert not content['result']['status'], err_msg
+            assert content['result']['value'], err_msg
         elif expected == 'both-false':
-            self.assertFalse(content['result']['status'], err_msg)
-            self.assertFalse(content['result']['value'], err_msg)
+            assert not content['result']['status'], err_msg
+            assert not content['result']['value'], err_msg
         else:
             self.fail("Unknown 'expected' %s" % expected)
         return content
@@ -467,7 +466,6 @@ class TestRealmContextController(TestController):
             'user': user.encode('utf-8'),
             }
         response = self.make_admin_request('assign', params=params)
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertTrue(content['result']['value'])
-
+        content = response.json
+        assert content['result']['status']
+        assert content['result']['value']

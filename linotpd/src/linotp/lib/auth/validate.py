@@ -29,7 +29,7 @@ import json
 from hashlib import sha256
 from datetime import datetime
 
-from pylons.configuration import config as env
+from linotp.flap import config as env
 
 from linotp.lib.auth.finishtokens import FinishTokens
 
@@ -276,8 +276,8 @@ class ValidationHandler(object):
                 continue
 
             if not tokens and not token_type:
-                raise Exception('tokenmismatch for token serial: %s'
-                                % (unicode(serial)))
+                raise Exception('tokenmismatch for token serial: %r'
+                                % serial)
 
             # there could be only one
             token = tokens[0]
@@ -420,7 +420,7 @@ class ValidationHandler(object):
             trans_dict['received_count'] = ch.received_count
             trans_dict['received_tan'] = ch.received_tan
             trans_dict['valid_tan'] = ch.valid_tan
-            trans_dict['message'] = ch.challenge
+            trans_dict['message'] = ch.getChallenge()
             trans_dict['status'] = ch.getStatus()
 
             # -------------------------------------------------------------- --
@@ -606,7 +606,7 @@ class ValidationHandler(object):
             return False, opt
 
         if passw is None:
-            raise ParameterError(u"Missing parameter:pass", id=905)
+            raise ParameterError("Missing parameter:pass", id=905)
 
         (res, opt) = self.checkTokenList(
             tokenList, passw, user, options=options)
@@ -708,7 +708,7 @@ class ValidationHandler(object):
             typ = token.getType()
             if typ.lower() not in tokenclass_registry:
                 log.error('token typ %r not found in tokenclasses: %r' %
-                          (typ, tokenclass_registry.keys()))
+                          (typ, list(tokenclass_registry.keys())))
                 audit_entry['action_detail'] = "Unknown Token type"
                 continue
 
@@ -848,7 +848,7 @@ class ValidationHandler(object):
 
         # add to all tokens the last accessd time stamp
         add_last_accessed_info(
-            [valid_tokens, pin_matching_tokens, challenge_tokens, valid_tokens])
+            [valid_tokens, pin_matching_tokens, challenge_tokens, invalid_tokens])
 
         # now we care for all involved tokens and their challenges
         for token in (valid_tokens + pin_matching_tokens +

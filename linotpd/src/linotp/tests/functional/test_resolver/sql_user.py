@@ -54,7 +54,8 @@ class SqlUserDB(object):
                 self.usercol = 'user'
 
         except Exception as e:
-            print "%r" % e
+            print("%r" % e)
+            raise e
         self.connection = connection
 
         umap = {
@@ -127,7 +128,7 @@ class SqlUserDB(object):
 
         create_key_value = []
 
-        for key, value in self.sql_params.items():
+        for key, value in list(self.sql_params.items()):
             create_key_value.append('%s %s' % (key, value))
 
         createStr = "CREATE TABLE %s ( %s )" % (
@@ -177,7 +178,7 @@ class SqlUserDB(object):
             t = sqlalchemy.sql.expression.text(delStr)
             self.connection.execute(t, user=username)
 
-        elif type(uid) in (str, u''):
+        elif type(uid) in (str, ''):
             delStr = 'DELETE FROM %s  WHERE id=:id' % (self.userTable)
             t = sqlalchemy.sql.expression.text(delStr)
             self.connection.execute(t, id=uid)

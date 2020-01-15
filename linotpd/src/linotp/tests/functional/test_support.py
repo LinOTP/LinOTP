@@ -34,7 +34,6 @@ import logging
 import json
 
 from mock import patch
-from nose.tools import raises
 
 from datetime import datetime
 from datetime import timedelta
@@ -100,15 +99,15 @@ class TestSupport(TestController):
 
         params = {'key': 'license'}
         response = self.make_system_request('getConfig', params)
-        self.assertTrue('"getConfig license": null' in response)
+        assert '"getConfig license": null' in response
 
         response = self.make_system_request("isSupportValid")
 
         if "your product is unlicensed" in response:
             raise InvalidLicenseException("your product is unlicensed")
 
-        self.assertTrue('"status": true' in response)
-        self.assertTrue('"value": true' in response)
+        assert '"status": true' in response
+        assert '"value": true' in response
 
         # ------------------------------------------------------------------ --
 
@@ -121,9 +120,9 @@ class TestSupport(TestController):
         expiry_date = datetime.strptime(expiry, "%Y-%m-%d")
         expected_expiry = datetime.now() + timedelta(days=14)
 
-        self.assertTrue(expiry_date.year == expected_expiry.year)
-        self.assertTrue(expiry_date.month == expected_expiry.month)
-        self.assertTrue(expiry_date.day == expected_expiry.day)
+        assert expiry_date.year == expected_expiry.year
+        assert expiry_date.month == expected_expiry.month
+        assert expiry_date.day == expected_expiry.day
 
         return
 
@@ -136,8 +135,8 @@ class TestSupport(TestController):
         with freeze_time(two_weeks_ago):
 
             response = self.install_license(license_filename="demo-lic.pem")
-            self.assertTrue('"status": true' in response)
-            self.assertTrue('"value": true' in response)
+            assert '"status": true' in response
+            assert '"value": true' in response
 
         response = self.make_system_request("getSupportInfo")
         jresp = json.loads(response.body)
@@ -145,15 +144,15 @@ class TestSupport(TestController):
         expiry_date = datetime.strptime(expiry, "%Y-%m-%d")
 
         # check that the license expiration date is before today
-        self.assertTrue(expiry_date < datetime.now())
+        assert expiry_date < datetime.now()
 
         response = self.make_system_request("isSupportValid")
         jresp = json.loads(response.body)
 
-        self.assertFalse(jresp.get("result", {}).get("value"))
-        self.assertTrue("License expired" in jresp.get(
+        assert not jresp.get("result", {}).get("value")
+        assert "License expired" in jresp.get(
             "detail", {}).get(
-            "reason"))
+            "reason")
 
         return
 
@@ -164,8 +163,8 @@ class TestSupport(TestController):
 
         response = self.install_license(license_filename="expired-lic.pem")
 
-        self.assertTrue('"status": false' in response)
-        self.assertTrue("expired - valid till '2017-12-12'" in response)
+        assert '"status": false' in response
+        assert "expired - valid till '2017-12-12'" in response
 
         return
 
@@ -181,8 +180,8 @@ class TestSupport(TestController):
                 'serial': 'HMAC_DEMO%d' % i
             }
             response = self.make_admin_request('init', params)
-            self.assertTrue('"status": true' in response)
-            self.assertTrue('"value": true' in response)
+            assert '"status": true' in response
+            assert '"value": true' in response
 
         response = self.install_license(license_filename="demo-lic.pem")
 
@@ -229,8 +228,8 @@ class TestSupport(TestController):
         with freeze_time(time_ago):
 
             response = self.install_license(license_filename="expired-lic.pem")
-            self.assertTrue('"status": true' in response)
-            self.assertTrue('"value": true' in response)
+            assert '"status": true' in response
+            assert '"value": true' in response
 
             for i in range(1, 6):
                 params = {
@@ -239,8 +238,8 @@ class TestSupport(TestController):
                     'serial': 'HMAC_DEMO%d' % i
                 }
                 response = self.make_admin_request('init', params)
-                self.assertTrue('"status": true' in response)
-                self.assertTrue('"value": true' in response)
+                assert '"status": true' in response
+                assert '"value": true' in response
 
             response = self.make_admin_request('init', params)
             assert '"status": false' in response, response
@@ -265,8 +264,8 @@ class TestSupport(TestController):
             upload_files = [("license", "linotp2.token_user.pem", license)]
             response = self.make_system_request("setSupport",
                                                 upload_files=upload_files)
-            self.assertTrue('"status": true' in response)
-            self.assertTrue('"value": true' in response)
+            assert '"status": true' in response
+            assert '"value": true' in response
 
             response = self.make_system_request("getSupportInfo")
             jresp = json.loads(response.body)
@@ -321,7 +320,7 @@ class TestSupport(TestController):
         }
 
         response = self.make_system_request('setPolicy', params=params)
-        self.assertTrue('false' not in response.body)
+        assert 'false' not in response.body
 
         license_valid_date = datetime(year=2018, month=11, day=16)
 
@@ -335,8 +334,8 @@ class TestSupport(TestController):
             upload_files = [("license", "linotp2.token_user.pem", license)]
             response = self.make_system_request("setSupport",
                                                 upload_files=upload_files)
-            self.assertTrue('"status": true' in response)
-            self.assertTrue('"value": true' in response)
+            assert '"status": true' in response
+            assert '"value": true' in response
 
             response = self.make_system_request("getSupportInfo")
             jresp = json.loads(response.body)

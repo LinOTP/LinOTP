@@ -30,14 +30,14 @@ validate controller - to check the authentication request
 
 import logging
 
-import webob
-from pylons import request, response, config
-from pylons import tmpl_context as c
-from pylons.controllers.util import abort
-from pylons.i18n.translation import _
+from linotp import flap
+from linotp.flap import (
+    _, request, response, config,
+    tmpl_context as c, abort
+)
 
 from linotp.lib.auth.validate import ValidationHandler
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import ParameterError
 
@@ -73,8 +73,6 @@ Session = linotp.model.Session
 
 CONTENT_TYPE_PAIRING = 1
 
-audit = config.get('audit')
-
 log = logging.getLogger(__name__)
 
 
@@ -91,13 +89,23 @@ class ValidateController(BaseController):
     The functions are described below in more detail.
     '''
 
-    def __before__(self, action, **params):
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError
+        """
+
+        action = request_context['action']
 
         try:
             c.audit = request_context['audit']
             c.audit['client'] = get_client(request)
+            audit = config.get('audit')
             request_context['Audit'] = audit
-            return response
+            return
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
@@ -106,7 +114,16 @@ class ValidateController(BaseController):
             return sendError(response, exx, context='before')
 
 
-    def __after__(self, action, **params):
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
+        audit = config.get('audit')
         audit.log(c.audit)
         return response
 
@@ -129,7 +146,7 @@ class ValidateController(BaseController):
         # put everything in the options but the user, pass, init
         options.update(param)
         for para in ["pass", "user", "init"]:
-            if options.has_key(para):
+            if para in options:
                 del options[para]
 
         passw = param.get("pass")
@@ -233,7 +250,7 @@ class ValidateController(BaseController):
                 log.warning("[check] authorization failed for validate/check: %r"
                             % exx)
                 c.audit['success'] = False
-                c.audit['info'] = unicode(exx)
+                c.audit['info'] = str(exx)
                 ok = False
                 if is_auth_return(ok):
                     if opt is None:
@@ -304,14 +321,14 @@ class ValidateController(BaseController):
                                       use_offline=use_offline)
 
             c.audit['success'] = ok
-            c.audit['info'] = unicode(opt)
+            c.audit['info'] = str(opt)
 
             Session.commit()
             return sendResult(response, ok, 0, opt=opt)
 
         except Exception as exx:
             log.exception("check_status failed: %r" % exx)
-            c.audit['info'] = unicode(exx)
+            c.audit['info'] = str(exx)
             Session.rollback()
             return sendResult(response, False, 0)
 
@@ -366,7 +383,7 @@ class ValidateController(BaseController):
                 log.warning("[check_yubikey] authorization failed for validate/check_yubikey: %r"
                             % exx)
                 c.audit['success'] = False
-                c.audit['info'] = unicode(exx)
+                c.audit['info'] = str(exx)
                 ok = False
 
             Session.commit()
@@ -374,7 +391,7 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.exception("[check_yubikey] validate/check_yubikey failed: %r" % exx)
-            c.audit['info'] = unicode(exx)
+            c.audit['info'] = str(exx)
             Session.rollback()
             return sendResult(response, False, 0)
 
@@ -393,7 +410,7 @@ class ValidateController(BaseController):
             except AuthorizeException as acc:
                 log.warning("[check_url] authorization failed for validate/check_url: %r" % acc)
                 c.audit['success'] = False
-                c.audit['action_detail'] = unicode(acc)
+                c.audit['action_detail'] = str(acc)
                 ok = False
 
             Session.commit()
@@ -405,7 +422,7 @@ class ValidateController(BaseController):
             else:
                 return "Preshared Key Todo"
 
-        except webob.exc.HTTPUnauthorized as acc:
+        except flap.HTTPUnauthorized as acc:
             ## the exception, when an abort() is called if forwarded
             log.exception("[__before__::%r] webob.exception %r" % acc)
             Session.rollback()
@@ -531,7 +548,7 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.exception("[check_t] validate/check_t failed: %r" % exx)
-            c.audit['info'] = unicode(exx)
+            c.audit['info'] = str(exx)
             Session.rollback()
             return sendResult(response, False, 0)
 
@@ -759,7 +776,7 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.exception("[check_s] validate/check_s failed: %r" % exx)
-            c.audit['info'] = unicode(exx)
+            c.audit['info'] = str(exx)
             Session.rollback()
             return sendResult(response, False, id=0, status=False)
 
@@ -801,15 +818,15 @@ class ValidateController(BaseController):
             except AuthorizeException as e:
                 log.warning("[simplecheck] validate/simplecheck: %r" % e)
                 c.audit['success'] = False
-                c.audit['action_detail'] = unicode(e)
+                c.audit['action_detail'] = str(e)
                 ok = False
 
             Session.commit()
 
             if ok is True:
-                ret = u":-)"
+                ret = ":-)"
             else:
-                ret = u":-("
+                ret = ":-("
             res.append(ret)
 
             if opt is not None:
@@ -828,7 +845,7 @@ class ValidateController(BaseController):
         except Exception as exx:
             log.exception("[simplecheck] failed: %r" % exx)
             Session.rollback()
-            return u":-("
+            return ":-("
 
         finally:
             Session.close()
@@ -898,7 +915,7 @@ class ValidateController(BaseController):
             log.exception("[smspin] validate/smspin failed: %r" % exx)
             # If an internal error occurs or the SMS gateway did not send
             # the SMS, we write this to the detail info.
-            c.audit['info'] = unicode(exx)
+            c.audit['info'] = str(exx)
             Session.rollback()
             return sendResult(response, False, 0)
 
@@ -974,7 +991,7 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.exception("validate/pair failed: %r" % exx)
-            c.audit['info'] = unicode(exx)
+            c.audit['info'] = str(exx)
             Session.rollback()
             return sendResult(response, False, 0, status=False)
 

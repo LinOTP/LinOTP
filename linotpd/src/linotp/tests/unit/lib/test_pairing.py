@@ -24,13 +24,15 @@
 #    Support: www.keyidentity.com
 #
 
+import pytest
 import unittest
 
-from pylons import config
+from linotp.flap import config
 from linotp.lib.pairing import generate_pairing_url
 from mock import patch
 
 
+@pytest.mark.usefixtures("app")
 class PairingUnitTestCase(unittest.TestCase):
 
     @patch('linotp.lib.pairing.get_secret_key')
@@ -45,9 +47,9 @@ class PairingUnitTestCase(unittest.TestCase):
         test if pairing urls get generated with correct custom protocol ids
         """
 
-        mocked_get_secret_key.return_value = 'X' * 64
-        mocked_get_dh_secret_key.return_value = 'X' * 64
-        mocked_get_public_key.return_value = 'X' * 32
+        mocked_get_secret_key.return_value = b'X' * 64
+        mocked_get_dh_secret_key.return_value = b'X' * 64
+        mocked_get_public_key.return_value = b'X' * 32
 
         with patch.dict(config):
 
@@ -62,7 +64,7 @@ class PairingUnitTestCase(unittest.TestCase):
                                        serial='QRfoo',
                                        callback_url='foo')
 
-            self.assertTrue(url.startswith('lseqr://'))
+            assert url.startswith('lseqr://')
 
         # -------------------------------------------------------------------- -
 
@@ -73,4 +75,4 @@ class PairingUnitTestCase(unittest.TestCase):
                                        serial='QRfoo',
                                        callback_url='foo')
 
-            self.assertTrue(url.startswith('yolo://'))
+            assert url.startswith('yolo://')

@@ -115,7 +115,7 @@ class LdapResolverTest(TestController):
             }
 
         response = self.make_system_request('setConfig', params)
-        self.assertTrue('"status": true' in response.body, response)
+        assert '"status": true' in response.body, response
 
         return res
 
@@ -130,7 +130,7 @@ class LdapResolverTest(TestController):
             }
 
         response = self.make_system_request('setConfig', params)
-        self.assertTrue('"status": true' in response.body, response)
+        assert '"status": true' in response.body, response
 
         return TestController.tearDown(self)
 
@@ -194,7 +194,7 @@ class LdapResolverTest(TestController):
             response = self.make_system_request(
                                     action='setResolver', params=param)
 
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
         resolver = ('useridresolver.LDAPIdResolver.IdResolver.blackdog,'
                     'useridresolver.LDAPIdResolver.IdResolver.blackdark')
@@ -204,7 +204,7 @@ class LdapResolverTest(TestController):
             }
 
         response = self.make_system_request('setRealm', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
 
     def test_cache_without_exception(self):

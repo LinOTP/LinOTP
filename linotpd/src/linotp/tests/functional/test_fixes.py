@@ -26,63 +26,112 @@
 
 
 """
+Tests for some miscellaneous fixes
 """
 
 
+import json
+import logging
+import threading
+
 from linotp.tests import TestController, url
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
-import logging
 log = logging.getLogger(__name__)
 
 
-import threading
 
-class DoRequest(threading.Thread):
-    ''' the request thread'''
 
-    def __init__ (self, utest, rid=1, uri=None, params=None):
-        '''
-        initialize all settings of the request thread
+def test_ticket_425(adminclient):
+    '''
+    Test #2425: test if setConfig is timing save
 
-        :param utest: method/function to be called
-        :param rid: the request id
-        :param uri: the request url object
-        :param params: additional parmeters
-        '''
-        threading.Thread.__init__(self)
+    1. run multiple setConfig threads concurrently
+    2. verify that only one thread has written his config
+    3. verify, that all config entries of this thread are in place
 
-        self.utest = utest
-        self.rid = rid
-        self.uri = uri
-        self.params = params
+    config entries are of format: key_entryId = val_threadId
+            eg. key_101 = val_4 belongs to thread 4 and is entry 101
+    '''
+    class DoRequest(threading.Thread):
+        ''' the request thread'''
 
-        self.response = None
+        def __init__ (self, client, rid=1, params=None):
+            '''
+            initialize all settings of the request thread
 
-    def run(self):
-        ''' start the thread'''
-        response = self.utest.app.get(self.uri, params=self.params)
-        self.response = response.body
-        return
+            :param client: application client
+            :param rid: the request id
+            :param uri: the request url object
+            :param params: additional parmeters
+            '''
+            threading.Thread.__init__(self)
 
-    def status(self):
-        '''
-        retrieve the request result
+            self.client = client
+            self.rid = rid
+            self.params = params
 
-        :return: the thread request result
-        '''
-        res = '"status": true,' in self.response
-        return res
+            self.response = None
 
-    def stat(self):
-        '''
-        retrieve the complete response
-        '''
-        return (self.rid, self.response)
+        def run(self):
+            ''' start the thread'''
+            response = self.client.post('/system/setConfig', json=self.params)
+            self.response = response.body
+            return
+
+        def status(self):
+            '''
+            retrieve the request result
+
+            :return: the thread request result
+            '''
+            res = '"status": true,' in self.response
+            return res
+
+        def stat(self):
+            '''
+            retrieve the complete response
+            '''
+            return (self.rid, self.response)
+
+    check_results = []
+    numthreads = 20
+    numkeys = 200
+
+    params = {}
+
+    for tid in range(numthreads):
+        param = {}
+        for kid in range(numkeys):
+            key = 'key_%d' % (kid)
+            val = 'val_%d' % (tid)
+            param[key] = val
+        params[tid] = param
+
+    for tid in range(numthreads):
+        param = params.get(tid)
+        current = DoRequest(adminclient, rid=tid, params=param)
+        check_results.append(current)
+        current.start()
+
+    ## wait till all threads are completed
+    for req in check_results:
+        req.join()
+
+    ## now check in the config if all keys are there
+    config = adminclient.get('/system/getConfig').json
+    conf = config['result']['value']
+
+    ## check for the keys and the values in the dict
+    counter = 0
+    valdict = set()
+
+    for cconf in conf:
+        if cconf.startswith('key_'):
+            valdict.add(conf.get(cconf))
+            counter += 1
+
+    assert counter == numkeys
+    assert len(valdict) == 1
 
 class TestFixesController(TestController):
     '''
@@ -175,65 +224,6 @@ class TestFixesController(TestController):
 
         return (serial, response)
 
-
-    def test_ticket_425(self):
-        '''
-        Test #2425: test if setConfig is timing save
-
-        1. run multiple setConfig threads concurrently
-        2. verify that only one thread has written his config
-        3. verify, that all config entries of this thread are in place
-
-        config entries are of format: key_entryId = val_threadId
-             eg. key_101 = val_4 belongs to thread 4 and is entry 101
-        '''
-
-        check_results = []
-        numthreads = 20
-        numkeys = 200
-
-        params = {}
-        for tid in range(numthreads):
-            param = {}
-            for kid in range(numkeys):
-                key = 'key_%d' % (kid)
-                val = 'val_%d' % (tid)
-                param[key] = val
-            params[tid] = param
-
-        uri = url(controller='system', action='setConfig')
-
-        for tid in range(numthreads):
-            param = params.get(tid)
-            current = DoRequest(self, rid=tid, uri=uri, params=param)
-            check_results.append(current)
-            current.start()
-
-        ## wait till all threads are completed
-        for req in check_results:
-            req.join()
-
-        ## now check in the config if all keys are there
-        config = self.get_config()
-        conf = json.loads(config.body)
-        conf = conf.get('result').get('value')
-
-        ## check for the keys and the values in the dict
-        counter = 0
-        valdict = set()
-        for cconf in conf:
-            if cconf.startswith('key_'):
-                valdict.add(conf.get(cconf))
-                counter += 1
-
-        assert counter == numkeys
-        assert len(valdict) == 1
-
-        self.delete_config(prefix='key_')
-
-        return
-
-
     def test_ticket_864(self):
         '''
         #2864: admin/tokenrealm with multiple realms
@@ -245,7 +235,7 @@ class TestFixesController(TestController):
         3. verify, that the token is part of the realms
         '''
 
-        sqlconnect = self.appconf.get('sqlalchemy.url')
+        sqlconnect = self.app.config['SQLALCHEMY_DATABASE_URI']
         log.debug('current test against %s' % (sqlconnect))
 
         self.add_token('root', serial='troot', typ='spass', key='1234')
@@ -270,39 +260,6 @@ class TestFixesController(TestController):
         assert 'mymixrealm' in realms
 
         self.del_token('troot')
-
-        return
-
-    def test_ticket_2909(self):
-        '''
-        Test #2909: HSM problems will raise an HSM Exception
-               which could trigger an HTTP Error
-        '''
-        param = {'__HSMEXCEPTION__':'__ON__'}
-        response = self.make_system_request(
-                    'setupSecurityModule', params=param)
-
-        param = {'key':'sec', 'value':'mySec', 'type':'password'}
-        response = self.make_system_request('setConfig', params=param)
-
-        assert '707' in response
-        assert 'hsm not ready' in response
-
-        res = ''
-        try:
-            param = {'key':'sec', 'value':'mySec',
-                 'type':'password', 'httperror':'503'}
-            response = self.make_system_request('setConfig', params=param)
-        except Exception as exx:
-            log.info(response)
-            res = type(exx).__name__
-
-        assert res == 'AppError'
-
-        ## restore default
-        param = {'__HSMEXCEPTION__':'__OFF__'}
-        response = self.make_system_request(
-                        'setupSecurityModule', params=param)
 
         return
 

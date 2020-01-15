@@ -42,8 +42,9 @@ from M2Crypto import EVP, RSA
 from binascii import hexlify
 from binascii import unhexlify
 from sqlalchemy import create_engine
+from linotp.flap import config
 from linotp.lib.audit.base import AuditBase
-from pylons import config
+from linotp.model import meta
 
 import logging.config
 import traceback
@@ -52,23 +53,16 @@ import linotp
 
 from linotp.lib.text_utils import utf8_slice
 
-# Create the logging object from the linotp.ini config file
-ini_file = config.get("__file__")
-if ini_file is not None:
-    # When importing the module with Sphinx to generate documentation
-    # 'ini_file' is None. In other cases this should not be the case.
-    logging.config.fileConfig(ini_file, disable_existing_loggers=False)
-
 log = logging.getLogger(__name__)
 
 metadata = schema.MetaData()
 
 def now():
-    u_now = u"%s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+    u_now = "%s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
     return u_now
 
 ######################## MODEL ################################################
-table_prefix = config.get("linotpAudit.sql.table_prefix", "")
+table_prefix = ""
 
 audit_table_name = '%saudit' % table_prefix
 
@@ -77,19 +71,19 @@ audit_table = schema.Table(audit_table_name, metadata,
                                                        optional=True),
                   primary_key=True),
     schema.Column('timestamp', types.Unicode(30), default=now, index=True),
-    schema.Column('signature', types.Unicode(512), default=u''),
+    schema.Column('signature', types.Unicode(512), default=''),
     schema.Column('action', types.Unicode(30), index=True),
-    schema.Column('success', types.Unicode(30), default=u"False"),
+    schema.Column('success', types.Unicode(30), default="False"),
     schema.Column('serial', types.Unicode(30), index=True),
     schema.Column('tokentype', types.Unicode(40)),
     schema.Column('user', types.Unicode(255), index=True),
     schema.Column('realm', types.Unicode(255), index=True),
     schema.Column('administrator', types.Unicode(255)),
-    schema.Column('action_detail', types.Unicode(512), default=u''),
-    schema.Column('info', types.Unicode(512), default=u''),
+    schema.Column('action_detail', types.Unicode(512), default=''),
+    schema.Column('info', types.Unicode(512), default=''),
     schema.Column('linotp_server', types.Unicode(80)),
     schema.Column('client', types.Unicode(80)),
-    schema.Column('log_level', types.Unicode(20), default=u"INFO", index=True),
+    schema.Column('log_level', types.Unicode(20), default="INFO", index=True),
     schema.Column('clearance_level', types.Integer, default=0)
 )
 
@@ -100,13 +94,13 @@ AUDIT_ENCODE = ["action", "serial", "success", "user", "realm", "tokentype",
 
 class AuditTable(object):
 
-    def __init__(self, serial=u"", action=u"", success=u"False",
-                 tokentype=u"", user=u"",
-                 realm=u"", administrator=u"",
-                 action_detail=u"", info=u"",
-                 linotp_server=u"",
-                 client=u"",
-                 log_level=u"INFO",
+    def __init__(self, serial="", action="", success="False",
+                 tokentype="", user="",
+                 realm="", administrator="",
+                 action_detail="", info="",
+                 linotp_server="",
+                 client="",
+                 log_level="INFO",
                  clearance_level=0,
                  config_param=None):
         """
@@ -153,24 +147,24 @@ class AuditTable(object):
             self.config = config
         self.trunc_as_err = self.config.get('linotpAudit.error_on_truncation',
                                             'False') == 'True'
-        self.serial = unicode(serial or '')
-        self.action = unicode(action or '')
-        self.success = unicode(success or '0')
-        self.tokentype = unicode(tokentype or '')
-        self.user = unicode(user or '')
-        self.realm = unicode(realm or '')
-        self.administrator = unicode(administrator or '')
+        self.serial = str(serial or '')
+        self.action = str(action or '')
+        self.success = str(success or '0')
+        self.tokentype = str(tokentype or '')
+        self.user = str(user or '')
+        self.realm = str(realm or '')
+        self.administrator = str(administrator or '')
 
         #
         # we have to truncate the 'action_detail' and the 'info' data
         # in utf-8 compliant way
         #
-        self.action_detail = utf8_slice(unicode(action_detail or ''), 512).next()
-        self.info = utf8_slice(unicode(info or ''), 512).next()
+        self.action_detail = next(utf8_slice(str(action_detail or ''), 512))
+        self.info = next(utf8_slice(str(info or ''), 512))
 
-        self.linotp_server = unicode(linotp_server or '')
-        self.client = unicode(client or '')
-        self.log_level = unicode(log_level or '')
+        self.linotp_server = str(linotp_server or '')
+        self.client = str(client or '')
+        self.log_level = str(log_level or '')
         self.clearance_level = clearance_level
         self.timestamp = now()
         self.siganture = ' '
@@ -196,7 +190,7 @@ class AuditTable(object):
 
         :return: - nothing -
         """
-        if type(value) in [str, unicode]:
+        if isinstance(value, str):
             field_len = self._get_field_len(name)
             encoded_value = linotp.lib.crypto.utils.uencode(value)
             if field_len != -1 and len(encoded_value) > field_len:
@@ -277,49 +271,87 @@ def add_column(engine, table, column):
 class Audit(AuditBase):
     """
     Audit Implementation to the generic audit interface
-    """
-    def __init__(self, config):
-        self.name = "SQlAudit"
-        self.config = config
-        connect_string = config.get("linotpAudit.sql.url")
-        pool_recycle = config.get("linotpAudit.sql.pool_recyle", 3600)
-        implicit_returning = config.get("linotpSQL.implicit_returning", True)
 
-        self.engine = None
+    This class provides audit capabilities mapped to an SQLAlchemy
+    backend which has a separate database connection.
+    """
+
+    name = "SQlAudit"
+
+    engine = None
+    """Database backend engine"""
+
+    session = None
+    """Database scoped session maker"""
+
+    def __init__(self, config, engine=None):
+        """
+        Initialise the audit backend
+
+        Here the audit backend is initialised from the given configuration,
+        encryption configuration is setup and a database connection opened.
+
+        By supplying an `engine` parameter to the constructor, it is possible
+        to use an existing instance as the backend, so that the audit table
+        can form a part of the main database. Note, this is not recommended
+        for large production systems because this table will be written to
+        frequently.
+
+        @param config Dict of configuration values
+        @param engine Use the given existing engine
+        """
+
+        super(Audit, self).__init__(config)
+
         ########################## SESSION ##################################
 
-        # Create an engine and create all the tables we need
-        if implicit_returning:
-            # If implicit_returning is explicitly set to True, we
-            # get lots of mysql errors
-            # AttributeError: 'MySQLCompiler_mysqldb' object has no
-            # attribute 'returning_clause'
-            # So we do not mention explicit_returning at all
-            self.engine = create_engine(connect_string,
-                                        pool_recycle=pool_recycle)
-        else:
-            self.engine = create_engine(connect_string,
-                                        pool_recycle=pool_recycle,
-                                        implicit_returning=False)
-
-        metadata.bind = self.engine
-        metadata.create_all()
-
-        # Set up the session
-        self.sm = orm.sessionmaker(bind=self.engine, autoflush=True,
-                                   autocommit=True, expire_on_commit=True)
-        self.session = orm.scoped_session(self.sm)
+        self._init_db()
+        self._init_sessionmaker()
+        self._createdb()
 
         # initialize signing keys
         self.readKeys()
 
-        self.PublicKey = RSA.load_pub_key(
-                                          self.config.get("linotpAudit.key.public"))
+        self.PublicKey = RSA.load_pub_key(self.publicKeyFilename)
         self.VerifyEVP = EVP.PKey()
         self.VerifyEVP.reset_context(md='sha256')
         self.VerifyEVP.assign_rsa(self.PublicKey)
 
-        return
+    def _init_db(self):
+        """
+        Get SQL Alchemy engine and sessionmaker for the audit interface
+        """
+
+        connect_string = self.config.get("AUDIT_DATABASE_URI")
+        pool_recycle = self.config.get("AUDIT_POOL_RECYCLE", 3600)
+
+        # If implicit_returning is explicitly set to True, we
+        # get lots of mysql errors
+        # AttributeError: 'MySQLCompiler_mysqldb' object has no
+        # attribute 'returning_clause'
+        # So we do not mention explicit_returning at all
+        implicit_returning = self.config.get("linotpSQL.implicit_returning", True)
+
+        self.engine = create_engine(connect_string,
+                                    pool_recycle=pool_recycle,
+                                    implicit_returning=implicit_returning)
+
+    def _init_sessionmaker(self):
+        """
+        Set up session maker in `self.session`
+        """
+        # Set up the session
+        sm = orm.sessionmaker(bind=self.engine, autoflush=True,
+                                   autocommit=True, expire_on_commit=True)
+        self.session = orm.scoped_session(sm)
+
+    def _createdb(self):
+        """
+        Create database tables
+        """
+        metadata.bind = self.engine
+        metadata.create_all()
+
 
     def _attr_to_dict(self, audit_line):
 
@@ -352,14 +384,14 @@ class Audit(AuditBase):
         Create a signature of the audit object
         '''
         line = self._attr_to_dict(audit_line)
-        s_audit = getAsString(line)
+        s_audit = getAsBytes(line)
 
-        key = EVP.load_key_string(self.private)
+        key = EVP.load_key_string(bytes(self.private, 'utf-8'))
         key.reset_context(md='sha256')
         key.sign_init()
         key.sign_update(s_audit)
         signature = key.sign_final()
-        return u'' + hexlify(signature)
+        return signature.hex()
 
 
     def _verify(self, auditline, signature):
@@ -371,7 +403,7 @@ class Audit(AuditBase):
             log.debug("[_verify] missing signature %r" % auditline)
             return res
 
-        s_audit = getAsString(auditline)
+        s_audit = getAsBytes(auditline)
 
         self.VerifyEVP.verify_init()
         self.VerifyEVP.verify_update(s_audit)
@@ -414,7 +446,7 @@ class Audit(AuditBase):
 
         at = AuditTable(
                     serial=param.get('serial'),
-                    action=param.get('action'),
+                    action=param.get('action').lstrip('/'),
                     success=1 if param.get('success') else 0,
                     tokentype=param.get('token_type'),
                     user=param.get('user'),
@@ -462,7 +494,7 @@ class Audit(AuditBase):
         if not AND:
             boolCheck = or_
 
-        for k, v in param.items():
+        for k, v in list(param.items()):
             if "" != v:
                 if "serial" == k:
                     conditions.append(AuditTable.serial.like(v))
@@ -508,8 +540,8 @@ class Audit(AuditBase):
         line = self._attr_to_dict(audit_line)
 
         ## if we have an \uencoded data, we extract the unicode back
-        for key, value in line.items():
-            if value and type(value) in [str, unicode]:
+        for key, value in list(line.items()):
+            if value and isinstance(value, str):
                 value = linotp.lib.crypto.utils.udecode(value)
                 line[key] = value
             elif value is None:
@@ -660,5 +692,42 @@ def getAsString(data):
         s += ", client=%s" % data.get('client')
     return s
 
+def getAsBytes(data):
+    """
+    Return the audit record in a bytes format that can be used
+    for signing
+    """
+    return bytes(getAsString(data), 'utf-8')
 
+class AuditLinOTPDB(Audit):
+    """
+    SQL audit backend that uses LinOTP database
+
+    This backend is mainly to allow simple configuration scenario
+    where a separate engine is not required
+    """
+    name = "SQLAudit-LinOTPDB"
+
+    def __init__(self, config):
+        """
+        Iniailise the audit backend using the LinOTP
+        database backend
+        """
+        super(AuditLinOTPDB, self).__init__(config, None)
+
+    def _init_db(self):
+        """
+        Initialise engine using LinOTP DB
+        """
+        self.engine = meta.engine
+
+    def _init_sessionmaker(self):
+        """
+        Set up session maker in `self.session`
+        """
+        self.session = meta.Session
+
+    def log_entry(self, param):
+        super(AuditLinOTPDB, self).log_entry(param)
+        self.session.commit()
 ###eof#########################################################################

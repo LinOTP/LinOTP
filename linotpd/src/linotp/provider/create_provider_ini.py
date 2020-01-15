@@ -24,7 +24,7 @@
 #    Support: www.keyidentity.com
 #
 
-import cStringIO
+import io
 from linotp.lib.utils.UConfigParser import UConfigParser
 
 
@@ -37,7 +37,7 @@ def create_provider_config():
     from linotp.provider import get_all_new_providers
 
     provider_config = {}
-    for provider_type in Provider_types.keys():
+    for provider_type in list(Provider_types.keys()):
 
         providers = get_all_new_providers(provider_type,
                                           show_managed_config=True)
@@ -46,19 +46,19 @@ def create_provider_config():
 
     ini = UConfigParser()
 
-    for provider_type, providers in provider_config.items():
-        for provider in providers.keys():
+    for provider_type, providers in list(provider_config.items()):
+        for provider in list(providers.keys()):
             section = '%s:%s' % (provider_type, provider)
             ini.add_section(section)
 
             provider_config = providers.get(provider)
-            for key, value in provider_config.items():
-                if isinstance(value, unicode):
+            for key, value in list(provider_config.items()):
+                if isinstance(value, str):
                     value = value.encode('utf-8')
 
                 ini.set(section, key, value)
 
-    output = cStringIO.StringIO()
+    output = io.StringIO()
     ini.write(output)
     contents = output.getvalue()
     output.close()

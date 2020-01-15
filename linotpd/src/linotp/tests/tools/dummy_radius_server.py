@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -81,7 +81,7 @@ def checkUser(username, password, state):
 
     ## handle a state request
     if state is not None and state == state_id:
-        if password in users.values():
+        if password in list(users.values()):
             auth = True
         else:
             auth = False
@@ -144,7 +144,7 @@ def usage(prog):
     """
     Print usage information and exit
     """
-    print """
+    print("""
 Usage:
         %s [--dict=###] [--authport=###] [--acctport=###] [--help]
 
@@ -152,7 +152,7 @@ Usage:
         --authport=, -t     Port used for RADIUS authentication packets (default is 18012)
         --acctport=, -c     Port used for RADIUS accounting packets (default is 18013)
         --help, -h          Show this message and exit
-""" % prog
+""" % prog)
 
 
 def main():
@@ -187,7 +187,7 @@ def main():
             )
 
     except GetoptError:
-        print "There is an error in your parameter syntax:"
+        print("There is an error in your parameter syntax:")
         usage(prog)
         sys.exit(1)
 
@@ -199,13 +199,13 @@ def main():
             if os.path.isfile(arg):
                 r_dict = arg
             else:
-                print("radius dictionary file  <%r> not found!" % arg)
+                print(("radius dictionary file  <%r> not found!" % arg))
         elif opt in ('-t', '--authport'):
             authport = int(arg)
         elif opt in ('-c', '--acctport'):
             acctport = int(arg)
         else:
-            print "Unknown option %s" % opt
+            print("Unknown option %s" % opt)
 
     params = {
                 "addresses": ["127.0.0.1", myIP],
@@ -221,7 +221,7 @@ def main():
     if os.path.isfile(r_dict):
         params["dict"] = Dictionary(r_dict)
 
-    print "[ starting dummy radius server ]"
+    print("[ starting dummy radius server ]")
     serv = myRadiusServer(**params)
 
     return serv.Run()

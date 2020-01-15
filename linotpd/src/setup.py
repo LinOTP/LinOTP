@@ -27,12 +27,7 @@
 import os
 import sys
 
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    from ez_setup import use_setuptools
-    use_setuptools()
-    from setuptools import setup, find_packages
+from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
 
 from linotp import __version__
@@ -40,8 +35,73 @@ from linotp import __version__
 # Taken from kennethreitz/requests/setup.py
 package_directory = os.path.realpath(os.path.dirname(__file__))
 
+install_requirements = [
+    'Flask',
+    'Flask-Mako',
+    'SQLAlchemy>=0.6',
+    'beaker',
+    'docutils>=0.4',
+    'simplejson>=2.0',
+    'pycryptodomex>=3.4',
+    'pyrad>=1.1',
+    'netaddr',
+    'qrcode>=2.4',
+    'configobj>=4.6.0',
+    'httplib2',
+    'requests',
+    'pillow',
+    'passlib',
+    'pysodium>=0.6.8',
+    # python-ldap needs libsasl2-dev and libldap2-dev system packages on
+    # debian buster to be installable via pip or install python-ldap via
+    # apt.
+    'python-ldap',
+    'bcrypt',
+    # m2crypto needs libssl-dev and swig system packages on debian buster
+    # to be installable via pip or install python-m2crypto via apt.
+    'm2crypto',
+]
+
+# Requirements needed to run all the tests
+# install with
+# > pip install -e ".[test]"
+test_requirements = [
+    'flask_testing',
+    'pytest',
+    'pytest-cov',
+    'pytest-freezegun',
+    'pytest-flask',
+    'pytest-selenium',
+    'pytest-testconfig',
+    'mock',
+    'freezegun',
+    'coverage',
+    'pylint',
+    'autopep8',
+    'flaky',
+]
+
+# packages needed during package build phase
+setup_requirements = [
+    'Babel',
+]
+
+# install with
+# > pip install -e ".[postgres]"
+postgres_requirements = [
+    # 'psycopg2' would require to compile some sources
+    'psycopg2-binary',
+]
+
+# install with
+# > pip install -e ".[mysql]"
+mysql_requirements = [
+    'mysql',
+]
 
 # Inspired by http://www.mattlayman.com/2015/i18n.html
+
+
 class Build(build_py):
     """
     Custom ``build_py`` command to ensure that mo files are always created.
@@ -53,17 +113,8 @@ class Build(build_py):
         build_py.run(self)
 
 
-def get_file_contents(file_path):
-    """Get the context of the file using full path name."""
-    content = ""
-    try:
-        full_path = os.path.join(package_directory, file_path)
-        content = open(full_path, 'r').read()
-    except Exception as exx:
-        print >> sys.stderr, "### exception happend %r" % exx
-        print >> sys.stderr, "### could not open file: %r" % file_path
-    return content
-
+with open('DESCRIPTION') as f:
+    DESCRIPTION = f.read()
 
 setup(
     name='LinOTP',
@@ -73,27 +124,18 @@ setup(
     license='AGPL v3, (C) KeyIdentity GmbH',
     author_email='linotp@keyidentity.com',
     url='https://www.linotp.org',
-    install_requires=[
-        "Pylons>=0.9.7",
-        "PasteScript<=1.7.5",
-        "WebOb",
-        "SQLAlchemy>=0.6,<=1.2.15",
-        "docutils>=0.4",
-        "simplejson>=2.0",
-        "pycryptodomex>=3.4",
-        "pyrad>=1.1",
-        "netaddr",
-        "qrcode>=2.4",
-        "configobj>=4.6.0",
-        "httplib2",
-        "requests",
-        "passlib",
-        "pysodium>=0.6.8",
-        "python-ldap",
-        "passlib",
-        # We also need M2Crypto. But this package is so problematic on many
-        # distributions, that we do not require it here!
-    ],
+    setup_requires=setup_requirements,
+    install_requires=install_requirements,
+    extras_require={
+        'postgres': postgres_requirements,
+        'mysql': mysql_requirements,
+        'test': test_requirements,
+    },
+    tests_require=test_requirements,
+
+    packages=find_packages(exclude=['ez_setup']),
+    include_package_data=True,
+    package_data={'linotp': ['linotp/i18n/*/LC_MESSAGES/*.mo']},
     scripts=[
         'tools/linotp-convert-token',
         'tools/linotp-create-pwidresolver-user',
@@ -118,13 +160,6 @@ setup(
         'tools/linotp-restore',
         'tools/linotp-enroll-smstoken',
     ],
-    setup_requires=[
-        'PasteScript>=1.6.3',
-        'Babel'
-    ],
-    packages=find_packages(exclude=['ez_setup']),
-    include_package_data=True,
-    package_data={'linotp': ['linotp/i18n/*/LC_MESSAGES/*.mo']},
     data_files=[
         (
             'etc/linotp2/',
@@ -134,8 +169,8 @@ setup(
                 'config/linotp.ini.paster',
                 'config/linotpapp.wsgi',
                 'config/who.ini',
-                'config/dictionary',
-                'config/keyidentity-push-ca-bundle.crt'
+                'config/keyidentity-push-ca-bundle.crt',
+                'dictionary',
             ]
         ),
         (
@@ -197,12 +232,13 @@ setup(
         ),
     ],
     classifiers=[
-        "Framework :: Pylons",
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Programming Language :: Python",
+        "Programming Language :: Python :: 2.7",
         "Topic :: Internet",
         "Topic :: Security",
         "Topic :: System :: Systems Administration :: Authentication/Directory"
+        "Framework :: Flask",
     ],
     message_extractors={
         'linotp': [
@@ -261,21 +297,7 @@ setup(
         ]
     },
     zip_safe=False,
-    paster_plugins=['PasteScript', 'Pylons'],
-    # The entry point for nose.plugins is required because otherwise nosetests
-    # complains "no such option 'with-pylons'".
-    # https://github.com/Pylons/pylons/issues/13
-    entry_points="""
-    [paste.app_factory]
-    main = linotp.config.middleware:make_app
-
-    [paste.app_install]
-    main = pylons.util:PylonsInstaller
-
-    [nose.plugins]
-    pylons = pylons.test:PylonsPlugin
-    """,
-    long_description=get_file_contents('DESCRIPTION'),
+    long_description=DESCRIPTION,
     cmdclass={'build_py': Build}
 
 )

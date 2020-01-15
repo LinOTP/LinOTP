@@ -402,7 +402,7 @@ def janitor_to_remove_enrollment_token(valid_tokens):
 
     # get all owners for the valid tokens
 
-    all_owners = set()
+    all_owners = []
 
     for token in valid_tokens:
 
@@ -420,7 +420,7 @@ def janitor_to_remove_enrollment_token(valid_tokens):
             continue
 
         if owner:
-            all_owners.add(owner)
+            all_owners.append(owner)
 
     # ------------------------------------------------------------------ --
 

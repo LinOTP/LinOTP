@@ -29,7 +29,6 @@
 """
 
 import datetime
-from simplejson import loads
 
 from linotp.tests import TestController
 from freezegun import freeze_time
@@ -89,7 +88,7 @@ class TestGetOtpController(TestController):
                       }
 
         response = self.make_admin_request(action='init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def createHOTPToken(self, serial, seed):
         '''
@@ -106,7 +105,7 @@ class TestGetOtpController(TestController):
                       }
 
         response = self.make_admin_request(action='init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def createTOTPToken(self, serial, seed, timeStep=30):
         '''
@@ -124,7 +123,7 @@ class TestGetOtpController(TestController):
                       }
 
         response = self.make_admin_request(action='init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def setTokenRealm(self, serial, realms):
         parameters = {"serial": serial,
@@ -187,24 +186,24 @@ class TestGetOtpController(TestController):
         '''
 
         response = self.setTokenRealm("dpw1", "mydefrealm")
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         response = self.setTokenRealm("hotp1", "mydefrealm")
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         response = self.setTokenRealm("totp1", "mydefrealm")
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         params = {'user': 'passthru_user1',
                   'serial': 'totp1'}
         response = self.make_admin_request(action='assign', params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         parameters = {}
         response = self.make_system_request(action='getRealms',
                                             params=parameters)
 
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         parameters = {'name': 'getmultitoken',
                       'scope': 'gettoken',
@@ -215,10 +214,10 @@ class TestGetOtpController(TestController):
                       }
         response = self.make_system_request(action='setPolicy',
                                             params=parameters)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         response = self.make_system_request(action='getConfig', params={})
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         return
 
@@ -232,8 +231,8 @@ class TestGetOtpController(TestController):
         response = self.make_gettoken_request(action='getotp',
                                               params=parameters)
 
-        self.assertTrue('"otpval": "427701"' in response,
-                        "current time %s;%r" % (self.curTime, response))
+        assert '"otpval": "427701"' in response, \
+                        "current time %s;%r" % (self.curTime, response)
 
         return
 
@@ -248,8 +247,8 @@ class TestGetOtpController(TestController):
         response = self.make_gettoken_request(action='getmultiotp',
                                               params=parameters)
 
-        self.assertTrue('"12-05-17": "028193"' in response, response)
-        self.assertTrue('"12-05-18": "857788"' in response, response)
+        assert '"12-05-17": "028193"' in response, response
+        assert '"12-05-18": "857788"' in response, response
 
         return
 
@@ -261,7 +260,7 @@ class TestGetOtpController(TestController):
         response = self.make_gettoken_request(action='getotp',
                                               params=parameters)
 
-        self.assertTrue('"otpval": "819132"' in response, response)
+        assert '"otpval": "819132"' in response, response
 
         return
 
@@ -276,8 +275,8 @@ class TestGetOtpController(TestController):
         response = self.make_gettoken_request(action='getmultiotp',
                                               params=parameters)
 
-        self.assertTrue('"0": "819132"' in response, response)
-        self.assertTrue('"1": "301156"' in response, response)
+        assert '"0": "819132"' in response, response
+        assert '"1": "301156"' in response, response
 
         return
 
@@ -317,7 +316,7 @@ class TestGetOtpController(TestController):
                           'curTime': TOTPcurTime}
             response = self.make_gettoken_request(action='getotp',
                                                   params=parameters)
-            self.assertTrue(otp in response, response)
+            assert otp in response, response
 
         return
 
@@ -338,16 +337,16 @@ class TestGetOtpController(TestController):
             response = self.make_gettoken_request(action='getmultiotp',
                                                   params=parameters)
 
-            resp = loads(response.body)
+            resp = response.json
             otps = resp.get('result').get('value').get('otp')
 
             otp1 = otps.get('44576668')
-            self.assertTrue(otp1.get('otpval') == '75301418', response)
-            self.assertTrue(otp1.get('time') == "2012-05-18 02:14:00", response)
+            assert otp1.get('otpval') == '75301418', response
+            assert otp1.get('time') == "2012-05-18 02:14:00", response
 
             otp2 = otps.get('44576669')
-            self.assertTrue(otp2.get('otpval') == '28155992', response)
-            self.assertTrue(otp2.get('time') == "2012-05-18 02:14:30", response)
+            assert otp2.get('otpval') == '28155992', response
+            assert otp2.get('time') == "2012-05-18 02:14:30", response
 
         return
 
@@ -363,7 +362,7 @@ class TestGetOtpController(TestController):
                                                  params=parameters,
                                                  auth_user=auth_user)
 
-        self.assertTrue('"message": "ERR410:' in response, response)
+        assert '"message": "ERR410:' in response, response
         return
 
     def test_10_usergetmultiotp(self):
@@ -384,7 +383,7 @@ class TestGetOtpController(TestController):
             response = self.make_system_request(action='setPolicy',
                                                 params=parameters)
 
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             auth_user = ('passthru_user1@myDefRealm', 'geheim1')
             parameters = {
@@ -395,16 +394,16 @@ class TestGetOtpController(TestController):
                                                      params=parameters,
                                                      auth_user=auth_user)
 
-            resp = loads(response.body)
+            resp = response.json
             otps = resp.get('result').get('value').get('otp')
 
             otp1 = otps.get('44576668')
-            self.assertTrue(otp1.get('otpval') == '75301418', response)
-            self.assertTrue(otp1.get('time') == "2012-05-18 02:14:00", response)
+            assert otp1.get('otpval') == '75301418', response
+            assert otp1.get('time') == "2012-05-18 02:14:00", response
 
             otp2 = otps.get('44576669')
-            self.assertTrue(otp2.get('otpval') == '28155992', response)
-            self.assertTrue(otp2.get('time') == "2012-05-18 02:14:30", response)
+            assert otp2.get('otpval') == '28155992', response
+            assert otp2.get('time') == "2012-05-18 02:14:30", response
 
         return
 
@@ -420,9 +419,9 @@ class TestGetOtpController(TestController):
         response = self.make_userservice_request(action='getmultiotp',
                                                  params=parameters,
                                                  auth_user=auth_user)
-        print response
-        self.assertTrue('"message": "The serial hotp1 does not belong'
-                        ' to user passthru_user1@mydefrealm"' in response, response)
+        print(response)
+        assert '"message": "The serial hotp1 does not belong' \
+                        ' to user passthru_user1@mydefrealm"' in response, response
 
         return
 

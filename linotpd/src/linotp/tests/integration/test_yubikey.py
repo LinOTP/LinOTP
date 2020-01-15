@@ -29,6 +29,8 @@ import unittest
 import requests
 from requests.auth import HTTPDigestAuth
 
+import pytest
+
 from linotpadminclientcli.clientutils import linotpclient
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.validate import Validate
@@ -41,13 +43,12 @@ class TestYubikey(TestCase):
     TestCase class that tests the Yubikey (enrollment and use)
     """
 
+    @pytest.fixture(autouse=True)
     def setUp(self):
         """
         Create a AD UserIdResolver and add it to a realm. Verify that the user
         we want to test with exists.
         """
-        TestCase.setUp(self)
-
         self.realm_name = "se_yubikey_realm"
         self.user_name = "maxwell"
 
@@ -56,9 +57,9 @@ class TestYubikey(TestCase):
 
         user_view = self.manage_ui.user_view
         user_view.select_realm(self.realm_name)
-        self.assertTrue(user_view.user_exists(self.user_name),
-                        "User '" + self.user_name +
-                        "' should exist.")
+        assert user_view.user_exists(self.user_name), \
+                        "User '" + self.user_name + \
+                        "' should exist."
         self.user_view = user_view
 
     def test_yubico_mode(self):
@@ -87,8 +88,8 @@ class TestYubikey(TestCase):
                               'otpkey': otpkey,
                               'otplen': yubi_otplen,
                               'description': description})
-        self.assertTrue(r1['result']['status'], "Error enrolling Yubikey")
-        self.assertTrue(r1['result']['value'], "Error enrolling Yubikey")
+        assert r1['result']['status'], "Error enrolling Yubikey"
+        assert r1['result']['value'], "Error enrolling Yubikey"
 
         self.user_view.select_user(self.user_name)
         pin = "asdf1234"
@@ -115,8 +116,8 @@ class TestYubikey(TestCase):
         for otp in valid_otps:
             access_granted, _ = validate.validate(user=self.user_name + "@" +
                                                   self.realm_name, password=pin + otp)
-            self.assertTrue(access_granted, "OTP: " + pin + otp + " for user " +
-                            self.user_name + "@" + self.realm_name + " returned False")
+            assert access_granted, "OTP: " + pin + otp + " for user " + \
+                            self.user_name + "@" + self.realm_name + " returned False"
 
         # validate/check_yubikey
         password = pin + public_uid + "eihtnehtetluntirtirrvblfkttbjuih"
@@ -127,27 +128,26 @@ class TestYubikey(TestCase):
                                 params={'pass': password},
                                 auth=cy_auth,
                                 verify=False)
-        self.assertEqual(
-            response.status_code, 200, "Invalid response %r" % response)
+        assert response.status_code == 200, "Invalid response %r" % response
         return_json = response.json()
-        self.assertTrue(return_json['result']['status'],
-                        "Invalid return value: %r" % return_json)
-        self.assertTrue(return_json['result']['value'],
-                        "Invalid return value: %r" % return_json)
-        self.assertEqual(return_json['detail']['user'],
-                         self.user_name,
-                         "Invalid return value: %r" % return_json)
-        self.assertEqual(return_json['detail']['realm'],
-                         self.realm_name,
-                         "Invalid return value: %r" % return_json)
+        assert return_json['result']['status'], \
+                        "Invalid return value: %r" % return_json
+        assert return_json['result']['value'], \
+                        "Invalid return value: %r" % return_json
+        assert return_json['detail']['user'] == \
+                         self.user_name, \
+                         "Invalid return value: %r" % return_json
+        assert return_json['detail']['realm'] == \
+                         self.realm_name, \
+                         "Invalid return value: %r" % return_json
 
         # Repeat an old (therefore invalid) OTP value
         invalid_otp = public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
         access_granted, _ = validate.validate(user=self.user_name + "@" +
                                               self.realm_name, password=pin + invalid_otp)
-        self.assertFalse(access_granted,
-                         "OTP: " + pin + invalid_otp + " for user " + self.user_name + "@" +
-                         self.realm_name + " should be rejected.")
+        assert not access_granted, \
+                         "OTP: " + pin + invalid_otp + " for user " + self.user_name + "@" + \
+                         self.realm_name + " should be rejected."
 
         # Repeat an old (therefore invalid) OTP value with
         # validate/check_yubikey
@@ -156,13 +156,12 @@ class TestYubikey(TestCase):
                                 params={'pass': password},
                                 auth=cy_auth,
                                 verify=False)
-        self.assertEqual(
-            response.status_code, 200, "Invalid response %r" % response)
+        assert response.status_code == 200, "Invalid response %r" % response
         return_json = response.json()
-        self.assertTrue(return_json['result']['status'],
-                        "Invalid return value: %r" % return_json)
-        self.assertFalse(return_json['result']['value'],
-                         "Invalid return value: %r" % return_json)
+        assert return_json['result']['status'], \
+                        "Invalid return value: %r" % return_json
+        assert not return_json['result']['value'], \
+                         "Invalid return value: %r" % return_json
         try:
             return_json['detail']['user']
             self.fail("Response should not contain detail.user %r" %

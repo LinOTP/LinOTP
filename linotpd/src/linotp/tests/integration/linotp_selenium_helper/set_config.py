@@ -28,7 +28,7 @@
 import logging
 import requests
 from requests.auth import HTTPDigestAuth
-from helper import get_session
+from .helper import get_session
 
 
 LOG = logging.getLogger(__name__)

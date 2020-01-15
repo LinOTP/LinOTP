@@ -30,8 +30,9 @@ provider handling
 import json
 import logging
 from functools import partial
+from configparser import ConfigParser
 
-from pylons.i18n.translation import _
+from linotp.flap import _
 
 from linotp.lib.config import storeConfig
 from linotp.lib.config import getLinotpConfig
@@ -307,7 +308,7 @@ def get_legacy_provider(provider_type):
     if not defintion:
         raise Exception('unknown provider type %r' % provider_type)
 
-    for key, translation in defintion.items():
+    for key, translation in list(defintion.items()):
         if key in config:
             provider[translation] = config[key]
 
@@ -340,19 +341,19 @@ def get_all_new_providers(provider_type, show_managed_config=False):
     config = getLinotpConfig()
 
     # first identify all providers by its name
-    for key, value in config.items():
+    for key, value in list(config.items()):
         if key[:len(prefix)] == prefix:
             parts = key.split('.')
             if len(parts) == 3:
                 provider_names[key] = value
 
-    for provider, provider_class in provider_names.items():
+    for provider, provider_class in list(provider_names.items()):
 
         defintion = {}
         defintion['Class'] = provider_class
         prefix = provider + '.'
 
-        for key, value in config.items():
+        for key, value in list(config.items()):
             if key[:len(prefix)] == prefix:
 
                 if 'enc' + key in config:
@@ -402,7 +403,7 @@ def getProvider(provider_type, provider_name=None, decrypted=False):
     """
     providers = {}
 
-    if provider_type in Legacy_Provider.keys():
+    if provider_type in list(Legacy_Provider.keys()):
         legacy_provider = get_legacy_provider(provider_type)
         providers.update(legacy_provider)
 
@@ -419,14 +420,14 @@ def getProvider(provider_type, provider_name=None, decrypted=False):
         provider['Default'] = True
     else:
         # we take the first one in the list as the default
-        firstone = providers.keys()[0]
+        firstone = list(providers.keys())[0]
         provider = providers[firstone]
         provider['Default'] = True
         default_provider_key = Default_Provider_Key[provider_type]
         storeConfig(default_provider_key, firstone)
 
     if decrypted:
-        for provider_def in providers.values():
+        for provider_def in list(providers.values()):
             if 'Config' in provider_def:
                 provider_def['Config'] = provider_def.get(
                                             'Config').get_unencrypted()
@@ -485,7 +486,7 @@ def delProvider(provider_type, provider_name):
     # treat backward default legacy case
     if provider_name == Legacy_Provider_Name:
         entries = Legacy_Provider.get(provider_type, {})
-        for entry in entries.keys():
+        for entry in list(entries.keys()):
             if entry in config:
                 del_entries.add(entry)
 
@@ -496,7 +497,7 @@ def delProvider(provider_type, provider_name):
 
         # now lookup the all decent entries
         provider_prefix = provider + '.'
-        for key in config.keys():
+        for key in list(config.keys()):
             if key[:len(provider_prefix)] == provider_prefix:
                 del_entries.add(key)
 
@@ -559,7 +560,7 @@ def save_legacy_provider(provider_type, params):
     if not defintion:
         raise Exception('unknown provider type %r' % provider_type)
 
-    for config_name, spec in defintion.items():
+    for config_name, spec in list(defintion.items()):
         if spec == 'Class' and 'class' in params:
             storeConfig(key=config_name, val=params['class'])
         if spec == 'Config' and 'config' in params:
@@ -614,7 +615,7 @@ def save_new_provider(provider_type, provider_name, params):
 
     config_mapping['managed'] = ('Managed', None)
 
-    for config_entry in config_mapping.keys():
+    for config_entry in list(config_mapping.keys()):
 
         if config_entry not in params:
             continue
@@ -624,8 +625,6 @@ def save_new_provider(provider_type, provider_name, params):
         config_key, config_type = mapping_entry
 
         value = params[config_entry]
-        if isinstance(params[config_entry], str):
-            value = params[config_entry].decode('utf-8')
 
         # store the config entry
         storeConfig(key=provider_prefix + '.' + config_key,
@@ -783,9 +782,7 @@ def load_provider_ini(ini_file):
     load the provider from a ini config file format
     """
 
-    from ConfigParser import SafeConfigParser
-
-    parser = SafeConfigParser()
+    parser = ConfigParser()
     parser.read(ini_file)
 
     for section_name in parser.sections():
@@ -808,7 +805,7 @@ def _get_default_provider_name(provider_type):
 
     providers = request_context['Provider'][provider_type]
 
-    for provider_name, provider in providers.items():
+    for provider_name, provider in list(providers.items()):
         if provider.get('Default'):
             return provider_name
 
@@ -889,7 +886,7 @@ def _build_provider_config(provider_info):
                          % (provider_config, exx))
 
     # we have to add the other, additional parameters like timeout
-    for additional, value in provider_info.items():
+    for additional, value in list(provider_info.items()):
         if additional not in ['Default', 'Config', 'Class']:
             if additional == 'Timeout':
                 provider_config['timeout'] = value
@@ -943,7 +940,7 @@ def _load_provider_class(provider_slass_spec):
         try:
 
             packageName, _, className = str(provider_class).rpartition('.')
-            mod = __import__(packageName, globals(), locals(), [className])
+            mod = __import__(packageName, globals(), locals(), [className], 1)
             provider_class_obj = getattr(mod, className)
 
         except ImportError as err:

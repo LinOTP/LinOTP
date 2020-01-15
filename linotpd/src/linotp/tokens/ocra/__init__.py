@@ -215,10 +215,6 @@ from linotp.lib.crypto.utils import get_hashalgo_from_description
 
 log = logging.getLogger(__name__)
 
-# for the hmac algo, we have to check the python version
-(ma, mi, _, _, _,) = sys.version_info
-pver = float(int(ma) + int(mi) * 0.1)
-
 
 def is_int(v):
     try:
@@ -228,8 +224,8 @@ def is_int(v):
         return False
 
 
-def truncated_value(h):
-    bytes_s = map(ord, h)
+def truncated_value(bytes_s):
+    # bytes_s = list(map(ord, h))
     offset = bytes_s[-1] & 0xf
     v = (bytes_s[offset] & 0x7f) << 24 | (bytes_s[offset + 1] & 0xff) << 16 | \
             (bytes_s[offset + 2] & 0xff) << 8 | (bytes_s[offset + 3] & 0xff)
@@ -237,14 +233,14 @@ def truncated_value(h):
 
 
 def dec(h, p):
-    v = unicode(truncated_value(h))
+    v = "%d" % truncated_value(h)
     if len(v) < p:
         v = (p - len(v)) * "0" + v
     return v[len(v) - p:]
 
 
 def int2beint64(i):
-    hex_counter = hex(long(i))[2:-1]
+    hex_counter = hex(int(i))[2:]
     hex_counter = '0' * (16 - len(hex_counter)) + hex_counter
     bin_counter = binascii.unhexlify(hex_counter)
     return bin_counter
@@ -288,7 +284,7 @@ class OcraSuite():
         (hotpStr, hash_type, trunc) = crypto.split('-')
 
         if hotpStr.upper() != 'HOTP':
-            raise Exception('unsupported hash version: %s' % unicode(hotpStr))
+            raise Exception('unsupported hash version: %s' % str(hotpStr))
 
         self.hash_algo = self._getCrypto(hash_type.lower())
         self.truncation = self._getTruncation(trunc)
@@ -329,10 +325,10 @@ class OcraSuite():
                 complement = param[1:] or '1M'
                 try:
                     length = 0
-                    if not re.match('^(\d+[HMS])+$', complement):
+                    if not re.match(r'^(\d+[HMS])+$', complement):
                         raise ValueError("timestep not in [HMS] %r"
                                          % complement)
-                    parts = re.findall('\d+[HMS]', complement)
+                    parts = re.findall(r'\d+[HMS]', complement)
                     for part in parts:
                         period = part[-1]
                         quantity = int(part[:-1])
@@ -349,20 +345,19 @@ class OcraSuite():
         '''
         h_data = binascii.hexlify(data)
         try:
-            data_input = bytearray(str(self.ocrasuite_description + '\0'))
+            data_input = bytearray(
+                self.ocrasuite_description.encode('utf-8') + b'\0')
             for d in data:
                 data_input.append(d)
 
         except Exception as e:
             log.exception('Failed to encode data %r: \n%r' % (e, h_data))
+            raise e
 
         # call the secret object to get the object
         #    convert it to binary
         #                        from linotp.lib.crypto import SecretObj
         h = None
-
-        if pver <= 2.6:
-            data_input = str(data_input)
 
         if self.secretObj is not None:
             h = self.secretObj.hmac_digest(data_input, self.hash_algo)
@@ -418,11 +413,11 @@ class OcraSuite():
 ########################################
     def combineData(self, C=None, Q=None, P=None, P_digest=None, S=None,
                     T=None, T_precomputed=None, Qsc=None):
-        datainput = ''
+        datainput = b''
 
         if self.C is not None:
             datainput += self._addCounter(C)
-        if Q is not None:
+        if self.Q is not None:
             datainput += self._addChallenge(Q)
         if self.P is not None:
             datainput += self._addPin(P, P_digest)
@@ -434,7 +429,7 @@ class OcraSuite():
         return datainput
 
     def _addCounter(self, C):
-        datainput = ''
+        datainput = b''
         if self.C:
             try:
                 C = int(C)
@@ -446,17 +441,17 @@ class OcraSuite():
         return datainput
 
     def _addChallenge(self, Q):
-        datainput = ''
+        datainput = b''
 
         if self.Q:
             max_length = self.Q[1]
             # do some sanity checks
             if Q is None or len(Q) == 0:
                 raise ValueError('challenge is empty : %r' % Q)
-            if type(Q) == unicode:
+            if isinstance(Q, str):
                 # this might raise an ascii conversion exception
-                Q = str(Q)
-            if not isinstance(Q, str):
+                Q = Q.encode('utf-8')
+            elif not isinstance(Q, str):
                 raise ValueError('challenge is no string: %r' % Q)
             if len(Q) > max_length:
                 raise ValueError('challenge is to long: %r' % Q)
@@ -475,15 +470,15 @@ class OcraSuite():
             if self.Q[0] == 'N':
                 Q = hex(int(Q))[2:]
                 Q += '0' * (len(Q) % 2)
-                Q = Q.decode('hex')
+                Q = bytes.fromhex(Q)
             elif self.Q[0] == 'H':
-                Q = Q.decode('hex')
+                Q = bytes.fromhex(Q)
             elif self.Q[0] == 'A':
                 # nothing to do - take and append
                 pass
 
             datainput = Q
-            datainput += '\0' * (128 - len(Q))
+            datainput += b'\0' * (128 - len(Q))
 
         return datainput
 
@@ -501,6 +496,9 @@ class OcraSuite():
             elif P is None:
                 raise ValueError('Pin/Password missing')
             else:
+                if isinstance(P, str):
+                    P = P.encode('utf-8')
+
                 datainput = self.P(P).digest()
         return datainput
 
@@ -515,7 +513,7 @@ class OcraSuite():
         return datainput
 
     def _addTimeStr(self, T=None, T_precomputed=None):
-        datainput = ''
+        datainput = b''
         if self.T:
             if T_precomputed is not None and is_int(T_precomputed):
                 #t = time.gmtime(T_precomputed*60)
@@ -524,7 +522,7 @@ class OcraSuite():
             elif is_int(T):
                 #t = time.gmtime(T)
                 #timestr = time.strftime('%Y-%m-%d:%H:%M:%S',t)
-                data = int2beint64(int(T / self.T))
+                data = int2beint64(int(T // self.T))
 
             else:
                 raise ValueError('time format error %r' % self.T)
@@ -544,13 +542,13 @@ class OcraSuite():
             challenge = challenge_hex[:c_len * 2]
         elif c_type == 'N':
             challenge_num = int(challenge_hex[:c_len], 16)
-            challenge = unicode(challenge_num)
+            challenge = str(challenge_num)
 
         if len(challenge) < c_len:
             challenge += '\0' * (c_len - len(challenge))
         challenge = challenge[:c_len]
 
-        return unicode(challenge)
+        return str(challenge)
 
     def data2rawChallenge(self, data):
 
@@ -583,7 +581,7 @@ class OcraSuite():
         challenge += chall[c_:]
         challenge = challenge[:c_len]
 
-        return unicode(challenge)
+        return str(challenge)
 
     def data2randomChallenge(self, data):
         '''
@@ -613,7 +611,7 @@ class OcraSuite():
                 challenge += urandom.choice(hexs)
 
         challenge = challenge[:c_len]
-        return unicode(challenge)
+        return str(challenge)
 
     def checkOtp(self, passw, counter, window, ocraChallenge, pin='',
                  options=None, timeshift=0):
@@ -632,6 +630,8 @@ class OcraSuite():
         '''
         ret = -1
 
+        window = int(window)
+
         # std counter for tokens w.o. timer or counter
         start = counter
         end = counter + 1
@@ -639,7 +639,7 @@ class OcraSuite():
 
         # callculate the start for the timer based tokens
         if self.T is not None:
-            ttime = datetime.now()
+            ttime = datetime.utcnow()
             ftime = ttime.strftime("%s")
             otime = int(ftime) + timeshift
 
@@ -665,8 +665,8 @@ class OcraSuite():
                 # in case of a provided transactionid, we scroll back in
                 # counter to support asynchronous transaction verification
 
-                if counter > window / 2:
-                    start = counter - window / 2
+                if counter > window // 2:
+                    start = counter - window // 2
                 else:
                     start = 0
             sdate = datetime.fromtimestamp(start)
@@ -684,9 +684,9 @@ class OcraSuite():
             challenge = challenge[idx + 1:]
 
         param = {}
-        param['Q'] = unicode(challenge)
-        param['P'] = unicode(pin)
-        param['S'] = unicode(session)
+        param['Q'] = challenge
+        param['P'] = pin
+        param['S'] = session
 
         for count in range(start, end, step):
             if self.C is not None:
@@ -739,8 +739,8 @@ def test():
     otp = ocra.compute(key, data)
 
     data = struct.pack(">Q", counter)
-    print "data %r" % binascii.hexlify(data)
-    print "otp %r" % otp
+    print("data %r" % binascii.hexlify(data))
+    print("otp %r" % otp)
 
 
 if __name__ == '__main__':

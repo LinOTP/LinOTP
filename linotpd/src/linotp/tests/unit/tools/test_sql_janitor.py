@@ -26,7 +26,7 @@
 
 from mock import patch
 
-from script_testing_lib import ScriptTester
+from .script_testing_lib import ScriptTester
 
 # -------------------------------------------------------------------------- --
 
@@ -36,8 +36,9 @@ class TestLinotpTokenUsage(ScriptTester):
 
     @patch('os.path.isfile')
     @patch('logging.FileHandler')
+    @patch('logging.getLogger')
     @patch('sys.exit')
-    def test_main(self, mock_exit, mock_log, mock_isfile):
+    def test_main(self, mock_exit, mock_getLogger, mock_log, mock_isfile):
         with patch('sys.argv', ['']):
             self.script_module.main()
         mock_exit.assert_called_with(0)

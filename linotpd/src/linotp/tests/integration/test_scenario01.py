@@ -31,7 +31,7 @@ import re
 import binascii
 import logging
 import os
-import unittest
+import pytest
 
 from linotp_selenium_helper import TestCase, Policy
 from linotp_selenium_helper.token_import import TokenImportAladdin
@@ -57,7 +57,7 @@ def calculate_motp(epoch, key, pin, digits=6):
     """
     from hashlib import md5
     vhash = "%d%s%s" % (epoch / 10, key, pin)
-    motp = md5(vhash).hexdigest()[:digits]
+    motp = md5(vhash.encode('utf-8')).hexdigest()[:digits]
     return motp
 
 
@@ -120,16 +120,8 @@ class TestScenario01(TestCase):
         err_import = token_import_aladdin.do_import(file_content=None,
                                                     file_path=aladdin_xml_path)
         # There shouldn't raise an error
-        self.assertFalse(err_import,
-                         "Error during Aladdin token import!")
-
-        token_import_aladdin = TokenImportAladdin(self.manage_ui)
-        err_import = token_import_aladdin.do_import(
-            file_path=os.path.join(self.manage_ui.test_data_dir,
-                                   'wrong_token.xml'))
-        # There shouldn't raise an error
-        self.assertTrue(err_import,
-                        "Successful import of wrong Aladdin token file!")
+        assert not err_import, \
+                         "Error during Aladdin token import!"
 
         serial_token_bach = "oath137332"
         test1_realm = realm_name1.lower()
@@ -166,7 +158,7 @@ class TestScenario01(TestCase):
         spass_token = SpassToken(
             driver=self.driver,
             base_url=self.base_url,
-            pin=u"beethovenspass#ñô",
+            pin="beethovenspass#ñô",
             description="SPass Token enrolled with Selenium"
         )
         serial_token_beethoven = spass_token.serial
@@ -199,10 +191,8 @@ class TestScenario01(TestCase):
             alert_box_text,
             re.DOTALL | re.VERBOSE
         )
-        self.assertTrue(
-            m is not None,
+        assert m is not None, \
             "alert_box_text does not match regex. Possibly the token was not enrolled properly. %r" % alert_box_text
-        )
         serial_token_mozart = m.group('serial')
         self.driver.find_element_by_xpath(
             "//button[@type='button' and ancestor::div[@aria-describedby='alert_box']]").click()
@@ -218,7 +208,7 @@ class TestScenario01(TestCase):
             "beethoven": serial_token_beethoven
         }
 
-        for user, token in user_token_dict.iteritems():
+        for user, token in user_token_dict.items():
             selfservice.login(user, "Test123!", test1_realm)
             selfservice.set_pin(token, user + "newpin")
             selfservice.logout()
@@ -241,12 +231,11 @@ class TestScenario01(TestCase):
                 hotp.generate(counter=counter, key=seed_oath137332_bin)
             access_granted, _ = validate.validate(user="bach@" +
                                                   test1_realm, password=otp)
-            self.assertTrue(access_granted, "OTP: " + otp + " for user " +
-                            "bach@" + test1_realm + " returned False")
+            assert access_granted, "OTP: " + otp + " for user " + \
+                            "bach@" + test1_realm + " returned False"
         access_granted, _ = validate.validate(user="bach@" + test1_realm,
                                               password="1234111111")
-        self.assertFalse(
-            access_granted, "OTP: 1234111111 should be False for user bach")
+        assert not access_granted, "OTP: 1234111111 should be False for user bach"
 
         # Validate Remote token - debussy
 
@@ -265,12 +254,11 @@ class TestScenario01(TestCase):
         # Validate Spass token - beethoven
         access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
                                               password="beethovennewpin")
-        self.assertTrue(access_granted, "OTP: " + "beethovennewpin" + " for user " +
-                        "beethoven@" + test1_realm + " returned False")
+        assert access_granted, "OTP: " + "beethovennewpin" + " for user " + \
+                        "beethoven@" + test1_realm + " returned False"
         access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
                                               password="randominvalidpin")
-        self.assertFalse(
-            access_granted, "OTP: randominvalidpin should be False for user beethoven")
+        assert not access_granted, "OTP: randominvalidpin should be False for user beethoven"
 
         # Validate mOTP token - mozart
         current_epoch = time.time()
@@ -283,8 +271,8 @@ class TestScenario01(TestCase):
         access_granted, _ = validate.validate(user="mozart@" + test1_realm,
                                               password="mozartnewpin" + motp_otp)
         time.sleep(1)
-        self.assertTrue(access_granted, "OTP: " + motp_otp + " for user " +
-                        "mozart@" + test1_realm + " returned False")
+        assert access_granted, "OTP: " + motp_otp + " for user " + \
+                        "mozart@" + test1_realm + " returned False"
         motp_otp = calculate_motp(
             epoch=current_epoch - 4000,
             key=motp_key,
@@ -292,15 +280,14 @@ class TestScenario01(TestCase):
         )
         access_granted, _ = validate.validate(user="mozart@" + test1_realm,
                                               password="mozartnewpin" + motp_otp)
-        self.assertFalse(
-            access_granted, "OTP: mozartnewpin%s should be False for user mozart" % motp_otp)
+        assert not access_granted, "OTP: mozartnewpin%s should be False for user mozart" % motp_otp
 
         self._announce_test("11. mOTP Pin im selfservice ändern")
 
         new_motp_pin = "5588"
 
         selfservice.login("mozart", "Test123!", test1_realm)
-        selfservice.set_motp_pin(token, new_motp_pin)
+        selfservice.set_motp_pin(serial_token_mozart, new_motp_pin)
         selfservice.logout()
 
         time.sleep(10)  # otherwise next mOTP value might not be valid
@@ -313,8 +300,8 @@ class TestScenario01(TestCase):
         )
         access_granted, _ = validate.validate(user="mozart@" + test1_realm,
                                               password="mozartnewpin" + motp_otp)
-        self.assertTrue(access_granted, "OTP: mozartnewpin" + motp_otp + " for user " +
-                        "mozart@" + test1_realm + " returned False")
+        assert access_granted, "OTP: mozartnewpin" + motp_otp + " for user " + \
+                        "mozart@" + test1_realm + " returned False"
 
         self._announce_test("12. Token Resynchronisierung")
 
@@ -325,8 +312,7 @@ class TestScenario01(TestCase):
             hotp.generate(counter=counter, key=seed_oath137332_bin)
         access_granted, _ = validate.validate(user="bach@" + test1_realm,
                                               password=otp)
-        self.assertFalse(
-            access_granted, "OTP: %s should be False for user bach" % otp)
+        assert not access_granted, "OTP: %s should be False for user bach" % otp
 
         selfservice.login("bach", "Test123!", test1_realm)
 
@@ -341,8 +327,7 @@ class TestScenario01(TestCase):
             hotp.generate(counter=counter + 3, key=seed_oath137332_bin)
         access_granted, _ = validate.validate(user="bach@" + test1_realm,
                                               password=otp)
-        self.assertTrue(
-            access_granted, "OTP: %s should be True for user bach" % otp)
+        assert access_granted, "OTP: %s should be True for user bach" % otp
 
         self._announce_test(
             "13. Benutzer beethoven deaktiviert seinen Token im Selfservice portal und versucht sich anzumelden.")
@@ -354,8 +339,7 @@ class TestScenario01(TestCase):
         # beethoven should be unable to authenticate
         access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
                                               password="beethovennewpin")
-        self.assertFalse(
-            access_granted, "OTP: beethovennewpin should be False for user beethoven")
+        assert not access_granted, "OTP: beethovennewpin should be False for user beethoven"
 
         self._announce_test(
             "14. Der Admin entsperrt diesen Token, der Benutzer beethoven kann sich wieder anmelden.")
@@ -368,8 +352,7 @@ class TestScenario01(TestCase):
         # beethoven should be able to authenticate
         access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
                                               password="beethovennewpin")
-        self.assertTrue(
-            access_granted, "OTP: beethovennewpin should be able to authenticate after re-enabled token.")
+        assert access_granted, "OTP: beethovennewpin should be able to authenticate after re-enabled token."
 
     def check_users(self, realm, data):
         expected_users = data['expected_users']
@@ -377,11 +360,11 @@ class TestScenario01(TestCase):
 
         found_users = self.manage_ui.user_view.get_num_users(realm)
 
-        self.assertEqual(expected_users, found_users,
-                         "Not the expected number of users in realm %s: Expecting %s but found %s"
-                         % (realm, expected_users, found_users))
+        assert expected_users == found_users, \
+                         "Not the expected number of users in realm %s: Expecting %s but found %s" \
+                         % (realm, expected_users, found_users)
 
         for user in users:
-            self.assertTrue(self.manage_ui.user_view.user_exists(user),
-                            "User '%s' should exist in realm %s" % (user, realm))
+            assert self.manage_ui.user_view.user_exists(user), \
+                            "User '%s' should exist in realm %s" % (user, realm)
             break

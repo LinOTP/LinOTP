@@ -35,13 +35,13 @@ import binascii
 import base64
 
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 import logging
 log = logging.getLogger(__name__)
 
 from linotp.lib.policy import get_tokenlabel, get_tokenissuer
-from urllib import quote
+from urllib.parse import quote
 
 class NoOtpAuthTokenException(Exception):
     pass
@@ -81,7 +81,7 @@ def create_google_authenticator(param, user=None):
 
     if not otpkey:
         raise Exception('Failed to create token url due to missing seed!')
-    key = base64.b32encode(binascii.unhexlify(otpkey))
+    key = base64.b32encode(binascii.unhexlify(otpkey)).decode()
     key = key.strip("=")
 
     algo = param.get("hashlib", "sha1") or "sha1"
@@ -109,7 +109,7 @@ def create_google_authenticator(param, user=None):
         url_param['issuer'] = quote(issuer)
 
     ga = "otpauth://%s/%s" % (typ, serial)
-    qg_param = urllib.urlencode(url_param)
+    qg_param = urllib.parse.urlencode(url_param)
 
     base_len = len(ga) + len(qg_param)
     max_len = 400

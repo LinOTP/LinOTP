@@ -32,9 +32,17 @@ import logging
 from linotp.tests import TestController
 import copy
 
+
 import json
 from sqlalchemy.engine import create_engine
 import sqlalchemy
+
+import unittest
+import pytest
+from ..conftest import Base_App_Config as BAC
+
+
+
 
 log = logging.getLogger(__name__)
 
@@ -57,7 +65,7 @@ class SQLUser(object):
                 self.usercol = 'user'
 
         except Exception as e:
-            print "%r" % e
+            print("%r" % e)
         self.connection = connection
 
         umap = {"userid": "id",
@@ -170,7 +178,7 @@ class SQLUser(object):
             t = sqlalchemy.sql.expression.text(delStr)
             self.connection.execute(t, user=username)
 
-        elif type(uid) in (str, u''):
+        elif type(uid) in (str, ''):
             delStr = 'DELETE FROM %s  WHERE id=:id;' % (self.userTable)
             t = sqlalchemy.sql.expression.text(delStr)
             self.connection.execute(t, id=uid)
@@ -191,7 +199,7 @@ class OrphandTestHelpers(object):
 
     def setUpSQL(self):
 
-        self.sqlconnect = self.appconf.get('sqlalchemy.url')
+        self.sqlconnect = self.app.config.get('SQLALCHEMY_DATABASE_URI')
         sqlUser = SQLUser(connect=self.sqlconnect)
         self.sqlResolverDef = sqlUser.getResolverDefinition()
         return
@@ -280,16 +288,16 @@ class OrphandTestHelpers(object):
         resp = self.make_system_request(action='setResolver',
                                         params=parameters)
 
-        self.assertTrue('"value": true' in resp, resp)
+        assert '"value": true' in resp, resp
 
         resp = self.make_system_request(action='getResolvers')
-        self.assertTrue('"resolvername": "%s"' % (name) in resp, resp)
+        assert '"resolvername": "%s"' % (name) in resp, resp
 
         param2 = {'resolver': name
                   }
         resp = self.make_system_request(action='getResolver',
                                         params=param2)
-        self.assertTrue('"Table": "User2"' in resp, resp)
+        assert '"Table": "User2"' in resp, resp
 
         return
 
@@ -300,7 +308,7 @@ class OrphandTestHelpers(object):
         }
         resp = self.make_system_request(action='delResolver',
                                         params=parameters)
-        self.assertTrue('"value": true' in resp, resp)
+        assert '"value": true' in resp, resp
 
         return resp
 
@@ -310,12 +318,12 @@ class OrphandTestHelpers(object):
                       'realm': realmName}
 
         resp = self.make_system_request('setRealm', params=parameters)
-        self.assertTrue('"value": true' in resp, resp)
+        assert '"value": true' in resp, resp
 
         if defaultRealm:
             params = {'realm': realmName}
             resp = self.make_system_request('setDefaultRealm', params=params)
-            self.assertTrue('"value": true' in resp, resp)
+            assert '"value": true' in resp, resp
         return
 
     def delSqlRealm(self, realmName):
@@ -324,7 +332,7 @@ class OrphandTestHelpers(object):
         }
         resp = self.make_system_request(action='delRealm',
                                         params=parameters)
-        self.assertTrue('"result": true' in resp, resp)
+        assert '"result": true' in resp, resp
 
         return resp
 
@@ -339,7 +347,7 @@ class OrphandTestHelpers(object):
             error = result.get('error')
             raise Exception(error.get('message'))
         else:
-            self.assertTrue('"status": true,' in response, response)
+            assert '"status": true,' in response, response
 
         body = json.loads(response.body)
         result = body.get('result')
@@ -356,7 +364,7 @@ class OrphandTestHelpers(object):
 
         response = self.make_admin_request(action='init',
                                            params=param)
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         return
 
@@ -372,10 +380,11 @@ class OrphandTestHelpers(object):
         param = None
         response = self.make_admin_request(action='show',
                                            params=param)
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
         return response
 
-
+@pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
+                    reason="non sqlite database required for this test!")
 class TestOrphandTokens(TestController, OrphandTestHelpers):
 
     def setUp(self):
@@ -409,7 +418,7 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
             }
 
         response = self.make_system_request('setConfig', params)
-        self.assertTrue('"status": true' in response.body, response)
+        assert '"status": true' in response.body, response
 
         resolverName = 'MySQLResolver'
         realmName = 'sqlrealm'.lower()
@@ -423,17 +432,17 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
 
         self.addToken(user)
         ret = self.authToken(user)
-        self.assertTrue('"value": true' in ret, ret)
+        assert '"value": true' in ret, ret
 
         self.delUsers()
         users = self.getUserList(resolverName)
-        self.assertTrue(len(users) == 0, users)
+        assert len(users) == 0, users
 
         res = self.showTokens()
-        self.assertTrue("/:no user info:/" in res, res)
+        assert "/:no user info:/" in res, res
 
         ret = self.authToken(user)
-        self.assertTrue('"value": false' in ret, ret)
+        assert '"value": false' in ret, ret
 
         self.delSqlRealm(realmName)
         self.delSqlResolver(resolverName)
@@ -471,13 +480,13 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         self.addSqlRealm(realmName, resolverName, defaultRealm=True)
 
         users = self.getUserList(resolverName)
-        self.assertTrue(len(users) > 0, users)
+        assert len(users) > 0, users
 
         user = users[0].get('username')
 
         self.addToken(user)
         ret = self.authToken(user)
-        self.assertTrue('"value": true' in ret, ret)
+        assert '"value": true' in ret, ret
 
         self.delSqlRealm(realmName)
         self.delSqlResolver(resolverName)
@@ -488,14 +497,14 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         except Exception as e:
             message = "%r" % e
             log.error(message)
-        self.assertTrue(len(empty_user_list) == 0, empty_user_list)
+        assert len(empty_user_list) == 0, empty_user_list
         # assert "invalid resolver class specification" in message
 
         ret = self.authToken(user)
-        self.assertTrue('"value": false' in ret, ret)
+        assert '"value": false' in ret, ret
 
         res = self.showTokens()
-        self.assertTrue("/:no user info:/" in res, res)
+        assert "/:no user info:/" in res, res
 
         return
 
@@ -527,55 +536,55 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         response = self.make_admin_request(action='userlist',
                                            params=parameters)
 
-        self.assertTrue('"userid": "__9998"' in response, response)
-        self.assertTrue('"userid": "__9997"' not in response, response)
-        self.assertTrue('"userid": "__9999"' not in response, response)
+        assert '"userid": "__9998"' in response, response
+        assert '"userid": "__9997"' not in response, response
+        assert '"userid": "__9999"' not in response, response
 
         # ignore SQL wildcards
         parameters = {'username': 'kn%t'}
         response = self.make_admin_request(action='userlist',
                                            params=parameters)
 
-        self.assertTrue('"userid": "__9998"' not in response, response)
-        self.assertTrue('"userid": "__9997"' in response, response)
-        self.assertTrue('"userid": "__9999"' not in response, response)
+        assert '"userid": "__9998"' not in response, response
+        assert '"userid": "__9997"' in response, response
+        assert '"userid": "__9999"' not in response, response
 
         # ignore SQL wildcards
         parameters = {'username': 'kn_t'}
         response = self.make_admin_request(action='userlist',
                                            params=parameters)
 
-        self.assertTrue('"userid": "__9998"' not in response, response)
-        self.assertTrue('"userid": "__9997"' not in response, response)
-        self.assertTrue('"userid": "__9999"' in response, response)
+        assert '"userid": "__9998"' not in response, response
+        assert '"userid": "__9997"' not in response, response
+        assert '"userid": "__9999"' in response, response
 
         # support LinOTP wildcards
         parameters = {'username': 'kn*t'}
         response = self.make_admin_request(action='userlist',
                                            params=parameters)
 
-        self.assertTrue('"userid": "__9998"' in response, response)
-        self.assertTrue('"userid": "__9997"' in response, response)
-        self.assertTrue('"userid": "__9999"' in response, response)
+        assert '"userid": "__9998"' in response, response
+        assert '"userid": "__9997"' in response, response
+        assert '"userid": "__9999"' in response, response
 
         # support LinOTP wildcards
         parameters = {'username': 'kn.t'}
         response = self.make_admin_request(action='userlist',
                                            params=parameters)
 
-        self.assertTrue('"userid": "__9998"' in response, response)
-        self.assertTrue('"userid": "__9997"' in response, response)
-        self.assertTrue('"userid": "__9999"' in response, response)
+        assert '"userid": "__9998"' in response, response
+        assert '"userid": "__9997"' in response, response
+        assert '"userid": "__9999"' in response, response
 
         # support LinOTP wildcards for other fields
         parameters = {'userid': '*9*'}
         response = self.make_admin_request(action='userlist',
                                            params=parameters)
 
-        self.assertTrue('"userid": "__9"' in response, response)
-        self.assertTrue('"userid": "__9998"' in response, response)
-        self.assertTrue('"userid": "__9997"' in response, response)
-        self.assertTrue('"userid": "__9999"' in response, response)
+        assert '"userid": "__9"' in response, response
+        assert '"userid": "__9998"' in response, response
+        assert '"userid": "__9997"' in response, response
+        assert '"userid": "__9999"' in response, response
 
         return
 

@@ -41,6 +41,8 @@ class TestSystemController(TestController):
     def setUp(self):
         TestController.setUp(self)
         self.delete_all_policies()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
 
     def test_setDefault(self):
         '''
@@ -57,15 +59,15 @@ class TestSystemController(TestController):
         response = self.make_system_request(action='setDefault',
                                             params=params)
         # log.debug("response %s\n",response)
-        self.assertTrue('"set DefaultSyncWindow": true' in response, response)
-        self.assertTrue('"set DefaultMaxFailCount": true' in response,
-                        response)
-        self.assertTrue('"set DefaultResetFailCount": true' in response,
-                        response)
-        self.assertTrue('"set DefaultSyncWindow": true' in response, response)
-        self.assertTrue('"set DefaultMaxFailCount": true' in response,
-                        response)
-        self.assertTrue('"set DefaultCountWindow": true'in response, response)
+        assert '"set DefaultSyncWindow": true' in response, response
+        assert '"set DefaultMaxFailCount": true' in response, \
+            response
+        assert '"set DefaultResetFailCount": true' in response, \
+            response
+        assert '"set DefaultSyncWindow": true' in response, response
+        assert '"set DefaultMaxFailCount": true' in response, \
+            response
+        assert '"set DefaultCountWindow": true'in response, response
 
         params = {"DefaultMaxFailCount": "10",
                   "DefaultSyncWindow": "1000",
@@ -78,15 +80,15 @@ class TestSystemController(TestController):
                                             params=params)
         # log.info("response %s\n",response)
 
-        self.assertTrue('"set DefaultSyncWindow": true' in response, response)
-        self.assertTrue('"set DefaultMaxFailCount": true' in response,
-                        response)
-        self.assertTrue('"set DefaultResetFailCount": true' in response,
-                        response)
-        self.assertTrue('"set DefaultSyncWindow": true' in response, response)
-        self.assertTrue('"set DefaultMaxFailCount": true' in response,
-                        response)
-        self.assertTrue('"set DefaultCountWindow": true'in response, response)
+        assert '"set DefaultSyncWindow": true' in response, response
+        assert '"set DefaultMaxFailCount": true' in response, \
+            response
+        assert '"set DefaultResetFailCount": true' in response, \
+            response
+        assert '"set DefaultSyncWindow": true' in response, response
+        assert '"set DefaultMaxFailCount": true' in response, \
+            response
+        assert '"set DefaultCountWindow": true'in response, response
 
     def test_001_resolvers(self):
         """
@@ -113,9 +115,9 @@ class TestSystemController(TestController):
         response = self.make_system_request(action='getRealms')
 
         # set realms
-        self.assertTrue('"realmname": "mydefrealm"'in response, response)
-        self.assertTrue('"realmname": "myotherrealm"'in response, response)
-        self.assertTrue('"realmname": "mymixrealm"'in response, response)
+        assert '"realmname": "mydefrealm"'in response, response
+        assert '"realmname": "myotherrealm"'in response, response
+        assert '"realmname": "mymixrealm"'in response, response
 
         # now check for the different users in the different realms
         params = {"username": "root",
@@ -123,10 +125,10 @@ class TestSystemController(TestController):
 
         response = self.make_admin_request(action='userlist', params=params)
 
-        self.assertTrue('"useridresolver.PasswdIdResolver.'
-                        'IdResolver.myOtherRes"'in response, response)
-        self.assertTrue('"useridresolver.PasswdIdResolver.'
-                        'IdResolver.myDefRes"'in response, response)
+        assert '"useridresolver.PasswdIdResolver.' \
+            'IdResolver.myOtherRes"'in response, response
+        assert '"useridresolver.PasswdIdResolver.' \
+            'IdResolver.myDefRes"'in response, response
 
         # now check for the different users in the different realms
         params = {"username": "root",
@@ -137,9 +139,9 @@ class TestSystemController(TestController):
                                            params=params)
         # log.info("response %s\n",response)
 
-        self.assertTrue('"useridresolver.PasswdIdResolver.'
-                        'IdResolver.myDefRes"'in response, response)
-        self.assertTrue('"root-def-passwd"'in response, response)
+        assert '"useridresolver.PasswdIdResolver.' \
+            'IdResolver.myDefRes"'in response, response
+        assert '"root-def-passwd"'in response, response
 
         # now check for the different users in the different realms
         params = {"username": "root",
@@ -148,13 +150,13 @@ class TestSystemController(TestController):
         response = self.make_admin_request(action='userlist',
                                            params=params)
 
-        self.assertTrue('"useridresolver.PasswdIdResolver.'
-                        'IdResolver.myOtherRes"'in response, response)
-        self.assertTrue('"root-myDom-passwd"'in response, response)
+        assert '"useridresolver.PasswdIdResolver.' \
+            'IdResolver.myOtherRes"'in response, response
+        assert '"root-myDom-passwd"'in response, response
 
-        self.assertTrue('"useridresolver.PasswdIdResolver.'
-                        'IdResolver.myDefRes"'in response, response)
-        self.assertTrue('"root-def-passwd"'in response, response)
+        assert '"useridresolver.PasswdIdResolver.' \
+            'IdResolver.myDefRes"'in response, response
+        assert '"root-def-passwd"'in response, response
 
         # now check for the different users in the different realms
         params = {"username": "root"}  # check in default
@@ -162,16 +164,21 @@ class TestSystemController(TestController):
         response = self.make_admin_request(action='userlist',
                                            params=params)
 
-        self.assertTrue('"useridresolver.PasswdIdResolver.'
-                        'IdResolver.myDefRes"'in response, response)
-        self.assertTrue('"root-def-passwd"'in response, response)
+        assert '"useridresolver.PasswdIdResolver.' \
+            'IdResolver.myDefRes"'in response, response
+        assert '"root-def-passwd"'in response, response
 
         # now set default to myDomain
         params = {"realm": "myOtherRealm"}
 
         response = self.make_system_request(action='setDefaultRealm',
                                             params=params)
-        self.assertTrue('"value": true'in response, response)
+        assert '"value": true'in response, response
+
+        response = self.make_system_request(action='getDefaultRealm')
+        value = response.json['result']['value']
+        assert 'myotherrealm' in value
+        assert 'true' in value['myotherrealm']['default']
 
         # now check for the different users in the different realms
         params = {"username": "root"}  # check in default
@@ -179,9 +186,9 @@ class TestSystemController(TestController):
         response = self.make_admin_request(action='userlist',
                                            params=params)
 
-        self.assertTrue('"useridresolver.PasswdIdResolver.'
-                        'IdResolver.myOtherRes"'in response, response)
-        self.assertTrue('"root-myDom-passwd"'in response, response)
+        assert '"useridresolver.PasswdIdResolver.' \
+            'IdResolver.myOtherRes"'in response, response
+        assert '"root-myDom-passwd"'in response, response
 
         # now delete the default realm
         params = {"realm": "myOtherRealm"}  # check in default
@@ -189,25 +196,25 @@ class TestSystemController(TestController):
         response = self.make_system_request(action='delRealm',
                                             params=params)
 
-        self.assertTrue('"delRealm": {'in response, response)
-        self.assertTrue('"result": true'in response, response)
+        assert '"delRealm": {'in response, response
+        assert '"result": true'in response, response
 
         params = {"realms": "*"}
 
         response = self.make_system_request(action='getRealms',
                                             params=params)
         # set realms
-        self.assertTrue('"realmname": "mydefrealm"'in response, response)
-        self.assertTrue('"realmname": "myotherrealm"' not in response,
-                        response)
-        self.assertTrue('"realmname": "mymixrealm"'in response, response)
+        assert '"realmname": "mydefrealm"'in response, response
+        assert '"realmname": "myotherrealm"' not in response, \
+            response
+        assert '"realmname": "mymixrealm"'in response, response
 
         # now check for the different users in the different realms
         params = {"username": "def"}  # check in default
 
         response = self.make_admin_request(action='userlist', params=params)
-
-        self.assertTrue('"value": []'in response, response)
+        value = response.json['result']['value']
+        assert value == [], response
 
         # now check for the different users in the different realms
         params = {"username": "def",  # check in default
@@ -216,43 +223,58 @@ class TestSystemController(TestController):
 
         response = self.make_admin_request(action='userlist', params=params)
         # log.info("response %s\n",response)
-        self.assertTrue('"description": "def User,,,,"'in response, response)
+        assert '"description": "def User,,,,"'in response, response
 
         # now set default to myDomain
         params = {"realm": "myDefRealm"}
 
         response = self.make_system_request(action='setDefaultRealm',
                                             params=params)
-        self.assertTrue('"value": true'in response, response)
+        assert '"value": true'in response, response
+
+        response = self.make_system_request(action='getDefaultRealm')
+        value = response.json['result']['value']
+        assert 'mydefrealm' in value
+        assert 'true' in value['mydefrealm']['default']
 
         # now check for the different users in the different realms
         params = {"username": "def"}  # check in default
 
         response = self.make_admin_request(action='userlist', params=params)
 
-        self.assertTrue('"description": "def User,,,,"'in response, response)
+        assert '"description": "def User,,,,"'in response, response
 
         # now set default to myDomain
         params = {"realm": "myMixRealm"}
 
         response = self.make_system_request(action='setDefaultRealm',
                                             params=params)
-        self.assertTrue('"value": true'in response, response)
+        assert '"value": true'in response, response
+
+        response = self.make_system_request(action='getDefaultRealm')
+        value = response.json['result']['value']
+        assert 'mymixrealm' in value
+        assert 'true' in value['mymixrealm']['default']
 
         # now check for the different users in the different realms
         params = {"username": "root"}  # check in default
 
         response = self.make_admin_request(action='userlist', params=params)
 
-        self.assertTrue('"root-def-passwd"'in response, response)
-        self.assertTrue('"root-myDom-passwd"'in response, response)
+        assert '"root-def-passwd"'in response, response
+        assert '"root-myDom-passwd"'in response, response
 
         # now set default to myDomain
         params = {"realm": "myOtherRealm"}
 
         response = self.make_system_request(action='setDefaultRealm',
                                             params=params)
-        self.assertTrue('"value": false'in response, response)
+        assert '"value": false'in response, response
+
+        response = self.make_system_request(action='getDefaultRealm')
+        value = response.json['result']['value']
+        assert 'mymixrealm' in value
+        assert 'true' in value['mymixrealm']['default']
 
         # now check for the different users in the different realms
         params = {"username": "def",  # check in default
@@ -262,7 +284,7 @@ class TestSystemController(TestController):
         response = self.make_admin_request(action='userlist',
                                            params=params)
         # log.info("response %s\n",response)
-        self.assertTrue('"description": "def User,,,,"'in response, response)
+        assert '"description": "def User,,,,"'in response, response
         self.delete_all_realms()
         self.delete_all_resolvers()
 
@@ -274,9 +296,9 @@ class TestSystemController(TestController):
         response = self.make_system_request(action='setDefault',
                                             params=params)
 
-        self.assertTrue('"status": false' in response, response)
-        self.assertTrue('Usage: setDefault: parameters are' in response,
-                        response)
+        assert '"status": false' in response, response
+        assert 'Usage: setDefault: parameters are' in response, \
+            response
 
     def test_setconfig_backwards(self):
         '''
@@ -287,37 +309,40 @@ class TestSystemController(TestController):
                   'description': 'old value'}
         response = self.make_system_request(action='setConfig', params=params)
 
-        self.assertTrue('"setConfig test": true' in response, response)
+        assert '"setConfig test": true' in response, response
 
         params = {'key': 'some.resolver.config',
                   'value': 'resolverText',
                   'description': 'resolver test'}
         response = self.make_system_request(action='setConfig', params=params)
 
-        self.assertTrue('"setConfig some.resolver.config": true' in response,
-                        response)
+        assert '"setConfig some.resolver.config": true' in response, \
+            response
 
     def test_setconfig_typing(self):
         '''
         Test: system/setConfig with typing
         '''
+        response = self.make_system_request(action='getConfig')
+        self.assertTrue("secretkey" not in response, response)
+
         params = {'secretkey': 'test123',
                   'secretkey.type': 'password'}
         response = self.make_system_request(action='setConfig', params=params)
         log.info(response)
-        self.assertTrue('"setConfig secretkey:test123": true' in response,
-                        response)
+        assert '"setConfig secretkey:test123": true' in response, \
+            response
 
         # the value will be returned transparently
         response = self.make_system_request(action='getConfig',
                                             params={'key': 'secretkey'})
-        self.assertTrue("test123" not in response, response)
+        assert "test123" not in response, response
 
         # the value will be returned transparently
         params = {'key': 'enclinotp.secretkey'}
         response = self.make_system_request(action='getConfig',
                                             params=params)
-        self.assertTrue("test123" not in response, response)
+        assert "test123" not in response, response
 
         response = self.make_system_request(action='delConfig',
                                             params={'key': 'secretkey'})
@@ -335,7 +360,7 @@ class TestSystemController(TestController):
         response = self.make_system_request(action='setResolver',
                                             params=params)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         params = {'name': 'reso2',
                   'type': 'passwdresolver',
@@ -344,7 +369,7 @@ class TestSystemController(TestController):
         response = self.make_system_request(action='setResolver',
                                             params=params)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         params = {'name': 'reso3',
                   'type': 'passwdresolver',
                   'fileName': os.path.join(self.fixture_path, 'my-pass2')}
@@ -352,16 +377,16 @@ class TestSystemController(TestController):
         response = self.make_system_request(action='setResolver',
                                             params=params)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_system_request(action='getResolvers', params={})
 
-        self.assertTrue('"entry": "linotp.passwdresolver.fileName.reso2"' in
-                        response, response)
-        self.assertTrue('"entry": "linotp.passwdresolver.fileName.reso1"' in
-                        response, response)
-        self.assertTrue('"entry": "linotp.passwdresolver.fileName.reso3"' in
-                        response, response)
+        assert '"entry": "linotp.passwdresolver.fileName.reso2"' in \
+            response, response
+        assert '"entry": "linotp.passwdresolver.fileName.reso1"' in \
+            response, response
+        assert '"entry": "linotp.passwdresolver.fileName.reso3"' in \
+            response, response
 
         # create a realm
         params = {'realm': 'realm1',
@@ -369,18 +394,18 @@ class TestSystemController(TestController):
                   }
         response = self.make_system_request(action='setRealm', params=params)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # try to delete a resolver, that is in a realm
         response = self.make_system_request(action='delResolver',
                                             params={'resolver': 'reso1'})
 
-        self.assertTrue('Resolver u\'reso1\'  still in use' in response,
-                        response)
+        assert 'Resolver \'reso1\'  still in use' in response, \
+            response
 
         response = self.make_system_request(action='delResolver',
                                             params={'resolver': 'reso3'})
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def test_policy_wrong_name(self):
         '''
@@ -392,8 +417,8 @@ class TestSystemController(TestController):
                   'realm': '*'}
         response = self.make_system_request(action='setPolicy', params=params)
 
-        self.assertTrue('The name of the policy may only contain'
-                        ' the characters'in response, response)
+        assert 'The name of the policy may only contain' \
+            ' the characters'in response, response
 
         self.delete_all_policies()
 
@@ -417,14 +442,14 @@ scope = authentication
                                             params={},
                                             upload_files=upload_files)
 
-        self.assertTrue('<status>False</status>' in response, response)
-        self.assertTrue('may only contain the characters'in response, response)
+        assert '<status>False</status>' in response, response
+        assert 'may only contain the characters' in response, response
 
         # Now check the policies, that we imported...
         response = self.make_system_request(action='getPolicy', method='POST',
                                             params={}, auth_user='superuser')
 
-        self.assertFalse('ded-ee' in response, response)
+        assert not ('ded-ee' in response), response
 
         return
 
@@ -448,7 +473,7 @@ scope = authentication
                                             params={},
                                             upload_files=upload_files)
 
-        self.assertTrue('<status>True</status>' in response, response)
+        assert '<status>True</status>' in response, response
 
         # Now check the policies, that we imported...
 
@@ -457,7 +482,7 @@ scope = authentication
                                             params={},
                                             auth_user='superuser')
 
-        self.assertFalse('ded-ee' in response, response)
+        assert not ('ded-ee' in response), response
 
         return
 
@@ -527,21 +552,21 @@ scope = gettoken
                                             params={},
                                             upload_files=upload_files)
 
-        self.assertTrue('<status>True</status>' in response, response)
-        self.assertTrue('<value>8</value>' in response, response)
+        assert '<status>True</status>' in response, response
+        assert '<value>8</value>' in response, response
 
         # Now check the policies, that we imported...
         response = self.make_system_request(action='getPolicy', method='POST',
                                             params={}, auth_user='superuser')
 
-        self.assertTrue('"resovler_ss1": {' in response, response)
-        self.assertTrue('"resovler_ss2": {' in response, response)
-        self.assertTrue('"ss1_maria": {' in response, response)
-        self.assertTrue('"SMS": {' in response, response)
-        self.assertTrue('"ss1_raff": {' in response, response)
-        self.assertTrue('"ocra": {' in response, response)
-        self.assertTrue('"ss1_ocra": {' in response, response)
-        self.assertTrue('"gettoken": {' in response, response)
+        assert '"resovler_ss1": {' in response, response
+        assert '"resovler_ss2": {' in response, response
+        assert '"ss1_maria": {' in response, response
+        assert '"SMS": {' in response, response
+        assert '"ss1_raff": {' in response, response
+        assert '"ocra": {' in response, response
+        assert '"ss1_ocra": {' in response, response
+        assert '"gettoken": {' in response, response
 
         # Now we try to upload with access policies.
         params = {'name': 'superuser',
@@ -554,7 +579,7 @@ scope = gettoken
                                             params=params,
                                             auth_user='superuser')
 
-        self.assertTrue('"setPolicy superuser":' in response, response)
+        assert '"setPolicy superuser":' in response, response
 
         params = {'name': 'readsystem',
                   'scope': 'system',
@@ -565,7 +590,7 @@ scope = gettoken
                                             params=params,
                                             auth_user='superuser')
 
-        self.assertTrue('"setPolicy readsystem":' in response, response)
+        assert '"setPolicy readsystem":' in response, response
 
         # superuser is allowed to import
         upload_files = [("file", "savedPolicy.txt", policy_content)]
@@ -575,8 +600,8 @@ scope = gettoken
                                             upload_files=upload_files,
                                             auth_user='superuser')
 
-        self.assertTrue('<status>True</status>' in response, response)
-        self.assertTrue('<value>8</value>' in response, response)
+        assert '<status>True</status>' in response, response
+        assert '<value>8</value>' in response, response
 
         # readadmin is not allowed to import
         upload_files = [("file", "savedPolicy.txt", policy_content)]
@@ -586,8 +611,8 @@ scope = gettoken
                                             upload_files=upload_files,
                                             auth_user='readadmin')
 
-        self.assertTrue('Policy check failed. You are not allowed to'
-                        ' write system config' in response, response)
+        assert 'Policy check failed. You are not allowed to' \
+            ' write system config' in response, response
 
         # finally remove all policies
         names = []
@@ -602,5 +627,11 @@ scope = gettoken
         self.delete_policy('superuser', auth_user='superuser')
 
         return
+
+    def test_get_policy_def(self):
+        ''' Just verify that the endpoint works '''
+        response = self.make_system_request(action='getPolicyDef')
+
+        assert '"status": true' in response, response
 
 # eof ########################################################################

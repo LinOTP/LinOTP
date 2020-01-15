@@ -162,8 +162,8 @@ class TestGetFromParam(unittest.TestCase):
 
                 try:
 
-                    self.assertTrue(user.login == result['login'], msg)
-                    self.assertTrue(user.realm == result['realm'], msg)
+                    assert user.login == result['login'], msg
+                    assert user.realm == result['realm'], msg
 
                 except Exception as _exx:
                     errors.append(msg)

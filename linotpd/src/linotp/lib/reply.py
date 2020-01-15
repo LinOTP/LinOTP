@@ -25,24 +25,23 @@
 #
 """create responses"""
 
+import base64
+import io
+import json
+import logging
+import urllib.error
+import urllib.parse
+import urllib.request
+
 import qrcode
-import StringIO
-import urllib
+from flask import Response, current_app, jsonify
+from flask import request as flask_request
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
-from pylons import request
-from pylons import tmpl_context as c
-
+from linotp.flap import request
+from linotp.flap import tmpl_context as c
+from linotp.lib.context import request_context, request_context_safety
 from linotp.lib.error import LinotpError
-from linotp.lib.util import get_version
-from linotp.lib.util import get_api_version
-
-from linotp.lib.context import request_context_safety
-from linotp.lib.context import request_context
+from linotp.lib.util import get_api_version, get_version
 
 optional = True
 required = False
@@ -75,13 +74,13 @@ resp = """
 </html>
 """
 
-import logging
 log = logging.getLogger(__name__)
 
 
-def _get_httperror_from_params(pylons_request):
+def _get_httperror_from_params(request):
     """
-    :param pylons_request: A Pylons request object
+    Extract an httperror parameter from the client request
+
     :return: The httperror parameter from the requests params, making sure it is
         a valid integer. If the value is contained in params then it will be
         returned. If it is an invalid value '500' will be returned instead.
@@ -92,15 +91,16 @@ def _get_httperror_from_params(pylons_request):
     """
     httperror = None
     try:
-        httperror = pylons_request.params.get('httperror', None)
+        request_params = current_app.getRequestParams()
+        httperror = request_params.get('httperror', None)
     except UnicodeDecodeError as exx:
         log.exception("Could not extract 'httperror' from params because some "
                 "parameter contains invalid Unicode. Trying to extract "
                 "directly from query_string. Exception: %r", exx)
-        from urlparse import parse_qs
-        params = parse_qs(pylons_request.query_string)
-        if 'httperror' in params:
-            httperror_list = params['httperror']
+        from urllib.parse import parse_qs
+        params = parse_qs(flask_request.query_string)
+        if b'httperror' in params:
+            httperror_list = params[b'httperror']
             if len(httperror_list) > 1:
                 log.warning("Parameter 'httperror' specified multiple times. "
                         "Using last value '%r'. All values: %r",
@@ -121,7 +121,7 @@ def _get_httperror_from_params(pylons_request):
     return httperror
 
 
-def sendError(response, exception, id=1, context=None):
+def sendError(_response, exception, id=1, context=None):
     '''
     sendError - return a HTML or JSON error result document
 
@@ -196,15 +196,15 @@ def sendError(response, exception, id=1, context=None):
     ## Exception, LinOtpError, str/unicode
     if hasattr(exception, '__class__') is True \
     and isinstance(exception, Exception):
-        errDesc = unicode(exception)
+        errDesc = str(exception)
         if isinstance(exception, LinotpError):
             errId = exception.getId()
 
-    elif type(exception) in [str, unicode]:
-        errDesc = unicode(exception)
+    elif isinstance(exception, str):
+        errDesc = str(exception)
 
     else:
-        errDesc = u"%r" % exception
+        errDesc = "%r" % exception
 
     ## check if we have an additional request parameter 'httperror'
     ## which triggers the error to be delivered as HTTP Error
@@ -219,7 +219,7 @@ def sendError(response, exception, id=1, context=None):
             send_custom_http_status = True
         else:
             # Only send custom HTTP status in defined error cases
-            if unicode(errId) in linotp_errors.split(','):
+            if str(errId) in linotp_errors.split(','):
                 send_custom_http_status = True
             else:
                 send_custom_http_status = False
@@ -230,22 +230,20 @@ def sendError(response, exception, id=1, context=None):
         # Always set a reason, when no standard one found (e.g. custom HTTP
         # code like 444) use 'LinOTP Error'
         reason = httpErr.get(httperror, 'LinOTP Error')
-
-        response.content_type = 'text/html'
-        response.status = "%s %s" % (httperror, reason)
-
         code = httperror
         status = "%s %s" % (httperror, reason)
         desc = '[%s] %d: %s' % (get_version(), errId, errDesc)
         ret = resp % (code, status, code, status, desc)
 
+        response = Response(response=ret, status=code, mimetype= 'text/html')
+
         if context in ['before', 'after']:
             response._exception = exception
-            response.text = u'' + ret
-            ret = response
+
+        return response
+
     else:
         # Send JSON response with HTTP status 200 OK
-        response.content_type = 'application/json'
         res = { "jsonrpc": get_api_version(),
                 "result" :
                     {"status": False,
@@ -257,15 +255,13 @@ def sendError(response, exception, id=1, context=None):
                  "version": get_version(),
                  "id": id
             }
-
-        ret = json.dumps(res, indent=3)
+        data = json.dumps(res, indent=3)
+        response = Response(response=data, status=200, mimetype= 'application/json')
 
         if context in ['before', 'after']:
             response._exception = exception
-            response.body = ret
-            ret = response
 
-    return ret
+        return response
 
 
 def sendResult(response, obj, id=1, opt=None, status=True):
@@ -286,8 +282,6 @@ def sendResult(response, obj, id=1, opt=None, status=True):
 
     '''
 
-    response.content_type = 'application/json'
-
     res = { "jsonrpc": get_api_version(),
             "result": { "status": status,
                         "value": obj,
@@ -298,7 +292,9 @@ def sendResult(response, obj, id=1, opt=None, status=True):
     if opt is not None and len(opt) > 0:
         res["detail"] = opt
 
-    return json.dumps(res, indent=3)
+    data = json.dumps(res, indent=3)
+
+    return Response(response=data, status=200, mimetype= 'application/json')
 
 
 def sendResultIterator(obj, id=1, opt=None, rp=None, page=None,
@@ -316,104 +312,98 @@ def sendResultIterator(obj, id=1, opt=None, rp=None, page=None,
         :return: generator of response data (yield)
     '''
 
-    if request_context_copy is None:
-        request_context_copy = {}
 
     # establish the request context within the pylons middleware
 
-    with request_context_safety():
+    api_version = get_api_version()
+    linotp_version = get_version()
 
-        for key, value in request_context_copy.items():
-            request_context[key] = value
+    res = {"jsonrpc": api_version,
+            "result": {"status": True,
+                       "value": "[DATA]",
+                      },
+           "version": linotp_version,
+           "id": id}
 
-        api_version = get_api_version()
-        linotp_version = get_version()
-
-        res = {"jsonrpc": api_version,
-                "result": {"status": True,
-                           "value": "[DATA]",
-                          },
-               "version": linotp_version,
-               "id": id}
-
-        err = {"jsonrpc": api_version,
-                "result":
-                    {"status": False,
-                     "error": {},
-                    },
-                "version": linotp_version,
-                "id": id
-            }
+    err = {"jsonrpc": api_version,
+            "result":
+                {"status": False,
+                 "error": {},
+                },
+            "version": linotp_version,
+            "id": id
+        }
 
 
-        start_at = 0
-        stop_at = 0
+    start_at = 0
+    stop_at = 0
+    if page:
+        if not rp:
+            rp = 16
+        try:
+            start_at = int(page) * int(rp)
+            stop_at = start_at + int(rp)
+        except ValueError as exx:
+            err['result']['error'] = {
+                            "code": 9876,
+                            "message": "%r" % exx,
+                            }
+            log.exception("failed to convert paging request parameters: %r"
+                          % exx)
+            yield json.dumps(err)
+            # finally we signal end of error result
+            return
+
+    typ = "%s" % type(obj)
+    if 'generator' not in typ and 'iterator' not in typ:
+        raise Exception('no iterator method for object %r' % obj)
+
+    res = {"jsonrpc": api_version,
+            "result": {"status": True,
+                       "value": "[DATA]",
+                      },
+           "version": linotp_version,
+           "id": id}
+    if page:
+        res['result']['page'] = int(page)
+
+    if opt is not None and len(opt) > 0:
+        res["detail"] = opt
+
+
+    surrounding = json.dumps(res)
+    prefix, postfix = surrounding.split('"[DATA]"')
+
+    # first return the opening
+    yield prefix + " ["
+
+
+    sep = ""
+    counter = 0
+    for next_one in obj:
+        # next_one = json.dumps(next_entry)
+        counter = counter + 1
+        # are we running in paging mode?
         if page:
-            if not rp:
-                rp = 16
-            try:
-                start_at = int(page) * int(rp)
-                stop_at = start_at + int(rp)
-            except ValueError as exx:
-                err['result']['error'] = {
-                                "code": 9876,
-                                "message": "%r" % exx,
-                                }
-                log.exception("failed to convert paging request parameters: %r"
-                              % exx)
-                yield json.dumps(err)
-                # finally we signal end of error result
-                raise StopIteration()
-
-        typ = "%s" % type(obj)
-        if 'generator' not in typ and 'iterator' not in typ:
-            raise Exception('no iterator method for object %r' % obj)
-
-        res = {"jsonrpc": api_version,
-                "result": {"status": True,
-                           "value": "[DATA]",
-                          },
-               "version": linotp_version,
-               "id": id}
-        if page:
-            res['result']['page'] = int(page)
-
-        if opt is not None and len(opt) > 0:
-            res["detail"] = opt
-
-
-        surrounding = json.dumps(res)
-        prefix, postfix = surrounding.split('"[DATA]"')
-
-        # first return the opening
-        yield prefix + " ["
-
-
-        sep = ""
-        counter = 0
-        for next_one in obj:
-            counter = counter + 1
-            # are we running in paging mode?
-            if page:
-                if counter >= start_at and counter < stop_at:
-                    res = "%s%s\n" % (sep, next_one)
-                    sep = ','
-                    yield res
-                if counter >= stop_at:
-                    # stop iterating if we reached the last one of the page
-                    break
-            else:
-                # no paging - no limit
+            if counter >= start_at and counter < stop_at:
                 res = "%s%s\n" % (sep, next_one)
                 sep = ','
                 yield res
+            if counter >= stop_at:
+                # stop iterating if we reached the last one of the page
+                break
+        else:
+            # no paging - no limit
+            res = "%s%s\n" % (sep, next_one)
+            sep = ','
+            yield res
 
-        # we add the amount of queried objects
-        total = '"queried" : %d' % counter
-        postfix = ', %s %s' % (total, postfix)
+    # we add the amount of queried objects
+    total = '"queried" : %d' % counter
+    postfix = ', %s %s' % (total, postfix)
 
-        # last return the closing
-        yield "] " + postfix
+    # last return the closing
+    yield "] " + postfix
 
 
 def sendCSVResult(response, obj, flat_lines=False,
@@ -431,11 +421,9 @@ def sendCSVResult(response, obj, flat_lines=False,
     '''
     delim = "'"
     seperator = ';'
-    response.content_type = "application/force-download"
-    response.headers['Content-disposition'] = ('attachment; filename=%s'
-                                               % filename)
-    output = u""
+    content_type = "application/force-download"
 
+    output = ""
     if not flat_lines:
 
         headers_printed = False
@@ -444,13 +432,13 @@ def sendCSVResult(response, obj, flat_lines=False,
         for row in data:
             # Do the header
             if not headers_printed:
-                for k in data[0].keys():
+                for k in list(data[0].keys()):
                     output += "%s%s%s%s " % (delim, k, delim, seperator)
                 output += "\n"
                 headers_printed = True
 
-            for val in row.values():
-                if type(val) in [str, unicode]:
+            for val in list(row.values()):
+                if isinstance(val, str):
                     value = val.replace("\n", " ")
                 else:
                     value = val
@@ -463,7 +451,11 @@ def sendCSVResult(response, obj, flat_lines=False,
 
             output += "\n"
 
-    return output
+    response = Response(response=output, status=200, mimetype=content_type)
+    response.headers['Content-disposition'] = (
+        'attachment; filename=%s' % filename)
+
+    return response
 
 
 def json2xml(json_obj, line_padding=""):
@@ -491,11 +483,11 @@ def json2xml(json_obj, line_padding=""):
     return "%s%s" % (line_padding, json_obj)
 
 
-def sendXMLResult(response, obj, id=1, opt=None):
+def sendXMLResult(_response, obj, id=1, opt=None):
     """
     send the result as an xml format
     """
-    response.content_type = 'text/xml'
+
     res = '<?xml version="1.0" encoding="UTF-8"?>\
             <jsonrpc version="%s">\
             <result>\
@@ -519,11 +511,12 @@ def sendXMLResult(response, obj, id=1, opt=None):
     <version>%s</version>
     <id>%s</id>%s
 </jsonrpc>""" % (xml_object, get_version(), id, xml_options)
-    return res
+
+    return Response(response=res, status=200, mimetype='text/xml')
 
 
-def sendXMLError(response, exception, id=1):
-    response.content_type = 'text/xml'
+def sendXMLError(_response, exception, id=1):
+
     if not hasattr(exception, "getId"):
         errId = -311
         errDesc = str(exception)
@@ -542,7 +535,7 @@ def sendXMLError(response, exception, id=1):
             <version>%s</version>\
             <id>%s</id>\
             </jsonrpc>' % (get_api_version(), errId, errDesc, get_version(), id)
-    return res
+    return Response(response=res, status=200, mimetype='text/xml')
 
 
 def sendQRImageResult(response, data, param=None, id=1, typ='html'):
@@ -578,23 +571,23 @@ def sendQRImageResult(response, data, param=None, id=1, typ='html'):
         del param['alt']
 
     img_data = data
-    if type(data) == dict:
+    if isinstance(data, dict):
         img_data = data.get('value', "")
 
     if typ in ['img', 'embed']:
-        response.content_type = 'text/html'
+        content_type = 'text/html'
         ret = create_img(img_data, width, alt)
 
     elif typ in ['png']:
-        response.content_type = 'image/png'
+        content_type = 'image/png'
         ret = create_png(img_data)
         response.content_length = len(ret)
 
     else:
-        response.content_type = 'text/html'
+        content_type = 'text/html'
         ret = create_html(img_data, width, param)
 
-    return ret
+    return Response(response=ret, status=200, mimetype=content_type)
 
 
 def create_png(data, alt=None):
@@ -604,10 +597,9 @@ def create_png(data, alt=None):
 
     img = qrcode.make(data)
 
-    output = StringIO.StringIO()
-    img.save(output)
-    o_data = output.getvalue()
-    output.close()
+    with io.BytesIO() as output:
+        img.save(output)
+        o_data = output.getvalue()
 
     return o_data
 
@@ -626,7 +618,7 @@ def create_img_src(data):
     '''
 
     o_data = create_png(data)
-    data_uri = o_data.encode("base64").replace("\n", "")
+    data_uri = base64.b64encode(o_data).decode()
     ret_img_src = 'data:image/png;base64,%s' % data_uri
 
     return ret_img_src
@@ -653,7 +645,7 @@ def create_img(data, width=0, alt=None, img_id="challenge_qrcode"):
         width_str = " width=%d " % (int(width))
 
     if alt is not None:
-        val = urllib.urlencode({'alt': alt})
+        val = urllib.parse.urlencode({'alt': alt})
         alt_str = " alt=%r " % (val[len('alt='):])
 
     ret_img = ('<img id="%s" %s  %s  src="%s"/>' %
@@ -678,14 +670,14 @@ def create_html(data, width=0, alt=None, list_id="challenge_data"):
     img = create_img(data, width=width, alt=data)
 
     if alt is not None:
-        if type(alt) in (str, u''):
+        if isinstance(alt, str):
             alt_str = '<p>%s</p>' % alt
-        elif type(alt) == dict:
+        elif isinstance(alt, dict):
             alta = []
-            for k in alt.keys():
+            for k in list(alt.keys()):
                 alta.append('<li> %s: <span class="%s">%s</span> </li>' % (k, k, alt.get(k)))
             alt_str = '<ul id="%s">%s</ul>' % ( list_id, " ".join(alta))
-        elif type(alt) == list:
+        elif isinstance(alt, list):
             alta = []
             for k in alt:
                 alta.append('<li> %s </li>' % (k))
@@ -716,11 +708,11 @@ def sendCSVIterator(obj, headers=True):
                 headers = False
 
             output = ""
-            for val in row.values():
-                if type(val) in [str, unicode]:
+            for val in list(row.values()):
+                if isinstance(val, str):
                     value = val.replace("\n", " ")
                     output += "%s%s%s, " % (delim, value, delim)
-                elif type(val) in [int, long]:
+                elif isinstance(val, int):
                     value = '%d' % val
                     output += "%s, " % (value)
                 else:
@@ -734,4 +726,3 @@ def sendCSVIterator(obj, headers=True):
         raise exx
 
 #eof#######################################################
-

@@ -168,7 +168,7 @@ def getSMSProviderClass(packageName, className):
 
     """
 
-    mod = __import__(packageName, globals(), locals(), [className])
+    mod = __import__(packageName, globals(), locals(), [className], 1)
     klass = getattr(mod, className)
     if not hasattr(klass, "submitMessage"):
         raise NameError("SMSProvider AttributeError: %r.%r "

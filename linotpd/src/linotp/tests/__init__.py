@@ -23,255 +23,252 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+"""
+LinOTP application test controller
 
+This package assumes the Flask environment is already loaded by the
+calling linotp.app.create_app in , currently assuming the 'testing'
+
+    TestController.create_app(self, config=None)
+
+while the testing configuration could be overwritten
+
+tests are triggerd in the parent directory of the linotp application, e.g. by
+`pytest tests/functional/test_one.py`
+
+By using the LinOTP application test api most of the LinOTP functional test
+could be ported to the pytest flask by moving the test files into this test
+directory.
 
 """
-Pylons application test package
 
-This package assumes the Pylons environment is already loaded, such as
-when this script is imported from the `nosetests --with-pylons=test.ini`
-command.
 
-This module initializes the application via ``websetup`` (`paster
-setup-app`) and provides the base testing objects.
-
-"""
-
-import cookielib
-import json
-import pylons.test
-import os
-import logging
-import hashlib
-import copy
 import base64
-
-import unittest2
-
-from paste.deploy import appconfig
-from paste.deploy import loadapp
-from paste.script.appinstall import SetupCommand
-
-from pylons import url
-from pylons.configuration import config as env
-from routes.util import URLGenerator
-import webtest
-
+import copy
+from datetime import datetime
 from distutils.version import LooseVersion
-import pkg_resources
-
-
+import hashlib
+import io
+import json
+import logging
+import os
 import warnings
-warnings.filterwarnings(action='ignore', category=DeprecationWarning)
+
+from flask import Flask, request, Response
+from unittest import TestCase
+from uuid import uuid4
+import pkg_resources
+import pytest
+
+from linotp.app import create_app
+
+
+warnings.filterwarnings(action="ignore", category=DeprecationWarning)
 
 
 def fxn():
     warnings.warn("deprecated", DeprecationWarning)
 
+
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     fxn()
 
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger('flask.app')
 
-__all__ = ['environ', 'url', 'TestController']
-
-assert pylons.test.pylonsapp, ("Pylons app must be loaded ('nosetests "
-                               "--with-pylons=test.ini')")
-config = pylons.test.pylonsapp.config
+__all__ = ["environ", "url", "TestController"]
 
 environ = {}
 
+def xfail_if_unported(controller, action):
+    """
+    If a controller is not yet ported, we automatically
+    xfail the test if a URL belonging to the controller is
+    called. This allows us to see which tests are really
+    failing, as opposed to those that use unported URLs
+    """
+    unported_controllers = [
+        'account',
+        'custom',
+        'error',
+        'maintenance',
+        'migrate',
+        'ocra',
+        'openid',
+        'u2f',
+    ]
 
-class TestController(unittest2.TestCase):
-    '''
+    if controller in unported_controllers:
+        pytest.xfail("Controller %s not yet available (action=%s)" % (controller, action))
+
+def url(controller, action):
+    """
+    Generate URL for a given controller and action
+    """
+    if controller.endswith("/"):
+        warnings.warn("Controller name should not have a trailing slash")
+        controller = controller.strip("/")
+
+    xfail_if_unported(controller, action)
+    return "/".join([controller, action or ""])
+
+class CompatibleTestResponse(Response):
+    """
+    A response class that supports the use of the
+    'in' operator for searching the body
+
+    This allows us to port the tests to Pytest without
+    needing code changes for code of the form
+    'assert foo in response'
+    """
+    def __contains__(self, value):
+        return value in self.body
+
+    def __str__(self, *args, **kwargs):
+        return self.body
+
+    def __repr__(self, *args, **kwargs):
+        return f"{super().__repr__()} {self.body}"
+
+
+class ConfigWrapper:
+    """
+    Compatibility wrapper for old style configuration
+
+    We map old lower case config values to upper case values.
+    This is a class so that we can raise warnings later on in
+    the porting cycle
+    """
+    mappings = {
+        'sqlalchemy.url': 'SQLALCHEMY_DATABASE_URI',
+    }
+    def __init__(self, config):
+        self.config = config
+
+    def _mapkey(self, key):
+        if key in list(self.mappings.keys()):
+            return self.mappings[key]
+        else:
+            return key
+
+    def __getitem__(self, key):
+        return self.config[self._mapkey(key)]
+
+    def get(self, key):
+        return self.config.get(self._mapkey(key))
+
+class TestController(TestCase):
+    """
     the TestController, which loads the linotp app upfront
-    '''
+    """
 
-    DEFAULT_WEB_METHOD = 'POST'
+    DEFAULT_WEB_METHOD = "POST"
     env = {}
     run_state = 0
 
-    def __init__(self, *args, **kwargs):
-        '''
-        initialize the test class
-        '''
+    session = "justatest"
+    resolvers = {}  # Set up of resolvers in create_common_resolvers
 
-        wsgiapp = pylons.test.pylonsapp
-        self.app = webtest.TestApp(wsgiapp)
+    # dict of all autheticated users cookies
+    user_service = {}
 
-        self.session = 'justatest'
-        self.resolvers = {}  # Set up of resolvers in create_common_resolvers
+    fixture_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "functional", "fixtures"
+    )
 
-        # dict of all autheticated users cookies
-        self.user_service = {}
+    @pytest.fixture(autouse=True)
+    def setup_self_app_and_client(self, app, client):
+        """
+        Make the `app` and `client` fixtures available
+        as class atributes
+        """
+        self.app = app
 
-        url._push_object(URLGenerator(config['routes.map'], environ))
-        unittest2.TestCase.__init__(self, *args, **kwargs)
+        # Support '<STRING> in response' style tests in client
+        client.response_wrapper = CompatibleTestResponse
 
-        self.appconf = config
-        self.here = self.appconf.get('here')
-
-        self.fixture_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), 'functional',
-            'fixtures',
-        )
-
-        # ------------------------------------------------------------------ --
-
-        current_webtest = LooseVersion(
-            pkg_resources.get_distribution('webtest').version
-        )
-        if current_webtest <= LooseVersion('2.0.14'):
-            # Fix application cookies for localhost for webtest versions
-            # 2.0.0 to 2.0.14 (https://github.com/Pylons/webtest/issues/84)
-            # The CookiePolicy code is taken from webtest
-
-            class CookiePolicy(cookielib.DefaultCookiePolicy):
-                """A subclass of DefaultCookiePolicy to allow cookie set for
-                Domain=localhost."""
-
-                def return_ok_domain(self, cookie, request):
-                    if cookie.domain == '.localhost':
-                        return True
-                    return cookielib.DefaultCookiePolicy.return_ok_domain(
-                        self, cookie, request)
-
-                def set_ok_domain(self, cookie, request):
-                    if cookie.domain == '.localhost':
-                        return True
-                    return cookielib.DefaultCookiePolicy.set_ok_domain(
-                        self, cookie, request)
-
-            self.app.cookiejar = cookielib.CookieJar(policy=CookiePolicy())
+        self.client = client
 
     @classmethod
     def setup_class(cls):
-        '''setup - create clean execution context by resetting database '''
-        LOG.info("######## setup_class: %r" % cls)
-        SetupCommand('setup-app').run([config['__file__']])
-        from linotp.lib.config import refreshConfig
-        refreshConfig()
-
-        # provide the info of environment we are running in
-        cls.env['pylons'] = LooseVersion(
-            pkg_resources.get_distribution('pylons').version
-        )
-        TestController.run_state = 0
         return
 
     @classmethod
     def teardown_class(cls):
-        '''teardown - cleanup of test class execution result'''
+        """teardown - cleanup of test class execution result"""
         LOG.info("######## teardown_class: %r" % cls)
         return
 
     @staticmethod
-    def get_json_body(response):
+    def set_cookie(app_client, key, value, expires=None, max_age=None):
         """
-        Parses the response body as JSON and returns it. WebOb added
-        the property json_body (alias json) in version 1.2
+        Sets a cookie on the test client
 
-        :param response: A WebOb response object
+        by setting the expires to 0 and the max_age to 0 the cookie will
+        not be valid anymore
+
+        :param client: the flask test client
+        :param key: the cookie name
+        :param value: the cookie value
+        :param expires: the expiration date
+        :param max_age: the maximum age of the copkie
         """
-        if response.content_type != 'application/json':
-            raise ValueError(
-                "Content type is not JSON. Response: %r" % response
-            )
-        current_webob = LooseVersion(
-            pkg_resources.get_distribution('webob').version
-        )
-        if current_webob >= LooseVersion('1.2'):
-            return response.json_body
-        else:
-            return json.loads(response.body, encoding=response.charset)
+        app_client.set_cookie(
+            '.localhost', key, value, expires=expires, max_age=max_age)
 
     @staticmethod
-    def set_cookie(app, key, value):
+    def delete_cookie(app_client, key):
         """
-        Sets a cookie on the TestApp 'app'.
-        The WebTest API changed with version 2.0.16
+        Delete a cookie from the test client
 
-        :param app: A webtest.TestApp object
+        :param client: the flask test client
+        :param key: the key of the cookie
         """
-        current_webtest = LooseVersion(
-            pkg_resources.get_distribution('webtest').version
-        )
-        if current_webtest >= LooseVersion('2.0.16'):
-            app.set_cookie(key, value)
-        elif current_webtest >= LooseVersion('2.0.0'):
-            # webtest 2.0.0 to 2.0.15 don't have a cookie setter interface
-            # This cookie setting code is taken from webtest 2.0.16
-            cookie = cookielib.Cookie(
-                version=0,
-                name=key,
-                value=value,
-                port=None,
-                port_specified=False,
-                domain='.localhost',
-                domain_specified=True,
-                domain_initial_dot=False,
-                path='/',
-                path_specified=True,
-                secure=False,
-                expires=None,
-                discard=False,
-                comment=None,
-                comment_url=None,
-                rest=None
-            )
-            app.cookiejar.set_cookie(cookie)
-        else:
-            app.cookies[key] = value
+        app_client.delete_cookie('.localhost', key)
+        return
 
     @staticmethod
     def get_cookies(response):
         """
         get a cookie from a response
 
-        :param app: A webtest.TestApp object
+        :return: the cookies dict
         """
         cookies = {}
-        cookie_entries = ''
-        for entry in response.headerlist:
+        cookie_entries = ""
+        for entry in response.headers:
             key, val = entry
-            if key == 'Set-Cookie':
+            if key == "Set-Cookie":
                 cookie_entries = val
                 break
 
-        cookys = cookie_entries.split(';')
+        cookys = cookie_entries.split(";")
 
         for cooky in cookys:
-            if '=' in cooky:
-                cookie_name, cookie_value = cooky.split('=', 1)
+            if "=" in cooky:
+                cookie_name, cookie_value = cooky.split("=", 1)
                 cookies[cookie_name] = cookie_value
 
         return cookies
 
     def setUp(self):
-        ''' here we do the system test init per test method '''
-        # self.delete_all_realms()
-        # self.delete_all_resolvers()
-        # self.create_common_resolvers()
-        # self.create_common_realms()
+        """ here we do the system test init per test method """
+        self.session = "justatest"
+        self.resolvers = {}  # Set up of resolvers in create_common_resolvers
 
-        if TestController.run_state == 0:
+        # dict of all authenticated users cookies
+        self.user_service = {}
 
-            # disable caching as this will change the behavior
-            params = {
-                'linotp.user_lookup_cache.enabled': True,
-                'linotp.resolver_lookup_cache.enabled': True,
-                }
-            self.make_system_request('setConfig', params=params)
+        request.environ['REQUEST_ID'] = str(uuid4())
+        request.environ['REQUEST_START_TIMESTAMP'] = datetime.now()
 
-            self.delete_all_policies()
-            self.delete_all_realms()
-            self.delete_all_resolvers()
-            self.delete_all_token()
+        # disable caching as this will change the behavior
+        params = {
+            "linotp.user_lookup_cache.enabled": True,
+            "linotp.resolver_lookup_cache.enabled": True,
+        }
 
-        TestController.run_state += 1
-
-        return
+        self.make_system_request("setConfig", params=params)
 
     def tearDown(self):
         # self.delete_all_realms()
@@ -279,68 +276,79 @@ class TestController(unittest2.TestCase):
         return
 
     def make_request(
-            self,
-            controller,
-            action,
-            method=None,
-            params=None,
-            headers=None,
-            cookies=None,
-            client=None,
-            upload_files=None,
-            content_type=None
+        self,
+        controller,
+        action,
+        method=None,
+        params=None,
+        headers=None,
+        cookies=None,
+        client=None,
+        upload_files=None,
+        content_type=None,
     ):
         """
         Makes a request using WebTest app self.app
         """
         if method is None:
             method = TestController.DEFAULT_WEB_METHOD
-        assert controller and action
-        assert method in ['GET', 'POST', 'PUT']
+        assert controller
+        assert method in ["GET", "POST", "PUT"]
 
         # Clear state (e.g. cookies)
-        self.app.reset()
+        # self.app.reset()
 
         pparams = {}
+
         if upload_files:
-            pparams['upload_files'] = upload_files
+            f_param, file_name, content = upload_files[0]
+            nparams = {
+                f_param: (io.BytesIO(content.encode('utf-8')), file_name),
+            }
+            params.update(nparams)
+            headers["Content-Type"] = 'multipart/form-data'
         if content_type:
-            pparams['content_type'] = content_type
+            headers['Content-Type'] = content_type
             if content_type == "application/json":
                 params = json.dumps(params)
 
         if client:
             if not headers:
                 headers = {}
-            headers['REMOTE_ADDR'] = client
-            pparams['extra_environ'] = {'REMOTE_ADDR': client}
+            headers["REMOTE_ADDR"] = client
+            pparams["environ_overrides"] = {"REMOTE_ADDR": client}
 
         if cookies:
             for key in cookies:
-                TestController.set_cookie(self.app, key, cookies[key])
-        if method == 'GET':
-            return self.app.get(
+                TestController.set_cookie(self.client, key, cookies[key])
+
+        if method == "GET":
+            response = self.client.get(
                 url(controller=controller, action=action),
-                params=params,
+                query_string=params,
                 headers=headers,
                 **pparams
             )
-        elif method == 'PUT':
-            return self.app.put(
+        elif method == "PUT":
+            response = self.client.put(
                 url(controller=controller, action=action),
-                params=params,
+                data=params,
                 headers=headers,
                 **pparams
             )
         else:
-            return self.app.post(
+            response = self.client.post(
                 url(controller=controller, action=action),
-                params=params,
+                data=params,
                 headers=headers,
                 **pparams
             )
+
+        response.body = response.data.decode("utf-8")
+        return response
+
     @staticmethod
-    def get_http_basic_header(username='admin', method='GET'):
+    def get_http_basic_header(username="admin", method="GET"):
         """
         Returns a string to be used as 'Authorization' in the headers
         dictionary.
@@ -360,10 +368,13 @@ class TestController(unittest2.TestCase):
             pw = "randompwd"
 
         # Authorization: Basic d2lraTpwZWRpYQ==
-        return "Basic %s" % base64.b64encode(login + ':' + pw)
+        auth_info = login + ":" + pw
+        return "Basic %s" % str(
+            base64.b64encode(auth_info.encode('utf-8')),
+            'utf-8')
 
     @staticmethod
-    def get_http_digest_header(username='admin', method='GET'):
+    def get_http_digest_header(username="admin", method="GET"):
         """
         Returns a string to be used as 'Authorization' in the headers
         dictionary. The values contained are basically bogus and we just aim to
@@ -377,57 +388,57 @@ class TestController(unittest2.TestCase):
         if method is None:
             method = TestController.DEFAULT_WEB_METHOD
         assert username
-        assert method in ['GET', 'POST']
+        assert method in ["GET", "POST"]
 
         # Assuming following 401 response from server:
         # 'www-authenticate': 'Digest realm="LinOTP2 admin area",
         #    nonce="hYJOfgYSBQA=6fd2875a6a04fa4fed643e5e8b0dbcbeed3930ae",
         #    algorithm=MD5, qop="auth"'
 
-        qop = 'auth'
+        qop = "auth"
         digest_uri = "/random/wont/be/checked"
-        nonce = 'hYJOfgYSBQA=6fd2875a6a04fa4fed643e5e8b0dbcbeed3930ae'
+        nonce = "hYJOfgYSBQA=6fd2875a6a04fa4fed643e5e8b0dbcbeed3930ae"
         password = "randompwd"
         realm = "LinOTP2 admin area"
         nonceCount = "00000001"
         clientNonce = "0a4f113b"
-        ha1 = hashlib.md5("%s:%s:%s" % (username, realm, password)).hexdigest()
-        ha2 = hashlib.md5("%s:%s" % (method, digest_uri)).hexdigest()
+        ha1 = hashlib.md5(
+            ("%s:%s:%s" % (username, realm, password)).encode("utf-8")
+        ).hexdigest()
+        ha2 = hashlib.md5(
+            ("%s:%s" % (method, digest_uri)).encode("utf-8")
+        ).hexdigest()
         response = hashlib.md5(
-            "%s:%s:%s:%s:%s:%s" % (
-                ha1,
-                nonce,
-                nonceCount,
-                clientNonce,
-                qop,
-                ha2
-            )
+            (
+                "%s:%s:%s:%s:%s:%s"
+                % (ha1, nonce, nonceCount, clientNonce, qop, ha2)
+            ).encode("utf-8")
         ).hexdigest()
         auth_content = [
-            "Digest username=\"%s\"" % username,
-            "realm=\"%s\"" % realm,
-            "nonce=\"%s\"" % nonce,
-            "uri=\"%s\"" % digest_uri,
-            "qop=\"%s\"" % qop,
-            "nc=\"%s\"" % nonceCount,
-            "cnonce=\"%s\"" % clientNonce,
-            "response=\"%s\"" % response,
+            'Digest username="%s"' % username,
+            'realm="%s"' % realm,
+            'nonce="%s"' % nonce,
+            'uri="%s"' % digest_uri,
+            'qop="%s"' % qop,
+            'nc="%s"' % nonceCount,
+            'cnonce="%s"' % clientNonce,
+            'response="%s"' % response,
         ]
-        return (', ').join(auth_content)
+        return (", ").join(auth_content)
 
     def make_authenticated_request(
-            self,
-            controller,
-            action,
-            method='GET',
-            params=None,
-            headers=None,
-            cookies=None,
-            auth_user='admin',
-            upload_files=None,
-            client=None,
-            auth_type='Digest',
-            content_type=None
+        self,
+        controller,
+        action,
+        method="GET",
+        params=None,
+        headers=None,
+        cookies=None,
+        auth_user="admin",
+        upload_files=None,
+        client=None,
+        auth_type="Digest",
+        content_type=None,
     ):
         """
         Makes an authenticated request (setting HTTP Digest header, cookie and
@@ -436,17 +447,19 @@ class TestController(unittest2.TestCase):
         params = params or {}
         headers = headers or {}
         cookies = cookies or {}
-        if 'session' not in params:
-            params['session'] = self.session
-        if 'admin_session' not in cookies:
-            cookies['admin_session'] = self.session
-        if 'Authorization' not in headers:
-            if auth_type == 'Basic':
-                headers['Authorization'] = \
-                    TestController.get_http_basic_header(username=auth_user)
+        if "session" not in params:
+            params["session"] = self.session
+        if "admin_session" not in cookies:
+            cookies["admin_session"] = self.session
+        if "Authorization" not in headers:
+            if auth_type == "Basic":
+                headers["Authorization"] = TestController.get_http_basic_header(
+                    username=auth_user
+                )
             else:
-                headers['Authorization'] = \
-                    TestController.get_http_digest_header(username=auth_user)
+                headers[
+                    "Authorization"
+                ] = TestController.get_http_digest_header(username=auth_user)
 
         return self.make_request(
             controller,
@@ -457,20 +470,27 @@ class TestController(unittest2.TestCase):
             cookies=cookies,
             upload_files=upload_files,
             client=client,
-            content_type=content_type
+            content_type=content_type,
         )
 
-    def make_admin_request(self, action, params=None, method=None, headers=None,
-                           auth_user='admin', client=None, upload_files=None,
-                           auth_type='Digest',
-                           content_type=None):
+    def make_admin_request(
+        self,
+        action,
+        params=None,
+        method=None,
+        auth_user="admin",
+        client=None,
+        upload_files=None,
+        auth_type="Digest",
+        content_type=None,
+    ):
         """
         Makes an authenticated request to /admin/'action'
         """
         if not params:
             params = {}
         return self.make_authenticated_request(
-            'admin',
+            "admin",
             action,
             method=method,
             params=params,
@@ -478,40 +498,53 @@ class TestController(unittest2.TestCase):
             upload_files=upload_files,
             client=client,
             auth_type=auth_type,
-            content_type=content_type
+            content_type=content_type,
         )
 
-    def make_audit_request(self, action, params=None, method=None,
-                           auth_user='admin', client=None,
-                           auth_type='Digest',
-                           content_type=None):
+    def make_audit_request(
+        self,
+        action,
+        params=None,
+        method=None,
+        auth_user="admin",
+        client=None,
+        auth_type="Digest",
+        content_type=None,
+    ):
         """
         Makes an authenticated request to /admin/'action'
         """
         if not params:
             params = {}
         return self.make_authenticated_request(
-            'audit',
+            "audit",
             action,
             method=method,
             params=params,
             auth_user=auth_user,
             client=client,
             auth_type=auth_type,
-            content_type=content_type
+            content_type=content_type,
         )
 
-    def make_manage_request(self, action, params=None, method=None,
-                            auth_user='admin', client=None, upload_files=None,
-                            auth_type='Digest',
-                            content_type=None):
+    def make_manage_request(
+        self,
+        action,
+        params=None,
+        method=None,
+        auth_user="admin",
+        client=None,
+        upload_files=None,
+        auth_type="Digest",
+        content_type=None,
+    ):
         """
         Makes an authenticated request to /manage/'action'
         """
         if not params:
             params = {}
         return self.make_authenticated_request(
-            'manage',
+            "manage",
             action,
             method=method,
             params=params,
@@ -519,20 +552,27 @@ class TestController(unittest2.TestCase):
             upload_files=upload_files,
             client=client,
             auth_type=auth_type,
-            content_type=content_type
+            content_type=content_type,
         )
 
-    def make_system_request(self, action, params=None, method=None,
-                            auth_user='admin', client=None, upload_files=None,
-                            auth_type='Digest',
-                            content_type=None):
+    def make_system_request(
+        self,
+        action,
+        params=None,
+        method=None,
+        auth_user="admin",
+        client=None,
+        upload_files=None,
+        auth_type="Digest",
+        content_type=None,
+    ):
         """
         Makes an authenticated request to /admin/'action'
         """
         if not params:
             params = {}
         return self.make_authenticated_request(
-            'system',
+            "system",
             action,
             method=method,
             params=params,
@@ -540,7 +580,7 @@ class TestController(unittest2.TestCase):
             upload_files=upload_files,
             client=client,
             auth_type=auth_type,
-            content_type=content_type
+            content_type=content_type,
         )
 
     def make_reporting_request(self, action, params=None, method=None,
@@ -563,15 +603,23 @@ class TestController(unittest2.TestCase):
             auth_type=auth_type,
             content_type=content_type
         )
-    def make_ocra_request(self, action, params=None, method=None,
-                          auth_user='admin', client=None, upload_files=None):
+
+    def make_ocra_request(
+        self,
+        action,
+        params=None,
+        method=None,
+        auth_user="admin",
+        client=None,
+        upload_files=None,
+    ):
         """
         Makes an authenticated request to /admin/'action'
         """
         if not params:
             params = {}
         return self.make_authenticated_request(
-            'ocra',
+            "ocra",
             action,
             method=method,
             params=params,
@@ -580,62 +628,23 @@ class TestController(unittest2.TestCase):
             client=client,
         )
 
-    def make_gettoken_request(self, action, params=None, method=None,
-                              auth_user='admin', client=None,
-                              upload_files=None,
-                              auth_type='Digest'):
+    def make_gettoken_request(
+        self,
+        action,
+        params=None,
+        method=None,
+        auth_user="admin",
+        client=None,
+        upload_files=None,
+        auth_type="Digest",
+    ):
         """
         Makes an authenticated request to /admin/'action'
         """
         if not params:
             params = {}
         return self.make_authenticated_request(
-            'gettoken',
-            action,
-            method=method,
-            params=params,
-            auth_user=auth_user,
-            upload_files=upload_files,
-            client=client,
-            auth_type=auth_type
-        )
-
-    # due to noestests search pattern for test, we have to mangle the name here :(
-    def make_t_esting_request(self, action, params=None, method=None,
-                              auth_user='admin', client=None,
-                              upload_files=None):
-        """
-        Makes an authenticated request to /admin/'action'
-        """
-        self.set_config_selftest()
-
-        if not params:
-            params = {}
-        res = self.make_authenticated_request(
-            'testing',
-            action,
-            method=method,
-            params=params,
-            auth_user=auth_user,
-            upload_files=upload_files,
-            client=client
-        )
-        # unset the selftest after using the testing interface
-        self.set_config_selftest(unset=True)
-
-        return res
-
-    def make_tools_request(self, action, params=None, method=None,
-                           auth_user='admin', client=None, upload_files=None,
-                           auth_type='Digest',
-                           content_type=None):
-        """
-        Makes an authenticated request to /tools/'action'
-        """
-        if not params:
-            params = {}
-        return self.make_authenticated_request(
-            'tools',
+            "gettoken",
             action,
             method=method,
             params=params,
@@ -643,24 +652,76 @@ class TestController(unittest2.TestCase):
             upload_files=upload_files,
             client=client,
             auth_type=auth_type,
-            content_type=content_type
         )
-    def make_validate_request(self, action, params=None, method=None,
-                              client=None):
+
+    # due to noestests search pattern for test, we have to mangle the name
+    # here :(
+    def make_t_esting_request(
+        self,
+        action,
+        params=None,
+        method=None,
+        auth_user="admin",
+        client=None,
+        upload_files=None,
+    ):
+        """
+        Makes an authenticated request to /admin/'action'
+        """
+        if not params:
+            params = {}
+        res = self.make_authenticated_request(
+            "testing",
+            action,
+            method=method,
+            params=params,
+            auth_user=auth_user,
+            upload_files=upload_files,
+            client=client,
+        )
+        return res
+
+    def make_tools_request(
+        self,
+        action,
+        params=None,
+        method=None,
+        auth_user="admin",
+        client=None,
+        upload_files=None,
+        auth_type="Digest",
+        content_type=None
+    ):
+        """
+        Makes an authenticated request to /tools/'action'
+        """
+        if not params:
+            params = {}
+        return self.make_authenticated_request(
+            "tools",
+            action,
+            method=method,
+            params=params,
+            auth_user=auth_user,
+            upload_files=upload_files,
+            client=client,
+            auth_type=auth_type,
+            content_type=content_type,
+        )
+
+    def make_validate_request(
+        self, action, params=None, method=None, client=None
+    ):
         """
         Makes an unauthenticated request to /validate/'action'
         """
         if not params:
             params = {}
         return self.make_request(
-            'validate',
-            action,
-            method=method,
-            params=params,
-            client=client,
+            "validate", action, method=method, params=params, client=client
         )
 
-    def set_config_selftest(self, auth_user='admin', unset=False):
+    def set_config_selftest(self, auth_user="admin", unset=False):
         """
         Set selfTest in LinOTP Config to 'True'
 
@@ -681,72 +742,95 @@ class TestController(unittest2.TestCase):
         refactored to instead use the above mentioned methods.
         """
         if unset:
-            params = {'key': 'selfTest'}
-            response = self.make_system_request('delConfig', params,
-                                                auth_user=auth_user)
-            content = TestController.get_json_body(response)
-            self.assertTrue(content['result']['status'])
-            self.assertTrue("delConfig selfTest" in response, response)
+            params = {"key": "selfTest"}
+            response = self.make_system_request(
+                "delConfig", params, auth_user=auth_user
+            )
+            content = response.json
+            assert content["result"]["status"]
+            assert "delConfig selfTest" in response, response
             self.isSelfTest = False
 
         else:
-            params = {
-                'selfTest': 'True',
-            }
-            response = self.make_system_request('setConfig', params,
-                                                auth_user=auth_user)
-            content = TestController.get_json_body(response)
-            self.assertTrue(content['result']['status'])
-            self.assertTrue('setConfig selfTest:True'
-                            in content['result']['value'])
-            self.assertTrue(content['result']['value']['setConfig selfTest:True'])
+            params = {"selfTest": "True"}
+            response = self.make_system_request(
+                "setConfig", params, auth_user=auth_user
+            )
+            content = response.json
+            assert content["result"]["status"]
+            assert "setConfig selfTest:True" in content["result"]["value"]
+            assert content["result"]["value"]["setConfig selfTest:True"]
             self.isSelfTest = True
 
-    # *********************************************************************** #
+        # *********************************************************************** #
         warnings.warn("The self-test modus is not recommended (anymore)!")
+
     # *********************************************************************** #
 
-    def delete_all_realms(self):
-        ''' get al realms and delete them '''
+    def delete_all_realms(self, auth_user='admin'):
+        """ get al realms and delete them """
 
-        response = self.make_system_request('getRealms', {})
-        jresponse = json.loads(response.body)
-        result = jresponse.get("result")
-        values = result.get("value", {})
+        response = self.make_system_request(
+            "getRealms", params={}, auth_user=auth_user)
+
+        values = response.json.get("result", {}).get("value", {})
+
         for realmId in values:
             realm_desc = values.get(realmId)
             realm_name = realm_desc.get("realmname")
             params = {"realm": realm_name}
-            resp = self.make_system_request('delRealm', params)
-            assert('"result": true' in resp)
+            resp = self.make_system_request(
+                "delRealm", params=params, auth_user=auth_user)
+            assert '"result": true' in resp.body
 
-    def delete_all_resolvers(self):
-        ''' get all resolvers and delete them '''
+    def delete_all_resolvers(self, auth_user='admin'):
+        """ get all resolvers and delete them """
 
-        response = self.make_system_request('getResolvers', {})
-        jresponse = json.loads(response.body)
-        result = jresponse.get("result")
-        values = result.get("value", {})
+        response = self.make_system_request(
+            "getResolvers", params={}, auth_user=auth_user)
+        values = response.json.get("result", {}).get("value", {})
+
         for realmId in values:
             resolv_desc = values.get(realmId)
             resolv_name = resolv_desc.get("resolvername")
             params = {"resolver": resolv_name}
-            resp = self.make_system_request('delResolver', params)
-            assert('"status": true' in resp)
+            resp = self.make_system_request(
+                "delResolver", params=params, auth_user=auth_user)
+            assert '"status": true' in resp.body
 
-    def delete_all_policies(self, auth_user='admin'):
+    def delete_all_policies(self, auth_user="admin"):
         """
         Get all policies and delete them
+
+        special handling for system policies
+
         """
-        response = self.make_system_request(action='getPolicy',
-                                            params={},
-                                            auth_user=auth_user)
-        content = TestController.get_json_body(response)
+        response = self.make_system_request(
+            action="getPolicy", params={}, auth_user=auth_user
+        )
+        content = response.json
         err_msg = "Error getting all policies. Response %s" % (content)
-        self.assertTrue(content['result']['status'], err_msg)
-        policies = content.get('result', {}).get('value', {}).keys()
-        for policy in policies:
-            self.delete_policy(policy, auth_user=auth_user)
+        assert content["result"]["status"], err_msg
+        policies = content.get("result", {}).get("value", {})
+
+        # first check which are the system policies with write rigts
+
+        sys_policies = []
+        for policy_name, policy_def in list(policies.items()):
+            if policy_def['scope'] == 'system':
+                action = policy_def['action']
+                if 'write' in action or '*' in action:
+                    sys_policies.append(policy_name)
+
+        # first delete all non-system policies
+
+        for policy in list(policies.keys()):
+            if policy not in sys_policies:
+                self.delete_policy(policy, auth_user=auth_user)
+
+        # finally delete the system policies
+        for sys_policy in sys_policies:
+            self.delete_policy(sys_policy, auth_user=auth_user)
 
         return
 
@@ -758,35 +842,31 @@ class TestController(unittest2.TestCase):
         user, realm, client and time can be omitted and will then default to *,
         *, '' and ''
         """
-        lparams = {
-            'user': '*',
-            'realm': '*',
-            'client': '',
-            'time': '',
-        }
+        lparams = {"user": "*", "realm": "*", "client": "", "time": ""}
         lparams.update(params)
         expected_keys = set(
-            ['name', 'scope', 'action', 'user', 'realm', 'client', 'time']
+            ["name", "scope", "action", "user", "realm", "client", "time"]
         )
         diff_set = expected_keys - set(lparams.keys())
-        self.assertTrue(len(diff_set) == 0,
-                        "Some key is missing to create a policy %r" % diff_set)
+        assert len(diff_set) == 0, \
+            "Some key is missing to create a policy %r" % diff_set
 
-        response = self.make_system_request('setPolicy', lparams)
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
+        response = self.make_system_request("setPolicy", lparams)
+        content = response.json
+        assert content["result"]["status"]
         expected_value = {
-            u'setPolicy %s' % params['name']: {
-                u'realm': True,
-                u'active': True,
-                u'client': True,
-                u'user': True,
-                u'time': True,
-                u'action': True,
-                u'scope': True
+            "setPolicy %s"
+            % params["name"]: {
+                "realm": True,
+                "active": True,
+                "client": True,
+                "user": True,
+                "time": True,
+                "action": True,
+                "scope": True,
             }
         }
-        self.assertDictEqual(expected_value, content['result']['value'])
+        assert expected_value == content["result"]["value"]
 
     def delete_license(self):
         ''' delete the current installed license '''
@@ -794,12 +874,12 @@ class TestController(unittest2.TestCase):
         params = {'key': 'license'}
         response = self.make_system_request('delConfig', params)
         msg = '"delConfig license": true'
-        self.assertTrue(msg in response)
+        assert msg in response
 
         params = {'key': 'license_duration'}
         response = self.make_system_request('delConfig', params)
         msg = '"delConfig license_duration": true'
-        self.assertTrue(msg in response)
+        assert msg in response
 
 
     def delete_config(self, prefix):
@@ -823,32 +903,31 @@ class TestController(unittest2.TestCase):
 
         return
 
-    def delete_policy(self, name, auth_user='admin'):
+    def delete_policy(self, name, auth_user="admin"):
         """
         Delete the policy with the given name
         """
         assert name, "Policy 'name' can't be empty or None"
-        params = {
-            'name': name,
-        }
-        response = self.make_system_request(action='delPolicy', params=params,
-                                            auth_user=auth_user)
-        content = TestController.get_json_body(response)
+        params = {"name": name}
+        response = self.make_system_request(
+            action="delPolicy", params=params, auth_user=auth_user
+        )
+        content = response.json
         expected_value = {
-            u'delPolicy': {
-                u'result': {
-                    u'linotp.Policy.%s.action' % name: True,
-                    u'linotp.Policy.%s.active' % name: True,
-                    u'linotp.Policy.%s.client' % name: True,
-                    u'linotp.Policy.%s.realm' % name: True,
-                    u'linotp.Policy.%s.scope' % name: True,
-                    u'linotp.Policy.%s.time' % name: True,
-                    u'linotp.Policy.%s.user' % name: True
+            "delPolicy": {
+                "result": {
+                    "linotp.Policy.%s.action" % name: True,
+                    "linotp.Policy.%s.active" % name: True,
+                    "linotp.Policy.%s.client" % name: True,
+                    "linotp.Policy.%s.realm" % name: True,
+                    "linotp.Policy.%s.scope" % name: True,
+                    "linotp.Policy.%s.time" % name: True,
+                    "linotp.Policy.%s.user" % name: True,
                 }
             }
         }
-        self.assertTrue(content['result']['status'])
-        self.assertDictEqual(expected_value, content['result']['value'])
+        assert content["result"]["status"], response
+        assert expected_value == content["result"]["value"], response
 
     def delete_all_token(self):
         """
@@ -856,13 +935,14 @@ class TestController(unittest2.TestCase):
         """
         serials = set()
 
-        response = self.make_admin_request('show', params={})
-        content = TestController.get_json_body(response)
+        response = self.make_admin_request("show", params={})
+        content = response.json
+
         err_msg = "Error getting token list. Response %s" % (content)
-        self.assertTrue(content['result']['status'], err_msg)
-        data = content['result']['value']['data']
+        assert content["result"]["status"], err_msg
+        data = content["result"]["value"]["data"]
         for entry in data:
-            serials.add(entry['LinOtp.TokenSerialnumber'])
+            serials.add(entry["LinOtp.TokenSerialnumber"])
 
         for serial in serials:
             self.delete_token(serial)
@@ -872,14 +952,12 @@ class TestController(unittest2.TestCase):
         Delete a token identified by its serial number
         """
         assert serial, "serial can not be empty or None"
-        params = {
-            'serial': serial,
-        }
-        response = self.make_admin_request('remove', params=params)
-        content = TestController.get_json_body(response)
+        params = {"serial": serial}
+        response = self.make_admin_request("remove", params=params)
+        content = response.json
         err_msg = "Error deleting token %s. Response %s" % (serial, content)
-        self.assertTrue(content['result']['status'], err_msg)
-        self.assertEqual(1, content['result']['value'], err_msg)
+        assert content["result"]["status"], err_msg
+        assert 1 == content["result"]["value"], err_msg
 
     def create_common_resolvers(self):
         """
@@ -887,57 +965,52 @@ class TestController(unittest2.TestCase):
         """
 
         resolver_params = {
-            'myDefRes': {
-                'name': 'myDefRes',
-                'fileName': (os.path.join(self.fixture_path, 'def-passwd')),
-                'type': 'passwdresolver',
+            "myDefRes": {
+                "name": "myDefRes",
+                "fileName": (os.path.join(self.fixture_path, "def-passwd")),
+                "type": "passwdresolver",
             },
-            'myOtherRes': {
-                'name': 'myOtherRes',
-                'fileName': (os.path.join(self.fixture_path, 'myDom-passwd')),
-                'type': 'passwdresolver',
-            }
+            "myOtherRes": {
+                "name": "myOtherRes",
+                "fileName": (os.path.join(self.fixture_path, "myDom-passwd")),
+                "type": "passwdresolver",
+            },
         }
         self.resolvers = {
-            'myOtherRes':
-                'useridresolver.PasswdIdResolver.IdResolver.myOtherRes',
-            'myDefRes':
-                'useridresolver.PasswdIdResolver.IdResolver.myDefRes',
+            "myOtherRes": "useridresolver.PasswdIdResolver.IdResolver.myOtherRes",
+            "myDefRes": "useridresolver.PasswdIdResolver.IdResolver.myDefRes",
         }
 
-        for resolver_name in ['myDefRes', 'myOtherRes']:
+        for resolver_name in ["myDefRes", "myOtherRes"]:
 
             # skip definition if resolver is already defined
-            response = self.make_system_request('getResolvers')
-            if resolver_name in response:
+            response = self.make_system_request("getResolvers")
+            if resolver_name in response.body:
                 continue
 
             params = resolver_params[resolver_name]
-            response = self.create_resolver(
-                name=resolver_name,
-                params=params,
-            )
-            content = TestController.get_json_body(response)
-            self.assertTrue(content['result']['status'])
-            self.assertTrue(content['result']['value'])
+            response = self.create_resolver(name=resolver_name, params=params)
+            content = response.json
+            assert content["result"]["status"]
+            assert content["result"]["value"]
 
     def create_resolver(self, name, params):
         param = copy.deepcopy(params)
-        param['name'] = name
-        resp = self.make_system_request('setResolver', param)
+        param["name"] = name
+        resp = self.make_system_request("setResolver", param)
         return resp
 
     def create_realm(self, realm, resolvers):
 
         params = {}
-        params['realm'] = realm
+        params["realm"] = realm
 
         if type(resolvers) == list:
-            params['resolvers'] = ','.join(resolvers)
+            params["resolvers"] = ",".join(resolvers)
         else:
-            params['resolvers'] = resolvers
+            params["resolvers"] = resolvers
 
-        resp = self.make_system_request('setRealm', params)
+        resp = self.make_system_request("setRealm", params)
         return resp
 
     def create_common_realms(self):
@@ -952,54 +1025,61 @@ class TestController(unittest2.TestCase):
 
         # Create 'myDefRealm' realm
         response = self.create_realm(
-            realm='myDefRealm',
-            resolvers=self.resolvers['myDefRes'],
+            realm="myDefRealm", resolvers=self.resolvers["myDefRes"]
         )
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertTrue(content['result']['value'])
+        content = response.json
+        assert content["result"]["status"]
+        assert content["result"]["value"]
 
         # Create 'myOtherRealm' realm
         response = self.create_realm(
-            realm='myOtherRealm',
-            resolvers=self.resolvers['myOtherRes'],
+            realm="myOtherRealm", resolvers=self.resolvers["myOtherRes"]
         )
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertTrue(content['result']['value'])
+        content = response.json
+        assert content["result"]["status"]
+        assert content["result"]["value"]
 
         # Create mixed realm
         response = self.create_realm(
-            realm='myMixRealm',
-            resolvers=','.join(self.resolvers.values()),
+            realm="myMixRealm", resolvers=",".join(list(self.resolvers.values()))
         )
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertTrue(content['result']['value'])
+        content = response.json
+        assert content["result"]["status"]
+        assert content["result"]["value"]
 
         # Assert 'myDefRealm' is default
-        response = self.make_system_request('getRealms', {})
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        realms = content['result']['value']
-        self.assertEqual(len(realms), 3)
-        self.assertIn('mydefrealm', realms)
-        self.assertIn('default', realms['mydefrealm'])
-        self.assertTrue(realms['mydefrealm']['default'])
+        response = self.make_system_request("getRealms", {})
+        content = response.json
 
-    def _user_service_init(self, auth_user, password, otp=None):
+        assert content["result"]["status"]
+        realms = content["result"]["value"]
+        assert len(realms) == 3
+        assert "mydefrealm" in realms
+        assert "default" in realms["mydefrealm"]
+        assert realms["mydefrealm"]["default"]
+
+    def _user_service_init(self, auth_user:str, password:str, otp:str=None):
+
+        auth_user = auth_user.encode('utf-8')
+        password = password.encode('utf-8')
 
         if otp:
-            passw = base64.b32encode(otp) + ':' + base64.b32encode(password)
-        else:
-            passw = ':' + base64.b32encode(password)
+            otp = otp.encode('utf-8')
 
-        params = {'login': auth_user, 'password': passw}
-        response = self.app.get(url(controller='userservice',
-                                    action='auth'), params=params)
+            passw = (
+                base64.b32encode(otp).decode() + ":"
+                + base64.b32encode(password).decode()
+            )
+        else:
+            passw = ":" + base64.b32encode(password).decode()
+
+        params = {"login": auth_user, "password": passw}
+        response = self.client.post(
+            url(controller="userservice", action="auth"), data=params
+        )
 
         cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get('userauthcookie')
+        auth_cookie = cookies.get("userauthcookie")
 
         if not auth_cookie:
             return response, None
@@ -1008,14 +1088,15 @@ class TestController(unittest2.TestCase):
 
         return response, auth_cookie
 
-    def make_userservice_request(self, action, params=None,
-                                 auth_user=None, new_auth_cookie=False):
+    def make_userservice_request(
+        self, action, params=None, auth_user=None, new_auth_cookie=False
+    ):
 
         if not params:
             params = {}
 
-        if not hasattr(self, 'user_service'):
-            setattr(self, 'user_service', {})
+        if not hasattr(self, "user_service"):
+            setattr(self, "user_service", {})
 
         otp = None
         if len(auth_user) == 3:
@@ -1029,20 +1110,22 @@ class TestController(unittest2.TestCase):
         auth_cookie = self.user_service.get(user, None)
 
         if not auth_cookie:
-            response, auth_cookie = self._user_service_init(user,
-                                                            password, otp)
+            response, auth_cookie = self._user_service_init(
+                user, password, otp)
 
             if not auth_cookie:
+                response.body = response.data.decode("utf-8")
                 return response
 
-        TestController.set_cookie(self.app, 'userauthcookie', auth_cookie)
+        TestController.set_cookie(self.client, "userauthcookie", auth_cookie)
 
-        params['session'] = auth_cookie
-        params['user'] = user
-        response = self.app.get(url(controller='userservice',
-                                    action=action),
-                                params=params)
+        params["session"] = auth_cookie
+        params["user"] = user
+        response = self.client.get(
+            "/userservice/" + action, query_string=params
+        )
 
+        response.body = response.data.decode("utf-8")
         return response
 
     # ---------------------------------------------------------------------- --
@@ -1054,24 +1137,27 @@ class TestController(unittest2.TestCase):
         params = {}
 
         if auth_user is not None:
-            params['login'] = auth_user
+            params["login"] = auth_user
 
         if password is not None:
-            params['password'] = password
+            params["password"] = password
 
         if otp is not None:
-            params['otp'] = otp
+            params["otp"] = otp
 
-        response = self.app.get(url(controller='userservice',
-                                    action='login'), params=params)
+        response = self.client.post(
+            url(controller="userservice", action="login"), data=params
+        )
 
         cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get('user_selfservice')
+        auth_cookie = cookies.get("user_selfservice")
 
+        response.body = response.data.decode("utf-8")
         return response, auth_cookie
 
-    def make_userselfservice_request(self, action, params=None,
-                                     auth_user=None, new_auth_cookie=False):
+    def make_userselfservice_request(
+        self, action, params=None, auth_user=None, new_auth_cookie=False
+    ):
 
         if not params:
             params = {}
@@ -1080,45 +1166,47 @@ class TestController(unittest2.TestCase):
 
         # identify login credentials
 
-        user = auth_user.get('login')
-        password = auth_user.get('password')
-        otp = auth_user.get('otp')
+        user = auth_user.get("login")
+        password = auth_user.get("password")
+        otp = auth_user.get("otp")
 
         if new_auth_cookie and user in self.user_service:
             del self.user_service[user]
 
         # ------------------------------------------------------------------ --
 
-        if not hasattr(self, 'user_selfservice'):
-            setattr(self, 'user_selfservice', {})
+        if not hasattr(self, "user_selfservice"):
+            setattr(self, "user_selfservice", {})
 
         auth_cookie = self.user_selfservice.get(user)
 
         if not auth_cookie:
-            response, auth_cookie = self._user_service_login(user,
-                                                             password,
-                                                             otp)
+            response, auth_cookie = self._user_service_login(
+                user, password, otp
+            )
 
             if not auth_cookie or '"value": false' in response.body:
+                response.body = response.data.decode("utf-8")
                 return response
 
             self.user_selfservice[user] = auth_cookie
 
-        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
-        params['session'] = auth_cookie
+        params["session"] = auth_cookie
         # params['user'] = user
-        response = self.app.get(url(controller='userservice',
-                                    action=action),
-                                params=params)
+        response = self.client.post(
+            url(controller="userservice", action=action), data=params
+        )
 
+        response.body = response.data.decode("utf-8")
         return response
-
 
     # ------------------------------------------------------------------------ -
 
-    def make_selfservice_request(self, action, params=None,
-                                 auth_user=None, new_auth_cookie=False):
+    def make_selfservice_request(
+        self, action, params=None, auth_user=None, new_auth_cookie=False
+    ):
 
         if not params:
             params = {}
@@ -1127,37 +1215,39 @@ class TestController(unittest2.TestCase):
 
         # identify login credentials
 
-        user = auth_user.get('login')
-        password = auth_user.get('password')
-        otp = auth_user.get('otp')
+        user = auth_user.get("login")
+        password = auth_user.get("password")
+        otp = auth_user.get("otp")
 
         if new_auth_cookie and user in self.user_service:
             del self.user_service[user]
 
         # ------------------------------------------------------------------ --
 
-        if not hasattr(self, 'user_selfservice'):
-            setattr(self, 'user_selfservice', {})
+        if not hasattr(self, "user_selfservice"):
+            setattr(self, "user_selfservice", {})
 
         auth_cookie = self.user_selfservice.get(user)
 
         if not auth_cookie:
-            response, auth_cookie = self._user_service_login(user,
-                                                             password,
-                                                             otp)
+            response, auth_cookie = self._user_service_login(
+                user, password, otp
+            )
 
             if not auth_cookie or '"value": false' in response.body:
                 return response
 
             self.user_selfservice[user] = auth_cookie
 
-        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
-        params['session'] = auth_cookie
+        params["session"] = auth_cookie
         # params['user'] = user
-        response = self.app.get(url(controller='selfservice',
-                                    action=action),
-                                params=params)
+        response = self.client.get(
+            url(controller="selfservice", action=action), query_string=params
+        )
 
+        response.body = response.data.decode("utf-8")
         return response
+
 # eof #

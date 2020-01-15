@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -34,14 +34,14 @@ import ldap.modlist as modlist
 import getpass
 
 def usage():
-    print  '''
+    print('''
     Parameter:
     -f <csv file>
     -h : help
     -u <ldap uri>
     -b <base, where to create the user>
     -d <Bind DN>
-    '''
+    ''')
 
 
 def create_user(l, base, keys, values):
@@ -54,7 +54,7 @@ def create_user(l, base, keys, values):
 
     ldif = modlist.addModlist(attrs)
 
-    print "creating user %s with attrs %s" % (values, attrs)
+    print("creating user %s with attrs %s" % (values, attrs))
     l.add_s(dn, ldif)
     #l.modify(dn, mods)
 
@@ -73,7 +73,7 @@ def main():
         opts, args = getopt(sys.argv[1:], "f:u:b:d:", ["file="])
 
     except GetoptError:
-        print "There is an error in your parameter syntax:"
+        print("There is an error in your parameter syntax:")
         usage()
         sys.exit(1)
 

@@ -89,7 +89,7 @@ def parse_duration(duration_str, time_delta_compliant=False):
 
     time_params = {}
 
-    for (name, param) in parts.iteritems():
+    for (name, param) in parts.items():
 
         if not param:
             continue
@@ -164,7 +164,7 @@ def text(value):
     if the value is unicode or str, leave it as is
     otherwise take the string representation
     """
-    if isinstance(value, unicode) or isinstance(value, str):
+    if isinstance(value, str) or isinstance(value, str):
         return value
     return "%r" % value
 
@@ -181,7 +181,7 @@ def encrypted_data(value):
 
     # anything other than string will raise an error
 
-    if not isinstance(value, str) and not isinstance(value, unicode):
+    if not isinstance(value, str) and not isinstance(value, str):
 
         raise Exception('Unable to encode non textual data')
 
@@ -203,7 +203,7 @@ def get_timeout(timeout, seperator=','):
     if isinstance(timeout, (float, int) ):
         return timeout
 
-    if not isinstance(timeout, (str, unicode)):
+    if not isinstance(timeout, str):
         raise ValueError("Unsupported timeout input type %r", timeout)
 
     try:
@@ -255,7 +255,7 @@ def check_networks_expression(networks):
     :return: boolean - true if this is a network description
     """
 
-    if not isinstance(networks, str) and not isinstance(networks, unicode):
+    if not isinstance(networks, str) and not isinstance(networks, str):
         return False
 
     networks = networks.strip()
@@ -380,7 +380,7 @@ def parse_timeout(timeout_val, seperator=','):
     if isinstance(timeout_val, tuple):
         return timeout_val
 
-    if isinstance(timeout_val, (str, unicode)):
+    if isinstance(timeout_val, str):
         if seperator in timeout_val:
             connection_time, response_time = timeout_val.split(seperator)
             return (float(connection_time), float(response_time))

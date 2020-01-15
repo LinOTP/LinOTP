@@ -179,18 +179,18 @@ class TestProviderController(TestController):
         check if legacy provider is default after create
         """
         response = self.define_legacy_provider()
-        self.assertTrue('/tmp/legacy' in response, response)
+        assert '/tmp/legacy' in response, response
 
         params = {'type': 'sms'}
         response = self.make_system_request('getProvider', params=params)
 
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get('imported_default', {})
-        self.assertTrue(provider.get('Default', False), response)
+        assert provider.get('Default', False), response
 
         params = {'type': 'email'}
         response = self.make_system_request('getProvider', params=params)
-        self.assertTrue('"value": {}' in response, response)
+        assert '"value": {}' in response, response
 
         return
 
@@ -199,24 +199,24 @@ class TestProviderController(TestController):
         check if new provider is default after create
         """
         response = self.define_new_provider()
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         params = {'type': 'sms'}
         response = self.make_system_request('getProvider', params=params)
 
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get('newone', {})
-        self.assertTrue(provider.get('Default', False), response)
+        assert provider.get('Default', False), response
 
         response = self.define_legacy_provider()
-        self.assertTrue('/tmp/legacy' in response, response)
+        assert '/tmp/legacy' in response, response
 
         params = {'type': 'sms'}
         response = self.make_system_request('getProvider', params=params)
 
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get('imported_default', {})
-        self.assertFalse(provider.get('Default', False), response)
+        assert not provider.get('Default', False), response
 
         return
 
@@ -224,7 +224,7 @@ class TestProviderController(TestController):
         """
         check if new provider is default after create
         """
-        config = u'{"file": "/tmp/müßte_gèhn"}'
+        config = '{"file": "/tmp/müßte_gèhn"}'
 
         # ------------------------------------------------------------------ --
 
@@ -232,17 +232,17 @@ class TestProviderController(TestController):
 
         provider_params = {'config': config.encode('utf-8')}
         response = self.define_new_provider(provider_params=provider_params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         params = {'type': 'sms'}
         response = self.make_system_request('getProvider', params=params)
 
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get('newone', {})
-        self.assertTrue(provider.get('Default', False), response)
+        assert provider.get('Default', False), response
 
         p_config = provider.get('Config', '')
-        self.assertTrue(config == p_config, jresp)
+        assert config == p_config, jresp
 
         # ------------------------------------------------------------------ --
 
@@ -250,17 +250,17 @@ class TestProviderController(TestController):
 
         provider_params = {'SMSProviderConfig': config.encode('utf-8')}
         response = self.define_legacy_provider(provider_params=provider_params)
-        self.assertTrue('/tmp/m' in response, response)
+        assert '/tmp/m' in response, response
 
         params = {'type': 'sms'}
         response = self.make_system_request('getProvider', params=params)
 
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get('imported_default', {})
-        self.assertFalse(provider.get('Default', False), response)
+        assert not provider.get('Default', False), response
 
         p_config = provider.get('Config', '')
-        self.assertTrue(config == p_config, jresp)
+        assert config == p_config, jresp
 
         return
 
@@ -272,24 +272,24 @@ class TestProviderController(TestController):
         """
 
         response = self.define_legacy_provider()
-        self.assertTrue('/tmp/legacy' in response, response)
+        assert '/tmp/legacy' in response, response
 
         params = {'type': 'sms'}
         response = self.make_system_request('getProvider', params=params)
 
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get('imported_default', {})
-        self.assertTrue(provider.get('Default', False), response)
+        assert provider.get('Default', False), response
 
         serial = 'sms1234'
         response = self.create_sms_token(serial=serial)
-        self.assertTrue(serial in response)
+        assert serial in response
 
         params = {'serial': serial, 'pass': '1234'}
         response = self.make_validate_request('check_s', params=params)
 
         global SMS_MESSAGE_CONFIG
-        self.assertTrue('/tmp/legacy' in SMS_MESSAGE_CONFIG.get('file'))
+        assert '/tmp/legacy' in SMS_MESSAGE_CONFIG.get('file')
 
         return
 
@@ -301,24 +301,24 @@ class TestProviderController(TestController):
         """
 
         response = self.define_new_provider()
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         params = {'type': 'sms'}
         response = self.make_system_request('getProvider', params=params)
 
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get('newone', {})
-        self.assertTrue(provider.get('Default', False), response)
+        assert provider.get('Default', False), response
 
         serial = 'sms1234'
         response = self.create_sms_token(serial=serial)
-        self.assertTrue(serial in response)
+        assert serial in response
 
         params = {'serial': serial, 'pass': '1234'}
         response = self.make_validate_request('check_s', params=params)
 
         global SMS_MESSAGE_CONFIG
-        self.assertTrue('/tmp/newone' in SMS_MESSAGE_CONFIG.get('file'))
+        assert '/tmp/newone' in SMS_MESSAGE_CONFIG.get('file')
 
         return
 
@@ -331,41 +331,41 @@ class TestProviderController(TestController):
 
         # create legacy provider
         response = self.define_legacy_provider()
-        self.assertTrue('/tmp/legacy' in response, response)
+        assert '/tmp/legacy' in response, response
 
         params = {'type': 'sms'}
         response = self.make_system_request('getProvider', params=params)
 
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get('imported_default', {})
-        self.assertTrue(provider.get('Default', False), response)
+        assert provider.get('Default', False), response
 
         # create new provider
         response = self.define_new_provider()
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # check that this is not the default one
         params = {'type': 'sms'}
         response = self.make_system_request('getProvider', params=params)
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get('newone', {})
-        self.assertFalse(provider.get('Default', True), response)
+        assert not provider.get('Default', True), response
 
         # define smsprovider policy to use the 'newone'
         response = self.setPolicy()
-        self.assertTrue('"setPolicy smsprovider_newone"' in response,
-                        response)
+        assert '"setPolicy smsprovider_newone"' in response, \
+                        response
 
         # trigger sms and check that the correct provider is used
         serial = 'sms1234'
         response = self.create_sms_token(serial=serial)
-        self.assertTrue(serial in response)
+        assert serial in response
 
         params = {'serial': serial, 'pass': '1234'}
         response = self.make_validate_request('check_s', params=params)
 
         global SMS_MESSAGE_CONFIG
-        self.assertTrue('/tmp/newone' in SMS_MESSAGE_CONFIG.get('file'))
+        assert '/tmp/newone' in SMS_MESSAGE_CONFIG.get('file')
 
         return
 
@@ -378,18 +378,18 @@ class TestProviderController(TestController):
 
         # create new provider
         response = self.define_new_provider()
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # check that this is the default one
         params = {'type': 'sms'}
         response = self.make_system_request('getProvider', params=params)
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get('newone', {})
-        self.assertTrue(provider.get('Default', False), response)
+        assert provider.get('Default', False), response
 
         # create legacy provider
         response = self.define_legacy_provider()
-        self.assertTrue('/tmp/legacy' in response, response)
+        assert '/tmp/legacy' in response, response
 
         # check that legacy provider is not the default one
         params = {'type': 'sms'}
@@ -397,35 +397,35 @@ class TestProviderController(TestController):
 
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get('imported_default', {})
-        self.assertFalse(provider.get('Default', True), response)
+        assert not provider.get('Default', True), response
 
         # set legacy provider as default provider
         params = {'type': 'sms', 'name': 'imported_default'}
         response = self.make_system_request('setDefaultProvider',
                                             params=params)
-        self.assertTrue('"value": true' in response)
+        assert '"value": true' in response
 
         params = {'type': 'sms'}
         response = self.make_system_request('getProvider', params=params)
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get('imported_default', {})
-        self.assertTrue(provider.get('Default', False), response)
+        assert provider.get('Default', False), response
 
         # define sms provider policy to use the 'newone'
         response = self.setPolicy(policy_params={'user': 'egon', })
-        self.assertTrue('"setPolicy smsprovider_newone"' in response,
-                        response)
+        assert '"setPolicy smsprovider_newone"' in response, \
+                        response
 
         # trigger sms and check that the default provider is used
         serial = 'sms1234'
         response = self.create_sms_token(serial=serial)
-        self.assertTrue(serial in response)
+        assert serial in response
 
         params = {'serial': serial, 'pass': '1234'}
         response = self.make_validate_request('check_s', params=params)
 
         global SMS_MESSAGE_CONFIG
-        self.assertTrue('/tmp/legacy' in SMS_MESSAGE_CONFIG.get('file'))
+        assert '/tmp/legacy' in SMS_MESSAGE_CONFIG.get('file')
 
         return
 
@@ -435,33 +435,33 @@ class TestProviderController(TestController):
         """
 
         response = self.define_new_provider()
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.define_new_provider({'managed': 'mypass',
                                              'name': 'managed_one'})
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         params = {'type': 'sms'}
         response = self.make_system_request('getProvider', params=params)
 
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get('managed_one', {})
-        self.assertFalse(provider.get('Default', True), response)
+        assert not provider.get('Default', True), response
 
         response = self.define_new_provider({'managed': 'wrongpass',
                                              'name': 'managed_one'})
         msg = "Not allowed to overwrite "
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         response = self.define_new_provider({'managed': 'mypass',
                                              'name': 'managed_one'})
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         params = {'managed': 'mypass',
                   'name': 'managed_one',
                   'type': 'sms'}
         self.make_system_request('delProvider', params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         return
 
@@ -502,7 +502,7 @@ class TestProviderController(TestController):
             'class': 'CustomVoiceProvider'}
 
         response = self.define_new_provider(provider_params=provider_params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # ----------------------------------------------------------------- --
 
@@ -513,12 +513,12 @@ class TestProviderController(TestController):
 
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get(provider_name, {})
-        self.assertTrue(provider.get('Default', False), response)
+        assert provider.get('Default', False), response
 
         params = {'type': 'voice',
                   'name': provider_name}
         response = self.make_system_request('testProvider', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # ----------------------------------------------------------------- --
 
@@ -535,7 +535,7 @@ class TestProviderController(TestController):
             'class': 'CustomVoiceProvider'}
 
         response = self.define_new_provider(provider_params=provider_params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # ----------------------------------------------------------------- --
 
@@ -547,7 +547,7 @@ class TestProviderController(TestController):
 
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get(provider_name_2, {})
-        self.assertFalse(provider.get('Default', False), response)
+        assert not provider.get('Default', False), response
 
         # ----------------------------------------------------------------- --
 
@@ -555,7 +555,7 @@ class TestProviderController(TestController):
 
         params = {'type': 'voice', 'name': provider_name_2}
         response = self.make_system_request('delProvider', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         return
 

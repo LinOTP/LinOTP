@@ -121,7 +121,7 @@ testvector = [
 
 class HmacOtp:
 
-    def __init__(self, key, counter=0, digits=6, hashfunc=sha1):
+    def __init__(self, key: bytes, counter=0, digits=6, hashfunc=sha1):
         self.key = key
         self.counter = counter
         self.digits = digits
@@ -133,20 +133,20 @@ class HmacOtp:
         digest = hmac.new(key, struct.pack(">Q", counter), self.hashfunc)
         return digest.digest()
 
-    def truncate(self, digest):
-        offset = ord(digest[-1:]) & 0x0f
+    def truncate(self, digest: bytes) -> bytes:
+        offset = digest[-1] & 0x0f
 
-        binary = (ord(digest[offset + 0]) & 0x7f) << 24
-        binary |= (ord(digest[offset + 1]) & 0xff) << 16
-        binary |= (ord(digest[offset + 2]) & 0xff) << 8
-        binary |= (ord(digest[offset + 3]) & 0xff)
+        binary = (digest[offset + 0] & 0x7f) << 24
+        binary |= (digest[offset + 1] & 0xff) << 16
+        binary |= (digest[offset + 2] & 0xff) << 8
+        binary |= (digest[offset + 3] & 0xff)
 
         return binary % (10 ** self.digits)
 
     def generate(self, key=None, counter=None):
         key = key or self.key
         counter = counter or self.counter
-        otp = unicode(self.truncate(self.hmac(key, counter)))
+        otp = str(self.truncate(self.hmac(key, counter)))
         sotp = (self.digits - len(otp)) * "0" + otp
         return sotp
 
@@ -159,7 +159,7 @@ class TotpToken(object):
         if key is None:
             self.key = binascii.hexlify(geturandom(keylen))
         else:
-            self.key = key.decode('hex')
+            self.key = bytes.fromhex(key)
             keylen = len(self.key)
 
         if algo is None:
@@ -182,7 +182,7 @@ class TotpToken(object):
 
         return
 
-    def getOtp(self, counter= -1, offset=0, jitter=0, seconds=None):
+    def getOtp(self, counter: int = -1, offset=0, jitter=0, seconds=None):
         '''
             @note: we require the ability to set the counter directly
                 to validate the hmac token against the defined test vectors
@@ -196,18 +196,17 @@ class TotpToken(object):
 
             offset = self.offset + offset
             T0 = time.time() + offset + jitter
-            counter = int((T0 / self.timestep) + 0.5)
+            counter = int(T0 // self.timestep)
         else:
-            counter = int((counter / self.timestep) + 0.5)
-
+            counter = int(counter // self.timestep)
         if seconds:
-            counter = int(seconds / self.timestep)
+            counter = int(seconds // self.timestep)
 
         otp = self.hmacOtp.generate(counter=counter)
 
         return (otp, counter)
 
-    def getKey(self):
+    def getKey(self) -> bytes:
         return self.key
 
     def getTimeStep(self):
@@ -219,7 +218,7 @@ class TotpToken(object):
             idate = int(counter - 0.5) * self.timestep
             ddate = datetime.datetime.utcfromtimestamp(idate / 1.0)
         except Exception as e:
-            print "%r" % e
+            print("%r" % e)
         return ddate
 
 
@@ -278,7 +277,7 @@ class TestTotpController(TestController):
         dt = datetime.datetime.now()
         if type(curTime) == datetime.datetime:
             dt = curTime
-        elif type(curTime) == unicode:
+        elif type(curTime) == str:
             if '.' in curTime:
                 tFormat = "%Y-%m-%d %H:%M:%S.%f"
             else:
@@ -526,7 +525,7 @@ class TestTotpController(TestController):
             # TotpToken class to calculate the otps
 
             t1 = TotpToken(timestep=step)
-            key = t1.getKey().encode('hex')
+            key = t1.getKey().hex()
 
             tserial = self.addToken(user=user, otplen=t1.digits, typ='totp',
                                     key=key, timeStep=step)
@@ -606,7 +605,7 @@ class TestTotpController(TestController):
         # Freeze time to the current system time
         with freeze_time(datetime.datetime.now()) as frozen_time:
             t1 = TotpToken(timestep=step)
-            key = t1.getKey().encode('hex')
+            key = t1.getKey().hex()
             step = t1.getTimeStep()
 
             tserial = self.addToken(user=user, otplen=t1.digits,
@@ -635,7 +634,7 @@ class TestTotpController(TestController):
         # Freeze time to the current system time
         with freeze_time(datetime.datetime.now()) as frozen_time:
             t1 = TotpToken(timestep=step)
-            key = t1.getKey().encode('hex')
+            key = t1.getKey().hex()
             step = t1.getTimeStep()
 
             tserial = self.addToken(user=user, otplen=t1.digits,
@@ -688,11 +687,11 @@ class TestTotpController(TestController):
         response = self.make_system_request('setConfig', params=params)
         assert 'false' not in response.body
 
-        for offset in range(10*step, 20*step, step/2):
+        for offset in range(10*step, 20*step, step//2):
             # Freeze time to the current system time
             with freeze_time(datetime.datetime.now()) as frozen_time:
                 t1 = TotpToken(timestep=step)
-                key = t1.getKey().encode('hex')
+                key = t1.getKey().hex()
                 step = t1.getTimeStep()
 
                 tserial = self.addToken(user=user, otplen=t1.digits,
@@ -738,7 +737,7 @@ class TestTotpController(TestController):
         # Freeze time to the current system time
         with freeze_time(datetime.datetime.now()) as frozen_time:
             t1 = TotpToken()
-            key = t1.getKey().encode('hex')
+            key = t1.getKey().hex()
             step = t1.getTimeStep()
 
             tserial = self.addToken(user=user, otplen=t1.digits,
@@ -792,7 +791,7 @@ class TestTotpController(TestController):
             # Freeze time to the current system time
             with freeze_time(datetime.datetime.now()) as frozen_time:
                 t1 = TotpToken(timestep=step)
-                key = t1.getKey().encode('hex')
+                key = t1.getKey().hex()
 
                 tserial = self.addToken(user=user, otplen=t1.digits,
                                         typ='totp', key=key, timeStep=step)
@@ -885,7 +884,7 @@ class TestTotpController(TestController):
                 response = self.make_gettoken_request(
                                 'getmultiotp', params=parameters)
 
-                print response
+                print(response)
                 resp = json.loads(response.body)
 
                 otpres = resp.get('result').get('value').get('otp')

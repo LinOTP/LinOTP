@@ -28,7 +28,7 @@ import os
 
 import unittest
 
-from linotp.lib.ImportOTP import parseOATHcsv
+from linotp.lib.ImportOTP.oath import parseOATHcsv
 
 
 class TestCacheActivation(unittest.TestCase):
@@ -74,11 +74,11 @@ class TestCacheActivation(unittest.TestCase):
 
         TOKENS = parseOATHcsv(csv)
 
-        self.assertTrue(len(TOKENS) == 4, TOKENS)
+        assert len(TOKENS) == 4, TOKENS
 
-        self.assertTrue(TOKENS["tok4"].get("timeStep") == 60, TOKENS)
+        assert TOKENS["tok4"].get("timeStep") == 60, TOKENS
 
-        self.assertTrue(TOKENS["tok3"].get("otplen") == 8, TOKENS)
+        assert TOKENS["tok3"].get("otplen") == 8, TOKENS
 
         return
 
@@ -90,11 +90,11 @@ class TestCacheActivation(unittest.TestCase):
 
         tokens = parseOATHcsv(csv)
 
-        self.assertTrue(len(tokens) == 8, tokens)
+        assert len(tokens) == 8, tokens
 
-        for serial, token in tokens.items():
+        for serial, token in list(tokens.items()):
             if 'sha256' in serial:
-                self.assertTrue(token['hashlib'] == 'sha256', token)
+                assert token['hashlib'] == 'sha256', token
 
         return
 

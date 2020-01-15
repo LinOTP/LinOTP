@@ -32,10 +32,7 @@ import string
 
 import os
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 from sqlalchemy import or_, and_
 from sqlalchemy import func
@@ -51,6 +48,7 @@ from linotp.lib.user import User, getUserRealms
 from linotp.lib.user import get_authenticated_user
 
 from linotp.lib.util import generate_password
+from linotp.lib.type_utils import boolean
 
 from linotp.lib.realm import realm2Objects
 
@@ -83,6 +81,7 @@ required = False
 
 ENCODING = "utf-8"
 
+
 ###############################################
 
 class TokenHandler(object):
@@ -106,7 +105,7 @@ class TokenHandler(object):
         if tokenrealm is None:
             tokenrealm = []
         # if we get a tokenrealm as string, we make an array out of this
-        elif type(tokenrealm) in [str, unicode]:
+        elif isinstance(tokenrealm, str):
             tokenrealm = [tokenrealm]
         # if there is a realm as parameter, we assign the token to this realm
         if 'realm' in param:
@@ -136,7 +135,7 @@ class TokenHandler(object):
             #  check if this token is in the list of available tokens
             if typ.lower() not in tokenclass_registry:
                 log.error('Token type %r not found. Available types are: %r' %
-                          (typ, tokenclass_registry.keys()))
+                          (typ, list(tokenclass_registry.keys())))
                 raise TokenAdminError("[initToken] failed: unknown token "
                                       "type %r" % typ, id=1610)
             token = createToken(serial)
@@ -156,7 +155,7 @@ class TokenHandler(object):
             #  prevent update of an unsupported token type
             if typ.lower() not in tokenclass_registry:
                 log.error('Token type %r not found. Available types are: %r' %
-                          (typ, tokenclass_registry.keys()))
+                          (typ, list(tokenclass_registry.keys())))
                 raise TokenAdminError("[initToken] failed: unknown token"
                                       " type %r" % typ, id=1610)
 
@@ -285,11 +284,10 @@ class TokenHandler(object):
                 token_init['type'] = 'email'
                 token_init['email_address'] = email
 
-
         authUser = get_authenticated_user(user.login, user.realm, passw)
         if authUser is None:
             msg = ("User %r@%r failed to authenticate against userstore"
-                      % (user.login, user.realm))
+                   % (user.login, user.realm))
             log.error(msg)
             return False, {'error': msg}
 
@@ -346,7 +344,7 @@ class TokenHandler(object):
 
         owner = self.getTokenOwner(serial)
         log.info("lost token for serial %r and owner %r@%r"
-                                        % (serial, owner.login, owner.realm))
+                 % (serial, owner.login, owner.realm))
 
         if owner.login == "" or owner.login is None:
             err = "You can only define a lost token for an assigned token."
@@ -356,8 +354,8 @@ class TokenHandler(object):
         client = context['Client']
 
         pol = linotp.lib.policy.get_client_policy(client,
-                                        scope="enrollment", realm=owner.realm,
-                                        user=owner.login, userObj=owner)
+                                                  scope="enrollment", realm=owner.realm,
+                                                  user=owner.login, userObj=owner)
 
         if not new_serial:
             new_serial = "lost%s" % serial
@@ -366,7 +364,7 @@ class TokenHandler(object):
         init_params = {'type': 'pw',
                        "serial": new_serial,
                        "description": "temporary replacement for %s" % serial
-                        }
+                       }
 
         if 'type' in param:
             if param['type'] == 'password':
@@ -400,8 +398,8 @@ class TokenHandler(object):
                 pw_len = 10
 
             contents = linotp.lib.policy.getPolicyActionValue(pol,
-                                            "lostTokenPWContents",
-                                            is_string=True)
+                                                              "lostTokenPWContents",
+                                                              is_string=True)
 
             character_pool = "%s%s%s" % (string.ascii_lowercase,
                                          string.ascii_uppercase, string.digits)
@@ -441,7 +439,7 @@ class TokenHandler(object):
             # set the validity of the temporary token
 
             validity = linotp.lib.policy.getPolicyActionValue(
-                                    pol, "lostTokenValid", max=False)
+                pol, "lostTokenValid", max=False)
 
             end_date = _calculate_validity_end(validity)
 
@@ -487,7 +485,7 @@ class TokenHandler(object):
         (userid, idResolver, idResolverClass) = getUserId(user)
 
         # special case for the sqlresolver with uid column defined as int
-        if isinstance(userid, (int, long)):
+        if isinstance(userid, int):
             userid = "%d" % userid
 
         if not (userid and idResolver and idResolverClass):
@@ -512,7 +510,7 @@ class TokenHandler(object):
 
         # compare the user with the owner
 
-        if token_idResolverClass == idResolverClass and  token_userid == userid:
+        if token_idResolverClass == idResolverClass and token_userid == userid:
             return True
 
         return False
@@ -558,7 +556,6 @@ class TokenHandler(object):
         user = get_token_owner(token)
 
         return user
-
 
     def check_serial(self, serial):
         '''
@@ -623,8 +620,8 @@ class TokenHandler(object):
         for token in tokens:
 
             token_exists = token.check_otp_exist(
-                                        otp=otp,
-                                        window=token.getOtpCountWindow())
+                otp=otp,
+                window=token.getOtpCountWindow())
 
             if token_exists >= 0:
                 matching_tokens.append(token)
@@ -690,16 +687,16 @@ class TokenHandler(object):
             token_exists = -1
             from linotp.lib import policy
             if (policy.autoassignment_forward(user)
-                        and token.type == 'remote'):
+                    and token.type == 'remote'):
                 ruser = User(user.login, user.realm)
                 token_exists = token.check_otp_exist(otp=passw,
-                                          window=token.getOtpCountWindow(),
-                                          user=ruser, autoassign=True)
+                                                     window=token.getOtpCountWindow(),
+                                                     user=ruser, autoassign=True)
                 (pin, otp) = token.splitPinPass(passw)
             else:
                 (pin, otp) = token.splitPinPass(passw)
                 token_exists = token.check_otp_exist(otp=otp,
-                                          window=token.getOtpCountWindow())
+                                                     window=token.getOtpCountWindow())
 
             if token_exists >= 0:
                 matching_pairs.append((token, pin))
@@ -843,7 +840,7 @@ class TokenHandler(object):
         return serial, username, resolverClass
 
 # local
-    def get_token_by_otp(self, token_list=None, otp="", window=10, typ=u"HMAC",
+    def get_token_by_otp(self, token_list=None, otp="", window=10, typ="HMAC",
                          realm=None, assigned=None):
         '''
         method
@@ -896,10 +893,10 @@ class TokenHandler(object):
                 filter(func.lower(Token.LinOtpTokenType) == typ.lower())
         if assigned is not None:
             # filter if assigned or not
-            if "0" == unicode(assigned):
+            if "0" == str(assigned):
                 sqlQuery = sqlQuery.filter(or_(Token.LinOtpUserid == None,
                                                Token.LinOtpUserid == ""))
-            elif "1" == unicode(assigned):
+            elif "1" == str(assigned):
                 sqlQuery = sqlQuery.filter(func.length(Token.LinOtpUserid) > 0)
             else:
                 log.warning("[getTokensOfType] assigned value not in [0,1] %r"
@@ -909,15 +906,16 @@ class TokenHandler(object):
             # filter for the realm
             sqlQuery = sqlQuery\
                 .filter(and_(func.lower(Realm.name) == realm.lower(),
-                        TokenRealm.realm_id == Realm.id,
-                        TokenRealm.token_id == Token.LinOtpTokenId)).distinct()
+                             TokenRealm.realm_id == Realm.id,
+                             TokenRealm.token_id == Token.LinOtpTokenId)).distinct()
 
         for token in sqlQuery:
             # the token is the database object, but we want
             # an instance of the tokenclass!
             tokenList.append(createTokenClassObject(token))
 
-        log.debug("[getTokensOfType] retrieved matching tokens: %r" % tokenList)
+        log.debug("[getTokensOfType] retrieved matching tokens: %r" %
+                  tokenList)
         return tokenList
 
     def removeToken(self, user=None, serial=None):
@@ -960,7 +958,7 @@ class TokenHandler(object):
 
             for t_id in token_ids:
                 Session.query(TokenRealm).filter(
-                                    TokenRealm.token_id == t_id).delete()
+                    TokenRealm.token_id == t_id).delete()
 
             Session.commit()
 
@@ -969,7 +967,7 @@ class TokenHandler(object):
 
         except Exception as exx:
             raise TokenAdminError("removeToken: Token update failed: %r"
-                                   % exx, id=1132)
+                                  % exx, id=1132)
 
         return len(tokenList)
 
@@ -978,7 +976,8 @@ class TokenHandler(object):
         if user is None and serial is None:
             raise ParameterError("Parameter user or serial required!", id=1212)
 
-        log.debug("[setCounterWindow] setting count window for serial %r" % serial)
+        log.debug(
+            "[setCounterWindow] setting count window for serial %r" % serial)
         tokenList = getTokens4UserOrSerial(user, serial)
 
         for token in tokenList:
@@ -1196,14 +1195,14 @@ class TokenHandler(object):
 
         #  now search the number of ttypes in the token database
         tokennum = Session.query(Token).filter(
-                        Token.LinOtpTokenType == u'' + tokenType).count()
+            Token.LinOtpTokenType == '' + tokenType).count()
 
         serial = _gen_serial(prefix, tokennum + 1)
 
         #  now test if serial already exists
         while True:
             numtokens = Session.query(Token).filter(
-                        Token.LinOtpTokenSerialnumber == u'' + serial).count()
+                Token.LinOtpTokenSerialnumber == '' + serial).count()
             if numtokens == 0:
                 #  ok, there is no such token, so we're done
                 break
@@ -1261,7 +1260,7 @@ def createTokenClassObject(token, typ=None):
 
         log.error('Token type %r not found. Available types are: %r.'
                   'Using default token class as fallback ' %
-                  (typ, tokenclass_registry.keys()))
+                  (typ, list(tokenclass_registry.keys())))
 
         from linotp.tokens.base import TokenClass
         tok = TokenClass(token)
@@ -1298,7 +1297,7 @@ def getRealms4Token(user, tokenrealm=None):
     """
 
     realms = []
-    if user is not None and user.login != "" :
+    if user is not None and user.login != "":
         #  the getUserRealms should return the default realm if realm was empty
         realms = getUserRealms(user)
         #  hack: sometimes the realm of the user is not in the
@@ -1312,10 +1311,11 @@ def getRealms4Token(user, tokenrealm=None):
         # tokenrealm can either be a string or a list
         log.debug("[getRealms4Token] tokenrealm given (%r). We will add the "
                   "new token to this realm" % tokenrealm)
-        if type(tokenrealm) in [str, unicode]:
-            log.debug("[getRealms4Token] String: adding realm: %r" % tokenrealm)
+        if isinstance(tokenrealm, str):
+            log.debug("[getRealms4Token] String: adding realm: %r" %
+                      tokenrealm)
             realms.append(tokenrealm)
-        elif type(tokenrealm) in [list]:
+        elif isinstance(tokenrealm, list):
             for tr in tokenrealm:
                 realms.append(tr)
 
@@ -1341,7 +1341,7 @@ def get_tokenserial_of_transaction(transId):
     return serials
 
 
-def getRolloutToken4User(user=None, serial=None, tok_type=u'ocra'):
+def getRolloutToken4User(user=None, serial=None, tok_type='ocra'):
 
     if (user is None or user.is_empty) and serial is None:
         return None
@@ -1366,20 +1366,21 @@ def getRolloutToken4User(user=None, serial=None, tok_type=u'ocra'):
         # resolver class is adjusted
 
         user_resolver = k.replace('useridresolveree.', 'useridresolver.')
-        user_resolver = user_resolver.replace('useridresolver.', 'useridresolver%.')
+        user_resolver = user_resolver.replace(
+            'useridresolver.', 'useridresolver%.')
 
         ''' coout tokens: 0 1 or more '''
         tokens = Session.query(
             Token).filter(
-                Token.LinOtpTokenType == unicode(tok_type)).filter(
+                Token.LinOtpTokenType == str(tok_type)).filter(
                     Token.LinOtpIdResClass.like(
-                        unicode(user_resolver))).filter(
-                            Token.LinOtpUserid == unicode(user_id))
+                        str(user_resolver))).filter(
+                            Token.LinOtpUserid == str(user_id))
 
     elif serial is not None:
         tokens = Session.query(Token).filter(
-            Token.LinOtpTokenType == unicode(tok_type)).filter(
-                Token.LinOtpTokenSerialnumber == unicode(serial))
+            Token.LinOtpTokenType == str(tok_type)).filter(
+                Token.LinOtpTokenSerialnumber == str(serial))
 
     for token in tokens:
         info = token.LinOtpTokenInfo
@@ -1390,8 +1391,8 @@ def getRolloutToken4User(user=None, serial=None, tok_type=u'ocra'):
                 serials.append(token.LinOtpTokenSerialnumber)
 
     if len(serials) > 1:
-        raise Exception('multiple tokens found in rollout state: %s'
-                        % unicode(serials))
+        raise Exception('multiple tokens found in rollout state: %r'
+                        % serials)
 
     if len(serials) == 1:
         serial = serials[0]
@@ -1414,6 +1415,7 @@ def setRealms(serial, realmList):
 
     return len(tokenList)
 
+
 def getTokenRealms(serial):
     '''
     This function returns a list of the realms of a token
@@ -1421,7 +1423,8 @@ def getTokenRealms(serial):
     tokenList = getTokens4UserOrSerial(None, serial, _class=False)
 
     if len(tokenList) == 0:
-        raise TokenAdminError("getTokenRealms failed. No token with serial %s found" % serial, id=1119)
+        raise TokenAdminError(
+            "getTokenRealms failed. No token with serial %s found" % serial, id=1119)
 
     token = tokenList[0]
 
@@ -1457,14 +1460,14 @@ def getTokenInRealm(realm, active=True):
     '''
     if active:
         sqlQuery = Session.query(TokenRealm, Realm, Token).filter(and_(
-                            TokenRealm.realm_id == Realm.id,
-                            func.lower(Realm.name) == realm.lower(),
-                            Token.LinOtpIsactive == True,
-                            TokenRealm.token_id == Token.LinOtpTokenId)).count()
+            TokenRealm.realm_id == Realm.id,
+            func.lower(Realm.name) == realm.lower(),
+            Token.LinOtpIsactive == True,
+            TokenRealm.token_id == Token.LinOtpTokenId)).count()
     else:
         sqlQuery = Session.query(TokenRealm, Realm).filter(and_(
-                            TokenRealm.realm_id == Realm.id,
-                            func.lower(Realm.name) == realm.lower())).count()
+            TokenRealm.realm_id == Realm.id,
+            func.lower(Realm.name) == realm.lower())).count()
     return sqlQuery
 
 
@@ -1517,7 +1520,7 @@ def getNumTokenUsers(resolver=None, active=True, realm=None):
     condition = and_(*conditions)
 
     token_users = session.filter(condition).distinct(
-                            Token.LinOtpUserid, Token.LinOtpIdResClass).count()
+        Token.LinOtpUserid, Token.LinOtpIdResClass).count()
 
     return token_users
 
@@ -1577,7 +1580,7 @@ def token_owner_iterator():
             userInfo = getUserInfo(userId, resolver, resolverC)
 
         if userId and not userInfo:
-            userInfo['username'] = u'/:no user info:/'
+            userInfo['username'] = '/:no user info:/'
 
         yield serial, userInfo['username']
 
@@ -1626,7 +1629,7 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
         if read_for_update:
             try:
 
-                sqlQuery = sqlQuery.with_lockmode('update').all()
+                sqlQuery = sqlQuery.with_for_update('update').all()
 
             except ResourceClosedError as exx:
                 log.warning("Token already locked for update: %r", exx)
@@ -1657,7 +1660,7 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                 resolverClass = resolverClass.replace('useridresolver.',
                                                       'useridresolver%.')
 
-                if isinstance(uid, (int, long)):
+                if isinstance(uid, int):
                     uconditions += ((model.Token.LinOtpUserid == "%d" % uid),)
                 else:
                     uconditions += ((model.Token.LinOtpUserid == uid),)
@@ -1677,7 +1680,7 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
 
                     try:
 
-                        sqlQuery = sqlQuery.with_lockmode('update').all()
+                        sqlQuery = sqlQuery.with_for_update('update').all()
 
                     except ResourceClosedError as exx:
                         log.warning("Token already locked for update: %r", exx)
@@ -1687,14 +1690,15 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                 # ---------------------------------------------------------- --
 
                 for token in sqlQuery:
-                    # we have to check that the token is in the same realm as the user
+                    # we have to check that the token is in the same realm as
+                    # the user
                     t_realms = token.getRealmNames()
                     u_realm = user.realm
                     if u_realm != '*':
                         if len(t_realms) > 0 and len(u_realm) > 0:
                             if u_realm.lower() not in t_realms:
                                 log.debug("user realm and token realm missmatch %r::%r"
-                                      % (u_realm, t_realms))
+                                          % (u_realm, t_realms))
                                 continue
 
                     log.debug("[getTokens4UserOrSerial] user serial (user): %r"
@@ -1709,6 +1713,7 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
         log.debug('Retrieved token list %r' % tokenList)
         return tokenList
 
+
 def setDefaults(token):
     #  set the defaults
     token.LinOtpOtpLen = int(getFromConfig("DefaultOtpLen", 6))
@@ -1716,7 +1721,7 @@ def setDefaults(token):
     token.LinOtpMaxFail = int(getFromConfig("DefaultMaxFailCount", 15))
     token.LinOtpSyncWindow = int(getFromConfig("DefaultSyncWindow", 1000))
 
-    token.LinOtpTokenType = u"HMAC"
+    token.LinOtpTokenType = "HMAC"
 
 
 def tokenExist(serial):
@@ -1729,7 +1734,6 @@ def tokenExist(serial):
     else:
         # If we have no serial we return false anyway!
         return False
-
 
 
 def get_token_owner(token):
@@ -1784,6 +1788,7 @@ def get_token_owner(token):
 
     return user
 
+
 def getTokenType(serial):
     '''
     Returns the tokentype of a given serial number
@@ -1804,20 +1809,49 @@ def getTokenType(serial):
 def add_last_accessed_info(list_of_tokenlist):
     """
     if token_last_access is defined in the config, add this to the token info
+
+    we receive a list of tokens, coming from the validation with e.g.
+    pin-match and challenge match token list
+
+    :param list_of_tokenlists: list of token lists
+    :return: - nothing -
     """
 
     token_last_access = getFromConfig('token.last_access', None)
+
     if not token_last_access:
         return
 
-    stampTokens = []
-    for token_list in list_of_tokenlist:
-        stampTokens.extend(token_list)
+    # ---------------------------------------------------------------------- --
 
-    now = datetime.datetime.now()
-    acces_info = now.strftime(token_last_access)
-    for token in stampTokens:
-        token.addToTokenInfo('last_access', acces_info)
+    # we support a default fallback if in the config the last access format was
+    # was misused as boolean - so we fallback to ISO format
+
+    try:
+        if not boolean(token_last_access):
+            return
+
+        token_last_access = True
+        log.debug('last_access defined as True - falling back to iso format')
+
+    except:
+        log.debug('using token.last_access format: %r', token_last_access)
+
+    now = datetime.datetime.utcnow()
+
+    if token_last_access is True:
+        access_info = now.isoformat()
+    else:
+        access_info = now.strftime(token_last_access)
+
+    # ---------------------------------------------------------------------- --
+
+    # we receive a list of tokens, coming from the validation with e.g.
+    # pin-match and challenge match token list
+
+    for token_list in list_of_tokenlist:
+        for token in token_list:
+            token.addToTokenInfo('last_access', access_info)
 
     return
 
@@ -1841,7 +1875,7 @@ def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
     return
         dictionary of otp values
     '''
-    ret = {"result" : False}
+    ret = {"result": False}
     toks = getTokens4UserOrSerial(None, serial)
 
     if len(toks) > 1:
@@ -1861,10 +1895,10 @@ def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
         # value, res==False is returned
 
         (res, error, otp_dict) = token.get_multi_otp(
-                                            count=count,
-                                            epoch_start=epoch_start,
-                                            epoch_end=epoch_end,
-                                            curTime=curTime)
+            count=count,
+            epoch_start=epoch_start,
+            epoch_end=epoch_end,
+            curTime=curTime)
 
         if res is True:
             ret = otp_dict
@@ -1873,6 +1907,7 @@ def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
             ret["error"] = error
 
     return ret
+
 
 def getOtp(serial, curTime=None):
     '''
@@ -1895,7 +1930,8 @@ def getOtp(serial, curTime=None):
     toks = getTokens4UserOrSerial(None, serial)
 
     if len(toks) > 1:
-        raise TokenAdminError("multiple tokens found - cannot get OTP!", id=1101)
+        raise TokenAdminError(
+            "multiple tokens found - cannot get OTP!", id=1101)
 
     if len(toks) == 0:
         log.warning("[getOTP] there is no token with serial %r" % serial)
@@ -1903,7 +1939,8 @@ def getOtp(serial, curTime=None):
 
     if len(toks) == 1:
         token = toks[0]
-        # if the token does not support getting the OTP value, a -2 is returned.
+        # if the token does not support getting the OTP value, a -2 is
+        # returned.
         return token.getOtp(curTime=curTime)
 
 
@@ -1918,7 +1955,8 @@ def setPin(pin, user, serial, param=None):
         raise ParameterError("Parameter user or serial required!", id=1212)
 
     if (user is not None):
-        log.info("[setPin] setting Pin for user %r@%r" % (user.login, user.realm))
+        log.info("[setPin] setting Pin for user %r@%r" %
+                 (user.login, user.realm))
     if (serial is not None):
         log.info("[setPin] setting Pin for token with serial %r" % serial)
 
@@ -1955,6 +1993,8 @@ def setPinUser(userPin, serial):
 ###############################################################################
 #  LinOtpTokenPinSO
 ###############################################################################
+
+
 def setPinSo(soPin, serial):
     user = None
 
@@ -2000,7 +2040,8 @@ def _gen_serial(prefix, tokennum, min_len=8):
     num_str = '%.4d' % tokennum
     h_len = min_len - len(num_str)
     if h_len > 0:
-        h_serial = binascii.hexlify(os.urandom(h_len)).upper()[0:h_len]
+        h_serial = binascii.hexlify(
+            os.urandom(h_len)).decode().upper()[0:h_len]
     return "%s%s%s" % (prefix, num_str, h_serial)
 
 
@@ -2022,14 +2063,14 @@ def genSerial(tokenType=None, prefix=None):
 
     #  now search the number of ttypes in the token database
     tokennum = Session.query(Token).filter(
-                    Token.LinOtpTokenType == u'' + tokenType).count()
+        Token.LinOtpTokenType == '' + tokenType).count()
 
     serial = _gen_serial(prefix, tokennum + 1)
 
     #  now test if serial already exists
     while True:
         numtokens = Session.query(Token).filter(
-                        Token.LinOtpTokenSerialnumber == u'' + serial).count()
+            Token.LinOtpTokenSerialnumber == '' + serial).count()
         if numtokens == 0:
             #  ok, there is no such token, so we're done
             break
@@ -2100,6 +2141,7 @@ def _calculate_validity_end(validity):
 
     return end_date
 
+
 def remove_token(token):
     """
     remove a token and all related entries like challenges or realm reference
@@ -2118,7 +2160,7 @@ def remove_token(token):
     # cleanup of the realm references
     token_id = token.LinOtpTokenId
     Session.query(TokenRealm).filter(
-            TokenRealm.token_id == token_id).delete()
+        TokenRealm.token_id == token_id).delete()
 
     # as these references seems not to be marked in the cache, we have to
     # update the cache manaualy

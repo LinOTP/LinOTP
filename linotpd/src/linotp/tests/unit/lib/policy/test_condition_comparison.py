@@ -27,7 +27,6 @@
 """ unit test for complex policy comparisons """
 
 import unittest
-from nose.tools import raises
 
 from datetime import datetime
 
@@ -121,17 +120,14 @@ class TestCompare(unittest.TestCase):
             # datetime args
             # datetime(year, month, day[, hour[, minute[, second[, micro ..
 
-            self.assertTrue(
-                time_list_compare(time_conditions,
-                                  datetime(2016, 12, 14, 15, 30)))  # 15:30
+            assert time_list_compare(time_conditions,
+                                  datetime(2016, 12, 14, 15, 30))  # 15:30
 
-            self.assertFalse(
-                time_list_compare(time_conditions,
-                                  datetime(2016, 12, 14, 18, 0)))  # 18:00
+            assert not time_list_compare(time_conditions,
+                                  datetime(2016, 12, 14, 18, 0))  # 18:00
 
-            self.assertFalse(
-                time_list_compare(time_conditions,
-                                  datetime(2016, 12, 14, 6, 0)))  # 6:00
+            assert not time_list_compare(time_conditions,
+                                  datetime(2016, 12, 14, 6, 0))  # 6:00
 
         return
 
@@ -148,17 +144,13 @@ class TestCompare(unittest.TestCase):
             # and subnet is not allowed too
             '!192.168.16.0/24')
 
-        self.assertFalse(
-            ip_list_compare(ip_conditions, '127.0.0.1'))
+        assert not ip_list_compare(ip_conditions, '127.0.0.1')
 
-        self.assertTrue(
-            ip_list_compare(ip_conditions, '192.168.12.13'))
+        assert ip_list_compare(ip_conditions, '192.168.12.13')
 
-        self.assertFalse(
-            ip_list_compare(ip_conditions, '192.168.17.15'))
+        assert not ip_list_compare(ip_conditions, '192.168.17.15')
 
-        self.assertFalse(
-            ip_list_compare(ip_conditions, '192.168.16.152'))
+        assert not ip_list_compare(ip_conditions, '192.168.16.152')
 
     def test_user_compare(self):
         """
@@ -178,22 +170,17 @@ class TestCompare(unittest.TestCase):
             '!*z')
 
         hugo = User('Hugo', 'realm')
-        self.assertTrue(
-            user_list_compare(user_conditions, hugo))
+        assert user_list_compare(user_conditions, hugo)
         emma = User('Emma')
-        self.assertFalse(
-            user_list_compare(user_conditions, emma))
+        assert not user_list_compare(user_conditions, emma)
 
         betonz = User('betonz', 'realm')
-        self.assertFalse(
-            user_list_compare(user_conditions, betonz))
+        assert not user_list_compare(user_conditions, betonz)
 
         wanda = User('wanda', 'realm')
-        self.assertTrue(
-            user_list_compare(user_conditions, wanda))
+        assert user_list_compare(user_conditions, wanda)
 
         wanda2 = 'wanda@realm'
-        self.assertTrue(
-            user_list_compare(user_conditions, wanda2))
+        assert user_list_compare(user_conditions, wanda2)
 
         return

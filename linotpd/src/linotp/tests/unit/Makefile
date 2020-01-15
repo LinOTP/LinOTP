@@ -27,12 +27,16 @@
 #
 
 #####################
-# Unit test targets
-#
+# Unit tests
+
+# Overrides can be specified on the make command line
+# For example:
+#   make functionaltests PYTESTARGS=-v
+PYTESTARGS=
 
 test: unittests
 
 unittests:
-	nosetests $(NOSETESTS_ARGS) .
+	pytest $(PYTESTARGS)
 
 .PHONY: test unittests

@@ -27,7 +27,7 @@
 '''
 
 import requests as http_requests
-from urlparse import urlparse
+from urllib.parse import urlparse
 import os
 
 class ProviderBase(object):

@@ -24,37 +24,13 @@
 #    Support: www.keyidentity.com
 #
 
-# -*- coding: utf-8 -*-
-#
-#    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
-#
-#    This file is part of LinOTP server.
-#
-#    This program is free software: you can redistribute it and/or
-#    modify it under the terms of the GNU Affero General Public
-#    License, version 3, as published by the Free Software Foundation.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU Affero General Public License for more details.
-#
-#    You should have received a copy of the
-#               GNU Affero General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-#
-#    E-mail: linotp@keyidentity.com
-#    Contact: www.linotp.org
-#    Support: www.keyidentity.com
-#
 
-import os
-import webtest
+import pytest
 
 import logging
 import json
+
+from linotp.tests.conftest import Base_App_Config as BAC
 
 from linotp.tests import TestController, url
 
@@ -112,8 +88,8 @@ class TestUserserviceAuthController(TestController):
         name = policy['name']
 
         response = self.make_system_request('setPolicy', params=policy)
-        self.assertTrue('"status": true' in response, response)
-        self.assertTrue(('"setPolicy %s": {' % name) in response, response)
+        assert '"status": true' in response, response
+        assert ('"setPolicy %s": {' % name) in response, response
 
         return
 
@@ -135,7 +111,7 @@ class TestUserserviceAuthController(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"img": "<img ' in response, response)
+        assert '"img": "<img ' in response, response
 
         policy = {
             'name': 'T1',
@@ -192,8 +168,8 @@ class TestUserserviceAuthController(TestController):
                                                      auth_user=auth_user,
                                                      new_auth_cookie=True)
 
-        self.assertTrue('additional authentication parameter required'
-                        in response)
+        assert 'additional authentication parameter required' \
+                        in response
 
         auth_user['otp'] = self.otps.pop()
 
@@ -203,17 +179,19 @@ class TestUserserviceAuthController(TestController):
                                                      auth_user=auth_user,
                                                      new_auth_cookie=True)
 
-        self.assertTrue('"img": "<img ' in response, response)
+        assert '"img": "<img ' in response, response
 
         params = {'serial': 'hmac123'}
         response = self.make_userselfservice_request('delete',
                                                      params=params,
                                                      auth_user=auth_user)
 
-        self.assertTrue('"delete token": 1' in response, response)
+        assert '"delete token": 1' in response, response
 
         return
 
+    @pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
+                        reason="non sqlite database required for this test!")
     def test_login_with_false_password(self):
         """
         check that the login generate a cookie, which does not require
@@ -231,7 +209,7 @@ class TestUserserviceAuthController(TestController):
                                                      auth_user=auth_user,
                                                      new_auth_cookie=True)
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         # ----------------------------------------------------------------- ---
 
@@ -241,8 +219,8 @@ class TestUserserviceAuthController(TestController):
         unbound_msg = ('UnboundLocalError("local variable \'reply\' '
                        'referenced before assignment",)')
 
-        failed_auth_msg = ("User User(login=u'passthru_user1', "
-                           "realm=u'mydefrealm', conf='' ::resolverUid:{}, "
+        failed_auth_msg = ("User User(login='passthru_user1', "
+                           "realm='mydefrealm', conf='' ::resolverUid:{}, "
                            "resolverConf:{}) failed to authenticate!")
 
         unbound_not_found = True
@@ -257,10 +235,11 @@ class TestUserserviceAuthController(TestController):
             if failed_auth_msg in entry:
                 failed_auth_found = True
 
-        self.assertTrue(unbound_not_found, entries)
-        self.assertTrue(failed_auth_found, entries)
+        assert unbound_not_found, entries
+        assert failed_auth_found, entries
 
         return
+
 
     def test_login_with_challenge_response(self):
         """
@@ -289,55 +268,55 @@ class TestUserserviceAuthController(TestController):
             'login': 'passthru_user1@myDefRealm',
             'password': 'geheim1'}
 
-        response = self.app.get(url(controller='userservice',
-                                    action='login'), params=auth_user)
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=auth_user)
 
         cookies = TestController.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
-        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
 
         # ------------------------------------------------------------------ --
 
         # verify that 'history' could not be called in this status
 
         params = {}
-        params['session'] = auth_cookie
+        params['session'] = 'void'
 
-        with self.assertRaises(webtest.app.AppError) as app_error:
+        response = self.client.post(url(controller='userservice',
+                                        action='history'), data=params)
 
-            response = self.app.get(url(controller='userservice',
-                                        action='history'), params=params)
+        assert response.status_code == 403
+        assert "No valid session" in response.data.decode()
 
-        self.assertTrue("403 Forbidden" in app_error.exception.message)
-
-        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
 
         params = {}
         params['session'] = auth_cookie
-        response = self.app.get(url(controller='userservice',
-                                    action='usertokenlist'), params=params)
+        response = self.client.post(url(controller='userservice',
+                                        action='usertokenlist'), data=params)
 
-        self.assertTrue('LoginToken' in response, response)
+        response.body = response.data.decode("utf-8")
+        assert 'LoginToken' in response, response
 
         # ------------------------------------------------------------------ --
 
         # next request is to trigger the login challenge response
 
-        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
 
         params = {}
         params['session'] = auth_cookie
-        response = self.app.get(url(controller='userservice',
-                                    action='login'), params=params)
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=params)
 
-        self.assertTrue('"Please enter your otp value: "' in response,
-                        response)
+        response.body = response.data.decode("utf-8")
+        assert '"Please enter your otp value: "' in response, \
+                        response
 
         # response should contain the challenge information
 
         cookies = TestController.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
-        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
 
         # ------------------------------------------------------------------ --
 
@@ -348,23 +327,25 @@ class TestUserserviceAuthController(TestController):
         params['session'] = auth_cookie
         params['otp'] = self.otps.pop()
 
-        response = self.app.get(url(controller='userservice',
-                                    action='login'), params=params)
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=params)
 
-        self.assertTrue('"value": true' in response, response)
+        response.body = response.data.decode("utf-8")
+        assert '"value": true' in response, response
 
         cookies = TestController.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
-        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
 
         # ------------------------------------------------------------------ --
 
         params = {}
         params['session'] = auth_cookie
-        response = self.app.get(url(controller='userservice',
-                                    action='history'), params=params)
+        response = self.client.post(url(controller='userservice',
+                                        action='history'), data=params)
 
-        self.assertTrue('"rows": [' in response, response)
+        response.body = response.data.decode("utf-8")
+        assert '"rows": [' in response, response
 
         return
 

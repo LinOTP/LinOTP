@@ -1,3 +1,15 @@
+linotp (2.90~0dev0-1) buster; urgency=low
+
+  * Set new version 2.90~0dev0-1
+
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Wed, 23 Oct 2019 14:05:58 +0200
+
+linotp (2.80~0dev0-1) buster; urgency=low
+
+  * Set new version 2.80~0dev0-1
+
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Tue, 10 Sep 2019 17:02:54 +0200
+
 linotp (2.10.7rc0-1) jessie; urgency=low
 
   * Support for Atlassian’s PBKDF2-based passwords in sqlresolver
@@ -6,12 +18,12 @@ linotp (2.10.7rc0-1) jessie; urgency=low
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 12 Jul 2019 13:52:12 +0200
 
-linotp (2.10.6rc0-1) jessie; urgency=low
+linotp (2.10.6-1) jessie; urgency=low
 
-  * Set new version 2.10.6rc0
-  * feature: support ssl/tls and start_tls with emailprovider
+  Feature:
+  * Server: support ssl/tls and start_tls with emailprovider
 
- --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 2 Jul 2019 17:55:28 +0200
+ --  LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 21 Aug 2019 10:43:02 +0200
 
 linotp (2.10.5.3-1) jessie; urgency=high
 

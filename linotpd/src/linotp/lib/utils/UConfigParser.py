@@ -24,10 +24,10 @@
 #    Support: www.keyidentity.com
 #
 
-import ConfigParser
+import configparser
 
 
-class UConfigParser(ConfigParser.RawConfigParser):
+class UConfigParser(configparser.RawConfigParser):
     DEFAULTSECT = "DEFAULT"
 
     def write(self, fp):
@@ -37,12 +37,12 @@ class UConfigParser(ConfigParser.RawConfigParser):
         """
         if self._defaults:
             fp.write("[%s]\n" % self.DEFAULTSECT)
-            for (key, value) in self._defaults.items():
+            for (key, value) in list(self._defaults.items()):
                 fp.write("%s = %s\n" % (key, str(value).replace('\n', '\n\t')))
             fp.write("\n")
         for section in self._sections:
             fp.write("[%s]\n" % section)
-            for (key, value) in self._sections[section].items():
+            for (key, value) in list(self._sections[section].items()):
                 if key == "__name__":
                     continue
                 if (value is not None) or (self._optcre == self.OPTCRE):

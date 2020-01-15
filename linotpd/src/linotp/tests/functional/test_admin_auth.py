@@ -75,7 +75,7 @@ class TestAdminAuthController(TestController):
             }
         params = resolver_params['adminResolver']
         response = self.create_resolver(name='adminResolver', params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         return
 
@@ -94,8 +94,8 @@ class TestAdminAuthController(TestController):
         name = policy['name']
 
         response = self.make_system_request('setPolicy', params=policy)
-        self.assertTrue('"status": true' in response, response)
-        self.assertTrue(('"setPolicy %s": {' % name) in response, response)
+        assert '"status": true' in response, response
+        assert ('"setPolicy %s": {' % name) in response, response
 
         return
 
@@ -112,29 +112,29 @@ class TestAdminAuthController(TestController):
                       }
         response = self.make_system_request('setPolicy', params=parameters)
 
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         parameters = {}
 
         # simple match - backward compatibility
         response = self.make_admin_request('show', params=parameters,
                                            auth_user='admin')
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         # pattern match for domain
         response = self.make_admin_request('show', params=parameters,
                                            auth_user='root@virtRealm')
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         # existance test in resolver
         response = self.make_admin_request('show', params=parameters,
                                            auth_user='root@adomain')
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         # non existance test in resolver
         response = self.make_admin_request('show', params=parameters,
                                            auth_user='toor@adomain')
-        self.assertTrue('"status": false' in response, response)
+        assert '"status": false' in response, response
         return
 
     def test_admin_resolver_and_domain(self):
@@ -149,35 +149,35 @@ class TestAdminAuthController(TestController):
                           'user': 'admin, adminResolver:, *@virtRealm',
                           }
             response = self.make_system_request('setPolicy', params=parameters)
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # simple match for admin - backward compatibility
             parameters = {'username': '*', 'realm': 'myDefRealm'}
             response = self.make_admin_request('userlist', params=parameters,
                                                auth_user='admin')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # wildcard domain match for root@virtRealm
             response = self.make_admin_request('userlist', params=parameters,
                                                auth_user='root@virtRealm')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # resolver match root@adomain in adminResolver:
             parameters = {'username': '*', 'resConf': 'myOtherRes'}
             response = self.make_admin_request('userlist', params=parameters,
                                                auth_user='root@adomain')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # resolver mis match toor@adomain not in adminResolver:
             response = self.make_admin_request('userlist', params=parameters,
                                                auth_user='toor@adomain')
-            self.assertTrue('"status": false' in response, response)
+            assert '"status": false' in response, response
 
         finally:
             parameters = {'name': 'admin_auth_userlist'}
             response = self.make_system_request('delPolicy', params=parameters,
                                             auth_user='superadmin')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
         return
 
@@ -193,35 +193,35 @@ class TestAdminAuthController(TestController):
                           'user': 'admin, adminResolver:,.*oo.*@virtRealm',
                           }
             response = self.make_system_request('setPolicy', params=parameters)
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # simple match for admin - backward compatibility
             parameters = {'username': '*', 'realm': 'myDefRealm'}
             response = self.make_admin_request('userlist', params=parameters,
                                                auth_user='admin')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # wildcard domain match for root@virtRealm
             response = self.make_admin_request('userlist', params=parameters,
                                                auth_user='root@virtRealm')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # resolver match root@adomain in adminResolver:
             parameters = {'username': '*', 'resConf': 'myOtherRes'}
             response = self.make_admin_request('userlist', params=parameters,
                                                auth_user='rotot@virtRealm')
-            self.assertTrue('"status": false' in response, response)
+            assert '"status": false' in response, response
 
             # resolver mis match toor@adomain not in adminResolver:
             response = self.make_admin_request('userlist', params=parameters,
                                                auth_user='toor@virtRealm')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
         finally:
             parameters = {'name': 'admin_auth_userlist'}
             response = self.make_system_request('delPolicy', params=parameters,
                                             auth_user='superadmin')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
         return
 
@@ -237,7 +237,7 @@ class TestAdminAuthController(TestController):
                           'user': 'admin, adminResolver:, *@virtRealm',
                           }
             response = self.make_system_request('setPolicy', params=parameters)
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # simple match - backward compatibility
             parameters = {'page': '1', 'rp': '15', 'sortname': 'username',
@@ -246,8 +246,8 @@ class TestAdminAuthController(TestController):
             response = self.make_manage_request('userview_flexi',
                                                params=parameters,
                                                auth_user='admin')
-            self.assertTrue('"page": 1' in response, response)
-            self.assertTrue('"rows": [' in response, response)
+            assert '"page": 1' in response, response
+            assert '"rows": [' in response, response
 
             parameters = {'name': 'admin_auth_userlist',
                           'scope': 'admin',
@@ -256,13 +256,13 @@ class TestAdminAuthController(TestController):
                           'user': 'admin, adminResolver:, *@virtRealm',
                           }
             response = self.make_system_request('setPolicy', params=parameters)
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # simple match - backward compatibility
             parameters = {'username': '*', 'realm': 'myDefRealm'}
             response = self.make_admin_request('userlist', params=parameters,
                                                auth_user='admin')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # simple match - backward compatibility
             parameters = {'page': '1', 'rp': '15', 'sortname': 'username',
@@ -271,8 +271,8 @@ class TestAdminAuthController(TestController):
             response = self.make_manage_request('userview_flexi',
                                                params=parameters,
                                                auth_user='admin')
-            self.assertTrue('"page": 1' in response, response)
-            self.assertTrue('"rows": [' in response, response)
+            assert '"page": 1' in response, response
+            assert '"rows": [' in response, response
 
             parameters = {'name': 'admin_auth_userlist',
                           'scope': 'admin',
@@ -281,13 +281,13 @@ class TestAdminAuthController(TestController):
                           'user': 'admin, adminResolver:, *@virtRealm',
                           }
             response = self.make_system_request('setPolicy', params=parameters)
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # simple match - backward compatibility
             parameters = {'username': '*', 'realm': 'myDefRealm'}
             response = self.make_admin_request('userlist', params=parameters,
                                                auth_user='admin')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # simple match - backward compatibility
             # simple match - backward compatibility
@@ -297,14 +297,14 @@ class TestAdminAuthController(TestController):
             response = self.make_manage_request('userview_flexi',
                                                params=parameters,
                                                auth_user='admin')
-            self.assertTrue('"page": 1' in response, response)
-            self.assertTrue('"rows": [' in response, response)
+            assert '"page": 1' in response, response
+            assert '"rows": [' in response, response
 
         finally:
             parameters = {'name': 'admin_auth_userlist'}
             response = self.make_system_request('delPolicy', params=parameters,
                                             auth_user='superadmin')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
         return
 
@@ -320,7 +320,7 @@ class TestAdminAuthController(TestController):
                       }
         response = self.make_system_request('setPolicy', params=parameters,
                                             auth_user='superadmin')
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         try:
             parameters = {'name': 'sys_auth',
@@ -331,44 +331,44 @@ class TestAdminAuthController(TestController):
                           }
             response = self.make_system_request('setPolicy', params=parameters,
                                                 auth_user='superadmin')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # now do rhe test on setConfig
             params = {'testKey': 'testVal'}
             response = self.make_system_request('setConfig', params=params,
                                                 auth_user='root@virtRealm')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # now do rhe test on setConfig
             params = {'testKey': 'testVal'}
             response = self.make_system_request('setConfig', params=params,
                                                 auth_user='root@adomain')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             # deny as not found in resolver or local match
             params = {'testKey': 'testVal'}
             response = self.make_system_request('setConfig', params=params,
                                                 auth_user='admin')
-            self.assertTrue('Policy check failed. You are not '
-                            'allowed to write system config.' in response,
-                            response)
+            assert 'Policy check failed. You are not ' \
+                            'allowed to write system config.' in response, \
+                            response
 
             # now do rhe test on setConfig
             params = {'testKey': 'testVal'}
             response = self.make_system_request('setConfig', params=params,
                                                 auth_user='superadmin')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
         finally:
             parameters = {'name': 'sys_auth'}
             response = self.make_system_request('delPolicy', params=parameters,
                                             auth_user='superadmin')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
             parameters = {'name': 'sysSuper'}
             response = self.make_system_request('delPolicy', params=parameters,
                                             auth_user='superadmin')
-            self.assertTrue('"status": true' in response, response)
+            assert '"status": true' in response, response
 
         return
 
@@ -385,10 +385,10 @@ class TestAdminAuthController(TestController):
         response = self.make_system_request('setPolicy', params=parameters,
                                             auth_type='Basic')
 
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         parameters = {}
         response = self.make_admin_request('show', params=parameters,
                                            auth_user='root@adomain',
                                            auth_type='Basic')
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response

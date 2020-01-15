@@ -28,8 +28,8 @@
 import requests
 from requests.auth import HTTPDigestAuth
 import logging
-from testconfig import config, load_ini
-from urlparse import urlparse
+from pytest_testconfig import config, load_ini
+from urllib.parse import urlparse
 
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
@@ -190,7 +190,7 @@ def get_from_tconfig(key_array, default=None, required=False):
     assert key_array is not None and len(key_array) > 0
     current_config = config
 
-    if not len(current_config):
+    if required and not len(current_config):
         raise Exception(
             "Testconfig is empty. See Readme for details (--tc-file)")
 
@@ -222,7 +222,7 @@ def close_alert_and_get_its_text(driver, accept=True):
 
     @return: Alert box text
     """
-    alert = driver.switch_to_alert()
+    alert = driver.switch_to.alert
     alert_text = alert.text
     if accept:
         alert.accept()

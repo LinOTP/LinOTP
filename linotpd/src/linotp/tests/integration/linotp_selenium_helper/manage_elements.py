@@ -154,17 +154,15 @@ class ManageTab(ManageElement):
             EC.element_to_be_clickable(
                 (By.CSS_SELECTOR, self.tabbutton_css))
         )
-        time.sleep(1)
         if tab_button.is_enabled():
             self.manage.close_dialogs_and_click(tab_button)
-        time.sleep(1)
 
-        WebDriverWait(self.driver, 3).until(
+        WebDriverWait(self.driver, 10).until(
             EC.visibility_of_element_located(
                 (By.CSS_SELECTOR, self.tabpane_css))
         )
 
-        assert self._is_tab_open(), "Tab should be open"
+        assert self._is_tab_open(), "Tab should be open (css={})".format(self.tabpane_css)
 
         # Wait for tab pane to show up and return element
         tab_element = self.find_by_css(self.tabpane_css)
@@ -253,7 +251,7 @@ class ManageDialog(ManageElement):
         @param timeout: Maximum time to wait in seconds
         """
         WebDriverWait(self.driver, timeout, ignored_exceptions=NoSuchElementException).until(
-            EC.visibility_of_element_located(
+            EC.element_to_be_clickable(
                 (By.CSS_SELECTOR, self.dialog_css))
         )
 

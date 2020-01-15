@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -33,8 +33,10 @@ This is a monitoring program, that determines the number of used tokens.
 """
 
 from sqlalchemy import *
+from sqlalchemy import text as sql_text
 from linotp.lib.utils import config_get, INI_FILE
 import sys
+
 
 def tokens_used(SQL_URL):
     '''
@@ -56,31 +58,34 @@ def tokens_used(SQL_URL):
     not_active = 0
 
     # overall
-    rows = token.count().execute()
+    rows = select([func.count()]).select_from(token).execute()
     row = rows.fetchone()
     overall_number = int(row[id_pos])
 
     # not assigned tokens
-    rows = token.count().where("LinOtpUserid=''").execute()
+    rows = select([func.count()]).select_from(
+        token).where(sql_text("LinOtpUserid=''")).execute()
     row = rows.fetchone()
     not_assigned = int(row[id_pos])
 
     # disabled tokens
-    rows = token.count().where("LinOtpIsactive=0").execute()
+    rows = select([func.count()]).select_from(token).where(
+        sql_text("LinOtpIsactive=0")).execute()
     row = rows.fetchone()
     not_active = int(row[id_pos])
 
     return (overall_number, not_active, not_assigned)
 
+
 def print_config():
     '''
     Print the munin config
     '''
-    print 'graph_title LinOTP Tokens'
-    print 'graph_vlabel Tokens'
-    print '_tokennum.label token count'
-    print '_inactive.label inactive tokens'
-    print '_notassigned.label not assigned tokens'
+    print('graph_title LinOTP Tokens')
+    print('graph_vlabel Tokens')
+    print('_tokennum.label token count')
+    print('_inactive.label inactive tokens')
+    print('_notassigned.label not assigned tokens')
 
 
 def main():
@@ -91,16 +96,17 @@ def main():
         if sys.argv[1] == "config":
             print_config()
         else:
-            print "invalid argument"
+            print("invalid argument")
     elif len(sys.argv) == 1:
         (t, n_active, n_assigned) = tokens_used(SQL_URL)
-        print "_tokennum.value %i" % t
-        print "_inactive.value %i" % n_active
-        print "_notassigned.value %i" % n_assigned
+        print("_tokennum.value %i" % t)
+        print("_inactive.value %i" % n_active)
+        print("_notassigned.value %i" % n_assigned)
     else:
-        print "wrong number of arguments"
+        print("wrong number of arguments")
 
     sys.exit(0)
+
 
 if __name__ == '__main__':
     main()

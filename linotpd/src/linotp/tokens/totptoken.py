@@ -27,6 +27,7 @@
 
 import logging
 import time
+from typing import Union
 import datetime
 
 
@@ -91,8 +92,8 @@ Internet-Draft                HOTPTimeBased               September 2010
 
 """
 
-def time2counter(T0, timeStepping):
-    counter = int(T0 / timeStepping)
+def time2counter(T0: Union[float, int], timeStepping: int) -> int:
+    counter = int(T0 // timeStepping)
     return counter
 
 def counter2time(counter, timeStepping):
@@ -117,7 +118,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         '''
 
         TokenClass.__init__(self, aToken)
-        self.setType(u"TOTP")
+        self.setType("TOTP")
         self.hKeyRequired = True
 
         # timeStep defines the granularity:
@@ -138,7 +139,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         # we support various hashlib methods, but only on create
         # which is effectively set in the update
 
-        self.hashlibStr = getFromConfig("totp.hashlib", u'sha1') or 'sha1'
+        self.hashlibStr = getFromConfig("totp.hashlib", 'sha1') or 'sha1'
 
         self.otplen = int(self.token.LinOtpOtpLen)
 
@@ -235,7 +236,7 @@ class TimeHmacTokenClass(HmacTokenClass):
                         },
                }
 
-        if key is not None and res.has_key(key):
+        if key is not None and key in res:
             ret = res.get(key)
         else:
             if ret == 'all':
@@ -358,7 +359,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         dt = datetime.datetime.now()
         if type(curTime) == datetime.datetime:
             dt = curTime
-        elif type(curTime) == unicode:
+        elif type(curTime) == str:
             if '.' in curTime:
                 tFormat = "%Y-%m-%d %H:%M:%S.%f"
             else:
@@ -374,7 +375,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         td = (dt - datetime.datetime(1970, 1, 1))
         ## for python 2.6 compatibility, we have to implement 2.7 .total_seconds()::
         ## TODO: fix to float!!!!
-        tCounter = ((td.microseconds + (td.seconds + td.days * 24 * 3600) * 10 ** 6) * 1.0) / 10 ** 6
+        tCounter = ((td.microseconds + (td.seconds + td.days * 24 * 3600) * 10 ** 6) * 1.0) // 10 ** 6
 
         return tCounter
 
@@ -422,7 +423,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         # ------------------------------------------------------------------ --
 
         otp_match_counter = hmac2Otp.checkOtp(
-            anOtpVal, int(totp_window / self.timeStepping), symetric=True)
+            anOtpVal, int(totp_window // self.timeStepping), symetric=True)
 
         # ------------------------------------------------------------------ --
 
@@ -654,7 +655,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         T0 = time.time() + shift
 
         log.debug("[resync] T0 : %i" % T0)
-        counter = int((T0 / timeStepping) + 0.5)  # T = (Current Unix time - T0) / timeStepping
+        counter = int(T0 // timeStepping)  # T = (Current Unix time - T0) / timeStepping
         log.debug("[resync] counter (current time): %i" % counter)
 
         oCount = self.getOtpCount()
@@ -664,12 +665,12 @@ class TimeHmacTokenClass(HmacTokenClass):
         # check 2nd value
         hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(self.hashlibStr))
         log.debug("[resync] %s in otpkey: %s " % (otp2, secObj))
-        res2 = hmac2Otp.checkOtp(otp2, int (window / timeStepping), symetric=True)  #TEST -remove the 10
+        res2 = hmac2Otp.checkOtp(otp2, int(window // timeStepping), symetric=True)  #TEST -remove the 10
         log.debug("[resync] res 2: %r" % res2)
         # check 1st value
         hmac2Otp = HmacOtp(secObj, counter - 1, otplen, self.getHashlib(self.hashlibStr))
         log.debug("[resync] %s in otpkey: %s " % (otp1, secObj))
-        res1 = hmac2Otp.checkOtp(otp1, int (window / timeStepping), symetric=True)  #TEST -remove the 10
+        res1 = hmac2Otp.checkOtp(otp1, int(window // timeStepping), symetric=True)  #TEST -remove the 10
         log.debug("[resync] res 1: %r" % res1)
 
         if res1 < oCount:
@@ -735,8 +736,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         if curTime:
             tCounter = self.time2float(curTime)
 
-        ## we don't need to round here as we have alread float
-        counter = int(((tCounter - shift) / timeStepping))
+        counter = int((tCounter - shift) // timeStepping)
         otpval = hmac2Otp.generate(counter=counter, inc_counter=False)
 
         pin = self.getPin()
@@ -777,8 +777,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         if curTime:
             tCounter = self.time2float(curTime)
 
-        # we don't need to round here as we have alread float
-        counter = int(((tCounter - shift) / timeStepping))
+        counter = int((tCounter - shift) // timeStepping)
 
         otp_dict["shift"] = shift
         otp_dict["timeStepping"] = timeStepping
@@ -822,7 +821,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         hmac2Otp = HmacOtp(
             secObj, counter, self.otplen, self.getHashlib(self.hashlibStr))
         matching_counter = hmac2Otp.checkOtp(
-                                otp, int(window / time_step), symetric=True)
+                                otp, int(window // time_step), symetric=True)
 
 
         # ------------------------------------------------------------------ --

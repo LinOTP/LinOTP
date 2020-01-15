@@ -41,7 +41,6 @@ class TestSelfserviceController(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        self.set_config_selftest()
         self.create_common_resolvers()
         self.create_common_realms()
 
@@ -58,7 +57,7 @@ class TestSelfserviceController(TestController):
                                         'action' : policy,
                                         'selftest_admin' : 'superadmin'
                                         })
-        print response
+        print(response)
         assert '"status": true' in response
         assert '"setPolicy self01": {' in response
 
@@ -81,12 +80,12 @@ class TestSelfserviceController(TestController):
 
         response = self.make_userselfservice_request('history',
                                 auth_user=auth_user)
-        print response
+        print(response)
         assert '"rows": [' in response
 
         response = self.make_selfservice_request('history',
                                 auth_user=auth_user)
-        print response
+        print(response)
         assert 'view_audit_selfservice' in response
 
     def test_reset(self):
@@ -100,14 +99,14 @@ class TestSelfserviceController(TestController):
 
         response = self.make_userselfservice_request('reset',
                                 auth_user=auth_user)
-        print response
+        print(response)
         assert '"status": false' in response
         assert '"code": -311' in response
 
         self.createPolicy("reset")
         response = self.make_userselfservice_request('reset',
                                 auth_user=auth_user)
-        print response
+        print(response)
         assert 'Missing parameter: ' in response
         assert '"code": 905' in response
 
@@ -117,32 +116,32 @@ class TestSelfserviceController(TestController):
                                         'user': 'passthru_user1@myDefRealm',
                                         'pin': "secret"
                                         })
-        print response
+        print(response)
         assert '"status": true' in response
 
         for i in "12345678901234567890":
             response = self.make_validate_request('check',
                                     params={'user': 'passthru_user1@myDefRealm',
                                             'pass': 'wrongpass'})
-            print response
+            print(response)
             assert '"value": false' in response
 
         response = self.make_userselfservice_request('reset',
                                 auth_user=auth_user,
                                 params={'serial': 'reset01'})
-        print response
+        print(response)
         assert '"status": true' in response
         assert '"reset Failcounter": 1' in response
 
         response = self.make_validate_request('check',
                                 params={'user': 'passthru_user1@myDefRealm',
                                         'pass': 'secret'})
-        print response
+        print(response)
         assert '"value": true' in response
 
         response = self.make_selfservice_request('reset',
                                 auth_user=auth_user)
-        print response
+        print(response)
         assert "<div id='resetform'>" in response
 
     def test_resync(self):
@@ -156,14 +155,14 @@ class TestSelfserviceController(TestController):
 
         response = self.make_userselfservice_request('resync',
                                 auth_user=auth_user)
-        print response
+        print(response)
         assert '"status": false' in response
         assert '"code": -311' in response
 
         self.createPolicy("resync")
         response = self.make_userselfservice_request('resync',
                                 auth_user=auth_user)
-        print response
+        print(response)
         assert 'Missing parameter' in response
         assert '"code": 905' in response
 
@@ -174,7 +173,7 @@ class TestSelfserviceController(TestController):
                                         'pin': "secret",
                                         'otpkey': '6161e082d736d3d9d67bc1d4711ff1a81af26160'
                                         })
-        print response
+        print(response)
         assert '"status": true' in response
 
         response = self.make_userselfservice_request('resync',
@@ -182,7 +181,7 @@ class TestSelfserviceController(TestController):
                                 params={'serial': 'XXXX',
                                         "otp1": "359864",
                                         "otp2": "348448" })
-        print response
+        print(response)
         assert '"status": false' in response
         assert 'no token found!' in response
 
@@ -191,13 +190,13 @@ class TestSelfserviceController(TestController):
                                 params={'serial': 'token01',
                                         "otp1": "885497",
                                         "otp2": "696793" })
-        print response
+        print(response)
         assert '"status": true' in response
         assert '"resync Token": true' in response
 
         response = self.make_selfservice_request('resync',
                                 auth_user=auth_user)
-        print response
+        print(response)
         assert "<div id='resyncform'>" in response
 
 
@@ -215,15 +214,15 @@ class TestSelfserviceController(TestController):
                                 auth_user=auth_user,
                                 params={'serial': 'XXXX',
                                         'pin': '1234'})
-        print response
+        print(response)
         assert '"status": false' in response
         assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response
 
         self.createPolicy("setMOTPPIN")
         response = self.make_userselfservice_request('setmpin',
                                 auth_user=auth_user)
-        print response
-        assert 'Missing parameter: \'pin\'' in response
+        print(response)
+        assert "Missing parameter: ''pin''" in response
         assert '"code": 905' in response
 
 
@@ -234,20 +233,20 @@ class TestSelfserviceController(TestController):
                                         'pin': "secret",
                                         'otpkey': '6161e082d736d3d9d67bc1d4711ff1a81af26160'
                                         })
-        print response
+        print(response)
         assert '"status": true' in response
 
         response = self.make_userselfservice_request('setmpin',
                                 auth_user=auth_user,
                                 params={'serial': 'token01',
                                         'pin': '1234'})
-        print response
+        print(response)
         assert '"status": true' in response
         assert '"set userpin": 1' in response
 
         response = self.make_selfservice_request('setmpin',
                                 auth_user=auth_user)
-        print response
+        print(response)
         assert "<div id='passwordform'>" in response
 
 
@@ -260,7 +259,7 @@ class TestSelfserviceController(TestController):
                                         'type': 'spass',
                                         'user': 'passthru_user1@myDefRealm',
                                         })
-        print response
+        print(response)
         assert '"status": true' in response
 
         auth_user = {
@@ -271,15 +270,15 @@ class TestSelfserviceController(TestController):
                                 auth_user=auth_user,
                                 params={'serial': 'spass01',
                                         'pin': '1234'})
-        print response
+        print(response)
         assert '"status": false' in response
         assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response
 
         self.createPolicy("setOTPPIN")
         response = self.make_userselfservice_request('setpin',
                                 auth_user=auth_user)
-        print response
-        assert 'Missing parameter: \'userpin\'' in response
+        print(response)
+        assert "Missing parameter: ''userpin''" in response
         assert '"code": 905' in response
 
 
@@ -287,27 +286,27 @@ class TestSelfserviceController(TestController):
                                 auth_user=auth_user,
                                 params={'serial': 'spass01',
                                         'userpin': 'secretPin'})
-        print response
+        print(response)
         assert '"status": true' in response
         assert '"set userpin": 1' in response
 
         response = self.make_validate_request('check',
                                 params={'user': 'passthru_user1@myDefRealm',
                                         'pass': 'secretPin'})
-        print response
+        print(response)
         assert '"status": true' in response
         assert '"value": true' in response
 
         response = self.make_selfservice_request('setpin',
                                 auth_user=auth_user)
-        print response
+        print(response)
         assert "<div id='passwordform'>" in response
 
         # testing the index and the list of the tokens
         response = self.make_selfservice_request('index',
                                 auth_user=auth_user)
 
-        print "%r" % response
+        print("%r" % response)
 
     def test_get_serial_by_otp(self):
         '''
@@ -323,16 +322,16 @@ class TestSelfserviceController(TestController):
                                 auth_user=auth_user,
                                 params={'type': 'hmac',
                                         'otp': '885497'})
-        print response
+        print(response)
         assert '"status": false' in response
-        assert '"message": "ERR410: The policy settings do not allow you to request a serial by OTP!",' in response
+        assert '"message": "ERR410: The policy settings do not allow you to request a serial by OTP!"' in response
 
         response = self.make_admin_request('init',
                                 params={'serial':'token01',
                                         'type': 'hmac',
                                         'otpkey': 'c4a3923c8d97e03af6a12fa40264c54b8429cf0d'
                                         })
-        print response
+        print(response)
         assert '"status": true' in response
 
         self.createPolicy("getserial")
@@ -340,14 +339,14 @@ class TestSelfserviceController(TestController):
                                 auth_user=auth_user,
                                 params={'type': 'hmac',
                                         'otp': '459812'})
-        print response
+        print(response)
         # The token is not found, as it is not in the realm of the user
         assert '"serial": ""' in response
 
         response = self.make_admin_request('tokenrealm',
                                 params={'serial': 'token01',
                                         'realms': 'myDefRealm'})
-        print response
+        print(response)
         assert '"value": 1' in response
 
         # NOw the token is found
@@ -355,7 +354,7 @@ class TestSelfserviceController(TestController):
                                 auth_user=auth_user,
                                 params={'type': 'hmac',
                                         'otp': '459812'})
-        print response
+        print(response)
         assert '"serial": "token01"' in response
 
     def test_assign(self):
@@ -370,14 +369,14 @@ class TestSelfserviceController(TestController):
                                         'type': 'hmac',
                                         'otpkey': 'c4a3923c8d97e03af6a12fa40264c54b8429cf0d'
                                         })
-        print response
+        print(response)
         assert '"status": true' in response
 
         # put into realm
         response = self.make_admin_request('tokenrealm',
                                 params={'serial': 'token01',
                                         'realms': 'myDefRealm'})
-        print response
+        print(response)
         assert '"value": 1' in response
 
         # Now try to assign
@@ -389,39 +388,39 @@ class TestSelfserviceController(TestController):
         response = self.make_userselfservice_request('assign',
                             auth_user=auth_user, params={'serial': 'token01'})
 
-        print response
+        print(response)
         assert '"message": "ERR410: ' in response
 
         self.createPolicy("assign")
         response = self.make_userselfservice_request('assign',
                                 auth_user=auth_user,
                                 params={'serial': 'token01'})
-        print response
+        print(response)
         assert '"assign token": true' in response
 
         # unassign
         response = self.make_userselfservice_request('unassign',
                                 auth_user=auth_user,
                                 params={'serial': 'token01'})
-        print response
-        assert '"message": "ERR410: The policy settings do not allow you to issue this request!",' in response
+        print(response)
+        assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response
 
         self.createPolicy("unassign")
         response = self.make_userselfservice_request('unassign',
                                 auth_user=auth_user,
                                 params={'serial': 'token01'})
-        print response
+        print(response)
         assert '"unassign token": true' in response
 
         # UI
         response = self.make_selfservice_request('assign',
                                 auth_user=auth_user)
-        print response
+        print(response)
         assert "<div id='assignform'>" in response
 
         response = self.make_selfservice_request('unassign',
                                 auth_user=auth_user)
-        print response
+        print(response)
         assert "<div id='unassignform'>" in response
 
 
@@ -437,7 +436,7 @@ class TestSelfserviceController(TestController):
                                         'otpkey': 'c4a3923c8d97e03af6a12fa40264c54b8429cf0d',
                                         'user': 'passthru_user1@myDefRealm'
                                         })
-        print response
+        print(response)
         assert '"status": true' in response
 
         auth_user = {
@@ -447,20 +446,20 @@ class TestSelfserviceController(TestController):
         response = self.make_userselfservice_request('delete',
                                 auth_user=auth_user,
                                 params={'serial': 'token01'})
-        print response
+        print(response)
         assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response
 
         self.createPolicy("delete")
         response = self.make_userselfservice_request('delete',
                                 auth_user=auth_user,
                                 params={'serial': 'token01'})
-        print response
+        print(response)
         assert '"delete token": 1' in response
 
         # UI
         response = self.make_selfservice_request('delete',
                                 auth_user=auth_user)
-        print response
+        print(response)
         assert "<div id='deleteform'>" in response
 
     def test_disable(self):
@@ -475,7 +474,7 @@ class TestSelfserviceController(TestController):
                                         'otpkey': 'c4a3923c8d97e03af6a12fa40264c54b8429cf0d',
                                         'user': 'passthru_user1@myDefRealm'
                                         })
-        print response
+        print(response)
         assert '"status": true' in response
 
         # disable
@@ -487,19 +486,19 @@ class TestSelfserviceController(TestController):
         response = self.make_userselfservice_request('disable',
                                 auth_user=auth_user,
                                 params={'serial': 'token01'})
-        print response
-        assert '"message": "ERR410: The policy settings do not allow you to issue this request!",' in response
+        print(response)
+        assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response
 
         self.createPolicy("disable")
         response = self.make_userselfservice_request('disable',
                                 auth_user=auth_user,
                                 params={'serial': 'token01'})
-        print response
+        print(response)
         assert '"disable token": 1' in response
 
         response = self.make_admin_request('show',
                                 params={'serial': 'token01'})
-        print response
+        print(response)
         assert '"LinOtp.TokenSerialnumber": "token01",' in response
         assert '"LinOtp.Isactive": false' in response
 
@@ -508,31 +507,31 @@ class TestSelfserviceController(TestController):
         response = self.make_userselfservice_request('enable',
                                 auth_user=auth_user,
                                 params={'serial': 'token01'})
-        print response
+        print(response)
         assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response
 
         self.createPolicy("enable")
         response = self.make_userselfservice_request('enable',
                                 auth_user=auth_user,
                                 params={'serial': 'token01'})
-        print response
+        print(response)
         assert '"enable token": 1' in response
 
         response = self.make_admin_request(
                         'show', params={'serial': 'token01'})
-        print response
+        print(response)
         assert '"LinOtp.TokenSerialnumber": "token01",' in response
         assert '"LinOtp.Isactive": true' in response
 
         # UI
         response = self.make_selfservice_request('disable',
                                 auth_user=auth_user)
-        print response
+        print(response)
         assert "<div id='disableform'>" in response
 
         response = self.make_selfservice_request('enable',
                                 auth_user=auth_user)
-        print response
+        print(response)
         assert "<div id='enableform'>" in response
 
     def test_init(self):
@@ -551,7 +550,7 @@ class TestSelfserviceController(TestController):
                                         'type': 'hmac',
                                         'otpkey': 'c4a3923c8d97e03af6a12fa40264c54b8429cf0d'
                                         })
-        print response
+        print(response)
         assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response
 
         self.createPolicy('enrollHMAC')
@@ -562,12 +561,12 @@ class TestSelfserviceController(TestController):
                                         'type': 'hmac',
                                         'otpkey': 'c4a3923c8d97e03af6a12fa40264c54b8429cf0d'
                                         })
-        print response
+        print(response)
         assert '"status": true' in response
 
         response = self.make_admin_request(
                         'show', params={'serial': 'token01'})
-        print response
+        print(response)
         assert '"LinOtp.TokenSerialnumber": "token01",' in response
         assert '"LinOtp.Isactive": true' in response
 
@@ -589,7 +588,7 @@ class TestSelfserviceController(TestController):
                                         'type': 'spass',
                                         'pin': '!token0secret!'
                                         })
-        print response
+        print(response)
         assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response
 
         ''' Verify that a spass token is properly created '''
@@ -602,12 +601,12 @@ class TestSelfserviceController(TestController):
                                         'onetime': 'true',
                                         'pin': '!token0secret!'
                                         })
-        print response
+        print(response)
         assert '"status": true' in response
 
         response = self.make_admin_request(
                         'show', params={'serial': 'token01'})
-        print response
+        print(response)
         assert '"LinOtp.TokenSerialnumber": "token01",' in response
         assert '"LinOtp.Isactive": true' in response
 
@@ -640,7 +639,9 @@ class TestSelfserviceController(TestController):
                                 params={'serial':'token01',
                                         'type': 'hmac'})
 
-        self.assertTrue('"message": "valid types are \'oathtoken\' and \'googleauthenticator\' and \'googleauthenticator_time\'. You provided hmac",' in response,response)
+        message = ("valid types are \'oathtoken\' and \'googleauthenticator\' "
+                   "and \'googleauthenticator_time\'. You provided hmac")
+        assert response.json['result']['error']['message'] == message, response
 
         response = self.make_userselfservice_request('webprovision',
                                 auth_user=auth_user,
@@ -648,7 +649,7 @@ class TestSelfserviceController(TestController):
                                         'type': 'googleauthenticator'
                                         })
 
-        self.assertTrue('"message": "ERR410: The policy settings do not allow you to issue this request!"' in response,response)
+        assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response,response
 
         self.createPolicy('webprovisionGOOGLE')
 
@@ -657,20 +658,20 @@ class TestSelfserviceController(TestController):
                                 params={'prefix':'LSGO',
                                         'type': 'googleauthenticator'
                                         })
-        self.assertTrue('"url": "otpauth://hotp/LinOTP:LSGO' in response,
-                        response)
+        assert '"url": "otpauth://hotp/LinOTP:LSGO' in response, \
+                        response
 
         # test
         response = self.make_admin_request(
                     'show', params={'user': 'passthru_user1@myDefRealm'})
-        self.assertTrue('"LinOtp.TokenSerialnumber": "LSGO' in response,response)
-        self.assertTrue('"LinOtp.Isactive": true' in response, response)
+        assert '"LinOtp.TokenSerialnumber": "LSGO' in response,response
+        assert '"LinOtp.Isactive": true' in response, response
 
         # UI
 
         response = self.make_selfservice_request('webprovisiongoogletoken',
                                 auth_user=auth_user)
-        self.assertTrue("googletokenform" in response.body, response)
+        assert "googletokenform" in response.body, response
 
         return
 
@@ -708,4 +709,4 @@ class TestSelfserviceController(TestController):
         response_dict = json.loads(response.body)
 
         user = response_dict['user']
-        self.assertEqual(user, 'passthru_user1')
+        assert user == 'passthru_user1'

@@ -23,6 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+from linotp.lib.crypto.utils import compare
 '''
 Declare the SecretObject to encapsulate security aspects
 '''
@@ -45,26 +46,36 @@ from pysodium import crypto_scalarmult_curve25519 as calc_dh
 
 from Cryptodome.Cipher import AES
 
-from linotp.lib.crypto.utils import libcrypt_password
-from linotp.lib.crypto.utils import get_hashalgo_from_description
-from linotp.lib.crypto.utils import hash_digest
-from linotp.lib.crypto.utils import hmac_digest
-from linotp.lib.crypto.utils import encryptPin
-from linotp.lib.crypto.utils import decryptPin
-from linotp.lib.crypto.utils import encrypt
-from linotp.lib.crypto.utils import decrypt
-from linotp.lib.crypto.utils import zerome
-from linotp.lib.crypto.utils import geturandom
-from linotp.lib.crypto.utils import get_dh_secret_key
+from linotp.lib.crypto import utils
 
-
-# for the hmac algo, we have to check the python version
-(python_major, python_minor, _, _, _,) = sys.version_info
 
 log = logging.getLogger(__name__)
 
 
 class SecretObj(object):
+    """
+    High level interface to security operations
+
+    This provides high level security operations without
+    needing access to the secure data
+
+    This is to be used by token implementations and
+    classes that need encrypted data such as the
+    database fields
+
+    The encryption operations themselves are realised
+    using a SecurityModule (such as HSM, PKCS11)
+
+    The class implementation ensures that secret keys
+    are not left around in memory after an operation
+    has been carried out.
+
+    It is possible to use this in two modes: With HSM,
+    where operations are passed to the HSM, and without
+    where a potentially degraded implementation is used.
+    This is to provide the functionality during startup,
+    before the HSM is ready.
+    """
     def __init__(self, val, iv, preserve=True, hsm=None):
         self.val = val
         self.iv = iv
@@ -74,7 +85,7 @@ class SecretObj(object):
 
     def getKey(self):
         log.debug('Warning: Requesting secret key as plaintext.')
-        return decrypt(self.val, self.iv, hsm=self.hsm)
+        return utils.decrypt(self.val, self.iv, hsm=self.hsm)
 
     def calc_dh(self, partition, data):
         """
@@ -86,16 +97,16 @@ class SecretObj(object):
         :param partition: the id of the server secret key
         :param :
         """
-        server_secret_key = get_dh_secret_key(partition)
+        server_secret_key = utils.get_dh_secret_key(partition)
         hmac_secret = calc_dh(server_secret_key, data)
 
-        zerome(server_secret_key)
+        utils.zerome(server_secret_key)
 
         return hmac_secret
 
     def compare(self, key):
         bhOtpKey = binascii.unhexlify(key)
-        enc_otp_key = encrypt(bhOtpKey, self.iv, hsm=self.hsm)
+        enc_otp_key = utils.encrypt(bhOtpKey, self.iv, hsm=self.hsm)
         otpKeyEnc = binascii.hexlify(enc_otp_key)
 
         return (otpKeyEnc == self.val)
@@ -119,41 +130,32 @@ class SecretObj(object):
         :return: boolean
         '''
 
-        if self.iv == ':1:':
+        if self.iv == b':1:':
 
-            crypted_password = libcrypt_password(password, self.val)
-
-            # position independend string comparison
-
-            result = True
-            for tup1, tup2 in zip(crypted_password, self.val):
-                result = result and (tup1 == tup2)
-
-            return result
+            return utils.compare_password(
+                password, self.val.decode('utf-8'))
 
         # the legacy comparison: compare the ecrypted password
 
-        enc_otp_key = encrypt(password, self.iv, hsm=self.hsm)
+        enc_otp_key = utils.encrypt(password, self.iv, hsm=self.hsm)
 
-        return binascii.hexlify(enc_otp_key) == binascii.hexlify(self.val)
+        return compare(
+            binascii.hexlify(enc_otp_key),binascii.hexlify(self.val))
+
 
     def hmac_digest(self, data_input, hash_algo=None, bkey=None):
 
         b_key = bkey
 
         if not bkey:
-            self._setupKey_()
-            b_key = self.bkey
+            b_key = self._setupKey_()
 
-        if (python_major, python_minor) > (2, 6):
-            data = data_input
-        else:
-            data = str(data_input)
+        data = data_input
 
         if not hash_algo:
-            hash_algo = get_hashalgo_from_description('sha1')
+            hash_algo = utils.get_hashalgo_from_description('sha1')
 
-        h_digest = hmac_digest(bkey=b_key, data_input=data,
+        h_digest = utils.hmac_digest(bkey=b_key, data_input=data,
                                hsm=self.hsm, hash_algo=hash_algo)
 
         if not bkey:
@@ -175,54 +177,105 @@ class SecretObj(object):
         return msg_bin
 
     @staticmethod
-    def encrypt(seed, iv=None, hsm=None):
+    def encrypt(seed: str, iv=None, hsm=None):
         if not iv:
-            iv = geturandom(16)
-        enc_seed = encrypt(seed, iv, hsm=hsm)
+            iv = utils.geturandom(16)
+        enc_seed = utils.encrypt(seed, iv, hsm=hsm)
         return iv, enc_seed
 
     @staticmethod
     def decrypt(enc_seed, iv=None, hsm=None):
-        dec_seed = decrypt(enc_seed, iv=iv, hsm=hsm)
+        dec_seed = utils.decrypt(enc_seed, iv=iv, hsm=hsm)
         return dec_seed
 
     @staticmethod
-    def hash_pin(pin, iv=None, hsm=None):
-        if not iv:
-            iv = geturandom(16)
-        hashed_pin = hash_digest(pin, iv, hsm=hsm)
+    def hash_pin(pin):
+        """
+        hash a given pin
+
+        :param pin:
+        :return: a concatenated 'iv:hashed_pin'
+        """
+
+        iv = utils.geturandom(16)
+        hashed_pin = utils.hash_digest(pin.encode('utf-8'), iv)
         return iv, hashed_pin
 
     @staticmethod
-    def encrypt_pin(pin, iv=None, hsm=None):
+    def check_hashed_pin(pin: str, hashed_pin: bytes, iv: bytes) -> bool:
         """
-        returns a concatenated 'iv:crypt'
+        check a hashed against a given pin
+
+        :param hashed_pin: hex binary
+        :param iv: hex binary iv from former decryption step
+        :param pin: string
+        :return: boolean
         """
-        if not iv:
-            iv = geturandom(16)
-        enc_pin = encryptPin(pin, iv=iv, hsm=hsm)
+
+        hash_pin = utils.hash_digest(pin.encode('utf-8'), iv)
+
+        # TODO: position independend compare
+        if hashed_pin == hash_pin:
+            return True
+
+        return False
+
+    @staticmethod
+    def encrypt_pin(pin: str):
+        """
+        encrypt a given pin
+
+        :param pin:
+        :return: a concatenated 'iv:crypt'
+        """
+
+        iv = utils.geturandom(16)
+        enc_pin = utils.encryptPin(pin.encode('utf-8'), iv=iv)
+
         return enc_pin
 
     @staticmethod
+    def check_encrypted_pin(pin:str, encrypted_pin:bytes, iv:bytes) -> bool:
+        """
+        check an encrypted against a given pin
+
+        :param encrypted_pin: hex binary
+        :param iv: hex binary iv from former decryption step
+        :param pin: string
+        :return: boolean
+        """
+
+        crypted_pin = utils.encryptPin(pin.encode('utf-8'), iv)
+
+        # TODO: position independend compare
+        if encrypted_pin == crypted_pin.encode('utf-8'):
+            return True
+
+        return False
+
+    @staticmethod
     def decrypt_pin(pin, hsm=None):
-        dec_pin = decryptPin(pin, hsm=hsm)
+        dec_pin = utils.decryptPin(pin, hsm=hsm)
         return dec_pin
 
     def encryptPin(self):
         self._setupKey_()
-        res = encryptPin(self.bkey)
+        res = utils.encryptPin(self.bkey)
         self._clearKey_(preserve=self.preserve)
         return res
 
     def _setupKey_(self):
+
         if not hasattr(self, 'bkey'):
             self.bkey = None
 
         if self.bkey is None:
-            akey = decrypt(self.val, self.iv, hsm=self.hsm)
-            self.bkey = binascii.unhexlify(akey)
-            zerome(akey)
-            del akey
+            self.bkey = binascii.unhexlify(
+                self.decrypt(
+                    self.val, self.iv, hsm=self.hsm)
+                )
+
+        return self.bkey
 
     def _clearKey_(self, preserve=False):
         if preserve is False:
@@ -231,7 +284,7 @@ class SecretObj(object):
                 self.bkey = None
 
             if self.bkey is not None:
-                zerome(self.bkey)
+                utils.zerome(self.bkey)
                 del self.bkey
 
     def __del__(self):
