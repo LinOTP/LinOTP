@@ -9,7 +9,7 @@ The steps in a nutshell:
 2. set up your environment by installing all required packages and tools
 3. configure LinOTP
 4. run a LinOTP test server
-5. run unit and functional tests
+5. run unit, functional and integration tests
 
 
 Get the source code
@@ -88,6 +88,17 @@ Additionally you can execute the tests in a single file by passing the path to t
 
 See the [Pytest documentation](https://docs.pytest.org/) for more information about using pytest.
 
+### Integration tests
+
+To run integration tests with selenium, please make sure that your system has `chromedriver` installed.
+
+Then start a LinOTP flask instance, and edit `linotpd/src/linotp/tests/integration/server_cfg.ini` so that the `[linotp]` section points to it.
+
+You can now execute integration tests with:
+
+    pytest --tc-file=linotpd/src/linotp/tests/integration/server_cfg.ini <path_to_test_file>
+
+You can find sample test files under `linotpd/src/linotp/tests/integration`.
 
 Typechecking with mypy
 ----------------------
