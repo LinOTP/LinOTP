@@ -6,10 +6,10 @@ This document guides you through the process of setting up a development environ
 The steps in a nutshell:
 
 1. get the LinOTP source code
-1. set up your system by installing all required packages and tools
-1. configure LinOTP
-1. run a LinOTP test server
-1. run unit and functional tests
+2. set up your environment by installing all required packages and tools
+3. configure LinOTP
+4. run a LinOTP test server
+5. run unit and functional tests
 
 
 Get the source code
