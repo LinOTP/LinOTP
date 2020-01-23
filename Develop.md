@@ -25,12 +25,12 @@ Set up your LinOTP development environment
 
 If you want to develop LinOTP you first need to install some packages. As superuser on a Debian-based system, run:
 
-    apt-get install python-virtualenv python-dev \
-                    python-paste python-pastedeploy \
-                    python-pastescript python-mysqldb \
+    apt-get install python3-virtualenv python3-dev \
+                    python3-paste python3-pastedeploy \
+                    python3-pastescript python3-mysqldb \
                     swig gcc libssl-dev libldap2-dev \
                     mariadb-server libmariadbclient-dev \
-                    libsasl2-dev python-m2crypto
+                    libsasl2-dev
 
 Notes:
  - libsasl2-dev and libldap2-dev system packages are required to install the `python-ldap` dependency via pip
@@ -44,11 +44,11 @@ Consider setting up a dedicated virtual environment now. This allows you to inst
 Then go to the *source code directory* and install the development dependencies:
 
     cd linotpd/src
-    pip install -e .
+    pip3 install -e .
 
 In order to run tests you must also install the test dependencies:
 
-    pip install -e ".[test]"
+    pip3 install -e ".[test]"
 
 
 Configuration
@@ -105,7 +105,7 @@ Typechecking with mypy
 
 To run a type check on the source code, install mypy and the stubs for sqlalchemy:
 ```
-pip install mypy sqlalchemy-stubs
+pip3 install mypy sqlalchemy-stubs
 ```
 
 Then run mypy on a directory of your choice like so:
