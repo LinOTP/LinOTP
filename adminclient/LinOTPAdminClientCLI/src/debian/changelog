@@ -1,3 +1,9 @@
+linotp-adminclient-cli (2.90rc0) buster; urgency=low
+
+  * Set new version 2.90rc0
+
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 23 Jan 2020 11:42:00 +0200
+
 linotp-adminclient-cli (2.90~0dev0-1) buster; urgency=low
 
   * Set new version 2.90~0dev0-1
