@@ -40,7 +40,7 @@ import sys
 import re
 import getpass
 import base64
-import linotp.lib.pbkdf2 as pbkdf2
+import linotp.lib.crypto.pbkdf2 as pbkdf2
 from linotp.lib.ImportOTP.PSKC import aes_decrypt
 import xml.etree.cElementTree as etree
 import binascii
