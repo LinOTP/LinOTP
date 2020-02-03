@@ -181,3 +181,119 @@ class TestUserserviceTokenTest(TestController):
         assert 'false' in response
         assert 'not supported by now' in response
 
+    def test_negative_userservice_verify(self):
+        """
+        verify that error handling is in place
+        """
+
+        auth_user = {
+            'login': 'passthru_user1@myDefRealm',
+            'password': 'geheim1'}
+
+        # ------------------------------------------------------------------ --
+
+        policy = {
+            'name': 'T1',
+            'action': 'enrollTOTP, enrollHMAC, delete, history, verify,',
+            'user': ' passthru.*.myDefRes:',
+            'realm': '*',
+            'scope': 'selfservice'
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response, response
+
+        # ------------------------------------------------------------------ --
+
+        # 1. token
+
+        serial1 = 'token_1'
+
+        params = {'type': 'totp', 'genkey': '1', 'serial': serial1}
+        response = self.make_userselfservice_request(
+            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+
+        assert '"img": "<img ' in response, response
+
+        seed_value = response.json['detail']['otpkey']['value']
+        _, _, _seed1 = seed_value.partition('//')
+
+        # 2. token
+
+        serial2 = 'token_2'
+
+        params = {'type': 'hmac', 'genkey': '1', 'serial': serial2}
+        response = self.make_userselfservice_request(
+            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+
+        assert '"img": "<img ' in response, response
+
+        seed_value = response.json['detail']['otpkey']['value']
+        _, _, seed2 = seed_value.partition('//')
+
+        # ------------------------------------------------------------------ --
+
+        # verification with multiple tokens by wildcard 'token_*'
+
+        otp = get_otp(seed2, counter=1,  digits=6)
+
+        params = {'serial': 'token_*', 'otp': otp}
+        response = self.make_userselfservice_request(
+            'verify', params=params, auth_user=auth_user)
+
+        assert 'false' in response
+        assert 'multiple tokens found!' in response
+
+        # ------------------------------------------------------------------ --
+
+        # verification with no token 'nokto_*'
+
+        otp = get_otp(seed2, counter=1,  digits=6)
+
+        params = {'serial': 'nokto_*', 'otp': otp}
+        response = self.make_userselfservice_request(
+            'verify', params=params, auth_user=auth_user)
+
+        assert 'false' in response
+        assert 'no token found!' in response
+
+        # ------------------------------------------------------------------ --
+
+        # verification with wrong parameters
+
+        otp = get_otp(seed2, counter=1,  digits=6)
+
+        params = {'serial': 'token_1', 'oktop': otp}
+        response = self.make_userselfservice_request(
+            'verify', params=params, auth_user=auth_user)
+
+        assert 'false' in response
+        assert 'Missing parameter' in response
+
+        # ------------------------------------------------------------------ --
+
+        # verification with additional, not specified, parameters
+
+        otp = get_otp(seed2, counter=1,  digits=6)
+
+        params = {'serial': 'token_1', 'otp': otp, 'no': 'doubt'}
+        response = self.make_userselfservice_request(
+            'verify', params=params, auth_user=auth_user)
+
+        assert 'false' in response
+        assert 'unsupported parameters' in response
+
+        # ------------------------------------------------------------------ --
+
+        # check for execption if selfservice 'verify' policy is not defined
+
+        response = self.make_system_request('delPolicy', params={'name': 'T1'})
+        assert 'false' not in response
+
+        otp = get_otp(seed2, counter=1,  digits=6)
+
+        params = {'serial': 'nokto_*', 'otp': otp, 'no': 'doubt'}
+        response = self.make_userselfservice_request(
+            'verify', params=params, auth_user=auth_user)
+
+        assert 'false' in response
+        assert 'not allow' in response
