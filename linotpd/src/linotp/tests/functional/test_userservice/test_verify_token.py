@@ -146,4 +146,38 @@ class TestUserserviceTokenTest(TestController):
 
         assert 'false' not in response
 
-# eof #
+    def test_verify_sms_token(self):
+        """ verify that currently no challenge response token are supported """
+
+        policy = {
+            'name': 'T1',
+            'action': 'enrollSMS, delete, history, verify,',
+            'user': ' passthru.*.myDefRes:',
+            'realm': '*',
+            'scope': 'selfservice'
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response, response
+
+        auth_user = {
+            'login': 'passthru_user1@myDefRealm',
+            'password': 'geheim1'}
+
+        serial = 'sms123'
+
+        params = {'type': 'sms', 'serial': serial, 'phone': '049 123 452 4543'}
+        response = self.make_userselfservice_request(
+            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+
+        assert 'detail' in response, response
+
+        seed = response.json['detail']['otpkey']
+        otp = get_otp(seed, counter=2,  digits=6)
+
+        params = {'serial': serial, 'otp': otp}
+        response = self.make_userselfservice_request(
+            'verify', params=params, auth_user=auth_user)
+
+        assert 'false' in response
+        assert 'not supported by now' in response
+
