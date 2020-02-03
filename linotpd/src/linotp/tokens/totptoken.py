@@ -339,7 +339,7 @@ class TimeHmacTokenClass(HmacTokenClass):
                       % (self.token.LinOtpCount, ex, res))
             return res
 
-        res = self.checkOtp(otp, counter, window=None)
+        res = self.checkOtp(otp, counter, window=window)
 
         return res
 
