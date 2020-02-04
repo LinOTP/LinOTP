@@ -51,6 +51,8 @@ def notify_user(user, action, info, required=False):
     :param info: generic dict which is action specific
     :param required: if True an exception is raised if no notification could
                      be send eg if no provider is defined or could be found
+
+    :return: boolean - true if notification is enabled
     """
 
     policies = get_client_policy(
@@ -69,7 +71,7 @@ def notify_user(user, action, info, required=False):
 
         if provider_type == 'email':
             notify_user_by_email(provider_name, user, action, info)
-            return
+            return True
 
         # elif provider_type == 'sms':
         #    notify_user_by_email(provider_name, user, action, info)
@@ -80,6 +82,7 @@ def notify_user(user, action, info, required=False):
         raise NotificationException(
             'No notification has been sent - %r provider defined?' % action)
 
+    return False
 
 def notify_user_by_email(provider_name, user, action, info):
     """
