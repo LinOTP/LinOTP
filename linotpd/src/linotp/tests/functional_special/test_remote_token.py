@@ -37,7 +37,7 @@ import binascii
 import json
 import logging
 import smtplib
-import urlparse
+import urllib.parse
 
 import httplib2
 from mock import patch
@@ -56,7 +56,7 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
 
     resp = 200
     body = kwparams.get('body', '')
-    params = dict(urlparse.parse_qsl(body))
+    params = dict(urllib.parse.parse_qsl(body))
 
     content = {
         "version": "LinOTP MOCK",
@@ -121,7 +121,7 @@ class TestRemoteToken(TestSpecialController):
                          }
 
         response = self.make_admin_request('init', params=param_local_1)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         return serial
 
 
@@ -169,36 +169,36 @@ class TestRemoteToken(TestSpecialController):
                        }
 
         response = self.make_admin_request('init', params=param_local_1)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('init', params=param_local_2)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('init', params=parameters1)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('init', params=parameters2)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('set',
                                            params={'serial': 'LSPW1',
                                                    'pin': 'lspw1'})
-        self.assertTrue('"set pin": 1' in response, response)
+        assert '"set pin": 1' in response, response
 
         response = self.make_admin_request('set',
                                            params={'serial': 'LSPW2',
                                                    'pin': ''})
-        self.assertTrue('"set pin": 1' in response, response)
+        assert '"set pin": 1' in response, response
 
         response = self.make_admin_request('set',
                                            params={'serial': 'LSRE001',
                                                    'pin': 'local'})
-        self.assertTrue('"set pin": 1' in response, response)
+        assert '"set pin": 1' in response, response
 
         response = self.make_admin_request('set',
                                            params={'serial': 'LSRE002',
                                                    'pin': 'local'})
-        self.assertTrue('"set pin": 1' in response, response)
+        assert '"set pin": 1' in response, response
 
         return
 
@@ -216,14 +216,14 @@ class TestRemoteToken(TestSpecialController):
         parameters = {"serial": "LSPW2", "pass": "234567"}
         response = self.make_validate_request('check_s',
                                               params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # test for local missing pin, which whould be 'local'
         parameters = {"user": "localuser", "pass": "234567"}
         response = self.make_validate_request('check',
                                               params=parameters)
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         # test for local pin check + remote pw check
         def check_func1(params):
@@ -245,13 +245,13 @@ class TestRemoteToken(TestSpecialController):
         parameters = {"user": "localuser", "pass": "local234567"}
         response = self.make_validate_request('check',
                                               params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # Checking if a wrong local PIN will fail
         parameters = {"user": "localuser", "pass": "lspw1234567"}
         response = self.make_validate_request('check', params=parameters)
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         return
 
@@ -283,7 +283,7 @@ class TestRemoteToken(TestSpecialController):
         parameters = {"user": "remoteuser", "pass": "lspw1123456"}
         response = self.make_validate_request('check', params=parameters)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # Checking if a missing remote PIN will fail
         def check_func2(params):
@@ -305,7 +305,7 @@ class TestRemoteToken(TestSpecialController):
         parameters = {"user": "remoteuser", "pass": "123456"}
         response = self.make_validate_request('check', params=parameters)
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         # Checking if a wrong remote PIN will fail
         def check_func2(params):
@@ -326,7 +326,7 @@ class TestRemoteToken(TestSpecialController):
         parameters = {"user": "remoteuser", "pass": "local123456"}
         response = self.make_validate_request('check', params=parameters)
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         return
 
@@ -348,7 +348,7 @@ class TestRemoteToken(TestSpecialController):
             log.debug("Column Table name: %s : %s : %r"
                       % (column.name, column.type, column.index))
             if column.name == 'LinOtpTokenSerialnumber':
-                self.assertTrue(column.index is True, column.name)
+                assert column.index is True, column.name
 
 
         # create token and remote token which points to this
@@ -371,19 +371,19 @@ class TestRemoteToken(TestSpecialController):
                       }
 
         response = self.make_admin_request('init', params=parameters1)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # set pin to the target token and do remote token pin verification
         for offset in range(1, 20):
             pin_chars = []
             for i in range(1, 100):
-                pin_chars.append(unichr(0x28 * offset + i))
-            pin = u"pin" + u"".join(pin_chars)
+                pin_chars.append(chr(0x28 * offset + i))
+            pin = "pin" + "".join(pin_chars)
             pin = pin.encode('utf-8')
 
             params = {'serial': serial, 'pin': pin}
             response = self.make_admin_request('set', params=params)
-            self.assertTrue('"set pin": 1' in response, response)
+            assert '"set pin": 1' in response, response
 
             # Checking if a wrong remote PIN will fail
             def check_func3(params):
@@ -409,7 +409,7 @@ class TestRemoteToken(TestSpecialController):
 
             params = {'user': 'root', 'pass': pin}
             response = self.make_validate_request('check', params=params)
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
         for serial in serials:
             self.delete_token(serial)

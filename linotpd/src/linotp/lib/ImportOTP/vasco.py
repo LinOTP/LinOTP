@@ -46,7 +46,7 @@ from ctypes import c_byte
 from tempfile import NamedTemporaryFile
 
 
-from pylons import config
+from linotp.flap import config
 
 
 __all__ = ["parseVASCOdata", "vasco_otp_check"]
@@ -57,23 +57,30 @@ log = logging.getLogger(__name__)
 vasco_dll = None
 vasco_libs = []
 
-# get the Vacman Controller lib
-fallbacks = ["/opt/vasco/Vacman_Controller/lib/libaal2sdk.so"]
+def init_vasco():
+    """
+    Vasco library initialiser
+    """
+    global vasco_dll
+    global vasco_libs
 
-vasco_lib = config.get("linotpImport.vasco_dll")
-if not vasco_lib:
-    log.info("Missing linotpImport.vasco_dll in config file")
-else:
-    vasco_libs.append(vasco_lib)
+    # get the Vacman Controller lib
+    fallbacks = ["/opt/vasco/Vacman_Controller/lib/libaal2sdk.so"]
 
-vasco_libs.extend(fallbacks)
-for vasco_lib in vasco_libs:
-    try:
-        log.debug("loading vasco lib %r", vasco_lib)
-        vasco_dll = CDLL(vasco_lib)
-        break
-    except Exception as exx:
-        log.info("cannot load vasco library: %r", exx)
+    vasco_lib = config.get("linotpImport.vasco_dll")
+    if not vasco_lib:
+        log.info("Missing linotpImport.vasco_dll in config file")
+    else:
+        vasco_libs.append(vasco_lib)
+
+    vasco_libs.extend(fallbacks)
+    for vasco_lib in vasco_libs:
+        try:
+            log.debug("loading vasco lib %r", vasco_lib)
+            vasco_dll = CDLL(vasco_lib)
+            break
+        except Exception as exx:
+            log.info("cannot load vasco library: %r", exx)
 
 
 # decorator: check_vasco
@@ -451,16 +458,16 @@ def vasco_otp_check(otpkey, otp):
 def test():
     tokens = parseVASCOdata("Demo_GO6.DPX")
 
-    for token, token_data in tokens.items():
-        print token
-        print token_data
+    for token, token_data in list(tokens.items()):
+        print(token)
+        print(token_data)
         data = pickle.loads(token_data['hmac_key'])
         passw = "000000"
         while passw != "X":
-            print "=========== Verify Password ============"
-            passw = raw_input("Enter OTP:")
+            print("=========== Verify Password ============")
+            passw = input("Enter OTP:")
             (res, data) = vasco_otp_check(data, passw)
 
-            print res
+            print(res)
 
 # eof #######################################################################

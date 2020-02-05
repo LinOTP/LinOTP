@@ -85,21 +85,21 @@ class TestPolicyMaxtoken(TestController):
         for i in range(1, 4):
             token_params = {'serial': '#TCOUNT%d' % i, }
             response = self.enroll_token(token_params)
-            self.assertTrue('#TCOUNT%d' % i in response)
+            assert '#TCOUNT%d' % i in response
 
         for i in range(1, 3):
 
             params = {'serial': '#TCOUNT%d' % i,
                       'user': 'def'}
             response = self.make_admin_request('assign', params=params)
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
         i = 3
         params = {'serial': '#TCOUNT%d' % i,
                   'user': 'def'}
         response = self.make_admin_request('assign', params=params)
         message = "ERR410: The maximum number of allowed tokens"
-        self.assertTrue(message in response, response)
+        assert message in response, response
 
         return
 
@@ -127,7 +127,7 @@ class TestPolicyMaxtoken(TestController):
             token_params = {'serial': '#TCOUNT%d' % i,
                             'user': 'def'}
             response = self.enroll_token(token_params)
-            self.assertTrue('#TCOUNT%d' % i in response)
+            assert '#TCOUNT%d' % i in response
 
         i = 3
         token_params = {'serial': '#TCOUNT%d' % i,
@@ -135,7 +135,7 @@ class TestPolicyMaxtoken(TestController):
         response = self.enroll_token(token_params)
         message = ("ERR410: The maximum number of allowed tokens per user "
                    "is exceeded")
-        self.assertTrue(message in response, response)
+        assert message in response, response
 
         return
 

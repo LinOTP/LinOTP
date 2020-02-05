@@ -27,16 +27,15 @@
 import logging
 import os
 
-from pylons import request
-from pylons import response
+from werkzeug.exceptions import InternalServerError
 
-from pylons.controllers.util import abort
+from linotp.flap import request, response, abort, config
 
 from linotp.lib.context import request_context
 
 from linotp.lib.reply import sendResult
 from linotp.lib.reply import sendError
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.logs import set_logging_level
 
 from linotp.model import Config
@@ -55,16 +54,21 @@ class MaintenanceController(BaseController):
     log levels) at runtime
     """
 
-    def __before__(self, action, **params):
+    def __before__(self, **params):
         """
+        __before__ is called before every action
+
         we check if the client cert was valid by looking for
-        the existance of an env variable. for apache this is
-        SSL_CLIENT_S_DN_CN. to support other servers we read
-        the name of the variable from the config
+        the existance of a CGI environment variable. For apache
+        this is SSL_CLIENT_S_DN_CN. To support other servers we
+        read the name of the variable from the config
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
         """
 
-        env_var = request_context['Config'].get(
-            'maintenance_verify_client_env_var', False)
+        env_var = config.get('MAINTENANCE_VERIFY_CLIENT_ENV_VAR', False)
 
         if env_var:
 
@@ -136,7 +140,7 @@ class MaintenanceController(BaseController):
         except Exception as exx:
             Session.rollback()
             log.exception(exx)
-            abort(500, "%r" % exx.message)
+            raise InternalServerError(str(exx))
 
         finally:
             Session.close()

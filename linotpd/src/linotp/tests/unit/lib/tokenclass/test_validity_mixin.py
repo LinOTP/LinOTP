@@ -81,7 +81,7 @@ class TestTokenValidityMixin(unittest.TestCase):
             if fake_token.count_auth > fake_token.count_auth_max:
                 break
 
-        self.assertTrue(fake_token.count_auth == 4, fake_token)
+        assert fake_token.count_auth == 4, fake_token
 
         return
 
@@ -94,13 +94,13 @@ class TestTokenValidityMixin(unittest.TestCase):
 
         fake_token.count_auth_max = 3
 
-        self.assertTrue(fake_token.count_auth_max == 3, fake_token)
+        assert fake_token.count_auth_max == 3, fake_token
 
         fake_token.del_count_auth_max()
 
         t_info = fake_token.getTokenInfo()
 
-        self.assertTrue('count_auth_max' not in t_info, fake_token)
+        assert 'count_auth_max' not in t_info, fake_token
 
         return
 
@@ -120,7 +120,7 @@ class TestTokenValidityMixin(unittest.TestCase):
             if fake_token.count_auth > fake_token.count_auth_max:
                 break
 
-        self.assertTrue(fake_token.count_auth == 4, fake_token)
+        assert fake_token.count_auth == 4, fake_token
 
         return
 
@@ -143,7 +143,7 @@ class TestTokenValidityMixin(unittest.TestCase):
                 fake_token.count_auth_success_max):
                 break
 
-        self.assertTrue(fake_token.count_auth_success == 4, fake_token)
+        assert fake_token.count_auth_success == 4, fake_token
 
         return
 
@@ -161,7 +161,7 @@ class TestTokenValidityMixin(unittest.TestCase):
                 fake_token.count_auth_success_max):
                 break
 
-        self.assertTrue(fake_token.count_auth_success == 4, fake_token)
+        assert fake_token.count_auth_success == 4, fake_token
 
         return
 
@@ -174,13 +174,13 @@ class TestTokenValidityMixin(unittest.TestCase):
 
         fake_token.count_auth_success_max = 3
 
-        self.assertTrue(fake_token.count_auth_success_max == 3, fake_token)
+        assert fake_token.count_auth_success_max == 3, fake_token
 
         fake_token.del_count_auth_success_max()
 
         t_info = fake_token.getTokenInfo()
 
-        self.assertTrue('count_auth_success_max' not in t_info, fake_token)
+        assert 'count_auth_success_max' not in t_info, fake_token
 
     # ---------------------------------------------------------------------- --
 
@@ -197,13 +197,13 @@ class TestTokenValidityMixin(unittest.TestCase):
         end_time_str = datetime.strftime(end_time, "%d/%m/%y %H:%M")
         fake_token.validity_period_end = end_time_str
 
-        self.assertTrue(fake_token.validity_period_end, fake_token)
+        assert fake_token.validity_period_end, fake_token
 
         fake_token.del_validity_period_end()
 
         t_info = fake_token.getTokenInfo()
 
-        self.assertTrue('validity_period_end' not in t_info, fake_token)
+        assert 'validity_period_end' not in t_info, fake_token
 
         return
 
@@ -220,13 +220,13 @@ class TestTokenValidityMixin(unittest.TestCase):
         start_time_str = datetime.strftime(start_time, "%d/%m/%y %H:%M")
         fake_token.validity_period_start = start_time_str
 
-        self.assertTrue(fake_token.validity_period_start, fake_token)
+        assert fake_token.validity_period_start, fake_token
 
         fake_token.del_validity_period_start()
 
         t_info = fake_token.getTokenInfo()
 
-        self.assertTrue('validity_period_start' not in t_info, fake_token)
+        assert 'validity_period_start' not in t_info, fake_token
 
         return
 
@@ -245,10 +245,10 @@ class TestTokenValidityMixin(unittest.TestCase):
         end_time_str = datetime.strftime(end_time, "%d/%m/%y %H:%M")
         fake_token.validity_period_end = end_time_str
 
-        self.assertTrue(fake_token.validity_period_end, fake_token)
-        self.assertTrue(fake_token.validity_period_end < now, fake_token)
+        assert fake_token.validity_period_end, fake_token
+        assert fake_token.validity_period_end < now, fake_token
 
-        self.assertFalse(fake_token.validity_period_start, fake_token)
+        assert not fake_token.validity_period_start, fake_token
 
         return
 
@@ -265,10 +265,10 @@ class TestTokenValidityMixin(unittest.TestCase):
         start_time_str = datetime.strftime(start_time, "%d/%m/%y %H:%M")
         fake_token.validity_period_start = start_time_str
 
-        self.assertTrue(fake_token.validity_period_start, fake_token)
-        self.assertTrue(fake_token.validity_period_start > now, fake_token)
+        assert fake_token.validity_period_start, fake_token
+        assert fake_token.validity_period_start > now, fake_token
 
-        self.assertFalse(fake_token.validity_period_end, fake_token)
+        assert not fake_token.validity_period_end, fake_token
 
     def test_for_not_expiry(self):
         '''
@@ -287,12 +287,11 @@ class TestTokenValidityMixin(unittest.TestCase):
         end_time_str = datetime.strftime(end_time, "%d/%m/%y %H:%M")
         fake_token.validity_period_end = end_time_str
 
-        self.assertTrue(fake_token.validity_period_start, fake_token)
-        self.assertTrue(fake_token.validity_period_end, fake_token)
+        assert fake_token.validity_period_start, fake_token
+        assert fake_token.validity_period_end, fake_token
 
-        self.assertTrue(
-            (fake_token.validity_period_start < now and
-             fake_token.validity_period_end > now),
-            fake_token)
+        assert (fake_token.validity_period_start < now and
+             fake_token.validity_period_end > now), \
+            fake_token
 
 # eof #

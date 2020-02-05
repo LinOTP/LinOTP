@@ -23,3 +23,26 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+
+"""
+Heartbeat controller test
+"""
+
+from linotp.tests import TestController
+
+class TestHealthcheck(TestController):
+    def test_healthcheck(self):
+        """
+        Test: system/setConfig
+        """
+
+        response = self.make_authenticated_request(
+            "healthcheck",
+            "status"
+        )
+
+        # Old style assert
+        assert '"alive"' in response, response
+
+        # Json assert
+        assert response.json['status'] == 'alive'

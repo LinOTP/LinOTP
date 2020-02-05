@@ -30,7 +30,7 @@ import os
 from mako.template import Template
 
 from mako.runtime import Context
-from StringIO import StringIO
+from io import StringIO
 
 import unittest
 
@@ -70,7 +70,7 @@ class TestActivationMako(unittest.TestCase):
                       _=mocked_translate)
         _res = qrtemplate.render_context(ctx)
         content = buf.getvalue()
-        self.assertTrue("params['user'] = 'me@home';" in content)
+        assert "params['user'] = 'me@home';" in content
 
         return
 
@@ -85,6 +85,6 @@ class TestActivationMako(unittest.TestCase):
                       _=mocked_translate)
         _res = qrtemplate.render_context(ctx)
         content = buf.getvalue()
-        self.assertTrue("params['user'] = 'me@home';" in content)
+        assert "params['user'] = 'me@home';" in content
 
         return

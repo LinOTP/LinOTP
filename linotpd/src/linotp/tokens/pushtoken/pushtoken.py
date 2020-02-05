@@ -48,7 +48,7 @@ from linotp.lib.pairing import generate_pairing_url
 from linotp.lib.config import getFromConfig
 from linotp.lib.policy import get_single_auth_policy
 from linotp.provider import loadProviderFromPolicy
-from pylons import config
+from linotp.flap import config
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from pysodium import crypto_sign_detached
@@ -100,7 +100,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
     def __init__(self, token_model_object):
         TokenClass.__init__(self, token_model_object)
-        self.setType(u'push')
+        self.setType('push')
         self.mode = ['challenge']
         self.supports_offline_mode = False
 
@@ -171,38 +171,60 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         info['policy']['authentication'] = auth_policies
 
-        info['policy']['selfservice'] = {'activate_PushToken':
-                                         {'type': 'bool',
-                                          'description': _('activate your '
-                                                           'PushToken')}
-                                         }
+        info['policy']['selfservice'] = {
+            'activate_PushToken': {
+                'type': 'bool',
+                'description': _('activate your PushToken')}
+        }
 
         # ------------------------------------------------------------------- --
 
         # wire the templates
 
         init_dict = {}
-        init_dict['title'] = {'html': 'pushtoken.mako', 'scope': 'enroll.title'}
-        init_dict['page'] = {'html': 'pushtoken.mako', 'scope': 'enroll'}
+
+        init_dict['title'] = {
+            'html': 'pushtoken/pushtoken.mako',
+            'scope': 'enroll.title'
+        }
+        init_dict['page'] = {
+            'html': 'pushtoken/pushtoken.mako',
+            'scope': 'enroll'
+        }
+
         info['init'] = init_dict
 
         config_dict = {}
         config_dict['title'] = {
-            'html': 'pushtoken.mako', 'scope': 'config.title'}
-        config_dict['page'] = {'html': 'pushtoken.mako', 'scope': 'config'}
+            'html': 'pushtoken/pushtoken.mako',
+            'scope': 'config.title'
+        }
+
+        config_dict['page'] = {
+            'html': 'pushtoken/pushtoken.mako',
+            'scope': 'config'
+        }
+
         info['config'] = config_dict
 
         ss_enroll = {}
-        ss_enroll['title'] = {'html': 'pushtoken.mako',
-                              'scope': 'selfservice.title.enroll'}
-        ss_enroll['page'] = {'html': 'pushtoken.mako',
-                             'scope': 'selfservice.enroll'}
+        ss_enroll['title'] = {
+            'html': 'pushtoken/pushtoken.mako',
+            'scope': 'selfservice.title.enroll'
+        }
+        ss_enroll['page'] = {
+            'html': 'pushtoken/pushtoken.mako',
+            'scope': 'selfservice.enroll'
+        }
 
         ss_activate = {}
-        ss_activate['title'] = {'html': 'pushtoken.mako',
-                                'scope': 'selfservice.title.activate'}
-        ss_activate['page'] = {'html': 'pushtoken.mako',
-                               'scope': 'selfservice.activate'}
+        ss_activate['title'] = {
+            'html': 'pushtoken/pushtoken.mako',
+            'scope': 'selfservice.title.activate'
+        }
+        ss_activate['page'] = {
+            'html': 'pushtoken/pushtoken.mako',
+            'scope': 'selfservice.activate'}
 
         selfservice_dict = {}
         selfservice_dict['enroll'] = ss_enroll
@@ -265,7 +287,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
             self.addToTokenInfo('user_token_id', user_token_id)
             b64_user_dsa_public_key = b64encode(user_dsa_public_key)
-            self.addToTokenInfo('user_dsa_public_key', b64_user_dsa_public_key)
+            self.addToTokenInfo(
+                'user_dsa_public_key', b64_user_dsa_public_key.decode())
             self.addToTokenInfo('user_login', user_login)
             self.addToTokenInfo('gda', gda)
 
@@ -436,7 +459,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # checkOtp to verify the signature
 
         b64_sig_base = b64encode(sig_base)
-        data = {'sig_base': b64_sig_base}
+        data = {'sig_base': b64_sig_base.decode()}
 
         if self.current_state == 'pairing_response_received':
             self.change_state('pairing_challenge_sent')

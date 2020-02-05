@@ -32,14 +32,16 @@ import os
 import logging
 import json
 
-from pylons import request, response, config, tmpl_context as c
-from pylons.templating import render_mako as render
-from pylons.i18n.translation import _
-from paste.deploy.converters import asbool
+import flask
+from flask import redirect
+
+from linotp.flap import (
+    config, render_mako as render, request, response, tmpl_context as c, _,
+)
 
 from mako.exceptions import CompileException
 
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.error import ParameterError
 
 # Our Token stuff
@@ -75,9 +77,9 @@ from linotp.lib.context import request_context
 from linotp.lib.ImportOTP import getKnownTypes, getImportText
 import linotp
 
+import linotp.model.meta
 Session = linotp.model.meta.Session
 
-audit = config.get('audit')
 log = logging.getLogger(__name__)
 
 KNOWN_TYPES = getKnownTypes()
@@ -88,7 +90,16 @@ log.info("importing linotp.lib. Known import types: %s" % IMPORT_TEXT)
 
 class ManageController(BaseController):
 
-    def __before__(self, action, **params):
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        action = request_context['action']
 
         try:
             c.audit = request_context['audit']
@@ -96,7 +107,7 @@ class ManageController(BaseController):
             c.audit['client'] = get_client(request)
 
             c.version = get_version()
-            c.version_ref = base64.encodestring(c.version)[:6]
+            c.version_ref = base64.encodebytes(c.version.encode())[:6]
 
             c.licenseinfo = get_copyright_info()
             c.polDefs = getPolicyDefinitions()
@@ -140,17 +151,28 @@ class ManageController(BaseController):
         finally:
             log.debug("[__before__::%r] done" % (action))
 
-    def __after__(self):
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
         if c.audit['action'] in ['manage/tokenview_flexi',
                                  'manage/userview_flexi' ]:
             c.audit['administrator'] = getUserFromRequest(request).get("login")
-            if 'serial' in self.request_params:
-                serial = self.request_params['serial']
+            if 'serial' in request.params:
+                serial = request.params['serial']
                 c.audit['serial'] = serial
                 c.audit['token_type'] = getTokenType(serial)
 
             c.audit['action_detail'] += linotp.lib.audit.base.get_token_num_info()
+            audit = config.get('audit')
             audit.log(c.audit)
+
+        return response
 
     def index(self):
         '''
@@ -158,16 +180,17 @@ class ManageController(BaseController):
         '''
 
         try:
-            c.debug = asbool(config.get('debug', False))
+            c.debug = bool(config.get('debug', False))
             c.title = "LinOTP Management"
             admin_user = getUserFromRequest(request)
 
-            if admin_user.has_key('login'):
+            if 'login' in admin_user:
                 c.admin = admin_user['login']
 
             log.debug("[index] importers: %s" % IMPORT_TEXT)
             c.importers = IMPORT_TEXT
-            c.help_url = config.get('help_url')
+            help_version = c.version[:c.version.find('.')]
+            c.help_url = config.get('HELP_URL').format(help_version)
 
             # -------------------------------------------------------------- --
 
@@ -244,12 +267,12 @@ class ManageController(BaseController):
         except PolicyException as pe:
             log.exception("[index] Error during checking policies: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as ex:
             log.exception("[index] failed! %r" % ex)
             Session.rollback()
-            return sendError(response, ex)
+            raise
 
         finally:
             Session.close()
@@ -260,7 +283,7 @@ class ManageController(BaseController):
         '''
         c.title = 'TokenTypeInfo'
         ttinfo = []
-        ttinfo.extend(tokenclass_registry.keys())
+        ttinfo.extend(list(tokenclass_registry.keys()))
         for tok in tokenclass_registry:
             tclass_object = tokenclass_registry.get(tok)
             if hasattr(tclass_object, 'getClassType'):
@@ -270,7 +293,7 @@ class ManageController(BaseController):
         log.debug("[index] importers: %s" % IMPORT_TEXT)
         c.tokeninfo = ttinfo
 
-        return render('/manage/tokentypeinfo.mako')
+        return render('/manage/tokentypeinfo.mako').decode('utf-8')
 
 
     def policies(self):
@@ -278,7 +301,7 @@ class ManageController(BaseController):
         This is the template for the policies TAB
         '''
         c.title = "LinOTP Management - Policies"
-        return render('/manage/policies.mako')
+        return render('/manage/policies.mako').decode('utf-8')
 
 
     def audittrail(self):
@@ -286,7 +309,7 @@ class ManageController(BaseController):
         This is the template for the audit trail TAB
         '''
         c.title = "LinOTP Management - Audit Trail"
-        return render('/manage/audit.mako')
+        return render('/manage/audit.mako').decode('utf-8')
 
 
     def tokenview(self):
@@ -305,7 +328,7 @@ class ManageController(BaseController):
         '''
         c.title = "LinOTP Management"
         c.tokenArray = []
-        return render('/manage/userview.mako')
+        return render('/manage/userview.mako').decode('utf-8')
 
     def custom_style(self):
         '''
@@ -402,6 +425,8 @@ class ManageController(BaseController):
             # If we have chosen a page to big!
             lines = []
             for tok in c.tokenArray:
+                uid = tok['LinOtp.Userid']
+                uid = uid.decode('utf-8') if isinstance(uid, bytes) else uid
                 lines.append(
                     {'id' : tok['LinOtp.TokenSerialnumber'],
                      'cell': [
@@ -416,7 +441,7 @@ class ManageController(BaseController):
                             tok['LinOtp.OtpLen'],
                             tok['LinOtp.CountWindow'],
                             tok['LinOtp.SyncWindow'],
-                            tok['LinOtp.Userid'],
+                            uid,
                             tok['LinOtp.IdResClass'].split('.')[-1],
                             ]
                     }
@@ -436,7 +461,7 @@ class ManageController(BaseController):
         except PolicyException as pe:
             log.exception("[tokenview_flexi] Error during checking policies: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[tokenview_flexi] failed: %r" % e)
@@ -497,14 +522,14 @@ class ManageController(BaseController):
                 lines.append(
                     { 'id' : u['username'],
                         'cell': [
-                            (u['username']) if u.has_key('username') else (""),
+                            (u['username']) if 'username' in u else (""),
                             (resolver_display),
-                            (u['surname']) if u.has_key('surname') else (""),
-                            (u['givenname']) if u.has_key('givenname') else (""),
-                            (u['email']) if u.has_key('email') else (""),
-                            (u['mobile']) if u.has_key('mobile') else (""),
-                            (u['phone']) if u.has_key('phone') else (""),
-                            (u['userid']) if u.has_key('userid') else (""),
+                            (u['surname']) if 'surname' in u else (""),
+                            (u['givenname']) if 'givenname' in u else (""),
+                            (u['email']) if 'email' in u else (""),
+                            (u['mobile']) if 'mobile' in u else (""),
+                            (u['phone']) if 'phone' in u else (""),
+                            (u['userid']) if 'userid' in u else (""),
                              ]
                     }
                     )
@@ -519,8 +544,8 @@ class ManageController(BaseController):
 
             lines = sorted(lines,
                            key=lambda user: user['cell'][sortnames[c.sort]],
-                           reverse=reverse,
-                           cmp=unicode_compare)
+                           reverse=reverse
+                           )
             # end: sorting
 
             # reducing the page
@@ -532,7 +557,6 @@ class ManageController(BaseController):
                 lines = lines[start:end]
 
             # We need to return 'page', 'total', 'rows'
-            response.content_type = 'application/json'
             res = { "page": int(c.page),
                 "total": c.userNum,
                 "rows": lines }
@@ -545,7 +569,7 @@ class ManageController(BaseController):
         except PolicyException as pe:
             log.exception("[userview_flexi] Error during checking policies: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[userview_flexi] failed: %r" % e)
@@ -602,12 +626,12 @@ class ManageController(BaseController):
                     except:
                         pass
 
-            return render('/manage/tokeninfo.mako')
+            return render('/manage/tokeninfo.mako').decode('utf-8')
 
         except PolicyException as pe:
             log.exception("[tokeninfo] Error during checking policies: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[tokeninfo] failed! %r" % e)
@@ -622,39 +646,43 @@ class ManageController(BaseController):
         '''
         redirect logout
         '''
-        from pylons.controllers.util import redirect
+
         http_host = request.environ.get("HTTP_HOST")
         url_scheme = request.environ.get("wsgi.url_scheme", "https")
-        redirect("%s://%s/manage/" % (url_scheme, http_host))
+
+        return redirect("%s://%s/manage/" % (url_scheme, http_host))
 
 
-    def help(self):
+    def help(self, id=None):
         '''
         This downloads the Manual
 
         The filename will be the 3. part,ID
         https://172.16.200.6/manage/help/somehelp.pdf
-        The file is downloaded through pylons!
+        The file is downloaded through Flask!
 
         '''
 
         try:
             directory = config.get("linotpManual.Directory", "/usr/share/doc/linotp")
             default_filename = config.get("linotpManual.File", "LinOTP_Manual-en.pdf")
+            mimetype = "application/pdf"
             headers = []
 
-            route_dict = request.environ.get('pylons.routes_dict')
-            filename = route_dict.get('id')
-            if not filename:
-                filename = default_filename + ".gz"
-                headers = [('content-Disposition', 'attachment; filename=\"' + default_filename + '\"'),
-                           ('content-Type', 'application/x-gzip')
-                           ]
+            # FIXME: Compression is better done using
+            # `Content-Encoding` (ideally farther up the WSGI stack).
 
-            from paste.fileapp import FileApp
-            wsgi_app = FileApp("%s/%s" % (directory, filename), headers=headers)
+            # if not id:
+            #     id = default_filename + ".gz"
+            #     mimetype = "application/x-gzip"  # iffy
+
+            id = id or default_filename
+
+            r = flask.send_file("%s/%s" % (directory, id), mimetype=mimetype,
+                                as_attachment=True,
+                                attachment_filename=default_filename)
             Session.commit()
-            return wsgi_app(request.environ, self.start_response)
+            return r
 
         except Exception as e:
             log.exception("[help] Error loading helpfile: %r" % e)
@@ -712,12 +740,12 @@ def _getTokenTypeConfig(section='config'):
             try:
                 page = conf.get('page')
                 c.scope = page.get('scope')
-                p_html = render(os.path.sep + page.get('html'))
+                p_html = render(os.path.sep + page.get('html')).decode('utf-8')
                 p_html = remove_empty_lines(p_html)
 
                 tab = conf.get('title')
                 c.scope = tab.get('scope')
-                t_html = render(os.path.sep + tab.get('html'))
+                t_html = render(os.path.sep + tab.get('html')).decode('utf-8')
                 t_html = remove_empty_lines(t_html)
 
             except CompileException as ex:

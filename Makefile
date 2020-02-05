@@ -156,7 +156,6 @@ test: unittests integrationtests functionaltests
 
 unittests:
 	$(MAKE) -C linotpd/src/linotp/tests/unit $@
-	nosetests $(NOSETESTS_ARGS) .
 
 # Functional tests. Additional arguments can be
 # supplied with FUNCTIONALTESTS_ARGS

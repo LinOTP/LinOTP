@@ -84,7 +84,7 @@ class TestImportUser(TestController):
                                             params=resolver_param)
 
         content = json.loads(response.body)
-        self.assertTrue(content['result']['status'])
+        assert content['result']['status']
 
         resolver_param = {
             'name': 'black2',
@@ -95,7 +95,7 @@ class TestImportUser(TestController):
                                             params=resolver_param)
 
         content = json.loads(response.body)
-        self.assertTrue(content['result']['status'])
+        assert content['result']['status']
 
         response = self.create_realm('black', [
             'useridresolver.PasswdIdResolver.IdResolver.black1'])
@@ -117,7 +117,7 @@ class TestImportUser(TestController):
                   }
 
         response = self.make_admin_request('init', params)
-        self.assertTrue('"value": true' in response)
+        assert '"value": true' in response
 
         # ------------------------------------------------------------------ --
 
@@ -129,7 +129,7 @@ class TestImportUser(TestController):
             }
 
         response = self.make_validate_request('check', params=params)
-        self.assertTrue('"value": true' in response)
+        assert '"value": true' in response
 
         response = self.create_realm('black', [
             'useridresolver.PasswdIdResolver.IdResolver.black1',
@@ -144,7 +144,7 @@ class TestImportUser(TestController):
         response = self.make_tools_request(action='migrate_resolver',
                                            params=params)
 
-        self.assertTrue('1 tokens of 1 migrated' in response, response)
+        assert '1 tokens of 1 migrated' in response, response
 
         # verify the tokens in the token list
         params = {'resConf': 'black2'}
@@ -153,8 +153,8 @@ class TestImportUser(TestController):
 
         token = jresp.get('result', {}).get('value', {}).get('data', [])[0]
 
-        self.assertTrue('black2' in token.get('LinOtp.IdResClass'))
-        self.assertTrue(token['LinOtp.TokenSerialnumber'] == 'migration_token')
+        assert 'black2' in token.get('LinOtp.IdResClass')
+        assert token['LinOtp.TokenSerialnumber'] == 'migration_token'
 
         # ------------------------------------------------------------------ --
 
@@ -166,7 +166,7 @@ class TestImportUser(TestController):
             }
 
         response = self.make_validate_request('check', params=params)
-        self.assertTrue('"value": true' in response)
+        assert '"value": true' in response
 
         return
 

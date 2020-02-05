@@ -28,10 +28,11 @@ import unittest
 import json
 import base64
 
-from contextlib import nested
+import pytest
+
 from pysodium import crypto_sign_keypair
 
-from pylons import config
+from linotp.flap import config
 
 from mock import patch
 
@@ -80,13 +81,12 @@ class FakeTokenModel(object):
 # -------------------------------------------------------------------------- --
 
 
-class PushTokenClassUnitTestCase(unittest.TestCase):
+class PushTokenClassUnitTestCase(object):
 
     # ---------------------------------------------------------------------- --
 
     @patch('linotp.tokens.pushtoken.pushtoken.get_secret_key')
-    def test_url_protocol_id(self,
-                             mocked_get_secret_key):
+    def test_url_protocol_id(self, base_app, mocked_get_secret_key):
 
         """ PUSHTOKEN: Test url protocol id customization """
 
@@ -102,7 +102,7 @@ class PushTokenClassUnitTestCase(unittest.TestCase):
         token.addToTokenInfo('user_token_id', 123)
         token.addToTokenInfo('user_dsa_public_key', user_public_key)
 
-        with nested(patch.dict(config), request_context_safety()):
+        with base_app.test_request_context():
 
             if 'mobile_app_protocol_id' in config:
                 del config['mobile_app_protocol_id']
@@ -120,7 +120,7 @@ class PushTokenClassUnitTestCase(unittest.TestCase):
                                                 message=message,
                                                 callback_url='foo')
 
-            self.assertTrue(url.startswith('lseqr://'))
+            assert url.startswith('lseqr://')
 
         # ------------------------------------------------------------------ --
 
@@ -131,8 +131,8 @@ class PushTokenClassUnitTestCase(unittest.TestCase):
         token.addToTokenInfo('user_token_id', 123)
         token.addToTokenInfo('user_dsa_public_key', user_public_key)
 
-        with nested(patch.dict(config, {'mobile_app_protocol_id': 'yolo'}),
-                    request_context_safety()):
+        with base_app.test_request_context():
+            config['mobile_app_protocol_id'] = 'yolo'
 
             request_context['hsm'] = fake_hsm_wrapper
 
@@ -144,6 +144,6 @@ class PushTokenClassUnitTestCase(unittest.TestCase):
                                                 message=message,
                                                 callback_url='foo')
 
-            self.assertTrue(url.startswith('yolo://'))
+            assert url.startswith('yolo://')
 
 # eof #

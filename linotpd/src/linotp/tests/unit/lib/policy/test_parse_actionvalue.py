@@ -29,6 +29,7 @@
 import unittest
 
 from linotp.lib.policy.util import parse_action_value
+import pytest
 
 class TestParseActionValue(unittest.TestCase):
     """
@@ -121,25 +122,20 @@ class TestParseActionValue(unittest.TestCase):
         parse_action_value raises some parsing exceptions
         """
 
-        with self.assertRaises(Exception) as exx:
+        with pytest.raises(Exception) as exx:
             parse_action_value(', delete="12 ,  3')
 
-        msg = "non terminated action"
-        assert msg in exx.exception.message
+        exx.match("non terminated action")
 
-        with self.assertRaises(Exception) as exx:
+        with pytest.raises(Exception) as exx:
             parse_action_value(', delete, delete ,')
 
-        msg = "duplicate key defintion"
-        assert msg in exx.exception.message
+        exx.match("duplicate key defintion")
 
-        with self.assertRaises(Exception) as exx:
+        with pytest.raises(Exception) as exx:
             parse_action_value(', del=1, del = 4 ,')
 
-        msg = "duplicate key defintion"
-        assert msg in exx.exception.message
-
-        return
+        exx.match("duplicate key defintion")
 
 
     def test_action_values(self):

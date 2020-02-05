@@ -37,11 +37,11 @@ import binascii
 import hashlib
 import logging
 
-from pylons import request, response
+from linotp.flap import response
 
 import linotp.model.meta
 
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 
 from linotp.lib.reply import sendResult
 from linotp.lib.reply import sendError
@@ -61,39 +61,28 @@ class MigrateController(BaseController):
     '''
     '''
 
-    def __before__(self, action, **params):
-        '''
+    def __before__(self, **params):
+        """
         __before__ is called before every action
              so we can check the authorization (fixed?)
 
-        :param action: name of the to be called action
-        :param params: the list of http parameters
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
 
-        :return: return response
-        :rtype:  pylon response
+        return
+
+    @staticmethod
+    def __after__(response):
         '''
-        try:
+        __after__ is called after every action
 
-            return response
-
-        except Exception as exx:
-            log.exception("[__before__::%r] exception %r" % (action, exx))
-            return sendError(response, exx, context='before')
-
-
-    def __after__(self):
-        '''
-        __after is called after every action
-
+        :param response: the previously created response - for modification
         :return: return the response
-        :rtype:  pylons response
         '''
-        try:
-            return response
+        return response
 
-        except Exception as exx:
-            log.exception("[__after__] exception %r" % (exx))
-            return sendError(response, exx, context='after')
 
     def backup(self):
         """
@@ -159,7 +148,7 @@ class MigrateController(BaseController):
         except PolicyException as pe:
             Session.rollback()
             log.exception('[backup] policy failed: %r' % pe)
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             Session.rollback()
@@ -273,7 +262,7 @@ class MigrateController(BaseController):
 
         except PolicyException as pe:
             log.exception('[restore] policy failed: %r' % pe)
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except DecryptionError as err:
             decryption_error = True

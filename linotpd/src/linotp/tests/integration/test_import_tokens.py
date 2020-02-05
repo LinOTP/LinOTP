@@ -23,20 +23,27 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-"""Helper functions
-
-Consists of functions to typically be used within templates, but also
-available to Controllers. This module is available to templates as 'h'.
-
-
-Import helpers as desired, or define your own, ie:
-   from webhelpers.html.tags import checkbox, password
-
-depending on the version there are two different possible locations...
-see:
-http://stackoverflow.com/questions/2219316/pylons-webhelpers-missing-secure-form-module
 
 """
-import logging
+Test token import via UI
+"""
 
-log = logging.getLogger(__name__)
+# pylint: disable=redefined-outer-name
+
+import os
+
+import pytest
+
+from linotp_selenium_helper.token_import import TokenImportAladdin, TokenImportError
+
+@pytest.fixture
+def aladdin(manage_ui):
+    return TokenImportAladdin(manage_ui)
+
+def test_token_import_aladdin_invalid_xml(manage_ui, aladdin):
+
+    with pytest.raises(TokenImportError):
+        aladdin.do_import(
+            file_path=os.path.join(manage_ui.test_data_dir,
+                                    'wrong_token.xml'))
+

@@ -28,6 +28,7 @@ Tests the chunked data handling in the config
 """
 
 
+import pytest
 import unittest
 
 from mock import patch
@@ -172,7 +173,13 @@ class ContEntries(object):
     def __iter__(self):
         return iter([])
 
+@pytest.fixture
+def deleteconfig(app):
+    # Clear all config entries before starting each test
+    Session.query(Config).delete(synchronize_session='fetch')
+    Session.commit()
 
+@pytest.mark.usefixtures("app")
 class TestChunkConfigCase(unittest.TestCase):
 
     @patch('linotp.lib.config.db_api._storeConfigEntryDB', storeConfigEntryDB)
@@ -195,21 +202,21 @@ class TestChunkConfigCase(unittest.TestCase):
         _store_continous_entry_db(chunks, key=key_name, val=big_value,
                                   typ=key_type, desc=key_desc)
 
-        conf_keys = TestConfigEntries.keys()
+        conf_keys = list(TestConfigEntries.keys())
 
         # ------------------------------------------------------------------ --
 
         # make sure that the first key entry 'test' is avaliable
         # and that the keys are representing the calculated number
 
-        self.assertTrue(key_name in conf_keys, TestConfigEntries)
+        assert key_name in conf_keys, TestConfigEntries
 
         entry = TestConfigEntries[key_name]
         value = entry['value']
         from_, to_ = entry['desc'].split(':')
 
         # we count from 0 to eg 3 so we have 4 entries
-        self.assertTrue(len(conf_keys) == int(to_) + 1, conf_keys)
+        assert len(conf_keys) == int(to_) + 1, conf_keys
 
         # ------------------------------------------------------------------ --
 
@@ -217,11 +224,11 @@ class TestChunkConfigCase(unittest.TestCase):
 
         for i in range(int(from_) + 1, int(to_) + 1):
             entry_key = "%s__[%d:%d]" % (key_name, i, int(to_))
-            self.assertTrue(entry_key in TestConfigEntries)
+            assert entry_key in TestConfigEntries
 
             value += TestConfigEntries[entry_key]['value']
 
-        self.assertTrue(value == big_value)
+        assert value == big_value
 
         # finally we check if the original type and description is in the
         # last entry
@@ -230,14 +237,14 @@ class TestChunkConfigCase(unittest.TestCase):
         entry_type = TestConfigEntries[entry_key]['type']
         entry_desc = TestConfigEntries[entry_key]['desc']
 
-        self.assertTrue(entry_type == key_type)
-        self.assertTrue(entry_desc == key_desc)
+        assert entry_type == key_type
+        assert entry_desc == key_desc
 
         # --------------------------------------------------------------------
 
         # cleanup the shared dictionary
 
-        for key in TestConfigEntries.keys():
+        for key in list(TestConfigEntries.keys()):
             del TestConfigEntries[key]
 
         return
@@ -259,21 +266,21 @@ class TestChunkConfigCase(unittest.TestCase):
         mock_session.query.return_value.filter.return_value = continous_entries
         _storeConfigDB(key, val, typ=typ, desc=desc)
 
-        conf_keys = TestConfigEntries.keys()
+        conf_keys = list(TestConfigEntries.keys())
 
-        self.assertTrue(key in conf_keys, TestConfigEntries)
+        assert key in conf_keys, TestConfigEntries
 
         entry = TestConfigEntries[key]
         _from_, to_ = entry['desc'].split(':')
 
         # we count from 0 to eg 3 so we have 4 entries
-        self.assertTrue(len(conf_keys) == int(to_) + 1, conf_keys)
+        assert len(conf_keys) == int(to_) + 1, conf_keys
 
         # --------------------------------------------------------------------
 
         # cleanup the shared dictionary
 
-        for key in TestConfigEntries.keys():
+        for key in list(TestConfigEntries.keys()):
             del TestConfigEntries[key]
 
         return
@@ -299,21 +306,21 @@ class TestChunkConfigCase(unittest.TestCase):
 
         # check that the value is realy stored
 
-        conf_keys = TestConfigEntries.keys()
+        conf_keys = list(TestConfigEntries.keys())
 
-        self.assertTrue(key in conf_keys, TestConfigEntries)
+        assert key in conf_keys, TestConfigEntries
 
         entry = TestConfigEntries[key]
         _from_, to_ = entry['desc'].split(':')
 
         # we count from 0 to eg 3 so we have 4 entries
-        self.assertTrue(len(conf_keys) == int(to_) + 1, conf_keys)
+        assert len(conf_keys) == int(to_) + 1, conf_keys
 
         # --------------------------------------------------------------------
 
         # cleanup the shared dictionary
 
-        for key in TestConfigEntries.keys():
+        for key in list(TestConfigEntries.keys()):
             del TestConfigEntries[key]
 
         return
@@ -337,55 +344,36 @@ class TestChunkConfigCase(unittest.TestCase):
 
         # check that the value is realy stored
 
-        conf_keys = TestConfigEntries.keys()
+        conf_keys = list(TestConfigEntries.keys())
 
-        self.assertTrue(key in conf_keys, TestConfigEntries)
+        assert key in conf_keys, TestConfigEntries
 
-        self.assertTrue(len(TestConfigEntries) == 1)
+        assert len(TestConfigEntries) == 1
 
         entry = TestConfigEntries['linotp.test_data']
-        self.assertTrue(entry['value'] == val)
+        assert entry['value'] == val
 
         # --------------------------------------------------------------------
 
         # cleanup the shared dictionary
 
-        for key in TestConfigEntries.keys():
+        for key in list(TestConfigEntries.keys()):
             del TestConfigEntries[key]
 
         return
 
 
+@pytest.mark.usefixtures("app")
+@pytest.mark.usefixtures("deleteconfig")
 class TestConfigStoreCase(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # we need a clean Session context to setup new sqlite db
-        # no matter what other unittests did
-        Session.close_all()
-        Session.remove()
-        # Use an in memory empty Sqlite database
-        super(TestConfigStoreCase, cls).setUpClass()
-        cls.engine = create_engine('sqlite:///:memory:')
-        metadata.create_all(cls.engine)
-        init_model(cls.engine)
-
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-
-        # Clear all config entries before starting each test
-        Session.query(Config).delete(synchronize_session='fetch')
-
-    def tearDown(self):
-        Session.remove()
-
     def test_storeConfigDB_encoding(self):
         # Test round trip of _storeConfigDB with entries that require
         # encoding of special characters
         conf = {
-            'Key': u'linotp.TËST',
-            'Value': u'VALUEÄ',
-            'Type': u'TYPEß',
-            'Description': u'DESCRIPTIÖN',
+            'Key': 'linotp.TËST',
+            'Value': 'VALUEÄ',
+            'Type': 'TYPEß',
+            'Description': 'DESCRIPTIÖN',
         }
 
         _storeConfigDB(conf['Key'], conf['Value'],
@@ -393,7 +381,7 @@ class TestConfigStoreCase(unittest.TestCase):
 
         # Check value is correctly returned
         stored_value = _retrieveConfigDB(conf['Key'])
-        self.assertEqual(conf['Value'], stored_value)
+        assert conf['Value'] == stored_value
 
         # Check type, description in database
         entries = Session.query(Config).all()
@@ -401,9 +389,9 @@ class TestConfigStoreCase(unittest.TestCase):
         assert(len(entries) == 1)
         stored_conf = entries[0]
 
-        for key in conf.keys():
-            self.assertEqual(conf[key], getattr(stored_conf, key),
-                             "Key should match key:%s - expected %r, recevied %r" % (key, conf[key], getattr(stored_conf, key)))
+        for key in list(conf.keys()):
+            assert conf[key] == getattr(stored_conf, key), \
+                             "Key should match key:%s - expected %r, recevied %r" % (key, conf[key], getattr(stored_conf, key))
 
     def test_updateExisting(self):
         # Test the following conditions:
@@ -420,18 +408,18 @@ class TestConfigStoreCase(unittest.TestCase):
         description = None
 
         _storeConfigDB(key, longvalue, typ, description)
-        self.assertEqual(Session.query(Config).count(), 2)
+        assert Session.query(Config).count() == 2
         oldentries = Session.query(Config).all()
-        self.assertEqual(len(oldentries), 2)
+        assert len(oldentries) == 2
 
         _storeConfigDB(key, value, typ, description)
         entries = Session.query(Config).all()
-        self.assertEqual(len(entries), 1)
+        assert len(entries) == 1
 
         entry = entries[0]
-        self.assertEqual(entry.Key, key)
-        self.assertEqual(entry.Value, value)
-        self.assertEqual(entry.Description, '')  # None is converted to ''
-        self.assertEqual(entry.Type, typ)
+        assert entry.Key == key
+        assert entry.Value == value
+        assert entry.Description == description
+        assert entry.Type == typ
 
 # eof #

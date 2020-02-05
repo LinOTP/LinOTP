@@ -33,6 +33,7 @@ ResourceScheduler - handle iteration on resources list with blocking
                     will be scheduled again
 """
 
+from typing import Dict, Any
 from datetime import datetime
 from datetime import timedelta
 
@@ -42,7 +43,7 @@ import logging
 
 # global registry, where all current resolver uri and
 
-GLOBAL_REGISTRY = {}
+GLOBAL_REGISTRY: Dict[str, Any] = {}
 MAX_BLOCK_COUNTER = 8  # delay = delay + delay * 2**block_counter
 
 log = logging.getLogger(__name__)
@@ -53,7 +54,6 @@ class AllResourcesUnavailable(Exception):
     to be thrown when all services are unavailable.
     """
     pass
-
 
 
 def string_to_list(string_list, sep=','):
@@ -102,6 +102,7 @@ class ResourceRegistry(object):
         raise NotImplementedError()
 
 # ------------------------------------------------------------------------- --
+
 
 class DictResourceRegistry(ResourceRegistry):
     """
@@ -255,7 +256,7 @@ class ResourceScheduler(object):
 
     # public interfaces
 
-    def next(self):
+    def __next__(self):
         """
         iterate trough all the resources and return only those, which are
         currently not blocked
@@ -332,7 +333,7 @@ class ResourceScheduler(object):
             log.info('blocking for %r seconds', adjusted_delay)
 
             self.resource_registry.store(resource, (
-                block_until, block_indicator +1, block_counter))
+                block_until, block_indicator + 1, block_counter))
 
             log.info('blocking resource %r till %r', resource, block_until)
 

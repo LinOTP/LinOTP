@@ -24,6 +24,7 @@
 #    Support: www.keyidentity.com
 #
 
+from threading import get_ident as get_thread_ident  # pylint: disable=import-error
 import sys
 
 py36 = sys.version_info >= (3, 6)
@@ -36,9 +37,5 @@ jython = sys.platform.startswith('java')
 pypy = hasattr(sys, 'pypy_version_info')
 win32 = sys.platform.startswith('win')
 
-if py3k:
-    from threading import get_ident as get_thread_ident  # pylint: disable=import-error
-    str_ = str
-else:
-    from thread import get_ident as get_thread_ident
-    str_ = unicode
+
+str_ = str

@@ -29,6 +29,7 @@
 """
 
 import datetime
+import pytest
 
 from linotp.tests import TestController
 
@@ -83,7 +84,7 @@ class TestAuthorizeController(TestController):
 
         response = self.make_admin_request(action='init',
                                            params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def setTokenRealm(self, serial, realms):
         parameters = {"serial": serial,
@@ -96,11 +97,11 @@ class TestAuthorizeController(TestController):
     def setPolicy(self, parameters):
         response = self.make_system_request(action='setPolicy',
                                             params=parameters)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
         # check for policy
         response = self.make_system_request(action='getPolicy',
                                             params=parameters)
-        self.assertTrue('"action": ' in response, response)
+        assert '"action": ' in response, response
 
     def initToken(self):
         '''
@@ -111,29 +112,30 @@ class TestAuthorizeController(TestController):
         resp = self.make_admin_request(action='assign',
                                        params={'user': 'localuser',
                                                'serial': 'pw1'})
-        self.assertTrue('"status": true' in resp, resp)
+        assert '"status": true' in resp, resp
         resp = self.make_admin_request(action='set',
                                        params={'pin': '1234',
                                                'serial': 'pw1'})
-        self.assertTrue('"status": true' in resp, resp)
+        assert '"status": true' in resp, resp
 
         self.createPWToken("pw2", pin="1234", pw="secret2")
         resp = self.make_admin_request(action='assign',
                                        params={'user': 'horst',
                                                'serial': 'pw2'})
-        self.assertTrue('"status": true' in resp, resp)
+        assert '"status": true' in resp, resp
         resp = self.make_admin_request(action='set',
                                        params={'pin': '1234',
                                                'serial': 'pw2'})
-        self.assertTrue('"status": true' in resp, resp)
+        assert '"status": true' in resp, resp
 
-    def create_policy(self):
+    @pytest.fixture
+    def policy_allow_localuser(self):
         '''
-        create the policy
+        policy to allow user 'localuser' to authorize with IP 172.16.200.*
         '''
         response = self.make_system_request(action="setConfig",
                                             params={"mayOverwriteClient": None})
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         parameters1 = {'name': 'authorization1',
                        'scope': 'authorization',
@@ -144,13 +146,14 @@ class TestAuthorizeController(TestController):
                        }
         self.setPolicy(parameters1)
 
-    def create_policy2(self):
+    @pytest.fixture
+    def policy_allow_horst(self):
         '''
-        create the policy
+        policy to allow user 'horst' to authorize with IP 172.16.200.*
         '''
         response = self.make_system_request(action="setConfig",
                                             params={"mayOverwriteClient": None})
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         parameters1 = {'name': 'authorization1',
                        'scope': 'authorization',
@@ -161,13 +164,14 @@ class TestAuthorizeController(TestController):
                        }
         self.setPolicy(parameters1)
 
-    def create_policy3(self):
+    @pytest.fixture
+    def policy_blank_user(self):
         '''
-        create the policy
+        policy to allow user '' (blank) to authorize with IP 10.*
         '''
         response = self.make_system_request(action="setConfig",
                                             params={"mayOverwriteClient": None})
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         parameters1 = {'name': 'authorization1',
                        'scope': 'authorization',
@@ -189,7 +193,7 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def test_00_horst_allowed(self):
         '''
@@ -202,14 +206,13 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
+    @pytest.mark.usefixtures('policy_allow_localuser')
     def test_01_localuser_allowed(self):
         '''
         Auth Test 01: test if localuser is allowed to authenticate
         '''
-        self.create_policy()
-
         parameters = {'user': 'localuser',
                       'pass': '1234secret1'}
         client = '172.16.200.10'
@@ -217,11 +220,12 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
+    @pytest.mark.usefixtures('policy_allow_localuser')
     def test_02_horst_not_allowed(self):
         '''
-        Auth Test 02: test if horst is not allowed to authenticate. horst is not authorized, since he is not mentioned in the policy1 as user.
+        Auth Test 02: test if horst is not allowed to authenticate. horst is not authorized, since he is not mentioned in the policy_allow_localuser as user.
         '''
         parameters = {'user': 'horst',
                       'pass': '1234secret2'}
@@ -230,8 +234,9 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
+    @pytest.mark.usefixtures('policy_allow_localuser')
     def test_03_localuser_not_allowed(self):
         '''
         Auth Test 03: localuser is not allowed to authenticate to another host than 172.16.200.X
@@ -244,14 +249,13 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
+    @pytest.mark.usefixtures('policy_allow_horst')
     def test_04_horst_allowed(self):
         '''
         Auth Test 04: Now we set a new policy, and horst should be allowed
         '''
-        self.create_policy2()
-
         parameters = {'user': 'horst',
                       'pass': '1234secret2'}
         client = '172.16.200.10'
@@ -259,14 +263,13 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
+    @pytest.mark.usefixtures('policy_blank_user')
     def test_05_blank_user(self):
         '''
         Auth Test 05: test if blank users are working for all users
         '''
-        self.create_policy3()
-
         parameters = {'user': 'horst',
                       'pass': '1234secret2'}
         client = '10.0.1.2'
@@ -274,7 +277,7 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
 
 # ############################################################################
@@ -289,10 +292,6 @@ class TestAuthorizeController(TestController):
         '''
         Auth Test 06 a: check a client policy with password PIN on one client
         '''
-
-        # deleting authorization policy
-        self.delete_policy("authorization1")
-
         # setting pin policy
         parameters = {'name': 'pinpolicy1',
                       'scope': 'authentication',
@@ -311,7 +310,7 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def test_06_b_named_pinpolicy(self):
         '''
@@ -336,7 +335,7 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def test_07_pinpolicy(self):
         '''
@@ -350,7 +349,7 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def test_08_pinpolicy(self):
         '''
@@ -372,7 +371,7 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
 ##########################################################################
 #
@@ -382,12 +381,6 @@ class TestAuthorizeController(TestController):
         '''
         Auth Test 10: client not in policy. So every tokentype should be able to authenticate
         '''
-        # clear pin policy
-        self.delete_policy("pinpolicy1")
-        self.delete_policy("pinpolicy2")
-        #
-        #
-        #
         parameters = {'name': 'tokentypepolicy1',
                       'scope': 'authorization',
                       'realm': '*',
@@ -404,7 +397,7 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def test_11_tokentype(self):
         '''
@@ -426,7 +419,7 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def test_12_tokentype(self):
         '''
@@ -448,7 +441,7 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
     def test_13_tokentype(self):
         '''
@@ -470,7 +463,7 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         self.delete_policy("tokentypepolicy1")
 
@@ -504,7 +497,7 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def test_21_autosms(self):
         '''
@@ -523,7 +516,7 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def test_22_autosms(self):
         '''
@@ -542,7 +535,7 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
     def test_23_autosms(self):
         '''
@@ -562,7 +555,7 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def test_24_autosms(self):
         '''
@@ -582,7 +575,7 @@ class TestAuthorizeController(TestController):
                                               params=parameters,
                                               client=client)
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
 ###################################################################
 #
@@ -604,7 +597,7 @@ class TestAuthorizeController(TestController):
         response = self.make_validate_request(action="check",
                                               params=parameters,
                                               client=client)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     def test_32_setrealm(self):
         '''
@@ -617,7 +610,7 @@ class TestAuthorizeController(TestController):
         response = self.make_validate_request(action="check",
                                               params=parameters,
                                               client=client)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
     def test_33_setrealm(self):
         '''
@@ -630,7 +623,7 @@ class TestAuthorizeController(TestController):
         response = self.make_validate_request(action="check",
                                               params=parameters,
                                               client=client)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
     def test_34_setrealm(self):
         '''
@@ -649,7 +642,7 @@ class TestAuthorizeController(TestController):
         response = self.make_validate_request(action="check",
                                               params=parameters,
                                               client=client)
-        self.assertTrue('"value": false'in response, response)
+        assert '"value": false'in response, response
 
     def test_99_setrealm(self):
 

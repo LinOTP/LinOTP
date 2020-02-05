@@ -27,7 +27,7 @@
     run in Yubico Mode"""
 
 
-from Cryptodome.Cipher import AES
+
 import binascii
 import logging
 
@@ -51,7 +51,7 @@ class YubikeyTokenClass(TokenClass):
 
     def __init__(self, aToken):
         TokenClass.__init__(self, aToken)
-        self.setType(u"yubikey")
+        self.setType("yubikey")
 
         self.hKeyRequired = True
         return
@@ -269,18 +269,19 @@ class YubikeyTokenClass(TokenClass):
 
         try:
             otp_bin = modhex_decode(yubi_otp)
-            msg_bin = secObj.aes_decrypt(otp_bin)
+            msg_bin = secObj.aes_decrypt(binascii.unhexlify(otp_bin))
         except (KeyError, TypeError, ValueError) as exx:
             log.warning("failed to decode yubi_otp! %r", exx)
             return -1
 
         msg_hex = binascii.hexlify(msg_bin)
 
-        uid = msg_hex[0:12]
+        uid = msg_hex[0:12].decode()
         log.debug("[checkOtp] uid: %r" % uid)
+
         try:
             prefix = modhex_decode(yubi_prefix)
-            log.debug("[checkOtp] prefix: %r" % binascii.hexlify(prefix))
+            log.debug("[checkOtp] prefix: %r" % prefix)
         except (TypeError, KeyError) as exx:
             log.info("Unable to decode token prefix %r! %r", yubi_prefix, exx)
 
@@ -303,8 +304,8 @@ class YubikeyTokenClass(TokenClass):
         # CRC-16 checksum of the whole decrypted OTP should give a fixed residual
         # of 0xf0b8 (see Yubikey-Manual - Chapter 6: Implementation details).
         crc = msg_hex[28:]
-        log.debug("[checkOtp] calculated checksum (61624): %r" % checksum(msg_hex))
-        if checksum(msg_hex) != 0xf0b8:
+        log.debug("[checkOtp] calculated checksum (61624): %r" % checksum(msg_bin))
+        if checksum(msg_bin) != 0xf0b8:
             log.warning("[checkOtp] CRC checksum for token %r failed" % serial)
             return -3
 
@@ -325,7 +326,6 @@ class YubikeyTokenClass(TokenClass):
             log.warning("[checkOtp] The wrong token was presented for %r. Got %r, expected %r."
                         % (serial, uid, tokenid))
             return -2
-
 
         log.debug('[checkOtp] compare counter to LinOtpCount: %r' % self.token.LinOtpCount)
         if count_int >= self.token.LinOtpCount:

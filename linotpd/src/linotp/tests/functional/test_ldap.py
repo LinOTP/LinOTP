@@ -30,15 +30,12 @@
 
 
 import sys
-import ConfigParser
+import configparser
 import logging
 from linotp.tests import TestController
 import copy
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 import hashlib
 import base64
@@ -412,7 +409,7 @@ class TestLDAP(TestController):
         config = resp.get('result').get('value')
 
         for k in config:
-            if k.startswith('ldapresolver.') and k.endswith(u'' + conf):
+            if k.startswith('ldapresolver.') and k.endswith('' + conf):
                     ret[k] = config.get(k)
 
         ''' finally fix the pw and dn in the config '''
@@ -474,15 +471,15 @@ class TestLDAP(TestController):
         #self.appconf = self.app.app.app.apps[1].application.app.application.app.app.app.config
         hostname = gethostname()
 
-        if self.appconf.has_key('linotp.ldapTestServerIp.' + hostname):
-            self.ldapurl = self.appconf.get('linotp.ldapTestServerIp.' + hostname)
-        elif self.appconf.has_key('<include>') is True:
+        if 'LINOTP_LDAPTESTSERVERIP_' + hostname in self.app.config:
+            self.ldapurl = self.app.config.get('LINOTP_LDAPTESTSERVERIP_' + hostname)
+        elif ('<include>' in self.app.config) is True:
             try:
-                filename = self.appconf.get('<include>')
-                cfgParse = ConfigParser.ConfigParser()
+                filename = self.app.config.get('<include>')
+                cfgParse = configparser.ConfigParser()
                 cfgParse.readfp(open(filename))
                 incDict = cfgParse.defaults()
-                self.ldapurl = incDict.get('linotp.ldapTestServerIp.'.lower() + hostname, None)
+                self.ldapurl = incDict.get('LINOTP_LDAPTESTSERVERIP_'.lower() + hostname, None)
             except Exception as e:
                 log.exception('Error parsing include file: %r' % e)
         else:
@@ -579,7 +576,7 @@ class TestLDAP(TestController):
                     ldapObjects.append(base)
 
                 except Exception as e:
-                    if 'Already exists' not in unicode(e):
+                    if 'Already exists' not in str(e):
                         raise Exception(e)
 
                 for user in self.users:
@@ -588,20 +585,20 @@ class TestLDAP(TestController):
                     nuser['uid'] = "%s-%s" % (user.get('uid'), resolver)
                     passw = hashlib.sha1(thePassword).digest()
                     passw = base64.encodestring(passw)
-                    nuser['userPassword'] = '{SHA}%s' % (unicode(passw))
+                    nuser['userPassword'] = '{SHA}%s' % (str(passw))
 
                     try:
                         ldapServ.addUser(**nuser)
                         ldapObjects.append(nuser.get('dn'))
                     except Exception as e:
-                        if 'Already exists' not in unicode(e):
+                        if 'Already exists' not in str(e):
                             raise Exception(e)
 
 
         except Exception as e:
             log.exception("%r" % e)
 
-            msg = unicode(e)
+            msg = str(e)
             if "Can't contact LDAP server" in msg:
                 ldapServerConnected = False
 
@@ -620,7 +617,7 @@ class TestLDAP(TestController):
             realmName = 'ldap_realm'
             parameters = {
                 'realm'     : realmName,
-                'resolvers' : u'%s' % (unicode(','.join(realmresolvers)))
+                'resolvers' : '%s' % (str(','.join(realmresolvers)))
             }
             resp = self.make_system_request('setRealm', params=parameters)
             assert('"value": true' in resp)
@@ -714,7 +711,7 @@ class TestLDAP(TestController):
                 try:
                     ldapServ.delete(ldapObject)
                 except Exception as e:
-                    if 'No such object' not in unicode(e):
+                    if 'No such object' not in str(e):
                         raise Exception(e)
 
             ldapServ.unbind()

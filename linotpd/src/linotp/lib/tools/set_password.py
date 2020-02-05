@@ -32,7 +32,7 @@ set password handler -
 import logging
 
 from linotp.lib.tools import ToolsHandler
-from linotp.lib.crypto.utils import libcrypt_password
+from linotp.lib.crypto import utils
 
 from sqlalchemy import schema, types
 from sqlalchemy.engine import create_engine
@@ -108,27 +108,27 @@ class SetPasswordHandler(ToolsHandler):
                                index=True)
 
         username = schema.Column(types.Unicode(255),
-                                 default=u'',
+                                 default='',
                                  unique=True,
                                  index=True)
 
         phone = schema.Column(types.Unicode(100),
-                              default=u'')
+                              default='')
 
         mobile = schema.Column(types.Unicode(100),
-                               default=u'')
+                               default='')
 
         email = schema.Column(types.Unicode(100),
-                              default=u'')
+                              default='')
 
         surname = schema.Column(types.Unicode(100),
-                                default=u'')
+                                default='')
 
         givenname = schema.Column(types.Unicode(100),
-                                  default=u'')
+                                  default='')
 
         password = schema.Column(types.Unicode(255),
-                                 default=u'')
+                                 default='')
 
     @staticmethod
     def create_table(db_context):
@@ -229,12 +229,10 @@ class SetPasswordHandler(ToolsHandler):
 
             crypted_password = admin_user.password
 
-            if libcrypt_password(
-                    old_password, crypted_password) != crypted_password:
-
+            if not utils.compare_password(old_password, crypted_password):
                 raise Exception("old password missmatch!")
 
-            admin_user.password = libcrypt_password(new_password)
+            admin_user.password = utils.crypt_password(new_password)
 
             session.add(admin_user)
 

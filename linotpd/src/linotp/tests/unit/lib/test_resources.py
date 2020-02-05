@@ -76,7 +76,7 @@ class TestResourceScheduler(unittest.TestCase):
 
             # block all uris
 
-            for uri in res_sched.next():
+            for uri in next(res_sched):
                 res_sched.block(uri, delay=30)
 
             # -------------------------------------------------------------- --
@@ -84,10 +84,10 @@ class TestResourceScheduler(unittest.TestCase):
             # verify that all uris are blocked and none is iterated
 
             uris = []
-            for uri in res_sched.next():
+            for uri in next(res_sched):
                 uris.append(uri)
 
-            self.assertTrue(len(uris) == 0)
+            assert len(uris) == 0
 
         # one minute later
         with freeze_time("2012-01-14 12:01:00"):
@@ -97,12 +97,12 @@ class TestResourceScheduler(unittest.TestCase):
             # verify that all uris are un blocked after the delay
 
             uris = []
-            for uri in res_sched.next():
+            for uri in next(res_sched):
                 uris.append(uri)
 
-            self.assertTrue('uri://1' in uris)
-            self.assertTrue('uri://2' in uris)
-            self.assertTrue('uri://3' in uris)
+            assert 'uri://1' in uris
+            assert 'uri://2' in uris
+            assert 'uri://3' in uris
 
         return
 
@@ -132,21 +132,21 @@ class TestResourceScheduler(unittest.TestCase):
         # check that the retry will be run through all uris n-times
 
         uris = []
-        for uri in res_sched.next():
+        for uri in next(res_sched):
             uris.append(uri)
 
-        self.assertTrue(len(uris) == 9)
+        assert len(uris) == 9
 
         # -------------------------------------------------------------- --
 
         # check that every uri is registered in the global registry
 
-        for _key, val in res_sched.resource_registry.registry.items():
+        for _key, val in list(res_sched.resource_registry.registry.items()):
             value, b_ind, b_count = val
 
-            self.assertTrue(value is None)
-            self.assertTrue(b_ind == 0 )
-            self.assertTrue(b_count == 0)
+            assert value is None
+            assert b_ind == 0
+            assert b_count == 0
 
         return
 
@@ -186,54 +186,54 @@ class TestResourceScheduler(unittest.TestCase):
             # verify that the second entry will not be iterated
 
             uris = []
-            for uri in res_sched.next():
+            for uri in next(res_sched):
                 uris.append(uri)
 
-            self.assertTrue(the_blocked_one not in uris)
+            assert the_blocked_one not in uris
 
             # -------------------------------------------------------------- --
 
             # verify that the retry is done 3 times for the other two
 
-            self.assertTrue(len(uris) == 6)
+            assert len(uris) == 6
 
             # -------------------------------------------------------------- --
 
             # verify that the blocked one is marked as blocked in the registry
 
-            for key, val in res_sched.resource_registry.registry.items():
+            for key, val in list(res_sched.resource_registry.registry.items()):
                 value, b_ind, b_count = val
 
                 if key == the_blocked_one:
-                    self.assertTrue(value is not None)
-                    self.assertTrue(b_ind == 1)
-                    self.assertTrue(b_count == 0)
+                    assert value is not None
+                    assert b_ind == 1
+                    assert b_count == 0
 
                 else:
-                    self.assertTrue(value is None)
+                    assert value is None
 
         # one minute later
 
         with freeze_time("2012-01-14 12:01:00"):
 
             uris = []
-            for uri in res_sched.next():
+            for uri in next(res_sched):
                 uris.append(uri)
 
             # -------------------------------------------------------------- --
 
             # verify that the former blocked one is now not more blocked
 
-            self.assertTrue(the_blocked_one in uris)
+            assert the_blocked_one in uris
 
             # -------------------------------------------------------------- --
 
             # verify that the former blocked one is as well unblocked in the
             # registry
 
-            for _key, val in res_sched.resource_registry.registry.items():
+            for _key, val in list(res_sched.resource_registry.registry.items()):
                 value, _b_ind, _b_count = val
-                self.assertTrue(value is None)
+                assert value is None
 
         return
 
@@ -279,7 +279,7 @@ class TestResourceScheduler(unittest.TestCase):
                 datetime.datetime.utcnow() + datetime.timedelta(minutes=i)):
 
                 try:
-                    for uri in res_sched.next():
+                    for uri in next(res_sched):
 
                         if uri == the_blocked_one:
                             raise DummyException()
@@ -292,7 +292,7 @@ class TestResourceScheduler(unittest.TestCase):
 
         # check the result
 
-        for key, val in res_sched.resource_registry.registry.items():
+        for key, val in list(res_sched.resource_registry.registry.items()):
             value, b_ind, b_count = val
             if b_ind == 1:
                 assert value is not None

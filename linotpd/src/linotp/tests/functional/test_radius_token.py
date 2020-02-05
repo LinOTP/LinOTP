@@ -124,24 +124,24 @@ class TestRadiusToken(TestController):
                       }
 
         response = self.make_admin_request('init', params=parameters1)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.make_admin_request('init', params=parameters2)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         params = {'serial': 'radius2', 'pin': 'local'}
         response = self.make_admin_request('set', params=params)
-        self.assertTrue('"set pin": 1' in response, response)
+        assert '"set pin": 1' in response, response
 
         params = {'serial': 'radius1', 'pin': ''}
         response = self.make_admin_request('set', params=params)
-        self.assertTrue('"set pin": 1' in response, response)
+        assert '"set pin": 1' in response, response
 
     def deleteRadiusToken(self):
         for serial in ["radius1", "radius2"]:
             parameters = {"serial": serial}
             response = self.make_admin_request('remove', params=parameters)
-            self.assertTrue('"value": 1' in response, response)
+            assert '"value": 1' in response, response
             return
 
     @patch.object(pyrad.client.Client, 'SendPacket', mocked_SendPacket_accept)

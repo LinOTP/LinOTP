@@ -27,6 +27,8 @@
 
 import time
 
+import pytest
+
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.hotp_token import HotpToken
 from linotp_selenium_helper.manage_ui import ManageUi
@@ -39,8 +41,8 @@ class TestAuth(TestCase):
     TestCase class that tests the auth/index forms
     """
 
+    @pytest.fixture(autouse=True)
     def setUp(self):
-        TestCase.setUp(self)
         self.realm_name = "se_test_auth"
         self.reset_resolvers_and_realms(data.sepasswd_resolver, self.realm_name)
 

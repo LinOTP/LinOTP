@@ -38,12 +38,12 @@ class TestDPWToken(unittest.TestCase):
 
         class mockSecObj(object):
             def getKey(self):
-                return '1234567890123456789012345678901234567890'
+                return b'1234567890123456789012345678901234567890'
 
         with dpwOtp(mockSecObj()) as dpw:
             day_otp = dpw.getOtp()
             res = dpw.checkOtp(anOtpVal=day_otp)
 
-        self.assertTrue(res)
+        assert res
 
 # eof #

@@ -35,7 +35,7 @@ import copy
 import logging
 
 from linotp.tests import TestController
-from .sql_user import SqlUserDB
+from sql_user import SqlUserDB
 
 log = logging.getLogger(__name__)
 
@@ -49,8 +49,7 @@ class SQLTestController(TestController):
         """
         sql connection setup
         """
-
-        self.sqlconnect = connect or self.appconf.get('sqlalchemy.url')
+        self.sqlconnect = connect or self.app.config.get('SQLALCHEMY_DATABASE_URI')
         sqlUser = SqlUserDB(connect=self.sqlconnect)
         self.sqlResolverDef = sqlUser.getResolverDefinition()
         return
@@ -142,17 +141,17 @@ class SQLTestController(TestController):
         resp = self.make_system_request(action='setResolver',
                                         params=parameters)
 
-        self.assertTrue('"value": true' in resp, resp)
+        assert '"value": true' in resp, resp
 
         resp = self.make_system_request(action='getResolvers')
-        self.assertTrue('"resolvername": "%s"' % (name) in resp, resp)
+        assert '"resolvername": "%s"' % (name) in resp, resp
 
         param2 = {
             'resolver': name
             }
         resp = self.make_system_request(action='getResolver',
                                         params=param2)
-        self.assertTrue('"Table": "User2"' in resp, resp)
+        assert '"Table": "User2"' in resp, resp
 
         return
 
@@ -163,7 +162,7 @@ class SQLTestController(TestController):
             }
         resp = self.make_system_request(action='delResolver',
                                         params=parameters)
-        self.assertTrue('"value": true' in resp, resp)
+        assert '"value": true' in resp, resp
 
         return resp
 
@@ -178,14 +177,14 @@ class SQLTestController(TestController):
             }
 
         resp = self.make_system_request('setRealm', params=parameters)
-        self.assertTrue('"value": true' in resp, resp)
+        assert '"value": true' in resp, resp
 
         if defaultRealm:
             params = {
                 'realm': realmName
                 }
             resp = self.make_system_request('setDefaultRealm', params=params)
-            self.assertTrue('"value": true' in resp, resp)
+            assert '"value": true' in resp, resp
         return
 
     def delSqlRealm(self, realmName):
@@ -196,7 +195,7 @@ class SQLTestController(TestController):
             }
         resp = self.make_system_request(action='delRealm',
                                         params=parameters)
-        self.assertTrue('"result": true' in resp, resp)
+        assert '"result": true' in resp, resp
 
         return resp
 

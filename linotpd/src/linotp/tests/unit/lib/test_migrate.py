@@ -104,7 +104,7 @@ class TestMigrate(unittest.TestCase):
         passphrase = "foobar"
         crypter = init_crypter(passphrase)
 
-        for key, value in config.items():
+        for key, value in list(config.items()):
 
             # calculate encryption and add mac from mac_data
             enc_value = crypter.encrypt(input_data=value,
@@ -113,6 +113,6 @@ class TestMigrate(unittest.TestCase):
             # decypt the real value
 
             out_value = crypter.decrypt(enc_value, just_mac=key + value)
-            self.assertTrue(value == out_value)
+            assert value == out_value
 
         return

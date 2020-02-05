@@ -42,17 +42,12 @@ Common rules
 
 """
 
-
 import binascii
 import logging
 import traceback
 from datetime import datetime
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
+import json
 
 """The application's model objects"""
 import sqlalchemy as sa
@@ -64,27 +59,30 @@ from sqlalchemy.orm import relation
 import linotp
 
 from linotp.model import meta
-from linotp.model.meta import Session
 from linotp.model.meta import MetaData
 
 from linotp.lib.crypto.utils import geturandom
 from linotp.lib.crypto.utils import hash_digest
-# from linotp.lib.crypto import encryptPin
-# from linotp.lib.crypto import decryptPin
+
 from linotp.lib.crypto.utils import get_rand_digit_str
 
+Session = meta.Session
 
-from pylons import config
+from linotp.flap import config
 log = logging.getLogger(__name__)
 
-implicit_returning = config.get('linotpSQL.implicit_returning', True)
+implicit_returning = True
+# TODO: Implicit returning from config
+# implicit_returning = config.get('linotpSQL.implicit_returning', True)
 
 # # for oracle we need a mapping of columns
 # # due to reserved keywords 'session' and 'timestamp'
 COL_PREFIX = ""
-SQLU = config.get("sqlalchemy.url", "")
-if SQLU.startswith("oracle:"):
-    COL_PREFIX = config.get("oracle.sql.column_prefix", "lino")
+
+# TODO: Get from app config
+# SQLU = config.get("sqlalchemy.url", "")
+# if SQLU.startswith("oracle:"):
+#     COL_PREFIX = config.get("oracle.sql.column_prefix", "lino")
 
 
 session_column = "%ssession" % COL_PREFIX
@@ -104,65 +102,67 @@ def init_model(engine):
 
     return
 
-token_table = sa.Table('Token', meta.metadata,
-                       sa.Column('LinOtpTokenId', sa.types.Integer(), sa.Sequence(
-                           'token_seq_id', optional=True), primary_key=True, nullable=False),
-                       sa.Column(
-                           'LinOtpTokenDesc', sa.types.Unicode(80), default=u''),
-                       sa.Column('LinOtpTokenSerialnumber', sa.types.Unicode(
-                           40), default=u'', unique=True, nullable=False, index=True),
 
-                       sa.Column(
-                           'LinOtpTokenType', sa.types.Unicode(30), default=u'HMAC', index=True),
-                       sa.Column(
-                           'LinOtpTokenInfo', sa.types.Unicode(2000), default=u''),
-                       # # encrypt
-                       sa.Column(
-                           'LinOtpTokenPinUser', sa.types.Unicode(512), default=u''),
-                       # # encrypt
-                       sa.Column(
-                           'LinOtpTokenPinUserIV', sa.types.Unicode(32), default=u''),
-                       # # encrypt
-                       sa.Column(
-                           'LinOtpTokenPinSO', sa.types.Unicode(512), default=u''),
-                       # # encrypt
-                       sa.Column(
-                           'LinOtpTokenPinSOIV', sa.types.Unicode(32), default=u''),
+token_table = sa.Table(
+    'Token', meta.metadata,
+    sa.Column('LinOtpTokenId', sa.types.Integer(), sa.Sequence(
+        'token_seq_id', optional=True), primary_key=True, nullable=False),
+    sa.Column(
+        'LinOtpTokenDesc', sa.types.Unicode(80), default=''),
+    sa.Column('LinOtpTokenSerialnumber', sa.types.Unicode(
+        40), default='', unique=True, nullable=False, index=True),
 
-                       sa.Column(
-                           'LinOtpIdResolver', sa.types.Unicode(120), default=u'', index=True),
-                       sa.Column(
-                           'LinOtpIdResClass', sa.types.Unicode(120), default=u''),
-                       sa.Column(
-                           'LinOtpUserid', sa.types.Unicode(320), default=u'', index=True),
+    sa.Column(
+        'LinOtpTokenType', sa.types.Unicode(30), default='HMAC', index=True),
+    sa.Column(
+        'LinOtpTokenInfo', sa.types.Unicode(2000), default=''),
+    # # encrypt
+    sa.Column(
+        'LinOtpTokenPinUser', sa.types.Unicode(512), default=''),
+    # # encrypt
+    sa.Column(
+        'LinOtpTokenPinUserIV', sa.types.Unicode(32), default=''),
+    # # encrypt
+    sa.Column(
+        'LinOtpTokenPinSO', sa.types.Unicode(512), default=''),
+    # # encrypt
+    sa.Column(
+        'LinOtpTokenPinSOIV', sa.types.Unicode(32), default=''),
+
+    sa.Column(
+        'LinOtpIdResolver', sa.types.Unicode(120), default='', index=True),
+    sa.Column(
+        'LinOtpIdResClass', sa.types.Unicode(120), default=''),
+    sa.Column(
+        'LinOtpUserid', sa.types.Unicode(320), default='', index=True),
 
 
-                       sa.Column(
-                           'LinOtpSeed', sa.types.Unicode(32), default=u''),
-                       sa.Column(
-                           'LinOtpOtpLen', sa.types.Integer(), default=6),
-                       # # hashed
-                       sa.Column(
-                           'LinOtpPinHash', sa.types.Unicode(512), default=u''),
-                       # # encrypt
-                       sa.Column(
-                           'LinOtpKeyEnc', sa.types.Unicode(1024), default=u''),
-                       sa.Column(
-                           'LinOtpKeyIV', sa.types.Unicode(32), default=u''),
+    sa.Column(
+        'LinOtpSeed', sa.types.Unicode(32), default=''),
+    sa.Column(
+        'LinOtpOtpLen', sa.types.Integer(), default=6),
+    # # hashed
+    sa.Column(
+        'LinOtpPinHash', sa.types.Unicode(512), default=''),
+    # # encrypt
+    sa.Column(
+        'LinOtpKeyEnc', sa.types.Unicode(1024), default=''),
+    sa.Column(
+        'LinOtpKeyIV', sa.types.Unicode(32), default=''),
 
-                       sa.Column(
-                           'LinOtpMaxFail', sa.types.Integer(), default=10),
-                       sa.Column(
-                           'LinOtpIsactive', sa.types.Boolean(), default=True),
-                       sa.Column(
-                           'LinOtpFailCount', sa.types.Integer(), default=0),
-                       sa.Column('LinOtpCount', sa.types.Integer(), default=0),
-                       sa.Column(
-                           'LinOtpCountWindow', sa.types.Integer(), default=10),
-                       sa.Column(
-                           'LinOtpSyncWindow', sa.types.Integer(), default=1000),
-                       implicit_returning=implicit_returning,
-                       )
+    sa.Column(
+        'LinOtpMaxFail', sa.types.Integer(), default=10),
+    sa.Column(
+        'LinOtpIsactive', sa.types.Boolean(), default=True),
+    sa.Column(
+        'LinOtpFailCount', sa.types.Integer(), default=0),
+    sa.Column('LinOtpCount', sa.types.Integer(), default=0),
+    sa.Column(
+        'LinOtpCountWindow', sa.types.Integer(), default=10),
+    sa.Column(
+        'LinOtpSyncWindow', sa.types.Integer(), default=1000),
+    implicit_returning=implicit_returning,
+)
 
 TOKEN_ENCODE = ["LinOtpTokenDesc", "LinOtpTokenSerialnumber",
                 "LinOtpTokenInfo", "LinOtpUserid", "LinOtpIdResClass",
@@ -174,9 +174,9 @@ class Token(object):
     def __init__(self, serial):
 
         # # self.LinOtpTokenId - will be generated DBType serial
-        self.LinOtpTokenSerialnumber = u'' + serial
+        self.LinOtpTokenSerialnumber = '' + serial
 
-        self.LinOtpTokenType = u''
+        self.LinOtpTokenType = ''
 
         self.LinOtpCount = 0
         self.LinOtpFailCount = 0
@@ -185,7 +185,7 @@ class Token(object):
         self.LinOtpIsactive = True
         self.LinOtpCountWindow = 10
         self.LinOtpOtpLen = 6
-        self.LinOtpSeed = u''
+        self.LinOtpSeed = ''
 
         self.LinOtpIdResolver = None
         self.LinOtpIdResClass = None
@@ -193,46 +193,6 @@ class Token(object):
 
         # will be assigned automaticaly
         # self.LinOtpTokenId      = 0
-
-    def __setattr__(self, name, value):
-        """
-        to support unicode on all backends, we use the json encoder with
-        the ASCII encode default
-
-        :param name: db column name or class member
-        :param value: the corresponding value
-
-        :return: - nothing -
-        """
-        if name in TOKEN_ENCODE:
-            # # encode data
-            if value:
-                value = linotp.lib.crypto.utils.uencode(value)
-        super(Token, self).__setattr__(name, value)
-
-    def __getattribute__(self, name):
-        """
-        to support unicode on all backends, we use the json decoder with
-        the ASCII decode default
-
-        :param name: db column name or class member
-
-        :return: the corresponding value
-        """
-        # Default behaviour
-        value = object.__getattribute__(self, name)
-        if name in TOKEN_ENCODE:
-            if value:
-                value = linotp.lib.crypto.utils.udecode(value)
-            else:
-                value = ""
-        # port of the 2.6. resolver to 2.7
-        if name in ['LinOtpIdResClass']:
-            if value[:len('useridresolveree.')] == 'useridresolveree.':
-                value = "useridresolver.%s" % value[
-                    len('useridreseolveree.') - 1:]
-
-        return value
 
     def _fix_spaces(self, data):
         '''
@@ -271,8 +231,8 @@ class Token(object):
         if reset_failcount:
             self.LinOtpFailCount = 0
 
-        self.LinOtpKeyEnc = unicode(binascii.hexlify(encrypted_seed))
-        self.LinOtpKeyIV = unicode(binascii.hexlify(iv))
+        self.LinOtpKeyEnc = binascii.hexlify(encrypted_seed).decode('utf-8')
+        self.LinOtpKeyIV = binascii.hexlify(iv).decode('utf-8')
 
     def get_encrypted_seed(self):
         key = binascii.unhexlify(self.LinOtpKeyEnc or '')
@@ -280,8 +240,8 @@ class Token(object):
         return key, iv
 
     def setUserPin(self, enc_userPin, iv):
-        self.LinOtpTokenPinUser = unicode(binascii.hexlify(enc_userPin))
-        self.LinOtpTokenPinUserIV = unicode(binascii.hexlify(iv))
+        self.LinOtpTokenPinUser = binascii.hexlify(enc_userPin).decode('utf-8')
+        self.LinOtpTokenPinUserIV = binascii.hexlify(iv).decode('utf-8')
 
     def getUserPin(self):
         pu = self._fix_spaces(self.LinOtpTokenPinUser or '')
@@ -294,8 +254,8 @@ class Token(object):
         return self.LinOtpCount or 0
 
     def set_hashed_pin(self, pin, iv):
-        self.LinOtpSeed = unicode(binascii.hexlify(iv))
-        self.LinOtpPinHash = unicode(binascii.hexlify(pin))
+        self.LinOtpSeed = binascii.hexlify(iv).decode('utf-8')
+        self.LinOtpPinHash = binascii.hexlify(pin).decode('utf-8')
 
     def get_hashed_pin(self):
         iv = binascii.unhexlify(self.LinOtpSeed)
@@ -308,8 +268,8 @@ class Token(object):
         target.LinOtpPinHash = src.LinOtpPinHash
 
     def set_encrypted_pin(self, pin, iv):
-        self.LinOtpSeed = unicode(binascii.hexlify(iv))
-        self.LinOtpPinHash = unicode(binascii.hexlify(pin))
+        self.LinOtpSeed = binascii.hexlify(iv).decode('utf-8')
+        self.LinOtpPinHash = binascii.hexlify(pin).decode('utf-8')
         self.LinOtpPinHash = "@@" + self.LinOtpPinHash
 
     def get_encrypted_pin(self):
@@ -319,8 +279,9 @@ class Token(object):
 
     def setHashedPin(self, pin):
         seed = geturandom(16)
-        self.LinOtpSeed = unicode(binascii.hexlify(seed))
-        self.LinOtpPinHash = unicode(binascii.hexlify(hash_digest(pin, seed)))
+        self.LinOtpSeed = binascii.hexlify(seed).decode('utf-8')
+        self.LinOtpPinHash = binascii.hexlify(
+            hash_digest(pin, seed)).decode('utf-8')
         return self.LinOtpPinHash
 
     def getHashedPin(self, pin):
@@ -340,7 +301,7 @@ class Token(object):
     def setDescription(self, desc):
         if desc is None:
             desc = ""
-        self.LinOtpTokenDesc = unicode(desc)
+        self.LinOtpTokenDesc = str(desc)
         return self.LinOtpTokenDesc
 
     def setOtpLen(self, otplen):
@@ -351,7 +312,7 @@ class Token(object):
         # is deleteted via foreign key relation
         # so we delete it explicitly
         token_realm_entries = Session.query(TokenRealm).filter(
-                            TokenRealm.token_id == self.LinOtpTokenId).all()
+            TokenRealm.token_id == self.LinOtpTokenId).all()
 
         for token_realm_entry in token_realm_entries:
             Session.delete(token_realm_entry)
@@ -368,8 +329,8 @@ class Token(object):
         return ret
 
     def setSoPin(self, enc_soPin, iv):
-        self.LinOtpTokenPinSO = unicode(binascii.hexlify(enc_soPin))
-        self.LinOtpTokenPinSOIV = unicode(binascii.hexlify(iv))
+        self.LinOtpTokenPinSO = binascii.hexlify(enc_soPin).decode('utf-8')
+        self.LinOtpTokenPinSOIV = binascii.hexlify(iv).decode('utf-8')
 
     def __unicode__(self):
         return self.LinOtpTokenDesc
@@ -465,7 +426,7 @@ class Token(object):
 
     def storeToken(self):
         if self.LinOtpUserid is None:
-            self.LinOtpUserid = u''
+            self.LinOtpUserid = ''
         if self.LinOtpIdResClass is None:
             self.LinOtpIdResClass = ''
         if self.LinOtpIdResolver is None:
@@ -518,7 +479,7 @@ class Token(object):
 
 def createToken(serial):
     log.debug('createToken(%s)' % serial)
-    serial = u'' + serial
+    serial = '' + serial
     token = Token(serial)
     log.debug('token object created')
 
@@ -526,14 +487,15 @@ def createToken(serial):
 
 ###############################################################################
 
+
 config_table = sa.Table('Config', meta.metadata,
                         sa.Column(
                             'Key', sa.types.Unicode(255), primary_key=True, nullable=False),
                         sa.Column(
-                            'Value', sa.types.Unicode(2000), default=u''),
-                        sa.Column('Type', sa.types.Unicode(2000), default=u''),
+                            'Value', sa.types.Unicode(2000), default=''),
+                        sa.Column('Type', sa.types.Unicode(2000), default=''),
                         sa.Column(
-                            'Description', sa.types.Unicode(2000), default=u''),
+                            'Description', sa.types.Unicode(2000), default=''),
                         implicit_returning=implicit_returning,
                         )
 
@@ -542,54 +504,18 @@ CONFIG_ENCODE = ["Key", "Value", "Description"]
 
 class Config(object):
 
-    def __init__(self, Key, Value, Type=u'', Description=u''):
+    def __init__(self, Key, Value, Type='', Description=''):
 
         if (not Key.startswith("linotp.") and not Key.startswith("enclinotp.")):
             Key = "linotp." + Key
 
-        self.Key = unicode(Key)
-        self.Value = unicode(Value)
-        self.Type = unicode(Type)
-        self.Description = unicode(Description)
-
+        self.Key = str(Key)
+        self.Value = str(Value)
+        self.Type = str(Type)
+        self.Description = str(Description)
 
     def __unicode__(self):
         return self.Description
-
-    def __setattr__(self, name, value):
-        """
-        to support unicode on all backends, we use the json encoder with
-        the ASCII encode default
-
-        :param name: db column name or class member
-        :param value: the corresponding value
-
-        :return: - nothing -
-        """
-        if name in CONFIG_ENCODE:
-            # # encode data
-            if value:
-                value = linotp.lib.crypto.utils.uencode(value)
-        super(Config, self).__setattr__(name, value)
-
-    def __getattribute__(self, name):
-        """
-        to support unicode on all backends, we use the json decoder with
-        the ASCII decode default
-
-        :param name: db column name or class member
-
-        :return: the corresponding value
-        """
-        # Default behaviour
-        value = object.__getattribute__(self, name)
-        if name in CONFIG_ENCODE:
-            if value:
-                value = linotp.lib.crypto.utils.udecode(value)
-            else:
-                value = ""
-
-        return value
 
     __str__ = __unicode__
 
@@ -618,9 +544,9 @@ realm_table = sa.Table('Realm', meta.metadata,
                        sa.Column('id', sa.types.Integer(), sa.Sequence(
                            'realm_seq_id', optional=True), primary_key=True, nullable=False),
                        sa.Column(
-                           'name', sa.types.Unicode(255), default=u'', unique=True, nullable=False),
+                           'name', sa.types.Unicode(255), default='', unique=True, nullable=False),
                        sa.Column('default', sa.types.Boolean(), default=False),
-                       sa.Column('option', sa.types.Unicode(40), default=u''),
+                       sa.Column('option', sa.types.Unicode(40), default=''),
                        implicit_returning=implicit_returning,
                        )
 
@@ -628,41 +554,6 @@ REALM_ENCODE = ["name", "option"]
 
 
 class Realm(object):
-
-    def __setattr__(self, name, value):
-        """
-        to support unicode on all backends, we use the json encoder with
-        the ASCII encode default
-
-        :param name: db column name or class member
-        :param value: the corresponding value
-
-        :return: - nothing -
-        """
-        if name in REALM_ENCODE:
-            # # encode data
-            if value:
-                value = linotp.lib.crypto.utils.uencode(value)
-        super(Realm, self).__setattr__(name, value)
-
-    def __getattribute__(self, name):
-        """
-        to support unicode on all backends, we use the json decoder with
-        the ASCII decode default
-
-        :param name: db column name or class member
-
-        :return: the corresponding value
-        """
-        # Default behaviour
-        value = object.__getattribute__(self, name)
-        if name in REALM_ENCODE:
-            if value:
-                value = linotp.lib.crypto.utils.udecode(value)
-            else:
-                value = ""
-
-        return value
 
     def __init__(self, realm):
         self.name = realm
@@ -690,13 +581,13 @@ ocra_table = sa.Table('ocra', meta.metadata,
                           'token_seq_id', optional=True), primary_key=True, nullable=False),
                       sa.Column('transid', sa.types.Unicode(20), unique=True,
                                 nullable=False, index=True),
-                      sa.Column('data', sa.types.Unicode(512), default=u''),
+                      sa.Column('data', sa.types.Unicode(512), default=''),
                       sa.Column(
-                          'challenge', sa.types.Unicode(256), default=u''),
+                          'challenge', sa.types.Unicode(256), default=''),
                       sa.Column(
-                          session_column, sa.types.Unicode(512), default=u''),
+                          session_column, sa.types.Unicode(512), default=''),
                       sa.Column(
-                          'tokenserial', sa.types.Unicode(64), default=u''),
+                          'tokenserial', sa.types.Unicode(64), default=''),
                       sa.Column(
                           timestamp_column, sa.types.DateTime, default=datetime.now()),
                       sa.Column(
@@ -714,56 +605,20 @@ class OcraChallenge(object):
     '''
     '''
 
-    def __init__(self, transId, challenge, tokenserial, data, session=u''):
+    def __init__(self, transId, challenge, tokenserial, data, session=''):
 
-        self.transid = u'' + transId
-        self.challenge = u'' + challenge
-        self.tokenserial = u'' + tokenserial
-        self.data = u'' + data
+        self.transid = '' + transId
+        self.challenge = '' + challenge
+        self.tokenserial = '' + tokenserial
+        self.data = '' + data
         self.timestamp = datetime.now()
-        self.session = u'' + session
+        self.session = '' + session
         self.received_count = 0
         self.received_tan = False
         self.valid_tan = False
 
-
-    def __setattr__(self, name, value):
-        """
-        to support unicode on all backends, we use the json encoder with
-        the ASCII encode default
-
-        :param name: db column name or class member
-        :param value: the corresponding value
-
-        :return: - nothing -
-        """
-        if name in OCRA_ENCODE:
-            # # encode data
-            if value:
-                value = linotp.lib.crypto.utils.uencode(value)
-        super(OcraChallenge, self).__setattr__(name, value)
-
-    def __getattribute__(self, name):
-        """
-        to support unicode on all backends, we use the json decoder with
-        the ASCII decode default
-
-        :param name: db column name or class member
-
-        :return: the corresponding value
-        """
-        # Default behaviour
-        value = object.__getattribute__(self, name)
-        if name in OCRA_ENCODE:
-            if value:
-                value = linotp.lib.crypto.utils.udecode(value)
-            else:
-                value = ""
-
-        return value
-
     def setData(self, data):
-        self.data = unicode(data)
+        self.data = str(data)
 
     def getData(self):
         return self.data
@@ -772,10 +627,10 @@ class OcraChallenge(object):
         return self.session
 
     def setSession(self, session):
-        self.session = unicode(session)
+        self.session = str(session)
 
     def setChallenge(self, challenge):
-        self.challenge = unicode(challenge)
+        self.challenge = str(challenge)
 
     def setTanStatus(self, received=False, valid=False):
         self.received_tan = received
@@ -809,7 +664,7 @@ class OcraChallenge(object):
         descr['received_tan'] = self.received_tan
         descr['valid_tan'] = self.valid_tan
 
-        return "%s" % unicode(descr)
+        return "%s" % str(descr)
 
     __str__ = __unicode__
 
@@ -830,19 +685,19 @@ challenges_table = sa.Table('challenges', meta.metadata,
                             sa.Column('ptransid', sa.types.Unicode(64),
                                       index=True),
                             sa.Column('data',
-                                      sa.types.Unicode(512), default=u''),
+                                      sa.types.Unicode(512), default=''),
                             sa.Column('bdata',
-                                      sa.types.Binary(), default=None),
+                                      sa.types.LargeBinary, default=None),
                             sa.Column('challenge',
-                                      sa.types.Unicode(512), default=u''),
+                                      sa.types.Unicode(512), default=''),
                             sa.Column('lchallenge',
-                                      sa.types.Unicode(2000), default=u''),
+                                      sa.types.Unicode(2000), default=''),
                             sa.Column('bchallenge',
-                                      sa.types.Binary, default=None),
+                                      sa.types.LargeBinary, default=None),
                             sa.Column(session_column,
-                                      sa.types.Unicode(512), default=u''),
+                                      sa.types.Unicode(512), default=''),
                             sa.Column('tokenserial',
-                                      sa.types.Unicode(64), default=u'',
+                                      sa.types.Unicode(64), default='',
                                       index=True),
                             sa.Column(timestamp_column, sa.types.DateTime,
                                       default=datetime.now()),
@@ -863,72 +718,36 @@ class Challenge(object):
     the generic challange handling
     '''
 
-    def __init__(self, transid, tokenserial, challenge=u'', data=u'', session=u''):
+    def __init__(self, transid, tokenserial, challenge='', data='', session=''):
 
-        self.transid = u'' + transid
+        self.transid = '' + transid
 
         #
         # for future use: subtransactions will refer to their parent
 
-        self.ptransid = u''
+        self.ptransid = ''
 
         # adjust challenge to be binary compatible
 
-        if isinstance(challenge, (str, unicode)):
+        if isinstance(challenge, str):
             challenge = challenge.encode('utf-8')
         self.challenge = challenge
 
         self.ochallenge = ''
 
-        self.tokenserial = u'' + tokenserial
+        self.tokenserial = '' + tokenserial
 
         # adjust data to be binary compatible
 
-        if isinstance(data, (str, unicode)):
+        if isinstance(data, str):
             data = data.encode('utf-8')
         self.data = data
 
         self.timestamp = datetime.now()
-        self.session = u'' + session
+        self.session = '' + session
         self.received_count = 0
         self.received_tan = False
         self.valid_tan = False
-
-
-    def __setattr__(self, name, value):
-        """
-        to support unicode on all backends, we use the json encoder with
-        the ASCII encode default
-
-        :param name: db column name or class member
-        :param value: the corresponding value
-
-        :return: - nothing -
-        """
-        if name in CHALLENGE_ENCODE:
-            # # encode data
-            if value:
-                value = linotp.lib.crypto.utils.uencode(value)
-        super(Challenge, self).__setattr__(name, value)
-
-    def __getattribute__(self, name):
-        """
-        to support unicode on all backends, we use the json decoder with
-        the ASCII decode default
-
-        :param name: db column name or class member
-
-        :return: the corresponding value
-        """
-        # Default behaviour
-        value = object.__getattribute__(self, name)
-        if name in CHALLENGE_ENCODE:
-            if value:
-                value = linotp.lib.crypto.utils.udecode(value)
-            else:
-                value = ""
-
-        return value
 
     @classmethod
     def createTransactionId(cls, length=20):
@@ -985,10 +804,10 @@ class Challenge(object):
         """
         set the session state information like open or closed
         - contains in addition the mac of the whole challenge entry
-        
+
         :param session: dictionary of the session info
         """
-        self.session = unicode(session)
+        self.session = str(session)
 
     def add_session_info(self, info):
         session_dict = {}
@@ -998,7 +817,7 @@ class Challenge(object):
 
         session_dict.update(info)
 
-        self.session = unicode(json.dumps(session_dict))
+        self.session = str(json.dumps(session_dict))
 
     def signChallenge(self, hsm):
         """
@@ -1049,7 +868,11 @@ class Challenge(object):
         self.challenge = challenge.encode('utf8')
 
     def getChallenge(self):
-        return self.challenge.decode('utf8')
+
+        if not isinstance(self.challenge, str):
+            return self.challenge.decode()
+
+        return self.challenge
 
     def setTanStatus(self, received=False, valid=False, increment=True):
         self.received_tan = received
@@ -1124,7 +947,7 @@ class Challenge(object):
             Session.add(self)
             Session.flush()
 
-        except Exception as exce:
+        except Exception as _exce:
             log.exception('[save]Error during saving challenge')
 
         return self.transid
@@ -1138,11 +961,12 @@ class Challenge(object):
         descr = {}
         descr['id'] = self.id
         descr['transid'] = self.transid
-        descr['challenge'] = self.challenge
+        descr['challenge'] = self.getChallenge()
         descr['tokenserial'] = self.tokenserial
         descr['data'] = self.getData()
         if save is True:
-            descr['timestamp'] = "%s" % self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            descr['timestamp'] = "%s" % self.timestamp.strftime(
+                '%Y-%m-%d %H:%M:%S')
         else:
             descr['timestamp'] = self.timestamp
         descr['received_tan'] = self.received_tan
@@ -1156,7 +980,7 @@ class Challenge(object):
                 session_info = json.loads(self.session)
                 if 'mac' in session_info:
                     del session_info['mac']
-            except Exception as exx:
+            except Exception as _exx:
                 pass
 
         descr['session'] = session_info
@@ -1165,7 +989,7 @@ class Challenge(object):
 
     def __unicode__(self):
         descr = self.get_vars()
-        return "%s" % unicode(descr)
+        return "%s" % str(descr)
 
     __str__ = __unicode__
 
@@ -1199,31 +1023,32 @@ reporting_table =\
              sa.Column('R_ID', sa.types.Integer(),
                        sa.Sequence('reporting_seq_id', optional=True),
                        primary_key=True, nullable=False),
-             sa.Column('R_TIMESTAMP', sa.types.DateTime, default=datetime.now()),
-             sa.Column('R_EVENT', sa.types.Unicode(250), default=u''),
-             sa.Column('R_REALM', sa.types.Unicode(250), default=u''),
-             sa.Column('R_PARAMETER', sa.types.Unicode(250), default=u''),
-             sa.Column('R_VALUE', sa.types.Unicode(250), default=u''),
+             sa.Column('R_TIMESTAMP', sa.types.DateTime,
+                       default=datetime.now()),
+             sa.Column('R_EVENT', sa.types.Unicode(250), default=''),
+             sa.Column('R_REALM', sa.types.Unicode(250), default=''),
+             sa.Column('R_PARAMETER', sa.types.Unicode(250), default=''),
+             sa.Column('R_VALUE', sa.types.Unicode(250), default=''),
              sa.Column('R_COUNT', sa.types.Integer(), default=0),
-             sa.Column('R_DETAIL', sa.types.Unicode(2000), default=u''),
-             sa.Column('R_SESSION', sa.types.Unicode(250), default=u''),
-             sa.Column('R_DESCRIPTION', sa.types.Unicode(2000), default=u''),
+             sa.Column('R_DETAIL', sa.types.Unicode(2000), default=''),
+             sa.Column('R_SESSION', sa.types.Unicode(250), default=''),
+             sa.Column('R_DESCRIPTION', sa.types.Unicode(2000), default=''),
              implicit_returning=implicit_returning,)
 
 
 class Reporting(object):
 
-    def __init__(self, event, realm, parameter=u'', value=u'', count=0,
-                 detail=u'', session=u'', description=u'', timestamp=None):
+    def __init__(self, event, realm, parameter='', value='', count=0,
+                 detail='', session='', description='', timestamp=None):
 
-        self.event = unicode(event)
-        self.realm = unicode(realm)
-        self.parameter = unicode(parameter)
-        self.value = unicode(value)
+        self.event = str(event)
+        self.realm = str(realm)
+        self.parameter = str(parameter)
+        self.value = str(value)
         self.count = count
-        self.detail = unicode(detail)
-        self.session = unicode(session)
-        self.description = unicode(description)
+        self.detail = str(detail)
+        self.session = str(session)
+        self.description = str(description)
         self.timestamp = datetime.now()
         if timestamp:
             self.timestamp = timestamp
@@ -1242,6 +1067,7 @@ class Reporting(object):
         ret['description'] = self.description
 
         return ret
+
 
 reporting_mapping = {}
 reporting_mapping['id'] = reporting_table.c.R_ID
@@ -1277,6 +1103,7 @@ class LoggingConfig(object):
     def __init__(self, name, level):
         self.name = name
         self.level = level
+
 
 logging_config_mapping = {}
 logging_config_mapping['name'] = logging_config_table.c.name
@@ -1319,7 +1146,7 @@ mapping['timestamp'] = "%stimestamp" % COL_PREFIX
 # # create Ocra ORM mapping to the Ocra class
 ocra_properties = {}
 if len(COL_PREFIX) > 0:
-    for key, value in mapping.items():
+    for key, value in list(mapping.items()):
         ocra_properties[key] = ocra_table.columns[value]
 
 orm.mapper(OcraChallenge, ocra_table, properties=ocra_properties)

@@ -33,9 +33,6 @@ import integration_data as data
 class TestCreateUserIdResolvers(TestCase):
     """TestCase class that creates 4 UserIdResolvers"""
 
-    def setUp(self):
-        TestCase.setUp(self)
-
     def clear_realms(self):
         # Need to clear realms so that useridresolvers can be deleted
         self.manage_ui.realm_manager.clear_realms_via_api()
@@ -66,10 +63,9 @@ class TestCreateUserIdResolvers(TestCase):
         realm_manager.close()
 
         user_view = self.manage_ui.user_view
-        self.assertEqual(
-            total_expected_users, user_view.get_num_users(realm_name),
-            "Expected %i users, got %i" %
-            (total_expected_users, user_view.get_num_users(realm_name)))
+        assert total_expected_users == user_view.get_num_users(realm_name), \
+            "Expected %i users, got %i" % \
+            (total_expected_users, user_view.get_num_users(realm_name))
 
     def create_resolver(self, testdata):
         m = self.manage_ui.useridresolver_manager

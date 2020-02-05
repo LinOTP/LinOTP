@@ -33,52 +33,52 @@ import struct
 
 from hashlib import sha1
 
-import sys
-(ma, mi, _, _, _,) = sys.version_info
-pver = float(int(ma) + int(mi) * 0.1)
-
 
 log = logging.getLogger(__name__)
 
 
 class HmacOtp():
 
-    def __init__(self, secObj=None, counter=0, digits=6, hashfunc=sha1):
+    def __init__(self, secObj=None, counter: int = 0, digits: int = 6, hashfunc=sha1):
         self.secretObj = secObj
         self.counter = counter
         self.digits = digits
         self.hashfunc = hashfunc
 
-    def hmac(self, counter=None, key=None):
+    def hmac(self, counter: int = None, key=None):
         counter = counter or self.counter
 
         data_input = struct.pack(">Q", counter)
+
         if key is None:
-            dig = str(self.secretObj.hmac_digest(data_input,
-                                                 hash_algo=self.hashfunc))
+            dig = self.secretObj.hmac_digest(
+                data_input, hash_algo=self.hashfunc)
         else:
-            if pver > 2.6:
-                dig = hmac.new(key, data_input, self.hashfunc).digest()
-            else:
-                dig = hmac.new(key, str(data_input), self.hashfunc).digest()
+            dig = hmac.new(key, data_input, self.hashfunc).digest()
 
         return dig
 
     def truncate(self, digest):
         offset = ord(digest[-1:]) & 0x0f
 
-        binary = (ord(digest[offset + 0]) & 0x7f) << 24
-        binary |= (ord(digest[offset + 1]) & 0xff) << 16
-        binary |= (ord(digest[offset + 2]) & 0xff) << 8
-        binary |= (ord(digest[offset + 3]) & 0xff)
+        binary = (digest[offset + 0] & 0x7f) << 24
+        binary |= (digest[offset + 1] & 0xff) << 16
+        binary |= (digest[offset + 2] & 0xff) << 8
+        binary |= (digest[offset + 3] & 0xff)
 
         return binary % (10 ** self.digits)
 
-    def generate(self, counter=None, inc_counter=True, key=None):
+    def generate(self, counter: int = None, inc_counter=True, key=None):
+
         counter = counter or self.counter
 
-        otp = str(self.truncate(self.hmac(counter=counter, key=key)))
-        """  fill in the leading zeros  """
+        otp = str(
+            self.truncate(
+                self.hmac(counter=counter, key=key))
+            )
+
+        # fill in the leading zeros
+
         sotp = (self.digits - len(otp)) * "0" + otp
         if inc_counter:
             self.counter = counter + 1
@@ -97,11 +97,11 @@ class HmacOtp():
         for c in range(start , end):
             otpval = self.generate(c)
 
-            if (unicode(otpval) == unicode(anOtpVal)):
+            if otpval == anOtpVal:
                 res = c
                 break
+
         #return -1 or the counter
         return res
 
 #eof##########################################################################
-

@@ -30,12 +30,17 @@ sql resolver tests
 
 import logging
 import json
+import pytest
 
-from .sql_test_controller import SQLTestController
+from linotp.tests.conftest import Base_App_Config as BAC
+
+from sql_test_controller import SQLTestController
 
 log = logging.getLogger(__name__)
 
 
+@pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
+                    reason="non sqlite database required for this test!")
 class SQLResolverTest(SQLTestController):
 
     def setUp(self):
@@ -94,7 +99,7 @@ class SQLResolverTest(SQLTestController):
         }
         response = self.make_admin_request('init', params=params)
 
-        self.assertTrue('false' not in response.body, response)
+        assert 'false' not in response.body, response
 
         # ------------------------------------------------------------------ --
 
@@ -109,7 +114,7 @@ class SQLResolverTest(SQLTestController):
             }
 
         response = self.make_system_request('setPolicy', params=params)
-        self.assertTrue('false' not in response.body)
+        assert 'false' not in response.body
 
         # ------------------------------------------------------------------ --
 
@@ -121,7 +126,7 @@ class SQLResolverTest(SQLTestController):
             }
 
         response = self.make_validate_request('check', params=params)
-        self.assertTrue('"value": false' in response)
+        assert '"value": false' in response
 
         # ------------------------------------------------------------------ --
 
@@ -137,7 +142,7 @@ class SQLResolverTest(SQLTestController):
             'result', {}).get(
                 'value', {}).get(
                     'data',[{}])[0]
-        self.assertTrue(token_info.get( "LinOtp.FailCount", -1) == 1)
+        assert token_info.get( "LinOtp.FailCount", -1) == 1
 
         # ------------------------------------------------------------------ --
 
@@ -154,7 +159,7 @@ class SQLResolverTest(SQLTestController):
                                                      auth_user=auth_user,
                                                      new_auth_cookie=True)
 
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -170,7 +175,7 @@ class SQLResolverTest(SQLTestController):
             'result', {}).get(
                 'value', {}).get(
                     'data',[{}])[0]
-        self.assertTrue(token_info.get( "LinOtp.FailCount", -1) == 0)
+        assert token_info.get( "LinOtp.FailCount", -1) == 0
 
         return
 

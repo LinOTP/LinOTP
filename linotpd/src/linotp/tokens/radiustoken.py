@@ -30,6 +30,7 @@ import logging
 
 import binascii
 
+from flask import current_app
 
 # for update, we require the TokenClass
 from linotp.tokens.base import TokenClass
@@ -41,7 +42,7 @@ from linotp.lib.error import ParameterError
 import pyrad.packet
 from pyrad.client import Client
 from pyrad.dictionary import Dictionary
-from pylons.configuration import config as env
+from linotp.flap import config as env
 
 
 log = logging.getLogger(__name__)
@@ -57,7 +58,7 @@ class RadiusTokenClass(RemoteTokenClass):
 
     def __init__(self, aToken):
         RemoteTokenClass.__init__(self, aToken)
-        self.setType(u"radius")
+        self.setType("radius")
 
         self.radiusServer = ""
         self.radiusUser = ""
@@ -109,7 +110,7 @@ class RadiusTokenClass(RemoteTokenClass):
             'policy': {},
         }
 
-        if key is not None and res.has_key(key):
+        if key is not None and key in res:
             ret = res.get(key)
         else:
             if ret == 'all':
@@ -146,7 +147,7 @@ class RadiusTokenClass(RemoteTokenClass):
 
         TokenClass.update(self, param)
         # We need to write the secret!
-        self.setOtpKey(binascii.hexlify(self.radiusSecret))
+        self.setOtpKey(self.radiusSecret.encode('utf-8').hex())
 
         self.addToTokenInfo("radius.server", self.radiusServer)
         self.addToTokenInfo("radius.local_checkpin", self.radiusLocal_checkpin)
@@ -238,8 +239,9 @@ class RadiusTokenClass(RemoteTokenClass):
             server = radiusServer.split(':')
             r_server = server[0]
             r_authport = 1812
-            nas_identifier = env.get("radius.nas_identifier", "LinOTP")
-            r_dict = env.get("radius.dictfile", "/etc/linotp2/dictionary")
+
+            nas_identifier = current_app.config['RADIUS_NAS_IDENTIFIER']
+            r_dict = current_app.getRadiusDictionaryPath()
 
             if len(server) >= 2:
                 r_authport = int(server[1])
@@ -267,7 +269,7 @@ class RadiusTokenClass(RemoteTokenClass):
 
             if response.code == pyrad.packet.AccessChallenge:
                 opt = {}
-                for attr in response.keys():
+                for attr in list(response.keys()):
                     opt[attr] = response[attr]
                 res = False
                 log.debug("challenge returned %r " % opt)

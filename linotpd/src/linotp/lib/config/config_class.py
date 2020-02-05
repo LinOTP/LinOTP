@@ -34,7 +34,8 @@ import time
 
 from datetime import datetime
 
-from linotp.config import environment as env
+from flask import current_app
+
 from linotp.lib.config.util import expand_here
 
 from linotp.lib.config.db_api import _removeConfigDB
@@ -58,6 +59,8 @@ log = logging.getLogger(__name__)
 
 class LinOtpConfig(dict):
     """
+    LinOTP Config class - a dictionary to hold the config entries with a backend database
+
     This class should be a request singleton.
 
     In case of a change, it must cover the different aspects like
@@ -69,9 +72,6 @@ class LinOtpConfig(dict):
     """
 
     def __init__(self, *args, **kw):
-        self.parent = super(LinOtpConfig, self)
-        self.parent.__init__(*args, **kw)
-
         self.delay = False
         self.realms = None
         self.glo = getGlobalObject()
@@ -80,7 +80,7 @@ class LinOtpConfig(dict):
         do_reload = False
 
         # do the bootstrap if no entry in the app_globals
-        if len(conf.keys()) == 0:
+        if len(list(conf.keys())) == 0:
             do_reload = True
 
         if self.glo.isConfigComplet() is False:
@@ -112,13 +112,13 @@ class LinOtpConfig(dict):
         if do_reload is True:
             # in case there is no entry in the dbconf or
             # the config file is newer, we write the config back to the db
-            entries = conf.keys()
+            entries = list(conf.keys())
             for entry in entries:
                 del conf[entry]
 
             writeback = False
             # get all conf entries from the config file
-            fileconf = _getConfigFromEnv()
+            fileconf = current_app.config
 
             # get all configs from the DB
             (dbconf, delay) = _retrieveAllConfigDB()
@@ -144,11 +144,11 @@ class LinOtpConfig(dict):
                 for con in conf:
                     if con != 'linotp.selfTest':
                         _storeConfigDB(con, conf.get(con))
-                _storeConfigDB(u'linotp.Config', datetime.now())
+                _storeConfigDB('linotp.Config', datetime.now())
 
             self.glo.setConfig(conf, replace=True)
 
-        self.parent.update(conf)
+        super().update(conf)
         return
 
     def setRealms(self, realmDict):
@@ -197,7 +197,7 @@ class LinOtpConfig(dict):
 
         # update this config and sync with global dict and db
 
-        res = self.parent.__setitem__(key, nVal)
+        res = super().__setitem__(key, nVal)
         self.glo.setConfig({key: nVal})
 
         # ----------------------------------------------------------------- --
@@ -207,7 +207,7 @@ class LinOtpConfig(dict):
 
         now = datetime.now()
 
-        self.glo.setConfig({'linotp.Config': unicode(now)})
+        self.glo.setConfig({'linotp.Config': str(now)})
 
         _storeConfigDB(key, val, typ, des)
         _storeConfigDB('linotp.Config', now)
@@ -259,24 +259,24 @@ class LinOtpConfig(dict):
         '''
         # has_key is required here, as we operate on the dict class
 
-        if not self.parent.has_key(key) and not key.startswith('linotp.'):
+        if not key.startswith('linotp.') and 'linotp.' + key in self:
             key = 'linotp.' + key
 
         # return default only if key does not exist
-        res = self.parent.get(key, default)
+        res = super().get(key, default)
         return res
 
     def has_key(self, key):
-        res = self.parent.has_key(key)
+        res = key in self
         if res is False and key.startswith('linotp.') is False:
             key = 'linotp.' + key
 
-        res = self.parent.has_key(key)
+        res = key in self
 
         if res is False and key.startswith('enclinotp.') is False:
             key = 'enclinotp.' + key
 
-        res = self.parent.has_key(key)
+        res = key in self
 
         return res
 
@@ -292,13 +292,13 @@ class LinOtpConfig(dict):
         '''
         Key = key
 
-        if self.parent.has_key(key):
-            Key = key
-
-        elif self.parent.has_key('linotp.' + key):
+        if 'linotp.' + key in self:
             Key = 'linotp.' + key
 
-        res = self.parent.__delitem__(Key)
+        elif key in self:
+            Key = key
+
+        res = super().__delitem__(Key)
 
         # sync with global dict
 
@@ -319,8 +319,8 @@ class LinOtpConfig(dict):
         """
         support for 'in' operator of the Config dict
         """
-        res = (self.parent.__contains__(key) or
-               self.parent.__contains__('linotp.' + key))
+        res = (super().__contains__(key) or
+               super().__contains__('linotp.' + key))
         return res
 
     def update(self, dic):
@@ -338,14 +338,14 @@ class LinOtpConfig(dict):
         # first check if all data is type compliant
         #
 
-        for key, val in dic.items():
+        for key, val in list(dic.items()):
             self._check_type(key, val)
 
         #
         # put the data in the parent dictionary
         #
 
-        res = self.parent.update(dic)
+        res = super().update(dic)
 
         #
         # and sync the data with the global config dict
@@ -363,35 +363,5 @@ class LinOtpConfig(dict):
 
         _storeConfigDB('linotp.Config', datetime.now())
         return res
-
-
-###############################################################################
-#  helper class from here
-###############################################################################
-
-def _getConfigFromEnv():
-
-    linotpConfig = {}
-
-    try:
-        _getConfigReadLock()
-        for entry in env.config:
-            # we check for the modification time of the config file
-            if entry == '__file__':
-                fname = env.config.get('__file__')
-                mTime = time.localtime(os.path.getmtime(fname))
-                modTime = datetime(*mTime[:6])
-                linotpConfig['linotp.Config'] = modTime
-
-            if entry.startswith("linotp."):
-                linotpConfig[entry] = expand_here(env.config[entry])
-            if entry.startswith("enclinotp."):
-                linotpConfig[entry] = env.config[entry]
-        _releaseConfigLock()
-    except Exception as e:
-        log.exception('Error while reading config: %r' % e)
-        _releaseConfigLock()
-    return linotpConfig
-
 
 # eof #

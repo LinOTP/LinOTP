@@ -32,16 +32,13 @@ import random
 from datetime import datetime
 from datetime import timedelta
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
+import json
 
 from sqlalchemy.engine import create_engine
 import sqlalchemy
 
 from linotp.tests import TestController
+import pytest
 
 log = logging.getLogger(__name__)
 
@@ -56,7 +53,7 @@ class SQLData(object):
             self.engine = create_engine(connect)
             connection = self.engine.connect()
         except Exception as e:
-            print "%r" % e
+            print("%r" % e)
         self.connection = connection
         return
 
@@ -97,7 +94,7 @@ class SQLData(object):
         rows = []
         for row in result:
             rows.append(row)
-            print unicode(row)
+            print(str(row))
         return
 
     def delData(self, key):
@@ -124,14 +121,14 @@ class TestReplication(TestController):
 
         TestController.setUp(self)
 
-        self.sqlconnect = self.appconf.get('sqlalchemy.url')
+        self.sqlconnect = self.app.config.get('SQLALCHEMY_DATABASE_URI')
         sqlData = SQLData(connect=self.sqlconnect)
         log.debug(sqlData)
         params = {
             'key': 'enableReplication',
             }
         resp = self.make_system_request('delConfig', params)
-        self.assertTrue('"delConfig enableReplication": true' in resp)
+        assert '"delConfig enableReplication": true' in resp
         return
 
     def tearDown(self):
@@ -171,7 +168,7 @@ class TestReplication(TestController):
             'type': 'spass',
             }
         response = self.make_admin_request('init', params)
-        self.assertTrue('"status": true,' in response)
+        assert '"status": true,' in response
 
         return
 
@@ -184,7 +181,7 @@ class TestReplication(TestController):
     def showTokens(self):
 
         response = self.make_admin_request('show', {})
-        self.assertTrue('"status": true,' in response)
+        assert '"status": true,' in response
         return response
 
     def set_caching(self, enable=True):
@@ -203,7 +200,7 @@ class TestReplication(TestController):
             params = {cache: enable_str}
             response = self.make_system_request('setConfig', params)
             msg = '"setConfig %s:%s": true' % (cache, enable_str)
-            self.assertTrue(msg in response, response)
+            assert msg in response, response
 
     def set_cache_expiry(self, expiration):
 
@@ -215,7 +212,7 @@ class TestReplication(TestController):
             params = {cache: expiration}
             response = self.make_system_request('setConfig', params)
             msg = '"setConfig %s:%s": true' % (cache, expiration)
-            self.assertTrue(msg in response, response)
+            assert msg in response, response
 
         return
 
@@ -238,31 +235,32 @@ class TestReplication(TestController):
             'enableReplication': 'true',
             }
         resp = self.make_system_request('setConfig', params)
-        self.assertTrue('"setConfig enableReplication:true": true' in resp)
+        assert '"setConfig enableReplication:true": true' in resp
 
         # 1.
         self.addData('replication', 'test1', 'test data')
 
         # 2.
         resp = self.make_system_request('getConfig', {})
-        self.assertTrue('"replication": "test1"' in resp)
+        assert '"replication": "test1"' in resp
 
         # 3.
         self.delData('replication')
 
         # 4.
         resp = self.make_system_request('getConfig', {})
-        self.assertTrue('"replication": "test1"' not in resp)
+        assert '"replication": "test1"' not in resp
 
         # 5 - cleanup
         params = {
             'key': 'enableReplication',
             }
         resp = self.make_system_request('delConfig', params)
-        self.assertTrue('"delConfig enableReplication": true' in resp)
+        assert '"delConfig enableReplication": true' in resp
 
         return
 
+    @pytest.mark.skip("will be supported if linotp config will be cached!")
     def test_replication_2(self):
         '''
             test 'no' replication, when 'enableReplication' entry is not set
@@ -282,38 +280,38 @@ class TestReplication(TestController):
 
         # 1.
         resp = self.make_system_request('getConfig', {})
-        self.assertTrue('"replication": "test1"' not in resp, resp)
+        assert '"replication": "test1"' not in resp, resp
 
         # 2.
         params = {'enableReplication': 'true'}
         resp = self.make_system_request('setConfig', params)
-        self.assertTrue('"setConfig enableReplication:true": true' in resp)
+        assert '"setConfig enableReplication:true": true' in resp
 
         # 3.
         self.delData('replication')
 
         # 3.
         resp = self.make_system_request('getConfig', {})
-        self.assertTrue('"replication": "test1"' not in resp, resp)
+        assert '"replication": "test1"' not in resp, resp
 
         self.addData('replication', 'test1', 'test data')
 
         # 4.
         resp = self.make_system_request('getConfig', {})
-        self.assertTrue('"replication": "test1"' in resp, resp)
+        assert '"replication": "test1"' in resp, resp
 
         # 4b
         self.delData('replication')
 
         resp = self.make_system_request('getConfig', {})
-        self.assertTrue('"replication": "test1"' not in resp, resp)
+        assert '"replication": "test1"' not in resp, resp
 
         # 5 - cleanup
         params = {
             'key': 'enableReplication',
             }
         resp = self.make_system_request('delConfig', params)
-        self.assertTrue('"delConfig enableReplication": true' in resp)
+        assert '"delConfig enableReplication": true' in resp
 
         return
 
@@ -357,7 +355,7 @@ class TestReplication(TestController):
             'enableReplication': 'true',
             }
         resp = self.make_system_request('setConfig', params)
-        self.assertTrue('"setConfig enableReplication:true": true' in resp)
+        assert '"setConfig enableReplication:true": true' in resp
 
         for k in sqlResolver:
             self.addData(k, sqlResolver.get(k), '')
@@ -366,7 +364,7 @@ class TestReplication(TestController):
             'resolver': 'mySQL',
             }
         resp = self.make_system_request('getResolver', params)
-        self.assertTrue('"Database": "yourUserDB"' in resp)
+        assert '"Database": "yourUserDB"' in resp
 
         for k in sqlResolver:
             self.delData(k)
@@ -375,14 +373,14 @@ class TestReplication(TestController):
             'resolver': 'mySQL',
             }
         resp = self.make_system_request('getResolver', params)
-        self.assertTrue('"data": {}' in resp)
+        assert '"data": {}' in resp
 
         # 5 - cleanup
         params = {
             'key': 'enableReplication',
             }
         resp = self.make_system_request('delConfig', params)
-        self.assertTrue('"delConfig enableReplication": true' in resp)
+        assert '"delConfig enableReplication": true' in resp
 
         return
 
@@ -404,29 +402,29 @@ class TestReplication(TestController):
             'enableReplication': 'true',
             }
         resp = self.make_system_request('setConfig', params)
-        self.assertTrue('"setConfig enableReplication:true": true' in resp)
+        assert '"setConfig enableReplication:true": true' in resp
 
         resp = self.make_system_request('getRealms', {})
-        self.assertTrue('"realmname": "realm"' not in resp, resp)
+        assert '"realmname": "realm"' not in resp, resp
 
         for k in realmDef:
             self.addData(k, realmDef.get(k), '')
 
         resp = self.make_system_request('getRealms', {})
-        self.assertTrue('"realmname": "realm"' in resp, resp)
+        assert '"realmname": "realm"' in resp, resp
 
         # 5 - cleanup
         for k in realmDef:
             self.delData(k)
 
         resp = self.make_system_request('getRealms', {})
-        self.assertTrue('"realmname": "realm"' not in resp, resp)
+        assert '"realmname": "realm"' not in resp, resp
 
         params = {
             'key': 'enableReplication',
             }
         resp = self.make_system_request('delConfig', params)
-        self.assertTrue('"delConfig enableReplication": true' in resp)
+        assert '"delConfig enableReplication": true' in resp
 
         return
 
@@ -466,7 +464,7 @@ class TestReplication(TestController):
             "linotp.DefaultRealm": "realm",
             }
 
-        realmDef["linotp.useridresolver.group.realm"] = ','.join(res_group.values())
+        realmDef["linotp.useridresolver.group.realm"] = ','.join(list(res_group.values()))
 
         # 0. delete all related data
         for k in realmDef:
@@ -477,11 +475,11 @@ class TestReplication(TestController):
             'enableReplication': 'true',
             }
         resp = self.make_system_request('setConfig', params)
-        self.assertTrue('"setConfig enableReplication:true": true' in resp)
+        assert '"setConfig enableReplication:true": true' in resp
 
         # 1.b check that realm is not defined
         resp = self.make_system_request('getRealms', {})
-        self.assertTrue('"realmname": "realm"' not in resp, resp)
+        assert '"realmname": "realm"' not in resp, resp
 
         # 2  write sql data
         for k in realmDef:
@@ -489,37 +487,37 @@ class TestReplication(TestController):
 
         # 3. lookup for the realm definition
         resp = self.make_system_request('getRealms', {})
-        self.assertTrue('"realmname": "realm"' in resp, resp)
+        assert '"realmname": "realm"' in resp, resp
 
         # 4. enroll token and auth for user passthru_user1
         self.addToken('passthru_user1')
         res = self.authToken('passthru_user1')
-        self.assertTrue('"value": true' in res)
+        assert '"value": true' in res
 
         # 5. set new resolver definition
         realmDef["linotp.useridresolver.group.realm"] = res_group["resolverTest"]
-        for key, value in realmDef.items():
+        for key, value in list(realmDef.items()):
             self.delData(key)
             self.addData(key, value, '')
 
         # 6. check that user in the realm is not defined
         res = self.authToken('passthru_user1')
-        self.assertTrue('"value": false' in res)
+        assert '"value": false' in res
 
         # 7. lookup for the realm definition
         resp = self.make_system_request('getRealms',)
-        self.assertTrue('"realmname": "realm"' in resp, resp)
-        self.assertTrue("resolverTest" in resp, resp)
+        assert '"realmname": "realm"' in resp, resp
+        assert "resolverTest" in resp, resp
 
         # 8. add new resolver definition again
         realmDef["linotp.useridresolver.group.realm"] = res_group["myDefRes"]
-        for key, value in realmDef.items():
+        for key, value in list(realmDef.items()):
             self.delData(key)
             self.addData(key, value, '')
 
         # 9. check that user is defined in realm again
         res = self.authToken('passthru_user1')
-        self.assertTrue('"value": true' in res)
+        assert '"value": true' in res
 
         # 10. cleanup
         for k in realmDef:
@@ -527,14 +525,14 @@ class TestReplication(TestController):
 
         # 11. lookup if the realm definition is removed
         resp = self.make_system_request('getRealms', {})
-        self.assertTrue('"realmname": "realm"' not in resp, resp)
+        assert '"realmname": "realm"' not in resp, resp
 
         # 12. disable replication
         params = {
             'key': 'enableReplication',
             }
         resp = self.make_system_request('delConfig', params)
-        self.assertTrue('"delConfig enableReplication": true' in resp)
+        assert '"delConfig enableReplication": true' in resp
 
         return
 
@@ -557,7 +555,7 @@ class TestReplication(TestController):
             'key': 'enableReplication',
             }
         resp = self.make_system_request('delConfig', params)
-        self.assertTrue('"delConfig enableReplication": true' in resp)
+        assert '"delConfig enableReplication": true' in resp
 
         for k in policyDef:
             self.delData(k)
@@ -567,8 +565,8 @@ class TestReplication(TestController):
             'enableReplication': 'true',
             }
         resp = self.make_system_request('setConfig', params)
-        self.assertTrue('"setConfig enableReplication:true": true' in resp,
-                        resp)
+        assert '"setConfig enableReplication:true": true' in resp, \
+                        resp
 
         # 2  write sql data
         for k in policyDef:
@@ -579,7 +577,7 @@ class TestReplication(TestController):
             'name': 'enrollPolicy',
             }
         resp = self.make_system_request('getPolicy', params)
-        self.assertTrue('"action": "maxtoken=3' in resp)
+        assert '"action": "maxtoken=3' in resp
 
         # 4. cleanup
         for k in policyDef:
@@ -591,14 +589,14 @@ class TestReplication(TestController):
             }
         resp = self.make_system_request('getPolicy', params)
         res = ('"action": "maxtoken=3' in resp)
-        self.assertTrue(res is False, resp)
+        assert res is False, resp
 
         # 4c. reset replication
         params = {
             'key': 'enableReplication',
             }
         resp = self.make_system_request('delConfig', params)
-        self.assertTrue('"delConfig enableReplication": true' in resp)
+        assert '"delConfig enableReplication": true' in resp
 
         return
 
@@ -634,23 +632,23 @@ class TestReplication(TestController):
 
         self.set_caching(enable=True)
 
-        with self.assertRaises(AssertionError) as ass_err:
+        with pytest.raises(AssertionError) as ass_err:
             self.set_cache_expiry(expiration='3600 xx')
 
-        error_message = ass_err.exception.message
-        self.assertTrue("must be of type 'duration'" in error_message)
+        error_message = str(ass_err.value)
+        assert "must be of type 'duration'" in error_message
 
-        with self.assertRaises(AssertionError) as ass_err:
+        with pytest.raises(AssertionError) as ass_err:
             self.set_cache_expiry(expiration='3w10')
 
-        error_message = ass_err.exception.message
-        self.assertTrue("must be of type 'duration'" in error_message)
+        error_message = str(ass_err.value)
+        assert "must be of type 'duration'" in error_message
 
-        with self.assertRaises(AssertionError) as ass_err:
+        with pytest.raises(AssertionError) as ass_err:
             self.set_cache_expiry(expiration='3600 years')
 
-        error_message = ass_err.exception.message
-        self.assertTrue("must be of type 'duration'" in error_message)
+        error_message = str(ass_err.value)
+        assert "must be of type 'duration'" in error_message
 
         self.set_cache_expiry(expiration='3600 seconds')
         self.set_cache_expiry(expiration=3600)

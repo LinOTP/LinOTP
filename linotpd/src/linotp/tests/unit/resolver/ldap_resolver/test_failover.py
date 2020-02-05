@@ -39,6 +39,7 @@ from linotp.useridresolver.LDAPIdResolver import IdResolver as LDAPResolver
 from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
 from freezegun import freeze_time
+import pytest
 
 TRIES = 2
 
@@ -169,8 +170,8 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         called = FakeLdapResolver.called
 
-        self.assertTrue(len(called) == 2 * TRIES + 1)
-        self.assertTrue('ldap://ok_bind4.psw.de' not in called)
+        assert len(called) == 2 * TRIES + 1
+        assert 'ldap://ok_bind4.psw.de' not in called
 
         # ------------------------------------------------------------------ --
 
@@ -178,19 +179,19 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         registry = MockedResourceRegistry.registry
 
-        for key, val in registry.items():
+        for key, val in list(registry.items()):
             value, _b_ind, _b_count = val
 
             if 'fail' in key:
-                self.assertTrue(value is not None)
+                assert value is not None
             else:
-                self.assertTrue(value is None)
+                assert value is None
 
         # ------------------------------------------------------------------ --
 
         # verify that the 4th entry was never evaluated
 
-        self.assertTrue('ldap://ok_bind4.psw.de' not in registry)
+        assert 'ldap://ok_bind4.psw.de' not in registry
 
         return
 
@@ -228,7 +229,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
         # run the bin test
         with freeze_time("2012-01-14 12:00:00"):
 
-            with self.assertRaises(ResolverNotAvailable):
+            with pytest.raises(ResolverNotAvailable):
                 myldap.bind()
 
             # -------------------------------------------------------------- --
@@ -237,8 +238,8 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
             called = FakeLdapResolver.called
 
-            self.assertTrue(len(called) == 4 * TRIES)
-            self.assertTrue('ldap://fail_bind4.psw.de' in called)
+            assert len(called) == 4 * TRIES
+            assert 'ldap://fail_bind4.psw.de' in called
 
             # -------------------------------------------------------------- --
 
@@ -246,14 +247,14 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
             registry = MockedResourceRegistry.registry
 
-            for key, value in registry.items():
-                self.assertTrue(value is not None)
+            for key, value in list(registry.items()):
+                assert value is not None
 
             # -------------------------------------------------------------- --
 
             # verify that the 4th entry was evaluated
 
-            self.assertTrue('ldap://fail_bind4.psw.de' in registry)
+            assert 'ldap://fail_bind4.psw.de' in registry
 
             # -------------------------------------------------------------- --
 
@@ -265,7 +266,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
             # and re-run the bind
 
-            with self.assertRaises(ResolverNotAvailable):
+            with pytest.raises(ResolverNotAvailable):
                 myldap.bind()
 
             # -------------------------------------------------------------- --
@@ -275,8 +276,8 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
             called = FakeLdapResolver.called
 
-            self.assertTrue(len(called) == 0)
-            self.assertTrue('ldap://fail_bind1.psw.de' not in called)
+            assert len(called) == 0
+            assert 'ldap://fail_bind1.psw.de' not in called
 
         with freeze_time("2012-01-14 12:01:00"):
 
@@ -298,8 +299,8 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
             called = FakeLdapResolver.called
 
-            self.assertTrue(len(called) == 2 * TRIES + 1)
-            self.assertTrue('ldap://go_bind4.psw.de' not in called)
+            assert len(called) == 2 * TRIES + 1
+            assert 'ldap://go_bind4.psw.de' not in called
 
             # -------------------------------------------------------------- --
 
@@ -307,19 +308,19 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
             registry = MockedResourceRegistry.registry
 
-            for key, val in registry.items():
+            for key, val in list(registry.items()):
                 value, _b_ind, _b_count = val
 
                 if 'fail' in key:
-                    self.assertTrue(value is not None)
+                    assert value is not None
                 else:
-                    self.assertTrue(value is None)
+                    assert value is None
 
             # -------------------------------------------------------------- --
 
             # verify that the 4th entry was never evaluated
 
-            self.assertTrue('ldap://go_bind4.psw.de' not in registry)
+            assert 'ldap://go_bind4.psw.de' not in registry
 
         return
 
@@ -363,8 +364,8 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         called = FakeLdapResolver.called
 
-        self.assertTrue(len(called) == 2 * TRIES + 1)
-        self.assertTrue('ldap://ok_bind4.psw.de' not in called)
+        assert len(called) == 2 * TRIES + 1
+        assert 'ldap://ok_bind4.psw.de' not in called
 
         # ------------------------------------------------------------------ --
 
@@ -372,19 +373,19 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         registry = MockedResourceRegistry.registry
 
-        for key, val in registry.items():
+        for key, val in list(registry.items()):
             value, _b_ind, _b_count = val
 
             if 'fail' in key:
-                self.assertTrue(value is not None)
+                assert value is not None
             else:
-                self.assertTrue(value is None)
+                assert value is None
 
         # ------------------------------------------------------------------ --
 
         # verify that the 4th entry was never evaluated
 
-        self.assertTrue('ldap://ok_bind4.psw.de' not in registry)
+        assert 'ldap://ok_bind4.psw.de' not in registry
 
         # ------------------------------------------------------------------ --
 
@@ -404,8 +405,8 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         called = FakeLdapResolver.called
 
-        self.assertTrue(len(called) == 1)
-        self.assertTrue('ldap://ok_bind4.psw.de' not in called)
+        assert len(called) == 1
+        assert 'ldap://ok_bind4.psw.de' not in called
 
         # ------------------------------------------------------------------ --
 
@@ -413,19 +414,19 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         registry = MockedResourceRegistry.registry
 
-        for key, val in registry.items():
+        for key, val in list(registry.items()):
             value, _b_ind, _b_count = val
 
             if 'fail' in key:
-                self.assertTrue(value is not None)
+                assert value is not None
             else:
-                self.assertTrue(value is None)
+                assert value is None
 
         # ------------------------------------------------------------------ --
 
         # verify that the 4th entry was never evaluated
 
-        self.assertTrue('ldap://ok_bind4.psw.de' not in registry)
+        assert 'ldap://ok_bind4.psw.de' not in registry
 
         return
 

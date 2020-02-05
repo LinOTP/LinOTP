@@ -30,8 +30,9 @@ Test the autoassignment Policy.
 """
 import json
 
-import unittest2
 from copy import deepcopy
+
+import pytest
 from mock import patch
 from linotp.tests import TestController
 
@@ -128,11 +129,11 @@ class TestAutoassignmentController(TestController):
 
         # 5 (user, password) pairs from myDefRealm
         users = [
-            (u'molière', u'molière'),
-            (u'shakespeare', u'shakespeare1'),
-            (u'lorca', u'lorca1'),
-            (u'aἰσχύλος', u'Πέρσαι'),
-            (u'beckett', u'beckett1'),
+            ('molière', 'molière'),
+            ('shakespeare', 'shakespeare1'),
+            ('lorca', 'lorca1'),
+            ('aἰσχύλος', 'Πέρσαι'),
+            ('beckett', 'beckett1'),
             ]
 
         # autoassign token to users
@@ -149,9 +150,9 @@ class TestAutoassignmentController(TestController):
             user_name, user_pwd = users[i]
             token = token_list[i]
             response = self.make_admin_request('getTokenOwner', {'serial': token['serial']})
-            content = TestController.get_json_body(response)
-            self.assertTrue(content['result']['status'])
-            self.assertEqual(user_name, content['result']['value']['username'])
+            content = response.json
+            assert content['result']['status']
+            assert user_name == content['result']['value']['username']
 
             # Validate the remaining OTP values
             for j in range(1, 3):
@@ -173,8 +174,8 @@ class TestAutoassignmentController(TestController):
 
         # (user, password) pairs from myDefRealm
         users = [
-            (u'molière', u'molière'),
-            (u'shakespeare', u'shakespeare1'),
+            ('molière', 'molière'),
+            ('shakespeare', 'shakespeare1'),
         ]
 
         # Assign token[0] to users[0]
@@ -185,9 +186,9 @@ class TestAutoassignmentController(TestController):
             'serial': token['serial'],
             }
         response = self.make_admin_request('assign', params=params)
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertEqual(1, content['result']['value'])
+        content = response.json
+        assert content['result']['status']
+        assert 1 == content['result']['value']
 
         # Try to autoassign token[0] to users[1] -> should fail because it is
         # already assigned to users[0]
@@ -230,7 +231,7 @@ class TestAutoassignmentController(TestController):
 
         # (user, password) pairs from myDefRealm
         users = [
-            (u'molière', u'molière'),
+            ('molière', 'molière'),
         ]
 
         # Assign token[0] to users[0]
@@ -241,9 +242,9 @@ class TestAutoassignmentController(TestController):
             'serial': token['serial'],
         }
         response = self.make_admin_request('assign', params=params)
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertEqual(1, content['result']['value'])
+        content = response.json
+        assert content['result']['status']
+        assert 1 == content['result']['value']
 
         # Try to autoassign token[1] to users[0] -> should fail because the
         # user already has a token
@@ -281,7 +282,7 @@ class TestAutoassignmentController(TestController):
 
         # (user, password) pairs from myDefRealm
         users = [
-            (u'molière', u'molière'),
+            ('molière', 'molière'),
         ]
 
         self._set_token_realm(token_list, 'mydefrealm')
@@ -309,7 +310,7 @@ class TestAutoassignmentController(TestController):
 
         # (user, password) pairs from myDefRealm
         users = [
-            (u'molière', u'molière'),
+            ('molière', 'molière'),
         ]
 
         # Policy with <int> action
@@ -343,7 +344,7 @@ class TestAutoassignmentController(TestController):
 
         # (user, password) pairs from myDefRealm
         users = [
-            (u'molière', u'molière'),
+            ('molière', 'molière'),
         ]
 
         # Policy with action -1
@@ -367,9 +368,10 @@ class TestAutoassignmentController(TestController):
             expected='value-false',
             )
 
-    @unittest2.skip(
-        "Currently broken because the counter for all matching token is "
-        "increased even if autoassignment fails. See issue #13134."
+    @pytest.mark.skip(
+        reason=(
+            "Currently broken because the counter for all matching token is "
+            "increased even if autoassignment fails. See issue #13134.")
         )
     def test_duplicate_otp(self):
         """
@@ -390,17 +392,17 @@ class TestAutoassignmentController(TestController):
             "otplen": token['otplen'],
         }
         response = self.make_admin_request('init', params=params)
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertTrue(content['result']['value'])
+        content = response.json
+        assert content['result']['status']
+        assert content['result']['value']
         token['serial'] = content['detail']['serial']
         self.token_for_deletion.add(token['serial'])
         token_list.append(token)
 
         # (user, password) pairs from myDefRealm
         users = [
-            (u'molière', u'molière'),
-            (u'shakespeare', u'shakespeare1'),
+            ('molière', 'molière'),
+            ('shakespeare', 'shakespeare1'),
         ]
 
         self._create_autoassignment_policy('my_autoassign_policy', 'mydefrealm')
@@ -429,9 +431,9 @@ class TestAutoassignmentController(TestController):
             'serial': token['serial'],
         }
         response = self.make_admin_request('assign', params=params)
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertEqual(1, content['result']['value'])
+        content = response.json
+        assert content['result']['status']
+        assert 1 == content['result']['value']
         # No PIN was set
         self._validate(
             user_name,
@@ -457,7 +459,7 @@ class TestAutoassignmentController(TestController):
 
         # (user, password) pairs from myDefRealm
         users = [
-            (u'molière', u'molière'),
+            ('molière', 'molière'),
         ]
 
         self._create_ignore_autoassignment_pin_policy('mydefrealm')
@@ -472,9 +474,9 @@ class TestAutoassignmentController(TestController):
 
         # Assert the token was assigned to the correct user
         response = self.make_admin_request('getTokenOwner', {'serial': token['serial']})
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertEqual(user_name, content['result']['value']['username'])
+        content = response.json
+        assert content['result']['status']
+        assert user_name == content['result']['value']['username']
 
         # Validate the remaining OTP values (note PIN is empty)
         for j in range(1, 3):
@@ -500,9 +502,9 @@ class TestAutoassignmentController(TestController):
                 "otplen": token['otplen'],
             }
             response = self.make_admin_request('init', params=params)
-            content = TestController.get_json_body(response)
-            self.assertTrue(content['result']['status'])
-            self.assertTrue(content['result']['value'])
+            content = response.json
+            assert content['result']['status']
+            assert content['result']['value']
             token['serial'] = content['detail']['serial']
             self.token_for_deletion.add(token['serial'])
 
@@ -511,15 +513,15 @@ class TestAutoassignmentController(TestController):
         Set the token realm 'realm_name' for all token in 'token_list'.
         """
         for token in token_list:
-            self.assertIsNotNone(token['serial'])
+            assert token['serial'] is not None
             params = {
                 'serial': token['serial'],
                 'realms': realm_name
             }
             response = self.make_admin_request('tokenrealm', params=params)
-            content = TestController.get_json_body(response)
-            self.assertTrue(content['result']['status'])
-            self.assertEqual(1, content['result']['value'])
+            content = response.json
+            assert content['result']['status']
+            assert 1 == content['result']['value']
 
     def _create_autoassignment_policy(self, name, realm,
                                       action='autoassignment'):
@@ -569,21 +571,21 @@ class TestAutoassignmentController(TestController):
             'pass': pwd.encode('utf-8')
         }
         response = self.make_validate_request('check', params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         if not err_msg:
             err_msg = "validate/check failed for %r. Response: %r" % (user, content)
         if expected == 'success':
-            self.assertTrue(content['result']['status'], err_msg)
-            self.assertTrue(content['result']['value'], err_msg)
+            assert content['result']['status'], err_msg
+            assert content['result']['value'], err_msg
         elif expected == 'value-false':
-            self.assertTrue(content['result']['status'], err_msg)
-            self.assertFalse(content['result']['value'], err_msg)
+            assert content['result']['status'], err_msg
+            assert not content['result']['value'], err_msg
         elif expected == 'status-false':
-            self.assertFalse(content['result']['status'], err_msg)
-            self.assertTrue(content['result']['value'], err_msg)
+            assert not content['result']['status'], err_msg
+            assert content['result']['value'], err_msg
         elif expected == 'both-false':
-            self.assertFalse(content['result']['status'], err_msg)
-            self.assertFalse(content['result']['value'], err_msg)
+            assert not content['result']['status'], err_msg
+            assert not content['result']['value'], err_msg
         else:
             self.fail("Unknown 'expected' %s" % expected)
         return content
@@ -604,7 +606,7 @@ class TestAutoassignmentController(TestController):
         """
 
         # 5 users from myDefRealm
-        users = [u'molière', u'shakespeare', u'lorca', u'aἰσχύλος', u'beckett']
+        users = ['molière', 'shakespeare', 'lorca', 'aἰσχύλος', 'beckett']
 
         # 5 token descriptions
         token_list = deepcopy(self.token_list)
@@ -641,9 +643,9 @@ class TestAutoassignmentController(TestController):
                 response = self.make_validate_request('check', params=params)
 
                 msg = 'Error 65537 while instatiating the CBC mode'
-                self.assertTrue(msg not in mocked_context.audit['info'])
+                assert msg not in mocked_context.audit['info']
 
-                self.assertTrue('"value": true' in response)
+                assert '"value": true' in response
 
         # ----------------------------------------------------------------- --
 
@@ -658,8 +660,8 @@ class TestAutoassignmentController(TestController):
             response = self.make_admin_request('getTokenOwner', params=params)
             content = json.loads(response.body)
 
-            self.assertTrue(content['result']['status'])
-            self.assertEqual(user_name, content['result']['value']['username'])
+            assert content['result']['status']
+            assert user_name == content['result']['value']['username']
 
             # -------------------------------------------------------------- --
 
@@ -673,7 +675,7 @@ class TestAutoassignmentController(TestController):
                     'pass': token['otps'][j]}
 
                 response = self.make_validate_request('check', params=params)
-                self.assertTrue('"value": true' in response)
+                assert '"value": true' in response
 
         return
 

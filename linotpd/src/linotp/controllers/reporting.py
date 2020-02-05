@@ -33,8 +33,11 @@ import logging
 
 from datetime import datetime
 
-from pylons import request, response, config, tmpl_context as c
-from linotp.lib.base import BaseController
+from flask import Response, stream_with_context
+from werkzeug.datastructures import Headers
+
+from linotp.flap import request, response, config, tmpl_context as c
+from linotp.controllers.base import BaseController
 from linotp.lib.context import request_context
 
 from linotp.lib.policy import (checkAuthorisation,
@@ -54,9 +57,8 @@ from linotp.lib.user import (getUserFromRequest, )
 from linotp.lib.util import check_session
 from linotp.lib.util import get_client
 
-from linotp.model.meta import Session
-
-audit = config.get('audit')
+import linotp.model.meta
+Session = linotp.model.meta.Session
 
 log = logging.getLogger(__name__)
 
@@ -66,9 +68,17 @@ class ReportingController(BaseController):
     reporting
     """
 
-    def __before__(self, action, **params):
+    def __before__(self, **params):
         """
+        __before__ is called before every action
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
         """
+
+        action = request_context['action']
+
         try:
 
             c.audit = request_context['audit']
@@ -79,10 +89,11 @@ class ReportingController(BaseController):
             # Session handling
             check_session(request)
 
+            audit = config.get('audit')
             request_context['Audit'] = audit
             checkAuthorisation(scope='reporting.access', method=action)
 
-            return request
+            return
 
         except Exception as exception:
             log.exception(exception)
@@ -91,15 +102,23 @@ class ReportingController(BaseController):
             return sendError(response, exception, context='before')
 
 
-    def __after__(self, action):
-        """
-        """
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
+        audit = config.get('audit')
+
         try:
             c.audit['administrator'] = getUserFromRequest(request).get('login')
 
             audit.log(c.audit)
             Session.commit()
-            return request
+            return response
 
         except Exception as exception:
             log.exception(exception)
@@ -150,7 +169,7 @@ class ReportingController(BaseController):
 
             # if there are no policies for us, we are allowed to see all realms
             if not realm_whitelist or '*' in realm_whitelist:
-                realm_whitelist = request_context['Realms'].keys()
+                realm_whitelist = list(request_context['Realms'].keys())
 
             realms = match_realms(request_realms, realm_whitelist)
 
@@ -164,7 +183,7 @@ class ReportingController(BaseController):
         except PolicyException as policy_exception:
             log.exception(policy_exception)
             Session.rollback()
-            return sendError(response, unicode(policy_exception), 1)
+            return sendError(response, str(policy_exception), 1)
 
         except Exception as exc:
             log.exception(exc)
@@ -208,7 +227,7 @@ class ReportingController(BaseController):
 
             # if there are no policies for us, we are allowed to see all realms
             if not realm_whitelist or '*' in realm_whitelist:
-                realm_whitelist = request_context['Realms'].keys()
+                realm_whitelist = list(request_context['Realms'].keys())
 
             realms = match_realms(request_realms, realm_whitelist)
 
@@ -226,7 +245,7 @@ class ReportingController(BaseController):
         except PolicyException as policy_exception:
             log.exception(policy_exception)
             Session.rollback()
-            return sendError(response, unicode(policy_exception), 1)
+            return sendError(response, str(policy_exception), 1)
 
         except Exception as exc:
             log.exception(exc)
@@ -280,7 +299,7 @@ class ReportingController(BaseController):
 
             # if there are no policies for us, we are allowed to see all realms
             if not realm_whitelist or '*' in realm_whitelist:
-                realm_whitelist = request_context['Realms'].keys()
+                realm_whitelist = list(request_context['Realms'].keys())
 
             realms = match_realms(request_realms, realm_whitelist)
 
@@ -291,12 +310,12 @@ class ReportingController(BaseController):
         except PolicyException as policy_exception:
             log.exception(policy_exception)
             Session.rollback()
-            return sendError(response, unicode(policy_exception), 1)
+            return sendError(response, str(policy_exception), 1)
 
         except ValueError as value_error:
             log.exception(value_error)
             Session.rollback()
-            return sendError(response, unicode(value_error), 1)
+            return sendError(response, str(value_error), 1)
 
         except Exception as exc:
             log.exception(exc)
@@ -366,7 +385,7 @@ class ReportingController(BaseController):
 
             # if there are no policies for us, we are allowed to see all realms
             if not realm_whitelist or '*' in realm_whitelist:
-                realm_whitelist = request_context['Realms'].keys()
+                realm_whitelist = list(request_context['Realms'].keys())
 
             realms = match_realms(request_realms, realm_whitelist)
 
@@ -379,23 +398,29 @@ class ReportingController(BaseController):
             Session.commit()
 
             if output_format == 'csv':
-                response.content_type = "application/force-download"
-                response.headers['Content-disposition'] = \
-                    'attachment; filename=linotp-reports.csv'
-                return sendCSVIterator(reports.iterate_reports())
+                headers = Headers()
+                headers.add('Content-Disposition', 'attachment',
+                            filename='linotp-reports.csv')
+                return Response(
+                    stream_with_context(
+                        sendCSVIterator(reports.iterate_reports())),
+                    mimetype='text/csv', headers=headers)
             else:
-                response.content_type = 'application/json'
-                return sendResultIterator(reports.iterate_reports(), opt=info)
+                return Response(
+                    stream_with_context(
+                        sendResultIterator(reports.iterate_reports(),
+                                           opt=info)),
+                    mimetype='application/json')
 
         except PolicyException as policy_exception:
             log.exception(policy_exception)
             Session.rollback()
-            return sendError(response, unicode(policy_exception), 1)
+            return sendError(response, str(policy_exception), 1)
 
         except ValueError as value_error:
             log.exception(value_error)
             Session.rollback()
-            return sendError(response, unicode(value_error), 1)
+            return sendError(response, str(value_error), 1)
 
         except Exception as exc:
             log.exception(exc)

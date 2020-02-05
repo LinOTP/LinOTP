@@ -74,7 +74,7 @@ class TestForwardToken(TestController):
                       }
 
         response = self.make_admin_request('init', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         return (parameters['serial'], otps)
 
@@ -89,14 +89,14 @@ class TestForwardToken(TestController):
                     }
 
         response = self.make_admin_request('init', params=param_fw)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         return param_fw['serial']
 
     def create_policy(self, params):
         name = params['name']
         response = self.make_system_request('setPolicy', params=params)
-        self.assertTrue('setPolicy ' + name in response, response)
+        assert 'setPolicy ' + name in response, response
 
     def test_check_s(self):
         '''
@@ -107,11 +107,11 @@ class TestForwardToken(TestController):
 
         parameters = {"serial": target_serial, "pass": "321!" + otps[0]}
         response = self.make_validate_request('check_s', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": forward_serial, "pass": "123!" + otps[1]}
         response = self.make_validate_request('check_s', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         return
 
@@ -131,11 +131,11 @@ class TestForwardToken(TestController):
 
         parameters = {"serial": target_serial, "pass": "321!" + otps[0]}
         response = self.make_validate_request('check_s', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": forward_serial, "pass": "123!"}
         response = self.make_validate_request('check_s', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         # now extract the transaction id and test the challenges
         jresp = json.loads(response.body)
@@ -145,13 +145,13 @@ class TestForwardToken(TestController):
         parameters = {"serial": forward_serial, "pass": otps[0],
                       'transactionid': transid}
         response = self.make_validate_request('check_s', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         # new one should work
         parameters = {"serial": forward_serial, "pass": otps[1],
                       'transactionid': transid}
         response = self.make_validate_request('check_s', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         return
 
@@ -164,40 +164,40 @@ class TestForwardToken(TestController):
 
         parameters = {"serial": target_serial, "pass": "321!" + otps[0]}
         response = self.make_validate_request('check_s', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # check that fail counter is forwarded
         for i in [2, 3, 4, 5]:
             parameters = {"serial": forward_serial,
                           "pass": "123!" + '12378%d' % i}
             response = self.make_validate_request('check_s', params=parameters)
-            self.assertTrue('"value": false' in response, response)
+            assert '"value": false' in response, response
 
         parameters = {"serial": forward_serial}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.FailCount": 4' in response, response)
+        assert '"LinOtp.FailCount": 4' in response, response
 
         parameters = {"serial": target_serial}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.FailCount": 4' in response, response)
+        assert '"LinOtp.FailCount": 4' in response, response
 
         # check that otp counter matches and failcounter is reseted
         for i in [2, 3, 4, 5]:
             parameters = {"serial": forward_serial,
                           "pass": "123!" + otps[i]}
             response = self.make_validate_request('check_s', params=parameters)
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
         parameters = {"serial": forward_serial}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.FailCount": 0' in response, response)
-        self.assertTrue('"LinOtp.Count": 6' in response, response)
+        assert '"LinOtp.FailCount": 0' in response, response
+        assert '"LinOtp.Count": 6' in response, response
 
         parameters = {"serial": target_serial}
         response = self.make_admin_request('show', params=parameters)
 
-        self.assertTrue('"LinOtp.FailCount": 0' in response, response)
-        self.assertTrue('"LinOtp.Count": 6' in response, response)
+        assert '"LinOtp.FailCount": 0' in response, response
+        assert '"LinOtp.Count": 6' in response, response
 
     def test_tokencounter_not_forwarded(self):
         '''
@@ -215,40 +215,40 @@ class TestForwardToken(TestController):
 
         parameters = {"serial": target_serial, "pass": "321!" + otps[0]}
         response = self.make_validate_request('check_s', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # check that fail counter is not forwarded
         for i in [2, 3, 4, 5]:
             parameters = {"serial": forward_serial,
                           "pass": "123!" + '12378%d' % i}
             response = self.make_validate_request('check_s', params=parameters)
-            self.assertTrue('"value": false' in response, response)
+            assert '"value": false' in response, response
 
         parameters = {"serial": forward_serial}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.FailCount": 4' in response, response)
+        assert '"LinOtp.FailCount": 4' in response, response
 
         parameters = {"serial": target_serial}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.FailCount": 0' in response, response)
+        assert '"LinOtp.FailCount": 0' in response, response
 
         # check that otp counter matches and fail counter is reseted
         for i in [2, 3, 4, 5]:
             parameters = {"serial": forward_serial,
                           "pass": "123!" + otps[i]}
             response = self.make_validate_request('check_s', params=parameters)
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
 
         parameters = {"serial": forward_serial}
         response = self.make_admin_request('show', params=parameters)
-        self.assertTrue('"LinOtp.FailCount": 0' in response, response)
-        self.assertTrue('"LinOtp.Count": 6' in response, response)
+        assert '"LinOtp.FailCount": 0' in response, response
+        assert '"LinOtp.Count": 6' in response, response
 
         parameters = {"serial": target_serial}
         response = self.make_admin_request('show', params=parameters)
 
-        self.assertTrue('"LinOtp.FailCount": 0' in response, response)
-        self.assertTrue('"LinOtp.Count": 6' in response, response)
+        assert '"LinOtp.FailCount": 0' in response, response
+        assert '"LinOtp.Count": 6' in response, response
 
     def test_check_owner(self):
         '''
@@ -259,20 +259,20 @@ class TestForwardToken(TestController):
 
         parameters = {"serial": target_serial, "pass": "321!" + otps[0]}
         response = self.make_validate_request('check_s', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": forward_serial, 'user': 'passthru_user1'}
         response = self.make_admin_request('assign', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": forward_serial, 'pin': 'hugo'}
         response = self.make_admin_request('set', params=parameters)
-        self.assertTrue('"set pin": 1' in response, response)
+        assert '"set pin": 1' in response, response
 
         # check that user is authenticated
         parameters = {"user": 'passthru_user1', "pass": "hugo" + otps[2]}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         return
 
@@ -285,7 +285,7 @@ class TestForwardToken(TestController):
 
         parameters = {"serial": target_serial, "pass": "321!" + otps[0]}
         response = self.make_validate_request('check_s', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         params = {'scope': 'authentication',
                   'action': 'otppin=1, ',
@@ -296,16 +296,16 @@ class TestForwardToken(TestController):
 
         parameters = {"serial": forward_serial, 'user': 'passthru_user1'}
         response = self.make_admin_request('assign', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         parameters = {"serial": forward_serial, 'pin': 'hugo'}
         response = self.make_admin_request('set', params=parameters)
-        self.assertTrue('"set pin": 1' in response, response)
+        assert '"set pin": 1' in response, response
 
         # check that user is authenticated
         parameters = {"user": 'passthru_user1', "pass": "geheim1" + otps[2]}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         return
 

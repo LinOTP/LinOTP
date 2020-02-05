@@ -31,7 +31,7 @@ log = logging.getLogger(__name__)
 
 class LinotpError(Exception):
 
-    def __init__(self, description=u"LinotpError!", id=10):
+    def __init__(self, description="LinotpError!", id=10):
         self.id = id
         self.message = description
         Exception.__init__(self, description)
@@ -43,21 +43,21 @@ class LinotpError(Exception):
         return self.message
 
     def __unicode__(self):
-        pstr = u"ERR%d: %r"
-        if type(self.message) in [str, unicode]:
-            pstr = u"ERR%d: %s"
+        pstr = "ERR%d: %r"
+        if isinstance(self.message, str):
+            pstr = "ERR%d: %s"
         return pstr % (self.id, self.message)
 
     def __str__(self):
-        pstr = u"ERR%d: %r"
-        if type(self.message) in [str, unicode]:
+        pstr = "ERR%d: %r"
+        if isinstance(self.message, str):
             pstr = "ERR%d: %s"
 
         # if we have here unicode, we might fail with conversion error
         try:
             res = pstr % (self.id, self.message)
         except Exception as exx:
-            res = u"ERR%d: %r" % (self.id, self.message)
+            res = "ERR%d: %r" % (self.id, self.message)
         return res
 
 

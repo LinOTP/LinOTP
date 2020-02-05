@@ -22,6 +22,7 @@ from mock import patch
 from linotp.lib.user import User
 from linotp.lib.token import TokenHandler
 from linotp.lib.error import TokenAdminError
+import pytest
 
 
 class FakeToken():
@@ -47,10 +48,10 @@ class TestTokenOwner(unittest.TestCase):
 
         th = TokenHandler()
 
-        with self.assertRaises(TokenAdminError) as exx:
+        with pytest.raises(TokenAdminError) as exx:
             th.isTokenOwner(serial, user)
 
-        assert 'no user found' in exx.exception.message
+        exx.match('no user found')
 
         return
 
@@ -65,10 +66,10 @@ class TestTokenOwner(unittest.TestCase):
 
         th = TokenHandler()
 
-        with self.assertRaises(TokenAdminError) as exx:
+        with pytest.raises(TokenAdminError) as exx:
             th.isTokenOwner(serial, user)
 
-        assert 'no user found' in exx.exception.message
+        exx.match('no user found')
 
         return
 
@@ -88,10 +89,10 @@ class TestTokenOwner(unittest.TestCase):
 
         th = TokenHandler()
 
-        with self.assertRaises(TokenAdminError) as exx:
+        with pytest.raises(TokenAdminError) as exx:
             th.isTokenOwner(serial, user)
 
-        assert 'no token found' in exx.exception.message
+        exx.match('no token found')
 
         return
 

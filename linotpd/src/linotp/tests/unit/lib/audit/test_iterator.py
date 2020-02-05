@@ -24,13 +24,14 @@
 #    Support: www.keyidentity.com
 #
 
+import pytest
 import sys
 if sys.version_info < (2, 7):
     try:
         import unittest2 as unittest
     except ImportError as exc:
-        print "You need to install unittest2 on Python 2.6. unittest2 is a "\
-              "backport of new unittest features."
+        print("You need to install unittest2 on Python 2.6. unittest2 is a "\
+              "backport of new unittest features.")
         raise exc
 else:
     import unittest
@@ -42,6 +43,7 @@ except ImportError:
     import simplejson as json
 
 
+@pytest.mark.usefixtures("app")
 class AuditIteratorTestCase(unittest.TestCase):
     """
     This class tests the AuditQuery, JSONAuditIterator and CSVAuditIterator
@@ -56,27 +58,27 @@ class AuditIteratorTestCase(unittest.TestCase):
         """
         from linotp.lib.audit.iterator import AuditQuery
         param = {
-            'rp': u'15',
-            'sortname': u'number',
-            'session': u'deadbeef00174df8e77bdf249de'
+            'rp': '15',
+            'sortname': 'number',
+            'session': 'deadbeef00174df8e77bdf249de'
                          '541d132903568b763306bb84b59b3fa5ad111',
-            'sortorder': u'desc',
-            'query': u'',
-            'qtype': u'serial',
-            'page': u'1'
+            'sortorder': 'desc',
+            'query': '',
+            'qtype': 'serial',
+            'page': '1'
             }
         audit = MagicMock(spec=["searchQuery", "getTotal"])
         audit_query = AuditQuery(param, audit)
         audit_iterator = iter(audit_query.get_query_result())
 
-        self.assertEqual(len(list(audit_iterator)), 0)
+        assert len(list(audit_iterator)) == 0
         audit.searchQuery.assert_called_once_with(
-            {u'serial': u''},
+            {'serial': ''},
             rp_dict={
-                'sortorder': u'desc',
-                'rp': u'15',
+                'sortorder': 'desc',
+                'rp': '15',
                 'page': 1,
-                'sortname': u'number'
+                'sortname': 'number'
                 }
             )
 
@@ -87,27 +89,27 @@ class AuditIteratorTestCase(unittest.TestCase):
         """
         from linotp.lib.audit.iterator import AuditQuery
         param = {
-            'rp': u'10',
-            'sortname': u'number',
-            'session': u'deadbeef00174df8e77bde249de541d132903568b767'
+            'rp': '10',
+            'sortname': 'number',
+            'session': 'deadbeef00174df8e77bde249de541d132903568b767'
                         '706bb84b59b3fa5ad523',
-            'sortorder': u'desc',
-            'query': u'se_test_auth',
-            'qtype': u'realm',
-            'page': u'2'
+            'sortorder': 'desc',
+            'query': 'se_test_auth',
+            'qtype': 'realm',
+            'page': '2'
             }
         audit = MagicMock(spec=["searchQuery"])
         audit_query = AuditQuery(param, audit)
         audit_iterator = iter(audit_query.get_query_result())
 
-        self.assertEqual(len(list(audit_iterator)), 0)
+        assert len(list(audit_iterator)) == 0
         audit.searchQuery.assert_called_once_with(
-            {u'realm': u'se_test_auth'},
+            {'realm': 'se_test_auth'},
             rp_dict={
-                'sortorder': u'desc',
-                'rp': u'10',
+                'sortorder': 'desc',
+                'rp': '10',
                 'page': 2,
-                'sortname': u'number'
+                'sortname': 'number'
                 }
             )
 
@@ -118,27 +120,27 @@ class AuditIteratorTestCase(unittest.TestCase):
         """
         from linotp.lib.audit.iterator import AuditQuery
         param = {
-            'rp': u'15',
-            'sortname': u'number',
-            'session': u'deadbeef00174df8e77bde249de541d132903568b767'
+            'rp': '15',
+            'sortname': 'number',
+            'session': 'deadbeef00174df8e77bde249de541d132903568b767'
                         '706bb84b59b3fa5ad523',
-            'sortorder': u'desc',
-            'query': u'حافظ',
-            'qtype': u'user',
-            'page': u'1'
+            'sortorder': 'desc',
+            'query': 'حافظ',
+            'qtype': 'user',
+            'page': '1'
             }
         audit = MagicMock(spec=["searchQuery"])
         audit_query = AuditQuery(param, audit)
         audit_iterator = iter(audit_query.get_query_result())
 
-        self.assertEqual(len(list(audit_iterator)), 0)
+        assert len(list(audit_iterator)) == 0
         audit.searchQuery.assert_called_once_with(
-            {u'user': u'حافظ'},
+            {'user': 'حافظ'},
             rp_dict={
-                'sortorder': u'desc',
-                'rp': u'15',
+                'sortorder': 'desc',
+                'rp': '15',
                 'page': 1,
-                'sortname': u'number'
+                'sortname': 'number'
                 }
             )
 
@@ -149,30 +151,30 @@ class AuditIteratorTestCase(unittest.TestCase):
         """
         from linotp.lib.audit.iterator import AuditQuery
         param = {
-            'rp': u'15',
-            'sortname': u'number',
-            'session': u'deadbeef00174df8e77bde249de541d132903568b767706bb84b59b3fa5ad523',
-            'sortorder': u'desc',
-            'query': u'action=audit/search;success=1;number=730',
-            'qtype': u'extsearch',
-            'page': u'1'
+            'rp': '15',
+            'sortname': 'number',
+            'session': 'deadbeef00174df8e77bde249de541d132903568b767706bb84b59b3fa5ad523',
+            'sortorder': 'desc',
+            'query': 'action=audit/search;success=1;number=730',
+            'qtype': 'extsearch',
+            'page': '1'
             }
         audit = MagicMock(spec=["searchQuery"])
         audit_query = AuditQuery(param, audit)
         audit_iterator = iter(audit_query.get_query_result())
 
-        self.assertEqual(len(list(audit_iterator)), 0)
+        assert len(list(audit_iterator)) == 0
         audit.searchQuery.assert_called_once_with(
             {
-                u'action': u'audit/search',
-                u'number': u'730',
-                u'success': u'1'
+                'action': 'audit/search',
+                'number': '730',
+                'success': '1'
                 },
             rp_dict={
-                'sortorder': u'desc',
-                'rp': u'15',
+                'sortorder': 'desc',
+                'rp': '15',
                 'page': 1,
-                'sortname': u'number'
+                'sortname': 'number'
                 }
             )
 
@@ -193,7 +195,7 @@ class AuditIteratorTestCase(unittest.TestCase):
             audit_query.get_entry(row)
             rows = rows + 1
 
-        self.assertEqual(rows, 2)
+        assert rows == 2
         audit.searchQuery.assert_called_once_with(
             {},
             rp_dict={
@@ -225,7 +227,7 @@ class AuditIteratorTestCase(unittest.TestCase):
             )
         audit_iterator = iter(audit_query.get_query_result())
 
-        self.assertEqual(len(list(audit_iterator)), 0)
+        assert len(list(audit_iterator)) == 0
         audit.searchQuery.assert_called_once_with(
             {
                 'action': 'audit/search',
@@ -247,42 +249,42 @@ class AuditIteratorTestCase(unittest.TestCase):
         certain input values
         """
         from linotp.lib.audit.iterator import (AuditQuery, JSONAuditIterator)
-        param = {u'user': u'حافظ'}
+        param = {'user': 'حافظ'}
         next_1 = {
-            'info': u'',
-            'administrator': u'',
-            'realm': u'se_realm1',
-            'success': u'1',
-            'linotp_server': u'oldjoe',
+            'info': '',
+            'administrator': '',
+            'realm': 'se_realm1',
+            'success': '1',
+            'linotp_server': 'oldjoe',
             'sig_check': 'OK',
-            'number': 768L,
-            'token_type': u'spass',
-            'action': u'validate/check',
-            'client': u'192.168.33.44',
-            'user': u'حافظ',
-            'clearance_level': 0L,
-            'action_detail': u'',
+            'number': 768,
+            'token_type': 'spass',
+            'action': 'validate/check',
+            'client': '192.168.33.44',
+            'user': 'حافظ',
+            'clearance_level': 0,
+            'action_detail': '',
             'date': '2014-04-25 11:52:54.243084',
-            'log_level': u'INFO',
-            'serial': u'LSSP000120D8'
+            'log_level': 'INFO',
+            'serial': 'LSSP000120D8'
             }
         next_2 = {
-            'info': u'',
-            'administrator': u'admin',
-            'realm': u'se_realm1',
-            'success': u'1',
-            'linotp_server': u'oldjoe',
+            'info': '',
+            'administrator': 'admin',
+            'realm': 'se_realm1',
+            'success': '1',
+            'linotp_server': 'oldjoe',
             'sig_check': 'OK',
-            'number': 764L,
-            'token_type': u'',
-            'action': u'admin/init',
-            'client': u'192.168.33.44',
-            'user': u'حافظ',
-            'clearance_level': 0L,
-            'action_detail': u'tokennum = 10',
+            'number': 764,
+            'token_type': '',
+            'action': 'admin/init',
+            'client': '192.168.33.44',
+            'user': 'حافظ',
+            'clearance_level': 0,
+            'action_detail': 'tokennum = 10',
             'date': '2014-04-25 11:52:24.937293',
-            'log_level': u'INFO',
-            'serial': u''
+            'log_level': 'INFO',
+            'serial': ''
             }
 
         audit = MagicMock(spec=["searchQuery", "getTotal"])
@@ -294,7 +296,7 @@ class AuditIteratorTestCase(unittest.TestCase):
         for value in json_audit_iterator:
             result_json += value
         expected_json = \
-u"""{ "page": 1, "rows": [ {
+"""{ "page": 1, "rows": [ {
    "cell": [
       768,
       "2014-04-25 11:52:54.243084",
@@ -337,7 +339,7 @@ u"""{ "page": 1, "rows": [ {
    ],
    "id": 764
 }], "total": 2 }"""
-        self.assertEqual(json.loads(result_json), json.loads(expected_json))
+        assert json.loads(result_json) == json.loads(expected_json)
 
     def test_CSVAuditIterator(self):
         """
@@ -346,47 +348,47 @@ u"""{ "page": 1, "rows": [ {
         """
         from linotp.lib.audit.iterator import (AuditQuery, CSVAuditIterator)
         expected_csv = \
-u""""number", "date", "sig_check", "missing_line", "action", "success", "serial", "token_type", "user", "realm", "administrator", "action_detail", "info", "linotp_server", "client", "log_level", "clearance_level"
+""""number", "date", "sig_check", "missing_line", "action", "success", "serial", "token_type", "user", "realm", "administrator", "action_detail", "info", "linotp_server", "client", "log_level", "clearance_level"
 768, "2014-04-25 11:52:54.243084", "OK", null, "validate/check", "1", "LSSP000120D8", "spass", "حافظ", "se_realm1", "", "", "", "oldjoe", "192.168.33.44", "INFO", 0
 764, "2014-04-25 11:52:24.937293", "OK", null, "admin/init", "1", "", "", "حافظ", "se_realm1", "admin", "tokennum = 10", "", "oldjoe", "192.168.33.44", "INFO", 0
 
 """
-        param = {u'user': u'حافظ', 'headers': ''}
+        param = {'user': 'حافظ', 'headers': ''}
         next_1 = {
-            'info': u'',
-            'administrator': u'',
-            'realm': u'se_realm1',
-            'success': u'1',
-            'linotp_server': u'oldjoe',
+            'info': '',
+            'administrator': '',
+            'realm': 'se_realm1',
+            'success': '1',
+            'linotp_server': 'oldjoe',
             'sig_check': 'OK',
-            'number': 768L,
-            'token_type': u'spass',
-            'action': u'validate/check',
-            'client': u'192.168.33.44',
-            'user': u'حافظ',
-            'clearance_level': 0L,
-            'action_detail': u'',
+            'number': 768,
+            'token_type': 'spass',
+            'action': 'validate/check',
+            'client': '192.168.33.44',
+            'user': 'حافظ',
+            'clearance_level': 0,
+            'action_detail': '',
             'date': '2014-04-25 11:52:54.243084',
-            'log_level': u'INFO',
-            'serial': u'LSSP000120D8'
+            'log_level': 'INFO',
+            'serial': 'LSSP000120D8'
             }
         next_2 = {
-            'info': u'',
-            'administrator': u'admin',
-            'realm': u'se_realm1',
-            'success': u'1',
-            'linotp_server': u'oldjoe',
+            'info': '',
+            'administrator': 'admin',
+            'realm': 'se_realm1',
+            'success': '1',
+            'linotp_server': 'oldjoe',
             'sig_check': 'OK',
-            'number': 764L,
-            'token_type': u'',
-            'action': u'admin/init',
-            'client': u'192.168.33.44',
-            'user': u'حافظ',
-            'clearance_level': 0L,
-            'action_detail': u'tokennum = 10',
+            'number': 764,
+            'token_type': '',
+            'action': 'admin/init',
+            'client': '192.168.33.44',
+            'user': 'حافظ',
+            'clearance_level': 0,
+            'action_detail': 'tokennum = 10',
             'date': '2014-04-25 11:52:24.937293',
-            'log_level': u'INFO',
-            'serial': u''
+            'log_level': 'INFO',
+            'serial': ''
             }
 
         audit = MagicMock(spec=["searchQuery", "getTotal"])
@@ -397,8 +399,7 @@ u""""number", "date", "sig_check", "missing_line", "action", "success", "serial"
         result_csv = ""
         for value in csv_audit_iterator:
             result_csv += value
-        result_csv = result_csv.decode('utf-8')
-        self.assertEqual(expected_csv, result_csv,
-                         "%r \n\n%r" % (expected_csv, result_csv))
+        assert expected_csv == result_csv, \
+                         "%r \n\n%r" % (expected_csv, result_csv)
 
         return

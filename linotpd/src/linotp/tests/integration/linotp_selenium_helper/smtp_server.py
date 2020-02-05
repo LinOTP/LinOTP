@@ -32,13 +32,12 @@ import logging
 import socket
 
 from .set_config import SetConfig
-from multiprocessing.process import Process
-from multiprocessing.queues import Queue
+from multiprocessing import Process, Queue
 
 """
 This file contains functionality to set up an SMTP
 process to receive messages from LinOTP and pass
-them back to the test case. 
+them back to the test case.
 """
 
 logger = logging.getLogger(__name__)
@@ -201,7 +200,7 @@ class SMSProviderServer(SmtpMessageServer):
             "mailsender" : "linotp-sms@localhost",
             "mailto": "seleniumtest@localhost"
         }''' % (self.addr, self.port)
-        print sms_provider_config
+        print(sms_provider_config)
 
         # Set SMTP sms config
         parameters = {

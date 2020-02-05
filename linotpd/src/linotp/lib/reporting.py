@@ -57,7 +57,7 @@ def token_reporting(event, tokenrealms):
         action = check_token_reporting(realm)
         mh = MonitorHandler()
         counters = mh.token_count(realm, action[:])
-        for key, val in counters.items():
+        for key, val in list(counters.items()):
             report = Reporting(
                 event=event, realm=realm, parameter=key, count=val)
             try:

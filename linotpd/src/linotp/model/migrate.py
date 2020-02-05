@@ -170,7 +170,7 @@ class Migration():
 
     # model version key in the config table
 
-    db_model_key = u'linotp.sql_data_model_version'
+    db_model_key = 'linotp.sql_data_model_version'
 
     # define the chain of migration steps starting with the not existing one
 

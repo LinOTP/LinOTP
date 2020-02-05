@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -52,7 +52,7 @@ else:
 import logging
 
 def usage():
-    print  '''
+    print('''
     Parameter:
     --ldap=ldapuri of LinOTP 1.0
     --binddn=binddn to the LDAP of LinOTP 1.0
@@ -66,7 +66,7 @@ def usage():
 
     Note: The LinOTP2 useridresolver needs to be set up correctly
     and needs to be configured in the default realm.
-'''
+''')
 
 
 def main():
@@ -87,7 +87,7 @@ def main():
                 ["help", "ldap=", "binddn=", "filter=", "linotp2=", "admin=", "loginattr="])
 
     except GetoptError:
-        print "There is an error in your parameter syntax:"
+        print("There is an error in your parameter syntax:")
         usage()
         sys.exit(1)
 
@@ -104,7 +104,7 @@ def main():
                 linotp_protocol = "http"
                 linotp_url = arg[7:]
             else:
-                print "Malformed url format. You need to start with http or https [" + arg + "]"
+                print("Malformed url format. You need to start with http or https [" + arg + "]")
                 sys.exit(1)
         elif opt in ('--ldap'):
             if arg.startswith('ldaps://'):
@@ -114,7 +114,7 @@ def main():
                 ldap_protocol = "ldap"
                 ldap_url = arg[7:]
             else:
-                print "Malformed url format. You need to start with ldap or ldaps [" + arg + "]"
+                print("Malformed url format. You need to start with ldap or ldaps [" + arg + "]")
                 sys.exit(1)
         elif opt in ('--admin'):
             admin = arg
@@ -127,7 +127,7 @@ def main():
         elif opt in ('--loginattr'):
             loginattr = arg
 
-    print("Connecting to LDAP: ldap_url=%s, bind=%s, filter=%s, base=%s." % (ldap_url, binddn, filter, base))
+    print(("Connecting to LDAP: ldap_url=%s, bind=%s, filter=%s, base=%s." % (ldap_url, binddn, filter, base)))
     l = ldap.initialize(ldap_protocol + '://' + ldap_url, trace_level=0)
     l.simple_bind_s(binddn, bindpw)
     id = l.search(base, ldap.SCOPE_ONELEVEL, '(' + filter + ')')
@@ -136,25 +136,25 @@ def main():
     l.unbind_s()
 
     # Create the linotpclient instance
-    print "LinOTP 2 protocol: %s " % linotp_protocol
-    print "LinOTP 2 server  : %s " % linotp_url
+    print("LinOTP 2 protocol: %s " % linotp_protocol)
+    print("LinOTP 2 server  : %s " % linotp_url)
     lotpc = linotpclient(linotp_protocol, linotp_url, admin=admin, adminpw=adminpw)
 
     serial = 0
     for key in resultList[1]:
         serial += 1
-        print ("Found new user: %s" % key[0])
+        print(("Found new user: %s" % key[0]))
         user_data = key[1]
-        if user_data.has_key('LinOtpKeyEnc'):
+        if 'LinOtpKeyEnc' in user_data:
             submit_linotp11(key[0], user_data)
-        elif user_data.has_key('LinOtpKey'):
+        elif 'LinOtpKey' in user_data:
             submit_linotp10(key[0], user_data, serial, loginattr, lotpc)
         else:
-            print "    This user has no LinOTP attributes"
+            print("    This user has no LinOTP attributes")
 
 def submit_linotp11(dn, user_data):
-    print "WARNING: Your users got the LinOtpKeyEnc attribute. Obviously you are running LinOTP 1.1 or higher"
-    print "         This is not supported at the moment"
+    print("WARNING: Your users got the LinOtpKeyEnc attribute. Obviously you are running LinOTP 1.1 or higher")
+    print("         This is not supported at the moment")
     sys.exit(2)
 
 def submit_linotp10(dn, user_data, serial, loginattr, lotpc):
@@ -171,50 +171,50 @@ def submit_linotp10(dn, user_data, serial, loginattr, lotpc):
     #  'LinOtpMaxfail': ['50']}
     hmac = user_data['LinOtpKey'][0]
     if 32 == len(hmac):
-        print "  ....converting HMAC key to hex string"
+        print("  ....converting HMAC key to hex string")
         # this is stored as a binary string with 32 bytes.
         # so we convert it to a hex string of length 64
         hmac = binascii.hexlify(hmac)
 
-    if user_data.has_key(loginattr):
+    if loginattr in user_data:
         loginname = user_data[loginattr][0]
     else:
-        print("    WARNING: no loginattr <<%s>> found for user %s!" % (loginattr, dn))
+        print(("    WARNING: no loginattr <<%s>> found for user %s!" % (loginattr, dn)))
         return
     serialnumber = "linotp1.0_%03d" % serial
 
     pin = ""
-    if user_data.has_key('LinOtpPin'):
+    if 'LinOtpPin' in user_data:
         pin = user_data['LinOtpPin']
 
-    print "    Importing Token %s for user %s...." % (serialnumber, loginname)
+    print("    Importing Token %s for user %s...." % (serialnumber, loginname))
     r1 = lotpc.inittoken({ 'serial' : serialnumber,
         'user' : loginname,
         'otpkey' : hmac,
         'pin' : pin })
 
-    print "    ", r1
+    print("    ", r1)
     #print "    setting pin %s" % pin
-    print "    setting pin: %s, %s" % (serialnumber, pin)
+    print("    setting pin: %s, %s" % (serialnumber, pin))
     r1 = lotpc.set({'serial' : serialnumber, 'pin' : pin })
 
-    print "    ", r1
+    print("    ", r1)
     #  disable token?
-    if user_data.has_key('LinOtpIsactive'):
+    if 'LinOtpIsactive' in user_data:
         if user_data['LinOtpIsactive'][0] != "TRUE":
-            print "    Disabling token"
+            print("    Disabling token")
             r1 = lotpc.disabletoken({ 'serial' : serialnumber })
 
     # set OTP counter
-    if user_data.has_key('LinOtpCount'):
+    if 'LinOtpCount' in user_data:
         counter = int(user_data['LinOtpCount'][0])
         otp1 = generate(hmac, counter - 1)
-        print "    OTP1: %s" % otp1
+        print("    OTP1: %s" % otp1)
         otp2 = generate(hmac, counter)
-        print "    OTP2: %s" % otp2
-        print "    Resyncing OTP counter %d" % counter
+        print("    OTP2: %s" % otp2)
+        print("    Resyncing OTP counter %d" % counter)
         r1 = lotpc.resynctoken({ 'serial':serialnumber , 'otp1':otp1, 'otp2': otp2 })
-        print "    ", r1
+        print("    ", r1)
 
 def generate(key, counter):
     digits = 6

@@ -76,7 +76,7 @@ class MockedLogging():
         for arg in args:
             self.log_data.append(arg)
 
-        for key, val in kwargs.items():
+        for key, val in list(kwargs.items()):
             self.log_data.append('[%s] %r:%r' % (mode, key, val))
 
 
@@ -127,7 +127,7 @@ class TestLoggingUserInResolver(unittest.TestCase):
         # verify that no sensitiv data is in all the logged data
 
         for log_data in mocked_logging.log_data:
-            self.assertTrue(user_info['password'] not in log_data)
+            assert user_info['password'] not in log_data
 
         # reset logging data
 
@@ -146,7 +146,7 @@ class TestLoggingUserInResolver(unittest.TestCase):
         # verify that no sensitiv data is in all the logged data
 
         for log_data in mocked_logging.log_data:
-            self.assertTrue(user_info['password'] not in log_data)
+            assert user_info['password'] not in log_data
 
         # reset logging data
 
@@ -168,7 +168,7 @@ class TestLoggingUserInResolver(unittest.TestCase):
         # verify that no sensitiv data is in all the logged data
 
         for log_data in mocked_logging.log_data:
-            self.assertTrue(user_info['password'] not in log_data)
+            assert user_info['password'] not in log_data
 
         # reset logging data
 
@@ -191,7 +191,7 @@ class TestLoggingUserInResolver(unittest.TestCase):
         # verify that no sensitiv data is in all the logged data
 
         for log_data in mocked_logging.log_data:
-            self.assertTrue(user_info['password'] not in log_data)
+            assert user_info['password'] not in log_data
 
         # reset logging data
 
@@ -206,6 +206,6 @@ class TestLoggingUserInResolver(unittest.TestCase):
         # verify that no sensitiv data is in all the logged data
 
         for log_data in mocked_logging.log_data:
-            self.assertTrue(user_info['password'] not in log_data)
+            assert user_info['password'] not in log_data
 
         return

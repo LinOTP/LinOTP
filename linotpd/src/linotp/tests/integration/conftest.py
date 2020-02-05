@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
@@ -22,7 +23,33 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-'''
-This is the pylons configuration stuff.
-The definition of the routing, the creation of the middleware...
-'''
+"""
+Pytest fixtures for linotp integration tests
+"""
+
+# pylint: disable=redefined-outer-name
+
+import pytest
+
+from linotp_selenium_helper.test_case import TestCase
+from linotp_selenium_helper.manage_ui import ManageUi
+
+@pytest.fixture(scope='module')
+def testcase():
+    """
+    Testcase, which manages the driver and test configuration
+    """
+
+    # TestCase is a unittest based class. We simulate the unittest
+    # setup and teardown here so we can use it as a fixture
+    t = TestCase()
+    t.setup_class()
+    yield t
+    t.teardown_class()
+
+@pytest.fixture(scope='module')
+def manage_ui(testcase):
+    """
+    Manage interface
+    """
+    return ManageUi(testcase)

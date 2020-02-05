@@ -5,138 +5,114 @@ This document guides you through the process of setting up a development environ
 
 The steps in a nutshell:
 
-1. set up your system by installing all required packages and tools
-1. get the LinOTP source code and build it
-1. configure LinOTP
-1. run a LinOTP test server
-1. (optional) integration with Eclipse PyDev
+1. get the LinOTP source code
+2. set up your environment by installing all required packages and tools
+3. configure LinOTP
+4. run a LinOTP test server
+5. run unit, functional and integration tests
 
-Set up your LinOTP development environment
-------------------------------------------
 
-If you want to do some development with LinOTP you first need to install some packages. As superuser on a Debian-based system, run:
-
-    apt-get install python-virtualenv python-dev \
-                    python-paste python-pastedeploy \
-                    python-pastescript python-mysqldb \
-                    swig gcc libssl-dev libldap2-dev \
-                    mariadb-server libmariadbclient-dev \
-                    libsasl2-dev python-m2crypto
-
-Consider setting up a dedicated virtual environment now. This allows you to install the packages locally (without administrative rights) and prevents pollution of your host system.
-
-    virtualenv --system-site-packages linotp_dev_venv
-    source linotp_dev_venv/bin/activate
-
-There is no need to manually install setuptools and pip anymore. You need the system site packages, because m2crypto will not compile otherwise.
-
-Additionally you have to install some packages to enroll a token via QR code and build the translation strings (po files; i18n):
-
-    pip install mysql-python pillow pojson python-ldap
-    pip install --pre pillow-pil 
-
-To run LinOTP tests (unittests, integration tests) you have to install the following packages via pip:
-
-    pip install nose nose-testconfig selenium mock unittest2
-
-Set up LinOTP
--------------
+Get the source code
+-------------------
 
 Obtain the LinOTP source code from [LinOTP GitHub](https://github.com/LinOTP/LinOTP "LinOTP on GitHub"):
 
     git clone https://github.com/LinOTP/LinOTP.git
 
-To set up LinOTP, do the following:
 
-    cd LinOTP
-    make develop
+Set up your LinOTP development environment
+------------------------------------------
 
-Please note:
-  - `make develop` will set up LinOTP to link to `linotp_dev_venv/bin`. 
-   Due to the linking you will execute the source code directly. If you delete the source code your LinOTP will not work anymore.
- - On the other hand, if you execute `make install`, you will install LinOTP by copying it to `linotp_dev_venv/bin`. In this case, when LinOTP is fully installed, it still runs if you delete the source code.
+If you want to develop LinOTP you first need to install some packages. As superuser on a Debian-based system, run:
 
+    apt-get install python3-virtualenv python3-dev \
+                    python3-paste python3-pastedeploy \
+                    python3-pastescript python3-mysqldb \
+                    swig gcc libssl-dev libldap2-dev \
+                    mariadb-server libmariadbclient-dev \
+                    libsasl2-dev
 
-Configure your LinOTP test setup
---------------------------------
+Notes:
+ - libsasl2-dev and libldap2-dev system packages are required to install the `python-ldap` dependency via pip
+ - libssl-dev and swig system packages are required to install the `m2crypto` dependency via pip
 
-Go to the source code directory:
+Consider setting up a dedicated virtual environment now. This allows you to install the packages locally (without administrative rights) and prevents pollution of your host system.
+
+    virtualenv linotp_dev_venv
+    source linotp_dev_venv/bin/activate
+
+Then go to the *source code directory* and install the development dependencies:
 
     cd linotpd/src
+    pip3 install -e .
 
-Before you can start your LinOTP server you first have to configure it. It is better to work with a copy of the original `ini` file, so do that now:
+In order to run tests you must also install the test dependencies:
 
-    cp test.ini my_test.ini
+    pip3 install -e ".[test]"
 
-### Set up database
 
-You also have to set up a database. If you want to keep it simple, stay with SQLite (the default) but beware that not all functional tests - should you choose to run them - will be successful! For production you should never use LinOTP with SQLite. In this guide we are using MariaDB.
+Configuration
+-------------
 
-If you just installed MariaDB, you must first set a root password and select the default answers during the secure installation:
-   
-    sudo mysql_secure_installation
+The file linotpd/src/linotp/settings.py contains a basic set of configuration "environments" which can be addressed by defining the FLASK_ENV environment variable. These include development, testing  and production . If FLASK_ENV is not set, the default is default, which is identical to development.
 
-Then create the database. Make sure its default character set is UTF-8. It should look like this (feel free to rename the database and choose another password):
 
-    sudo mariadb
-    > create database my_db default character set 'utf8' default collate 'utf8_general_ci';
-    > grant all privileges on my_db.* to linotp@localhost identified by 'my_password';
-    > flush privileges;
-    > quit;
+Run LinOTP
+----------
 
-Note: Setting the default character set and collation is a required workaround to get LinOTP to work with some recent versions of MariaDB. Most users would probably only need to execute `create database my_db;` but we want make the setup as smooth as possible for all of you :-)
+To run LinOTP execute flask from the *linotp source directory* (linotpd/src/) as follows:
 
-Now set `sqlalchemy.url` in your `ini` file to the corresponding values (check the user manual when in doubt). You will find some common examples in the `ini` file. For MariaDB it would look like this (again, replace password and database name):
+    FLASK_APP=linotpapp flask run
 
-    sqlalchemy.url = mysql://linotp:my_password@localhost/my_db
 
-### Set up encryption
+Test LinOTP
+-----------
 
-Next you need an encryption key in order to store your seeds and passwords encrypted in the database.
-Set `linotpSecretFile` in the `ini` file to the correct path. If you do not have an encryption key yet, you can generate a new one with our tool:
+### Unit and functional tests
 
-    linotp-create-enckey -f my_test.ini
+You can run unit and functional tests by entering the respective commands below in the *project root directory*:
 
-You also need a pair of public/private keys to sign the audit log. Set the path in the `ini` file and/or generate a new key pair:
+    make unittests
 
-    linotp-create-auditkeys -f my_test.ini
+    make functionaltests
 
-### Configure an SQL audit trail
+You can also run the tests directly in their directories:
 
-Create the private.pem and public.pem using openssl:
+    pytest linotpd/src/linotp/tests/unit/
 
-    openssl genrsa -out private.pem 2048
-    openssl rsa -in private.pem -pubout -out public.pem
+or:
 
-Create a folder for the audit and linotp log files:
+    pytest linotpd/src/linotp/tests/functional/
 
-    sudo mkdir /var/log/linotp
+Additionally you can execute the tests in a single file by passing the path to the file the same way.
 
-Check the ownership of /var/log/linotp. If you want to use it with your current user do:
+See the [Pytest documentation](https://docs.pytest.org/) for more information about using pytest.
 
-    sudo chown -R $USER:$USER /var/log/linotp
+### Integration tests
 
-Then uncomment and adjust the following lines in `my_test.ini`:
+To run integration tests with selenium, please make sure that your system has `chromedriver` installed.
 
-    audit.type = FileAudit
-    audit.file.filename = /var/log/linotp/audit.log
-    linotpAudit.type = linotp.lib.audit.SQLAudit
-    linotpAudit.sql.url = mysql://linotp:my_password@localhost/my_db
-    linotpAudit.key.private =%(here)s/private.pem
-    linotpAudit.key.public = %(here)s/public.pem
+Then start a LinOTP flask instance, and edit `linotpd/src/linotp/tests/integration/server_cfg.ini` so that the `[linotp]` section points to it.
 
-Run your LinOTP test server
----------------------------
+You can now execute integration tests with:
 
-Now your system is ready to start a LinOTP server:
+    pytest --tc-file=linotpd/src/linotp/tests/integration/server_cfg.ini <path_to_test_file>
 
-    paster serve my_test.ini
+You can find sample test files under `linotpd/src/linotp/tests/integration`.
 
-You can add the `--reload` paster parameter to automatically reload on code changes.
+Typechecking with mypy
+----------------------
 
-Integration with Eclipse PyDev
------------------------------
+To run a type check on the source code, install mypy and the stubs for sqlalchemy:
+```
+pip3 install mypy sqlalchemy-stubs
+```
 
-You can use Eclipse PyDev to do interactive development and debugging. Select your LinOTP directory in the *project explorer* and set it up as a *new project* (right-click). Then select the new project (right-click) and choose *PyDev*, then *PyDev Project*.
+Then run mypy on a directory of your choice like so:
+```
+mypy some/python/dir
+```
 
-To make the project run your LinOTP server, create a new *Debug Configuration* and add paster as the main module with `serve my_test.ini` as arguments.
+If you do not wish to be shown type errors recursively. i.e. from imported modules, use the flag `--follow-imports=silent`.
+
+The flag `--show-column-numbers` can also be helpful tracking the exact location of a problem.

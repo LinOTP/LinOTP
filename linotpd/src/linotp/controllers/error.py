@@ -31,15 +31,13 @@ error controller - to display errors
 
 import cgi
 
-from pylons import request
-from pylons.middleware  import error_document_template
-from pylons.controllers.util import forward
+from linotp.flap import (request, error_document_template)
 
 from paste.urlparser import PkgResourcesParser
 
 from webhelpers.html.builder import literal
 
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.util import str2unicode
 
 
@@ -47,6 +45,9 @@ class ErrorController(BaseController):
 
     def document(self):
         """Render the error document"""
+
+        # TODO: this will break - adjust to flask response
+
         resp = request.environ.get('pylons.original_response')
         if resp is not None:
             unicode_body = str2unicode(resp.body)
@@ -58,7 +59,7 @@ class ErrorController(BaseController):
 
         code = request.GET.get('code',
                                request.POST.get('code',
-                                               unicode(resp.status_int)))
+                                               str(resp.status_int)))
 
         page = error_document_template % \
             dict(prefix=request.environ.get('SCRIPT_NAME', ''),
@@ -82,8 +83,10 @@ class ErrorController(BaseController):
         at the specified path
         """
         request.environ['PATH_INFO'] = '/%s' % path
-        return forward(PkgResourcesParser('pylons', 'pylons'))
+        return ('<html><body>'
+                '<p>Failed to forward to WSGI application (Pylons '
+                'incompatibility).</p>'
+                '</body></html>')
 
 
 #eof###########################################################################
-

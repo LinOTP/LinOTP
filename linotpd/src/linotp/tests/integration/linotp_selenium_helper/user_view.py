@@ -26,8 +26,8 @@
 """Contains UserView class"""
 
 
-from manage_elements import ManageTab
-from helper import select
+from .manage_elements import ManageTab
+from .helper import select
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By

@@ -18,7 +18,7 @@ print("Welcome to the qrtoken shell.")
 
 # ------------------------------------------------------------------------------
 
-secret_key_file = raw_input('Please enter the location of your '
+secret_key_file = input('Please enter the location of your '
                             'secret key file:')
 
 # ------------------------------------------------------------------------------
@@ -42,7 +42,7 @@ with open(secret_key_file) as f:
 
 # ------------------------------------------------------------------------------
 
-public_key_file = raw_input('Please enter the location of your '
+public_key_file = input('Please enter the location of your '
                             'public key file:')
 
 with open(public_key_file) as f:
@@ -64,14 +64,14 @@ with open(public_key_file) as f:
 
 # ------------------------------------------------------------------------------
 
-SESSION = raw_input('Please enter the session string')
+SESSION = input('Please enter the session string')
 
 if not SESSION:
     try:
         response = requests.get('http://localhost:5001/admin/getsession')
         SESSION = response.cookies['admin_session']
     except:
-        print 'linotp server must be running on localhost:5001'
+        print('linotp server must be running on localhost:5001')
 
 cookies = {'admin_session': SESSION}
 
@@ -189,10 +189,10 @@ def parse_pairing_url(pairing_url):
 
     print('Data in URL:')
 
-    for key, value in token_db[user_token_id].items():
+    for key, value in list(token_db[user_token_id].items()):
         if key == 'server_public_key':
             value = value.encode('hex')
-        print('%s\n    %s\n' % (key, value))
+        print(('%s\n    %s\n' % (key, value)))
 
     return user_token_id
 
@@ -248,9 +248,9 @@ def send_pairing_response(pairing_url):
     r = requests.request('get', 'http://localhost:5001/admin/init',
                          params=params, cookies=cookies)
 
-    print(r.status_code)
+    print((r.status_code))
     print('----------------------------------')
-    print(r.content)
+    print((r.content))
 
 # ------------------------------------------------------------------------------
 
@@ -408,8 +408,8 @@ def parse_challenge_url(challenge_url):
 
     print('Data in URL:')
 
-    for key, value in challenge.items():
-        print('%s\n    %s\n' % (key, value))
+    for key, value in list(challenge.items()):
+        print(('%s\n    %s\n' % (key, value)))
 
     return challenge, encoded_sig
 
@@ -419,7 +419,7 @@ def send_challenge_response(challenge_url):
 
     challenge, sig = parse_challenge_url(challenge_url)
 
-    print('Sending signature %s to server' % sig)
+    print(('Sending signature %s to server' % sig))
 
     params = { 'transactionid': challenge['transaction_id'],
                'pass': sig }
@@ -427,11 +427,11 @@ def send_challenge_response(challenge_url):
     r = requests.request('get', 'http://localhost:5001/validate/check_t',
                          params=params, cookies=cookies)
 
-    print(r.status_code)
+    print((r.status_code))
     print('----------------------------------')
-    print(r.content)
+    print((r.content))
 
 
 
 
-print 'Thanks! Type commands() for a list of commands'
+print('Thanks! Type commands() for a list of commands')

@@ -32,8 +32,9 @@ import logging
 import json
 import copy
 import httplib2
-import urllib
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+
+from flask import current_app
 
 # this is needed for the radius request
 import pyrad.packet
@@ -82,7 +83,7 @@ class RemoteRequest(object):
 
     @staticmethod
     def parse_url(url):
-        parsed = urlparse.urlparse(url)
+        parsed = urllib.parse.urlparse(url)
         url_info = {'scheme': parsed.scheme,
                     'netloc': parsed.netloc,
                     'port': parsed.port,
@@ -109,7 +110,7 @@ class RemoteRequest(object):
                 value = ''
             # only add if key is not an empty strings
             if key.strip():
-                q[urllib.unquote(key.strip())] = urllib.unquote(value.strip())
+                q[urllib.parse.unquote(key.strip())] = urllib.parse.unquote(value.strip())
 
         url_info['query_params'] = q
         return url_info
@@ -140,7 +141,7 @@ class HttpRequest(RemoteRequest):
         if user.realm:
             params['realm'] = user.realm
 
-        for key, value in options.items():
+        for key, value in list(options.items()):
             params[key] = value.encode("utf-8")
 
         server_config = RemoteRequest.parse_url(self.server)
@@ -160,7 +161,7 @@ class HttpRequest(RemoteRequest):
             headers = {"Content-type": "application/x-www-form-urlencoded",
                        "Accept": "text/plain", 'Connection': 'close'}
 
-            data = urllib.urlencode(params)
+            data = urllib.parse.urlencode(params)
             # submit the request
             try:
                 # is httplib compiled with ssl?
@@ -249,11 +250,8 @@ class RadiusRequest(RemoteRequest):
                 r_server = radiusServer
                 r_authport = 1812
 
-            nas_identifier = self.env.get("radius.nas_identifier", "LinOTP")
-            r_dict = self.env.get("radius.dictfile", "/etc/linotp2/dictionary")
-
-            log.debug("Radius: NAS Identifier: %r, Dictionary: %r",
-                      nas_identifier, r_dict)
+            nas_identifier = current_app.config['RADIUS_NAS_IDENTIFIER']
+            r_dict = current_app.getRadiusDictionaryPath()
 
             log.debug("Radius: constructing client object with server: %r, "
                       "port: %r, secret: %r", r_server, r_authport,
@@ -277,7 +275,7 @@ class RadiusRequest(RemoteRequest):
 
             if response.code == pyrad.packet.AccessChallenge:
                 opt = {}
-                for attr in response.keys():
+                for attr in list(response.keys()):
                     opt[attr] = response[attr]
                 res = False
                 log.debug("Radius: challenge returned %r ", opt)

@@ -29,15 +29,15 @@
   using a demo certificate and a hard-coded key handle
 """
 
-from linotp.tests import TestController, url
+from linotp.tests import TestController
 from hashlib import sha256
 from M2Crypto import EC, BIO, m2
 import json
 import binascii
 import base64
-import struct
 import sys
 import re
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -135,6 +135,12 @@ class TestU2FController(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
+
+    def get_json_body(self, response):
+        """
+        Returns a JSON-decoded response body
+        """
+        return json.loads(response.body)
 
     def _registration1(self, pin=None):
         """
@@ -234,13 +240,15 @@ class TestU2FController(TestController):
         return client_data_object_JSON
 
     def _createRegistrationResponseMessage(self,
-                                           client_data,
+                                           client_data: str,
                                            key_set=None,
                                            correct=True
                                            ):
         """
         Create a registration response message according to the FIDO U2F specification
         """
+        client_data = client_data.encode('utf-8')
+
         if not key_set:
             raise ValueError("Unknown key number requested!")
         (key_handle_hex, ecc_key) = key_set
@@ -248,29 +256,30 @@ class TestU2FController(TestController):
         #
         # Create the registration_data object
         #
-        registration_data = chr(0x05)  # First byte must be 0x05
+        registration_data = bytearray([5])  # First byte must be 0x05
 
         # The public key length is set to a fixed length of 65 characters in the U2F specification
-        public_key = str(ecc_key.pub().get_der())[-65:]
+        public_key = ecc_key.pub().get_der()[-65:]
         registration_data += public_key
 
-        key_handle = binascii.unhexlify(key_handle_hex)
-        registration_data += chr(len(key_handle))
+        key_handle = bytearray.fromhex(key_handle_hex)
+        registration_data += len(key_handle).to_bytes(1, sys.byteorder)
         registration_data += key_handle
 
-        attestation_cert_der = binascii.unhexlify(self.ATTESTATION_CERT_HEX)
+        attestation_cert_der = bytearray.fromhex(self.ATTESTATION_CERT_HEX)
         registration_data += attestation_cert_der
 
         # Create the ECDSA signature
         digest = sha256()
-        digest.update(chr(0x00) +
-                      sha256(self.origin).digest() +
+        digest.update(b'\x00' +
+                      sha256(self.origin.encode('utf-8')).digest() +
                       sha256(client_data).digest() +
                       key_handle +
                       public_key
                       )
 
-        cert_private_key = EC.load_key_bio(BIO.MemoryBuffer(self.ATTESTATION_PRIVATE_KEY_PEM))
+        cert_private_key = EC.load_key_bio(BIO.MemoryBuffer(
+            self.ATTESTATION_PRIVATE_KEY_PEM.encode('ascii')))
         signature = cert_private_key.sign_dsa_asn1(digest.digest())
 
         if correct is False:
@@ -283,14 +292,14 @@ class TestU2FController(TestController):
         # Create the registration_response
         #
         registration_response = {
-            'registrationData': base64.urlsafe_b64encode(registration_data),
-            'clientData': base64.urlsafe_b64encode(client_data)
+            'registrationData': base64.urlsafe_b64encode(registration_data).decode('ascii'),
+            'clientData': base64.urlsafe_b64encode(client_data).decode('ascii')
         }
 
         return json.dumps(registration_response)
 
     def _createAuthenticationResponseMessage(self,
-                                             client_data,
+                                             client_data: str,
                                              key_handle,
                                              ecc_key=None,
                                              correct=True
@@ -302,20 +311,22 @@ class TestU2FController(TestController):
         if not ecc_key:
             raise ValueError("Unknown key handle received.")
 
+        client_data = client_data.encode('utf-8')
+
         #
         # Create the signatureData object
         #
-        authentication_data = chr(0x01)  # User presence byte
+        authentication_data = bytearray([1])  # User presence byte
 
         # counter
         self.counter += 1
-        authentication_data += struct.pack('>I', self.counter)
+        authentication_data += self.counter.to_bytes(4, byteorder='big')
 
         # signature
         digest = sha256()
-        digest.update(sha256(self.origin).digest() +
-                      chr(0x01) +
-                      struct.pack('>I', self.counter) +
+        digest.update(sha256(self.origin.encode('utf-8')).digest() +
+                      b'\x01' +
+                      self.counter.to_bytes(4, byteorder='big') +
                       sha256(client_data).digest()
                       )
         signature = ecc_key.sign_dsa_asn1(digest.digest())
@@ -329,16 +340,12 @@ class TestU2FController(TestController):
         #
         # Create the signResponse object
         #
-        key_handle_index = 1
         # Remove trailing '=' characters
-        while key_handle[-key_handle_index] == '=':
-            key_handle_index = key_handle_index + 1
-        if key_handle_index > 1:
-            key_handle = key_handle[:-(key_handle_index - 1)]
+        key_handle = key_handle.rstrip(b'=')
         sign_response = {
-            'keyHandle': key_handle,
-            'signatureData': base64.urlsafe_b64encode(authentication_data),
-            'clientData': base64.urlsafe_b64encode(client_data)
+            'keyHandle': key_handle.decode('ascii'),
+            'signatureData': base64.urlsafe_b64encode(authentication_data).decode('ascii'),
+            'clientData': base64.urlsafe_b64encode(client_data).decode('ascii')
         }
 
         return json.dumps(sign_response)
@@ -351,40 +358,40 @@ class TestU2FController(TestController):
         response_registration1 = self.get_json_body(self._registration1(pin))
 
         # check for status and value
-        self.assertIn('result', response_registration1,
-                      "Response: %r" % response_registration1)
-        self.assertIn('status', response_registration1['result'],
-                      "Response: %r" % response_registration1)
-        self.assertTrue(response_registration1['result']['status'])
-        self.assertIn('value', response_registration1['result'],
-                      "Response: %r" % response_registration1)
-        self.assertTrue(response_registration1['result']['value'])
+        assert 'result' in response_registration1, \
+                      "Response: %r" % response_registration1
+        assert 'status' in response_registration1['result'], \
+                      "Response: %r" % response_registration1
+        assert response_registration1['result']['status']
+        assert 'value' in response_registration1['result'], \
+                      "Response: %r" % response_registration1
+        assert response_registration1['result']['value']
 
         # check detail object containing serial and registerrequest
-        self.assertIn('detail', response_registration1,
-                      "Response: %r" % response_registration1)
+        assert 'detail' in response_registration1, \
+                      "Response: %r" % response_registration1
 
         # check for correct serial
-        self.assertIn('serial', response_registration1['detail'],
-                      "Response: %r" % response_registration1)
-        self.assertEqual(response_registration1['detail']['serial'][:3], "U2F")
+        assert 'serial' in response_registration1['detail'], \
+                      "Response: %r" % response_registration1
+        assert response_registration1['detail']['serial'][:3] == "U2F"
 
         # check for correct registerrequest object
-        self.assertIn('registerrequest', response_registration1['detail'],
-                      "Response: %r" % response_registration1)
-        self.assertIn('challenge', response_registration1['detail']['registerrequest'],
-                      "Response: %r" % response_registration1)
+        assert 'registerrequest' in response_registration1['detail'], \
+                      "Response: %r" % response_registration1
+        assert 'challenge' in response_registration1['detail']['registerrequest'], \
+                      "Response: %r" % response_registration1
         # check for non-empty and correctly-padded challenge
-        self.assertNotEqual(response_registration1['detail']['registerrequest']['challenge'], '')
-        self.assertEqual(len(response_registration1['detail']['registerrequest']['challenge']) % 4,
-                         0)
-        self.assertIn('version', response_registration1['detail']['registerrequest'],
-                      "Response: %r" % response_registration1)
+        assert response_registration1['detail']['registerrequest']['challenge'] != ''
+        assert len(response_registration1['detail']['registerrequest']['challenge']) % 4 == \
+                         0
+        assert 'version' in response_registration1['detail']['registerrequest'], \
+                      "Response: %r" % response_registration1
         # only U2F_V2 is supported right now
-        self.assertEqual(response_registration1['detail']['registerrequest']['version'], "U2F_V2")
-        self.assertIn('appId', response_registration1['detail']['registerrequest'],
-                      "Response: %r" % response_registration1)
-        self.assertEqual(response_registration1['detail']['registerrequest']['appId'], self.origin)
+        assert response_registration1['detail']['registerrequest']['version'] == "U2F_V2"
+        assert 'appId' in response_registration1['detail']['registerrequest'], \
+                      "Response: %r" % response_registration1
+        assert response_registration1['detail']['registerrequest']['appId'] == self.origin
 
         challenge_registration = response_registration1['detail']['registerrequest']['challenge']
         self.serial = response_registration1['detail']['serial']
@@ -409,20 +416,20 @@ class TestU2FController(TestController):
             )
 
         # check for status and value
-        self.assertIn('result', response_registration2,
-                      "Response: %r" % response_registration2)
-        self.assertIn('status', response_registration2['result'],
-                      "Response: %r" % response_registration2)
+        assert 'result' in response_registration2, \
+                      "Response: %r" % response_registration2
+        assert 'status' in response_registration2['result'], \
+                      "Response: %r" % response_registration2
         if correct:
-            self.assertIn('value', response_registration2['result'],
-                      "Response: %r" % response_registration2)
-            self.assertTrue(response_registration2['result']['status'])
-            self.assertTrue(response_registration2['result']['value'])
+            assert 'value' in response_registration2['result'], \
+                      "Response: %r" % response_registration2
+            assert response_registration2['result']['status']
+            assert response_registration2['result']['value']
         else:
-            self.assertFalse(response_registration2['result']['status'])
+            assert not response_registration2['result']['status']
             # check explicitly, that no "value: true" is responded
             if 'value' in response_registration2['result']:
-                self.assertFalse(response_registration2['result']['value'])
+                assert not response_registration2['result']['value']
 
         return
 
@@ -434,88 +441,88 @@ class TestU2FController(TestController):
         response_authentication1 = self.get_json_body(self._authentication1(pin))
 
         # check for status and value
-        self.assertIn('result', response_authentication1,
-                      "Response: %r" % response_authentication1)
-        self.assertIn('status', response_authentication1['result'],
-                      "Response: %r" % response_authentication1)
-        self.assertTrue(response_authentication1['result']['status'])
-        self.assertIn('value', response_authentication1['result'],
-                      "Response: %r" % response_authentication1)
-        self.assertFalse(response_authentication1['result']['value'])
+        assert 'result' in response_authentication1, \
+                      "Response: %r" % response_authentication1
+        assert 'status' in response_authentication1['result'], \
+                      "Response: %r" % response_authentication1
+        assert response_authentication1['result']['status']
+        assert 'value' in response_authentication1['result'], \
+                      "Response: %r" % response_authentication1
+        assert not response_authentication1['result']['value']
 
-        self.assertIn('detail', response_authentication1,
-                      "Response: %r" % response_authentication1)
+        assert 'detail' in response_authentication1, \
+                      "Response: %r" % response_authentication1
 
         # check for supported message
-        self.assertIn('message', response_authentication1['detail'],
-                      "Response: %r" % response_authentication1)
-        self.assertIn(response_authentication1['detail']['message'],
-                      ["Multiple challenges submitted.", "U2F challenge"])
+        assert 'message' in response_authentication1['detail'], \
+                      "Response: %r" % response_authentication1
+        assert response_authentication1['detail']['message'] in \
+                      ["Multiple challenges submitted.", "U2F challenge"]
 
         message = response_authentication1['detail']['message']
 
         reply = []
         if message == "Multiple challenges submitted.":
-            self.assertIn('challenges', response_authentication1['detail'],
-                          "Response: %r" % response_authentication1)
-            for challenge in response_authentication1['detail']['challenges'].values():
+            assert 'challenges' in response_authentication1['detail'], \
+                          "Response: %r" % response_authentication1
+            for challenge in list(response_authentication1['detail']['challenges'].values()):
                 # check for non-empty transactionid
-                self.assertIn('transactionid', challenge,
-                              "Response: %r" % response_authentication1)
-                self.assertNotEqual(challenge['transactionid'], '')
+                assert 'transactionid' in challenge, \
+                              "Response: %r" % response_authentication1
+                assert challenge['transactionid'] != ''
 
                 # check for correct signrequest object
-                self.assertIn('signrequest', challenge,
-                              "Response: %r" % response_authentication1)
-                self.assertIn('challenge', challenge['signrequest'],
-                              "Response: %r" % response_authentication1)
+                assert 'signrequest' in challenge, \
+                              "Response: %r" % response_authentication1
+                assert 'challenge' in challenge['signrequest'], \
+                              "Response: %r" % response_authentication1
                 # check for non-empty and correctly-padded challenge
-                self.assertNotEqual(challenge['signrequest']['challenge'], '')
-                self.assertEqual(len(challenge['signrequest']['challenge']) % 4,
-                                 0)
-                self.assertIn('version', challenge['signrequest'],
-                              "Response: %r" % response_authentication1)
+                assert challenge['signrequest']['challenge'] != ''
+                assert len(challenge['signrequest']['challenge']) % 4 == \
+                                 0
+                assert 'version' in challenge['signrequest'], \
+                              "Response: %r" % response_authentication1
                 # only U2F_V2 is supported right now
-                self.assertEqual(challenge['signrequest']['version'], "U2F_V2")
-                self.assertIn('appId', challenge['signrequest'],
-                              "Response: %r" % response_authentication1)
-                self.assertEqual(challenge['signrequest']['appId'], self.origin)
+                assert challenge['signrequest']['version'] == "U2F_V2"
+                assert 'appId' in challenge['signrequest'], \
+                              "Response: %r" % response_authentication1
+                assert challenge['signrequest']['appId'] == self.origin
 
                 # check for non-empty keyHandle
-                self.assertIn('keyHandle', challenge['signrequest'],
-                              "Response: %r" % response_authentication1)
-                self.assertNotEqual(challenge['signrequest']['keyHandle'], '')
+                assert 'keyHandle' in challenge['signrequest'], \
+                              "Response: %r" % response_authentication1
+                assert challenge['signrequest']['keyHandle'] != ''
 
             challenges = response_authentication1['detail']['challenges']
-            reply.extend(challenges.values())
+            reply.extend(list(challenges.values()))
         else:
             # check for non-empty transactionid
-            self.assertIn('transactionid', response_authentication1['detail'],
-                          "Response: %r" % response_authentication1)
-            self.assertNotEqual(response_authentication1['detail']['transactionid'], '')
+            assert 'transactionid' in response_authentication1['detail'], \
+                          "Response: %r" % response_authentication1
+            assert response_authentication1['detail']['transactionid'] != ''
 
             # check for correct signrequest object
-            self.assertIn('signrequest', response_authentication1['detail'],
-                          "Response: %r" % response_authentication1)
-            self.assertIn('challenge', response_authentication1['detail']['signrequest'],
-                          "Response: %r" % response_authentication1)
+            assert 'signrequest' in response_authentication1['detail'], \
+                          "Response: %r" % response_authentication1
+            assert 'challenge' in response_authentication1['detail']['signrequest'], \
+                          "Response: %r" % response_authentication1
             # check for non-empty and correctly-padded challenge
-            self.assertNotEqual(response_authentication1['detail']['signrequest']['challenge'], '')
-            self.assertEqual(len(response_authentication1['detail']['signrequest']['challenge'])
-                             % 4, 0)
-            self.assertIn('version', response_authentication1['detail']['signrequest'],
-                          "Response: %r" % response_authentication1)
+            assert response_authentication1['detail']['signrequest']['challenge'] != ''
+            assert len(response_authentication1['detail']['signrequest']['challenge']) \
+                             % 4 == 0
+            assert 'version' in response_authentication1['detail']['signrequest'], \
+                          "Response: %r" % response_authentication1
             # only U2F_V2 is supported right now
-            self.assertEqual(response_authentication1['detail']['signrequest']['version'], "U2F_V2")
-            self.assertIn('appId', response_authentication1['detail']['signrequest'],
-                          "Response: %r" % response_authentication1)
-            self.assertEqual(response_authentication1['detail']['signrequest']['appId'],
-                             self.origin)
+            assert response_authentication1['detail']['signrequest']['version'] == "U2F_V2"
+            assert 'appId' in response_authentication1['detail']['signrequest'], \
+                          "Response: %r" % response_authentication1
+            assert response_authentication1['detail']['signrequest']['appId'] == \
+                             self.origin
 
             # check for non-empty keyHandle
-            self.assertIn('keyHandle', response_authentication1['detail']['signrequest'],
-                          "Response: %r" % response_authentication1)
-            self.assertNotEqual(response_authentication1['detail']['signrequest']['keyHandle'], '')
+            assert 'keyHandle' in response_authentication1['detail']['signrequest'], \
+                          "Response: %r" % response_authentication1
+            assert response_authentication1['detail']['signrequest']['keyHandle'] != ''
             reply.append(response_authentication1['detail'])
         return reply
 
@@ -535,17 +542,16 @@ class TestU2FController(TestController):
         key_handle_authentication = \
             key_handle_authentication + ('=' * (4 - (len(key_handle_authentication) % 4)))
         key_handle_authentication = key_handle_authentication.encode('ascii')
-        self.assertTrue(binascii.hexlify(base64.urlsafe_b64decode(key_handle_authentication)) in \
-                        [self.KEY_HANDLE_HEX1, self.KEY_HANDLE_HEX2],
+        assert binascii.hexlify(base64.urlsafe_b64decode(key_handle_authentication)).decode('ascii') in \
+                        [self.KEY_HANDLE_HEX1, self.KEY_HANDLE_HEX2], \
                         "signrequest: %r" % signrequest_authentication
-                        )
 
         # Construct the registration response message
         client_data_authentication = self._createClientDataObject('authentication',
                                                                   challenge_authentication,
                                                                   )
 
-        key_handle_hex = binascii.hexlify(base64.urlsafe_b64decode(key_handle_authentication))
+        key_handle_hex = binascii.hexlify(base64.urlsafe_b64decode(key_handle_authentication)).decode('ascii')
         ecc_key = self.key_handle_set.get(key_handle_hex, None)
 
         authentication_response_message = \
@@ -555,6 +561,7 @@ class TestU2FController(TestController):
                                                       correct=correct
                                                       )
         # Complete the token authentication
+        # breakpoint()
         response_authentication2 = self.get_json_body(
             self._authentication2(transactionid_authentication,
                                   authentication_response_message,
@@ -563,17 +570,17 @@ class TestU2FController(TestController):
             )
 
         # check result object
-        self.assertIn('result', response_authentication2,
-                      "Response: %r" % response_authentication2)
-        self.assertIn('status', response_authentication2['result'],
-                      "Response: %r" % response_authentication2)
-        self.assertTrue(response_authentication2['result']['status'])
-        self.assertIn('value', response_authentication2['result'],
-                      "Response: %r" % response_authentication2)
+        assert 'result' in response_authentication2, \
+                      "Response: %r" % response_authentication2
+        assert 'status' in response_authentication2['result'], \
+                      "Response: %r" % response_authentication2
+        assert response_authentication2['result']['status']
+        assert 'value' in response_authentication2['result'], \
+                      "Response: %r" % response_authentication2
         if correct:
-            self.assertTrue(response_authentication2['result']['value'])
+            assert response_authentication2['result']['value']
         else:
-            self.assertFalse(response_authentication2['result']['value'])
+            assert not response_authentication2['result']['value']
 
         return response_authentication2
 
@@ -596,7 +603,8 @@ class TestU2FController(TestController):
         # support for the NIST P-256 elliptic curve (as of March 2015),
         # this command will fail with a NULL pointer exception on these systems
         try:
-            EC.load_key_bio(BIO.MemoryBuffer(self.ATTESTATION_PRIVATE_KEY_PEM))
+            EC.load_key_bio(BIO.MemoryBuffer(
+                self.ATTESTATION_PRIVATE_KEY_PEM.encode('utf-8')))
         except ValueError:
             has_ec_support = False
 
@@ -681,7 +689,6 @@ class TestU2FController(TestController):
                 "Probably no OpenSSL support for the needed NIST P-256 curve!"
                 )
         self._registration(correct=False)
-        return
 
     def test_u2f_registration_and_authentication_with_pin(self):
         """
@@ -766,7 +773,6 @@ class TestU2FController(TestController):
                 )
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin=pin, correct=False)
-        return
 
     def test_u2f_unsupported_openssl_version(self):
         """
@@ -790,40 +796,40 @@ class TestU2FController(TestController):
         response_registration1 = self.get_json_body(self._registration1())
 
         # check for status and value
-        self.assertIn('result', response_registration1,
-                      "Response: %r" % response_registration1)
-        self.assertIn('status', response_registration1['result'],
-                      "Response: %r" % response_registration1)
-        self.assertTrue(response_registration1['result']['status'])
-        self.assertIn('value', response_registration1['result'],
-                      "Response: %r" % response_registration1)
-        self.assertTrue(response_registration1['result']['value'])
+        assert 'result' in response_registration1, \
+                      "Response: %r" % response_registration1
+        assert 'status' in response_registration1['result'], \
+                      "Response: %r" % response_registration1
+        assert response_registration1['result']['status']
+        assert 'value' in response_registration1['result'], \
+                      "Response: %r" % response_registration1
+        assert response_registration1['result']['value']
 
         # check detail object containing serial and registerrequest
-        self.assertIn('detail', response_registration1,
-                      "Response: %r" % response_registration1)
+        assert 'detail' in response_registration1, \
+                      "Response: %r" % response_registration1
 
         # check for correct serial
-        self.assertIn('serial', response_registration1['detail'],
-                      "Response: %r" % response_registration1)
-        self.assertEqual(response_registration1['detail']['serial'][:3], "U2F")
+        assert 'serial' in response_registration1['detail'], \
+                      "Response: %r" % response_registration1
+        assert response_registration1['detail']['serial'][:3] == "U2F"
 
         # check for correct registerrequest object
-        self.assertIn('registerrequest', response_registration1['detail'],
-                      "Response: %r" % response_registration1)
-        self.assertIn('challenge', response_registration1['detail']['registerrequest'],
-                      "Response: %r" % response_registration1)
+        assert 'registerrequest' in response_registration1['detail'], \
+                      "Response: %r" % response_registration1
+        assert 'challenge' in response_registration1['detail']['registerrequest'], \
+                      "Response: %r" % response_registration1
         # check for non-empty and correctly-padded challenge
-        self.assertNotEqual(response_registration1['detail']['registerrequest']['challenge'], '')
-        self.assertEqual(len(response_registration1['detail']['registerrequest']['challenge']) % 4,
-                         0)
-        self.assertIn('version', response_registration1['detail']['registerrequest'],
-                      "Response: %r" % response_registration1)
+        assert response_registration1['detail']['registerrequest']['challenge'] != ''
+        assert len(response_registration1['detail']['registerrequest']['challenge']) % 4 == \
+                         0
+        assert 'version' in response_registration1['detail']['registerrequest'], \
+                      "Response: %r" % response_registration1
         # only U2F_V2 is supported right now
-        self.assertEqual(response_registration1['detail']['registerrequest']['version'], "U2F_V2")
-        self.assertIn('appId', response_registration1['detail']['registerrequest'],
-                      "Response: %r" % response_registration1)
-        self.assertEqual(response_registration1['detail']['registerrequest']['appId'], self.origin)
+        assert response_registration1['detail']['registerrequest']['version'] == "U2F_V2"
+        assert 'appId' in response_registration1['detail']['registerrequest'], \
+                      "Response: %r" % response_registration1
+        assert response_registration1['detail']['registerrequest']['appId'] == self.origin
 
         challenge_registration = response_registration1['detail']['registerrequest']['challenge']
         self.serial = response_registration1['detail']['serial']
@@ -847,22 +853,22 @@ class TestU2FController(TestController):
 
         # Registration must fail
         # check for status and value
-        self.assertIn('result', response_registration2,
-                      "Response: %r" % response_registration2)
-        self.assertIn('status', response_registration2['result'],
-                      "Response: %r" % response_registration2)
-        self.assertFalse(response_registration2['result']['status'])
+        assert 'result' in response_registration2, \
+                      "Response: %r" % response_registration2
+        assert 'status' in response_registration2['result'], \
+                      "Response: %r" % response_registration2
+        assert not response_registration2['result']['status']
         # check explicitly, that no "value: true" is responded
         if 'value' in response_registration2['result']:
-            self.assertFalse(response_registration2['result']['value'])
+            assert not response_registration2['result']['value']
 
         # Check for correct error messages
-        self.assertIn('error', response_registration2['result'],
-                      "Response: %r" % response_registration2)
-        self.assertIn('message', response_registration2['result']['error'],
-                      "Response: %r" % response_registration2)
-        self.assertIn("This version of OpenSSL is not supported!",
-                      response_registration2['result']['error']['message'])
+        assert 'error' in response_registration2['result'], \
+                      "Response: %r" % response_registration2
+        assert 'message' in response_registration2['result']['error'], \
+                      "Response: %r" % response_registration2
+        assert "This version of OpenSSL is not supported!" in \
+                      response_registration2['result']['error']['message']
 
     def test_u2f_unsupported_openssl_missing_curve(self):
         """
@@ -881,7 +887,9 @@ class TestU2FController(TestController):
             if match.group('version')[0] != '0':
                 # Only run test on missing NIST P-256 curve support
                 try:
-                    EC.load_key_bio(BIO.MemoryBuffer(self.ATTESTATION_PRIVATE_KEY_PEM))
+                    EC.load_key_bio(
+                        BIO.MemoryBuffer(
+                            self.ATTESTATION_PRIVATE_KEY_PEM.encode('utf-8')))
                 except ValueError:
                     skip_test = False
 
@@ -895,40 +903,40 @@ class TestU2FController(TestController):
         response_registration1 = self.get_json_body(self._registration1())
 
         # check for status and value
-        self.assertIn('result', response_registration1,
-                      "Response: %r" % response_registration1)
-        self.assertIn('status', response_registration1['result'],
-                      "Response: %r" % response_registration1)
-        self.assertTrue(response_registration1['result']['status'])
-        self.assertIn('value', response_registration1['result'],
-                      "Response: %r" % response_registration1)
-        self.assertTrue(response_registration1['result']['value'])
+        assert 'result' in response_registration1, \
+                      "Response: %r" % response_registration1
+        assert 'status' in response_registration1['result'], \
+                      "Response: %r" % response_registration1
+        assert response_registration1['result']['status']
+        assert 'value' in response_registration1['result'], \
+                      "Response: %r" % response_registration1
+        assert response_registration1['result']['value']
 
         # check detail object containing serial and registerrequest
-        self.assertIn('detail', response_registration1,
-                      "Response: %r" % response_registration1)
+        assert 'detail' in response_registration1, \
+                      "Response: %r" % response_registration1
 
         # check for correct serial
-        self.assertIn('serial', response_registration1['detail'],
-                      "Response: %r" % response_registration1)
-        self.assertEqual(response_registration1['detail']['serial'][:3], "U2F")
+        assert 'serial' in response_registration1['detail'], \
+                      "Response: %r" % response_registration1
+        assert response_registration1['detail']['serial'][:3] == "U2F"
 
         # check for correct registerrequest object
-        self.assertIn('registerrequest', response_registration1['detail'],
-                      "Response: %r" % response_registration1)
-        self.assertIn('challenge', response_registration1['detail']['registerrequest'],
-                      "Response: %r" % response_registration1)
+        assert 'registerrequest' in response_registration1['detail'], \
+                      "Response: %r" % response_registration1
+        assert 'challenge' in response_registration1['detail']['registerrequest'], \
+                      "Response: %r" % response_registration1
         # check for non-empty and correctly-padded challenge
-        self.assertNotEqual(response_registration1['detail']['registerrequest']['challenge'], '')
-        self.assertEqual(len(response_registration1['detail']['registerrequest']['challenge']) % 4,
-                         0)
-        self.assertIn('version', response_registration1['detail']['registerrequest'],
-                      "Response: %r" % response_registration1)
+        assert response_registration1['detail']['registerrequest']['challenge'] != ''
+        assert len(response_registration1['detail']['registerrequest']['challenge']) % 4 == \
+                         0
+        assert 'version' in response_registration1['detail']['registerrequest'], \
+                      "Response: %r" % response_registration1
         # only U2F_V2 is supported right now
-        self.assertEqual(response_registration1['detail']['registerrequest']['version'], "U2F_V2")
-        self.assertIn('appId', response_registration1['detail']['registerrequest'],
-                      "Response: %r" % response_registration1)
-        self.assertEqual(response_registration1['detail']['registerrequest']['appId'], self.origin)
+        assert response_registration1['detail']['registerrequest']['version'] == "U2F_V2"
+        assert 'appId' in response_registration1['detail']['registerrequest'], \
+                      "Response: %r" % response_registration1
+        assert response_registration1['detail']['registerrequest']['appId'] == self.origin
 
         challenge_registration = response_registration1['detail']['registerrequest']['challenge']
         self.serial = response_registration1['detail']['serial']
@@ -952,22 +960,22 @@ class TestU2FController(TestController):
 
         # Registration must fail
         # check for status and value
-        self.assertIn('result', response_registration2,
-                      "Response: %r" % response_registration2)
-        self.assertIn('status', response_registration2['result'],
-                      "Response: %r" % response_registration2)
-        self.assertFalse(response_registration2['result']['status'])
+        assert 'result' in response_registration2, \
+                      "Response: %r" % response_registration2
+        assert 'status' in response_registration2['result'], \
+                      "Response: %r" % response_registration2
+        assert not response_registration2['result']['status']
         # check explicitly, that no "value: true" is responded
         if 'value' in response_registration2['result']:
-            self.assertFalse(response_registration2['result']['value'])
+            assert not response_registration2['result']['value']
 
         # Check for correct error messages
-        self.assertIn('error', response_registration2['result'],
-                      "Response: %r" % response_registration2)
-        self.assertIn('message', response_registration2['result']['error'],
-                      "Response: %r" % response_registration2)
-        self.assertIn("missing ECDSA support for the NIST P-256 curve in OpenSSL",
-                      response_registration2['result']['error']['message'])
+        assert 'error' in response_registration2['result'], \
+                      "Response: %r" % response_registration2
+        assert 'message' in response_registration2['result']['error'], \
+                      "Response: %r" % response_registration2
+        assert "missing ECDSA support for the NIST P-256 curve in OpenSSL" in \
+                      response_registration2['result']['error']['message']
 
     def setOfflinePolicy(self, realm='*', name='u2f_offline',
                          action='support_offline=u2f', active=True):
@@ -985,7 +993,7 @@ class TestU2FController(TestController):
             }
 
         response = self.make_system_request("setPolicy", params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
     def authentication_with_use_offline(self):
 
@@ -1011,7 +1019,7 @@ class TestU2FController(TestController):
                                                  additional_params=use_offline)
 
         # policy is not set, so no offline info should be shown
-        self.assertNotIn('detail', response)
+        assert 'detail' not in response
 
         # set the policy and check again
         self.setOfflinePolicy()
@@ -1026,22 +1034,22 @@ class TestU2FController(TestController):
         response = self._authentication_response(challenges[0],
                                                  additional_params=use_offline)
 
-        self.assertIn('detail', response)
+        assert 'detail' in response
         detail = response.get('detail')
 
-        self.assertIn('offline', detail)
+        assert 'offline' in detail
         offline = detail.get('offline')
 
-        self.assertIn('offline_info', offline)
+        assert 'offline_info' in offline
         token_type = offline.get('token_type')
-        self.assertIn('serial', offline)
+        assert 'serial' in offline
         serial = offline.get('serial')
 
-        self.assertEqual(serial, self.serial)
+        assert serial == self.serial
 
-        self.assertEqual(token_type, 'u2f')
+        assert token_type == 'u2f'
 
-        self.assertIn('offline_info', offline)
+        assert 'offline_info' in offline
         offline_info = offline.get('offline_info')
 
         # prepare info for comparison
@@ -1054,18 +1062,18 @@ class TestU2FController(TestController):
         public_key = str(ecc_key.pub().get_der())[-65:]
         public_key_b64 = base64.urlsafe_b64encode(public_key)
 
-        self.assertIn('key_handle', offline_info)
+        assert 'key_handle' in offline_info
         key_handle_rec = offline_info.get('key_handle')
-        self.assertEqual(key_handle_b64, key_handle_rec)
+        assert key_handle_b64 == key_handle_rec
 
-        self.assertIn('public_key', offline_info)
+        assert 'public_key' in offline_info
         public_key_rec = offline_info.get('public_key')
-        self.assertEqual(public_key_b64, public_key_rec)
+        assert public_key_b64 == public_key_rec
 
-        self.assertIn('app_id', offline_info)
+        assert 'app_id' in offline_info
         app_id = offline_info.get('app_id')
-        self.assertEqual(app_id, self.origin)
+        assert app_id == self.origin
 
-        self.assertIn('counter', offline_info)
+        assert 'counter' in offline_info
         counter = offline_info.get('counter')
-        self.assertEqual(counter, self.counter)
+        assert counter == self.counter

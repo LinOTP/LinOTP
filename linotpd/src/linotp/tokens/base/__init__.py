@@ -51,11 +51,14 @@ from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
 from linotp.lib.crypto import SecretObj
 from linotp.lib.crypto.utils import get_hashalgo_from_description
+from linotp.lib.crypto.utils import compare
 
 from linotp.lib.error import ParameterError
 from linotp.lib.error import TokenAdminError
 from linotp.lib.user import getUserResolverId
 from linotp.lib.util import generate_otpkey
+
+from linotp.lib.type_utils import boolean
 
 from linotp.lib.reply import create_img
 
@@ -63,8 +66,8 @@ from linotp.lib.auth.validate import check_pin
 from linotp.lib.auth.validate import check_otp
 from linotp.lib.auth.validate import split_pin_otp
 
-from validity_mixin import TokenValidityMixin
-from tokeninfo_mixin import TokenInfoMixin
+from .validity_mixin import TokenValidityMixin
+from .tokeninfo_mixin import TokenInfoMixin
 from linotp.tokens import tokenclass_registry
 
 from sqlalchemy import asc, desc
@@ -109,7 +112,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         self.supports_offline_mode = False
 
     def setType(self, typ):
-        typ = u'' + typ
+        typ = '' + typ
         self.type = typ
         self.token.setType(typ)
 
@@ -893,23 +896,20 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
             raise ParameterError('[ParameterError] You may either specify'
                                  'genkey or otpkey, but not both!', id=344)
 
-        if otpKey is not None:
-            self.setOtpKey(otpKey, reset_failcount=reset_failcount)
-        else:
-            if genkey == 1:
-                otpKey = self._genOtpKey_()
+
+        if otpKey is None and genkey == 1:
+            otpKey = self._genOtpKey_()
 
         # otpKey still None?? - raise the exception
-        if otpKey is None:
-            if self.hKeyRequired is True:
-                try:
-                    otpKey = param["otpkey"]
-                except KeyError:
-                    raise ParameterError("Missing parameter: 'otpkey'")
+        if otpKey is None and self.hKeyRequired is True:
+            try:
+                otpKey = param["otpkey"]
+            except KeyError:
+                raise ParameterError("Missing parameter: 'otpkey'")
 
         if otpKey is not None:
             self.addToInfo('otpkey', otpKey)
-            self.setOtpKey(otpKey)
+            self.setOtpKey(otpKey, reset_failcount=reset_failcount)
 
         pin = param.get("pin")
         if pin is not None:
@@ -953,7 +953,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         """
         return
 
-    def _genOtpKey_(self, otpkeylen=None):
+    def _genOtpKey_(self, otpkeylen:int = None) -> str:
         '''
         private method, to create an otpkey
 
@@ -972,7 +972,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         set the token description
         :param description: set the token description
         """
-        self.token.setDescription(u'' + description)
+        self.token.setDescription('' + description)
         return
 
     def setDefaults(self):
@@ -987,7 +987,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         self.token.LinOtpSyncWindow = int(
             getFromConfig("DefaultSyncWindow") or 1000)
 
-        self.token.LinOtpTokenType = u'' + self.type
+        self.token.LinOtpTokenType = '' + self.type
         return
 
     def setUser(self, user, report):
@@ -1141,12 +1141,13 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
             storeHashed = False
 
         if storeHashed is True:
-            iv, hashed_pin = SecretObj.hash_pin(pin, hsm=hsm)
+            iv, hashed_pin = SecretObj.hash_pin(pin)
             self.token.set_hashed_pin(hashed_pin, iv)
         else:
-            enc_pin = SecretObj.encrypt_pin(pin, hsm=hsm)
+            enc_pin = SecretObj.encrypt_pin(pin)
             iv = enc_pin.split(':')[0]
-            self.token.set_encrypted_pin(enc_pin, binascii.unhexlify(iv))
+            self.token.set_encrypted_pin(
+                enc_pin.encode('utf-8'), binascii.unhexlify(iv))
 
     def getPin(self):
         """
@@ -1273,7 +1274,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
             otplen = 6
 
         auth_info = []
-        if getFromConfig("PrependPin") == "True":
+        if boolean(getFromConfig("PrependPin", True)):
             pin = passw[0:-otplen]
             otpval = passw[-otplen:]
             auth_info.append(('pin_length', len(pin)))
@@ -1298,28 +1299,28 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         :return: boolean
 
         '''
-        res = False
 
-        hsm = context['hsm']
         if self.token.isPinEncrypted():
+
             # for comparison we encrypt the pin and do the comparison
+            # iv is binary, while encrypted_token_pin is hexlified
             iv, encrypted_token_pin = self.token.get_encrypted_pin()
-            encrypted_pin = SecretObj.encrypt_pin(pin, iv=iv, hsm=hsm)
-            if encrypted_token_pin == encrypted_pin:
-                res = True
-        else:
-            # for hashed pins we re-do the hash and compare the hashes
-            iv, hashed_token_pin = self.token.get_hashed_pin()
-            iv, hashed_pin = SecretObj.hash_pin(pin or '', iv, hsm=hsm)
-            if hashed_pin == hashed_token_pin:
-                res = True
 
-            # special case of empty pin, where pin has never been set
-            # especially in case of lost token with the pw token
-            if len(hashed_token_pin) == 0 and len(pin) == 0:
-                res = True
+            return SecretObj.check_encrypted_pin(
+                        pin, encrypted_token_pin, iv)
 
-        return res
+        # hashed pin comparison
+
+        iv, hashed_token_pin = self.token.get_hashed_pin()
+
+        # special case of empty pin, where pin has never been set
+        # especially in case of lost token with the pw token
+        if len(hashed_token_pin) == 0 and len(pin) == 0:
+            return True
+
+        return SecretObj.check_hashed_pin(
+                             pin or '', hashed_token_pin, iv)
+
 
     @staticmethod
     def copy_pin(src, target):
@@ -1363,7 +1364,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
             if key == 'context':
                 continue
             val = getattr(self, attr)
-            if type(val) in [list, dict, str, unicode, int, float, bool]:
+            if isinstance(val, (list, dict, str, int, float, bool)):
                 ldict[key] = val
             elif type(val).__name__.startswith('Token'):
                 ldict[key] = val.get_vars(save=save)

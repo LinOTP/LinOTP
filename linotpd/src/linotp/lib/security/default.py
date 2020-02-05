@@ -117,10 +117,9 @@ class DefaultSecurityModule(SecurityModule):
 
         secret = ''
         try:
-            f = open(self.secFile)
-            for _i in range(0, id + 1):
-                secret = f.read(32)
-            f.close()
+            with open(self.secFile, 'rb') as f:
+                for _i in range(0, id + 1):
+                    secret = f.read(32)
             if not secret:
                 # secret = setupKeyFile(secFile, id+1)
                 raise Exception("No secret key defined for index: %r !\n"
@@ -134,7 +133,7 @@ class DefaultSecurityModule(SecurityModule):
 
         return secret
 
-    def setup_module(self, param):
+    def setup_module(self, params):
         '''
         callback, which is called during the runtime to
         initialze the security module
@@ -147,7 +146,7 @@ class DefaultSecurityModule(SecurityModule):
         '''
         if self.crypted is False:
             return
-        if 'password' not in param:
+        if 'password' not in params:
             raise Exception("missing password")
 
         # if we have a crypted file and a password, we take all keys
@@ -176,9 +175,16 @@ class DefaultSecurityModule(SecurityModule):
 
         return os.urandom(len)
 
-    def encrypt(self, data, iv=None, id=0):
+    def encrypt(self, data: bytes, iv: bytes, id: int = 0) -> bytes:
         '''
         security module methods: encrypt
+
+        This module performs the following operations on
+        the input data, which is a string:
+            * convert data to hexidcimal representation
+            * add termination string
+            * pad with null to a multiple of 16 bytes
+            * aes encrypt
 
         :param data: the to be encrypted data
         :type  data:byte string
@@ -197,21 +203,20 @@ class DefaultSecurityModule(SecurityModule):
             raise Exception('setup of security module incomplete')
 
         key = self.getSecret(id)
-        # convert input to ascii, so we can securely append bin data
-        input = binascii.b2a_hex(data)
-        input += '\x01\x02'
-        padding = (16 - len(input) % 16) % 16
-        input += padding * "\0"
+        input_data = binascii.b2a_hex(data)
+        input_data += b'\x01\x02'
+        padding = (16 - len(input_data) % 16) % 16
+        input_data += padding * b'\0'
         aes = AES.new(key, AES.MODE_CBC, iv)
 
-        res = aes.encrypt(input)
+        res = aes.encrypt(input_data)
 
         if self.crypted is False:
             zerome(key)
             del key
         return res
 
-    def decrypt(self, input, iv=None, id=0):
+    def decrypt(self, value: bytes, iv: bytes, id: int = 0) -> bytes:
         '''
         security module methods: decrypt
 
@@ -233,26 +238,25 @@ class DefaultSecurityModule(SecurityModule):
 
         key = self.getSecret(id)
         aes = AES.new(key, AES.MODE_CBC, iv)
-        output = aes.decrypt(input)
+        output = aes.decrypt(value)
 
         eof = len(output) - 1
         if eof == -1:
             raise Exception('invalid encoded secret!')
 
-        while output[eof] == '\0':
+        while output[eof] == 0x00:
             eof -= 1
 
-        if output[eof-1:eof+1] != '\x01\x02':
+        if not(output[eof-1] == 0x01 and output[eof] == 0x02):
             raise Exception('invalid encoded secret!')
 
-        # convert output from ascii, back to bin data
-        data = binascii.a2b_hex(output[:eof-1])
+        data = output[:eof-1]
 
         if self.crypted is False:
             zerome(key)
             del key
 
-        return data
+        return binascii.a2b_hex(data)
 
     def decryptPassword(self, cryptPass):
         '''
@@ -283,7 +287,7 @@ class DefaultSecurityModule(SecurityModule):
 
         return self._decryptValue(cryptPin, TOKEN_KEY)
 
-    def encryptPassword(self, password):
+    def encryptPassword(self, cryptPass: str) -> str:
         '''
         dedicated security module methods: encryptPassword
         which used one slot id to encrypt a string
@@ -294,9 +298,9 @@ class DefaultSecurityModule(SecurityModule):
         :return: encrypted data - leading iv, seperated by the ':'
         :rtype:  byte string
         '''
-        return self._encryptValue(password, CONFIG_KEY)
+        return self._encryptValue(cryptPass, CONFIG_KEY)
 
-    def encryptPin(self, pin, iv=None):
+    def encryptPin(self, cryptPin: bytes, iv: bytes=None) -> str:
         '''
         dedicated security module methods: encryptPin
         which used one slot id to encrypt a string
@@ -310,10 +314,10 @@ class DefaultSecurityModule(SecurityModule):
         :return: encrypted data - leading iv, seperated by the ':'
         :rtype:  byte string
         '''
-        return self._encryptValue(pin, TOKEN_KEY, iv=iv)
+        return self._encryptValue(cryptPin, TOKEN_KEY, iv=iv)
 
     # base methods for pin and password
-    def _encryptValue(self, value, keyNum, iv=None):
+    def _encryptValue(self, value:bytes, keyNum, iv:bytes=None):
         '''
         _encryptValue - base method to encrypt a value
         - uses one slot id to encrypt a string
@@ -335,7 +339,7 @@ class DefaultSecurityModule(SecurityModule):
             iv = self.random(16)
         v = self.encrypt(value, iv, keyNum)
 
-        value = binascii.hexlify(iv) + ':' + binascii.hexlify(v)
+        value = iv.hex() + ':' + v.hex()
         return value
 
     def _decryptValue(self, cryptValue, keyNum):
@@ -380,7 +384,9 @@ class DefaultSecurityModule(SecurityModule):
 
         try:
             sign_key = self.getSecret(slot_id)
-            hex_mac = hmac.new(sign_key, message, method).hexdigest()
+            hex_mac = hmac.new(
+                sign_key, message.encode('utf-8'), method
+                ).hexdigest()
         finally:
             if sign_key:
                 zerome(sign_key)
@@ -406,8 +412,10 @@ class DefaultSecurityModule(SecurityModule):
 
         try:
             sign_key = self.getSecret(slot_id)
-            hmac_obj = hmac.new(sign_key, message, method)
-            sign_mac = hmac.new(sign_key, message, method).hexdigest()
+            hmac_obj = hmac.new(
+                sign_key, message.encode('utf-8'), method)
+            sign_mac = hmac.new(
+                sign_key, message.encode('utf-8'), method).hexdigest()
 
             res = 0
             # as we compare on hex, we have to multiply by 2
@@ -463,11 +471,3 @@ class DefaultSecurityModule(SecurityModule):
         hash_obj.update(seed)
 
         return hash_obj.digest()
-
-
-class ErrSecurityModule(DefaultSecurityModule):
-
-    def setup_module(self, params):
-        ret = DefaultSecurityModule.setup_module(self, params)
-        self.is_ready = False
-        return ret

@@ -34,25 +34,20 @@ selfservice controller - This is the controller for the self service interface,
 """
 import os
 import json
-import webob
 
-from paste.httpexceptions import HTTPFound
+from flask import redirect, Response
+from werkzeug.exceptions import Forbidden
 
-from pylons import request
-from pylons import response
-from pylons import config
-from pylons import tmpl_context as c
-from pylons import url
-
-from pylons.controllers.util import abort
-from pylons.controllers.util import redirect
-from pylons.templating import render_mako as render
-from pylons.i18n.translation import _
+from linotp import flap
+from linotp.flap import (
+    request, response, config, tmpl_context as c,
+    _, render_mako as render, url
+)
 
 from mako.exceptions import CompileException
 
 import linotp.model
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.error import ParameterError
 
 from linotp.lib.token import getTokenType
@@ -96,8 +91,6 @@ Session = linotp.model.Session
 
 ENCODING = "utf-8"
 log = logging.getLogger(__name__)
-audit = config.get('audit')
-
 
 class SelfserviceController(BaseController):
 
@@ -126,13 +119,20 @@ class SelfserviceController(BaseController):
         "webprovisionoathtoken"
     ]
 
-    def __before__(self, action):
-        '''
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
+
         This is the authentication to self service. If you want to do
         ANYTHING with the selfservice, you need to be authenticated. The
         _before_ is executed before any other function in this controller.
-        '''
 
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        action = request_context['action']
         self.redirect = None
 
         try:
@@ -144,6 +144,7 @@ class SelfserviceController(BaseController):
             self.client = get_client(request)
             c.audit['client'] = self.client
 
+            audit = config.get('audit')
             request_context['Audit'] = audit
 
             # -------------------------------------------------------------- --
@@ -170,10 +171,11 @@ class SelfserviceController(BaseController):
 
                 if action in ['index']:
                     self.redirect = True
-                    redirect(url(controller='selfservice', action='login'))
+                    return redirect(
+                        url(controller='selfservice', action='login'))
 
                 else:
-                    abort(403, "No valid session")
+                    Forbidden("No valid session")
 
             # -------------------------------------------------------------- --
 
@@ -187,7 +189,7 @@ class SelfserviceController(BaseController):
                     return
 
                 self.redirect = True
-                redirect(url(controller='selfservice', action='index'))
+                return redirect(url(controller='selfservice', action='index'))
 
             # -------------------------------------------------------------- --
 
@@ -195,13 +197,12 @@ class SelfserviceController(BaseController):
             if auth_user and auth_type is 'user_selfservice' \
                     and auth_state is not 'authenticated':
                 self.redirect = True
-                redirect(url(controller='selfservice', action='login'))
-
+                return redirect(url(controller='selfservice', action='login'))
 
             # futher processing with the authenticated user
 
             if auth_state != 'authenticated':
-                abort(403, "No valid session")
+                Forbidden("No valid session")
 
             c.user = auth_user.login
             c.realm = auth_user.realm
@@ -225,7 +226,7 @@ class SelfserviceController(BaseController):
                         c.audit['info'] = "session expired"
                         audit.log(c.audit)
 
-                        abort(403, "No valid session")
+                        Forbidden("No valid session")
 
             # -------------------------------------------------------------- --
 
@@ -271,17 +272,12 @@ class SelfserviceController(BaseController):
 
             c.pin_policy = _get_auth_PinPolicy(user=self.authUser)
 
-            return response
-
-        except (webob.exc.HTTPUnauthorized, webob.exc.HTTPForbidden) as acc:
+        except (flap.HTTPUnauthorized, flap.HTTPForbidden) as acc:
             # the exception, when an abort() is called if forwarded
             log.info("[__before__::%r] webob.exception %r" % (action, acc))
             Session.rollback()
             Session.close()
             raise acc
-
-        except HTTPFound as exx:
-            raise exx
 
         except Exception as e:
             log.exception("[__before__] failed with error: %r" % e)
@@ -289,14 +285,21 @@ class SelfserviceController(BaseController):
             Session.close()
             return sendError(response, e, context='before')
 
-    def __after__(self, action,):
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
         '''
 
-        '''
-        if self.redirect:
-            return
+        if request_context.get('reponse_redirect', False):
+            # FIXME: does this really do a redirect???
+            return response
 
-        param = self.request_params
+        param = request.params
+        action = request_context['action']
 
         try:
             if c.audit['action'] in ['selfservice/index']:
@@ -325,15 +328,17 @@ class SelfserviceController(BaseController):
                     c.audit['serial'] = param['serial']
                     c.audit['token_type'] = getTokenType(param['serial'])
 
+                audit = config.get('audit')
                 audit.log(c.audit)
 
             return response
 
-        except webob.exc.HTTPUnauthorized as acc:
+        except flap.HTTPUnauthorized as acc:
             # the exception, when an abort() is called if forwarded
             log.exception("[__after__::%r] webob.exception %r" % (action, acc))
             Session.rollback()
             Session.close()
+            # FIXME: verify that this really works
             raise acc
 
         except Exception as e:
@@ -358,23 +363,20 @@ class SelfserviceController(BaseController):
         redirect to the login page
         """
 
-        cookie = request.cookies.get('user_selfservice')
-        if cookie:
-            remove_auth_cookie(cookie)
+        request_context['reponse_redirect'] = True
+
+        response = redirect('login')
+
+        if request.cookies.get('user_selfservice'):
+            remove_auth_cookie(request.cookies.get('user_selfservice'))
             response.delete_cookie('user_selfservice')
 
-        self.redirect = True
-        redirect(url(controller='selfservice', action='login'))
+        return response
 
     def login(self):
         '''
         render the selfservice login page
         '''
-
-        cookie = request.cookies.get('user_selfservice')
-        if cookie:
-            remove_auth_cookie(cookie)
-            response.delete_cookie('user_selfservice')
 
         c.title = _("LinOTP Self Service Login")
 
@@ -408,7 +410,13 @@ class SelfserviceController(BaseController):
         if mfa_login and mfa_3_fields:
             c.mfa_3_fields = True
 
-        return render('/selfservice/login.mako')
+        response = Response(render('/selfservice/login.mako'))
+
+        if request.cookies.get('user_selfservice'):
+            remove_auth_cookie(request.cookies.get('user_selfservice'))
+            response.delete_cookie('user_selfservice')
+
+        return response
 
     def load_form(self):
         '''
@@ -441,13 +449,13 @@ class SelfserviceController(BaseController):
                 tclt = tokenclass_registry.get(tok)
                 if hasattr(tclt, 'getClassInfo'):
                     sections = tclt.getClassInfo(section, {})
-                    if scope in sections.keys():
+                    if scope in list(sections.keys()):
                         section = sections.get(scope)
                         page = section.get('page')
                         c.scope = page.get('scope')
                         c.authUser = self.authUser
                         html = page.get('html')
-                        res = render(os.path.sep + html)
+                        res = render(os.path.sep + html).decode()
                         res = remove_empty_lines(res)
 
             Session.commit()
@@ -475,8 +483,9 @@ class SelfserviceController(BaseController):
         Return an empty file instead of a 404 (which would mean hitting the
         debug console)
         '''
+        response = Response('')
         response.headers['Content-type'] = 'text/css'
-        return ''
+        return response
 
     def assign(self):
         '''

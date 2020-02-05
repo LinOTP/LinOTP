@@ -29,7 +29,7 @@ Contains System Settings Dialog class
 
 import logging
 
-from manage_elements import ManageDialog
+from .manage_elements import ManageDialog
 
 LOGGER = logging.getLogger(__name__)
 

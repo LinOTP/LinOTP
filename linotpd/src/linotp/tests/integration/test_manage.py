@@ -24,6 +24,7 @@
 #    Support: www.keyidentity.com
 #
 
+import pytest
 
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.manage_ui import ManageUi
@@ -33,8 +34,8 @@ class TestManage(TestCase):
     TestCase class that tests the manage page
     """
 
+    @pytest.fixture(autouse=True)
     def setUp(self):
-        TestCase.setUp(self)
         self.manage = ManageUi(self)
 
     def test_manage_open(self):

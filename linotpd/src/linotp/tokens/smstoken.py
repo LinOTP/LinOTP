@@ -227,7 +227,7 @@ class SmsTokenClass(HmacTokenClass):
     '''
     def __init__(self, aToken):
         HmacTokenClass.__init__(self, aToken)
-        self.setType(u"sms")
+        self.setType("sms")
         self.hKeyRequired = False
 
         # we support various hashlib methods, but only on create
@@ -529,7 +529,7 @@ class SmsTokenClass(HmacTokenClass):
 
         except Exception as e:
             # The PIN was correct, but the SMS could not be sent.
-            self.info['info'] = unicode(e)
+            self.info['info'] = str(e)
             info = ("The SMS could not be sent: %r" % e)
             log.warning("[submitChallenge] %s", info)
             return False, info
@@ -920,7 +920,7 @@ class SmsTokenClass(HmacTokenClass):
 
         if '<otp>' not in message:
             log.error('Message unconfigured: prepending <otp> to message')
-            if isinstance(message, basestring):
+            if isinstance(message, str):
                 message = "<otp> %s" % message
             else:
                 message = "<otp> %r" % message
@@ -953,7 +953,7 @@ class SmsTokenClass(HmacTokenClass):
         available = False
 
         res_scheduler = ResourceScheduler(tries=1, uri_list=providers)
-        for provider_name in res_scheduler.next():
+        for provider_name in next(res_scheduler):
 
             sms_provider = loadProvider('sms', provider_name=provider_name)
 

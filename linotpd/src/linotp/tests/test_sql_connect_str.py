@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 #
@@ -119,9 +119,9 @@ class TestSqlConnectStr(unittest.TestCase):
 
             sql_connect = build_simple_connect(**params)
 
-            self.assertEqual(sql_connect, result,
-                             "error in test set %s: %r:%r" %
-                             (description, sql_connect, result))
+            assert sql_connect == result, \
+                             "error in test set %s: %r:%r" % \
+                             (description, sql_connect, result)
 
             # finally we verify that sqlalchemy is able to interpret the url
 

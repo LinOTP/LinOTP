@@ -256,7 +256,7 @@ class TestTotpLookupController(TestController):
             'token3': 'myMixRealm,myDefRealm'
             }
 
-        for serial, realms in tokens_realms.items():
+        for serial, realms in list(tokens_realms.items()):
 
             params = {
                 'serial': serial,

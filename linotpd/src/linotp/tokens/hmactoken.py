@@ -142,7 +142,7 @@ class HmacTokenClass(TokenClass):
                 }
                }
 
-        if key is not None and res.has_key(key):
+        if key is not None and key in res:
             ret = res.get(key)
         else:
             if ret == 'all':
@@ -159,16 +159,16 @@ class HmacTokenClass(TokenClass):
         '''
 
         TokenClass.__init__(self, a_token)
-        self.setType(u"HMAC")
+        self.setType("HMAC")
         self.hKeyRequired = True
         self.authenticated = None
 
         # we support various hashlib methods, but only on create
         # which is effectively set in the update
 
-        self.hashlibStr = u"sha1"
+        self.hashlibStr = "sha1"
         try:
-            self.hashlibStr = getFromConfig("hotp.hashlib", u'sha1')
+            self.hashlibStr = getFromConfig("hotp.hashlib", 'sha1')
         except Exception as ex:
             log.exception('[init] Failed to get the hotp.hashlib (%r)' % (ex))
             raise Exception(ex)
@@ -436,16 +436,16 @@ class HmacTokenClass(TokenClass):
         autosync = False
 
         ## get autosync from config or use False as default
-        async = getFromConfig("AutoResync", False)
+        setting = getFromConfig("AutoResync", False)
         # TODO: nasty:
         # The SQLite database returns AutoResync as a boolean and not as a string.
         # So the boolean has no .lower()
-        if isinstance(async, bool):
-            autosync = async
+        if isinstance(setting, bool):
+            autosync = setting
         else:
-            if "true" == async.lower():
+            if "true" == setting.lower():
                 autosync = True
-            elif "false" == async.lower():
+            elif "false" == setting.lower():
                 autosync = False
             else:
                 autosync = False
