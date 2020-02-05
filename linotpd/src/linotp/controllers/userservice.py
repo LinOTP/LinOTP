@@ -2400,5 +2400,61 @@ class UserserviceController(BaseController):
         finally:
             Session.close()
 
+    def setdescription(self):
+        """
+        sets a description for a token
+
+        as this is a controller method, the parameters are taken from
+        BaseController.request_params
+
+        :param serial: serial number of the token *required
+        :param description: string containing a new description for the token
+
+        :return: a linotp json doc with result {'status': True, 'value': True}
+
+        """
+
+        log.debug("set token description")
+
+        try:
+
+            param = self.request_params
+
+            serial = param["serial"]
+            description = param["description"]
+
+        except KeyError as exx:
+            raise ParameterError("Missing parameter: '%s'" % exx)
+
+        try:
+
+            # no policy required, the user must be the token owner though
+
+            th = TokenHandler()
+
+            if not th.isTokenOwner(serial, self.authUser):
+                raise "User %r is not owner of the token" % self.authUser.login
+
+            log.info("user %s@%s is changing description of token with "
+                     "serial %s.",
+                     self.authUser.login, self.authUser.realm, serial)
+
+            ret = th.setDescription(description, None, serial)
+
+            res = {"set description": ret}
+
+            c.audit['realm'] = self.authUser.realm
+            c.audit['success'] = ret
+
+            Session.commit()
+            return sendResult(response, res, 1)
+
+        except Exception as exx:
+            log.error("failed: %r", exx)
+            Session.rollback()
+            return sendError(response, exx, 1)
+
+        finally:
+            Session.close()
 
 #eof##########################################################################
