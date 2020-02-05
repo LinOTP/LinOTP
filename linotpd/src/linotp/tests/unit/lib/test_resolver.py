@@ -25,10 +25,12 @@
 #
 
 import unittest
+import pytest
 from mock import patch, ANY
 
 from linotp.lib import resolver
 
+@pytest.mark.usefixtures("app")
 class TestGetResolverList(unittest.TestCase):
 
     @classmethod

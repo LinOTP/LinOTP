@@ -25,12 +25,14 @@
 #
 import copy
 import unittest
+import pytest
 
 from mock import mock
 
 from linotp.controllers.admin import AdminController
 
 
+@pytest.mark.usefixtures("app")
 class TestAdminController(unittest.TestCase):
 
     token = {

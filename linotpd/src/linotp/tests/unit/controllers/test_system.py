@@ -35,6 +35,7 @@ from linotp.lib.security.provider import SecurityProvider
 from linotp.model.meta import Session
 
 
+@pytest.mark.usefixtures("app")
 class TestSetResolver(unittest.TestCase):
 
     @patch('linotp.controllers.system.BaseController.__init__', return_value=None)

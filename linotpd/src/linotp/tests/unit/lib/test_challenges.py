@@ -34,6 +34,7 @@ from linotp.lib.challenges import Challenges
 import pytest
 
 
+@pytest.mark.usefixtures("app")
 class TestChallengesTransactionidLength(unittest.TestCase):
 
     def test_transactionid_length(self):
