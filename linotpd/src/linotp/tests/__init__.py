@@ -323,20 +323,6 @@ class TestController(TestCase):
                 TestController.set_cookie(self.client, key, cookies[key])
 
         # ------------------------------------------------------------------ --
-        # TODO: verify the routing to /api/helpdest works in flask
-
-        # setup the request url
-
-        # req_url = url(controller=controller, action=action)
-
-        # due to a bug in the url() we have to concat the contoller and
-        # the action for the helpdesk manually - probably because is the
-        # two part controller which results in an /account/login
-
-        # if controller in ['api/helpdesk']:
-        #     req_url = '/' + controller + '/' + action
-
-        # ------------------------------------------------------------------ --
 
         if method == "GET":
             response = self.client.get(
@@ -466,12 +452,14 @@ class TestController(TestCase):
         if "session" not in params:
             params["session"] = self.session
 
+        session = params["session"]
+
         cookie_name = 'admin_session'
         if controller in ['api/helpdesk']:
             cookie_name = 'helpdesk_session'
 
         if cookie_name not in cookies:
-            cookies[cookie_name] = self.session
+            cookies[cookie_name] = session
 
         if "Authorization" not in headers:
             if auth_type == "Basic":
@@ -530,6 +518,11 @@ class TestController(TestCase):
         """
         Makes an authenticated request to /api/helpdesk/'action'
         """
+        if cookies:
+
+            TestController.set_cookie(
+                self.client, 'helpdesk_session', cookies.get('helpdesk_session'))
+
         return self.make_authenticated_request(
             'api/helpdesk',
             action,
