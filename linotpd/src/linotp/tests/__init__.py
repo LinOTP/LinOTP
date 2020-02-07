@@ -1233,6 +1233,9 @@ class TestController(TestCase):
             url(controller="userservice", action=action), data=params
         )
 
+        if response.status_code != 200:
+            raise Exception('Server Error %d' % response.status_code)
+
         response.body = response.data.decode("utf-8")
         return response
 
