@@ -37,4 +37,4 @@ __copyright__ = "Copyright (C) 2010 - 2019 KeyIdentity GmbH\n2019 - 2020 arxes-t
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
 __email__ = "linotp@keyidentity.com"
-__version__ = '2.90rc0'
+__version__ = '3.0.dev0'
