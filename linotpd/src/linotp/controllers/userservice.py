@@ -2517,7 +2517,7 @@ class UserserviceController(BaseController):
             c.audit['success'] = ret
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except Exception as exx:
             log.error("failed: %r", exx)
