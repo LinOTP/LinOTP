@@ -481,7 +481,8 @@ class TestHelpdeskEnrollment(TestController):
         filename = os.path.join(self.fixture_path, 'enrollment_email.eml')
         with open(filename, "rb") as f:
             content = f.read()
-        inline_template = json.dumps(content)
+
+        inline_template = json.dumps(content.decode('utf-8'))
 
         email_config = {
             "SMTP_SERVER": "mail.example.com",
