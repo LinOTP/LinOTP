@@ -287,9 +287,7 @@ class AdminController(BaseController):
         @after_this_request
         def drop_session_cookie(response):
             response.delete_cookie(key='admin_session')
-
-        response = Response(
-            response='', status=200, mimetype='application/json')
+            return response
 
         return sendResult(None, True)
 
