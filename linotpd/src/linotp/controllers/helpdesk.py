@@ -82,7 +82,6 @@ from linotp.lib.realm import get_realms_from_params
 import linotp.model
 Session = linotp.model.Session
 
-audit = config.get('audit')
 
 
 log = logging.getLogger(__name__)
@@ -111,6 +110,8 @@ class HelpdeskController(BaseController):
             c.audit = request_context['audit']
             c.audit['success'] = False
             c.audit['client'] = get_client(request)
+
+            audit = config.get('audit')
             request_context['Audit'] = audit
 
             # Session handling
