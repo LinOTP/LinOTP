@@ -101,9 +101,11 @@ class HelpdeskController(BaseController):
     The functions are described below in more detail.
     '''
 
-    def __before__(self, action, **params):
+    def __before__(self,  **params):
         '''
         '''
+
+        action = request_context['action']
 
         try:
 
