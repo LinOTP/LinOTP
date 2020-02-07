@@ -386,16 +386,15 @@ class HelpdeskController(BaseController):
                 lines.append(
                     {'id': u['username'],
                         'cell': [
-                            (u['username']) if u.has_key('username') else (""),
-                            (resolver_display),
-                            (u['surname']) if u.has_key('surname') else (""),
-                            (u['givenname']) if u.has_key(
-                                'givenname') else (""),
-                            (u['email']) if u.has_key('email') else (""),
-                            (u['mobile']) if u.has_key('mobile') else (""),
-                            (u['phone']) if u.has_key('phone') else (""),
-                            (u['userid']) if u.has_key('userid') else (""),
-                            (u['realms']),
+                            u.get('username', ''),
+                            resolver_display,
+                            u.get('surname', ''),
+                            u.get('givenname', ''),
+                            u.get('email', ''),
+                            u.get('mobile', ''),
+                            u.get('phone', ''),
+                            u.get('userid', ''),
+                            u.get('realms', ''),
                     ]
                     }
                 )
