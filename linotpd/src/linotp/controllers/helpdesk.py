@@ -120,15 +120,13 @@ class HelpdeskController(BaseController):
             if action not in ['getsession', 'dropsession']:
                 check_session(request, scope='helpdesk')
 
-            return request
-
         except Exception as exx:
             log.exception("[__before__::%r] exception", action)
 
             Session.rollback()
             Session.close()
 
-            return sendError(response, exx, context='before')
+            return sendError(None, exx, context='before')
 
     def __after__(self, action):
         '''
@@ -140,8 +138,7 @@ class HelpdeskController(BaseController):
 
             audit.log(c.audit)
             Session.commit()
-
-            return request
+            return response
 
         except Exception as e:
             log.exception(
@@ -292,7 +289,7 @@ class HelpdeskController(BaseController):
 
             c.audit['success'] = True
             Session.commit()
-            return sendResult(response, res)
+            return sendResult(None, res)
 
         except PolicyException as pex:
             log.exception("Error during checking policies")
@@ -436,13 +433,13 @@ class HelpdeskController(BaseController):
             c.audit['success'] = True
 
             Session.commit()
-            return sendResult(response, res)
+            return sendResult(None, res)
 
         except PolicyException as pe:
             log.exception(
                 "[userview_flexi] Error during checking policies: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
             log.exception("[userview_flexi] failed: %r" % e)
@@ -600,7 +597,7 @@ class HelpdeskController(BaseController):
 
             c.audit['success'] = ret
 
-            return sendResult(response, ret)
+            return sendResult(None, ret)
 
         except PolicyException as pex:
             log.exception("Policy Exception while enrolling token")
@@ -688,7 +685,7 @@ class HelpdeskController(BaseController):
             c.audit['info'] = result
 
             Session.commit()
-            return sendResult(response, result)
+            return sendResult(None, result)
 
         except PolicyException as pex:
             log.exception('[setPin] policy failed %r')
