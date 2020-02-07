@@ -139,6 +139,9 @@ def parseYubicoCSV(csv):
                     '''
                     ttype = "hmac"
                     otplen = 6
+                    if l and len(l) > 11 and l[11] and l[11].strip():
+                        otplen = int(l[11])
+
                     serial = "UBOM%08d_%s" % (serial_int, slot)
                     TOKENS[serial] = {'type': ttype,
                                       'hmac_key': key,
