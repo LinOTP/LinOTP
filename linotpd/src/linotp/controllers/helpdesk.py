@@ -190,8 +190,12 @@ class HelpdeskController(BaseController):
         return sendResult(None, True)
 
     def dropsession(self):
-        response.set_cookie('helpdesk_session', None, expires=1)
-        return sendResult(response, True)
+        @after_this_request
+        def drop_session_cookie(response):
+            response.delete_cookie(key='helpdesk_session')
+            return response
+
+        return sendResult(None, True)
 
     def tokens(self):
         '''
