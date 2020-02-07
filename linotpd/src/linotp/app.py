@@ -297,7 +297,7 @@ class LinOTPApp(Flask):
         if path[0]:
             request_context['controller'] = path[0]
 
-        request_context['action'] = 'index' if len(path) == 1 else path[1]
+        request_context['action'] = 'index' if len(path) == 1 else path[-1]
 
         # ------------------------------------------------------------------------
 
