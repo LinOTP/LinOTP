@@ -169,6 +169,13 @@ def check_session(request, scope='admin'):
     '''
     This function checks the session cookie and compares it to
     the session parameter
+
+    :param request: the request object
+    :param scope: by default the admin scope, but used to as well
+                  for the scope helpdesk with the helpdesk_session
+                  cookie name
+
+    :return: boolean
     '''
 
     if isSelfTest():
@@ -194,7 +201,7 @@ def check_session(request, scope='admin'):
             log.warning("misconfiguration in linotpNoSessionCheck: "
                         "%r - %r" % (network, ex))
 
-    cookie = request.cookies.get('admin_session')
+    cookie = request.cookies.get(scope + '_session')
     session = get_request_param(request, 'session')
     # doing any other request, we need to check the session!
     log.debug("[check_session]: session: %s" % session)
