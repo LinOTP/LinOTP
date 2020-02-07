@@ -128,13 +128,21 @@ class HelpdeskController(BaseController):
 
             return sendError(None, exx, context='before')
 
-    def __after__(self, action):
+    @staticmethod
+    def __after__(response):
         '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
         '''
+
+        action = request_context['action']
+        audit = config.get('audit')
 
         try:
             c.audit['administrator'] = getUserFromRequest(request).get("login")
-            c.audit['serial'] = self.request_params.get('serial')
+            c.audit['serial'] = request.params.get('serial')
 
             audit.log(c.audit)
             Session.commit()
