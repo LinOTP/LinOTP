@@ -29,6 +29,7 @@ helpdesk controller - interfaces to administrate LinOTP as helpdesk
 """
 import os
 import logging
+from binascii import hexlify
 
 from flask import Response, after_this_request
 
@@ -160,39 +161,33 @@ class HelpdeskController(BaseController):
     def getsession(self):
         '''
         This generates a session key and sets it as a cookie
-        set_cookie is defined in python-webob::
 
             def set_cookie(self, key, value='', max_age=None,
                    path='/', domain=None, secure=None, httponly=False,
                    version=None, comment=None, expires=None, overwrite=False):
         '''
-        import binascii
-        try:
-            web_host = request.environ.get('HTTP_HOST')
-            # HTTP_HOST also contains the port number. We need to stript this!
-            web_host = web_host.split(':')[0]
-            log.debug("[getsession] environment: %s" % request.environ)
-            log.debug("[getsession] found this web_host: %s" % web_host)
-            random_key = os.urandom(SESSION_KEY_LENGTH)
-            cookie = binascii.hexlify(random_key)
-            log.debug(
-                "[getsession] adding session cookie %s to response." % cookie)
-            # we send all three to cope with IE8
-            response.set_cookie('helpdesk_session',
-                                value=cookie, domain=web_host)
-            # this produces an error with the gtk client
-            # response.set_cookie('admin_session', value=cookie,  domain=".%" % web_host )
-            response.set_cookie('helpdesk_session', value=cookie, domain="")
-            return sendResult(response, True)
 
-        except Exception as e:
-            log.exception(
-                "[getsession] unable to create a session cookie: %r" % e)
-            Session.rollback()
-            return sendError(response, e)
+        @after_this_request
+        def set_session_cookie(response):
+            try:
+                random_key = os.urandom(SESSION_KEY_LENGTH)
+                value = hexlify(random_key)
+                log.debug(
+                    "[getsession] adding session cookie %s to response." % value)
 
-        finally:
-            Session.close()
+                # TODO: add secure cookie at least for https
+
+                # Add cookie to generated response
+                response.set_cookie('helpdesk_session', value=value)
+
+                return response
+
+            except Exception as e:
+                log.exception("[getsession] unable to create a session cookie")
+                Session.rollback()
+                return sendError(response, e)
+
+        return sendResult(None, True)
 
     def dropsession(self):
         response.set_cookie('helpdesk_session', None, expires=1)
