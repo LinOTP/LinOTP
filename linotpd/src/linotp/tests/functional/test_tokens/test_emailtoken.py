@@ -164,7 +164,9 @@ class TestEmailtoken(TestController):
             assert 'false' in response
 
             call_args = mock_smtp_instance.sendmail.call_args
-            _from, _to, message = call_args.args
+            _from, _to, raw_message = call_args.args
+
+            message = raw_message.decode('utf-8')
 
             assert 'Content-Type: multipart/related;' in message
             assert '${otp}' not in message
@@ -213,7 +215,9 @@ class TestEmailtoken(TestController):
 
         filename = os.path.join(self.fixture_path, 'email.eml')
         with open(filename, "rb") as f:
-            content = f.read()
+            raw_content = f.read()
+
+        content = raw_content.decode('utf-8')
         inline_template = '"' + content.replace('"', '\"') + '"'
 
         email_provider_config = {
@@ -289,7 +293,9 @@ class TestEmailtoken(TestController):
             assert '"message": "e-mail sent successfully"' in response
 
             call_args = mock_smtp_instance.sendmail.call_args
-            _from, _to, message = call_args.args
+            _from, _to, raw_message = call_args.args
+
+            message = raw_message.decode('utf-8')
 
             # verify that the template is used instead of the message
             assert 'Content-Type: multipart/related;' in message
