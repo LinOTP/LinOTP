@@ -30,12 +30,13 @@ helpdesk controller - interfaces to administrate LinOTP as helpdesk
 import os
 import logging
 
-from pylons import request
-from pylons import response
-from pylons import config
-from pylons import tmpl_context as c
+from flask import Response, after_this_request
 
-from linotp.lib.base import BaseController
+from linotp.flap import (
+    config, request, response, tmpl_context as c)
+
+
+from linotp.controllers.base import BaseController
 
 from linotp.lib.reply import sendResult
 from linotp.lib.reply import sendError
