@@ -38,10 +38,9 @@ from passlib.hash import phpass as passlib_phpass
 
 from linotp.tests.conftest import Base_App_Config as BAC
 
-from sql_test_controller import SQLTestController
+from .sql_test_controller import SQLTestController
 
 log = logging.getLogger(__name__)
-
 
 
 @pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),

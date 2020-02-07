@@ -34,7 +34,7 @@ import pytest
 
 from linotp.tests.conftest import Base_App_Config as BAC
 
-from sql_test_controller import SQLTestController
+from .sql_test_controller import SQLTestController
 
 log = logging.getLogger(__name__)
 
