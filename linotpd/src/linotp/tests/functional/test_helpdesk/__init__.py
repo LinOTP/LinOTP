@@ -43,6 +43,8 @@ def enable_helpdesk_controller(pylons_config):
     remark: there is no way to drop a route nor to copy the mapper
     """
 
+    return
+
     routeMap = pylons_config['routes.map']
 
     controller = 'helpdesk'
