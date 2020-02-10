@@ -75,7 +75,7 @@ class FileSMSProvider(ISMSProvider):
             filename = "%s%s%s" % (here, os.path.sep, filename)
         try:
             with open(filename.encode('utf-8'), "w") as f:
-                msg = u"%s:%s" % (str2unicode(phone), str2unicode(message))
+                msg = "%s:%s" % (str2unicode(phone), str2unicode(message))
                 f.write(msg.encode('utf-8'))
             ret = True
 

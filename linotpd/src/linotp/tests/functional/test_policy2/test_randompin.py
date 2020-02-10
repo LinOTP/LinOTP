@@ -92,7 +92,7 @@ class TestRandompinController(TestController):
         case (because PIN has been set to an unknown value).
         """
         # Enroll token
-        user = u'aἰσχύλος'  # realm myDefRealm
+        user = 'aἰσχύλος'  # realm myDefRealm
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
@@ -125,7 +125,7 @@ class TestRandompinController(TestController):
         as in test_simple_enroll.
         """
         # Enroll token
-        user = u'aἰσχύλος'  # realm myDefRealm
+        user = 'aἰσχύλος'  # realm myDefRealm
         token = deepcopy(self.tokens[0])
         self._enroll_token(token)
 
@@ -146,7 +146,7 @@ class TestRandompinController(TestController):
         self._create_randompin_policy('myDefRealm')
 
         # Enroll token
-        user = u'aἰσχύλος'  # realm myDefRealm
+        user = 'aἰσχύλος'  # realm myDefRealm
         token2 = deepcopy(self.tokens[0])
         self._enroll_token(token2)
 
@@ -185,7 +185,7 @@ class TestRandompinController(TestController):
         self._create_selfservice_policy('myDefRealm')
 
         # Enroll token
-        user = u'aἰσχύλος'  # realm myDefRealm
+        user = 'aἰσχύλος'  # realm myDefRealm
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
@@ -197,7 +197,7 @@ class TestRandompinController(TestController):
             )
 
         # User logs into selfservice and sets PIN
-        pwd = u'Πέρσαι'
+        pwd = 'Πέρσαι'
         pin = 'mytokenpin'
         self._set_pin_in_selfservice(user, pwd, token['serial'], pin)
 
@@ -222,7 +222,7 @@ class TestRandompinController(TestController):
         self._create_selfservice_policy('myDefRealm')
 
         # Enroll token
-        user = u'aἰσχύλος'  # realm myDefRealm
+        user = 'aἰσχύλος'  # realm myDefRealm
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
@@ -242,7 +242,7 @@ class TestRandompinController(TestController):
             )
 
         # User logs into selfservice and sets PIN
-        pwd = u'Πέρσαι'
+        pwd = 'Πέρσαι'
         pin = 'mytokenpin'
         self._set_pin_in_selfservice(user, pwd, token['serial'], pin)
         # authenticate successfully with PIN+OTP
@@ -276,7 +276,7 @@ class TestRandompinController(TestController):
         self._create_selfservice_policy('myDefRealm')
 
         # Enroll token
-        user = u'aἰσχύλος'  # realm myDefRealm
+        user = 'aἰσχύλος'  # realm myDefRealm
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
@@ -288,7 +288,7 @@ class TestRandompinController(TestController):
             )
 
         # User logs into selfservice and sets PIN
-        pwd = u'Πέρσαι'
+        pwd = 'Πέρσαι'
         pin = 'mytokenpin'
         self._set_pin_in_selfservice(user, pwd, token['serial'], pin)
         # authenticate successfully with PIN+OTP
@@ -348,8 +348,8 @@ class TestRandompinController(TestController):
         self._set_token_realm(token['serial'], 'myDefRealm')
 
         # autoassign the token
-        user = u'aἰσχύλος'
-        pwd = u'Πέρσαι'
+        user = 'aἰσχύλος'
+        pwd = 'Πέρσαι'
         self._validate(
             user,
             pwd + token['otps'].popleft(),
@@ -430,9 +430,9 @@ class TestRandompinController(TestController):
         if user:
             params['user'] = user.encode('utf-8')
         response = self.make_admin_request('init', params=params)
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertTrue(content['result']['value'])
+        content = response.json
+        assert content['result']['status']
+        assert content['result']['value']
         token['serial'] = content['detail']['serial']
         self.token_for_deletion.add(token['serial'])
         return
@@ -497,7 +497,7 @@ class TestRandompinController(TestController):
         :return: The content (JSON object)
         """
         response = self.make_validate_request(action, params=params)
-        content = TestController.get_json_body(response)
+        content = response.json
         if not err_msg:
             err_msg = "validate/%s failed for %r. Response: %r" % (
                 action,
@@ -505,17 +505,17 @@ class TestRandompinController(TestController):
                 content
                 )
         if expected == 'success':
-            self.assertTrue(content['result']['status'], err_msg)
-            self.assertTrue(content['result']['value'], err_msg)
+            assert content['result']['status'], err_msg
+            assert content['result']['value'], err_msg
         elif expected == 'value-false':
-            self.assertTrue(content['result']['status'], err_msg)
-            self.assertFalse(content['result']['value'], err_msg)
+            assert content['result']['status'], err_msg
+            assert not content['result']['value'], err_msg
         elif expected == 'status-false':
-            self.assertFalse(content['result']['status'], err_msg)
-            self.assertTrue(content['result']['value'], err_msg)
+            assert not content['result']['status'], err_msg
+            assert content['result']['value'], err_msg
         elif expected == 'both-false':
-            self.assertFalse(content['result']['status'], err_msg)
-            self.assertFalse(content['result']['value'], err_msg)
+            assert not content['result']['status'], err_msg
+            assert not content['result']['value'], err_msg
         else:
             self.fail("Unknown 'expected' %s" % expected)
         return content
@@ -533,9 +533,9 @@ class TestRandompinController(TestController):
             'user': user.encode('utf-8'),
             }
         response = self.make_admin_request('assign', params=params)
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertTrue(content['result']['value'])
+        content = response.json
+        assert content['result']['status']
+        assert content['result']['value']
         return
 
     def _set_pin_in_selfservice(self, user, pwd, serial, pin):
@@ -551,17 +551,16 @@ class TestRandompinController(TestController):
             'serial': serial,
             'userpin': pin,
             }
-        login = user.encode('utf-8')
-        password = pwd.encode('utf-8')
-        response = self.make_userservice_request('setpin', params,
-                                                 auth_user=(login, password))
 
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
+        response = self.make_userservice_request('setpin', params,
+                                                 auth_user=(user, pwd))
+
+        content = response.json
+        assert content['result']['status']
         expected = {
             "set userpin": 1
             }
-        self.assertDictEqual(expected, content['result']['value'])
+        assert expected == content['result']['value']
         return
 
     def _set_pin(self, serial, pin):
@@ -573,9 +572,9 @@ class TestRandompinController(TestController):
             'pin': pin,
             }
         response = self.make_admin_request('set', params=params)
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertTrue(content['result']['value'])
+        content = response.json
+        assert content['result']['status']
+        assert content['result']['value']
         return
 
     def _set_token_realm(self, serial, realm):
@@ -588,7 +587,7 @@ class TestRandompinController(TestController):
             'realms': realm,
         }
         response = self.make_admin_request('tokenrealm', params=params)
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertEqual(1, content['result']['value'])
+        content = response.json
+        assert content['result']['status']
+        assert 1 == content['result']['value']
         return

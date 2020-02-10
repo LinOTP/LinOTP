@@ -25,6 +25,7 @@
 #
 """LinOTP Selenium Test that tests the selfservice in the WebUI"""
 
+import pytest
 from linotp_selenium_helper import TestCase, Policy, SelfService
 
 import integration_data as data
@@ -36,9 +37,8 @@ class TestSelfservice(TestCase):
        and then logging in and verifying the text "set PIN" is present.
     """
 
+    @pytest.fixture(autouse=True)
     def setUp(self):
-        TestCase.setUp(self)
-
         self.realm_name = "SE_realm_selfservice"
         self.reset_resolvers_and_realms(
             data.musicians_ldap_resolver, self.realm_name)
@@ -50,7 +50,7 @@ class TestSelfservice(TestCase):
         Policy(self.manage_ui, "SE_policy_selfservice",
                "selfservice", "setOTPPIN, ", self.realm_name.lower())
 
-        login_user = u"郎"
+        login_user = "郎"
         login_password = "Test123!"
 
         self.selfservice.login(

@@ -24,6 +24,7 @@
 #    Support: www.keyidentity.com
 #
 
+import pytest
 
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.auth_ui import AuthUi
@@ -39,8 +40,8 @@ class TestAuth(TestCase):
     TestCase class that tests the auth/index forms
     """
 
+    @pytest.fixture(autouse=True)
     def setUp(self):
-        TestCase.setUp(self)
         self.realm_name = "se_test_auth"
         self.reset_resolvers_and_realms(
             data.sepasswd_resolver, self.realm_name)

@@ -23,22 +23,26 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+
 """
 system controller - to configure the system
 """
 import os
 
 import json
-import webob
 import binascii
 from configobj import ConfigObj
 
-from pylons import request, response, config, tmpl_context as c
+import flask
+from werkzeug.datastructures import FileStorage
+
+from linotp import flap
+from linotp.flap import config, request, response, tmpl_context as c, _
 
 from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 
 from linotp.lib.selftest import isSelfTest
-from linotp.lib.base import BaseController
+from .base import BaseController
 
 from linotp.lib.config import storeConfig
 from linotp.lib.config import getLinotpConfig
@@ -113,11 +117,9 @@ from linotp.provider import setDefaultProvider
 
 from linotp.lib.type_utils import boolean
 
-from linotp.lib.crypto.utils import libcrypt_password
+from linotp.lib.crypto import utils
 
-from paste.fileapp import FileApp
 from cgi import escape
-from pylons.i18n.translation import _
 
 from linotp.lib.context import request_context
 
@@ -126,7 +128,6 @@ import linotp.model.meta
 
 Session = linotp.model.meta.Session
 
-audit = config.get('audit')
 log = logging.getLogger(__name__)
 
 
@@ -141,18 +142,18 @@ class SystemController(BaseController):
 
     The functions are described below in more detail.
     '''
+    def __before__(self, **params):
+        """
+        __before__ is called before every action so we can check the
+                   authorization
 
-    def __before__(self, action, **params):
-        '''
-        __before__ is called before every action
-             so we can check the authorization (fixed?)
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
 
-        :param action: name of the to be called action
-        :param params: the list of http parameters
+        action = request_context['action']
 
-        :return: return response
-        :rtype:  pylon response
-        '''
         try:
 
             c.audit = request_context['audit']
@@ -161,6 +162,8 @@ class SystemController(BaseController):
 
             # check session might raise an abort()
             check_session(request)
+
+            audit = config.get('audit')
             request_context['Audit'] = audit
 
             # check authorization
@@ -170,8 +173,9 @@ class SystemController(BaseController):
                               'isSupportValid']:
                 checkPolicyPre('system', action)
 
-            # default return for the __before__ and __after__
-            return response
+
+            # default return for the __before__ is nothing
+            return
 
         except PolicyException as pex:
             log.exception("[__before__::%r] policy exception %r", action, pex)
@@ -179,7 +183,7 @@ class SystemController(BaseController):
             Session.close()
             return sendError(response, pex, context='before')
 
-        except webob.exc.HTTPUnauthorized as acc:
+        except flap.HTTPUnauthorized as acc:
             # the exception, when an abort() is called if forwarded
             log.exception("[__before__::%r] webob.exception %r", action, acc)
             Session.rollback()
@@ -193,14 +197,19 @@ class SystemController(BaseController):
             return sendError(response, exx, context='before')
 
 
-    def __after__(self):
+    @staticmethod
+    def __after__(response):
         '''
-        __after is called after every action
+        __after__ is called after every action
 
+        :param response: the previously created response - for modification
         :return: return the response
-        :rtype:  pylons response
         '''
+
         try:
+
+            audit = config.get('audit')
+
             c.audit['administrator'] = getUserFromRequest(request).get("login")
             audit.log(c.audit)
             # default return for the __before__ and __after__
@@ -263,7 +272,7 @@ class SystemController(BaseController):
         try:
             param = getLowerParams(self.request_params)
             log.info("[setDefault] saving default configuration: %r",
-                     param.keys())
+                     list(param.keys()))
 
             for k in keys:
                 if k.lower() in param:
@@ -323,7 +332,7 @@ class SystemController(BaseController):
         param = self.request_params
 
         try:
-            log.info("[setConfig] saving configuration: %r", param.keys())
+            log.info("[setConfig] saving configuration: %r", list(param.keys()))
 
             if "key" in param:
                 key = param["key"]
@@ -375,7 +384,7 @@ class SystemController(BaseController):
                 # --------------------------------------------------------- --
                 # after successfully storing run the direct config callback
 
-                for key, val in conf.items():
+                for key, val in list(conf.items()):
 
                     self._config_callback(key, val)
 
@@ -499,7 +508,7 @@ class SystemController(BaseController):
             # if there is no parameter, we return them all
             if len(param) == 0:
                 conf = getLinotpConfig()
-                keys = conf.keys()
+                keys = list(conf.keys())
                 keys.sort()
                 for key in keys:
 
@@ -519,7 +528,7 @@ class SystemController(BaseController):
                         typ = type(conf.get(key)).__name__
                         if typ not in ['str', 'unicode']:
                             if typ == 'datetime':
-                                res[Key] = unicode(conf.get(key))
+                                res[Key] = str(conf.get(key))
                             else:
                                 res[Key] = conf.get(key)
                         else:
@@ -696,7 +705,7 @@ class SystemController(BaseController):
                 else:
                     mode = 'rename'
 
-            log.info("[setResolver] saving configuration %r", param.keys())
+            log.info("[setResolver] saving configuration %r", list(param.keys()))
 
             #
             # before storing the new resolver, we check if already a
@@ -748,7 +757,7 @@ class SystemController(BaseController):
 
                 change_realms = {}
 
-                for realm_name, realm_description in getRealms().items():
+                for realm_name, realm_description in list(getRealms().items()):
 
                     resolvers = realm_description.get('useridresolver')
 
@@ -795,7 +804,7 @@ class SystemController(BaseController):
 
         except ResolverLoadConfigError as exx:
             log.exception("Failed to load resolver definition %r \n %r",
-                          exx, param.keys())
+                          exx, list(param.keys()))
             Session.rollback()
             return sendError(response, msg % new_resolver_name)
 
@@ -1269,7 +1278,7 @@ class SystemController(BaseController):
                 enforce = True
                 p_param['enforce'] = enforce
 
-            c.audit['action_detail'] = unicode(param)
+            c.audit['action_detail'] = str(param)
 
             if len(name) > 0 and len(action) > 0:
                 log.debug("[setPolicy] saving policy %r", p_param)
@@ -1370,7 +1379,6 @@ class SystemController(BaseController):
                 lines = lines[start:end]
 
             # We need to return 'page', 'total', 'rows'
-            response.content_type = 'application/json'
             res = {"page": int(page),
                    "total": lines_total,
                    "rows": lines}
@@ -1379,7 +1387,6 @@ class SystemController(BaseController):
             c.audit['info'] = ("name = %s, realm = %s, scope = %s" %
                                (name, realm, scope))
             Session.commit()
-            response.content_type = 'application/json'
             return json.dumps(res, indent=3)
 
         except Exception as exx:
@@ -1492,25 +1499,22 @@ class SystemController(BaseController):
         res = True
         try:
 
-            log.debug("[importPolicy] getting POST request: %r", request.POST)
+            log.debug("[importPolicy] getting POST request: %r", request.files)
 
-            policy_file = request.POST['file']
+            policy_file = request.files.get('file')
             fileString = ""
             log.debug("[importPolicy] loading policy file to server using POST"
                       " request. File: %r", policy_file)
+            if not policy_file:
+                raise ParameterError('missing input file')
 
-            # -- ----------------------------------------------------------- --
-            # In case of form post requests, it is a "instance" of FieldStorage
-            # i.e. the Filename is selected in the browser and the data is
-            # transferred in an iframe.
-            #     see: http://jquery.malsup.com/form/#sample4
-            # -- ----------------------------------------------------------- --
-
-            if type(policy_file).__name__ == 'instance':
+            if isinstance(policy_file, FileStorage):
                 log.debug("[importPolicy] Field storage file: %s", policy_file)
-                fileString = policy_file.value
+                fileString = policy_file.read().decode()
+
                 sendResultMethod = sendXMLResult
                 sendErrorMethod = sendXMLError
+
             else:
                 fileString = policy_file
 
@@ -1524,8 +1528,8 @@ class SystemController(BaseController):
 
             # the contents of filestring needs to be parsed and
             # stored as policies.
-
-            policies = ConfigObj(fileString.split('\n'), encoding="UTF-8")
+            config = fileString.split('\n')
+            policies = ConfigObj(config)
             log.info("[importPolicy] read the following policies: %r",
                      policies)
 
@@ -1612,7 +1616,7 @@ class SystemController(BaseController):
                     res["allowed"] = len(pol) > 0
                     res["policy"] = pol
                     if len(pol) > 0:
-                        c.audit['info'] = "allowed by policy %s" % pol.keys()
+                        c.audit['info'] = "allowed by policy %s" % list(pol.keys())
                 else:
                     # No policy active for this scope
                     c.audit['info'] = ("allowed since no policies in scope %s"
@@ -1628,7 +1632,7 @@ class SystemController(BaseController):
                 res["allowed"] = len(pol) > 0
                 res["policy"] = pol
                 if len(pol) > 0:
-                    c.audit['info'] = "allowed by policy %s" % pol.keys()
+                    c.audit['info'] = "allowed by policy %s" % list(pol.keys())
 
             c.audit['action_detail'] = ("action = %s, realm = %s, scope = %s"
                                         % (action, realm, scope))
@@ -1646,10 +1650,16 @@ class SystemController(BaseController):
             Session.close()
 
 ##########################################################################
-    def getPolicy(self):
+    def getPolicy(self, id=None):
         """
         method:
             system/getPolicy
+
+        params:
+            id: (optional) The filename needs to be specified as the
+                            third part of the URL like
+                            /system/getPolicy/policy.cfg.
+                            It will then be exported to this file.
 
         description:
             this function is used to retrieve the policies that you
@@ -1664,10 +1674,7 @@ class SystemController(BaseController):
             * user    (optional) will only return the policy for this user
             * scope - (optional) will only return the policies within the
                                  given scope
-            * export - (optional) The filename needs to be specified as the
-                                  third part of the URL like
-                                  /system/getPolicy/policy.cfg.
-                                  It will then be exported to this file.
+
             * display_inactive - (optional) if set, then also inactive policies
                                             will be displayed
 
@@ -1682,7 +1689,6 @@ class SystemController(BaseController):
         param = getLowerParams(self.request_params)
 
         log.debug("[getPolicy] getting policy: %r", param)
-        export = None
         action = None
         user = None
 
@@ -1700,9 +1706,6 @@ class SystemController(BaseController):
             display_inactive = param.get("display_inactive", False)
             if display_inactive:
                 only_active = False
-
-            route_dict = request.environ.get('pylons.routes_dict')
-            export = route_dict.get('id')
 
             log.debug("[getPolicy] retrieving policy name: %s, realm: %s,"
                       " scope: %s", name, realm, scope)
@@ -1735,7 +1738,7 @@ class SystemController(BaseController):
 
             if user:
                 rpol = {}
-                for p_name, policy in pol.items():
+                for p_name, policy in list(pol.items()):
                     if policy['user'] is None:
                         rpol[p_name] = policy
                     else:
@@ -1752,10 +1755,14 @@ class SystemController(BaseController):
 
             Session.commit()
 
-            if export:
-                filename = create_policy_export_file(pol, export)
-                wsgi_app = FileApp(filename)
-                return wsgi_app(request.environ, self.start_response)
+            # if id is set, this defines the export filename
+            # FIXME: This is potentially racy because the value of `id`
+            # is hard-coded in the policy management JavaScript file.
+
+            if id:
+                filename = create_policy_export_file(pol, id)
+                return flask.send_file(filename, mimetype="text/plain",
+                                       as_attachment=True)
             else:
                 return sendResult(response, pol, 1)
 
@@ -1828,27 +1835,11 @@ class SystemController(BaseController):
 
         try:
             params = getLowerParams(self.request_params)
-            log.debug("[setupSecurityModule] parameters: %r", params.keys())
+            log.debug("[setupSecurityModule] parameters: %r", list(params.keys()))
 
             hsm_id = params.get('hsm_id', None)
 
-            from linotp.lib.config.global_api import getGlobalObject
-            glo = getGlobalObject()
-            sep = glo.security_provider
-
-            # for test purpose we switch to an errHSM
-            if isSelfTest():
-                if params.get('__hsmexception__') == '__ON__':
-                    hsm = c.hsm.get('obj')
-                    hsm_id = sep.activeOne
-                    if type(hsm).__name__ == 'DefaultSecurityModule':
-                        hsm_id = sep.setupModule('err', params)
-
-                if params.get('__hsmexception__') == '__OFF__':
-                    hsm = c.hsm.get('obj')
-                    hsm_id = sep.activeOne
-                    if type(hsm).__name__ == 'ErrSecurityModule':
-                        hsm_id = sep.setupModule('default', params)
+            sep = flask.current_app.security_provider
 
             if hsm_id is None:
                 hsm_id = sep.activeOne
@@ -1953,7 +1944,7 @@ class SystemController(BaseController):
 
             license_txt = getFromConfig('license', '')
             try:
-                licString = binascii.unhexlify(license_txt)
+                licString = binascii.unhexlify(license_txt).decode()
             except TypeError:
                 licString = license_txt
 
@@ -1964,7 +1955,7 @@ class SystemController(BaseController):
                 res, msg = setDemoSupportLicense()
                 Session.flush()
                 license_txt = getFromConfig('license', '')
-                licString = binascii.unhexlify(license_txt)
+                licString = binascii.unhexlify(license_txt).decode()
 
             (res, msg,
              lic_info) = isSupportLicenseValid(licString)
@@ -2008,12 +1999,12 @@ class SystemController(BaseController):
         try:
 
             try:
-                licField = request.POST['license']
+                licField = request.files['license']
             except KeyError as _keyerr:
                 return sendErrorMethod(response, 'No key \'license\': '
                                        'Not a form request')
 
-            response_format = request.POST.get('format', '')
+            response_format = self.request_params.get('format', '')
             if response_format == 'xml':
                 sendResultMethod = sendXMLResult
                 sendErrorMethod = sendXMLError
@@ -2022,12 +2013,12 @@ class SystemController(BaseController):
 
             # In case of normal post requests, it is a "instance" of
             # FieldStorage
-            if type(licField).__name__ == 'instance':
+            if isinstance(licField, FileStorage):
                 log.debug("[setSupport] Field storage: %s", licField)
-                support_description = licField.value
+                support_description = licField.read().decode()
             else:
                 # we got UTF-8!
-                support_description = licField.encode('utf-8')
+                support_description = licField.decode()
             log.debug("[setSupport] license %s", support_description)
 
             res, msg = setSupportLicense(support_description)
@@ -2090,7 +2081,7 @@ class SystemController(BaseController):
 
                 password = params['managed']
 
-                params['managed'] = libcrypt_password(password)
+                params['managed'] = utils.crypt_password(password)
 
             if provider_def and 'Managed' in provider_def[name]:
 
@@ -2101,8 +2092,7 @@ class SystemController(BaseController):
                 password = params['managed']
                 crypt_password = provider_def[name]['Managed']
 
-                if libcrypt_password(
-                        password, crypt_password) != crypt_password:
+                if not utils.compare_password(password, crypt_password):
 
                     raise Exception('Not allowed to overwrite the '
                                     'configuration of a managed provider')
@@ -2157,7 +2147,7 @@ class SystemController(BaseController):
 
             res = getProvider(provider_type, provider_name, decrypted=True)
             if res:
-                for provider_name, desc in res.items():
+                for provider_name, desc in list(res.items()):
                     if 'Managed' in desc:
                         res[provider_name]['Managed'] = True
 
@@ -2258,9 +2248,7 @@ class SystemController(BaseController):
                 password = self.request_params['managed']
                 crypt_password = provider_def[provider_name]['Managed']
 
-                if libcrypt_password(
-                        password, crypt_password) != crypt_password:
-
+                if not utils.compare_password(password, crypt_password):
                     raise Exception('Not allowed to delete the '
                                     'managed provider')
 

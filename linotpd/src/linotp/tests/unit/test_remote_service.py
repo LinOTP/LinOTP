@@ -28,6 +28,7 @@ from datetime import datetime, timedelta
 from mock import patch
 from unittest import TestCase
 from linotp.lib.remote_service import RemoteServiceList, AllServicesUnavailable, State
+import pytest
 
 
 class CustomException(Exception):
@@ -60,7 +61,7 @@ class TestRemoteServiceList(TestCase):
         A list without services should throw an AllServicesUnavailable exception
         """
         services = RemoteServiceList()
-        with self.assertRaises(AllServicesUnavailable):
+        with pytest.raises(AllServicesUnavailable):
             services.call_first_available()
 
     def test_failing_service_list_should_throw(self):
@@ -71,7 +72,7 @@ class TestRemoteServiceList(TestCase):
         services.append(generate_failing_func())
         services.append(generate_failing_func())
 
-        with self.assertRaises(AllServicesUnavailable):
+        with pytest.raises(AllServicesUnavailable):
             services.call_first_available()
 
     def test_passes_arguments(self):
@@ -80,7 +81,7 @@ class TestRemoteServiceList(TestCase):
         """
         services = RemoteServiceList()
         services.append(lambda arg: arg)
-        self.assertEqual(services.call_first_available(42), 42)
+        assert services.call_first_available(42) == 42
 
     def test_passes_kwargs(self):
         """
@@ -92,8 +93,8 @@ class TestRemoteServiceList(TestCase):
         # the arguments we pass into the service should be returned for investigation
         args, kwargs = services.call_first_available(1, 2, 3, one=1, two=2, three=3)
 
-        self.assertEqual(args, (1,2,3))
-        self.assertEqual(kwargs, dict(one=1, two=2, three=3))
+        assert args == (1,2,3)
+        assert kwargs == dict(one=1, two=2, three=3)
 
     def test_service_failover(self):
         """
@@ -104,8 +105,8 @@ class TestRemoteServiceList(TestCase):
         services.append(func)
         services.append(lambda: 42)
 
-        self.assertEqual(services.call_first_available(), 42)
-        self.assertEqual(func.call_count, 1)
+        assert services.call_first_available() == 42
+        assert func.call_count == 1
 
     def test_custom_exception_handling(self):
         """
@@ -116,8 +117,8 @@ class TestRemoteServiceList(TestCase):
         services.append(func)
         services.append(lambda: 23)
 
-        self.assertEqual(services.call_first_available(), 23)
-        self.assertEqual(func.call_count, 1)
+        assert services.call_first_available() == 23
+        assert func.call_count == 1
 
     def test_service_is_marked_as_unavailable(self):
         """
@@ -132,23 +133,23 @@ class TestRemoteServiceList(TestCase):
         services.append(lambda: 42)
 
         # initially all services should be marked as functional
-        self.assertEqual(services[0].state, State.FUNCTIONAL)
-        self.assertEqual(services[1].state, State.FUNCTIONAL)
+        assert services[0].state == State.FUNCTIONAL
+        assert services[1].state == State.FUNCTIONAL
 
         # after calling for `failure_threshold` times the failing service
         # should be marked as UNAVAILABLE
         for _ in range(0, services.failure_threshold):
-            self.assertEqual(services.call_first_available(), 42)
+            assert services.call_first_available() == 42
 
-        self.assertGreater(func.call_count, 0)
-        self.assertEqual(func.call_count, services.failure_threshold)
-        self.assertEqual(services[0].state, State.UNAVAILABLE)
+        assert func.call_count > 0
+        assert func.call_count == services.failure_threshold
+        assert services[0].state == State.UNAVAILABLE
 
         # the second function must still be FUNCTIONAL
-        self.assertEqual(services[1].state, State.FUNCTIONAL)
+        assert services[1].state == State.FUNCTIONAL
 
         # and return the expected value
-        self.assertEqual(services.call_first_available(), 42)
+        assert services.call_first_available() == 42
 
     @patch('linotp.lib.remote_service.now')
     def test_recovery(self, dt_now):
@@ -172,7 +173,7 @@ class TestRemoteServiceList(TestCase):
 
         # calling the function (before it is marked as failing) returns the
         # input parameters (as expected)
-        self.assertEqual(services.call_first_available(1), ((1,), {}))
+        assert services.call_first_available(1) == ((1,), {})
 
         # mark the first function in the list as failing & move into the future
         func.fail = True
@@ -180,25 +181,25 @@ class TestRemoteServiceList(TestCase):
 
         # call n times until the function is marked as failed
         for _ in range(0, services.failure_threshold):
-            self.assertEqual(services.call_first_available(), 'failover')
+            assert services.call_first_available() == 'failover'
 
-        self.assertEqual(services[0].state, State.UNAVAILABLE)
+        assert services[0].state == State.UNAVAILABLE
 
         # Every second until recovery call the first available service
         # The return value should always be 'failover'
         while dt_now.return_value <= start_time + timedelta(seconds=services.recovery_timeout):
-            self.assertEqual(services.call_first_available(), 'failover')
+            assert services.call_first_available() == 'failover'
             dt_now.return_value += timedelta(seconds=1)
 
         # the state of the primary function should still be UNAVAILABLE
-        self.assertEqual(services[0].state, State.UNAVAILABLE)
-        self.assertEqual(services[1].state, State.FUNCTIONAL)
+        assert services[0].state == State.UNAVAILABLE
+        assert services[1].state == State.FUNCTIONAL
 
         # tell function to return again
         func.fail = False
 
         # after the recovery timeout the first service should start returing again
         dt_now.return_value += timedelta(seconds=1)
-        self.assertEqual(services.call_first_available(1), ((1,), {}))
-        self.assertEqual(services[0].state, State.FUNCTIONAL)
+        assert services.call_first_available(1) == ((1,), {})
+        assert services[0].state == State.FUNCTIONAL
 

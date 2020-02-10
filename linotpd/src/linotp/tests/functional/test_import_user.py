@@ -47,10 +47,11 @@ the check is made by a dryrun
 - delete the resolver on test end
 
 """
-
+import io
 import os
 import json
 import logging
+import pytest
 
 # for drop Table we require some sql
 
@@ -58,11 +59,15 @@ from sqlalchemy.engine import create_engine
 from sqlalchemy import sql
 from sqlalchemy.exc import ProgrammingError
 
+from ..conftest import Base_App_Config as BAC
+
 from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 
 
+@pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
+                    reason="non sqlite database required for this test!")
 class TestImportUser(TestController):
 
     resolver_name = "myresolv"
@@ -85,7 +90,7 @@ class TestImportUser(TestController):
         for the tests, we will drop the imported user table
         """
 
-        sqlconnect = self.appconf.get('sqlalchemy.url')
+        sqlconnect = self.app.config.get('SQLALCHEMY_DATABASE_URI')
         engine = create_engine(sqlconnect)
         connection = engine.connect()
 
@@ -123,12 +128,12 @@ class TestImportUser(TestController):
                                            params=params,
                                            upload_files=upload_files)
 
-        self.assertTrue('"updated": {}' in response, response)
-        self.assertTrue('"created": {}' in response, response)
+        assert '"updated": {}' in response, response
+        assert '"created": {}' in response, response
 
         def_passwd_file = os.path.join(self.fixture_path, 'def-passwd')
 
-        with open(def_passwd_file, "r") as f:
+        with io.open(def_passwd_file, "r", encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
@@ -143,10 +148,10 @@ class TestImportUser(TestController):
                                            params=params,
                                            upload_files=upload_files)
 
-        self.assertTrue('"updated": {}' in response, response)
+        assert '"updated": {}' in response, response
         jresp = json.loads(response.body)
         created = jresp.get('result', {}).get('value', {}).get('created', {})
-        self.assertTrue(len(created) == 27, response)
+        assert len(created) == 27, response
 
         csv_data = content.split('\n')[4:]
         content = '\n'.join(csv_data)
@@ -158,12 +163,12 @@ class TestImportUser(TestController):
 
         jresp = json.loads(response.body)
         deleted = jresp.get('result', {}).get('value', {}).get('deleted', {})
-        self.assertTrue(len(deleted) == 4, response)
+        assert len(deleted) == 4, response
 
         updated = jresp.get('result', {}).get('value', {}).get('updated', {})
-        self.assertTrue(len(updated) == 23, response)
+        assert len(updated) == 23, response
 
-        self.assertTrue('"created": {}' in response, response)
+        assert '"created": {}' in response, response
 
         return
 
@@ -174,7 +179,7 @@ class TestImportUser(TestController):
 
         def_passwd_file = os.path.join(self.fixture_path, 'def-passwd')
 
-        with open(def_passwd_file, "r") as f:
+        with io.open(def_passwd_file, "r", encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
@@ -189,11 +194,11 @@ class TestImportUser(TestController):
                                            params=params,
                                            upload_files=upload_files)
 
-        self.assertTrue('"updated": {}' in response, response)
+        assert '"updated": {}' in response, response
 
         jresp = json.loads(response.body)
         created = jresp.get('result', {}).get('value', {}).get('created', {})
-        self.assertTrue(len(created) == 27, response)
+        assert len(created) == 27, response
 
         upload_files = [("file", "user_list", content)]
         params = {'resolver': self.resolver_name,
@@ -207,23 +212,23 @@ class TestImportUser(TestController):
                                            params=params,
                                            upload_files=upload_files)
 
-        self.assertTrue('"updated": {}' in response, response)
+        assert '"updated": {}' in response, response
 
         jresp = json.loads(response.body)
         created = jresp.get('result', {}).get('value', {}).get('created', {})
-        self.assertTrue(len(created) == 27, response)
+        assert len(created) == 27, response
 
         # make sure that no resolver has been created on dryrun
 
         params = {'resolver': self.resolver_name}
         response = self.make_system_request('getResolver', params=params)
-        self.assertTrue('"data": {}' in response, response)
+        assert '"data": {}' in response, response
 
         # make sure that no realm has been created on dryrun
 
         params = {}
         response = self.make_system_request('getRealms', params=params)
-        self.assertTrue('"value": {}' in response, response)
+        assert '"value": {}' in response, response
 
     def test_list_imported_users(self):
         """
@@ -236,7 +241,7 @@ class TestImportUser(TestController):
 
         def_passwd_file = os.path.join(self.fixture_path, 'def-passwd.csv')
 
-        with open(def_passwd_file, "r") as f:
+        with io.open(def_passwd_file, "r", encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
@@ -263,11 +268,11 @@ class TestImportUser(TestController):
                                            params=params,
                                            upload_files=upload_files)
 
-        self.assertTrue('"updated": {}' in response, response)
+        assert '"updated": {}' in response, response
 
         jresp = json.loads(response.body)
         created = jresp.get('result', {}).get('value', {}).get('created', {})
-        self.assertTrue(len(created) == 24, response)
+        assert len(created) == 24, response
 
         # ------------------------------------------------------------------ --
 
@@ -294,7 +299,7 @@ class TestImportUser(TestController):
                     'desc', {}).get(
                     'rows', {})
 
-        self.assertTrue(rows == 24)
+        assert rows == 24
 
         # ------------------------------------------------------------------ --
 
@@ -309,7 +314,7 @@ class TestImportUser(TestController):
 
         jresp = json.loads(response.body)
         users = jresp.get('result', {}).get('value', [])
-        self.assertTrue(len(users) == 24, users)
+        assert len(users) == 24, users
 
         # ------------------------------------------------------------------ --
 
@@ -333,7 +338,7 @@ class TestImportUser(TestController):
         jresp = json.loads(response.body)
         img = jresp.get('detail', {}).get('googleurl', {}).get('img', '')
 
-        self.assertTrue("data:image" in img, response)
+        assert "data:image" in img, response
 
         return
 
@@ -350,7 +355,7 @@ class TestImportUser(TestController):
 
         response = self.make_system_request('setPolicy', params=policy)
 
-        self.assertTrue('"status": true' in response)
+        assert '"status": true' in response
 
         content = ""
         upload_files = [("file", "user_list", content)]
@@ -369,16 +374,16 @@ class TestImportUser(TestController):
                                            params=params,
                                            upload_files=upload_files,)
 
-        self.assertTrue(msg in response, response)
+        assert msg in response, response
 
         response = self.make_tools_request(action='import_users',
                                            params=params,
                                            upload_files=upload_files,
                                            auth_user='hans')
 
-        self.assertFalse(msg in response, response)
-        self.assertTrue('"updated": {}' in response, response)
-        self.assertTrue('"created": {}' in response, response)
+        assert not (msg in response), response
+        assert '"updated": {}' in response, response
+        assert '"created": {}' in response, response
 
         return
 
@@ -394,7 +399,7 @@ class TestImportUser(TestController):
         def_passwd_file = os.path.join(self.fixture_path,
                                        'def-passwd-plain.csv')
 
-        with open(def_passwd_file, "r") as f:
+        with io.open(def_passwd_file, "r", encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
@@ -422,11 +427,11 @@ class TestImportUser(TestController):
                                            params=params,
                                            upload_files=upload_files)
 
-        self.assertTrue('"updated": {}' in response, response)
+        assert '"updated": {}' in response, response
 
         jresp = json.loads(response.body)
         created = jresp.get('result', {}).get('value', {}).get('created', {})
-        self.assertTrue(len(created) == 24, response)
+        assert len(created) == 24, response
 
         # upload one more times to check for update and not modified
 
@@ -434,11 +439,11 @@ class TestImportUser(TestController):
                                            params=params,
                                            upload_files=upload_files)
 
-        self.assertTrue('"modified": {}' in response, response)
+        assert '"modified": {}' in response, response
 
         jresp = json.loads(response.body)
         updated = jresp.get('result', {}).get('value', {}).get('updated', {})
-        self.assertTrue(len(updated) == 24, response)
+        assert len(updated) == 24, response
 
         # login to the selfservice to check the password
         policy = {'name': 'T1',
@@ -468,7 +473,7 @@ class TestImportUser(TestController):
         jresp = json.loads(response.body)
         img = jresp.get('detail', {}).get('googleurl', {}).get('img', '')
 
-        self.assertTrue("data:image" in img, response)
+        assert "data:image" in img, response
 
         return
 

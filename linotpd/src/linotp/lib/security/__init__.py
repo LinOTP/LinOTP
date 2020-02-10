@@ -58,29 +58,29 @@ class SecurityModule(object):
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)
 
-    def encrypt(self, value, iv=None, id=0):
+    def encrypt(self, data: bytes, iv: bytes, id: int = 0) -> bytes:
         fname = 'encrypt'
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)
 
-    def decrypt(self, value, iv=None, id=0):
+    def decrypt(self, value: bytes, iv: bytes, id: int = 0) -> bytes:
         fname = 'decrypt'
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)
 
     ### higer level methods ###
 
-    def encryptPassword(self, cryptPass):
+    def encryptPassword(self, cryptPass: str) -> str:
         fname = 'decrypt'
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)
 
-    def encryptPin(self, cryptPin, iv=None):
+    def encryptPin(self, cryptPin, iv=None) -> str:
         fname = 'decrypt'
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)
 
-    def decryptPassword(self, cryptPass):
+    def decryptPassword(self, cryptPass: str) -> str:
         fname = 'decrypt'
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)

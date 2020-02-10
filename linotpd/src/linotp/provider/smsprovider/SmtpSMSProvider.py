@@ -178,17 +178,17 @@ class SmtpSMSProvider(ISMSProvider):
         log.debug("[submitMessage] submitting message %s to %s",
                   message, phone)
 
-        toaddr = string.replace(toaddr, PHONE_TAG, phone)
+        toaddr = toaddr.replace(PHONE_TAG, phone)
 
         if not subject:
             subject = "[LinOTP]"
-        subject = string.replace(subject, PHONE_TAG, phone)
-        subject = string.replace(subject, MSG_TAG, message)
+        subject = subject.replace(PHONE_TAG, phone)
+        subject = subject.replace(MSG_TAG, message)
 
         if not body:
             body = "<otp>"
-        body = string.replace(body, PHONE_TAG, phone)
-        body = string.replace(body, MSG_TAG, message)
+        body = body.replace(PHONE_TAG, phone)
+        body = body.replace(MSG_TAG, message)
 
         msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s"
                % (fromaddr, toaddr, subject, body))

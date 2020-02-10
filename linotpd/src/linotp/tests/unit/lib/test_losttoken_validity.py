@@ -45,12 +45,12 @@ class LostTokenValidityTest(unittest.TestCase):
 
         end_date = _calculate_validity_end(validity=5)
 
-        self.assertTrue("23:59" in end_date)
+        assert "23:59" in end_date
 
         in_five_days = (datetime.date.today() + datetime.timedelta(days=5)
                         ).strftime("%d/%m/%y")
 
-        self.assertTrue(in_five_days in end_date)
+        assert in_five_days in end_date
 
         return
 
@@ -65,7 +65,7 @@ class LostTokenValidityTest(unittest.TestCase):
         in_one_hour = (datetime.datetime.now() + datetime.timedelta(hours=1)
                        ).strftime("%d/%m/%y %H")
 
-        self.assertTrue(in_one_hour in end_date)
+        assert in_one_hour in end_date
 
         return
 
@@ -83,7 +83,7 @@ class LostTokenValidityTest(unittest.TestCase):
                                                         days=1, hours=1)
                        ).strftime("%d/%m/%y %H")
 
-        self.assertTrue(in_one_hour in end_date)
+        assert in_one_hour in end_date
 
         return
 
@@ -101,7 +101,7 @@ class LostTokenValidityTest(unittest.TestCase):
                                                         hours=36, minutes=120)
                        ).strftime("%d/%m/%y %H")
 
-        self.assertTrue(in_one_hour in end_date)
+        assert in_one_hour in end_date
 
         return
 

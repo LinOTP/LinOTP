@@ -27,14 +27,13 @@
 ocra controller - Interface for the Challenge Response Token (OCRA)
 """
 import logging
-from urllib import urlencode
+from urllib.parse import urlencode
 
-import webob
-from pylons import request, response, config, tmpl_context as c
-
+from linotp import flap
+from linotp.flap import request, response, config, tmpl_context as c
 
 from linotp.lib.auth.validate import ValidationHandler
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.error import ParameterError
 
 from linotp.lib.policy import PolicyException
@@ -66,8 +65,6 @@ import linotp.model.meta
 Session = linotp.model.meta.Session
 
 
-audit = config.get('audit')
-
 log = logging.getLogger(__name__)
 
 
@@ -77,10 +74,18 @@ class OcraController(BaseController):
     according to RFC 6287
     '''
 
-    def __before__(self, action, **params):
-        '''
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
+
         Here we see, what action is to be called and check the authorization
-        '''
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        action = request_context['action']
 
         try:
 
@@ -90,10 +95,11 @@ class OcraController(BaseController):
             if action != "check_t":
                 check_session(request)
 
+            audit = config.get('audit')
             request_context['Audit'] = audit
-            return response
+            return
 
-        except webob.exc.HTTPUnauthorized as acc:
+        except flap.HTTPUnauthorized as acc:
 
             # the exception, when an abort() is called if forwarded
 
@@ -110,9 +116,18 @@ class OcraController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
 
-    def __after__(self):
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
         c.audit['administrator'] = getUserFromRequest(request).get("login")
+
+        audit = config.get('audit')
         audit.log(c.audit)
 
         return response
@@ -256,12 +271,12 @@ class OcraController(BaseController):
         except PolicyException as pe:
             log.exception("[request] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe))
+            return sendError(response, str(pe))
 
         except Exception as exx:
             log.exception("[request] failed: %r" % exx)
             Session.rollback()
-            return sendError(response, unicode(exx))
+            return sendError(response, str(exx))
 
         finally:
             Session.close()
@@ -339,7 +354,7 @@ class OcraController(BaseController):
                 tokens = getTokens4UserOrSerial(serial=serial)
                 if len(tokens) == 0 or len(tokens) > 1:
                     raise Exception('tokenmismatch for token serial: %s'
-                                    % (unicode(serial)))
+                                    % (str(serial)))
 
                 theToken = tokens[0]
                 tok = theToken.token
@@ -383,7 +398,7 @@ class OcraController(BaseController):
         except Exception as exx:
             log.exception("[check_t] failed: %r", exx)
             Session.rollback()
-            return sendResult(response, unicode(exx), 0)
+            return sendResult(response, str(exx), 0)
 
         finally:
             Session.close()
@@ -534,12 +549,12 @@ class OcraController(BaseController):
         except PolicyException as pe:
             log.exception("[checkstatus] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe))
+            return sendError(response, str(pe))
 
         except Exception as exx:
             log.exception("[checkstatus] failed: %r" % exx)
             Session.rollback()
-            return sendResult(response, unicode(exx), 0)
+            return sendResult(response, str(exx), 0)
 
         finally:
             Session.close()
@@ -581,12 +596,12 @@ class OcraController(BaseController):
         except PolicyException as pe:
             log.exception("[getActivationCode] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe))
+            return sendError(response, str(pe))
 
         except Exception as exx:
             log.exception("[getActivationCode] failed: %r" % exx)
             Session.rollback()
-            return sendError(response, unicode(exx), 0)
+            return sendError(response, str(exx), 0)
 
         finally:
             Session.close()
@@ -599,8 +614,8 @@ class OcraController(BaseController):
         from linotp.tokens.ocra import OcraSuite
         from datetime import datetime
 
-        from urlparse import urlparse
-        from urlparse import parse_qs
+        from urllib.parse import urlparse
+        from urllib.parse import parse_qs
 
         res = {}
 
@@ -680,10 +695,10 @@ class OcraController(BaseController):
                 counter = 0
 
             if nonce3 is not None:
-                nonce = unicode(nonce3)
+                nonce = str(nonce3)
 
             if ocrasuite3 is not None:
-                ocrasuite = unicode(ocrasuite3)
+                ocrasuite = str(ocrasuite3)
 
             #  now we have all in place for the key derivation to create
             # the new key sharedsecret, activationcode and nonce
@@ -695,19 +710,19 @@ class OcraController(BaseController):
                 key_len = 64
 
             if sharedsecret is not None:
-                sharedsecret = unicode(sharedsecret)
+                sharedsecret = str(sharedsecret)
             if nonce is not None:
-                nonce = unicode(nonce)
+                nonce = str(nonce)
             if activationcode is not None:
-                activationcode = unicode(activationcode)
+                activationcode = str(activationcode)
 
             newkey = kdf2(sharedsecret, nonce, activationcode, len=key_len)
             ocra = OcraSuite(ocrasuite)
 
             param = {}
             param['C'] = int(counter)
-            param['Q'] = unicode(challenge)
-            param['P'] = unicode(ocrapin)
+            param['Q'] = str(challenge)
+            param['P'] = str(ocrapin)
             param['S'] = ''
 
             if ocra.T is not None:
@@ -737,7 +752,7 @@ class OcraController(BaseController):
         except Exception as e:
             log.exception("[ocra/calculateOtp] failed: %r" % e)
             Session.rollback()
-            return sendError(response, unicode(e), 0)
+            return sendError(response, str(e), 0)
 
         finally:
             Session.close()

@@ -64,7 +64,7 @@ class TestPolicyEngine(TestController):
 
         params = {'type': 'spass', 'serial': 'NewEngineTestToken'}
         response = self.make_admin_request('init', params)
-        self.assertTrue(serial in response, response)
+        assert serial in response, response
 
         # ----------------------------------------------------------------- --
 
@@ -80,7 +80,7 @@ class TestPolicyEngine(TestController):
             'active': True
         }
         response = self.make_system_request('setPolicy', params=policy)
-        self.assertTrue('"setPolicy adm_1"' in response, response)
+        assert '"setPolicy adm_1"' in response, response
 
         able_policy = {
             'name': 'adm_2',
@@ -92,7 +92,7 @@ class TestPolicyEngine(TestController):
             'active': True
         }
         response = self.make_system_request('setPolicy', params=able_policy)
-        self.assertTrue('"setPolicy adm_2"' in response, response)
+        assert '"setPolicy adm_2"' in response, response
 
         # ----------------------------------------------------------------- --
 
@@ -105,8 +105,8 @@ class TestPolicyEngine(TestController):
 
         params = {'NewPolicyEvaluation': True}
         response = self.make_system_request('setConfig', params=params)
-        self.assertTrue('NewPolicyEvaluation:True": true' in response,
-                        response)
+        assert 'NewPolicyEvaluation:True": true' in response, \
+                        response
         try:
 
             # ------------------------------------------------------------- --
@@ -115,12 +115,12 @@ class TestPolicyEngine(TestController):
 
             params = {}
             response = self.make_admin_request('show', params)
-            self.assertTrue(serial in response, response)
+            assert serial in response, response
 
             params = {'serial': serial}
             response = self.make_admin_request('disable', params)
             msg = "You do not have the administrative right to disable "
-            self.assertTrue(msg in response, response)
+            assert msg in response, response
 
             # ------------------------------------------------------------- --
 
@@ -129,18 +129,18 @@ class TestPolicyEngine(TestController):
             able_policy['time'] = '*  0-24  * * * *;'
             response = self.make_system_request(
                                         'setPolicy', params=able_policy)
-            self.assertTrue('"setPolicy adm_2"' in response, response)
+            assert '"setPolicy adm_2"' in response, response
 
             # and check if this works
 
             params = {}
             response = self.make_admin_request('show', params)
-            self.assertTrue(serial in response, response)
+            assert serial in response, response
 
             params = {'serial': serial}
             response = self.make_admin_request('disable', params)
-            self.assertTrue(msg not in response, response)
-            self.assertTrue('"value": 1' in response, response)
+            assert msg not in response, response
+            assert '"value": 1' in response, response
 
             # ------------------------------------------------------------- --
 
@@ -148,13 +148,13 @@ class TestPolicyEngine(TestController):
             if new_eng is None:
                 params = {'key': 'NewPolicyEvaluation'}
                 response = self.make_system_request('delConfig', params=params)
-                self.assertTrue('NewPolicyEvaluation:True": true' in response,
-                                response)
+                assert 'NewPolicyEvaluation:True": true' in response, \
+                                response
             else:
                 params = {'NewPolicyEvaluation': new_eng}
                 response = self.make_system_request('setConfig', params=params)
-                self.assertTrue('NewPolicyEvaluation' in response,
-                                response)
+                assert 'NewPolicyEvaluation' in response, \
+                                response
 
         return
 

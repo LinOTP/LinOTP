@@ -29,14 +29,13 @@ testing controller - for testing purposes
 
 import logging
 
-from pylons import request, response
-from linotp.lib.base import BaseController
+from linotp.flap import response
+from linotp.controllers.base import BaseController
 
 from linotp.lib.error import ParameterError
 
 from linotp.lib.reply import sendResult, sendError
 
-from linotp.lib.selftest import isSelfTest
 from linotp.lib.policy import get_auth_AutoSMSPolicy
 
 from linotp.lib.crypto.utils import urandom
@@ -96,10 +95,26 @@ class TestingController(BaseController):
     The functions are described below in more detail.
     '''
 
-    def __before__(self):
-        return response
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
 
-    def __after__(self):
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        return
+
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
         return response
 
     def autosms(self):
@@ -119,11 +134,6 @@ class TestingController(BaseController):
         '''
 
         try:
-            if isSelfTest() is False:
-                Session.rollback()
-                return sendError(response, "The testing controller can only"
-                                 " be used in SelfTest mode!", 0)
-
             if "user" not in self.request_params:
                 raise ParameterError("Missing parameter: 'user'")
 
@@ -222,7 +232,7 @@ class TestingController(BaseController):
         except Exception as e:
             log.exception('[http2sms] %r' % e)
             Session.rollback()
-            return sendError(response, unicode(e), 0)
+            return sendError(response, str(e), 0)
 
         finally:
             Session.close()

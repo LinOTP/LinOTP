@@ -34,9 +34,9 @@ try:
     import yubico.yubikey_defs
     from yubico.yubikey import YubiKeyError
 except ImportError as  e:
-    print "python yubikey module not available."
-    print "please get it from https://github.com/Yubico/python-yubico if you want to enroll yubikeys"
-    print str(e)
+    print("python yubikey module not available.")
+    print("please get it from https://github.com/Yubico/python-yubico if you want to enroll yubikeys")
+    print(str(e))
 
 from time import sleep
 from usb import USBError
@@ -47,7 +47,7 @@ try:
     CRYPTO_AVAILABLE = True
 except:
     CRYPTO_AVAILABLE = False
-    print "No pycrypto available. You can not enroll yubikeys with static password."
+    print("No pycrypto available. You can not enroll yubikeys with static password.")
 
 MODE_YUBICO = 1
 MODE_OATH = 2
@@ -56,8 +56,8 @@ MODE_STATIC = 3
 hexHexChars = '0123456789abcdef'
 modHexChars = 'cbdefghijklnrtuv'
 
-hex2ModDict = dict(zip(hexHexChars, modHexChars))
-mod2HexDict = dict(zip(modHexChars, hexHexChars))
+hex2ModDict = dict(list(zip(hexHexChars, modHexChars)))
+mod2HexDict = dict(list(zip(modHexChars, hexHexChars)))
 
 def modhex_encode(s):
     return ''.join(
@@ -200,13 +200,13 @@ def main():
                 ['outfile='])
 
     except GetoptError:
-        print "There is an error in your parameter syntax:"
-        print "o, outfile=    the name of the output file"
+        print("There is an error in your parameter syntax:")
+        print("o, outfile=    the name of the output file")
         sys.exit(1)
 
     for opt, arg in opts:
         if opt in ('o', '--outfile'):
-            print "setting output file : ", arg
+            print("setting output file : ", arg)
             OUTFILE = arg
 
     #
@@ -217,7 +217,7 @@ def main():
         #                                access_key = binascii.unhexlify('121212121212'),
         #                                unlock_key = binascii.unhexlify('121212121212'))
         otpkey, serial = enrollYubikey(debug=False)
-        print "Success: serial: %s, otpkey: %s." % (serial, otpkey)
+        print("Success: serial: %s, otpkey: %s." % (serial, otpkey))
         #
         # Now we write to a file
         #
@@ -228,10 +228,10 @@ def main():
         f.close()
 
     except yubico.yubico_exception.YubicoError as  e:
-        print "ERROR: %s" % str(e)
+        print("ERROR: %s" % str(e))
         sys.exit(1)
     except YubiError as  e:
-        print "Error: %s" % e.value
+        print("Error: %s" % e.value)
 
 
 class YubikeyPlug(object):
@@ -253,7 +253,7 @@ class YubikeyPlug(object):
 
                 if serial != self.last_serial:
                     self.last_serial = serial
-                    print "\nFound Yubikey with serial %r\n" % serial
+                    print("\nFound Yubikey with serial %r\n" % serial)
                     found = True
                     break;
             except USBError:

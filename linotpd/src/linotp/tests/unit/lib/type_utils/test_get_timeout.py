@@ -3,6 +3,7 @@ import unittest
 from datetime import datetime
 
 from linotp.lib.type_utils import get_timeout
+import pytest
 
 class GetTimeoutTest(unittest.TestCase):
 
@@ -27,19 +28,19 @@ class GetTimeoutTest(unittest.TestCase):
 
     def test_get_timeout_fail_type(self):
 
-        with self.assertRaises(ValueError) as exx:
+        with pytest.raises(ValueError) as exx:
             get_timeout(datetime.now())
 
-        assert "Unsupported timeout input type" in exx.exception.args[0]
+        exx.match("Unsupported timeout input type")
 
     def test_get_timeout_fail_string(self):
 
-        with self.assertRaises(ValueError) as exx:
+        with pytest.raises(ValueError) as exx:
             get_timeout("5 , , ,")
 
-        assert "Failed to convert timeout" in exx.exception.message
+        exx.match("Failed to convert timeout")
 
-        with self.assertRaises(ValueError) as exx:
+        with pytest.raises(ValueError) as exx:
             get_timeout("5 , 3.0,     ,")
 
-        assert "Failed to convert timeout" in exx.exception.message
+        exx.match("Failed to convert timeout")

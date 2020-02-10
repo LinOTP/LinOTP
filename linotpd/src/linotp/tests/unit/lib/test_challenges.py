@@ -31,8 +31,10 @@ Test lib challenge methods
 import unittest
 from mock import patch
 from linotp.lib.challenges import Challenges
+import pytest
 
 
+@pytest.mark.usefixtures("app")
 class TestChallengesTransactionidLength(unittest.TestCase):
 
     def test_transactionid_length(self):
@@ -40,18 +42,17 @@ class TestChallengesTransactionidLength(unittest.TestCase):
         with patch('linotp.lib.challenges.context') as mock_context:
             mock_context.get.return_value = {}
             transid_length = Challenges.get_tranactionid_length()
-            self.assertAlmostEqual(
-                transid_length, Challenges.DefaultTransactionIdLength)
+            assert round(abs(transid_length-Challenges.DefaultTransactionIdLength), 7) == 0
 
-            with self.assertRaises(Exception) as wrong_range:
-                too_short_length = 7
+            too_short_length = 7
 
-                wrong_range_message = \
-                    "TransactionIdLength must be between 12 and 17, " \
-                    "was %d" % too_short_length
-                mock_context.get.return_value = {
-                    'TransactionIdLength': too_short_length
-                }
+            wrong_range_message = \
+                "TransactionIdLength must be between 12 and 17, " \
+                "was %d" % too_short_length
+            mock_context.get.return_value = {
+                'TransactionIdLength': too_short_length
+            }
+            with pytest.raises(Exception) as wrong_range:
                 Challenges.get_tranactionid_length()
 
-            self.assertEqual(wrong_range.exception.message, wrong_range_message)
+            assert str(wrong_range.value) == wrong_range_message

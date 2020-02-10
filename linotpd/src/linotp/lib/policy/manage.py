@@ -155,7 +155,7 @@ def deletePolicy(name, enforce=False):
         raise ServerError("policy name may only contain the "
                           "characters a-zA-Z0-9_", id=8888)
 
-    if context and 'Config' in context:
+    if context and context.get('Config'):
         Config = context['Config']
     else:
         Config = getLinotpConfig()
@@ -224,7 +224,7 @@ def _check_policy_impact(scope='', action='', active='True',
     # add the new policy and check the constrains
     policies[name] = pol
 
-    for policy in policies.values():
+    for policy in list(policies.values()):
 
         # do we have a system policy that is active?
         p_scope = policy['scope'].lower()
@@ -269,21 +269,21 @@ def create_policy_export_file(policy, filename):
     This function takes a policy dictionary and creates an export file from it
     '''
     TMP_DIRECTORY = "/tmp"
-    filename = "%s/%s" % (TMP_DIRECTORY, filename)
+    file_name = "%s/%s" % (TMP_DIRECTORY, filename)
     if len(policy) == 0:
-        f = open(filename, "w")
+        f = open(file_name, "w")
         f.write('')
         f.close()
     else:
-        for value in policy.values():
-            for k in value.keys():
+        for value in list(policy.values()):
+            for k in list(value.keys()):
                 value[k] = value[k] or ""
 
         policy_file = ConfigObj(encoding="UTF-8")
-        policy_file.filename = filename
+        policy_file.filename = file_name
 
-        for name in policy.keys():
+        for name in list(policy.keys()):
             policy_file[name] = policy[name]
             policy_file.write()
 
-    return filename
+    return file_name

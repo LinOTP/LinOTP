@@ -115,7 +115,7 @@ class TestAutoassignSMSController(TestController):
         }
 
         response = self.make_system_request('setProvider', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         response = self.make_system_request('setProvider', params)
         assert '"status": true' in response
 
@@ -132,7 +132,7 @@ class TestAutoassignSMSController(TestController):
 
         response = self.make_system_request(
             action='setPolicy', params=params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
     def define_sms_provider(self):
         """ define the default sms provider """
@@ -162,7 +162,7 @@ class TestAutoassignSMSController(TestController):
                   }
 
         response = self.make_system_request('setProvider', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -177,7 +177,7 @@ class TestAutoassignSMSController(TestController):
 
         response = self.make_system_request(action='setPolicy',
                                             params=params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
     @patch('requests.Session.post', mocked_http_request)
     def test_autoenroll_sms_email(self):
@@ -199,7 +199,7 @@ class TestAutoassignSMSController(TestController):
         }
 
         response = self.make_system_request('setPolicy', params=policy)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         user = 'passthru_user1@myDefRealm'
         params = {
@@ -208,9 +208,8 @@ class TestAutoassignSMSController(TestController):
             'data': 'this is your otp <otp>'
         }
         response = self.make_validate_request('check', params)
-        self.assertTrue(
-            'this is your otp' in REQUEST_BODY['text'], REQUEST_BODY)
-        self.assertTrue('sms submitted' in response, response)
+        assert 'this is your otp' in REQUEST_BODY['text'], REQUEST_BODY
+        assert 'sms submitted' in response, response
 
         return
 
@@ -236,7 +235,7 @@ class TestAutoassignSMSController(TestController):
         }
 
         response = self.make_system_request('setPolicy', params=policy)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         # ---------------------------------------------------------------- --
 
@@ -249,9 +248,8 @@ class TestAutoassignSMSController(TestController):
         }
 
         response = self.make_validate_request('check', params)
-        self.assertTrue('"value": false' in response.body, response)
-        self.assertTrue(
-            '"linotp_tokentype": "email"' in response.body, response)
+        assert '"value": false' in response.body, response
+        assert '"linotp_tokentype": "email"' in response.body, response
 
         # ---------------------------------------------------------------- --
 
@@ -262,7 +260,7 @@ class TestAutoassignSMSController(TestController):
 
         _, submit_kwparams = EMAIL_MESSAGE_OTP
         otp = submit_kwparams.get('replacements').get('otp')
-        self.assertTrue(otp is not None)
+        assert otp is not None
 
         user = 'passthru_user1@myDefRealm'
         params = {
@@ -272,7 +270,7 @@ class TestAutoassignSMSController(TestController):
         }
 
         response = self.make_validate_request('check', params)
-        self.assertTrue('"value": true' in response.body, response)
+        assert '"value": true' in response.body, response
 
         return
 
@@ -296,7 +294,7 @@ class TestAutoassignSMSController(TestController):
         }
 
         response = self.make_system_request('setPolicy', params=policy)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         user = 'passthru_user1@myDefRealm'
         params = {
@@ -304,9 +302,9 @@ class TestAutoassignSMSController(TestController):
             'pass': 'geheim1',
         }
         response = self.make_validate_request('check', params)
-        self.assertTrue('"value": false' in response.body, response)
-        self.assertTrue('"linotp_tokentype": "sms"' in response.body, response)
-        self.assertTrue('sms submitted' in response.body, response)
+        assert '"value": false' in response.body, response
+        assert '"linotp_tokentype": "sms"' in response.body, response
+        assert 'sms submitted' in response.body, response
 
         return
 
@@ -331,7 +329,7 @@ class TestAutoassignSMSController(TestController):
         }
 
         response = self.make_system_request('setPolicy', params=policy)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         user = 'email_only@myDefRealm'
         params = {
@@ -339,9 +337,8 @@ class TestAutoassignSMSController(TestController):
             'pass': 'geheim1',
         }
         response = self.make_validate_request('check', params)
-        self.assertTrue('"value": false' in response.body, response)
-        self.assertTrue(
-            '"linotp_tokentype": "email"' in response.body, response)
+        assert '"value": false' in response.body, response
+        assert '"linotp_tokentype": "email"' in response.body, response
 
         return
 
@@ -365,7 +362,7 @@ class TestAutoassignSMSController(TestController):
         }
 
         response = self.make_system_request('setPolicy', params=policy)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         user = 'mobile_only@myDefRealm'
         params = {
@@ -373,9 +370,8 @@ class TestAutoassignSMSController(TestController):
             'pass': 'geheim1',
         }
         response = self.make_validate_request('check', params)
-        self.assertTrue('"value": false' in response.body, response)
-        self.assertTrue(
-            '"linotp_tokentype": "sms"' in response.body, response)
+        assert '"value": false' in response.body, response
+        assert '"linotp_tokentype": "sms"' in response.body, response
 
         return
 

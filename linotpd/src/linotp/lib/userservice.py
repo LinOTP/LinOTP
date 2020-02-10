@@ -34,11 +34,10 @@ import base64
 import json
 
 # for the temporary rendering context, we use 'c'
-from pylons import (tmpl_context as c
-                    )
-
-from pylons.templating import render_mako as render
-
+from linotp.flap import (
+    tmpl_context as c,
+    render_mako as render,
+)
 
 from linotp.lib.policy import (get_client_policy,
                                getSelfserviceActions,
@@ -176,8 +175,9 @@ def create_auth_cookie(user, client, state='authenticated', state_data=None):
     # build the cache data
 
     data = [user, client, expiration, state, state_data]
+    hash_data = ("%r" % data).encode('utf-8')
 
-    digest = hmac.new(key, "%r" % data, digestmod=hashlib.sha256).digest()
+    digest = hmac.new(key, hash_data, digestmod=hashlib.sha256).digest()
     auth_cookie = base64.urlsafe_b64encode(digest).decode().strip("=")
 
     Cookie_Cache[auth_cookie] = data
@@ -271,7 +271,7 @@ def get_cookie_secret():
     config = request_context['Config']
 
     if not config.get('selfservice_auth_secret'):
-        secret = binascii.hexlify(os.urandom(SECRET_LEN))
+        secret = binascii.hexlify(os.urandom(SECRET_LEN)).decode()
         config['selfservice_auth_secret'] = secret
 
     return config.get('selfservice_auth_secret')
@@ -441,12 +441,12 @@ def add_dynamic_selfservice_enrollment(config, actions):
             try:
                 selfservice = tclass_object.getClassInfo('selfservice', ret=None)
                 # # check if we have a policy in the token definition for the enroll
-                if selfservice.has_key('enroll') and 'enroll' + tok.upper() in actions:
+                if 'enroll' in selfservice and 'enroll' + tok.upper() in actions:
                     service = selfservice.get('enroll')
                     tab = service.get('title')
                     c.scope = tab.get('scope')
                     t_file = tab.get('html')
-                    t_html = render(t_file)
+                    t_html = render(t_file).decode()
                     ''' remove empty lines '''
                     t_html = '\n'.join([line for line in t_html.split('\n') if line.strip() != ''])
                     e_name = "%s.%s.%s" % (tok, 'selfservice', 'enroll')
@@ -455,7 +455,7 @@ def add_dynamic_selfservice_enrollment(config, actions):
                 # # check if there are other selfserive policy actions
                 policy = tclass_object.getClassInfo('policy', ret=None)
                 if 'selfservice' in policy:
-                    selfserv_policies = policy.get('selfservice').keys()
+                    selfserv_policies = list(policy.get('selfservice').keys())
                     for action in actions:
                         if action in selfserv_policies:
                             # # now lookup, if there is an additional section
@@ -464,7 +464,7 @@ def add_dynamic_selfservice_enrollment(config, actions):
                             tab = service.get('title')
                             c.scope = tab.get('scope')
                             t_file = tab.get('html')
-                            t_html = render(t_file)
+                            t_html = render(t_file).decode()
                             ''' remove empty lines '''
                             t_html = '\n'.join([line for line in t_html.split('\n') if line.strip() != ''])
                             e_name = "%s.%s.%s" % (tok, 'selfservice', action)
@@ -473,7 +473,7 @@ def add_dynamic_selfservice_enrollment(config, actions):
 
             except Exception as e:
                 log.info('[_add_dynamic_actions] no policy for tokentype '
-                         '%s found (%r)' % (unicode(tok), e))
+                         '%s found (%r)' % (str(tok), e))
 
     return dynanmic_actions
 
@@ -499,8 +499,8 @@ def add_dynamic_selfservice_policies(config, actions):
             # # check if we have a policy in the token definition
             try:
                 policy = tclt.getClassInfo('policy', ret=None)
-                if policy is not None and policy.has_key('selfservice'):
-                    scope_policies = policy.get('selfservice').keys()
+                if policy is not None and 'selfservice' in policy:
+                    scope_policies = list(policy.get('selfservice').keys())
                     ''' initialize the policies '''
                     if len(defined_policies) == 0:
                         for pol in actions:
@@ -513,11 +513,10 @@ def add_dynamic_selfservice_policies(config, actions):
                             dynamic_policies.append(local_policy)
             except Exception as e:
                 log.info('[_add_dynamic_actions] no policy for tokentype '
-                         '%s found (%r)' % (unicode(tok), e))
+                         '%s found (%r)' % (str(tok), e))
 
     return dynamic_policies
 
 def add_local_policies():
 
     return
-

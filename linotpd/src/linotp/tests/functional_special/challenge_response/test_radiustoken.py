@@ -35,10 +35,10 @@ import re
 import time
 import json
 import logging
-import urlparse
+import urllib.parse
 
 # we need this for the radius token
-import pyrad
+from pyrad.client import Client
 import pyrad.packet as packet
 from pyrad.packet import AccessAccept, AccessReject, AccessChallenge
 
@@ -57,11 +57,11 @@ class RadiusResponse(object):
 
     def __init__(self, auth, reply=None):
         if auth is True:
-            self.code = pyrad.packet.AccessAccept
+            self.code = AccessAccept
         elif auth is False:
-            self.code = pyrad.packet.AccessReject
+            self.code = AccessReject
         else:
-            self.code = pyrad.packet.AccessChallenge
+            self.code = AccessChallenge
 
         if not reply:
             self.reply = {}
@@ -73,7 +73,7 @@ class RadiusResponse(object):
         return self.reply.get(key)
 
     def keys(self):
-        return self.reply.keys()
+        return list(self.reply.keys())
 
 
 def mocked_radius_SendPacket(Client, *argparams, **kwparams):
@@ -154,10 +154,10 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         cookies = {"admin_session": self.session}
 
         response = self.make_system_request("setPolicy", params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         response = self.make_system_request("getPolicy", params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         self.policies.append(name)
         return response
@@ -200,12 +200,12 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
                      ]
         for params in params_list:
             response = self.make_admin_request(action='init', params=params)
-            self.assertTrue('"value": true' in response, response)
+            assert '"value": true' in response, response
             serials.append(params.get("serial"))
 
         return serials
 
-    @patch.object(pyrad.client.Client, 'SendPacket', mocked_radius_SendPacket)
+    @patch.object(Client, 'SendPacket', mocked_radius_SendPacket)
     def test_radiustoken_remote_pin(self):
         """
         Challenge Response Test: radius token with remote PIN
@@ -218,7 +218,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         # now switch policy on for challenge_response for hmac token
         response = self.setPinPolicy(name="ch_resp", realm='*',
                                 action='challenge_response=radius')
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         # define validation function
         def check_func1(params):
@@ -240,11 +240,11 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         # 1.1 now trigger a challenge
         params = {"user": user, "pass": "test"}
         response = self.make_validate_request('check', params=params)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         body = json.loads(response.body)
         state = body.get('detail', {}).get('transactionid', '')
-        self.assertTrue(state != '', response)
+        assert state != '', response
 
         # 1.2 check the challenge
 
@@ -267,14 +267,14 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         response = self.make_validate_request('check', params=params)
 
         # hey, if this ok, we are done for the remote pin check
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         for serial in serials:
             self.delete_token(serial)
 
         return
 
-    @patch.object(pyrad.client.Client, 'SendPacket', mocked_radius_SendPacket)
+    @patch.object(Client, 'SendPacket', mocked_radius_SendPacket)
     def test_radiustoken_local_pin(self):
         """
         Challenge Response Test: radius token with local PIN
@@ -289,7 +289,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         # now switch policy on for challenge_response for hmac token
         response = self.setPinPolicy(name="ch_resp", realm='*',
                                 action='challenge_response=radius')
-        self.assertTrue('"status": true,' in response, response)
+        assert '"status": true,' in response, response
 
         # 1.1 now trigger a challenge
         # define validation function
@@ -311,11 +311,11 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
 
         params = {"user": user, "pass": "local"}
         response = self.make_validate_request('check', params=params)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         body = json.loads(response.body)
         state = body.get('detail', {}).get('transactionid', '')
-        self.assertTrue(state != '', response)
+        assert state != '', response
 
         # 1.2 check the challenge
         def check_func2(params):
@@ -334,7 +334,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         params = {"user": user, "pass": otp, "state": state}
         response = self.make_validate_request('check', params=params)
         # hey, if this ok, we are done for the remote pin check
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         for serial in serials:
             self.delete_token(serial)

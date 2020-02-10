@@ -28,12 +28,12 @@
 tools controller
 """
 import json
-from cgi import FieldStorage
 
-from pylons import request, response
-from pylons import tmpl_context as c
+from werkzeug.datastructures import FileStorage
 
-from linotp.lib.base import BaseController
+from linotp.flap import request, response, tmpl_context as c
+
+from linotp.controllers.base import BaseController
 from linotp.lib.reply import sendError
 from linotp.lib.reply import sendResult
 from linotp.lib.error import ParameterError
@@ -70,9 +70,16 @@ class ToolsController(BaseController):
     """
     """
 
-    def __before__(self, action, **params):
+    def __before__(self, **params):
         """
+        __before__ is called before every action
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
         """
+
+        action = request_context['action']
 
         try:
 
@@ -81,7 +88,7 @@ class ToolsController(BaseController):
 
             checkToolsAuthorisation(action, params)
             c.audit = request_context['audit']
-            return request
+            return
 
         except PolicyException as exx:
             log.exception("policy failed %r" % exx)
@@ -95,9 +102,15 @@ class ToolsController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
-    def __after__(self, action):
-        """
-        """
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
         try:
             # finally create the audit entry
             Audit = request_context['Audit']
@@ -106,7 +119,7 @@ class ToolsController(BaseController):
             c.audit.update(audit)
             Audit.log(c.audit)
             Session.commit()
-            return request
+            return response
 
         except Exception as exx:
             log.exception(exx)
@@ -205,14 +218,13 @@ class ToolsController(BaseController):
 
         try:
 
-            params = {}
-            params.update(request.POST)
+            params = self.request_params
 
             # -------------------------------------------------------------- --
             # processing required arguments
             try:
 
-                data_file = request.POST['file']
+                data_file = request.files['file']
                 resolver_name = params['resolver']
 
             except KeyError as exx:
@@ -233,8 +245,10 @@ class ToolsController(BaseController):
             #     see: http://jquery.malsup.com/form/#sample4
             # -- ----------------------------------------------------------- --
 
-            if isinstance(data_file, FieldStorage):
-                data = data_file.value
+            if isinstance(data_file, FileStorage):
+                data = data_file.read()
+
+            data = data.decode()
 
             # -------------------------------------------------------------- --
 
@@ -292,8 +306,7 @@ class ToolsController(BaseController):
 
             # we have to convert the column_mapping back into an dict
 
-            if (isinstance(column_mapping, str) or
-                isinstance(column_mapping, unicode)):
+            if isinstance(column_mapping, str):
                 column_mapping = json.loads(column_mapping)
 
             # prevent overwrite of existing unmanaged resolver

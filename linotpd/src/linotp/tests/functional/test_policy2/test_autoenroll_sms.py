@@ -109,7 +109,7 @@ class TestAutoassignSMSController(TestController):
                   }
 
         response = self.make_system_request('setProvider', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -124,7 +124,7 @@ class TestAutoassignSMSController(TestController):
 
         response = self.make_system_request(action='setPolicy',
                                             params=params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
     @patch('requests.Session.post', mocked_http_request)
     def test_autoenroll_sms(self):
@@ -146,7 +146,7 @@ class TestAutoassignSMSController(TestController):
             }
 
         response = self.make_system_request('setPolicy', params=policy)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         user = 'passthru_user1@myDefRealm'
         params = {
@@ -155,9 +155,8 @@ class TestAutoassignSMSController(TestController):
             'data': 'this is your otp <otp>'
             }
         response = self.make_validate_request('check', params)
-        self.assertTrue(
-            'this is your otp' in REQUEST_BODY['text'], REQUEST_BODY)
-        self.assertTrue('sms submitted' in response, response)
+        assert 'this is your otp' in REQUEST_BODY['text'], REQUEST_BODY
+        assert 'sms submitted' in response, response
 
         return
 
@@ -181,7 +180,7 @@ class TestAutoassignSMSController(TestController):
             }
 
         response = self.make_system_request('setPolicy', params=policy)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         user = 'passthru_user1@myDefRealm'
         params = {
@@ -190,9 +189,8 @@ class TestAutoassignSMSController(TestController):
             'data': 'this is your otp <otp>'
             }
         response = self.make_validate_request('simplecheck', params)
-        self.assertTrue(
-            'this is your otp' in REQUEST_BODY['text'], REQUEST_BODY)
-        self.assertTrue('sms submitted' in response, response)
+        assert 'this is your otp' in REQUEST_BODY['text'], REQUEST_BODY
+        assert 'sms submitted' in response, response
 
         return
 
@@ -219,7 +217,7 @@ class TestAutoassignSMSController(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('false' not in response)
+        assert 'false' not in response
 
         params = {
             'serial': serial,
@@ -229,7 +227,7 @@ class TestAutoassignSMSController(TestController):
             }
 
         response = self.make_validate_request('check_s', params=params)
-        self.assertTrue('submit' in REQUEST_BODY['text'])
+        assert 'submit' in REQUEST_BODY['text']
 
         params = {
             'serial': serial,
@@ -238,7 +236,7 @@ class TestAutoassignSMSController(TestController):
             }
 
         response = self.make_validate_request('check_s', params=params)
-        self.assertTrue('false' not in response.body)
+        assert 'false' not in response.body
 
         return
 
@@ -265,7 +263,7 @@ class TestAutoassignSMSController(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('false' not in response)
+        assert 'false' not in response
 
         policy = {
             'name': 'autassign_sms',
@@ -277,7 +275,7 @@ class TestAutoassignSMSController(TestController):
             }
 
         response = self.make_system_request('setPolicy', params=policy)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         params = {
             'user': 'passthru_user1@myDefRealm',
@@ -285,7 +283,7 @@ class TestAutoassignSMSController(TestController):
             }
 
         response = self.make_validate_request('check', params=params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         params = {
             'user': 'passthru_user1@myDefRealm',
@@ -293,8 +291,8 @@ class TestAutoassignSMSController(TestController):
             }
 
         response = self.make_validate_request('simplecheck', params=params)
-        self.assertTrue(':-(' in response, response)
-        self.assertTrue('Message' in REQUEST_BODY['text'])
+        assert ':-(' in response, response
+        assert 'Message' in REQUEST_BODY['text']
 
         otp = REQUEST_BODY['text'].split()[-1]
 
@@ -304,7 +302,7 @@ class TestAutoassignSMSController(TestController):
             }
 
         response = self.make_validate_request('simplecheck', params=params)
-        self.assertTrue(':-)' in response, response)
+        assert ':-)' in response, response
 
         return
 

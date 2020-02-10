@@ -23,51 +23,36 @@
 #    Support: www.keyidentity.com
 #
 
-from mock import patch
 import json
-import unittest
+import os
+from mock import patch
+import flask
+import pytest
 from sqlalchemy.exc import OperationalError
-from webob.exc import HTTPUnauthorized
-from webob.exc import HTTPInternalServerError
 
 from linotp.controllers.maintenance import MaintenanceController
+from linotp.flap import config, HTTPUnauthorized
+from linotp.model import LoggingConfig
+from linotp.model.meta import Session
 
+@pytest.mark.usefixtures("app")
+class TestMaintenance(object):
 
-class TestMaintenance(unittest.TestCase):
-
-    @patch('linotp.controllers.system.BaseController.__init__',
-           return_value=None)
-    def setUp(self, mock_base):
-        unittest.TestCase.setUp(self)
-        self.maint = MaintenanceController()
-
-    @patch('linotp.controllers.system.sendError')
-    @patch('linotp.controllers.system.sendResult')
     @patch('linotp.controllers.maintenance.Session')
-    @patch('linotp.controllers.maintenance.response')
-    def test_check_status_ok(self, mock_response, mock_session,
-                             mock_sendresult, mock_senderror):
+    def test_check_status_ok(self, mock_session, client):
         """
         Test that 'check_status' returns the number of config entries
         """
         entries = 1
 
         mock_session.query.return_value.count.return_value = entries
-        mock_senderror.side_effect = lambda response, exx: exx
-        mock_sendresult.side_effect = lambda response, obj, *args: obj
 
-        ret = self.maint.check_status()
+        response = client.get('/maintenance/check_status')
 
-        ret = json.loads(ret)
-        self.assertEqual(ret['detail']['config']['entries'], entries)
+        assert response.json['detail']['config']['entries'] == entries
 
-    @patch('linotp.controllers.system.sendResult')
-    @patch('linotp.controllers.system.sendError')
     @patch('linotp.controllers.maintenance.Session')
-    @patch('linotp.controllers.maintenance.response')
-    def test_000_check_status_error(
-            self, mock_response, mock_session, mock_senderror,
-            mock_sendresult):
+    def test_000_check_status_error(self, mock_session, client):
         """
         Test that 'check_status' returns an error status code
         """
@@ -77,33 +62,56 @@ class TestMaintenance(unittest.TestCase):
 
         mock_session.query.side_effect = op_error
 
-        mock_senderror.side_effect = lambda response, exx: exx
-        mock_sendresult.side_effect = lambda response, obj, *args: obj
+        response = client.get('/maintenance/check_status')
 
-        with self.assertRaises(HTTPInternalServerError) as err:
-            self.maint.check_status()
-
-        self.assertTrue(err.exception.status_code == 500)
-
+        assert response.status_code == 500
 
         return
 
-    @patch('linotp.controllers.maintenance.request_context')
-    @patch('linotp.controllers.maintenance.request')
-    def test_before_error(self, mock_request, mock_context):
+    def test_set_loglevel(self, app, client):
+        name = 'linotp.lib.user'
+        config_entry = Session.query(LoggingConfig).get(name)
+        assert not config_entry
+
+        params = dict(
+            loggerName=name,
+            level=10,
+        )
+        client.post('/maintenance/setLogLevel', json=params)
+
+        config_entry = Session.query(LoggingConfig).get(name)
+        assert config_entry.level == 10
+
+
+class TestMaintCertificateHandling(object):
+
+    maint = None
+
+    @pytest.fixture(autouse=True)
+    def controller(self, app):
+        self.app = app
+        self.maint = app.blueprints['maintenance']
+
+    def test_certificate_error(self):
         """
-        Test that '__before' raises an exception if no certificate is available
+        Test that a request raises an exception if no certificate is available
         """
 
-        mock_request.environ.get.return_value = None
-        mock_context.__getitem__.return_value.get.return_value = True
+        config['MAINTENANCE_VERIFY_CLIENT_ENV_VAR'] = 'TEST_VAR_NOTSET'
 
-        with self.assertRaises(HTTPUnauthorized) as err:
+        with pytest.raises(HTTPUnauthorized) as err:
             self.maint.__before__(action='check_status')
 
-        self.assertTrue(err.exception.status_code == 401)
+        assert err.value.code == 401
 
-        return
+    def test_certificate_ok(self):
+        """
+        Test that a request raises an exception if no certificate is available
+        """
 
-if __name__ == "__main__":
-    unittest.main()
+        config['MAINTENANCE_VERIFY_CLIENT_ENV_VAR'] = 'TEST_VAR'
+
+        with self.app.test_request_context('/matintenance/check_status'):
+            flask.request.environ['TEST_VAR'] = 'OK'
+            ret = self.maint.__before__(action='check_status')
+            assert ret is None

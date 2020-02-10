@@ -71,20 +71,20 @@ def main():
     OFFSET = 0
 
     def usage():
-       print "o, offset=      tokenoffset in seconds"
+       print("o, offset=      tokenoffset in seconds")
 
     try:
         opts, args = getopt(sys.argv[1:], "o:",
                 ['offset=', '--help'])
 
     except GetoptError:
-        print "There is an error in your parameter syntax:"
+        print("There is an error in your parameter syntax:")
         usage()
         sys.exit(1)
 
     for opt, arg in opts:
         if opt in ('o', '--offset'):
-            print "setting offset : ", arg
+            print("setting offset : ", arg)
             OFFSET = int(arg)
 
 
@@ -96,8 +96,8 @@ def main():
     key = binascii.a2b_hex(HEXKEY)
     otp = HmacOtp(key, counter=counter).generate()
 
-    print "Your OTP with number %d is %06d." % (counter, otp)
-    print "Happy Authenticating!"
+    print("Your OTP with number %d is %06d." % (counter, otp))
+    print("Happy Authenticating!")
 
 
 if __name__ == '__main__':

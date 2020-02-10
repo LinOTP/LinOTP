@@ -35,16 +35,9 @@ import json
 
 from linotp.tests import TestController
 
-from . import enable_helpdesk_controller
-import pylons.test
+
 
 class TestHelpdeskAuthorization(TestController):
-
-    @classmethod
-    def setup_class(cls):
-        """add the helpdesk route to the test pylons app"""
-
-        enable_helpdesk_controller(pylons.test.pylonsapp.config)
 
     def setUp(self):
         """ setup for std resolver / realms"""
@@ -69,34 +62,26 @@ class TestHelpdeskAuthorization(TestController):
         response = self.make_helpdesk_request('getsession')
         assert 'false' not in response
 
-        cookies = self.get_cookies(response)
+        cookies = TestController.get_cookies(response)
 
         assert 'helpdesk_session' in cookies
 
         session = cookies.get('helpdesk_session')
 
-        params = {
-            'session': session
-            }
+        assert session, cookies
 
-        response = self.make_helpdesk_request(
-            'users', params=params, cookies=cookies)
+        params = {'session': session}
+        response = self.make_helpdesk_request('users', params=params)
 
-        assert 'false' not in response
+        cookies = TestController.get_cookies(response)
+        assert 'false' not in response, (cookies, session)
 
-        params = {
-            'session': session
-            }
-
-        self.set_cookie(self.app, 'helpdesk_session', session)
-
-        response = self.make_helpdesk_request(
-            'dropsession', params=params, cookies=cookies)
+        response = self.make_helpdesk_request('dropsession')
 
         assert 'false' not in response
 
-        cookies = self.get_cookies(response)
-        assert ' expires' in cookies
+        cookies = TestController.get_cookies(response)
+        assert ' Expires' in cookies
         assert cookies.get('helpdesk_session') == ''
 
 # eof #

@@ -50,24 +50,19 @@ import base64
 import logging
 
 import os
+from flask import Response
+from werkzeug.exceptions import Forbidden
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
-from pylons import request
-from pylons import response
-from pylons import config
-from pylons import tmpl_context as c
+from linotp.flap import (
+    request, response, config, tmpl_context as c,
+    render_mako as render, _,
+)
 
-
-from pylons.controllers.util import abort
-
-from pylons.templating import render_mako as render
 from mako.exceptions import CompileException
 
-from linotp.lib.base import BaseController
+from linotp.controllers.base import BaseController
 from linotp.lib.auth.validate import ValidationHandler
 
 from linotp.lib.policy import (checkPolicyPre,
@@ -78,8 +73,8 @@ from linotp.lib.policy import (checkPolicyPre,
                                get_client_policy,
                                )
 
-from linotp.lib.reply import (sendResult,
-                              sendError,
+from linotp.lib.reply import sendResult as sendResponse
+from linotp.lib.reply import (sendError,
                               sendQRImageResult,
                               create_img,
                               create_img_src
@@ -118,8 +113,6 @@ from linotp.lib.apps import (create_google_authenticator,
                              create_oathtoken_url
                              )
 
-from pylons.i18n.translation import _
-
 from linotp.lib.audit.base import (get_token_num_info,
                                    search as audit_search
                                    )
@@ -134,7 +127,7 @@ from linotp.lib.userservice import (get_userinfo,
                                     remove_auth_cookie,
                                     )
 
-from linotp.model import Session
+
 
 from linotp.lib.resolver import getResolverObject
 
@@ -144,30 +137,22 @@ from linotp.lib.context import request_context
 
 from linotp.lib.reporting import token_reporting
 
+import linotp.model.meta
+Session = linotp.model.meta.Session
+
 log = logging.getLogger(__name__)
-audit = config.get('audit')
 
 ENCODING = "utf-8"
 
 # -------------------------------------------------------------------------- --
 
-# provide secure cookies for production evironments
-
-secure_cookie = True
-
-# in the development environment where we run in debug or uniTest mode
-# there is probaly no https defined. So we switch secure cookies only off
-# if the url is not https
-
-if config.get('debug') is True or config.get('unitTest') in [True, 'True']:
-
-    try:
-        app_url = request.application_url
-    except TypeError:
-        app_url = ''
-
-    if not app_url.startswith('https://'):
-        secure_cookie = False
+def secure_cookie():
+    """
+    in the development environment where we run in debug mode
+    there is probaly no https defined. So we switch secure cookies off.
+    this is done in the settings.py
+    """
+    return config.get('SESSION_COOKIE_SECURE', True)
 
 # -------------------------------------------------------------------------- --
 
@@ -216,6 +201,40 @@ def get_auth_user(request):
     return 'unauthenticated', None, None
 
 
+def sendResult(response_proxy, obj, id=1, opt=None, status=True):
+    """ extend the standard sendResult to handle cookies """
+
+    response = sendResponse(
+        response=None, obj=obj, id=id, opt=opt, status=status)
+
+    if response_proxy and response_proxy.delete_cookies:
+        for delete_cookie in response_proxy.delete_cookies:
+            response.delete_cookie(key=delete_cookie)
+
+    if response_proxy and response_proxy.cookies:
+        for args, kwargs in response_proxy.cookies:
+            response.set_cookie(*args, **kwargs)
+
+    if response_proxy and response_proxy.mime_type:
+        response.mime_type = response_proxy.mime_type
+
+    return response
+
+
+class LocalResponseProxy():
+
+    def __init__(self):
+        self.delete_cookies = set()
+        self.cookies = []
+        self.mime_type = None
+
+    def set_cookie(self, *args, **kwargs):
+        self.cookies.append((args, kwargs))
+
+    def delete_cookie(self, key):
+        self.delete_cookies.add(key)
+
+
 class UserserviceController(BaseController):
     """
     the interface from the service into linotp to execute the actions for the
@@ -226,12 +245,24 @@ class UserserviceController(BaseController):
     request during which the auth_cookie and session is verified
     """
 
-    def __before__(self, action, **parameters):
+    def __before__(self, **params):
         """
+        __before__ is called before every action
+
         every request to the userservice must pass this place
         here we can check the authorisation for each action and the
         per request general available information
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+
         """
+
+        # for seamless migration from pylons to flask
+        self.response = LocalResponseProxy()
+
+        action = request_context['action']
 
         self.client = get_client(request) or ''
 
@@ -271,13 +302,23 @@ class UserserviceController(BaseController):
         if (not identity or
            auth_type not in ["userservice", 'user_selfservice']):
 
-            abort(403, _("No valid session"))
+            raise Forbidden(_("No valid session"))
 
         # ------------------------------------------------------------------ --
 
         # make the authenticated user global available
 
         self.authUser = identity
+
+        # we put the authenticated user in the `request_context['AuthUser']`
+        # which is normaly filled by the getUserFromRequest
+        # as we require the authenticated user in the __after__ method for
+        # audit and reporting
+
+        request_context['AuthUser'] = {
+            'login': self.authUser.login,
+            'realm': self.authUser.realm
+            }
 
         c.user = identity.login
         c.realm = identity.realm
@@ -288,7 +329,7 @@ class UserserviceController(BaseController):
 
         if not check_session(request, self.authUser, self.client):
 
-            abort(403, _("No valid session"))
+            raise Forbidden(_("No valid session"))
 
         # ------------------------------------------------------------------ --
 
@@ -304,15 +345,25 @@ class UserserviceController(BaseController):
 
         if auth_state != 'authenticated':
 
-            abort(403, _("No valid session"))
+            raise Forbidden(_("No valid session"))
 
         # ------------------------------------------------------------------ --
 
         return
 
-    def __after__(self, action):
+    @staticmethod
+    def __after__(response):
         '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
         '''
+
+        action = request_context['action']
+
+        authUser = request_context['AuthUser']
+
         try:
             if c.audit['action'] not in ['userservice/context',
                                          'userservice/pre_context',
@@ -320,18 +371,14 @@ class UserserviceController(BaseController):
                                          'userservice/load_form'
                                          ]:
 
-                if hasattr(self, 'authUser') and not self.authUser.is_empty:
-                    c.audit['user'] = self.authUser.login
-                    c.audit['realm'] = self.authUser.realm
-                else:
-                    c.audit['user'] = ''
-                    c.audit['realm'] = ''
+                c.audit['user'] = authUser.get('login', '')
+                c.audit['realm'] = authUser.get('realm','')
 
                 log.debug("[__after__] authenticating as %s in realm %s!"
                           % (c.audit['user'], c.audit['realm']))
 
-                if 'serial' in self.request_params:
-                    serial = self.request_params['serial']
+                if 'serial' in request.params:
+                    serial = request.params['serial']
                     c.audit['serial'] = serial
                     c.audit['token_type'] = getTokenType(serial)
 
@@ -353,6 +400,8 @@ class UserserviceController(BaseController):
 
                     c.audit['action_detail'] += get_token_num_info()
 
+                audit = config.get('audit')
+
                 audit.log(c.audit)
                 Session.commit()
 
@@ -361,7 +410,7 @@ class UserserviceController(BaseController):
         except Exception as acc:
             # the exception, when an abort() is called if forwarded
             log.exception("[__after__::%r] webob.exception %r" % (action, acc))
-            raise acc
+            return sendError(response, acc, context='__after__')
 
     def _identify_user(self, params):
         """
@@ -451,11 +500,12 @@ class UserserviceController(BaseController):
                 c.audit['action_detail'] = ("User %r not found" %
                                             param.get('login'))
                 c.audit['success'] = False
-                return sendResult(response, False, 0)
+                return sendResult(self.response, False, 0)
 
             uid = "%s@%s" % (user.login, user.realm)
 
             self.authUser = user
+            request_context['authUser'] = user
 
             # -------------------------------------------------------------- --
 
@@ -469,7 +519,7 @@ class UserserviceController(BaseController):
                 c.audit['action_detail'] = ("Missing password for user %r"
                                             % uid)
                 c.audit['success'] = False
-                return sendResult(response, False, 0)
+                return sendResult(self.response, False, 0)
 
             (otp, passw) = password.split(':')
             otp = base64.b32decode(otp)
@@ -493,24 +543,26 @@ class UserserviceController(BaseController):
                 c.audit['action_detail'] = ("User %r failed to authenticate!"
                                             % uid)
                 c.audit['success'] = False
-                return sendResult(response, False, 0)
+                return sendResult(self.response, False, 0)
 
             # -------------------------------------------------------------- --
 
             log.debug("Successfully authenticated user %s:", uid)
 
-            (cookie, expires,
+            (cookie_value, expires,
              expiration) = create_auth_cookie(user, self.client)
 
-            response.set_cookie('userauthcookie', cookie,
-                                secure=secure_cookie,
-                                expires=expires)
+            self.response.set_cookie(
+                'userauthcookie',
+                value=cookie_value,
+                secure=secure_cookie(),
+                expires=expires)
 
             c.audit['action_detail'] = "expires: %s " % expiration
             c.audit['success'] = True
 
             Session.commit()
-            return sendResult(response, True, 0)
+            return sendResult(self.response, True, 0)
 
         except Exception as exx:
 
@@ -563,18 +615,21 @@ class UserserviceController(BaseController):
             # if an otp is provided we can do a direct authentication
 
             if otp:
+
                 if res:
-                    (cookie, expires, _exp) = create_auth_cookie(
+                    (cookie_value, expires, _exp) = create_auth_cookie(
                                                         user, self.client)
 
-                    response.set_cookie('user_selfservice', cookie,
-                                        secure=secure_cookie,
-                                        expires=expires)
+                    self.response.set_cookie(
+                        'user_selfservice',
+                        value=cookie_value,
+                        secure=secure_cookie(),
+                        expires=expires)
 
                     c.audit['info'] = ("User %r authenticated from otp" % user)
 
                 Session.commit()
-                return sendResult(response, res, 0)
+                return sendResult(self.response, res, 0)
 
             # -------------------------------------------------------------- --
 
@@ -589,23 +644,25 @@ class UserserviceController(BaseController):
                 if 'message' in reply and "://chal/" in reply['message']:
                     reply['img_src'] = create_img_src(reply['message'])
 
-                (cookie, expires,
+                (cookie_value, expires,
                  expiration) = create_auth_cookie(
                                         user, self.client,
                                         state='challenge_triggered',
                                         state_data=reply)
 
-                response.set_cookie('user_selfservice', cookie,
-                                    secure=secure_cookie,
-                                    expires=expires)
+                self.response.set_cookie(
+                    'user_selfservice',
+                    value=cookie_value,
+                    secure=secure_cookie(),
+                    expires=expires)
 
                 c.audit['success'] = False
 
                 Session.commit()
-                return sendResult(response, False, 0, opt=reply)
+                return sendResult(self.response, False, 0, opt=reply)
 
             Session.commit()
-            return sendResult(response, res, 0, opt=reply)
+            return sendResult(self.response, res, 0, opt=reply)
 
         # -------------------------------------------------------------- --
 
@@ -634,18 +691,18 @@ class UserserviceController(BaseController):
                 c.audit['success'] = res
 
                 if res:
-                    (cookie, expires,
+
+                    (cookie_value, expires,
                      expiration) = create_auth_cookie(user, self.client)
 
-                    response.set_cookie('user_selfservice', cookie,
-                                        secure=secure_cookie,
-                                        expires=expires)
-
-                    c.audit['action_detail'] = "expires: %s " % expiration
-                    c.audit['info'] = "%r logged in " % user
+                    self.response.set_cookie(
+                        'user_selfservice',
+                        value=cookie_value,
+                        secure=secure_cookie(),
+                        expires=expires)
 
                 Session.commit()
-                return sendResult(response, res, 0)
+                return sendResult(self.response, res, 0)
 
             # -------------------------------------------------------------- --
 
@@ -669,17 +726,20 @@ class UserserviceController(BaseController):
                             'valid_tan')
 
             if verified:
-                (cookie, expires,
+                (cookie_value, expires,
                  expiration) = create_auth_cookie(user, self.client)
 
-                response.set_cookie('user_selfservice', cookie,
-                                    secure=secure_cookie,
-                                    expires=expires)
+                self.response.set_cookie(
+                    'user_selfservice',
+                    value=cookie_value,
+                    secure=secure_cookie(),
+                    expires=expires)
+
                 c.audit['action_detail'] = "expires: %s " % expiration
                 c.audit['info'] = "%r logged in " % user
 
             Session.commit()
-            return sendResult(response, verified, 0)
+            return sendResult(self.response, verified, 0)
 
         else:
             raise NotImplementedError('unknown state %r' % auth_state)
@@ -701,7 +761,7 @@ class UserserviceController(BaseController):
             c.audit['success'] = False
 
             Session.commit()
-            return sendResult(response, False, 0)
+            return sendResult(self.response, False, 0)
 
         # ------------------------------------------------------------------ --
 
@@ -716,12 +776,14 @@ class UserserviceController(BaseController):
             if res:
                 log.debug("Successfully authenticated user %r:", user)
 
-                (cookie, expires,
+                (cookie_value, expires,
                  expiration) = create_auth_cookie(user, self.client)
 
-                response.set_cookie('user_selfservice', cookie,
-                                    secure=secure_cookie,
-                                    expires=expires)
+                self.response.set_cookie(
+                    'user_selfservice',
+                    value=cookie_value,
+                    secure=secure_cookie(),
+                    expires=expires)
 
                 c.audit['action_detail'] = "expires: %s " % expiration
                 c.audit['info'] = "%r logged in " % user
@@ -732,21 +794,24 @@ class UserserviceController(BaseController):
             c.audit['success'] = res
 
             Session.commit()
-            return sendResult(response, res, 0, reply)
+            return sendResult(self.response, res, 0, reply)
 
         # ------------------------------------------------------------------ --
 
         # last step - we have no otp but mfa_login request - so we
         # create the 'credentials_verified state'
 
-        (cookie, expires,
+        (cookie_value, expires,
          expiration) = create_auth_cookie(
                             user, self.client,
                             state='credentials_verified')
 
-        response.set_cookie('user_selfservice', cookie,
-                            secure=secure_cookie,
-                            expires=expires)
+        self.response.set_cookie(
+            'user_selfservice',
+            value=cookie_value,
+            secure=secure_cookie(),
+            expires=expires)
+
         reply = {'message': 'credential verified - '
                  'additional authentication parameter required'}
 
@@ -756,7 +821,7 @@ class UserserviceController(BaseController):
         c.audit['success'] = True
         Session.commit()
 
-        return sendResult(response, False, 0, opt=reply)
+        return sendResult(self.response, False, 0, opt=reply)
 
     def _login_with_password_only(self, user, password):
         """
@@ -769,19 +834,21 @@ class UserserviceController(BaseController):
         res = user.checkPass(password)
 
         if res:
-            (cookie, expires,
+            (cookie_value, expires,
              _expiration) = create_auth_cookie(user, self.client)
 
-            response.set_cookie('user_selfservice', cookie,
-                                secure=secure_cookie,
-                                expires=expires)
+            self.response.set_cookie(
+                'user_selfservice',
+                value=cookie_value,
+                secure=secure_cookie(),
+                expires=expires)
 
         c.audit['success'] = res
         c.audit['info'] = "%r logged in " % user
 
         Session.commit()
 
-        return sendResult(response, res, 0)
+        return sendResult(self.response, res, 0)
 
     def login(self):
         """
@@ -821,7 +888,7 @@ class UserserviceController(BaseController):
 
             if user_selfservice_cookie and not auth_info[0]:
 
-                response.delete_cookie('user_selfservice')
+                self.response.delete_cookie('user_selfservice')
 
             # -------------------------------------------------------------- --
 
@@ -832,6 +899,7 @@ class UserserviceController(BaseController):
                 raise UserNotFound('user %r not found!' % param.get('login'))
 
             self.authUser = user
+            request_context['authUser'] = user
 
             # -------------------------------------------------------------- --
 
@@ -869,7 +937,7 @@ class UserserviceController(BaseController):
             c.audit['success'] = False
 
             Session.rollback()
-            return sendResult(response, False, 0)
+            return sendResult(self.response, False, 0)
 
         finally:
             Session.close()
@@ -957,7 +1025,7 @@ class UserserviceController(BaseController):
                                          exclude_rollout=False)
 
             Session.commit()
-            return sendResult(response, tokenArray, 0)
+            return sendResult(self.response, tokenArray, 0)
 
         except Exception as exx:
             log.exception("failed with error: %r", exx)
@@ -979,7 +1047,7 @@ class UserserviceController(BaseController):
             c.audit['success'] = True
 
             Session.commit()
-            return sendResult(response, uinfo, 0)
+            return sendResult(self.response, uinfo, 0)
 
         except Exception as exx:
             Session.rollback()
@@ -999,11 +1067,12 @@ class UserserviceController(BaseController):
 
             cookie = request.cookies.get('user_selfservice')
             remove_auth_cookie(cookie)
-            response.delete_cookie('user_selfservice')
+            self.response.delete_cookie(key='user_selfservice')
+
             c.audit['success'] = True
 
             Session.commit()
-            return sendResult(response, True, 0)
+            return sendResult(self.response, True, 0)
 
         except Exception as exx:
             Session.rollback()
@@ -1029,8 +1098,9 @@ class UserserviceController(BaseController):
         '''
         try:
             pre_context = get_pre_context(self.client)
-            response.content_type = 'application/json'
-            return json.dumps(pre_context, indent=3)
+            data = json.dumps(pre_context, indent=3)
+            return Response(
+                response=data, status=200, mimetype='application/json')
 
         except Exception as e:
             log.exception("failed with error: %r" % e)
@@ -1054,9 +1124,9 @@ class UserserviceController(BaseController):
             realm = self.authUser.realm
 
             context = get_context(config, user, realm, self.client)
-
-            response.content_type = 'application/json'
-            return json.dumps(context, indent=3)
+            data = json.dumps(context, indent=3)
+            return Response(
+                response=data, status=200, mimetype='application/json')
 
         except Exception as e:
             log.exception("[context] failed with error: %r" % e)
@@ -1083,7 +1153,7 @@ class UserserviceController(BaseController):
             try:
                 act = self.request_params["type"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             try:
                 (tok, section, scope) = act.split('.')
@@ -1097,14 +1167,14 @@ class UserserviceController(BaseController):
             realm = self.authUser.realm
 
             context = get_context(config, user, realm, self.client)
-            for k, v in context.items():
+            for k, v in list(context.items()):
                 setattr(c, k, v)
 
             if tok in tokenclass_registry:
                 tclt = tokenclass_registry.get(tok)
                 if hasattr(tclt, 'getClassInfo'):
                     sections = tclt.getClassInfo(section, {})
-                    if scope in sections.keys():
+                    if scope in list(sections.keys()):
                         section = sections.get(scope)
                         page = section.get('page')
                         c.scope = page.get('scope')
@@ -1155,7 +1225,7 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userenable', param,
@@ -1172,12 +1242,12 @@ class UserserviceController(BaseController):
                 c.audit['success'] = ret
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("[enable] policy failed %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[enable] failed: %r" % e)
@@ -1210,7 +1280,7 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userdisable', param,
@@ -1226,12 +1296,12 @@ class UserserviceController(BaseController):
                 c.audit['success'] = ret
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("policy failed %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("failed: %r" % e)
@@ -1257,7 +1327,7 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
@@ -1271,12 +1341,12 @@ class UserserviceController(BaseController):
                 c.audit['success'] = ret
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("[userdelete] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[userdelete] deleting token %s of user %s failed! %r"
@@ -1300,7 +1370,7 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
@@ -1313,12 +1383,12 @@ class UserserviceController(BaseController):
                 c.audit['success'] = ret
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("error resetting token with serial %s: %r"
@@ -1345,7 +1415,7 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             upin = param.get("pin", None)
 
@@ -1361,12 +1431,12 @@ class UserserviceController(BaseController):
                 c.audit['realm'] = self.authUser.realm
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("unassigning token %s of user %s failed! %r"
@@ -1393,7 +1463,7 @@ class UserserviceController(BaseController):
                 userPin = param["userpin"]
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
@@ -1421,12 +1491,12 @@ class UserserviceController(BaseController):
                 c.audit['success'] = ret
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pex:
             log.exception("policy failed: %r" % pex)
             Session.rollback()
-            return sendError(response, unicode(pex), 1)
+            return sendError(response, str(pex), 1)
 
         except Exception as exx:
             log.exception("Error setting OTP PIN: %r" % exx)
@@ -1450,7 +1520,7 @@ class UserserviceController(BaseController):
                 pin = param["pin"]
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
@@ -1463,12 +1533,12 @@ class UserserviceController(BaseController):
                 c.audit['success'] = ret
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pex:
             log.exception("policy failed: %r" % pex)
             Session.rollback()
-            return sendError(response, unicode(pex), 1)
+            return sendError(response, str(pex), 1)
 
         except Exception as exx:
             log.exception("Error setting the mOTP PIN %r" % exx)
@@ -1497,7 +1567,7 @@ class UserserviceController(BaseController):
                 otp1 = param["otp1"]
                 otp2 = param["otp2"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
@@ -1510,12 +1580,12 @@ class UserserviceController(BaseController):
                 c.audit['success'] = ret
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("error resyncing token with serial %s:%r"
@@ -1543,7 +1613,7 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             # check if token is in another realm
             realm_list = getTokenRealms(serial)
@@ -1552,7 +1622,7 @@ class UserserviceController(BaseController):
                 # if the token is assigned to realms, then the user must be in
                 # one of the realms, otherwise the token can not be assigned
                 raise Exception(_("The token you want to assign is "
-                                             " not contained in your realm!"))
+                                  "not contained in your realm!"))
             th = TokenHandler()
             if (False == th.hasOwner(serial)):
                 log.info("user %s@%s is assign the token with "
@@ -1570,12 +1640,12 @@ class UserserviceController(BaseController):
             checkPolicyPost('selfservice', 'userassign', param, self.authUser)
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("[userassign] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[userassign] token assignment failed! %r" % exx)
@@ -1618,7 +1688,7 @@ class UserserviceController(BaseController):
             try:
                 otp = param["otp"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             ttype = param.get("type", None)
 
@@ -1632,12 +1702,12 @@ class UserserviceController(BaseController):
             c.audit['serial'] = serial
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("token getSerialByOtp failed! %r" % exx)
@@ -1661,7 +1731,7 @@ class UserserviceController(BaseController):
             try:
                 tok_type = param["type"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             serial = param.get('serial', None)
             prefix = param.get('prefix', None)
@@ -1730,12 +1800,12 @@ class UserserviceController(BaseController):
                 hparam['qr'] = param.get('qr') or 'html'
                 return sendQRImageResult(response, rdata, hparam)
             else:
-                return sendResult(response, ret, opt=response_detail)
+                return sendResult(self.response, ret, opt=response_detail)
 
         except PolicyException as pe:
             log.exception("[userinit] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[userinit] token initialization failed! %r" % e)
@@ -1891,14 +1961,14 @@ class UserserviceController(BaseController):
             checkPolicyPost('selfservice', 'enroll', param, user=self.authUser)
 
             Session.commit()
-            return sendResult(response, {'init': ret1,
+            return sendResult(self.response, {'init': ret1,
                                          'setpin': False,
                                          'oathtoken': ret})
 
         except PolicyException as pe:
             log.exception("[userwebprovision] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[userwebprovision] token initialization failed! %r"
@@ -1925,8 +1995,8 @@ class UserserviceController(BaseController):
             JSON response
         '''
 
-        getotp_active = config.get("linotpGetotp.active")
-        if "True" != getotp_active:
+        getotp_active = config.get("GETOTP_ENABLED")
+        if not getotp_active:
             return sendError(response, _("getotp is not activated."), 0)
 
         param = self.request_params
@@ -1937,7 +2007,7 @@ class UserserviceController(BaseController):
                 serial = param["serial"]
                 count = int(param["count"])
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             curTime = param.get("curTime", None)
 
@@ -1966,17 +2036,17 @@ class UserserviceController(BaseController):
             c.audit['success'] = True
 
             Session.commit()
-            return sendResult(response, ret, 0)
+            return sendResult(self.response, ret, 0)
 
         except PolicyException as pe:
             log.exception("[usergetmultiotp] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[usergetmultiotp] gettoken/getmultiotp failed: %r" % e)
             Session.rollback()
-            return sendError(response, _(u"selfservice/usergetmultiotp failed:"
+            return sendError(response, _("selfservice/usergetmultiotp failed:"
                                          " %r") % e, 0)
 
         finally:
@@ -2035,13 +2105,13 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("[search] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[search] audit/search failed: %r" % exx)
             Session.rollback()
             return sendError(response, _("audit/search failed: %s")
-                                                        % unicode(exx), 0)
+                                                        % str(exx), 0)
 
         finally:
             Session.close()
@@ -2077,7 +2147,7 @@ class UserserviceController(BaseController):
             try:
                 typ = param["type"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             if typ and typ.lower() not in ["ocra", "ocra2"]:
                 return sendError(response, _("valid types are 'ocra' "
@@ -2089,7 +2159,7 @@ class UserserviceController(BaseController):
             try:
                 helper_param['serial'] = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             acode = param["activationcode"]
             helper_param['activationcode'] = acode.upper()
@@ -2097,7 +2167,7 @@ class UserserviceController(BaseController):
             try:
                 helper_param['genkey'] = param["genkey"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
             (ret, tokenObj) = th.initToken(helper_param, self.authUser)
@@ -2128,12 +2198,12 @@ class UserserviceController(BaseController):
             c.audit['realm'] = self.authUser.realm
 
             Session.commit()
-            return sendResult(response, {'activate': True, 'ocratoken': ret})
+            return sendResult(self.response, {'activate': True, 'ocratoken': ret})
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("token initialization failed! %r" % e)
@@ -2174,26 +2244,26 @@ class UserserviceController(BaseController):
                 passw = param['pass']
                 p_serial = param['serial']
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             value = {}
 
             ocraChallenge = OcraTokenClass.getTransaction(transid)
             if ocraChallenge is None:
                 error = ('[userfinshocratoken] No challenge for transaction'
-                            ' %s found' % unicode(transid))
+                            ' %s found' % str(transid))
                 raise Exception(error)
 
             serial = ocraChallenge.tokenserial
             if serial != p_serial:
                 error = ('[userfinshocratoken] token mismatch for token '
-                      'serial: %s - %s' % (unicode(serial), unicode(p_serial)))
+                      'serial: %s - %s' % (str(serial), str(p_serial)))
                 raise Exception(error)
 
             tokens = getTokens4UserOrSerial(serial=serial)
             if len(tokens) == 0 or len(tokens) > 1:
                 error = ('[userfinshocratoken] no token found for '
-                         'serial: %s' % (unicode(serial)))
+                         'serial: %s' % (str(serial)))
                 raise Exception(error)
 
             theToken = tokens[0]
@@ -2228,12 +2298,12 @@ class UserserviceController(BaseController):
                             param, self.authUser)
 
             Session.commit()
-            return sendResult(response, value, opt)
+            return sendResult(self.response, value, opt)
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             error = "token finitialization failed! %r" % e
@@ -2300,12 +2370,12 @@ class UserserviceController(BaseController):
             c.audit['realm'] = self.authUser.realm
 
             Session.commit()
-            return sendResult(response, value, opt)
+            return sendResult(self.response, value, opt)
 
         except PolicyException as pe:
             log.exception("[userfinshocra2token] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             error = "[userfinshocra2token] token initialization failed! %r" % e
@@ -2334,12 +2404,12 @@ class UserserviceController(BaseController):
                     method = param["method"]
                 except KeyError as exx:
                     raise ParameterError("Missing parameter: '%s'"
-                                         % exx.message)
+                                         % str(exx))
 
             try:
                 typ = param["type"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
             serial = param.get("serial", None)
 
@@ -2384,12 +2454,12 @@ class UserserviceController(BaseController):
                     c.audit['success'] = False
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("[token_call] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[token_call] calling method %s.%s of user %s failed! %r"
@@ -2447,7 +2517,7 @@ class UserserviceController(BaseController):
             c.audit['success'] = ret
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(self.response, res, 1)
 
         except Exception as exx:
             log.error("failed: %r", exx)

@@ -33,8 +33,7 @@ import netaddr
 
 import logging
 
-from pylons import config
-from pylons.controllers.util import abort
+from linotp.flap import config, abort
 
 from linotp.lib.crypto.utils import urandom
 from linotp.lib.crypto.utils import geturandom
@@ -53,10 +52,7 @@ from linotp import (__version__ as linotp_version,
                     __product__ as linotp_product,
                     )
 
-try:
-    from linotp import __api__ as linotp_api
-except ImportError:
-    linotp_api = 2.0
+from linotp import __api__ as linotp_api
 
 SESSION_KEY_LENGTH = 32
 hostname_regex = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
@@ -125,10 +121,11 @@ def  get_request_param(request, key, default=None):
     Returns the get / post / etc. param with the given key dependent on
     the content type
     """
-    if request.content_type == 'application/json':
-        return request.json_body.get(key, default)
+
+    if request.is_json:
+        return request.json.get(key, default)
     else:
-        return request.params.get(key, default)
+        return request.values.get(key, default)
 
 def getLowerParams(param):
     ret = {}
@@ -151,13 +148,13 @@ def uniquify(doubleList):
     return uniqueList
 
 
-def generate_otpkey(key_size=20):
+def generate_otpkey(key_size:int = 20) -> str:
     '''
     generates the HMAC key of keysize. Should be 20 or 32
     THe key is returned as a hexlified string
     '''
     log.debug("generating key of size %s" % key_size)
-    return binascii.hexlify(geturandom(key_size))
+    return geturandom(key_size).hex()
 
 
 def generate_password(size=6, characters=None):
@@ -172,6 +169,13 @@ def check_session(request, scope='admin'):
     '''
     This function checks the session cookie and compares it to
     the session parameter
+
+    :param request: the request object
+    :param scope: by default the admin scope, but used to as well
+                  for the scope helpdesk with the helpdesk_session
+                  cookie name
+
+    :return: boolean
     '''
 
     if isSelfTest():
@@ -197,9 +201,14 @@ def check_session(request, scope='admin'):
             log.warning("misconfiguration in linotpNoSessionCheck: "
                         "%r - %r" % (network, ex))
 
-    if request.path.endswith('/getsession'):
-        log.debug('[check_session] requesting a new session cookie')
-        return
+    cookie = request.cookies.get(scope + '_session')
+    session = get_request_param(request, 'session')
+    # doing any other request, we need to check the session!
+    log.debug("[check_session]: session: %s" % session)
+    log.debug("[check_session]: cookie:  %s" % cookie)
+    if session is None or session == "" or session != cookie:
+        log.error("The request did not pass a valid session!")
+        abort(401, "You have no valid session!")
 
     cookie = request.cookies.get(scope + '_session')
     session = get_request_param(request, 'session')
@@ -236,7 +245,7 @@ def remove_session_from_param(param):
     So we remove the session from the params.
     '''
     return_param = {}
-    for key in param.keys():
+    for key in list(param.keys()):
         if "session" != key.lower():
             return_param[key] = param[key]
 
@@ -440,28 +449,20 @@ def remove_empty_lines(doc):
 hexHexChars = '0123456789abcdef'
 modHexChars = 'cbdefghijklnrtuv'
 
-hex2ModDict = dict(zip(hexHexChars, modHexChars))
-mod2HexDict = dict(zip(modHexChars, hexHexChars))
+hex2ModDict = dict(list(zip(hexHexChars, modHexChars)))
+mod2HexDict = dict(list(zip(modHexChars, hexHexChars)))
 
 
-def modhex_encode(s):
-    return ''.join(
-        [hex2ModDict[c] for c in s.encode('hex')]
-    )
-# end def modhex_encode
+def modhex_encode(s: str) -> str:
+    return ''.join([hex2ModDict[c] for c in s])
 
 
-def modhex_decode(m):
-    return ''.join(
-        [mod2HexDict[c] for c in m]
-    ).decode('hex')
-# end def modhex_decode
+def modhex_decode(m: str) -> str:
+    return ''.join([mod2HexDict[c] for c in m])
 
-
-def checksum(msg):
+def checksum(msg: bytes) -> int:
     crc = 0xffff
-    for i in range(0, len(msg) / 2):
-        b = int(msg[i * 2] + msg[(i * 2) + 1], 16)
+    for b in msg:
         crc = crc ^ (b & 0xff)
         for _j in range(0, 8):
             n = crc & 1
@@ -486,7 +487,7 @@ def str2unicode(input_str):
                    ]
     for param in conversions:
         try:
-            output_str = unicode(input_str, **param)
+            output_str = str(input_str, **param)
             break
         except UnicodeDecodeError as exx:
             if param == conversions[-1]:
@@ -504,7 +505,7 @@ def unicode_compare(x, y):
     :param y: right value
     :return: the locale aware comparison result
     """
-    return cmp(str2unicode(x), str2unicode(y))
+    return x == y
 
 
 
@@ -517,7 +518,7 @@ def dict_copy(dict_):
     # 3 to 4 levels deep.
 
     copy = {}
-    for key, value in dict_.iteritems():
+    for key, value in dict_.items():
         if isinstance(value, dict):
             fragment = {key: dict_copy(value)}
         else:
@@ -551,6 +552,6 @@ def int_from_bytes(bytes_, byteorder='little'):
     res = 0
     for byte in bytes_[::order]:
         res *= 256
-        res += ord(byte)
+        res += byte
 
     return res

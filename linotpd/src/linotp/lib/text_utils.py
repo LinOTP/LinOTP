@@ -43,7 +43,7 @@ def simple_slice(text, chunk_size):
     if text == '':
         yield text
 
-    for pos in xrange(0, len(text), chunk_size):
+    for pos in range(0, len(text), chunk_size):
         yield text[pos:pos + chunk_size]
 
 
@@ -61,7 +61,7 @@ def utf8_slice(text, chunk_size):
     t_len = 0
     start = 0
 
-    for pos in xrange(0, len(text)):
+    for pos in range(0, len(text)):
 
         ll = len(text[pos].encode('utf-8'))
         t_len = t_len + ll

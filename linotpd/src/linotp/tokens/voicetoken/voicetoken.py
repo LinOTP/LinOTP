@@ -134,7 +134,7 @@ class VoiceTokenClass(HmacTokenClass):
 
         HmacTokenClass.__init__(self, token_obj)
 
-        self.setType(u'voice')
+        self.setType('voice')
 
         self.hashlibStr = "sha256"
 
@@ -184,21 +184,21 @@ class VoiceTokenClass(HmacTokenClass):
             'description': 'A voice token.',
             'init': {
                 'page': {
-                    'html': 'voicetoken.mako',
+                    'html': 'voicetoken/voicetoken.mako',
                     'scope': 'enroll',
                 },
                 'title': {
-                    'html': 'voicetoken.mako',
+                    'html': 'voicetoken/voicetoken.mako',
                     'scope': 'enroll.title',
                 },
             },
             'config': {
                 'title': {
-                    'html': 'voicetoken.mako',
+                    'html': 'voicetoken/voicetoken.mako',
                     'scope': 'config.title',
                 },
                 'page': {
-                    'html': 'voicetoken.mako',
+                    'html': 'voicetoken/voicetoken.mako',
                     'scope': 'config',
                 },
             },

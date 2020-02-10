@@ -40,8 +40,8 @@ class TestgetUserFromRequest(unittest.TestCase):
 
     def run_and_assert(self, request):
         authentification = getUserFromRequest(request)
-        self.assertEqual(authentification['login'], self.login,
-                         'Input was: %r' % request.environ)
+        assert authentification['login'] == self.login, \
+                         'Input was: %r' % request.environ
         return authentification
 
     def test_remote_authentification(self):
@@ -49,8 +49,8 @@ class TestgetUserFromRequest(unittest.TestCase):
         self.run_and_assert(request)
 
     def test_basic_authentification(self):
-        basicstring = "Basic %s" % base64.b64encode(
-            self.login + ':' + self.password)
+        auth_info = (self.login + ':' + self.password).encode('utf-8')
+        basicstring = "Basic %s" % str(base64.b64encode(auth_info), 'utf-8')
         request = self.Request({'HTTP_AUTHORIZATION': basicstring})
         self.run_and_assert(request)
 
@@ -58,8 +58,8 @@ class TestgetUserFromRequest(unittest.TestCase):
         digest = "Digest username=%s, Digest Password=Enemenemuh" % self.login
         request = self.Request({'HTTP_AUTHORIZATION': digest})
         authentification = self.run_and_assert(request)
-        self.assertEqual(authentification['Digest Password'], self.password,
-                         'Input was: %r' % request.environ)
+        assert authentification['Digest Password'] == self.password, \
+                         'Input was: %r' % request.environ
 
     def test_SSL_CLIENT_authentifictaion(self):
         request = self.Request({'SSL_CLIENT_S_DN_CN': self.login})
@@ -68,4 +68,4 @@ class TestgetUserFromRequest(unittest.TestCase):
     def test_empty_auth(self):
         request = self.Request({})
         authentification = getUserFromRequest(request)
-        self.assertEqual(authentification['login'], '', 'Input was empty')
+        assert authentification['login'] == '', 'Input was empty'

@@ -169,12 +169,20 @@ class TestEMailTemplate(TestCase):
         replacements = {
             'otp': otp,
             'serial': 'LEMT_12345'
-            }
+        }
 
         response = EMailProvider.render_simple_message(
             email_to, email_from, subject, message, replacements)
 
         # verify that the otp is appended to the message without <otp>
+
+        assert response
+
+        # depending of the input of the rendering the response could be
+        # of type bytes or python str - thus we convert to assure to
+        # recieve a python str
+        if not isinstance(response, str):
+            response = response.decode('utf-8')
 
         assert otp in response
         assert otp + ' subject' in response
@@ -218,6 +226,14 @@ class TestEMailTemplate(TestCase):
         response = EMailProvider.render_template_message(
             email_to, email_from, subject, template_message, replacements)
 
+        assert response
+
+        # depending of the input of the rendering the response could be
+        # of type bytes or python str - thus we convert to assure to
+        # recieve a python str
+        if not isinstance(response, str):
+            response = response.decode('utf-8')
+
         assert "Your requested OTP is " + otp in response
         assert "<td align='center'>" + otp in response
         assert "Subject: " + otp + " subject" in response
@@ -243,6 +259,14 @@ class TestEMailTemplate(TestCase):
 
         response = EMailProvider.render_template_message(
             email_to, email_from, subject, template_message, replacements)
+
+        assert response
+
+        # depending of the input of the rendering the response could be
+        # of type bytes or python str - thus we convert to assure to
+        # recieve a python str
+        if not isinstance(response, str):
+            response = response.decode('utf-8')
 
         assert "Your requested OTP is " + otp + " ${var}"in response
         assert "<td align='center'>" + otp + " ${var}" in response
@@ -284,6 +308,14 @@ class TestEMailTemplate(TestCase):
         response = EMailProvider.render_template_message(
             email_to, email_from, subject, template_message, replacements)
 
+        assert response
+
+        # depending of the input of the rendering the response could be
+        # of type bytes or python str - thus we convert to assure to
+        # recieve a python str
+        if not isinstance(response, str):
+            response = response.decode('utf-8')
+
         assert "Subject: " + otp + " subject" in response
 
         # ------------------------------------------------------------------ --
@@ -296,6 +328,7 @@ class TestEMailTemplate(TestCase):
             response = EMailProvider.render_template_message(
                 email_to, email_from, subject, template_message, replacements)
 
-        assert 'not in email provider template root' in exx.exception.message
+        ex_msg = "%r" % exx.exception
+        assert 'not in email provider template root' in ex_msg
 
 # eof

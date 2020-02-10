@@ -29,8 +29,8 @@ U2F controller - interface to the list of valid facets
 """
 
 import json
-from pylons import response
-from linotp.lib.base import BaseController
+from linotp.flap import response
+from linotp.controllers.base import BaseController
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.policy import getPolicy, getPolicyActionValue
 

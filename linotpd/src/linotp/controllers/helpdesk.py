@@ -29,13 +29,15 @@ helpdesk controller - interfaces to administrate LinOTP as helpdesk
 """
 import os
 import logging
+from binascii import hexlify
 
-from pylons import request
-from pylons import response
-from pylons import config
-from pylons import tmpl_context as c
+from flask import Response, after_this_request
 
-from linotp.lib.base import BaseController
+from linotp.flap import (
+    config, request, response, tmpl_context as c)
+
+
+from linotp.controllers.base import BaseController
 
 from linotp.lib.reply import sendResult
 from linotp.lib.reply import sendError
@@ -81,7 +83,6 @@ from linotp.lib.realm import get_realms_from_params
 import linotp.model
 Session = linotp.model.Session
 
-audit = config.get('audit')
 
 
 log = logging.getLogger(__name__)
@@ -101,22 +102,24 @@ class HelpdeskController(BaseController):
     The functions are described below in more detail.
     '''
 
-    def __before__(self, action, **params):
+    def __before__(self,  **params):
         '''
         '''
+
+        action = request_context['action']
 
         try:
 
             c.audit = request_context['audit']
             c.audit['success'] = False
             c.audit['client'] = get_client(request)
+
+            audit = config.get('audit')
             request_context['Audit'] = audit
 
             # Session handling
             if action not in ['getsession', 'dropsession']:
                 check_session(request, scope='helpdesk')
-
-            return request
 
         except Exception as exx:
             log.exception("[__before__::%r] exception", action)
@@ -124,20 +127,27 @@ class HelpdeskController(BaseController):
             Session.rollback()
             Session.close()
 
-            return sendError(response, exx, context='before')
+            return sendError(None, exx, context='before')
 
-    def __after__(self, action):
+    @staticmethod
+    def __after__(response):
         '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
         '''
+
+        action = request_context['action']
+        audit = config.get('audit')
 
         try:
             c.audit['administrator'] = getUserFromRequest(request).get("login")
-            c.audit['serial'] = self.request_params.get('serial')
+            c.audit['serial'] = request.params.get('serial')
 
             audit.log(c.audit)
             Session.commit()
-
-            return request
+            return response
 
         except Exception as e:
             log.exception(
@@ -151,43 +161,41 @@ class HelpdeskController(BaseController):
     def getsession(self):
         '''
         This generates a session key and sets it as a cookie
-        set_cookie is defined in python-webob::
 
             def set_cookie(self, key, value='', max_age=None,
                    path='/', domain=None, secure=None, httponly=False,
                    version=None, comment=None, expires=None, overwrite=False):
         '''
-        import binascii
-        try:
-            web_host = request.environ.get('HTTP_HOST')
-            # HTTP_HOST also contains the port number. We need to stript this!
-            web_host = web_host.split(':')[0]
-            log.debug("[getsession] environment: %s" % request.environ)
-            log.debug("[getsession] found this web_host: %s" % web_host)
-            random_key = os.urandom(SESSION_KEY_LENGTH)
-            cookie = binascii.hexlify(random_key)
-            log.debug(
-                "[getsession] adding session cookie %s to response." % cookie)
-            # we send all three to cope with IE8
-            response.set_cookie('helpdesk_session',
-                                value=cookie, domain=web_host)
-            # this produces an error with the gtk client
-            # response.set_cookie('admin_session', value=cookie,  domain=".%" % web_host )
-            response.set_cookie('helpdesk_session', value=cookie, domain="")
-            return sendResult(response, True)
 
-        except Exception as e:
-            log.exception(
-                "[getsession] unable to create a session cookie: %r" % e)
-            Session.rollback()
-            return sendError(response, e)
+        @after_this_request
+        def set_session_cookie(response):
+            try:
+                random_key = os.urandom(SESSION_KEY_LENGTH)
+                value = hexlify(random_key)
+                log.debug(
+                    "[getsession] adding session cookie %s to response." % value)
 
-        finally:
-            Session.close()
+                # TODO: add secure cookie at least for https
+
+                # Add cookie to generated response
+                response.set_cookie('helpdesk_session', value=value)
+
+                return response
+
+            except Exception as e:
+                log.exception("[getsession] unable to create a session cookie")
+                Session.rollback()
+                return sendError(response, e)
+
+        return sendResult(None, True)
 
     def dropsession(self):
-        response.set_cookie('helpdesk_session', None, expires=1)
-        return sendResult(response, True)
+        @after_this_request
+        def drop_session_cookie(response):
+            response.delete_cookie(key='helpdesk_session')
+            return response
+
+        return sendResult(None, True)
 
     def tokens(self):
         '''
@@ -288,7 +296,7 @@ class HelpdeskController(BaseController):
 
             c.audit['success'] = True
             Session.commit()
-            return sendResult(response, res)
+            return sendResult(None, res)
 
         except PolicyException as pex:
             log.exception("Error during checking policies")
@@ -378,16 +386,15 @@ class HelpdeskController(BaseController):
                 lines.append(
                     {'id': u['username'],
                         'cell': [
-                            (u['username']) if u.has_key('username') else (""),
-                            (resolver_display),
-                            (u['surname']) if u.has_key('surname') else (""),
-                            (u['givenname']) if u.has_key(
-                                'givenname') else (""),
-                            (u['email']) if u.has_key('email') else (""),
-                            (u['mobile']) if u.has_key('mobile') else (""),
-                            (u['phone']) if u.has_key('phone') else (""),
-                            (u['userid']) if u.has_key('userid') else (""),
-                            (u['realms']),
+                            u.get('username', ''),
+                            resolver_display,
+                            u.get('surname', ''),
+                            u.get('givenname', ''),
+                            u.get('email', ''),
+                            u.get('mobile', ''),
+                            u.get('phone', ''),
+                            u.get('userid', ''),
+                            u.get('realms', ''),
                     ]
                     }
                 )
@@ -409,8 +416,8 @@ class HelpdeskController(BaseController):
 
             lines = sorted(lines,
                            key=lambda user: user['cell'][sortnames[sort]],
-                           reverse=reverse,
-                           cmp=unicode_compare)
+                           reverse=reverse
+                           )
 
             # end: sorting
 
@@ -432,13 +439,13 @@ class HelpdeskController(BaseController):
             c.audit['success'] = True
 
             Session.commit()
-            return sendResult(response, res)
+            return sendResult(None, res)
 
         except PolicyException as pe:
             log.exception(
                 "[userview_flexi] Error during checking policies: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
             log.exception("[userview_flexi] failed: %r" % e)
@@ -596,7 +603,7 @@ class HelpdeskController(BaseController):
 
             c.audit['success'] = ret
 
-            return sendResult(response, ret)
+            return sendResult(None, ret)
 
         except PolicyException as pex:
             log.exception("Policy Exception while enrolling token")
@@ -684,7 +691,7 @@ class HelpdeskController(BaseController):
             c.audit['info'] = result
 
             Session.commit()
-            return sendResult(response, result)
+            return sendResult(None, result)
 
         except PolicyException as pex:
             log.exception('[setPin] policy failed %r')

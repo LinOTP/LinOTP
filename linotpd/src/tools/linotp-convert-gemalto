@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 #
@@ -46,7 +46,7 @@ import xml.etree.cElementTree as etree
 import binascii
 
 def usage():
-    print __doc__
+    print(__doc__)
 
 def main():
     try:
@@ -54,7 +54,7 @@ def main():
                 ["help", "file="])
 
     except GetoptError:
-        print "There is an error in your parameter syntax:"
+        print("There is an error in your parameter syntax:")
         usage()
         sys.exit(1)
 
@@ -70,7 +70,7 @@ def main():
 
 
     if "" == filename:
-        print "missing filename!"
+        print("missing filename!")
         usage()
         sys.exit(1)
 
@@ -86,7 +86,7 @@ def main():
     namespace = ""
     if match:
         namespace = match.group(1)
-        print("Found namespace %s" % namespace)
+        print(("Found namespace %s" % namespace))
 
     version = XML.get("version")
     element_list = list(XML)
@@ -94,16 +94,16 @@ def main():
     ''' Determine all encryption information '''
     encryptionMethod = XML.find(namespace + "EncryptionMethod")
     if encryptionMethod.get("algorithm") != "PBE-AES128-CBC":
-        print "We only support PBE-AES128-CBC. We found: %s" % encryptionMethod.get("algorithm")
+        print("We only support PBE-AES128-CBC. We found: %s" % encryptionMethod.get("algorithm"))
         sys.exit(2)
 
     salt = encryptionMethod.find(namespace + "PBESalt").text
     iteration = encryptionMethod.find(namespace + "PBEIterationCount").text
     iv = encryptionMethod.find(namespace + "IV").text
-    print "Encryption parameters:"
-    print " salt: %s" % salt
-    print " iterations: %s" % iteration
-    print " iv: %s" % iv
+    print("Encryption parameters:")
+    print(" salt: %s" % salt)
+    print(" iterations: %s" % iteration)
+    print(" iv: %s" % iv)
 
     digestMethod = XML.find(namespace + "DigestMethod").get("algorithm")
 
@@ -114,7 +114,7 @@ def main():
                     int(key_len), int(iteration))
     ENCRYPTION_KEY_hex = binascii.hexlify(ENCRYPTION_KEY_bin)
 
-    print "We derived the encryption key of %s bytes" % len(ENCRYPTION_KEY_bin)
+    print("We derived the encryption key of %s bytes" % len(ENCRYPTION_KEY_bin))
     #print "enc key: %s " % ENCRYPTION_KEY_hex
 
     ''' get all tokens '''
@@ -131,12 +131,12 @@ def main():
             algorithm = secret.get("SecretAlgorithm")
 
             if serial != secret_id:
-                print "Error: serial %s does not match SecretId %s" % (serial, secret_id)
+                print("Error: serial %s does not match SecretId %s" % (serial, secret_id))
 
             algo_id = secret.find(namespace + "Usage").find(namespace + "AlgorithmIdentifier")
             cryptofunction = algo_id.find(namespace + "CryptoFunction").text
             if cryptofunction != "HMAC-SHA1":
-                print "We do not support %s for serial %s" % (cryptofunction, serial)
+                print("We do not support %s for serial %s" % (cryptofunction, serial))
             truncation = algo_id.find(namespace + "Truncation").text
 
             ''' get seed '''
@@ -150,7 +150,7 @@ def main():
                         valud_digest_b64 = data.find(namespace + "ValueDigest").text
                         # TODO: check the digest...
                         decrypt = base64.b64decode(iv) + base64.b64decode(value_b64)
-                        print "decrypting %s" % base64.b64encode(decrypt)
+                        print("decrypting %s" % base64.b64encode(decrypt))
                         seed = aes_decrypt(base64.b64encode(decrypt), ENCRYPTION_KEY_hex)
                         seed = binascii.hexlify(seed)
 
@@ -158,7 +158,7 @@ def main():
 
     for token in TOKENS:
         (seed, algorithm, truncation) = TOKENS[token]
-        print "%s, %s, %s, %s" % (token, seed, algorithm, truncation)
+        print("%s, %s, %s, %s" % (token, seed, algorithm, truncation))
 
 
 if __name__ == '__main__':

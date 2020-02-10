@@ -28,7 +28,6 @@ import os
 import json
 import struct
 import mock
-from nose.tools import raises
 
 from tempfile import NamedTemporaryFile
 from collections import defaultdict
@@ -72,11 +71,12 @@ def u64_to_transaction_id(u64_int):
     # HACK! counterpart to transaction_id_to_u64 in
     # tokens.qrtokenclass
     rest = u64_int % 100
+    before = u64_int // 100
+
     if rest == 0:
-        return str(u64_int / 100)
+        return str(before)
     else:
-        before = u64_int // 100
-        return '%s.%s' % (str(before), str(rest))
+        return '%d.%02d' % (before, rest)
 
 # -------------------------------------------------------------------------- --
 
@@ -138,7 +138,7 @@ class TestPushToken(TestController):
                   'time': ''}
 
         self.create_policy(params=params)
-        self.uri = self.appconf.get('mobile_app_protocol_id', 'lseqr')
+        self.uri = self.app.config.get('MOBILE_APP_PROTOCOLL_ID', 'lseqr')
 
 # -------------------------------------------------------------------------- --
 
@@ -174,13 +174,13 @@ class TestPushToken(TestController):
         response = self.make_system_request('setPolicy', params)
         response_dict = json.loads(response.body)
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
-        self.assertIn('status', result)
+        assert 'status' in result
         status = result.get('status')
 
-        self.assertTrue(status)
+        assert status
 
         response = self.make_system_request('getPolicy', params)
 
@@ -247,11 +247,11 @@ class TestPushToken(TestController):
         # sent and validate
 
         response_dict = json.loads(response.body)
-        self.assertIn('pairing_url', response_dict.get('detail', {}))
+        assert 'pairing_url' in response_dict.get('detail', {})
 
         pairing_url = response_dict.get('detail', {}).get('pairing_url')
-        self.assertIsNotNone(pairing_url)
-        self.assertTrue(pairing_url.startswith(self.uri + '://pair/'))
+        assert pairing_url is not None
+        assert pairing_url.startswith(self.uri + '://pair/')
 
         return pairing_url
 
@@ -289,7 +289,7 @@ class TestPushToken(TestController):
             # right now, so type must be CONTENT_TYPE_PAIRING)
 
             content_type = challenge['content_type']
-            self.assertEqual(content_type, CONTENT_TYPE_PAIRING)
+            assert content_type == CONTENT_TYPE_PAIRING
 
         # ----------------------------------------------------------------- --
 
@@ -304,10 +304,10 @@ class TestPushToken(TestController):
         response_dict = json.loads(response.body)
 
         status = response_dict.get('result', {}).get('status')
-        self.assertTrue(status)
+        assert status
 
         value = response_dict.get('result', {}).get('value')
-        self.assertTrue(value, response)
+        assert value, response
 
 
     def execute_correct_pairing(self, user=None, pin='1234' , serial=None,
@@ -386,16 +386,16 @@ class TestPushToken(TestController):
 
         # check if returned json is correct
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
-        self.assertIn('value', result)
+        assert 'value' in result
         value = result.get('value')
-        self.assertFalse(value)
+        assert not value
 
-        self.assertIn('status', result)
+        assert 'status' in result
         status = result.get('status')
-        self.assertTrue(status)
+        assert status
 
         return user_token_id
 
@@ -426,8 +426,8 @@ class TestPushToken(TestController):
 
         # validate protocol versions and type id
 
-        self.assertEqual(token_type, TYPE_PUSHTOKEN)
-        self.assertEqual(version, PAIRING_URL_VERSION)
+        assert token_type == TYPE_PUSHTOKEN
+        assert version == PAIRING_URL_VERSION
 
         # ------------------------------------------------------------------ --
 
@@ -452,11 +452,12 @@ class TestPushToken(TestController):
         # save token data for later use
 
         user_token_id = len(self.tokens)
-        self.tokens[user_token_id] = {'serial': token_serial,
-                                      'server_public_key': server_public_key,
-                                      'partition': partition,
-                                      'callback_url': callback_url,
-                                      'pin': pin}
+        self.tokens[user_token_id] = {
+            'serial': token_serial.decode(),
+            'server_public_key': server_public_key,
+            'partition': partition,
+            'callback_url': callback_url.decode(),
+            'pin': pin}
 
         # ------------------------------------------------------------------ --
 
@@ -516,7 +517,7 @@ class TestPushToken(TestController):
 
         header = challenge_data[0:5]
         version, user_token_id = struct.unpack('<bI', header)
-        self.assertEqual(version, CHALLENGE_URL_VERSION)
+        assert version == CHALLENGE_URL_VERSION
 
         # ------------------------------------------------------------------ --
 
@@ -588,25 +589,25 @@ class TestPushToken(TestController):
 
         if content_type == CONTENT_TYPE_PAIRING:
 
-            serial, callback_url, __ = plaintext[offset:].split('\x00')
-            challenge['serial'] = serial
+            serial, callback_url, __ = plaintext[offset:].split(b'\x00')
+            challenge['serial'] = serial.decode()
 
         elif content_type == CONTENT_TYPE_SIGNREQ:
 
-            message, callback_url, __ = plaintext[offset:].split('\x00')
-            challenge['message'] = message
+            message, callback_url, __ = plaintext[offset:].split(b'\x00')
+            challenge['message'] = message.decode()
 
         elif content_type == CONTENT_TYPE_LOGIN:
 
-            login, host, callback_url, __ = plaintext[offset:].split('\x00')
-            challenge['login'] = login
-            challenge['host'] = host
+            login, host, callback_url, __ = plaintext[offset:].split(b'\x00')
+            challenge['login'] = login.decode()
+            challenge['host'] = host.decode()
 
         # ------------------------------------------------------------------ --
 
         # prepare the parsed challenge data
 
-        challenge['callback_url'] = callback_url
+        challenge['callback_url'] = callback_url.decode()
         challenge['transaction_id'] = transaction_id
         challenge['user_token_id'] = user_token_id
 
@@ -614,7 +615,7 @@ class TestPushToken(TestController):
 
         sig_base = (
             struct.pack('<b', CHALLENGE_URL_VERSION) +
-            b'%s\0' % action +
+            b'%s\0' % action.encode('utf-8') +
             server_signature + plaintext)
 
         sig = crypto_sign_detached(sig_base, self.secret_key)
@@ -661,7 +662,7 @@ class TestPushToken(TestController):
         pairing_response += self.public_key
 
         pairing_response += token_serial.encode('utf8') + b'\x00\x00'
-        pairing_response += self.gda + b'\x00'
+        pairing_response += self.gda.encode('utf-8') + b'\x00'
 
         signature = crypto_sign_detached(pairing_response, self.secret_key)
         pairing_response += signature
@@ -743,17 +744,17 @@ class TestPushToken(TestController):
             challenge_url = mock_push_notification.call_args[0][1]
 
             response_dict = json.loads(response.body)
-            self.assertIn('result', response_dict)
+            assert 'result' in response_dict
 
             result = response_dict.get('result')
-            self.assertIn('status', result)
-            self.assertIn('value', result)
+            assert 'status' in result
+            assert 'value' in result
 
             status = result.get('status')
             value = result.get('value')
 
-            self.assertTrue(status)
-            self.assertFalse(value)
+            assert status
+            assert not value
 
         # ------------------------------------------------------------------ --
 
@@ -780,7 +781,7 @@ class TestPushToken(TestController):
         # check if the content type is right
 
         content_type = challenge['content_type']
-        self.assertEqual(content_type, CONTENT_TYPE_SIGNREQ)
+        assert content_type == CONTENT_TYPE_SIGNREQ
 
         # ------------------------------------------------------------------ --
 
@@ -795,10 +796,10 @@ class TestPushToken(TestController):
         response_dict = json.loads(response.body)
 
         status = response_dict.get('result', {}).get('status')
-        self.assertTrue(status)
+        assert status
 
         value = response_dict.get('result', {}).get('value')
-        self.assertTrue(value, response)
+        assert value, response
 
         # ------------------------------------------------------------------ --
 
@@ -813,11 +814,11 @@ class TestPushToken(TestController):
         transactions = response_dict.get('detail', {}).get('transactions', {})
         transaction = transactions[challenge['transaction_id']]
 
-        self.assertTrue(transaction['status'] == 'closed', response)
-        self.assertTrue(transaction['accept'], response)
-        self.assertTrue(transaction['valid_tan'], response)
+        assert transaction['status'] == 'closed', response
+        assert transaction['accept'], response
+        assert transaction['valid_tan'], response
 
-        self.assertTrue('KIPT' in transaction['token']['serial'], response)
+        assert 'KIPT' in transaction['token']['serial'], response
 
         return
 
@@ -848,7 +849,7 @@ class TestPushToken(TestController):
             # check if the content type is right
 
             content_type = challenge['content_type']
-            self.assertEqual(content_type, CONTENT_TYPE_SIGNREQ)
+            assert content_type == CONTENT_TYPE_SIGNREQ
 
             created_challenges.append((challenge_url, challenge, sig))
 
@@ -873,7 +874,7 @@ class TestPushToken(TestController):
         # we have here one additonal challenge, which was the inital
         # pairing challenge
 
-        self.assertTrue(len(challenges) == (len(created_challenges) + 1))
+        assert len(challenges) == (len(created_challenges) + 1)
 
         # ------------------------------------------------------------------ --
 
@@ -893,10 +894,10 @@ class TestPushToken(TestController):
         response_dict = json.loads(response.body)
 
         status = response_dict.get('result', {}).get('status')
-        self.assertTrue(status)
+        assert status
 
         value = response_dict.get('result', {}).get('value')
-        self.assertTrue(value, response)
+        assert value, response
 
         # ------------------------------------------------------------------ --
 
@@ -911,9 +912,9 @@ class TestPushToken(TestController):
         transactions = response_dict.get('detail', {}).get('transactions', {})
         transaction = transactions[challenge['transaction_id']]
 
-        self.assertTrue(transaction['status'] == 'closed', response)
-        self.assertTrue(transaction['accept'], response)
-        self.assertTrue(transaction['valid_tan'], response)
+        assert transaction['status'] == 'closed', response
+        assert transaction['accept'], response
+        assert transaction['valid_tan'], response
 
         # verify that all challenges are kept
 
@@ -932,7 +933,7 @@ class TestPushToken(TestController):
         open_challenges = 0
         accept_challenges = 0
 
-        for challenge in challenges.values():
+        for challenge in list(challenges.values()):
 
             status = challenge['session']['status']
             accept = challenge['session'].get('accept')
@@ -943,8 +944,8 @@ class TestPushToken(TestController):
             if status == 'closed' and accept:
                 accept_challenges += 1
 
-        self.assertTrue(open_challenges == 9)
-        self.assertTrue(accept_challenges == 2)
+        assert open_challenges == 9
+        assert accept_challenges == 2
 
         return
 
@@ -969,7 +970,7 @@ class TestPushToken(TestController):
         # check if the content type is right
 
         content_type = challenge['content_type']
-        self.assertEqual(content_type, CONTENT_TYPE_SIGNREQ)
+        assert content_type == CONTENT_TYPE_SIGNREQ
 
         # ------------------------------------------------------------------ --
 
@@ -984,10 +985,10 @@ class TestPushToken(TestController):
         response_dict = json.loads(response.body)
 
         status = response_dict.get('result', {}).get('status')
-        self.assertTrue(status)
+        assert status
 
         value = response_dict.get('result', {}).get('value')
-        self.assertTrue(value, response)
+        assert value, response
 
         # ------------------------------------------------------------------ --
 
@@ -1002,9 +1003,9 @@ class TestPushToken(TestController):
         transactions = response_dict.get('detail', {}).get('transactions', {})
         transaction = transactions[challenge['transaction_id']]
 
-        self.assertTrue(transaction['status'] == 'closed', response)
-        self.assertTrue(transaction['reject'], response)
-        self.assertFalse(transaction['valid_tan'], response)
+        assert transaction['status'] == 'closed', response
+        assert transaction['reject'], response
+        assert not transaction['valid_tan'], response
 
         return
 
@@ -1031,7 +1032,7 @@ class TestPushToken(TestController):
         # check if the content type is right
 
         content_type = challenge['content_type']
-        self.assertEqual(content_type, CONTENT_TYPE_SIGNREQ)
+        assert content_type == CONTENT_TYPE_SIGNREQ
 
         # ------------------------------------------------------------------ --
 
@@ -1046,10 +1047,10 @@ class TestPushToken(TestController):
         response_dict = json.loads(response.body)
 
         status = response_dict.get('result', {}).get('status')
-        self.assertTrue(status)
+        assert status
 
         value = response_dict.get('result', {}).get('value')
-        self.assertFalse(value, response)
+        assert not value, response
 
 # -------------------------------------------------------------------------- --
 
@@ -1077,16 +1078,16 @@ class TestPushToken(TestController):
 
         # check if returned json is correct
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
-        self.assertIn('value', result)
+        assert 'value' in result
         value = result.get('value')
-        self.assertFalse(value)
+        assert not value
 
-        self.assertIn('status', result)
+        assert 'status' in result
         status = result.get('status')
-        self.assertTrue(status)
+        assert status
 
         # ------------------------------------------------------------------ --
 
@@ -1120,16 +1121,16 @@ class TestPushToken(TestController):
 
         # check if returned json is correct
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
-        self.assertIn('value', result)
+        assert 'value' in result
         value = result.get('value')
-        self.assertFalse(value)
+        assert not value
 
-        self.assertIn('status', result)
+        assert 'status' in result
         status = result.get('status')
-        self.assertFalse(status)
+        assert not status
 
         # ------------------------------------------------------------------ --
 
@@ -1167,16 +1168,16 @@ class TestPushToken(TestController):
 
         # check if returned json is correct
 
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
         result = response_dict.get('result')
 
-        self.assertIn('value', result)
+        assert 'value' in result
         value = result.get('value')
-        self.assertFalse(value)
+        assert not value
 
-        self.assertIn('status', result)
+        assert 'status' in result
         status = result.get('status')
-        self.assertFalse(status)
+        assert not status
 
         # ------------------------------------------------------------------ --
 
@@ -1203,7 +1204,7 @@ class TestPushToken(TestController):
         # check if the content type is right
 
         content_type = challenge['content_type']
-        self.assertEqual(content_type, CONTENT_TYPE_LOGIN)
+        assert content_type == CONTENT_TYPE_LOGIN
 
         # ------------------------------------------------------------------ --
 
@@ -1218,10 +1219,10 @@ class TestPushToken(TestController):
         response_dict = json.loads(response.body)
 
         status = response_dict.get('result', {}).get('status')
-        self.assertTrue(status)
+        assert status
 
         value = response_dict.get('result', {}).get('value')
-        self.assertTrue(value, response)
+        assert value, response
 
 # -------------------------------------------------------------------------- --
 
@@ -1241,16 +1242,16 @@ class TestPushToken(TestController):
 
         response = self.make_validate_request('check_s', params)
         response_dict = json.loads(response.body)
-        self.assertIn('result', response_dict)
+        assert 'result' in response_dict
 
         result = response_dict.get('result')
-        self.assertIn('status', result)
-        self.assertIn('value', result)
+        assert 'status' in result
+        assert 'value' in result
 
         status = result.get('status')
         value = result.get('value')
 
-        self.assertFalse(status)
-        self.assertFalse(value)
+        assert not status
+        assert not value
 
 # -------------------------------------------------------------------------- --

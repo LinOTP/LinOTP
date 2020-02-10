@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -66,7 +66,7 @@ class DeviceSMSProvider(ISMSProvider):
             - send out a message to a phone
 
         '''
-        if (not self.config.has_key("CONFIGFILE")):
+        if ("CONFIGFILE" not in self.config):
             log.error("[submitMessage] No config key CONFIGFILE found!")
             return False
 
@@ -79,7 +79,7 @@ class DeviceSMSProvider(ISMSProvider):
                 phone,
                 ]
 
-        if (self.config.has_key("SMSC")):
+        if ("SMSC" in self.config):
             args.append("--smsc")
             args.append(self.config.get("SMSC"))
 
@@ -106,7 +106,7 @@ class DeviceSMSProvider(ISMSProvider):
 
 
 def main(phone, message):
-    print "SMSProvider - class load test "
+    print("SMSProvider - class load test ")
 
     # echo "text" | gnokii --config <filename> <ziel>
 
@@ -117,7 +117,7 @@ def main(phone, message):
 
     sms.loadConfig(config)
     ret = sms.submitMessage(phone, message)
-    print sms
+    print(sms)
 
 
 if __name__ == "__main__":
@@ -125,4 +125,4 @@ if __name__ == "__main__":
     #phone      = "015154294800"
     message = "DeviceSMSProviderClass test. blocking. :-/"
     main(phone, message)
-    print "... done!"
+    print("... done!")

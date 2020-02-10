@@ -30,7 +30,7 @@ import zlib
 from os import urandom
 from base64 import b64encode
 from base64 import b64decode
-from pylons import config
+from linotp.flap import config
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from Cryptodome.Cipher import AES
@@ -56,28 +56,7 @@ from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.error import ParameterError
 from linotp.lib.pairing import generate_pairing_url
 
-# --------------------------------------------------------------------------- --
-
-try:
-
-    from hmac import compare_digest
-
-except ImportError:
-
-    # for python version < 2.7.7
-
-    def compare_digest(a, b):
-
-        if len(a) != len(b):
-            return False
-
-        result = 0
-        for letter_a, letter_b in zip(a, b):
-            result |= ord(letter_a) ^ ord(letter_b)
-
-        return result == 0
-
-# --------------------------------------------------------------------------- --
+from hmac import compare_digest
 
 from linotp.lib.context import request_context as context
 
@@ -112,7 +91,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     def __init__(self, token_model_object):
         TokenClass.__init__(self, token_model_object)
-        self.setType(u'qr')
+        self.setType('qr')
         self.mode = ['challenge']
         self.supports_offline_mode = True
 
@@ -183,38 +162,57 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         info['policy']['authentication'] = auth_policies
 
-        info['policy']['selfservice'] = {'activate_QRToken':
-                                         {'type': 'bool',
-                                          'description': _('activate your '
-                                                           'QRToken')}
-                                         }
+        info['policy']['selfservice'] = {
+            'activate_QRToken': {
+                'type': 'bool',
+                'description': _('activate your QRToken')}
+            }
 
         # ------------------------------------------------------------------- --
 
         # wire the templates
 
         init_dict = {}
-        init_dict['title'] = {'html': 'qrtoken.mako', 'scope': 'enroll.title'}
-        init_dict['page'] = {'html': 'qrtoken.mako', 'scope': 'enroll'}
+        init_dict['title'] = {
+            'html': 'qrtoken/qrtoken.mako',
+            'scope': 'enroll.title'
+        }
+        init_dict['page'] = {
+            'html': 'qrtoken/qrtoken.mako',
+            'scope': 'enroll'
+        }
         info['init'] = init_dict
 
         config_dict = {}
         config_dict['title'] = {
-            'html': 'qrtoken.mako', 'scope': 'config.title'}
-        config_dict['page'] = {'html': 'qrtoken.mako', 'scope': 'config'}
+            'html': 'qrtoken/qrtoken.mako',
+            'scope': 'config.title'
+        }
+        config_dict['page'] = {
+            'html': 'qrtoken/qrtoken.mako',
+            'scope': 'config'
+        }
         info['config'] = config_dict
 
         ss_enroll = {}
-        ss_enroll['title'] = {'html': 'qrtoken.mako',
-                              'scope': 'selfservice.title.enroll'}
-        ss_enroll['page'] = {'html': 'qrtoken.mako',
-                             'scope': 'selfservice.enroll'}
+        ss_enroll['title'] = {
+            'html': 'qrtoken/qrtoken.mako',
+            'scope': 'selfservice.title.enroll'
+        }
+        ss_enroll['page'] = {
+            'html': 'qrtoken/qrtoken.mako',
+            'scope': 'selfservice.enroll'
+        }
 
         ss_activate = {}
-        ss_activate['title'] = {'html': 'qrtoken.mako',
-                                'scope': 'selfservice.title.activate'}
-        ss_activate['page'] = {'html': 'qrtoken.mako',
-                               'scope': 'selfservice.activate'}
+        ss_activate['title'] = {
+            'html': 'qrtoken/qrtoken.mako',
+            'scope': 'selfservice.title.activate'
+        }
+        ss_activate['page'] = {
+            'html': 'qrtoken/qrtoken.mako',
+            'scope': 'selfservice.activate'
+        }
 
         selfservice_dict = {}
         selfservice_dict['enroll'] = ss_enroll
@@ -246,7 +244,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         self.ensure_state('pairing_url_sent')
 
         self.addToTokenInfo('user_token_id', user_token_id)
-        b64_user_public_key = b64encode(user_public_key)
+        b64_user_public_key = b64encode(user_public_key).decode()
         self.addToTokenInfo('user_public_key', b64_user_public_key)
 
         self.change_state('pairing_response_received')
@@ -479,7 +477,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # the server must send a hmac based signature with the
         # response
 
-        sig = ''
+        sig = b''
         sec_obj = self._get_secret_object()
 
         if flags & CHALLENGE_HAS_SIGNATURE:

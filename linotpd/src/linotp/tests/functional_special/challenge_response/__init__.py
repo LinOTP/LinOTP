@@ -46,7 +46,7 @@ import re
 import time
 import json
 import logging
-import urlparse
+import urllib.parse
 
 
 from linotp.tests.functional_special import TestSpecialController
@@ -166,7 +166,7 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
     test_func = HTTP_RESPONSE_FUNC
     if test_func:
         body = kwparams.get('body')
-        params = dict(urlparse.parse_qsl(body))
+        params = dict(urllib.parse.parse_qsl(body))
         resp, content = test_func(params)
         HTTP_RESPONSE_FUNC = None
 
@@ -256,7 +256,7 @@ class TestChallengeResponseController(TestSpecialController):
             params['email_address'] = email_address
 
         response = self.make_admin_request(action='init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
         self.serials.append(serial)
         return serial
 
@@ -276,10 +276,10 @@ class TestChallengeResponseController(TestSpecialController):
             }
 
         response = self.make_system_request("setPolicy", params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         response = self.make_system_request("getPolicy", params=params)
-        self.assertTrue('"status": true' in response, response)
+        assert '"status": true' in response, response
 
         self.policies.append(name)
         return response

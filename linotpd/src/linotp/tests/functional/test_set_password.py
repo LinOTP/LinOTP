@@ -37,7 +37,7 @@ from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy.exc import ProgrammingError
 
-from linotp.lib.crypto.utils import libcrypt_password
+from linotp.lib.crypto import utils
 from linotp.lib.tools.set_password import SetPasswordHandler
 from linotp.lib.tools.set_password import DataBaseContext
 
@@ -53,7 +53,7 @@ class TestSetAdminPassword(TestController):
         for the tests, we will drop the imported user table
         """
 
-        sqlconnect = self.appconf.get('sqlalchemy.url')
+        sqlconnect = self.app.config.get('SQLALCHEMY_DATABASE_URI')
         engine = create_engine(sqlconnect)
 
         # create the session for the db operation
@@ -83,16 +83,16 @@ class TestSetAdminPassword(TestController):
         for testing we require the admin user to exist
         """
 
-        sqlconnect = self.appconf.get('sqlalchemy.url')
+        sqlconnect = self.app.config.get('SQLALCHEMY_DATABASE_URI')
         engine = create_engine(sqlconnect)
 
         db_context = DataBaseContext(engine.url)
 
         SetPasswordHandler.create_table(db_context)
         SetPasswordHandler.create_admin_user(
-                                db_context,
-                                username='admin',
-                                crypted_password=libcrypt_password('nimda'))
+                        db_context,
+                        username='admin',
+                        crypted_password=utils.crypt_password('nimda'))
 
     def test_set_simple_password(self):
         """
@@ -112,7 +112,7 @@ class TestSetAdminPassword(TestController):
                                            auth_user='admin')
 
         msg = '"detail": "password updated for \'admin\'"'
-        self.assertTrue(msg in response)
+        assert msg in response
 
         return
 

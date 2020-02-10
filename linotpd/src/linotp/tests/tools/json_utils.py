@@ -70,7 +70,7 @@ class JsonUtils:
         if object is None:
             return defaultValue
         
-        if isinstance(path, basestring):
+        if isinstance(path, str):
             path = path.split('/')
         else:
             try:
@@ -91,15 +91,15 @@ class JsonUtils:
     # Also. for array, each different element must be equal.      
     @staticmethod
     def compareValue(value1, value2):
-        if isinstance(value1, basestring):
-            if isinstance(value2, basestring):
+        if isinstance(value1, str):
+            if isinstance(value2, str):
                 if value1 == value2:
                     return True
         elif type(value1) == type(value2):
             if value1 == value2:
                 return True
             if isinstance(value1, list):
-                if len(value1) <> len(value2):
+                if len(value1) != len(value2):
                     return False
                 for i in range(len(value1)):
                     if not JsonUtils.compareValue(value1[i], value2[i]):
@@ -113,7 +113,7 @@ class JsonUtils:
     # the "testDictionary" (first parameter, test for inclusion). 
     @staticmethod
     def checkDictionary(testDictionary, dictionary):
-        for key in testDictionary.keys():
+        for key in list(testDictionary.keys()):
             value1 = testDictionary.get(key, None)
             if value1 is None:
                 # Check Value; value must exist in dictionary
@@ -137,10 +137,10 @@ class JsonUtils:
     @staticmethod
     def checkJsonValues(object, value, namedValues = {}):
         if isinstance(value, dict):
-            for key in value.keys():
+            for key in list(value.keys()):
                 if isinstance(key, RegexType):
                     temp = None
-                    for key2 in object.keys():
+                    for key2 in list(object.keys()):
                         # Find a key that match the Regex pattern!
                         match = key.match(key2)
                         if not match is None:

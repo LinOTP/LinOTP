@@ -29,9 +29,11 @@
 Test the onetime token for the selfservice login
 """
 import json
+import pytest
+
 from linotp.tests import TestController
 
-import unittest2
+from linotp.tests.conftest import Base_App_Config as BAC
 
 
 class TestRolloutToken(TestController):
@@ -86,7 +88,7 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_system_request('setPolicy', params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         user = 'passthru_user1@myDefRealm'
         password = 'geheim1'
@@ -106,13 +108,13 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.validate_check(user, pin, otp)
-        self.assertTrue(' "value": true' in response, response)
+        assert ' "value": true' in response, response
 
         response = self.user_service_login(user, password, otp)
-        self.assertTrue(' "value": true' in response, response)
+        assert ' "value": true' in response, response
 
         return
 
@@ -130,7 +132,7 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_system_request('setPolicy', params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         user = 'passthru_user1@myDefRealm'
         password = 'geheim1'
@@ -148,13 +150,13 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.validate_check(user, pin, otp)
-        self.assertTrue(' "value": true' in response, response)
+        assert ' "value": true' in response, response
 
         response = self.user_service_login(user, password, otp)
-        self.assertTrue(' "value": true' in response, response)
+        assert ' "value": true' in response, response
 
         return
 
@@ -172,7 +174,7 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_system_request('setPolicy', params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         user = 'passthru_user1@myDefRealm'
         password = 'geheim1'
@@ -192,13 +194,13 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.validate_check(user, pin, otp)
-        self.assertTrue(' "value": false' in response, response)
+        assert ' "value": false' in response, response
 
         response = self.user_service_login(user, password, otp)
-        self.assertTrue(' "value": true' in response, response)
+        assert ' "value": true' in response, response
 
         return
 
@@ -216,7 +218,7 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_system_request('setPolicy', params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         user = 'passthru_user1@myDefRealm'
         password = 'geheim1'
@@ -235,13 +237,13 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.validate_check(user, pin, otp)
-        self.assertTrue(' "value": false' in response, response)
+        assert ' "value": false' in response, response
 
         response = self.user_service_login(user, password, otp)
-        self.assertTrue(' "value": true' in response, response)
+        assert ' "value": true' in response, response
 
         return
 
@@ -259,7 +261,7 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_system_request('setPolicy', params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         user = 'passthru_user1@myDefRealm'
         password = 'geheim1'
@@ -279,16 +281,18 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         response = self.validate_check(user, pin, otp)
-        self.assertTrue(' "value": true' in response, response)
+        assert ' "value": true' in response, response
 
         response = self.user_service_login(user, password, otp)
-        self.assertTrue(' "value": false' in response, response)
+        assert ' "value": false' in response, response
 
         return
 
+    @pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
+                        reason="non sqlite database required for this test!")
     def test_enrollment_janitor(self):
         """
         test janitor - remove rollout token via validate/check
@@ -303,7 +307,7 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_system_request('setPolicy', params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         params = {
             'name': 'purge',
@@ -315,7 +319,7 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_system_request('setPolicy', params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         user = 'passthru_user1@myDefRealm'
         password = 'geheim1'
@@ -333,7 +337,7 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # enroll second token - the enrollment token should disapear now
 
@@ -346,20 +350,20 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # ------------------------------------------------------------------ --
 
         # ensure the rollout is only valid in scope userservice
 
         response = self.validate_check(user, pin, otp)
-        self.assertTrue(' "value": false' in response, response)
+        assert ' "value": false' in response, response
 
         response = self.user_service_login(user, password, otp)
-        self.assertTrue(' "value": true' in response, response)
+        assert ' "value": true' in response, response
 
         response = self.make_admin_request('show', params=params)
-        self.assertTrue('KIPW0815' in response, response)
+        assert 'KIPW0815' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -370,11 +374,11 @@ class TestRolloutToken(TestController):
             'value', {}).get(
             'data', [])
 
-        self.assertTrue(len(tokens) > 1)
+        assert len(tokens) > 1
 
         for token in tokens:
             if token["LinOtp.TokenSerialnumber"] == "KIPW0815":
-                self.assertTrue(token['LinOtp.TokenDesc'] == 'rollout token')
+                assert token['LinOtp.TokenDesc'] == 'rollout token'
                 break
 
         # ------------------------------------------------------------------ --
@@ -383,10 +387,10 @@ class TestRolloutToken(TestController):
         # the rollout token should have disappeared
 
         response = self.validate_check(user, pin="Test123!", password='second')
-        self.assertTrue(' "value": true' in response, response)
+        assert ' "value": true' in response, response
 
         response = self.make_admin_request('show', params=params)
-        self.assertTrue('KIPW0815' not in response, response)
+        assert 'KIPW0815' not in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -412,7 +416,7 @@ class TestRolloutToken(TestController):
                 found_in_audit_log = True
                 break
 
-        self.assertTrue(found_in_audit_log, entries)
+        assert found_in_audit_log, entries
 
         return
 
@@ -430,7 +434,7 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_system_request('setPolicy', params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         params = {
             'name': 'purge',
@@ -442,7 +446,7 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_system_request('setPolicy', params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         user = 'passthru_user1@myDefRealm'
         password = 'geheim1'
@@ -462,7 +466,7 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # enroll second token
 
@@ -475,17 +479,17 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # ------------------------------------------------------------------ --
         # ensure that login with rollout token is only
         # possible in the selfservice
 
         response = self.validate_check(user, pin, otp)
-        self.assertTrue(' "value": false' in response, response)
+        assert ' "value": false' in response, response
 
         response = self.user_service_login(user, password, otp)
-        self.assertTrue(' "value": true' in response, response)
+        assert ' "value": true' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -493,7 +497,7 @@ class TestRolloutToken(TestController):
         # should make the rollout token not disappeared
 
         response = self.make_admin_request('show', params=params)
-        self.assertTrue('KIPW0815' in response, response)
+        assert 'KIPW0815' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -501,10 +505,10 @@ class TestRolloutToken(TestController):
         # the rollout token should have disappeared
 
         response = self.user_service_login(user, password, otp='second')
-        self.assertTrue(' "value": true' in response, response)
+        assert ' "value": true' in response, response
 
         response = self.make_admin_request('show', params=params)
-        self.assertTrue('KIPW0815' not in response, response)
+        assert 'KIPW0815' not in response, response
 
         return
 
@@ -522,7 +526,7 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_system_request('setPolicy', params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         user = 'passthru_user1@myDefRealm'
         password = 'geheim1'
@@ -542,7 +546,7 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # enroll second token
 
@@ -555,17 +559,17 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # ------------------------------------------------------------------ --
         # ensure that login with rollout token is only
         # possible in the selfservice
 
         response = self.validate_check(user, pin, otp)
-        self.assertTrue(' "value": false' in response, response)
+        assert ' "value": false' in response, response
 
         response = self.user_service_login(user, password, otp)
-        self.assertTrue(' "value": true' in response, response)
+        assert ' "value": true' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -573,7 +577,7 @@ class TestRolloutToken(TestController):
         # should make the rollout token not disappeared
 
         response = self.make_admin_request('show', params=params)
-        self.assertTrue('KIPW0815' in response, response)
+        assert 'KIPW0815' in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -581,10 +585,10 @@ class TestRolloutToken(TestController):
         # the rollout token should not disappeared as the policy is not set
 
         response = self.user_service_login(user, password, otp='second')
-        self.assertTrue(' "value": true' in response, response)
+        assert ' "value": true' in response, response
 
         response = self.make_admin_request('show', params=params)
-        self.assertTrue('KIPW0815' in response, response)
+        assert 'KIPW0815' in response, response
 
         return
 
@@ -602,7 +606,7 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_system_request('setPolicy', params)
-        self.assertTrue('false' not in response, response)
+        assert 'false' not in response, response
 
         user = 'passthru_user1@myDefRealm'
         password = 'geheim1'
@@ -621,7 +625,7 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # enroll second token
 
@@ -634,7 +638,7 @@ class TestRolloutToken(TestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
         # ----------------------------------------------------------------- --
 
@@ -651,12 +655,12 @@ class TestRolloutToken(TestController):
 
         # verify that the rollout token is not in the list
 
-        self.assertTrue('KIPW0815' in response, response)
-        self.assertTrue('LinOtp.TokenSerialnumber' in response, response)
+        assert 'KIPW0815' in response, response
+        assert 'LinOtp.TokenSerialnumber' in response, response
 
         response = self.make_selfservice_request(
             'usertokenlist', None, auth_user=auth_user)
-        self.assertTrue('KIPW0815' not in response.body, response)
+        assert 'KIPW0815' not in response.body, response
 
         return
 

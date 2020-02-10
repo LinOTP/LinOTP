@@ -25,11 +25,13 @@
 #
 """Contains Policy class"""
 
-import time
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
 
-from manage_elements import ManageTab
-from helper import select, fill_form_element
-
+from .manage_elements import ManageTab
+from .helper import select, fill_form_element
 
 class PolicyManager(ManageTab):
     policy_entries_css_selector = "table#policy_table > tbody > tr"
@@ -61,12 +63,39 @@ class PolicyManager(ManageTab):
             if not policies:
                 break
             self.delete_policy(policies[0])
-            time.sleep(1)
 
     def delete_policy(self, p):
+        """
+        Select and delete the given policy line
+
+        p: WebElement of policy line
+        """
+        # Clear policy name field
+        policy_name_element = self.find_by_id("policy_name")
+        policy_name_element.clear()
+
+        def policy_name_empty(_):
+            return policy_name_element.get_attribute('value') == ""
+        WebDriverWait(self.driver, 10).until(policy_name_empty)
+
+        # Select policy to delete
         p.click()
+        WebDriverWait(self.driver, 10).until_not(policy_name_empty)
+
+        # Delete the policy
         self.find_by_id(self.policy_delete_button_id).click()
         self.wait_for_grid_loading()
+        info = self.manage.alert_box_handler
+        info.clear_messages()
+
+        def policy_still_visible(driver):
+            try:
+                return p.is_displayed()
+            except StaleElementReferenceException:
+                return False
+
+        WebDriverWait(self.driver, 10).until_not(policy_still_visible)
+        assert info.check_last_message('Policy deleted.')
 
     def set_new_policy(self, policy):
         """

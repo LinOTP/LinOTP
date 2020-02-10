@@ -250,7 +250,7 @@ class SMTPEmailProvider(IEmailProvider):
         email_message = SMTPEmailProvider._render_template(
             message.encode('utf-8'), replacements)
 
-        msg = MIMEText(email_message.encode('utf-8'))
+        msg = MIMEText(email_message)
         msg['Subject'] = Header(subject_replacement).encode('utf-8')
         msg['From'] = Header(email_from).encode('utf-8')
         msg['To'] = Header(email_to).encode('utf-8')
@@ -371,10 +371,9 @@ class SMTPEmailProvider(IEmailProvider):
         # now build up the final message with all replacements
 
         message = SMTPEmailProvider._render_template(
-            template_data.encode('utf-8'), replacements)
+            template_data, replacements)
 
         return message.encode('utf-8')
-
 
     @staticmethod
     def _render_template(template_data, replacements):

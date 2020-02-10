@@ -92,7 +92,7 @@ class EmailTokenClass(HmacTokenClass):
 
     def __init__(self, aToken):
         HmacTokenClass.__init__(self, aToken)
-        self.setType(u"email")
+        self.setType("email")
         self.hKeyRequired = False
 
         # we support various hashlib methods, but only on create

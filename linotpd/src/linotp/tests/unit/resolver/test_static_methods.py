@@ -66,17 +66,17 @@ class TestResolverTestCase(unittest.TestCase):
         ldap_cls = ldap_resolver
 
         res = ldap_cls.primary_key_changed({}, {})
-        self.assertFalse(res)
+        assert not res
 
         res = ldap_cls.primary_key_changed({'UIDTYPE': 'objectGUID'},
                                            {'UIDTYPE': 'uid'})
 
-        self.assertTrue(res)
+        assert res
 
         res = ldap_cls.primary_key_changed({'UIDTYPE': 'uid'},
                                            {'UIDTYPE': 'uid'})
 
-        self.assertFalse(res)
+        assert not res
 
         return
 
@@ -93,7 +93,7 @@ class TestResolverTestCase(unittest.TestCase):
         sql_cls = sql_resolver
 
         res = sql_cls.primary_key_changed({}, {})
-        self.assertFalse(res)
+        assert not res
 
         u_map_1 = json.dumps({'userid': 'id'})
         u_map_2 = json.dumps({'userid': 'uid'})
@@ -101,11 +101,11 @@ class TestResolverTestCase(unittest.TestCase):
         res = sql_cls.primary_key_changed({'Map': u_map_1},
                                           {'Map': u_map_2})
 
-        self.assertTrue(res)
+        assert res
 
         res = sql_cls.primary_key_changed({'Map': u_map_1},
                                           {'Map': u_map_1})
 
-        self.assertFalse(res)
+        assert not res
 
         return

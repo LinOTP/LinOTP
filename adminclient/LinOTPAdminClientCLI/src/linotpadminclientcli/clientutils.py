@@ -29,14 +29,14 @@ this module is used for the communication of the python based management clients
                 linotpadm.py and glinotpadm.py
 """
 
-import urllib2, httplib, urllib
+import urllib.request, urllib.error, urllib.parse, http.client, urllib.request, urllib.parse, urllib.error
 import re
 import random
 import sys, os
 import ssl
 import logging
 import logging.handlers
-import cookielib
+import http.cookiejar
 
 if sys.version_info[0:2] >= (2, 6):
     import json
@@ -114,14 +114,14 @@ class pyToken:
             usertoken = usertoken + line
         return usertoken
 
-class HTTPSClientAuthHandler(urllib2.HTTPSHandler):
+class HTTPSClientAuthHandler(urllib.request.HTTPSHandler):
     '''
     This Class is used to do the client cert auth with urllib2
     found at:
     http://www.osmonov.com/2009/04/client-certificates-with-urllib2.html
     '''
     def __init__(self, key, cert):
-        urllib2.HTTPSHandler.__init__(self)
+        urllib.request.HTTPSHandler.__init__(self)
         self.key = key
         self.cert = cert
 
@@ -134,7 +134,7 @@ class HTTPSClientAuthHandler(urllib2.HTTPSHandler):
         return self.do_open(self.getConnection, req)
 
     def getConnection(self, host, timeout=300):
-        return httplib.HTTPSConnection(host, key_file=self.key, cert_file=self.cert)
+        return http.client.HTTPSConnection(host, key_file=self.key, cert_file=self.cert)
 
 class linotpclient(object):
     '''
@@ -174,7 +174,7 @@ class linotpclient(object):
         self.logging = False
         self.authtype = authtype
         self.log = logging.getLogger('linotpclient')
-        self.cookie_jar = cookielib.CookieJar()
+        self.cookie_jar = http.cookiejar.CookieJar()
         self.session = ""
         if (self.admin and self.adminpw) or (self.cert and self.key):
             self.getsession()
@@ -255,11 +255,11 @@ class linotpclient(object):
             In case of connection errors it raises a
             LinOTPClientError exception.
         '''
-        p = urllib.urlencode(param)
+        p = urllib.parse.urlencode(param)
         d = ""
         if len(data) > 0:
             # We got data, so we will do a POST request.
-            d = urllib.urlencode(data)
+            d = urllib.parse.urlencode(data)
         else:
             # We do a normal GET request
             d = ""
@@ -279,15 +279,15 @@ class linotpclient(object):
                 # we got a username, so we will do digest auth
                 if not self.adminpw:
                     raise LinOTPClientError(1004, _("When specifying an admin user to authenticate you also need to pass a password."))
-                pw_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+                pw_manager = urllib.request.HTTPPasswordMgrWithDefaultRealm()
                 pw_manager.add_password(None, uri=self.protocol + '://' + self.url, user=self.admin, passwd=self.adminpw)
 
                 if "Digest" == self.authtype:
                     # Digest Auth
-                    auth_handler = urllib2.HTTPDigestAuthHandler(pw_manager)
+                    auth_handler = urllib.request.HTTPDigestAuthHandler(pw_manager)
                 else:
                     # Basic Auth
-                    auth_handler = urllib2.HTTPBasicAuthHandler(pw_manager)
+                    auth_handler = urllib.request.HTTPBasicAuthHandler(pw_manager)
             elif (self.cert and (self.protocol == "https")):
                 #########################################################
                 # CLIENT CERT AUTH
@@ -305,34 +305,34 @@ class linotpclient(object):
 
         try:
             # Proxy handler:
-            proxy_handler = urllib2.ProxyHandler({})
-            proxy_auth_handler = urllib2.ProxyBasicAuthHandler()
+            proxy_handler = urllib.request.ProxyHandler({})
+            proxy_auth_handler = urllib.request.ProxyBasicAuthHandler()
             if self.proxy:
-                proxy_handler = urllib2.ProxyHandler({self.protocol: self.protocol + '://' + self.proxy + '/'})
+                proxy_handler = urllib.request.ProxyHandler({self.protocol: self.protocol + '://' + self.proxy + '/'})
                 # TODO: Proxy Authentication
                 # proxy_auth_handler.add_password(None, self.protocol+'://'+self.url, self.proxyuser, self.proxypass)
 
-            cookie_handler = urllib2.HTTPCookieProcessor(self.cookie_jar)
+            cookie_handler = urllib.request.HTTPCookieProcessor(self.cookie_jar)
 
             ctx = None
-            https_handler = urllib2.HTTPSHandler()
+            https_handler = urllib.request.HTTPSHandler()
             if self.disable_ssl_certificate_validation:
                 # only the urlib2 in python 2.7 has the ssl.create_default
                 try:
                     ctx = ssl.create_default_context()
                     ctx.check_hostname = False
                     ctx.verify_mode = ssl.CERT_NONE
-                    https_handler = urllib2.HTTPSHandler(context=ctx)
+                    https_handler = urllib.request.HTTPSHandler(context=ctx)
                 except AttributeError as exx:
                     # so we have the old ulrlib, which does no verification
-                    https_handler = urllib2.HTTPSHandler()
+                    https_handler = urllib.request.HTTPSHandler()
 
-            opener = urllib2.build_opener(https_handler,
+            opener = urllib.request.build_opener(https_handler,
                                           auth_handler, proxy_handler,
                                           cookie_handler)
 
             # ...and install it globally so it can be used with urlopen.
-            urllib2.install_opener(opener)
+            urllib.request.install_opener(opener)
 
             req_params = {}
             if param:
@@ -345,10 +345,10 @@ class linotpclient(object):
 
             p = None
             if req_params:
-                p = urllib.urlencode(req_params)
+                p = urllib.parse.urlencode(req_params)
 
             req_url = self.protocol + '://' + self.url + path
-            f = urllib2.urlopen(urllib2.Request(req_url, p))
+            f = urllib.request.urlopen(urllib.request.Request(req_url, p))
 
         except Exception as e:
             if self.logging:
@@ -506,24 +506,24 @@ class linotpclient(object):
             return r1
 
         elif param['rtype'] == 'LDAP':
-            for k, v in ldap_opts_map.items():
+            for k, v in list(ldap_opts_map.items()):
                 if not k in param:
                     raise LinOTPClientError(1201, _("When setting an ldap resolver, you need to specify '%s'.") % k)
                 r1 = self.writeserverconfig({ 'ldapresolver.' + v + '.' + param['resolver']: param[ k ] })
             return r1
         elif param['rtype'] == 'SQL':
-            print "TODO: Doing the Voodoo to set all these config keys"
+            print("TODO: Doing the Voodoo to set all these config keys")
 
         return {}
 
     def deleteresolver(self, param):
         r1 = self.readserverconfig({})
-        for (k, v) in r1['result']['value'].items():
+        for (k, v) in list(r1['result']['value'].items()):
             resolver = k.split(".")
             if len(resolver) == 3:
                 if resolver[0] in ("passwdresolver", "ldapresolver", "sqlresolver"):
                     if resolver[2] == param['resolver']:
-                        print "deleting config key %s." % k
+                        print("deleting config key %s." % k)
                         self.deleteconfig({'key':k })
 
 
@@ -531,11 +531,11 @@ class linotpclient(object):
         r1 = self.readserverconfig(param)
         # now we need to split all the resolving stuff.
         newResolver = {}
-        for (k, v) in r1['result']['value'].items():
+        for (k, v) in list(r1['result']['value'].items()):
             resolver = k.split(".")
             if len(resolver) == 3:
                 if resolver[0]in ("passwdresolver", "ldapresolver", "sqlresolver"):
-                    if newResolver.has_key(resolver[2]) == False:
+                    if (resolver[2] in newResolver) == False:
                         newResolver[resolver[2]] = {}
                     newResolver[resolver[2]]['type'] = resolver[0]
                     newResolver[resolver[2]][resolver[1]] = v
@@ -545,7 +545,7 @@ class linotpclient(object):
 
     def importtoken(self, param):
         if not param['file']:
-            print "Please specify a filename to import the token from"
+            print("Please specify a filename to import the token from")
             return False
         f = open (param['file'])
         tokenfile = f.readlines()
@@ -565,11 +565,11 @@ class linotpclient(object):
             mt = re.search('<Token serial=\"(.*)\">', line)
             if mt:
                 if tokenseed:
-                    print "Error: Got a seed (" + tokenseed + ")without a serial!"
+                    print("Error: Got a seed (" + tokenseed + ")without a serial!")
                 else:
                     tokenserial = mt.group(1)
                     tokens = tokens + 1
-                    print "Importing token", tokens, "/", token_count, "with serial", tokenserial
+                    print("Importing token", tokens, "/", token_count, "with serial", tokenserial)
             else:
                 ms = re.search('<Seed>(.*)</Seed>', line)
                 if ms:
@@ -577,12 +577,12 @@ class linotpclient(object):
                     if tokenserial:
                         ret = self.inittoken({ 'serial':tokenserial, 'otpkey':tokenseed, 'description':"Safeword", 'user':'', 'pin':''})
                         if ret['result']['status'] == False:
-                            print ret['result']['error']['message']
+                            print(ret['result']['error']['message'])
                         tokenseed = ""
                         tokenserial = ""
                     else:
-                        print "Error: Got a seed (" + tokenseed + ") without a serial!"
-        print "%i tokens imported." % tokens
+                        print("Error: Got a seed (" + tokenseed + ") without a serial!")
+        print("%i tokens imported." % tokens)
         return True
 
 
@@ -600,7 +600,7 @@ def dumpresult(status, data, tabformat):
 
     #if not result['status']:
     if not status:
-        print "The return status is false"
+        print("The return status is false")
     else:
 
         head = tabentry
@@ -610,7 +610,7 @@ def dumpresult(status, data, tabformat):
             for i in range(0, len(head)):
                 tabvisible.append(i)
         if len(tabhead) < len(head):
-            print "tabhead " + str(len(tabhead)) + " head " + str(len(head))
+            print("tabhead " + str(len(tabhead)) + " head " + str(len(head)))
             for i in range(0, len(head)):
                 tabhead.append('head')
         if len(tabsize) < len(head):
@@ -625,9 +625,9 @@ def dumpresult(status, data, tabformat):
 
         i = 0
         for t in tabhead:
-            print tabstr[i] % str(t) [:tabsize[i]], tabdelim,
+            print(tabstr[i] % str(t) [:tabsize[i]], tabdelim, end=' ')
             i = i + 1
-        print
+        print()
 
         for token in data:
             i = 0
@@ -635,7 +635,7 @@ def dumpresult(status, data, tabformat):
                 #print tabstr[i] % str(token.get(t)).endcode('utf-8') [:tabsize[i]], tabdelim,
                 #text=str(token.get(t)).encode('utf-8')
                 text = token.get(t)
-                if not type(token.get(t)) == unicode:
+                if not type(token.get(t)) == str:
                     text = str(token.get(t))
                 # If we got a IdResClass like useridresolver.PasswdIdResolver.IdResolver.pw2
                 # we only want to get the last field
@@ -643,6 +643,6 @@ def dumpresult(status, data, tabformat):
                     r = text.split('.')
                     if len(r) == 4:
                         text = r[3]
-                print tabstr[i] % text [:tabsize[i]], tabdelim,
+                print(tabstr[i] % text [:tabsize[i]], tabdelim, end=' ')
                 i = i + 1
-            print
+            print()

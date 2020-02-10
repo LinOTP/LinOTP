@@ -29,9 +29,11 @@ audit controller - to search the audit trail
 
 import logging
 
-from pylons import tmpl_context as c
-from pylons import request, response, config
-from linotp.lib.base import BaseController
+from flask import Response, stream_with_context
+
+from linotp.flap import tmpl_context as c, request, response, config
+
+from linotp.controllers.base import BaseController
 
 
 from linotp.lib.util import check_session
@@ -51,7 +53,6 @@ from linotp.lib.context import request_context
 import linotp.model
 Session = linotp.model.Session
 
-audit = config.get('audit')
 
 optional = True
 required = False
@@ -68,15 +69,23 @@ class AuditController(BaseController):
 
     '''
 
-    def __before__(self, action, **params):
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
 
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        action = request_context['action']
 
         try:
             c.audit = request_context['audit']
             c.audit['client'] = get_client(request)
             check_session(request)
+            audit = config.get('audit')
             request_context['Audit'] = audit
-
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
@@ -84,14 +93,23 @@ class AuditController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
+    @staticmethod
+    def __after__(response):
+        '''
+        __after__ is called after every action
 
-    def __after__(self):
+        :param response: the previously created response - for modification
+        :return: return the response
+        '''
+
+        audit = config.get('audit')
+
         c.audit['administrator'] = getUserFromRequest(request).get("login")
         audit.log(c.audit)
 
+        return response
 
     def search(self):
-
         '''
         This functions searches within the audit trail
         It returns the audit information for the given search pattern
@@ -131,32 +149,42 @@ class AuditController(BaseController):
                 if key in search_params:
                     del search_params[key]
 
-            output_format = self.request_params.get("outform", 'json') or 'json'
-            delimiter = self.request_params.get('delimiter', ',') or ','
+            output_format = self.request_params.get(
+                "outform", 'json') or 'json'
 
-            audit_iterator = None
+            streamed_response = None
 
+            audit = config.get('audit')
             audit_query = AuditQuery(search_params, audit)
 
             if output_format == "csv":
-                filename = "linotp-audit.csv"
-                response.content_type = "application/force-download"
-                response.headers['Content-disposition'] = (
-                                        'attachment; filename=%s' % filename)
+                delimiter = self.request_params.get('delimiter', ',') or ','
 
-                audit_iterator = CSVAuditIterator(audit_query, delimiter)
+                streamed_response = Response(
+                    stream_with_context(
+                        CSVAuditIterator(audit_query, delimiter)
+                    ), mimetype='text/csv'
+                )
+                streamed_response.headers.set(
+                    'Content-disposition',
+                    'attachment', filename='linotp-audit.csv')
+
             else:
-                response.content_type = 'application/json'
-                audit_iterator = JSONAuditIterator(audit_query)
+                streamed_response = Response(
+                    stream_with_context(
+                        JSONAuditIterator(audit_query)
+                    ), mimetype='application/json'
+                )
 
             c.audit['success'] = True
             Session.commit()
-            return audit_iterator
+
+            return streamed_response
 
         except PolicyException as pe:
             log.exception("[getotp] gettoken/getotp policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[search] audit/search failed: %r" % e)

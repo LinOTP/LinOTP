@@ -26,9 +26,10 @@
 
 import unittest
 
-from linotp.lib.crypto.utils import libcrypt_password
+from linotp.lib.crypto import utils
 from linotp.lib.tools.set_password import SetPasswordHandler
 from linotp.lib.tools.set_password import DataBaseContext
+import pytest
 
 
 class TestSetPasswordTool(unittest.TestCase):
@@ -45,12 +46,12 @@ class TestSetPasswordTool(unittest.TestCase):
         """
         check that an exception with the message will be raised
         """
-        with self.assertRaises(exception) as exx:
+        with pytest.raises(exception) as exx:
             pw_handler.set_password(username,
                                     old_password,
                                     new_password)
 
-        self.assertTrue(message in exx.exception.message)
+        exx.match(message)
 
     def test_set_password(self):
 
@@ -58,8 +59,8 @@ class TestSetPasswordTool(unittest.TestCase):
         SetPasswordHandler.create_table(self.db_context)
 
         admin_user = 'admin'
-        admin_pw = libcrypt_password('admin_password')
 
+        admin_pw = utils.crypt_password('admin_password')
         # setup the inital user and it's password
 
         SetPasswordHandler.create_admin_user(self.db_context,
@@ -88,22 +89,22 @@ class TestSetPasswordTool(unittest.TestCase):
                                 Exception, message=msg)
 
         # test for invalid new password using different data types
-        msg = "must be string, not None"
+        msg = "must be unicode or bytes, not None"
         self.check_for_exeption(pw_handler,
                                 'admin', 'new_password', None,
                                 Exception, message=msg)
 
-        msg = "must be string, not int"
+        msg = "must be unicode or bytes, not int"
         self.check_for_exeption(pw_handler,
                                 'admin', 'new_password', 123456,
                                 Exception, message=msg)
 
-        msg = "must be string, not float"
+        msg = "must be unicode or bytes, not float"
         self.check_for_exeption(pw_handler,
                                 'admin', 'new_password', 1234.56,
                                 Exception, message=msg)
 
-        msg = "must be string, not DataBaseContext"
+        msg = "must be unicode or bytes, not linotp.lib."
         self.check_for_exeption(pw_handler,
                                 'admin', 'new_password', self.db_context,
                                 Exception, message=msg)
@@ -137,7 +138,7 @@ class TestSetPasswordTool(unittest.TestCase):
         SetPasswordHandler.create_table(self.db_context)
 
         admin_user = 'admin'
-        admin_pw = libcrypt_password('admin_password')
+        admin_pw = utils.crypt_password('admin_password')
 
         # setup the inital user and it's password
 
@@ -146,7 +147,7 @@ class TestSetPasswordTool(unittest.TestCase):
                                              crypted_password=admin_pw)
 
         admin_user = 'admin'
-        admin_pw = libcrypt_password('password_of_admin')
+        admin_pw = utils.crypt_password('password_of_admin')
 
         # setup the inital user and try to set it's password a second time
         # - this will fail as the user could only be set once

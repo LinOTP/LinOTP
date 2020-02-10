@@ -41,16 +41,49 @@ from . import MockedSMTP
 
 from linotp.tests import TestController
 
-from . import enable_helpdesk_controller
-import pylons.test
+
+import base64
+
+
+def get_email_content(email_message):
+    """
+
+    to convert the urlsafe base64 encoded message back to plain content
+
+    example email message is:
+
+    Content-Type: text/plain; charset="utf-8"
+    MIME-Version: 1.0
+    Content-Transfer-Encoding: base64
+    Subject: New email token enrolled
+    From: linotp@example.com
+    To: hans@example.com
+
+    QSBuZXcgZW1haWwgdG9rZW4gKExTRU0wMDAxMjFEMSkgd2l0aCBwaW4gJ3Rlc3QxMjMhJyBmb3Ig
+    SGFucyBNw7xsbGVyIGhhcyBiZWVuIGVucm9sbGVkLg==
+
+
+    thus the content starts with the first empty line
+    """
+
+    if not 'Content-Transfer-Encoding: base64' in email_message:
+        return email_message
+
+    body = []
+    body_start = False
+
+    for l in email_message.split('\n'):
+        if body_start:
+            body.append(l.strip())
+        if not l:
+            body_start = True
+
+    cc = "\n".join(body).strip()
+
+    return base64.urlsafe_b64decode(cc).decode('utf-8')
+
 
 class TestHelpdeskEnrollment(TestController):
-
-    @classmethod
-    def setup_class(cls):
-        """add the helpdesk route to the test pylons app"""
-
-        enable_helpdesk_controller(pylons.test.pylonsapp.config)
 
     def setUp(self):
         """ setup for std resolver / realms"""
@@ -314,14 +347,15 @@ class TestHelpdeskEnrollment(TestController):
             _email_from, email_to, email_message = call_args_list[0].args
             assert email_to == 'pass.true@example.com'
             assert 'Subject: New email token enrolled' in email_message
-            assert "with pin 'geheim1!" not in email_message
+
+            content = get_email_content(email_message)
+            assert "with pin 'geheim1!" not in content
 
             # second call is the otp notification
 
             _email_from, email_to, email_message = call_args_list[1].args
             assert email_to == 'pass.true@example.com'
             assert 'Subject: Your requested otp' in email_message
-
 
     def test_enrollment(self):
         """verify that an email token will be enrolled"""
@@ -385,7 +419,9 @@ class TestHelpdeskEnrollment(TestController):
 
             assert email_to == 'hans@example.com'
             assert 'Subject: New email token enrolled' in email_message
-            assert "with pin 'test123!" in email_message
+
+            content = get_email_content(email_message)
+            assert "with pin 'test123!" in content
 
         # ------------------------------------------------------------------ --
 
@@ -421,14 +457,17 @@ class TestHelpdeskEnrollment(TestController):
 
             assert email_to == 'hans@example.com'
             assert 'Subject: New email token enrolled' in email_message
-            assert "with pin 'test123!" not in email_message
+
+            content = get_email_content(email_message)
+            assert "with pin 'test123!" not in content
 
             # now verify that there are only digits in the pin, as we defined
             # the random pin contents
 
-            parts = email_message.split("'")
-            assert int(parts[1]), email_message
-            assert len(parts[1]) == 12, email_message
+            content = get_email_content(email_message)
+            parts = content.split("'")
+            assert int(parts[1]), content
+            assert len(parts[1]) == 12, content
 
         return
 
@@ -442,7 +481,8 @@ class TestHelpdeskEnrollment(TestController):
         filename = os.path.join(self.fixture_path, 'enrollment_email.eml')
         with open(filename, "rb") as f:
             content = f.read()
-        inline_template = json.dumps(content)
+
+        inline_template = json.dumps(content.decode('utf-8'))
 
         email_config = {
             "SMTP_SERVER": "mail.example.com",
@@ -511,10 +551,12 @@ class TestHelpdeskEnrollment(TestController):
             _email_from, email_to, email_message = call_args[0]
 
             assert email_to == 'hans@example.com'
-            message_parts = email_message.split('\\n')
+            message_parts = email_message.decode('utf-8').split('\\n')
 
             assert 'Subject: New email token enrolled' in message_parts[3]
-            assert "with pin 'test123!" not in message_parts[13]
+
+            content = email_message.decode('utf-8')
+            assert "with pin 'test123!" not in content
 
             # now verify that there are only digits in the pin, as we defined
             # the random pin contents
@@ -727,7 +769,9 @@ class TestHelpdeskEnrollment(TestController):
 
             assert email_to == 'hans@example.com'
             assert 'Subject: New email token enrolled' in email_message
-            assert "with pin 'test123!" in email_message
+
+            content = get_email_content(email_message)
+            assert "with pin 'test123!" in content
 
         # ------------------------------------------------------------------ --
 

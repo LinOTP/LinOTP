@@ -44,3 +44,8 @@ maintenance     - for internal maintenance purposes
 
 '''
 
+from .base import BaseController
+
+__all__ = [
+    'BaseController'
+]

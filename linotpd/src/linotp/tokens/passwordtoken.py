@@ -32,7 +32,7 @@ from linotp.tokens.base import TokenClass
 from linotp.tokens.hmactoken import HmacTokenClass
 from linotp.tokens import tokenclass_registry
 from linotp.lib.error import ParameterError
-from linotp.lib.crypto.utils import libcrypt_password
+from linotp.lib.crypto import utils
 
 log = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class PasswordTokenClass(HmacTokenClass):
     def __init__(self, aToken):
         TokenClass.__init__(self, aToken)
         self.hKeyRequired = True
-        self.setType(u"pw")
+        self.setType("pw")
 
     @classmethod
     def getClassType(cls):
@@ -148,9 +148,9 @@ class PasswordTokenClass(HmacTokenClass):
         :param reset_failcount: boolean, if the failcounter should be reseted
         """
 
-        password_hash = libcrypt_password(otpKey.encode('utf-8'))
+        password_hash = utils.crypt_password(otpKey).encode('utf-8')
 
-        self.token.set_encrypted_seed(password_hash, ":1:",
+        self.token.set_encrypted_seed(password_hash, b":1:",
                                       reset_failcount=reset_failcount)
 
     def checkOtp(self, anOtpVal, counter, window, options=None):
@@ -168,7 +168,7 @@ class PasswordTokenClass(HmacTokenClass):
 
         secObj = self._get_secret_object()
 
-        if secObj.compare_password(anOtpVal.encode('utf-8')):
+        if secObj.compare_password(anOtpVal):
 
             return 0
 

@@ -31,6 +31,7 @@ import logging
 import json
 import re
 
+from flask import current_app
 from functools import partial
 
 from linotp.lib.context import request_context as context
@@ -46,8 +47,7 @@ from linotp.lib.type_utils import boolean
 from linotp.useridresolver import resolver_registry
 from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
-from linotp.lib.crypto.utils import encryptPassword
-
+from linotp.lib.crypto.encrypted_data import EncryptedData
 # -------------------------------------------------------------------------- --
 
 # on module load integrate the parser function for resolver config
@@ -120,7 +120,7 @@ def save_resolver_config(resolver, config, prefix, name):
 
     res = True
 
-    for key, value in config.items():
+    for key, value in list(config.items()):
 
         # if the config contains something starting with 'linotp.'
         # it does not belong to the resolver rather then to linotp
@@ -233,7 +233,7 @@ def similar_resolver_exists(config_identifier):
     """
 
     config = context.get('Config')
-    cls_identifiers = resolver_registry.keys()
+    cls_identifiers = list(resolver_registry.keys())
 
     for config_entry in config:
         for cls_identifier in cls_identifiers:
@@ -254,7 +254,7 @@ def get_cls_identifier(config_identifier):
     """
 
     config = context.get('Config')
-    cls_identifiers = resolver_registry.keys()
+    cls_identifiers = list(resolver_registry.keys())
 
     for config_entry in config:
 
@@ -393,7 +393,7 @@ def getResolverInfo(resolvername, passwords=False):
     # - adjusted passwords
     # - all values as text
 
-    for key in res_conf.keys():
+    for key in list(res_conf.keys()):
 
         # suppress global config entries
 
@@ -403,15 +403,21 @@ def getResolverInfo(resolvername, passwords=False):
 
         # should passwords be displayed?
         if key in resolver_cls.crypted_parameters:
-            if not passwords:
-                res_conf[key] = encryptPassword(res_conf[key])
+
+            # we have to be sure that we only have encrypted data objects for
+            # secret data
+            if not isinstance(res_conf[key], EncryptedData):
+                    raise Exception('Encrypted Data Object expected')
+
+            # if parameter password is True, we need to unencrypt
+            if passwords:
+                res_conf[key] = res_conf[key].get_unencrypted()
 
         # as we have in the resolver config typed values, this might
         # lead to some trouble. so we prepare for output comparison
         # the string representation
 
-        if (not isinstance(res_conf[key], str) and
-            not isinstance(res_conf[key], unicode)):
+        if not isinstance(res_conf[key], str):
             res_conf[key] = "%r" % res_conf[key]
 
     if 'readonly' in res_conf:
@@ -618,7 +624,7 @@ def _flush_user_resolver_cache(resolver_spec):
     realms = config.getRealms()
 
     # if a resolver is redefined, we have to refresh the related realm cache
-    for realm_name, realm_spec in realms.items():
+    for realm_name, realm_spec in list(realms.items()):
         resolvers = realm_spec.get('useridresolver', [])
         if resolver_spec in resolvers:
             delete_realm_resolver_cache(realm_name)
@@ -636,7 +642,7 @@ def _get_resolver_config(resolver_config_identifier):
     # identify the fully qualified resolver spec by all possible resolver
     # prefixes, which are taken from the resolver_classes list
     lookup_keys = []
-    config_keys = resolver_registry.keys()
+    config_keys = list(resolver_registry.keys())
     for entry in config_keys:
         lookup_keys.append('linotp.' + entry)
 
@@ -645,7 +651,7 @@ def _get_resolver_config(resolver_config_identifier):
     resolver_config = {}
     config = context['Config']
 
-    for key, value in config.items():
+    for key, value in list(config.items()):
         if key.endswith(resolver_config_identifier):
             for entry in lookup_keys:
                 if key.startswith(entry):
@@ -736,7 +742,10 @@ def _get_resolver_config_cache():
                  "resolver_lookup_cache.expiration config")
         return None
 
-    cache_manager = context['CacheManager']
+    cache_manager = current_app.getCacheManager()
+    if not cache_manager:
+        return None
+
     cache_name = 'resolver_config'
     resolver_config_cache = cache_manager.get_cache(cache_name,
                                                     type="memory",
@@ -767,7 +776,7 @@ def setupResolvers(config=None, cache_dir="/tmp"):
     :return: -nothing-
     """
 
-    resolver_classes = resolver_registry.values()
+    resolver_classes = list(resolver_registry.values())
 
     # resolver classes can have multiple aliases, so
     # resolver_classes can contain duplicates.
@@ -803,7 +812,7 @@ def closeResolvers():
     hook to close the resolvers at the end of the request
     """
     try:
-        for resolver in context.get('resolvers_loaded', {}).values():
+        for resolver in list(context.get('resolvers_loaded', {}).values()):
             if hasattr(resolver, 'close'):
                 resolver.close()
     except Exception as exx:
@@ -870,7 +879,7 @@ def get_resolver_types():
     :return: array of resolvertypes like 'passwdresolver'
     """
     types = []
-    for resolver_cls in resolver_registry.values():
+    for resolver_cls in list(resolver_registry.values()):
         type_ = resolver_cls.getResolverClassType()
         types.append(type_)
     return types
@@ -965,7 +974,7 @@ def prepare_resolver_parameter(new_resolver_name, param,
         # is allowed
 
         if previous_readonly:
-            for key, p_value in previous_param.items():
+            for key, p_value in list(previous_param.items()):
 
                 # we inherit the readonly parameter if it is
                 # not provided by the ui

@@ -32,6 +32,7 @@ import unittest
 
 from linotp.lib.type_utils import parse_duration
 from linotp.lib.type_utils import DurationParsingException
+import pytest
 
 
 class DurationTestCase(unittest.TestCase):
@@ -64,7 +65,7 @@ class DurationTestCase(unittest.TestCase):
             "PT10M": 600.0,
             "PT1M": 60.0,
           }
-        for duration, seconds in test_vector.items():
+        for duration, seconds in list(test_vector.items()):
 
             timedelta = parse_duration(duration, time_delta_compliant=False)
             assert seconds == timedelta.total_seconds()
@@ -78,7 +79,7 @@ class DurationTestCase(unittest.TestCase):
             "1d 2h 1m": 93660.0,
           }
 
-        for duration, seconds in test_vector.items():
+        for duration, seconds in list(test_vector.items()):
             timedelta = parse_duration(duration)
             assert seconds == timedelta.total_seconds()
 
@@ -91,9 +92,9 @@ class DurationTestCase(unittest.TestCase):
             "1k 1h": 0,
           }
 
-        for duration, _seconds in test_vector.items():
+        for duration, _seconds in list(test_vector.items()):
 
-            with self.assertRaises(DurationParsingException):
+            with pytest.raises(DurationParsingException):
                 parse_duration(duration)
 
         return

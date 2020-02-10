@@ -27,89 +27,87 @@
 """
 admin controller - interfaces to administrate LinOTP
 """
-import os
-import logging
+from binascii import hexlify
 from datetime import datetime
-
 import json
+from linotp.controllers.base import BaseController
+from linotp.flap import (
+    config, request, response, tmpl_context as c, _,
+    HTTPUnauthorized,
+)
+from linotp.lib.audit.base import get_token_num_info
 
-from pylons import request
-from pylons import response
-from pylons import config
-from pylons import tmpl_context as c
+from linotp.lib.challenges import Challenges
 
-from linotp.lib.base import BaseController
-from linotp.lib.tokeniterator import TokenIterator
-from linotp.lib.token import TokenHandler
-
-from linotp.lib.token import setPin
-from linotp.lib.token import resetToken
-from linotp.lib.token import setPinUser
-from linotp.lib.token import setPinSo
-
-from linotp.lib.token import setRealms, getTokenType
-from linotp.lib.token import getTokens4UserOrSerial
-from linotp.lib.token import getTokenRealms
-from linotp.tokens import tokenclass_registry
+from linotp.lib.context import request_context
 
 from linotp.lib.error import ParameterError
 from linotp.lib.error import TokenAdminError
 
-from linotp.lib.util import getLowerParams
-from linotp.lib.util import check_session
-from linotp.lib.util import SESSION_KEY_LENGTH
-
-from linotp.lib.util import get_client
-from linotp.lib.user import getSearchFields
-from linotp.lib.user import getUserListIterators
-from linotp.lib.user import User
-from linotp.lib.user import getUserFromParam
-from linotp.lib.user import getUserFromRequest
+from linotp.lib.policy import PolicyException
+from linotp.lib.policy import checkPolicyPost
+from linotp.lib.policy import checkPolicyPre
+from linotp.lib.policy import getOTPPINEncrypt
 
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.realm import getRealms
 
-from linotp.lib.reply import sendResult
-from linotp.lib.reply import sendError
-from linotp.lib.reply import sendXMLResult
-from linotp.lib.reply import sendXMLError
 from linotp.lib.reply import sendCSVResult
-from linotp.lib.reply import sendResultIterator
-
+from linotp.lib.reply import sendError
 from linotp.lib.reply import sendQRImageResult
+from linotp.lib.reply import sendResult
+from linotp.lib.reply import sendResultIterator
+from linotp.lib.reply import sendXMLError
+from linotp.lib.reply import sendXMLResult
 
-from linotp.lib.challenges import Challenges
-
-from linotp.lib.policy import checkPolicyPre
-from linotp.lib.policy import checkPolicyPost
-from linotp.lib.policy import PolicyException
-from linotp.lib.policy import getOTPPINEncrypt
-
-from linotp.lib.audit.base import get_token_num_info
-
-# for loading XML file
-from linotp.lib.ImportOTP import parseSafeNetXML
-from linotp.lib.ImportOTP import parseOATHcsv
-from linotp.lib.ImportOTP import ImportException
-from linotp.lib.ImportOTP import parseYubicoCSV
-
-from linotp.lib.useriterator import iterate_users
-from linotp.lib.context import request_context
 from linotp.lib.reporting import token_reporting
-from pylons.i18n.translation import _
 
 from linotp.lib.resolver import get_resolver_class
 from linotp.lib.resolver import prepare_resolver_parameter
 
-# For logout
-from webob.exc import HTTPUnauthorized
+from linotp.lib.token import TokenHandler
+from linotp.lib.token import getTokenRealms
+from linotp.lib.token import getTokens4UserOrSerial
+from linotp.lib.token import resetToken
+from linotp.lib.token import setPin
+from linotp.lib.token import setPinSo
+from linotp.lib.token import setPinUser
+from linotp.lib.token import setRealms, getTokenType
 
+from linotp.lib.tokeniterator import TokenIterator
+
+from linotp.lib.user import User
+from linotp.lib.user import getSearchFields
+from linotp.lib.user import getUserFromParam
+from linotp.lib.user import getUserFromRequest
+from linotp.lib.user import getUserListIterators
+
+from linotp.lib.useriterator import iterate_users
+
+from linotp.lib.util import SESSION_KEY_LENGTH
+from linotp.lib.util import check_session
+from linotp.lib.util import getLowerParams
+from linotp.lib.util import get_client
+
+import linotp.model
+from linotp.tokens import tokenclass_registry
+import logging
+import os
+
+from flask import Response, after_this_request
+from flask import stream_with_context
+from werkzeug.datastructures import FileStorage
+
+from linotp.lib.ImportOTP.oath import parseOATHcsv
+from linotp.lib.ImportOTP.safenet import ImportException
+from linotp.lib.ImportOTP.safenet import parseSafeNetXML
+from linotp.lib.ImportOTP.yubico import parseYubicoCSV
+
+
+# for loading XML file
 # this is a hack for the static code analyser, which
 # would otherwise show session.close() as error
-import linotp.model
 Session = linotp.model.Session
-
-audit = config.get('audit')
 
 
 log = logging.getLogger(__name__)
@@ -129,20 +127,30 @@ class AdminController(BaseController):
     The functions are described below in more detail.
     '''
 
-    def __before__(self, action, **params):
-        '''
-        '''
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        action = request_context['action']
 
         try:
 
             c.audit = request_context['audit']
             c.audit['success'] = False
             c.audit['client'] = get_client(request)
-            # Session handling
-            check_session(request)
 
+            if request.path.lower() != '/admin/getsession':
+                # Check we have a valid session
+                check_session(request)
+
+            audit = config.get('audit')
             request_context['Audit'] = audit
-            return request
+            return None
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r", action, exx)
@@ -150,18 +158,26 @@ class AdminController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
-    def __after__(self, action):
+    @staticmethod
+    def __after__(response):
         '''
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
         '''
+
+        action = request_context['action']
+        audit = config.get('audit')
 
         try:
             # prevent logging of getsession or other irrelevant requests
             if action in ['getsession', 'dropsession']:
-                return request
+                return response
 
             c.audit['administrator'] = getUserFromRequest(request).get("login")
 
-            serial = self.request_params.get('serial')
+            serial = request.params.get('serial')
             if serial:
                 c.audit['serial'] = serial
                 c.audit['token_type'] = getTokenType(serial)
@@ -189,10 +205,11 @@ class AdminController(BaseController):
 
             audit.log(c.audit)
             Session.commit()
-            return request
+            return response
 
         except Exception as e:
-            log.exception("[__after__] unable to create a session cookie: %r" % e)
+            log.exception(
+                "[__after__] unable to create a session cookie: %r" % e)
             Session.rollback()
             return sendError(response, e, context='after')
 
@@ -200,25 +217,23 @@ class AdminController(BaseController):
             Session.close()
 
     def logout(self):
-        # see http://docs.pylonsproject.org/projects/pyramid/1.0/narr/webob.html
+        # see
+        # http://docs.pylonsproject.org/projects/pyramid/1.0/narr/webob.html
         c.audit['action_detail'] = "logout"
-        # response.status = "401 Not authenticated"
 
         nonce = request.environ.get("nonce")
         realm = request.environ.get("realm")
         detail = "401 Unauthorized"
-        # return HTTPUnauthorized(request=request)
         raise HTTPUnauthorized(
-             unicode(detail),
-             [('WWW-Authenticate', 'Digest realm="%s", nonce="%s", qop="auth"' % (realm, nonce))]
-            )
+            str(detail),
+            [('WWW-Authenticate', 'Digest realm="%s", nonce="%s", qop="auth"' % (realm, nonce))]
+        )
 
         # raise exc.HTTPUnauthorized(
         #                           str(detail),
         #                           [('WWW-Authenticate', 'Basic realm="%s"' % realm)]
         #                          )
         # abort(401, "You are not authenticated")
-
 
     def getsession(self):
         '''
@@ -229,36 +244,52 @@ class AdminController(BaseController):
                    path='/', domain=None, secure=None, httponly=False,
                    version=None, comment=None, expires=None, overwrite=False):
         '''
-        import binascii
-        try:
-            web_host = request.environ.get('HTTP_HOST')
-            # HTTP_HOST also contains the port number. We need to stript this!
-            web_host = web_host.split(':')[0]
-            log.debug("[getsession] environment: %s" % request.environ)
-            log.debug("[getsession] found this web_host: %s" % web_host)
-            random_key = os.urandom(SESSION_KEY_LENGTH)
-            cookie = binascii.hexlify(random_key)
-            log.debug("[getsession] adding session cookie %s to response." % cookie)
-            # we send all three to cope with IE8
-            response.set_cookie('admin_session', value=cookie, domain=web_host)
-            # this produces an error with the gtk client
-            # response.set_cookie('admin_session', value=cookie,  domain=".%" % web_host )
-            response.set_cookie('admin_session', value=cookie, domain="")
-            return sendResult(response, True)
+        @after_this_request
+        def set_session_cookie(response):
+            try:
+                web_host = request.environ.get('HTTP_HOST')
+                # HTTP_HOST also contains the port number. We need to stript
+                # this!
+                web_host = web_host.split(':')[0]
+                log.debug("[getsession] found this web_host: %s" % web_host)
+                random_key = os.urandom(SESSION_KEY_LENGTH)
 
-        except Exception as e:
-            log.exception("[getsession] unable to create a session cookie: %r" % e)
-            Session.rollback()
-            return sendError(response, e)
+                value = hexlify(random_key)
+                log.debug(
+                    "[getsession] adding session cookie %s to response." % value)
 
-        finally:
-            Session.close()
+                if web_host not in ('127.0.0.1', 'localhost'):
+                    domain = web_host
+                else:
+                    domain = None
+
+                # TODO: add secure cookie at least for https
+
+                # Add cookie to generated response
+                response.set_cookie('admin_session', value=value)
+
+                return response
+
+            except Exception as e:
+                log.exception("[getsession] unable to create a session cookie")
+                Session.rollback()
+                return sendError(response, e)
+
+        return sendResult(None, True)
 
     def dropsession(self):
-        # request.cookies.pop( 'admin_session', None )
-        # FIXME: Does not seem to work
-        response.set_cookie('admin_session', None, expires=1)
-        return
+        """
+        dropsession - invalidate the admin session cookie
+
+        :remark: by delete_cookie the cookie is not deleted. instead the
+                 expiration date is set to the beginning of unix time ;)
+        """
+        @after_this_request
+        def drop_session_cookie(response):
+            response.delete_cookie(key='admin_session')
+            return response
+
+        return sendResult(None, True)
 
     def getTokenOwner(self):
         """
@@ -284,7 +315,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("Error getting token owner. Exception was %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("Error getting token owner. Exception was %r" % e)
@@ -378,7 +409,7 @@ class AdminController(BaseController):
 
             filterRealm = []
             # check admin authorization
-            res = checkPolicyPre('admin', 'show', param , user=user)
+            res = checkPolicyPre('admin', 'show', param, user=user)
 
             # check if policies are active at all
             # If they are not active, we are allowed to SHOW any tokens.
@@ -387,7 +418,7 @@ class AdminController(BaseController):
                 filterRealm = res['realms']
 
             if realm:
-            # If the admin wants to see only one realm, then do it:
+                # If the admin wants to see only one realm, then do it:
                 log.debug("Only tokens in realm %s will be shown",
                           realm)
                 if realm in filterRealm or '*' in filterRealm:
@@ -427,7 +458,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[show] policy failed: %r' % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception('[show] failed: %r' % e)
@@ -463,35 +494,51 @@ class AdminController(BaseController):
         param = self.request_params
 
         try:
-            serial = param.get("serial")
+            serials = param.get("serial", [])
+            if serials and not isinstance(serials, list):
+                serials = [serials]
+
             user = getUserFromParam(param)
 
             c.audit['user'] = user.login
+            c.audit['realm'] = user.realm or ""
 
-            if user.is_empty:
-                c.audit['realm'] = getTokenRealms(serial)
-            else:
-                c.audit['realm'] = user.realm
-                if c.audit['realm'] == "":
-                    realms = set()
-                    for tokenserial in getTokens4UserOrSerial(user, serial):
-                        realms.union(tokenserial.getRealms())
-                    c.audit['realm'] = realms
+            if not serials and not user:
+                raise ParameterError('missing parameter user or serial!')
+
+            if user:
+                tokens = getTokens4UserOrSerial(user)
+                for token in tokens:
+                    serials.append(token.getSerial())
+
+            realms = set()
+            for serial in set(serials):
+                realms.union(getTokenRealms(serial))
+
+            c.audit['realm'] = "%r" % realms
 
             # check admin authorization
             checkPolicyPre('admin', 'remove', param)
 
+            log.info("[remove] removing token with serial %r for user %r",
+                     serials, user.login)
+
             th = TokenHandler()
-            log.info("[remove] removing token with serial %s for user %s", serial, user.login)
-            ret = th.removeToken(user, serial)
+            for serial in set(serials):
+                ret = th.removeToken(user, serial)
 
             c.audit['success'] = ret
 
             opt_result_dict = {}
-            if ret == 0 and serial:
-                opt_result_dict['message'] = "No token with serial %s" % serial
-            elif ret == 0 and user and not user.is_empty:
-                opt_result_dict['message'] = "No tokens for this user"
+
+            # if not token could be removed, create a response detailed
+            if ret == 0:
+                if user:
+                    msg = "No tokens for this user %r" % user.login
+                else:
+                    msg = "No token with serials %r" % serials
+
+                opt_result_dict['message'] = msg
 
             Session.commit()
             return sendResult(response, ret, opt=opt_result_dict)
@@ -499,7 +546,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[remove] policy failed %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[remove] failed! %r" % e)
@@ -570,7 +617,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[enable] policy failed %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[enable] failed: %r" % e)
@@ -628,7 +675,7 @@ class AdminController(BaseController):
             th = TokenHandler()
             serial, username, resolverClass = th.get_serial_by_otp(None, otp,
                                                                    10, typ=typ,
-                                                realm=realm, assigned=assigned)
+                                                                   realm=realm, assigned=assigned)
             log.debug("[getSerialByOtp] found %s with user %s" %
                       (serial, username))
 
@@ -650,7 +697,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[disable] policy failed %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             c.audit['success'] = 0
@@ -717,14 +764,13 @@ class AdminController(BaseController):
             elif ret == 0 and user and not user.is_empty:
                 opt_result_dict['message'] = "No tokens for this user"
 
-
             Session.commit()
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
             log.exception("[disable] policy failed %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[disable] failed! %r" % e)
@@ -778,12 +824,12 @@ class AdminController(BaseController):
             c.audit['action_detail'] = "%r - %r" % (unique, new_serial)
 
             Session.commit()
-            return sendResult(response, {"unique":unique, "new_serial":new_serial}, 1)
+            return sendResult(response, {"unique": unique, "new_serial": new_serial}, 1)
 
         except PolicyException as pe:
             log.exception("[check_serial] policy failed %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[check_serial] failed! %r" % e)
@@ -969,7 +1015,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[init] policy failed %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[init] token initialization failed! %r" % e)
@@ -1043,7 +1089,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[unassign] policy failed %r' % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[unassign] failed! %r" % e)
@@ -1110,7 +1156,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[assign] policy failed %r' % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception('[assign] token assignment failed! %r' % e)
@@ -1195,7 +1241,8 @@ class AdminController(BaseController):
                 # check admin authorization
                 checkPolicyPre('admin', 'setPin', param)
 
-                log.info("[setPin] setting soPin for token with serial %s" % serial)
+                log.info(
+                    "[setPin] setting soPin for token with serial %s" % serial)
                 ret = setPinSo(soPin, serial)
                 res["set sopin"] = ret
                 count = count + 1
@@ -1213,12 +1260,12 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[setPin] policy failed %r, %r' % (msg, pe))
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception('[setPin] %s :%r' % (msg, e))
             Session.rollback()
-            return sendError(response, unicode(e), 0)
+            return sendError(response, str(e), 0)
 
         finally:
             Session.close()
@@ -1334,8 +1381,8 @@ class AdminController(BaseController):
                 elif validityPeriodStart is not None:
 
                     validity_period_start = datetime.utcfromtimestamp(
-                                    int(validityPeriodStart)).strftime(
-                                        "%d/%m/%y %H:%M").strip()
+                        int(validityPeriodStart)).strftime(
+                        "%d/%m/%y %H:%M").strip()
                     token.validity_period_start = validity_period_start
 
                 # ---------------------------------------------------------- --
@@ -1346,8 +1393,8 @@ class AdminController(BaseController):
                 elif validityPeriodEnd is not None:
 
                     validity_period_end = datetime.utcfromtimestamp(
-                                    int(validityPeriodEnd)).strftime(
-                                        "%d/%m/%y %H:%M").strip()
+                        int(validityPeriodEnd)).strftime(
+                        "%d/%m/%y %H:%M").strip()
 
                     token.validity_period_end = validity_period_end
 
@@ -1361,7 +1408,7 @@ class AdminController(BaseController):
         except PolicyException as pex:
             log.exception('policy failed%r', pex)
             Session.rollback()
-            return sendError(response, unicode(pex), 1)
+            return sendError(response, str(pex), 1)
 
         except Exception as exx:
 
@@ -1369,7 +1416,7 @@ class AdminController(BaseController):
 
             log.exception('%r', exx)
             Session.rollback()
-            return sendError(response, unicode(exx), 0)
+            return sendError(response, str(exx), 0)
 
         finally:
             Session.close()
@@ -1398,7 +1445,7 @@ class AdminController(BaseController):
             * timeStep      - optional - set the timestep for timebased tokens (usually 30 or 60 seconds)
             * timeShift     - optional - set the shift or timedrift of this token
             * countAuthSuccessMax    - optional    - set the maximum allowed successful authentications
-            * countAuthSuccess\      - optional    - set the counter of the successful authentications
+            * countAuthSuccess       - optional    - set the counter of the successful authentications
             * countAuth        - optional - set the counter of authentications
             * countAuthMax     - optional - set the maximum allowed authentication tries
             * validityPeriodStart    - optional - set the start date of the validity period. The token can not be used before this date
@@ -1505,7 +1552,7 @@ class AdminController(BaseController):
                 otpLen = int(param["OtpLen".lower()])
                 log.info(
                     "[set] setting OtpLen (%r) for token with serial %r" % (
-                    otpLen, serial))
+                        otpLen, serial))
                 ret = th.setOtpLen(otpLen, user, serial)
                 res["set OtpLen"] = ret
                 count = count + 1
@@ -1520,7 +1567,7 @@ class AdminController(BaseController):
                 ret = th.setHashLib(hashlib, user, serial)
                 res["set hashlib"] = ret
                 count = count + 1
-                c.audit['action_detail'] += "hashlib=%s, " % unicode(hashlib)
+                c.audit['action_detail'] += "hashlib=%s, " % str(hashlib)
 
             if "timeWindow".lower() in param:
                 msg = "[set] setting timeWindow failed"
@@ -1537,7 +1584,7 @@ class AdminController(BaseController):
                 timeStep = int(param["timeStep".lower()])
                 log.info(
                     "[set] setting timeStep (%r) for token with serial %r" % (
-                    timeStep, serial))
+                        timeStep, serial))
                 ret = th.addTokenInfo("timeStep", timeStep, user, serial)
                 res["set timeStep"] = ret
                 count = count + 1
@@ -1558,7 +1605,7 @@ class AdminController(BaseController):
                 ca = int(param["countAuth".lower()])
                 log.info(
                     "[set] setting count_auth (%r) for token with serial %r" % (
-                    ca, serial))
+                        ca, serial))
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
@@ -1627,7 +1674,7 @@ class AdminController(BaseController):
                     ret += 1
                 res["set validityPeriodStart"] = ret
                 c.audit[
-                    'action_detail'] += u"validityPeriodStart=%s, " % unicode(
+                    'action_detail'] += "validityPeriodStart=%s, " % str(
                     ca)
 
             if "validityPeriodEnd".lower() in param:
@@ -1643,14 +1690,14 @@ class AdminController(BaseController):
                     count = count + 1
                     ret += 1
                 res["set validityPeriodEnd"] = ret
-                c.audit['action_detail'] += "validityPeriodEnd=%s, " % unicode(
+                c.audit['action_detail'] += "validityPeriodEnd=%s, " % str(
                     ca)
 
             if "phone" in param:
                 msg = "[set] setting phone failed"
                 ca = param["phone".lower()]
                 log.info("[set] setting phone (%r) for token with serial %r" % (
-                ca, serial))
+                    ca, serial))
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
@@ -1658,7 +1705,7 @@ class AdminController(BaseController):
                     count = count + 1
                     ret += 1
                 res["set phone"] = ret
-                c.audit['action_detail'] += "phone=%s, " % unicode(ca)
+                c.audit['action_detail'] += "phone=%s, " % str(ca)
 
             if count == 0:
                 Session.rollback()
@@ -1678,9 +1725,9 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[set] policy failed: %s, %r' % (msg, pe))
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
-        except Exception as exx :
+        except Exception as exx:
             log.exception('%s: %r' % (msg, exx))
             Session.rollback()
             # as this message is directly returned into the javascript
@@ -1767,7 +1814,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[resync] policy failed %r' % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception('[resync] resyncing token failed %r' % e)
@@ -1802,13 +1849,29 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        users = []
+
         param = self.request_params.copy()
 
         # check admin authorization
         # check if we got a realm or resolver, that is ok!
         try:
+
+            # TODO:
+            # check if admin is allowed to see the useridresolvers
+            # as users_iters is (user_iterator, resolvername)
+            # we could simply check if the admin is allowed to view the
+            # resolver
+            # hint:
+            # done by getting the list of realm the admin is allowed to view
+            # and add this as paramter list to the getUserListIterators
+            # (s. helpdesk api)
+
             realm = param.get("realm")
+
+            # Here we need to list the users, that are only visible in the
+            # realm!! we could also only list the users in the realm, if the
+            # admin got the right "userlist".
+
             checkPolicyPre('admin', 'userlist', param)
 
             up = 0
@@ -1821,72 +1884,50 @@ class AdminController(BaseController):
             if (len(user.resolver_config_identifier) > 0):
                 up = up + 1
 
-            # Here we need to list the users, that are only visible in the
-            # realm!! we could also only list the users in the realm, if the
-            # admin got the right "userlist".
-
             if len(param) == up:
                 usage = {"usage": "list available users matching the "
-                                    "given search patterns:"}
+                         "given search patterns:"}
                 usage["searchfields"] = getSearchFields(user)
                 res = usage
                 Session.commit()
                 return sendResult(response, res)
 
-            else:
-                list_params = {}
-                list_params.update(param)
-                if 'session' in list_params:
-                    del list_params['session']
+            list_params = {}
+            list_params.update(param)
 
-                rp = None
-                if "rp" in list_params:
-                    rp = list_params['rp']
-                    del list_params['rp']
+            if 'session' in list_params:
+                del list_params['session']
 
-                page = None
-                if "page" in list_params:
-                    page = list_params['page']
-                    del list_params['page']
+            rp = None
+            if "rp" in list_params:
+                rp = int(list_params['rp'])
+                del list_params['rp']
 
-                users_iters = getUserListIterators(list_params, user)
-                # TODO: check if admin is allowed to see the useridresolvers
-                # as users_iters is (user_iterator, resolvername)
-                # we could simply check if the admin is allowed to view the
-                # resolver
+            page = None
+            if "page" in list_params:
+                page = list_params['page']
+                del list_params['page']
 
-                c.audit['success'] = True
-                c.audit['info'] = "realm: %s" % realm
+            users_iters = getUserListIterators(list_params, user)
 
-                Session.commit()
+            c.audit['success'] = True
+            c.audit['info'] = "realm: %s" % realm
 
-                response.content_type = 'application/json'
+            Session.commit()
 
-                # ---------------------------------------------------------- --
+            return Response(
+                stream_with_context(
+                    sendResultIterator(
+                        iterate_users(users_iters), rp=rp, page=page)
+                ), mimetype='application/json'
+            )
 
-                # the result iterator is called in the middle of the
-                # pylons middleware. Thus the request_context has been
-                # terminated already and we have no request context available
-                # within the respons iterations. Therefore we make copy the
-                # request context to establish a new request context from
-                # the given parameter within the response iterator
-
-                request_context_copy = {}
-
-                for key, value in request_context.items():
-                    request_context_copy[key] = value
-
-                return sendResultIterator(
-                        iterate_users(users_iters),
-                        rp=rp, page=page,
-                        request_context_copy=request_context_copy)
-
-                # ---------------------------------------------------------- --
+            # ---------------------------------------------------------- --
 
         except PolicyException as pe:
             log.exception('[userlist] policy failed %r' % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[userlist] failed %r" % e)
@@ -1942,7 +1983,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[tokenrealm] policy failed %r' % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception('[tokenrealm] error setting realms for token %r' % e)
@@ -1983,9 +2024,10 @@ class AdminController(BaseController):
         try:
 
             # check admin authorization
-            checkPolicyPre('admin', 'reset', param , user=user)
+            checkPolicyPre('admin', 'reset', param, user=user)
 
-            log.info("[reset] resetting the FailCounter for token with serial %s" % serial)
+            log.info(
+                "[reset] resetting the FailCounter for token with serial %s" % serial)
             ret = resetToken(user, serial)
 
             c.audit['success'] = ret
@@ -2009,7 +2051,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception('[reset] policy failed %r' % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[reset] Error resetting failcounter %r" % exx)
@@ -2070,7 +2112,7 @@ class AdminController(BaseController):
             c.audit['serial'] = serial_to
             c.audit['action_detail'] = "from %s" % serial_from
 
-            err_string = unicode(ret)
+            err_string = str(ret)
             if -1 == ret:
                 err_string = "can not get PIN from source token"
             if -2 == ret:
@@ -2089,7 +2131,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[losttoken] Error doing losttoken %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[copyTokenPin] Error copying token pin")
@@ -2152,7 +2194,7 @@ class AdminController(BaseController):
             c.audit['source_realm'] = getTokenRealms(serial_from)
             c.audit['realm'] = getTokenRealms(serial_to)
 
-            err_string = unicode(ret)
+            err_string = str(ret)
             if -1 == ret:
                 err_string = "can not get user from source token"
             if -2 == ret:
@@ -2171,7 +2213,7 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[copyTokenUser] Policy Exception %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[copyTokenUser] Error copying token user")
@@ -2231,12 +2273,12 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[losttoken] Policy Exception: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe), 1)
+            return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[losttoken] Error doing losttoken %r" % e)
             Session.rollback()
-            return sendError(response, unicode(e))
+            return sendError(response, str(e))
 
         finally:
             Session.close()
@@ -2275,7 +2317,8 @@ class AdminController(BaseController):
 
         from linotp.lib.ImportOTP import getKnownTypes
         known_types.extend(getKnownTypes())
-        log.info("[loadtokens] importing linotp.lib. Known import types: %s" % known_types)
+        log.info(
+            "[loadtokens] importing linotp.lib. Known import types: %s" % known_types)
 
         from linotp.lib.ImportOTP.PSKC import parsePSKCdata
         log.info("[loadtokens] loaded parsePSKCdata")
@@ -2289,18 +2332,19 @@ class AdminController(BaseController):
         from linotp.lib.ImportOTP.vasco import parseVASCOdata
         log.info("[loadtokens] loaded parseVASCOdata")
 
-        try:
-            log.debug("[loadtokens] getting POST request")
-            log.debug("[loadtokens] %r" % request.POST)
-            tokenFile = request.POST['file']
-            fileType = request.POST['type']
-            targetRealm = request.POST.get(
-                            'realm', request.POST.get(
-                                'targetrealm', '')).lower()
+        params = self.request_params
 
+        try:
+            log.debug("[loadtokens] getting upload data")
+            log.debug("[loadtokens] %r", request.params)
+            tokenFile = request.files['file']
+            fileType = params['type']
+            targetRealm = params.get(
+                'realm', params.get(
+                    'targetrealm', '')).lower()
 
             # for encrypted token import data, this is the decryption key
-            transportkey = request.POST.get('transportkey', None)
+            transportkey = params.get('transportkey', None)
             if not transportkey:
                 transportkey = None
 
@@ -2312,79 +2356,101 @@ class AdminController(BaseController):
             hashlib = None
 
             if "pskc" == fileType:
-                pskc_type = request.POST['pskc_type']
-                pskc_password = request.POST['pskc_password']
-                pskc_preshared = request.POST['pskc_preshared']
-                if 'pskc_checkserial' in request.POST:
+                pskc_type = params['pskc_type']
+                pskc_password = params['pskc_password']
+                pskc_preshared = params['pskc_preshared']
+                if 'pskc_checkserial' in params:
                     pskc_checkserial = True
 
             fileString = ""
             typeString = ""
 
-            log.debug("[loadtokens] loading token file to server using POST request. Filetype: %s. File: %s"
-                        % (fileType, tokenFile))
+            log.debug("[loadtokens] loading token file to server "
+                      "Filetype: %s. File: %s", fileType, tokenFile)
 
-            # In case of form post requests, it is a "instance" of FieldStorage
-            # i.e. the Filename is selected in the browser and the data is transferred
-            # in an iframe. see: http://jquery.malsup.com/form/#sample4
-            #
-            if type(tokenFile).__name__ == 'instance':
+            # In case of form post requests, it is a "instance" of FileStorage
+            # i.e. the Filename is selected in the browser and the data is
+            # transferred in an iframe. see:
+            # http://jquery.malsup.com/form/#sample4
+
+            if isinstance(tokenFile, FileStorage):
                 log.debug("[loadtokens] Field storage file: %s", tokenFile)
-                fileString = tokenFile.value
+                fileString = tokenFile.read().decode()
                 sendResultMethod = sendXMLResult
                 sendErrorMethod = sendXMLError
             else:
                 fileString = tokenFile
             log.debug("[loadtokens] fileString: %s", fileString)
 
-            if type(fileType).__name__ == 'instance':
+            if isinstance(fileType, FileStorage):
                 log.debug("[loadtokens] Field storage type: %s", fileType)
-                typeString = fileType.value
+                typeString = fileType.read()
             else:
                 typeString = fileType
             log.debug("[loadtokens] typeString: <<%s>>", typeString)
             if "pskc" == typeString:
-                log.debug("[loadtokens] passing password: %s, key: %s, checkserial: %s" % (pskc_password, pskc_preshared, pskc_checkserial))
+                log.debug("[loadtokens] passing password: %s, key: %s, "
+                          "checkserial: %s",
+                          pskc_password, pskc_preshared, pskc_checkserial)
 
             if fileString == "" or typeString == "":
                 log.error("[loadtokens] file: %s", fileString)
                 log.error("[loadtokens] type: %s", typeString)
-                log.error("[loadtokens] Error loading/importing token file. file or type empty!")
-                return sendErrorMethod(response, "Error loading tokens. File or Type empty!")
+                log.error("[loadtokens] Error loading/importing token file. "
+                          "file or type empty!")
+                return sendErrorMethod(
+                    response, ("Error loading tokens. File or Type empty!"))
 
             if typeString not in known_types:
-                log.error("[loadtokens] Unknown file type: >>%s<<. We only know the types: %s" % (typeString, ', '.join(known_types)))
-                return sendErrorMethod(response, "Unknown file type: >>%s<<. We only know the types: %s" % (typeString, ', '.join(known_types)))
+                log.error("[loadtokens] Unknown file type: >>%s<<. "
+                          "We only know the types: %s",
+                          typeString, ', '.join(known_types))
+                return sendErrorMethod(
+                    response, ("Unknown file type: >>%s<<. We only know the "
+                               "types: %s" % (
+                                   typeString, ', '.join(known_types))))
 
             # Parse the tokens from file and get dictionary
             if typeString == "aladdin-xml":
                 TOKENS = parseSafeNetXML(fileString)
                 # we only do hashlib for aladdin at the moment.
-                if 'aladdin_hashlib' in request.POST:
-                    hashlib = request.POST['aladdin_hashlib']
+                if 'aladdin_hashlib' in params:
+                    hashlib = params['aladdin_hashlib']
+
             elif typeString == "oathcsv":
                 TOKENS = parseOATHcsv(fileString)
+
             elif typeString == "yubikeycsv":
                 TOKENS = parseYubicoCSV(fileString)
+
             elif typeString == "dpw":
                 TOKENS = parseDPWdata(fileString)
 
             elif typeString == "dat":
-                startdate = request.POST.get('startdate', None)
+                startdate = params.get('startdate', None)
                 TOKENS = parse_dat_data(fileString, startdate)
 
             elif typeString == "feitian":
                 TOKENS = parsePSKCdata(fileString, do_feitian=True)
+
             elif typeString == "pskc":
                 if "key" == pskc_type:
-                    TOKENS = parsePSKCdata(fileString, preshared_key_hex=pskc_preshared, do_checkserial=pskc_checkserial)
+                    TOKENS = parsePSKCdata(
+                        fileString, preshared_key_hex=pskc_preshared,
+                        do_checkserial=pskc_checkserial)
+
                 elif "password" == pskc_type:
-                    TOKENS = parsePSKCdata(fileString, password=pskc_password, do_checkserial=pskc_checkserial)
+                    TOKENS = parsePSKCdata(
+                        fileString, password=pskc_password,
+                        do_checkserial=pskc_checkserial)
+
                 elif "plain" == pskc_type:
-                    TOKENS = parsePSKCdata(fileString, do_checkserial=pskc_checkserial)
+                    TOKENS = parsePSKCdata(
+                        fileString, do_checkserial=pskc_checkserial)
+
             elif typeString == "vasco":
                 # TODO: verify merge 2.8.1.2 with 2.9
-                vasco_otplen = int(request.POST.get('vasco_otplen', 6))
+                vasco_otplen = int(params.get('vasco_otplen', 6))
                 TOKENS = parseVASCOdata(fileString, vasco_otplen, transportkey)
                 if TOKENS is None:
                     raise ImportException("Vasco DLL was not properly loaded. "
@@ -2480,37 +2546,42 @@ class AdminController(BaseController):
 
                 # add additional parameter for vasco tokens
                 if TOKENS[serial]['type'] == "vasco":
-                    init_param['vasco_appl'] = TOKENS[serial]['tokeninfo'].get('application')
-                    init_param['vasco_type'] = TOKENS[serial]['tokeninfo'].get('type')
-                    init_param['vasco_auth'] = TOKENS[serial]['tokeninfo'].get('auth')
+                    init_param['vasco_appl'] = TOKENS[serial]['tokeninfo'].get(
+                        'application')
+                    init_param['vasco_type'] = TOKENS[serial]['tokeninfo'].get(
+                        'type')
+                    init_param['vasco_auth'] = TOKENS[serial]['tokeninfo'].get(
+                        'auth')
 
                 # add ocrasuite for ocra tokens, only if ocrasuite is not empty
                 if TOKENS[serial]['type'] in ['ocra', 'ocra2']:
                     if TOKENS[serial].get('ocrasuite', "") != "":
-                        init_param['ocrasuite'] = TOKENS[serial].get('ocrasuite')
+                        init_param['ocrasuite'] = TOKENS[serial].get(
+                            'ocrasuite')
 
                 if hashlib and hashlib != "auto":
                     init_param['hashlib'] = hashlib
 
                 (ret, _tokenObj) = th.initToken(
-                                            init_param,
-                                            User('', '', ''),
-                                            tokenrealm=tokenrealm)
+                    init_param,
+                    User('', '', ''),
+                    tokenrealm=tokenrealm)
 
                 # check policy to set token pin random
                 checkPolicyPost('admin', 'init',
-                               {'serial': serial})
+                                {'serial': serial})
 
             # check the max tokens per realm
 
             checkPolicyPost('admin', 'loadtokens',
-                           {'tokenrealm': tokenrealm})
+                            {'tokenrealm': tokenrealm})
 
-            log.info ("[loadtokens] %i tokens imported." % len(TOKENS))
-            res = { 'value' : True, 'imported' : len(TOKENS) }
+            log.info("[loadtokens] %i tokens imported." % len(TOKENS))
+            res = {'value': True, 'imported': len(TOKENS)}
 
-            c.audit['info'] = "%s, %s (imported: %i)" % (fileType, tokenFile, len(TOKENS))
-            c.audit['serial'] = ', '.join(TOKENS.keys())
+            c.audit['info'] = "%s, %s (imported: %i)" % (
+                fileType, tokenFile, len(TOKENS))
+            c.audit['serial'] = ', '.join(list(TOKENS.keys()))
             c.audit['success'] = ret
             c.audit['realm'] = tokenrealm
 
@@ -2541,7 +2612,7 @@ class AdminController(BaseController):
             'NOREFERRALS': 'True',
             'CACERTIFICATE': '',
             'EnforceTLS': 'False',
-            }
+        }
 
         mapping = {
             "ldap_basedn": 'LDAPBASE',
@@ -2561,7 +2632,7 @@ class AdminController(BaseController):
             "enforcetls": 'EnforceTLS',
 
         }
-        for key, value in params.items():
+        for key, value in list(params.items()):
             if key.lower() in mapping:
                 ldap_params[mapping[key.lower()]] = value
             else:
@@ -2632,8 +2703,7 @@ class AdminController(BaseController):
                 new_resolver_name = request_params["name"]
 
             except KeyError as exx:
-                raise ParameterError(_("Missing parameter: %r") %
-                                     exx.message)
+                raise ParameterError(_("Missing parameter: %r") % exx)
 
             # ---------------------------------------------------------- --
 
@@ -2652,9 +2722,9 @@ class AdminController(BaseController):
 
             (param, missing,
              _primary_key_changed) = prepare_resolver_parameter(
-                                        new_resolver_name=new_resolver_name,
-                                        param=param,
-                                        previous_name=previous_name)
+                new_resolver_name=new_resolver_name,
+                param=param,
+                previous_name=previous_name)
 
             if missing:
                 raise ParameterError(_("Missing parameter: %r") %
@@ -2681,7 +2751,7 @@ class AdminController(BaseController):
         except Exception as e:
             log.exception("[testresolver] failed: %r" % e)
             Session.rollback()
-            return sendError(response, unicode(e), 1)
+            return sendError(response, str(e), 1)
 
         finally:
             Session.close()
@@ -2749,16 +2819,15 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[totp_lookup] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe))
+            return sendError(response, str(pe))
 
         except Exception as exx:
             log.exception("[totp_lookup] failed: %r" % exx)
             Session.rollback()
-            return sendResult(response, unicode(exx), 0)
+            return sendResult(response, str(exx), 0)
 
         finally:
             Session.close()
-
 
     def checkstatus(self):
         """
@@ -2792,7 +2861,8 @@ class AdminController(BaseController):
         try:
             checkPolicyPre('admin', "checkstatus")
 
-            transid = param.get('transactionid', None) or param.get('state', None)
+            transid = param.get(
+                'transactionid', None) or param.get('state', None)
             user = getUserFromParam(param)
             serial = param.get('serial')
             all = param.get('open', 'False').lower() == 'true'
@@ -2803,7 +2873,7 @@ class AdminController(BaseController):
             if transid is None and user.is_empty and serial is None:
                 # # raise exception
                 log.exception("[admin/checkstatus] : missing parameter: "
-                             "transactionid, user or serial number for token")
+                              "transactionid, user or serial number for token")
                 raise ParameterError("Usage: %s" % description, id=77)
 
             # # gather all challenges from serial, transactionid and user
@@ -2839,7 +2909,7 @@ class AdminController(BaseController):
                 for challenge in challenges:
                     if challenge.getTokenSerial() == serial:
                         chall_dict[challenge.getTransactionId()] = \
-                                        challenge.get_vars(save=True)
+                            challenge.get_vars(save=True)
                 stat['challenges'] = chall_dict
 
                 # # add the token info to the stat dict
@@ -2859,12 +2929,12 @@ class AdminController(BaseController):
         except PolicyException as pe:
             log.exception("[checkstatus] policy failed: %r" % pe)
             Session.rollback()
-            return sendError(response, unicode(pe))
+            return sendError(response, str(pe))
 
         except Exception as exx:
             log.exception("[checkstatus] failed: %r" % exx)
             Session.rollback()
-            return sendResult(response, unicode(exx), 0)
+            return sendResult(response, str(exx), 0)
 
         finally:
             Session.close()
@@ -2872,7 +2942,6 @@ class AdminController(BaseController):
     # ------------------------------------------------------------------------ -
 
     def unpair(self):
-
         """ admin/unpair - resets a token to its unpaired state """
 
         try:
@@ -2896,7 +2965,8 @@ class AdminController(BaseController):
                 raise Exception('No token found. Unpairing not possible')
 
             if len(tokens) > 1:
-                raise Exception('Multiple tokens found. Unpairing not possible')
+                raise Exception(
+                    'Multiple tokens found. Unpairing not possible')
 
             token = tokens[0]
 
@@ -2926,7 +2996,7 @@ class AdminController(BaseController):
 
         except Exception as exx:
             log.exception("admin/unpair failed: %r" % exx)
-            c.audit['info'] = unicode(exx)
+            c.audit['info'] = str(exx)
             Session.rollback()
             return sendResult(response, False, 0, status=False)
 
