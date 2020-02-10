@@ -79,6 +79,7 @@ use POSIX;
 use Switch;
 use Net::LDAP;
 use WWW::Curl::Easy;
+use URL::Encode qw( url_encode );
 
 
 my $LDAPHOST = "";
@@ -141,9 +142,10 @@ sub bind {
     $curl->setopt(CURLOPT_SSL_VERIFYHOST, 0);
     $curl->setopt(CURLOPT_SSL_VERIFYPEER, 0);
     
-    my $username = $this->resolve_name($binddn);
+    my $encoded_username = url_encode($this->resolve_name($binddn));
+    my $encoded_bindpw = url_encode($bindpw);
     
-    my $url = "https://localhost/validate/check?user=$username&pass=$bindpw";
+    my $url = "https://localhost/validate/check?user=$encoded_username&pass=$encoded_bindpw";
     
     $curl->setopt(CURLOPT_URL, $url);
     
