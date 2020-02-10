@@ -137,6 +137,8 @@ from linotp.lib.context import request_context
 
 from linotp.lib.reporting import token_reporting
 
+from linotp.lib.challenges import Challenges
+
 import linotp.model.meta
 Session = linotp.model.meta.Session
 
@@ -1592,6 +1594,100 @@ class UserserviceController(BaseController):
                        % (serial, e))
             Session.rollback()
             return sendError(response, e, 1)
+
+        finally:
+            Session.close()
+
+    def verify(self):
+        '''
+        verify a token, identified by a serial number
+
+        after a successful authentication and a valid session, the idenitfied
+        user can verify his enrolled tokens. To verify the token, the token
+        serial number is used.
+
+        for direct authenticating tokens like hmac and totp, the parameter otp
+        is required:
+
+        a valid verification request example would be:
+
+              https://.../userservice/verify?serial=token_serial&otp=123456&session=...
+
+        replied by the usual /validate/check json response
+
+        {
+             "jsonrpc": "2.XX",
+               "result": {
+                  "status": true,
+                  "value": true
+               },
+               "version": "LinOTP 2.XX",
+               "id": 1
+        }
+        '''
+
+        try:
+
+            params = self.request_params
+
+            checkPolicyPre('selfservice', 'userverify', params, self.authUser)
+
+            # -------------------------------------------------------------- --
+
+            # setup - get the token object from the serial
+
+            serial = params.get('serial')
+            if not serial:
+                raise ParameterError("Missing parameter: serial")
+
+            th = TokenHandler()
+            if not th.isTokenOwner(serial, self.authUser):
+                raise Exception("User is not token owner")
+
+            tokens = getTokens4UserOrSerial(serial=serial)
+
+            if len(tokens) == 0:
+                raise Exception("no token for user found")
+
+            if len(tokens) > 1:
+                raise Exception("more than one token selected")
+
+            token = tokens[0]
+
+            # -------------------------------------------------------------- --
+
+            # verify the tokens which support direct authentication eg with otp
+
+            if 'authenticate' in token.mode:
+
+                otp = params.get('otp')
+                if not otp:
+                    raise ParameterError("Missing parameter: otp")
+
+                unknown_params = params.keys() ^ ['serial', 'otp', 'session']
+                if unknown_params:
+                    raise ParameterError(
+                        "unsupported parameters: %r" % unknown_params)
+
+                res = token.check_otp_exist(otp=otp)
+
+                Session.commit()
+                return sendResult(self.response, res >= 0)
+
+            msg = "Challenge Response token verification not supported by now"
+            return sendError(response, msg)
+
+        except PolicyException as pe:
+            log.error("policy failed: %r" % pe)
+            Session.rollback()
+            return sendError(response, pe)
+
+        except Exception as exx:
+            c.audit['success'] = False
+            log.error("error verifying token with serial %s: %r"
+                      % (serial, exx))
+            Session.rollback()
+            return sendError(response, exx, 1)
 
         finally:
             Session.close()

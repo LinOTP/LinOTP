@@ -112,6 +112,7 @@ def getPolicyDefinitions(scope=""):
             'delete': {'type': 'bool'},
             'unassign': {'type': 'bool'},
             'resync': {'type': 'bool'},
+            'verify': {'type': 'bool'},
             'reset': {
                 'type': 'bool',
                 'desc': 'Allow to reset the failcounter of a token.'},
