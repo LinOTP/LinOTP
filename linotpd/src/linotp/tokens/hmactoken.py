@@ -166,12 +166,8 @@ class HmacTokenClass(TokenClass):
         # we support various hashlib methods, but only on create
         # which is effectively set in the update
 
-        self.hashlibStr = "sha1"
-        try:
-            self.hashlibStr = getFromConfig("hotp.hashlib", 'sha1')
-        except Exception as ex:
-            log.exception('[init] Failed to get the hotp.hashlib (%r)' % (ex))
-            raise Exception(ex)
+        self.hashlibStr = self.getFromTokenInfo(
+                "hashlib", getFromConfig("hotp.hashlib", 'sha1'))
 
     def update(self, param, reset_failcount=True):
         '''
