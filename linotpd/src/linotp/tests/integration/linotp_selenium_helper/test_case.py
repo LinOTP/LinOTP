@@ -119,17 +119,26 @@ class TestCase(unittest.TestCase):
     def startDriver(cls):
         """
         Start the Selenium driver ourselves. Used by the integration tests.
+
+        remarks:
+        see stackoverflow: How to deal with certificates using Selenium?
+          https://stackoverflow.com/questions/24507078/how-to-deal-with-certificates-using-selenium
         """
         def _get_chrome_options():
             chrome_options = webdriver.ChromeOptions()
             chrome_options.add_argument(
                 '--lang=' + cls.selenium_driver_language)
+            chrome_options.add_argument('--ignore-certificate-errors')
+            chrome_options.add_argument('--allow-running-insecure-content')
+            chrome_options.add_argument('--allow-insecure-localhost')
+            chrome_options.add_argument('--unsafely-treat-insecure-origin-as-secure')
             return chrome_options
 
         def _get_firefox_profile():
             fp = webdriver.FirefoxProfile()
             fp.set_preference(
                 "intl.accept_languages", cls.selenium_driver_language)
+            fp.accept_untrusted_certs = True
             return fp
 
         selenium_driver = cls.selenium_driver_name
@@ -147,7 +156,6 @@ class TestCase(unittest.TestCase):
             elif selenium_driver == 'firefox':
                 driver = webdriver.Firefox(
                     firefox_profile=_get_firefox_profile())
-
             if driver is None:
                 logger.warn("Falling back to Firefox driver.")
                 driver = webdriver.Firefox(
@@ -165,6 +173,7 @@ class TestCase(unittest.TestCase):
             try:
                 desired_capabilities = getattr(
                     DesiredCapabilities, selenium_driver).copy()
+                desired_capabilities['acceptInsecureCerts'] = True
             except AttributeError:
                 logger.warning(
                     "Could not find capabilities for the given remote driver %s", selenium_driver)
