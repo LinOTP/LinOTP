@@ -342,11 +342,11 @@ class TestGetOtpController(TestController):
 
             otp1 = otps.get('44576668')
             assert otp1.get('otpval') == '75301418', response
-            assert otp1.get('time') == "2012-05-18 02:14:00", response
+            assert otp1.get('time') == "2012-05-18 00:14:00", response
 
             otp2 = otps.get('44576669')
             assert otp2.get('otpval') == '28155992', response
-            assert otp2.get('time') == "2012-05-18 02:14:30", response
+            assert otp2.get('time') == "2012-05-18 00:14:30", response
 
         return
 
@@ -399,11 +399,11 @@ class TestGetOtpController(TestController):
 
             otp1 = otps.get('44576668')
             assert otp1.get('otpval') == '75301418', response
-            assert otp1.get('time') == "2012-05-18 02:14:00", response
+            assert otp1.get('time') == "2012-05-18 00:14:00", response
 
             otp2 = otps.get('44576669')
             assert otp2.get('otpval') == '28155992', response
-            assert otp2.get('time') == "2012-05-18 02:14:30", response
+            assert otp2.get('time') == "2012-05-18 00:14:30", response
 
         return
 
