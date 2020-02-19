@@ -788,7 +788,7 @@ class TimeHmacTokenClass(HmacTokenClass):
                 timeCounter = ((counter + i) * timeStepping) + shift
                 otp_dict["otp"][ counter + i] = {
                      'otpval' : otpval,
-                     'time'  : datetime.datetime.fromtimestamp(timeCounter).strftime("%Y-%m-%d %H:%M:%S"),
+                     'time'  : datetime.datetime.utcfromtimestamp(timeCounter).strftime("%Y-%m-%d %H:%M:%S"),
                     }
             ret = True
 
