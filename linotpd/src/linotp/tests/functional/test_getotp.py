@@ -343,11 +343,11 @@ class TestGetOtpController(TestController):
 
             otp1 = otps.get('44576668')
             self.assertTrue(otp1.get('otpval') == '75301418', response)
-            self.assertTrue(otp1.get('time') == "2012-05-18 02:14:00", response)
+            self.assertTrue(otp1.get('time') == "2012-05-18 00:14:00", response)
 
             otp2 = otps.get('44576669')
             self.assertTrue(otp2.get('otpval') == '28155992', response)
-            self.assertTrue(otp2.get('time') == "2012-05-18 02:14:30", response)
+            self.assertTrue(otp2.get('time') == "2012-05-18 00:14:30", response)
 
         return
 
@@ -400,11 +400,11 @@ class TestGetOtpController(TestController):
 
             otp1 = otps.get('44576668')
             self.assertTrue(otp1.get('otpval') == '75301418', response)
-            self.assertTrue(otp1.get('time') == "2012-05-18 02:14:00", response)
+            self.assertTrue(otp1.get('time') == "2012-05-18 00:14:00", response)
 
             otp2 = otps.get('44576669')
             self.assertTrue(otp2.get('otpval') == '28155992', response)
-            self.assertTrue(otp2.get('time') == "2012-05-18 02:14:30", response)
+            self.assertTrue(otp2.get('time') == "2012-05-18 00:14:30", response)
 
         return
 

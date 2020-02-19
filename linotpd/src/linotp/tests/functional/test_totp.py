@@ -728,25 +728,14 @@ class TestTotpController(TestController):
                 resp = json.loads(response.body)
 
                 otpres = resp.get('result').get('value').get('otp')
-
                 otp1 = otpres.get(str(counter))
-
-                ''' calculate the utc offset'''
-                uTime = otp1.get('time')
-                fTime = self.time2float(uTime)
-                ut = datetime.datetime.utcfromtimestamp(fTime)
-                ot = datetime.datetime.fromtimestamp(fTime)
-                td = (ut - ot)
-                delta = (td.microseconds * 1.0 + (td.seconds + td.days * 24 * 3600) * 10 ** 6) / 10.0 ** 6
-
-                ''' compare the time absolute values'''
-                dt = datetime.datetime.strptime(uTime, tFormat) + datetime.timedelta(seconds=delta)
-                ct = datetime.datetime.strptime(curTime, tFormat)
-                cl = ct - datetime.timedelta(seconds=step)
-
-                assert dt <= ct and cl <= dt
                 assert otp1.get('otpval') == otp
 
+                # verify: the first otp matches the unix start time + timeslice
+                if '1' in otpres:
+                    otp_one = otpres.get('1')
+                    uTime = otp_one.get('time')
+                    assert '1970-01-01 00:00:30' == uTime
 
             self.removeTokens()
 
