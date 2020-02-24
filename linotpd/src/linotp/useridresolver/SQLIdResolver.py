@@ -311,7 +311,6 @@ class dbObject():
 
         :param sqlConnect: sql url for the connection
         """
-        log.debug('[dbObject::connect] %s' % sqlConnect)
 
         args = {'echo': False, 'echo_pool': True}
 
@@ -320,6 +319,10 @@ class dbObject():
             args['connect_args'] = { 'connect_timeout': timeout}
 
         self.engine = create_engine(sqlConnect, **args)
+
+        # the repr of engine is does not show the password
+
+        log.debug('[dbObject::connect] %r' % self.engine)
 
         self.meta = MetaData()
 
@@ -376,9 +379,9 @@ class dbObject():
         return
 
 
-# connect callback
+# connect callback - currently not used
 def call_on_connect(dbapi_con, connection_record):
-    log.debug("[call_on_connect] new DBAPI connection: %s " % (str(dbapi_con)))
+    log.debug("[call_on_connect] new DBAPI connection")
     return
 
 
