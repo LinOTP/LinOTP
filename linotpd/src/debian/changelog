@@ -1,4 +1,4 @@
-linotp (2.11.1rc0-1) jessie; urgency=low
+linotp (2.11.1rc1-1) jessie; urgency=low
 
   Feature:
    * Server: add support for autoenrollment enrollment notification
