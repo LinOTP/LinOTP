@@ -24,6 +24,7 @@ adminclient/LinOTPAdminClientCLI/LinOTPAdminClientCLI_*.orig.tar.gz
 adminclient/LinOTPAdminClientCLI/linotp-adminclient-cli_*.dsc
 adminclient/LinOTPAdminClientCLI/linotp-adminclient-cli_*.tar.gz
 adminclient/LinOTPAdminClientCLI/linotp-adminclient-cli_*_amd64.changes
+adminclient/LinOTPAdminClientCLI/src/debian/.debhelper
 adminclient/LinOTPAdminClientCLI/src/debian/files
 adminclient/LinOTPAdminClientCLI/src/debian/linotp-adminclient-cli.postinst.debhelper
 adminclient/LinOTPAdminClientCLI/src/debian/linotp-adminclient-cli.prerm.debhelper
@@ -44,41 +45,17 @@ linotpd/src/linotp/i18n/de/LC_MESSAGES/linotp.mo
 linotpd/src/linotp_*
 linotpd/src/LinOTP-*.tar.gz
 linotpd/src/linotp/public/i18n/de.json
+linotpd/src/debian/.debhelper/
+linotpd/src/debian/files
+linotpd/src/debian/linotp.*.debhelper
+linotpd/src/debian/linotp.substvars
+linotpd/src/debian/linotp/
 OUTPUT
 qrcode/deb_dist/
 qrcode/qrcode-*.tar.gz
 qrcode_*_amd64.build
 RELEASE/
 
-# SMS Provider
-smsprovider/src/SMSProvider-*.tar.gz
-smsprovider/src/SMSProvider_*.orig.tar.gz
-smsprovider/src/SMSProvider/debian/
-smsprovider/src/linotp-smsprovider*
-smsprovider/src/smsprovider_*
-smsprovider/SMSProvider_*.orig.tar.gz
-smsprovider/linotp-smsprovider_*.dsc
-smsprovider/linotp-smsprovider_*.tar.gz
-smsprovider/linotp-smsprovider_*.changes
-smsprovider/src/debian/files
-smsprovider/src/debian/linotp-smsprovider.postinst.debhelper
-smsprovider/src/debian/linotp-smsprovider.prerm.debhelper
-smsprovider/src/debian/linotp-smsprovider.substvars
-smsprovider/src/debian/linotp-smsprovider/
-smsprovider/src/debian/python-module-stampdir/
-
-# UserIdResolver
-useridresolver/LinOtpUserIdResolver-*.tar.gz
-useridresolver/linotp-useridresolver_*.dsc
-useridresolver/linotp-useridresolver_*.tar.gz
-useridresolver/linotp-useridresolver_*.deb
-useridresolver/linotp-useridresolver_*.changes
-useridresolver/src/debian/files
-useridresolver/src/debian/linotp-useridresolver.postinst.debhelper
-useridresolver/src/debian/linotp-useridresolver.prerm.debhelper
-useridresolver/src/debian/linotp-useridresolver.substvars
-useridresolver/src/debian/linotp-useridresolver/
-useridresolver/src/debian/python-module-stampdir/
 linotpd/src/.eggs/*
 
 # License file for test cases, never commit!
