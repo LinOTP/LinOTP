@@ -331,30 +331,26 @@ case "$1" in
       echo_log "Skipping Apache configuration because we're on an SVA3."
     elif [ "$APACHE" = "true" ]; then
       if ! check_apache_disabled; then
-        # Copy virtual host definition for LinOTP to /etc/apache2,
-        # depending on the Apache version.
+        # Copy virtual host definition for LinOTP to /etc/apache2
         APACHE2_VERSION=$(dpkg -s apache2 | grep "^Version:" | cut -d' ' -f2)
         if [ -z "$APACHE2_VERSION" ]; then
           echo_error "Apache requested but apache2 isn't installed, aborting"
           exit 1
         fi
-        if dpkg --compare-versions "${APACHE2_VERSION}" ge 2.4; then
-          config=/etc/linotp2/apache2.4-example/linotp2.conf
-        else
-          config=/etc/linotp2/apache2.2-example/linotp2.conf
-        fi
+
         echo_log "Setting up for Apache $APACHE2_VERSION"
         if [ ! -f /etc/apache2/sites-available/linotp2.conf ]; then
-          echo_log "Using configuration file: $config"
-          cp "$config" /etc/apache2/sites-available/linotp2.conf
+          cp /etc/linotp2/apache2.4-example/linotp2.conf /etc/apache2/sites-available/linotp2.conf
         else
           echo_log "Apache already configured, leaving intact."
         fi
 
         a2ensite linotp2
+
         for mod in auth_digest wsgi ssl headers; do
           a2enmod -q $mod
         done
+
         echo_log "Basic Apache configuration done"
       fi
       if [ "$APACHE_SSL_CREATE" = "true" ]; then
