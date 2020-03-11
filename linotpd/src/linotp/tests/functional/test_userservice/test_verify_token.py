@@ -29,10 +29,31 @@ import math
 import binascii
 from datetime import datetime
 from hashlib import sha1
+from mock import patch
 
+import linotp.provider.smsprovider.FileSMSProvider
 
 from linotp.tests import TestController
 from linotp.lib.HMAC import HmacOtp
+
+
+# mocking hook is starting here
+SMS_MESSAGE_OTP = ('', '')
+SMS_MESSAGE_CONFIG = {}
+
+
+def mocked_submitMessage(FileSMS_Object, *argparams, **kwparams):
+
+    # this hook is defined to grep the otp and make it globaly available
+    global SMS_MESSAGE_OTP
+    SMS_MESSAGE_OTP = argparams
+
+    # we call here the original sms submitter - as we are a functional test
+    global SMS_MESSAGE_CONFIG
+    SMS_MESSAGE_CONFIG = FileSMS_Object.config
+
+    return True
+
 
 unix_start_time = datetime(year=1970, month=1, day=1)
 
@@ -73,6 +94,24 @@ class TestUserserviceTokenTest(TestController):
 
     def tearDown(self):
         TestController.tearDown(self)
+
+    def define_provider(self, provider_params=None):
+        """
+        define the new provider via setProvider
+        """
+        params = {'name': 'newone',
+                  'config': '{"file":"/tmp/newone"}',
+                  'timeout': '301',
+                  'type': 'sms',
+                  'class': 'smsprovider.FileSMSProvider.FileSMSProvider'
+                  }
+
+        if provider_params:
+            params.update(provider_params)
+
+        response = self.make_system_request('setProvider', params=params)
+
+        return response
 
     def test_verify_hmac_token(self):
 
@@ -145,41 +184,6 @@ class TestUserserviceTokenTest(TestController):
             'verify', params=params, auth_user=auth_user)
 
         assert 'false' not in response
-
-    def test_verify_sms_token(self):
-        """ verify that currently no challenge response token are supported """
-
-        policy = {
-            'name': 'T1',
-            'action': 'enrollSMS, delete, history, verify,',
-            'user': ' passthru.*.myDefRes:',
-            'realm': '*',
-            'scope': 'selfservice'
-        }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response, response
-
-        auth_user = {
-            'login': 'passthru_user1@myDefRealm',
-            'password': 'geheim1'}
-
-        serial = 'sms123'
-
-        params = {'type': 'sms', 'serial': serial, 'phone': '049 123 452 4543'}
-        response = self.make_userselfservice_request(
-            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
-
-        assert 'detail' in response, response
-
-        seed = response.json['detail']['otpkey']
-        otp = get_otp(seed, counter=2,  digits=6)
-
-        params = {'serial': serial, 'otp': otp}
-        response = self.make_userselfservice_request(
-            'verify', params=params, auth_user=auth_user)
-
-        assert 'false' in response
-        assert 'not supported by now' in response
 
     def test_negative_userservice_verify(self):
         """
@@ -267,7 +271,7 @@ class TestUserserviceTokenTest(TestController):
             'verify', params=params, auth_user=auth_user)
 
         assert 'false' in response
-        assert 'Missing parameter' in response
+        assert 'unsupported parameters' in response
 
         # ------------------------------------------------------------------ --
 
@@ -297,3 +301,129 @@ class TestUserserviceTokenTest(TestController):
 
         assert 'false' in response
         assert 'not allow' in response
+
+    def test_verify_cr_hmac_token(self):
+
+        policy = {
+            'name': 'T1',
+            'action': 'enrollHMAC, delete, history, verify,',
+            'user': ' passthru.*.myDefRes:',
+            'realm': '*',
+            'scope': 'selfservice'
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response, response
+
+        auth_user = {
+            'login': 'passthru_user1@myDefRealm',
+            'password': 'geheim1'}
+
+        serial = 'hmac123'
+
+        params = {'type': 'hmac', 'genkey': '1', 'serial': serial}
+        response = self.make_userselfservice_request(
+            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+
+        assert '"img": "<img ' in response, response
+
+        seed_value = response.json['detail']['otpkey']['value']
+        _, _, seed = seed_value.partition('//')
+
+        params = {'serial': serial}
+        response = self.make_userselfservice_request(
+            'verify', params=params, auth_user=auth_user)
+
+        jresp = response.json
+        assert jresp['result']['value'] == False
+        assert jresp['detail']['reply_mode'] == ['offline']
+
+        otp = get_otp(seed, 1, digits=6)
+
+        params = {'serial': serial, 'otp': otp}
+        response = self.make_userselfservice_request(
+            'verify', params=params, auth_user=auth_user)
+
+        assert 'false' not in response
+
+    @patch.object(linotp.provider.smsprovider.FileSMSProvider.FileSMSProvider,
+                  'submitMessage', mocked_submitMessage)
+    def test_verify_cr_sms_token(self):
+        """ verify challenge response for sms token """
+
+        # setup policies
+
+        policy = {
+            'name': 'T1',
+            'action': 'enrollSMS, delete, history, verify,',
+            'user': ' passthru.*.myDefRes:',
+            'realm': '*',
+            'scope': 'selfservice'
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response, response
+
+        # define the sms provider - we use a mocked file provider
+
+        response = self.define_provider({'name': 'simple_provider'})
+        assert '"value": true' in response, response
+
+        # define provider as default
+
+        params = {'name': 'simple_provider_policy',
+                  'scope': 'authentication',
+                  'realm': '*',
+                  'action': 'sms_provider=simple_provider',
+                  'user': '*',
+                  }
+
+        response = self.make_system_request(action='setPolicy',
+                                            params=params)
+        assert 'false' not in response, response
+
+        # ------------------------------------------------------------------ --
+
+        # enroll sms token
+
+        auth_user = {
+            'login': 'passthru_user1@myDefRealm',
+            'password': 'geheim1'}
+
+        serial = 'sms123'
+
+        params = {'type': 'sms', 'serial': serial, 'phone': '049 123 452 4543'}
+        response = self.make_userselfservice_request(
+            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+
+        assert 'detail' in response, response
+
+        # ------------------------------------------------------------------ --
+
+        # trigger the challenge
+
+        params = {'serial': serial}
+        response = self.make_userselfservice_request(
+            'verify', params=params, auth_user=auth_user)
+
+        assert 'detail' in response
+
+        jresp = response.json
+        transaction_id = jresp['detail']['transactionid']
+        assert transaction_id
+        assert 'false' in response
+
+        # ------------------------------------------------------------------ --
+
+        # reply with the transaction and otp
+
+        (_phone, otp) = SMS_MESSAGE_OTP
+
+        params = {
+            'serial': serial,
+            'otp': otp,
+            'transactionid': transaction_id
+        }
+
+        response = self.make_userselfservice_request(
+            'verify', params=params, auth_user=auth_user)
+
+        assert 'false' not in response

@@ -1634,48 +1634,138 @@ class UserserviceController(BaseController):
 
             # -------------------------------------------------------------- --
 
-            # setup - get the token object from the serial
+            # setup - get the tokens from the serial or transactionid/state
 
+            transaction_id = params.get('transactionid', params.get('state'))
             serial = params.get('serial')
-            if not serial:
-                raise ParameterError("Missing parameter: serial")
 
-            th = TokenHandler()
-            if not th.isTokenOwner(serial, self.authUser):
-                raise Exception("User is not token owner")
-
-            tokens = getTokens4UserOrSerial(serial=serial)
-
-            if len(tokens) == 0:
-                raise Exception("no token for user found")
-
-            if len(tokens) > 1:
-                raise Exception("more than one token selected")
-
-            token = tokens[0]
+            if not serial and not transaction_id:
+                raise ParameterError(
+                    "Missing parameter: serial or transactionid")
 
             # -------------------------------------------------------------- --
 
-            # verify the tokens which support direct authentication eg with otp
+            # check for invalid params
 
-            if 'authenticate' in token.mode:
+            supported_params = ['serial', 'transactionid', 'otp', 'session']
+            unknown_params = [p for p in params if p not in supported_params]
+            if len(unknown_params) > 0:
+                raise ParameterError(
+                    "unsupported parameters: %r" % unknown_params)
 
-                otp = params.get('otp')
-                if not otp:
-                    raise ParameterError("Missing parameter: otp")
 
-                unknown_params = params.keys() ^ ['serial', 'otp', 'session']
-                if unknown_params:
-                    raise ParameterError(
-                        "unsupported parameters: %r" % unknown_params)
+            # -------------------------------------------------------------- --
+
+            # identify the affected tokens
+
+            if transaction_id:
+                _expired_challenges, valid_challenges = Challenges.get_challenges(
+                    transid=transaction_id)
+
+                serials = [c.tokenserial for c in valid_challenges]
+                serials = list(set(serials)) # remove duplicates
+
+                tokens = []
+                for serial in serials:
+                    tokens.extend(getTokens4UserOrSerial(serial=serial))
+
+            elif serial:
+                tokens = getTokens4UserOrSerial(serial=serial)
+
+            # -------------------------------------------------------------- --
+
+            # now there are all tokens identified either by serial or by
+            # transaction id, we can do the sanity checks that there is only
+            # one token which belongs to the authenticated user
+
+            if len(tokens) == 0:
+                raise Exception("no token found!")
+
+            if len(tokens) > 1:
+                raise Exception("multiple tokens found!")
+
+            token = tokens[0]
+
+            th = TokenHandler()
+            if not th.isTokenOwner(token.getSerial(), self.authUser):
+                raise Exception("User is not token owner")
+
+            # -------------------------------------------------------------- --
+
+            # challenge response:
+            # either transactionid + otp or only otp
+
+            # verify the challenge belonging to the transaction
+
+            if transaction_id:
+
+                reply = Challenges.get_challenges(transid=transaction_id)
+                expired_challenges, valid_challenges = reply
+
+                if expired_challenges:
+                    raise Exception('challenge already expired!')
+
+                if not valid_challenges:
+                    raise Exception('no valid challenge found!')
+
+                res, reply = token.check_challenge_response(
+                    valid_challenges, self.authUser,
+                    params.get('otp'), options=params)
+
+                if not res:
+                    log.debug('failed to verify transaction')
+
+                Session.commit()
+                return sendResult(self.response, res >= 0)
+
+            if 'otp' in params:
+
+                otp = params['otp']
 
                 res = token.check_otp_exist(otp=otp)
 
                 Session.commit()
                 return sendResult(self.response, res >= 0)
 
-            msg = "Challenge Response token verification not supported by now"
-            return sendError(response, msg)
+            # -------------------------------------------------------------- --
+
+            # challenge request:
+            # when there is no transactionid and / or no otp
+
+            # default for non-challenge response like ['hmac', 'totp', +++]
+            if 'authenticate' in token.mode:
+                message = "Please enter your otp"
+                reply_mode = ['offline']
+            elif 'challenge' in token.mode:
+                res, reply = Challenges.create_challenge(token)
+                if not res:
+                    raise Exception('failed to trigger challenge %r' % reply)
+
+                transaction_id = reply['transactionid']
+                message = reply['message']
+                reply_mode = ['online']
+            else:
+                raise Exception("unsupported token mode!")
+
+            # -------------------------------------------------------------- --
+
+            # create the challenge response
+
+            detail_response = {
+                "message": message,  # user facing message, might be localiszed
+                "reply_mode": reply_mode
+            }
+
+            if transaction_id:
+                detail_response['transactionid'] = transaction_id
+
+            # -------------------------------------------------------------- --
+
+            # close down the session and submit the result
+
+            Session.commit()
+            return sendResult(
+                self.response, False, opt=detail_response)
 
         except PolicyException as pe:
             log.error("policy failed: %r" % pe)
