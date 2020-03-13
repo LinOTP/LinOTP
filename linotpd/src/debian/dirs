@@ -1,5 +1,6 @@
 etc/linotp2
+etc/linotp2/apache-site-includes
+etc/linotp2/custom-style
 etc/linotp2/custom-templates
 etc/linotp2/custom-templates/mailtemplates
-etc/linotp2/custom-style
 var/log/linotp
