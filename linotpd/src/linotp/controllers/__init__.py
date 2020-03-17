@@ -28,19 +28,42 @@
 This is the controller module. The controllers provide the Web API to
 communicate with LinOTP. You can use the following controllers:
 
-account		- used for loggin in to the selfservice
-admin		- API to manage the tokens
-audit		- to search the audit trail
-auth		- to do authentication tests
-error		- to display errors
-gettoken	- to retrieve OTP values
-manage		- the Web UI
-openid		- the openid interface
-selfservice	- the selfservice UI
-system		- to configure the system
-testing		- for testing purposes
-validate	- for authenticating/ OTP checking
-maintenance     - for internal maintenance purposes
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.admin`       | API to manage the tokens                 |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.audit`       | to search the audit trail                |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.auth`        | to do authentication tests               |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.error`       | to display errors                        |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.gettoken`    | to retrieve OTP values                   |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.helpdesk`    | management operations on behalf of users |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.maintenance` | for internal maintenance purposes        |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.manage`      | the Web UI                               |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.monitoring`  | for system monitoring                    |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.openid`      | the openid interface                     |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.ocra`        | Ocra token API                           |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.selfservice` | the selfservice UI                       |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.system`      | to configure the system                  |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.testing`     | for testing purposes                     |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.tools`       | to access various tools                  |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.u2f`         | U2F token API                            |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.userservice` | user API, used by selfservice frontend   |
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.validate`    | for authenticating / OTP checking        |
++--------------------------------------------+------------------------------------------+
 
 '''
-
