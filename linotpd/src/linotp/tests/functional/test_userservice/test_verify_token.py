@@ -415,7 +415,8 @@ class TestUserserviceTokenTest(TestController):
 
         # reply with the transaction and otp
 
-        (_phone, otp) = SMS_MESSAGE_OTP
+        (_phone, otp_msg) = SMS_MESSAGE_OTP
+        otp, _, _ = otp_msg.partition(' ')
 
         params = {
             'serial': serial,

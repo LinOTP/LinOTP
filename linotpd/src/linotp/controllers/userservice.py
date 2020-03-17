@@ -1627,7 +1627,6 @@ class UserserviceController(BaseController):
         '''
 
         try:
-
             params = self.request_params
 
             checkPolicyPre('selfservice', 'userverify', params, self.authUser)
@@ -1730,34 +1729,62 @@ class UserserviceController(BaseController):
             # -------------------------------------------------------------- --
 
             # challenge request:
-            # when there is no transactionid and / or no otp
+            # when there is no transaction id and / or no OTP
 
-            # default for non-challenge response like ['hmac', 'totp', +++]
+            transaction_data = None
+            transaction_id = None
+
             if 'authenticate' in token.mode:
-                message = "Please enter your otp"
-                reply_mode = ['offline']
+                # default for non-challenge response tokens like ['hmac', 'totp', +++]
+                message = _('Please enter your otp')
             elif 'challenge' in token.mode:
-                res, reply = Challenges.create_challenge(token)
+                # tokens that do not have a direct authentication mode need a challenge to be tested
+                data = _('SelfService token test\n\n Token: {0}\nSerial:{1}\nUser: {2}').format(
+                    token.type, token.token.LinOtpTokenSerialnumber, self.authUser.login)
+                options = {
+                    'content_type': '0',
+                    'data': data
+                }
+                res, reply = Challenges.create_challenge(token, options=options)
                 if not res:
-                    raise Exception('failed to trigger challenge %r' % reply)
+                    raise Exception('failed to trigger challenge {:r}'.format(reply))
 
+                if token.type is 'qr':
+                    transaction_data = reply['message']
+                    message = _('Please scan the provided qr code')
+                else:
+                    message = reply['message']
                 transaction_id = reply['transactionid']
-                message = reply['message']
-                reply_mode = ['online']
             else:
-                raise Exception("unsupported token mode!")
+                raise Exception('unsupported token mode')
+
+            # announce available reply channels via reply_mode
+            # - online: token supports online mode where the user can independently
+            #   answer the challenge via a different channel without having to enter
+            #   an OTP.
+            # - offline: token supports offline mode where the user needs to manually
+            #   enter an OTP.
+            if token.type is 'push':
+                reply_mode =  ['online']
+            elif token.type is 'qr':
+                reply_mode =  ['offline', 'online']
+            else:
+                reply_mode = ['offline']
 
             # -------------------------------------------------------------- --
 
-            # create the challenge response
+            # create the challenge detail response
 
             detail_response = {
-                "message": message,  # user facing message, might be localiszed
+                "message": message,  # localized user facing message
                 "reply_mode": reply_mode
             }
 
             if transaction_id:
                 detail_response['transactionid'] = transaction_id
+
+            if transaction_data:
+                detail_response['transactiondata'] = transaction_data
 
             # -------------------------------------------------------------- --
 
