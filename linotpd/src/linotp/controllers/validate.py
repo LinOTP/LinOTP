@@ -218,6 +218,7 @@ class ValidateController(BaseController):
            * data (optional): optional challenge + otp verification for challenge response token.  This indicates, that this request is a challenge request.
            * state (optional): The optional id to respond to a previous challenge.
            * transactionid (optional): The optional id to respond to a previous challenge.
+           * serial (optional): optional serial of a token to use instead of the matching tokens found for the given user and pass
 
         returns:
             JSON response::
