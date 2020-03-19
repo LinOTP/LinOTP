@@ -211,14 +211,14 @@ class ValidateController(BaseController):
 
         arguments:
 
-           * user:    The username or loginname
-           * pass:    The password that consist of a possible fixed password component and the OTP value
-           * realm (optional): An optional realm to match the user to a useridresolver
-           * challenge (optional): optional challenge + otp verification for challenge response token. This indicates, that this request is a challenge request.
-           * data (optional): optional challenge + otp verification for challenge response token.  This indicates, that this request is a challenge request.
-           * state (optional): The optional id to respond to a previous challenge.
-           * transactionid (optional): The optional id to respond to a previous challenge.
-           * serial (optional): optional serial of a token to use instead of the matching tokens found for the given user and pass
+           * user: The username or loginname
+           * pass: The password that consist of a possible fixed password component and the OTP value
+           * realm (optional): The realm to be used to match the user to a useridresolver
+           * challenge (optional): This param indicates, that this request is a challenge request.
+           * data (optional): Data to use to generate a challenge
+           * state (optional): A state id of an existing challenge to respond to
+           * transactionid (optional): A transaction id of an existing challenge to respond to
+           * serial (optional): Serial of a token to use instead of the matching tokens found for the given user and pass
 
         returns:
             JSON response::
