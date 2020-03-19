@@ -943,7 +943,7 @@ def get_resolvers_of_user(login, realm):
     get the resolvers of a given user, identified by loginname and realm
     """
 
-    log.info("getting resolvers for user %r oiut of realm %r", login, realm)
+    log.info("getting resolvers for user %r in realm %r", login, realm)
 
     def _get_resolvers_of_user(login=login, realm=realm):
 
