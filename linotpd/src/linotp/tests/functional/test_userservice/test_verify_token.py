@@ -25,7 +25,9 @@
 #
 
 
+import os
 import math
+import json
 import binascii
 from datetime import datetime
 from hashlib import sha1
@@ -36,6 +38,7 @@ import linotp.provider.smsprovider.FileSMSProvider
 from linotp.tests import TestController
 from linotp.lib.HMAC import HmacOtp
 
+from .qr_token_validation import QR_Token_Validation as QR
 
 # mocking hook is starting here
 SMS_MESSAGE_OTP = ('', '')
@@ -91,6 +94,7 @@ class TestUserserviceTokenTest(TestController):
         # create the common resolvers and realm
         self.create_common_resolvers()
         self.create_common_realms()
+
 
     def tearDown(self):
         TestController.tearDown(self)
@@ -428,3 +432,162 @@ class TestUserserviceTokenTest(TestController):
             'verify', params=params, auth_user=auth_user)
 
         assert 'false' not in response
+
+
+    def test_qr_token(self):
+        """
+        userservice token verification for qrtoken
+
+        which is done in the following steps
+
+        * define the callback url
+        * define the selfservice policies to verify the token
+        * enroll the qr token
+        * pair the qr token
+        * run first challenge & challenge verification against /validate/check*
+        * run challenge & challenge verification against /userservice/verify
+
+        """
+
+        # set pairing callback policies
+
+        cb_url='/foo/bar/url'
+
+        params = {'name': 'dummy1',
+                  'scope': 'authentication',
+                  'realm': '*',
+                  'action': 'qrtoken_pairing_callback_url=%s' % cb_url,
+                  'user': '*'}
+
+        response = self.make_system_request(action='setPolicy', params=params)
+        assert 'false' not in response, response
+
+        # ------------------------------------------------------------------- --
+
+        # set challenge callback policies
+
+        params = {
+            'name': 'dummy3',
+            'scope': 'authentication',
+            'realm': '*',
+            'action': 'qrtoken_challenge_callback_url=%s' % cb_url,
+            'user': '*'
+        }
+
+        response = self.make_system_request(action='setPolicy', params=params)
+        assert 'false' not in response, response
+
+        params = {
+            'name': 'enroll_policy',
+            'scope': 'selfservice',
+            'realm': '*',
+            'action': 'activate_QRToken, enrollQR, verify',
+            'user': '*'
+        }
+
+        response = self.make_system_request(action='setPolicy', params=params)
+        assert 'false' not in response, response
+
+        # ------------------------------------------------------------------- --
+
+        # enroll the qr token:
+
+        # response should contain pairing url, check if it was sent and validate
+
+        user = 'passthru_user1@myDefRealm'
+        auth_user = {'login': user, 'password': 'geheim1'}
+        serial = 'qrtoken'
+        pin = '1234'
+
+        secret_key, public_key = QR.create_keys()
+
+        params = {'type': 'qr', 'pin': pin, 'user': user, 'serial': serial}
+        response = self.make_admin_request('init', params)
+
+        pairing_url = QR.get_pairing_url_from_response(response)
+
+        # ------------------------------------------------------------------- --
+
+        # do the pairing
+
+        token_info = QR.create_user_token_by_pairing_url(pairing_url, pin)
+
+        pairing_response = QR.create_pairing_response(
+            public_key, token_info, token_id=1)
+
+        params = {'pairing_response': pairing_response}
+
+        response = self.make_validate_request('pair', params)
+        response_dict = json.loads(response.body)
+
+        assert not response_dict.get('result', {}).get('value', True)
+        assert response_dict.get('result', {}).get('status', False)
+
+        # ------------------------------------------------------------------- --
+
+        # trigger a challenge
+
+        params = {'serial': serial, 'pass': pin, 'data': serial}
+
+        response = self.make_validate_request('check_s', params)
+        response_dict = json.loads(response.body)
+
+        assert 'detail' in response_dict
+        detail = response_dict.get('detail')
+
+        assert 'transactionid' in detail
+        assert 'message' in detail
+
+        # ------------------------------------------------------------------- --
+
+        # verify the transaction
+
+        # calculate the challenge response from the returned message
+        # for verification we can use tan or sig
+
+        message = detail.get('message')
+        challenge, _sig, tan = QR.claculate_challenge_response(
+                                        message, token_info, secret_key)
+
+        params = {'transactionid': challenge['transaction_id'], 'pass': tan}
+        response = self.make_validate_request('check_t', params)
+        assert 'false' not in response
+
+        # ------------------------------------------------------------------- --
+
+        # trigger a challenge against the userservice verify interface
+
+        params = {'serial': serial}
+
+        response = self.make_userselfservice_request(
+                            'verify', params, auth_user=auth_user)
+
+        response_dict = json.loads(response.body)
+
+        assert 'detail' in response_dict
+        detail = response_dict.get('detail')
+
+        assert 'transactionid' in detail
+        assert 'message' in detail
+        assert 'transactiondata' in detail
+
+        # ------------------------------------------------------------------- --
+
+        # verify the transaction against the userservice verify interface
+
+        # calculate the challenge response from the returned message
+        # for verification we can use tan or sig
+
+        message = detail.get('transactiondata')
+        challenge, _sig, tan = QR.claculate_challenge_response(
+                                        message, token_info, secret_key)
+
+        params = {'transactionid': challenge['transaction_id'], 'otp': tan}
+        response = self.make_userselfservice_request(
+                            'verify', params, auth_user=auth_user)
+
+        assert 'false' not in response
+
+        return
+
+# eof
