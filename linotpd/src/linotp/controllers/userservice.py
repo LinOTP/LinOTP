@@ -1707,15 +1707,41 @@ class UserserviceController(BaseController):
                 if not valid_challenges:
                     raise Exception('no valid challenge found!')
 
-                res, reply = token.check_challenge_response(
-                    valid_challenges, self.authUser,
-                    params.get('otp'), options=params)
+                otp = params.get('otp')
+                if otp: # we received an otp, verify the challenge
+                    res, reply = token.check_challenge_response(
+                        valid_challenges, self.authUser,
+                        otp, options=params)
 
-                if not res:
-                    log.debug('failed to verify transaction')
+                    if not res:
+                        log.debug('failed to verify transaction')
 
-                Session.commit()
-                return sendResult(self.response, res >= 0)
+                    Session.commit()
+                    return sendResult(self.response, res >= 0)
+                else: # we only received an otp, send the transaction status
+                    if len(valid_challenges) != 1:
+                        raise Exception('Could not uniquely identify challenge for transaction id {} '.format(transaction_id))
+                    challenge = valid_challenges[0]
+
+                    challenge_session = challenge.getSession()
+                    if challenge_session:
+                        challenge_session = json.loads(challenge_session)
+                    else:
+                        challenge_session = {}
+
+                    details = {
+                        'received_count': challenge.received_count,
+                        'received_tan': challenge.received_tan,
+                        'valid_tan': challenge.valid_tan,
+                        'message': challenge.getChallenge(),
+                        'status': challenge.getStatus(),
+                        'accept': challenge_session.get('accept', False),
+                        'reject': challenge_session.get('reject', False),
+                    }
+
+                    Session.commit()
+                    return sendResult(
+                        self.response, details['valid_tan'], opt=details)
 
             if 'otp' in params:
 
