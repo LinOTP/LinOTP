@@ -25,15 +25,17 @@
 #
 
 
-import os
 import math
 import json
 import binascii
+
+
 from datetime import datetime
 from hashlib import sha1
 from mock import patch
 
 import linotp.provider.smsprovider.FileSMSProvider
+from linotp.provider.emailprovider import SMTPEmailProvider
 
 from linotp.tests import TestController
 from linotp.lib.HMAC import HmacOtp
@@ -44,10 +46,26 @@ from .qr_token_validation import QR_Token_Validation as QR
 SMS_MESSAGE_OTP = ('', '')
 SMS_MESSAGE_CONFIG = {}
 
+EMAIL_MESSAGE_OTP = ('', '')
+EMAIL_MESSAGE_CONFIG = {}
+
+
+
+def mocked_submitEmailMessage(SMTPEmailProvider_Object, *argparams, **kwparams):
+
+    # this hook is defined to grep the otp and make it globally available
+    global EMAIL_MESSAGE_OTP
+    EMAIL_MESSAGE_OTP = kwparams['replacements']['otp']
+
+    # we call here the original email submiter - as we are a functional test
+    global EMAIL_MESSAGE_CONFIG
+    EMAIL_MESSAGE_CONFIG = SMTPEmailProvider_Object.config
+
+    return True, "email submitted"
 
 def mocked_submitMessage(FileSMS_Object, *argparams, **kwparams):
 
-    # this hook is defined to grep the otp and make it globaly available
+    # this hook is defined to grep the otp and make it globally available
     global SMS_MESSAGE_OTP
     SMS_MESSAGE_OTP = argparams
 
@@ -99,7 +117,7 @@ class TestUserserviceTokenTest(TestController):
     def tearDown(self):
         TestController.tearDown(self)
 
-    def define_provider(self, provider_params=None):
+    def define_sms_provider(self, provider_params=None):
         """
         define the new provider via setProvider
         """
@@ -116,6 +134,28 @@ class TestUserserviceTokenTest(TestController):
         response = self.make_system_request('setProvider', params=params)
 
         return response
+
+    def define_email_provider(self, provider_params=None):
+
+        email_conf = {
+            "SMTP_SERVER": "mail.example.com",
+            "SMTP_USER": "secret_user",
+            "SMTP_PASSWORD": "secret_pasword"
+        }
+
+        params = {
+            'name': 'new_email_provider',
+            'config': json.dumps(email_conf),
+            'timeout': '30',
+            'type': 'email',
+            'class': 'linotp.provider.emailprovider.SMTPEmailProvider'
+        }
+
+        if provider_params:
+            params.update(provider_params)
+
+        return self.make_system_request('setProvider', params=params)
+
 
     def test_verify_hmac_token(self):
 
@@ -368,7 +408,7 @@ class TestUserserviceTokenTest(TestController):
 
         # define the sms provider - we use a mocked file provider
 
-        response = self.define_provider({'name': 'simple_provider'})
+        response = self.define_sms_provider({'name': 'simple_provider'})
         assert '"value": true' in response, response
 
         # define provider as default
@@ -589,5 +629,112 @@ class TestUserserviceTokenTest(TestController):
         assert 'false' not in response
 
         return
+
+    @patch.object(SMTPEmailProvider, 'submitMessage', mocked_submitEmailMessage)
+    def test_verify_cr_email_token(self):
+        """ verify challenge response for email token """
+
+        # setup policies
+
+        policy = {
+            'name': 'T1',
+            'action': 'enrollEMAIL, delete, history, verify,',
+            'user': ' passthru.*.myDefRes:',
+            'realm': '*',
+            'scope': 'selfservice'
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response, response
+
+        # define the email provider - we use a mocked file provider
+
+        response = self.define_email_provider({'name': 'simple_email_provider'})
+        assert 'false' not in response, response
+
+        # ------------------------------------------------------------------ --
+
+        # define provider as default
+
+        params = {'name': 'simple_email_provider',
+                  'scope': 'authentication',
+                  'realm': '*',
+                  'action': 'email_provider=simple_email_provider',
+                  'user': '*',
+                  }
+
+        response = self.make_system_request(action='setPolicy', params=params)
+
+        assert 'false' not in response, response
+
+
+        # ------------------------------------------------------------------ --
+
+        # enroll sms token
+        user = 'passthru_user1@myDefRealm'
+        pin = '123'
+
+        auth_user = {
+            'login': user,
+            'password': 'geheim1'}
+
+        serial = 'email123'
+
+        params = {
+            'type': 'email',
+            'serial': serial,
+            'email_address': 'test@example.net',
+            'pin': pin
+        }
+        response = self.make_userselfservice_request(
+            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+
+        assert 'detail' in response, response
+
+        # ------------------------------------------------------------------ --
+
+        # trigger the challenge
+
+        params = {'serial': serial}
+        response = self.make_userselfservice_request(
+            'verify', params=params, auth_user=auth_user)
+
+        assert 'detail' in response
+
+        jresp = response.json
+        transaction_id = jresp['detail']['transactionid']
+        assert transaction_id
+        assert 'false' in response
+
+        # ------------------------------------------------------------------ --
+
+        # reply with the transaction and otp
+
+        otp = EMAIL_MESSAGE_OTP
+
+        params = {
+            'serial': serial,
+            'otp': otp,
+            'transactionid': transaction_id
+        }
+
+        response = self.make_userselfservice_request(
+            'verify', params=params, auth_user=auth_user)
+
+        assert 'false' not in response
+
+        # ------------------------------------------------------------------ --
+
+        # finally check that this otp could not be used for
+        # a validate/check anymore
+
+        params = {
+            'user': user,
+            'pass': pin+otp,
+        }
+
+        response = self.make_validate_request('check', params=params)
+
+        assert 'false' in response
+
 
 # eof
