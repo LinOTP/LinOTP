@@ -1710,17 +1710,47 @@ class UserserviceController(BaseController):
                 otp = params.get('otp')
                 if otp: # we received an otp, verify the challenge
                     res, reply = token.check_challenge_response(
-                        valid_challenges, self.authUser,
-                        otp, options=params)
+                        valid_challenges, self.authUser, otp, options=params)
 
-                    if not res:
+                    if res:
+                        log.debug('successful verified transaction')
+
+                        token.incOtpCounter()
+                        token.statusValidationSuccess()
+
+                        # finish as well related open challenges
+                        Challenges.finish_challenges(token, success=True)
+
+                        if token.count_auth_success_max > 0:
+                            token.inc_count_auth_success()
+
+                        if token.count_auth_max > 0:
+                            token.inc_count_auth()
+
+                    else:
+
                         log.debug('failed to verify transaction')
+
+                        # count all token accesses
+                        if token.count_auth_max > 0:
+                            token.inc_count_auth()
+
+                        token.statusValidationFail()
+                        Challenges.finish_challenges(token, success=False)
 
                     Session.commit()
                     return sendResult(self.response, res >= 0)
-                else: # we only received an otp, send the transaction status
+
+                else:
+
+                    # we only received a transaction id, so we query the
+                    # transaction status
+
                     if len(valid_challenges) != 1:
-                        raise Exception('Could not uniquely identify challenge for transaction id {} '.format(transaction_id))
+                        raise Exception(
+                            'Could not uniquely identify challenge for '
+                            'transaction id {} '.format(transaction_id))
+
                     challenge = valid_challenges[0]
 
                     challenge_session = challenge.getSession()
