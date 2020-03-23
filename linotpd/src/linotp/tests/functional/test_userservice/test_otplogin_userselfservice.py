@@ -249,7 +249,7 @@ class TestUserserviceAuthController(TestController):
                                                          auth_user=auth_user)
 
         msg = "%s" % exx.exception
-        assert 'Server Error 403' in msg
+        assert 'Server Error 401' in msg
 
         self.delete_all_token()
         self.delete_policy(name='mfa_noToken')
@@ -350,7 +350,7 @@ class TestUserserviceAuthController(TestController):
         response = self.client.post(url(controller='userservice',
                                         action='history'), data=params)
 
-        assert response.status_code == 403
+        assert response.status_code == 401
         assert "No valid session" in response.data.decode()
 
         TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)

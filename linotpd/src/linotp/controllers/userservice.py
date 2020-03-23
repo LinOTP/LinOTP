@@ -51,7 +51,7 @@ import logging
 
 import os
 from flask import Response
-from werkzeug.exceptions import Forbidden
+from werkzeug.exceptions import Unauthorized
 
 import json
 
@@ -304,7 +304,7 @@ class UserserviceController(BaseController):
         if (not identity or
            auth_type not in ["userservice", 'user_selfservice']):
 
-            raise Forbidden(_("No valid session"))
+            raise Unauthorized('No valid session')
 
         # ------------------------------------------------------------------ --
 
@@ -331,7 +331,7 @@ class UserserviceController(BaseController):
 
         if not check_session(request, self.authUser, self.client):
 
-            raise Forbidden(_("No valid session"))
+            raise Unauthorized('No valid session')
 
         # ------------------------------------------------------------------ --
 
@@ -347,7 +347,7 @@ class UserserviceController(BaseController):
 
         if auth_state != 'authenticated':
 
-            raise Forbidden(_("No valid session"))
+            raise Unauthorized('No valid session')
 
         # ------------------------------------------------------------------ --
 
@@ -1694,10 +1694,8 @@ class UserserviceController(BaseController):
             # challenge response:
             # either transactionid + otp or only otp
 
-            # verify the challenge belonging to the transaction
-
+            # verify the challenge belonging to the transaction or show its status
             if transaction_id:
-
                 reply = Challenges.get_challenges(transid=transaction_id)
                 expired_challenges, valid_challenges = reply
 

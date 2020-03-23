@@ -39,7 +39,7 @@ window.onerror = error_handling;
  * the Login to the selfservice portal is required.
  * Is also defined in controllers/account.py
  */
-LOGIN_CODE = 403
+LOGIN_CODE = 401
 
 /* clear the admin cookie and
    * for IE try to clean the ClearAuthenticationCache and reload same page
