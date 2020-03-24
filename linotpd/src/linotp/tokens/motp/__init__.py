@@ -89,7 +89,7 @@ class mTimeOtp(object):
             initTime = int(options.get('initTime', 0))
 
         if (initTime == 0):
-            otime = int(time.time() / 10)
+            otime = int(time.time() // 10)
         else:
             otime = int(initTime)
 
@@ -104,7 +104,7 @@ class mTimeOtp(object):
 
         for i in range(otime - window, otime + window):
             otp = str(self.calcOtp(i, key, pin))
-            if str(anOtpVal) == otp:
+            if anOtpVal == otp:
                 res = i
                 break
 
