@@ -2994,7 +2994,7 @@ def get_pin_policies(user):
     # in the context of the selfservice login we precheck the password
     # so thate the password could be ignored at all
 
-    if request_context['Path'] == '/userservice/login':
+    if request_context['Path'] in ['/userservice/login', '/userservice/verify']:
         pin_policies = [3]
 
     if len(pin_policies) > 1:
