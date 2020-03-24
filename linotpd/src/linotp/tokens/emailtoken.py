@@ -343,7 +343,7 @@ class EmailTokenClass(HmacTokenClass):
         :rtype: bool, string, dict, dict
         """
         attributes = {}
-        counter = self.getOtpCount()
+        counter = self.getOtpCount() + 1
         data = {'counter_value': "%s" % counter}
 
         try:
@@ -570,10 +570,11 @@ class EmailTokenClass(HmacTokenClass):
 
         for challenge in challenges:
             challenge_data = challenge.getData()
-            stored_counter = challenge_data.get("counter_value")
+            stored_counter = int(challenge_data.get("counter_value", -1))
             temp_otp_counter = self.checkOtp(otp, int(stored_counter),
                                              window, options)
-            if temp_otp_counter > 0:
+
+            if temp_otp_counter > 0 and temp_otp_counter == stored_counter:
                 otp_counter = temp_otp_counter
                 matching_challenges = [challenge]
                 break
