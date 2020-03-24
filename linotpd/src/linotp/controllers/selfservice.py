@@ -36,7 +36,7 @@ import os
 import json
 
 from flask import redirect, Response
-from werkzeug.exceptions import Forbidden
+from werkzeug.exceptions import Unauthorized
 
 from linotp import flap
 from linotp.flap import (
@@ -175,7 +175,7 @@ class SelfserviceController(BaseController):
                         url(controller='selfservice', action='login'))
 
                 else:
-                    Forbidden("No valid session")
+                    Unauthorized('No valid session')
 
             # -------------------------------------------------------------- --
 
@@ -202,7 +202,7 @@ class SelfserviceController(BaseController):
             # futher processing with the authenticated user
 
             if auth_state != 'authenticated':
-                Forbidden("No valid session")
+                Unauthorized('No valid session')
 
             c.user = auth_user.login
             c.realm = auth_user.realm
@@ -226,7 +226,7 @@ class SelfserviceController(BaseController):
                         c.audit['info'] = "session expired"
                         audit.log(c.audit)
 
-                        Forbidden("No valid session")
+                        Unauthorized('No valid session')
 
             # -------------------------------------------------------------- --
 
