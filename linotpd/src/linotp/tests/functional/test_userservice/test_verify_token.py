@@ -28,10 +28,10 @@
 import math
 import json
 import binascii
-
+import time
 
 from datetime import datetime
-from hashlib import sha1
+from hashlib import sha1, md5
 from mock import patch
 
 import linotp.provider.smsprovider.FileSMSProvider
@@ -388,6 +388,101 @@ class TestUserserviceTokenTest(TestController):
             'verify', params=params, auth_user=auth_user)
 
         assert 'false' not in response
+
+    def test_verify_cr_motp_token(self):
+
+        policy = {
+            'name': 'T1',
+            'action': 'enrollMOTP, delete, history, verify,',
+            'user': ' passthru.*.myDefRes:',
+            'realm': '*',
+            'scope': 'selfservice'
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response, response
+
+
+        user = 'passthru_user1@myDefRealm'
+        auth_user = {
+            'login': user,
+            'password': 'geheim1'}
+
+        pin = "pin"
+        motppin = "1234"
+
+        serial = 'motp'
+        otpkey = "1234567890123456"
+
+        parameters = {
+            "serial": serial,
+            "type": "motp",
+            "otpkey": otpkey,
+            "otppin": motppin,
+            "user": user,
+            "pin": pin,
+            "description": "TestToken1",
+        }
+
+        response = self.make_admin_request('init', params=parameters)
+        assert '"value": true' in response, response
+
+        # ------------------------------------------------------------------ --
+        # ask for motp in /userservice/verify
+
+        params = {'serial': serial}
+        response = self.make_userselfservice_request(
+            'verify', params=params, auth_user=auth_user)
+
+        assert '"value": false' in response, response
+        assert "Please enter your otp" in response
+
+        # ------------------------------------------------------------------ --
+
+        # calculate an motp
+
+        unix_seconds = int(time.time())
+        counter = unix_seconds // 10
+
+        binary_data = b"%d%b%b" % (
+            counter, otpkey.encode('utf-8'), motppin.encode('utf-8')
+            )
+        otp = md5(binary_data).hexdigest()[:6]
+
+        # and verify the motp in /userservice/verify
+
+        params = {'serial': serial, 'otp': otp}
+        response = self.make_userselfservice_request(
+            'verify', params=params, auth_user=auth_user)
+
+        assert '"value": true' in response, response
+
+        # ------------------------------------------------------------------ --
+
+        # and verify that the motp could not be re-used
+
+        params = {'serial': serial, 'otp': otp}
+        response = self.make_userselfservice_request(
+            'verify', params=params, auth_user=auth_user)
+
+        assert '"value": true' not in response, response
+
+        # ------------------------------------------------------------------ --
+
+        # and verify that a wrong motp could not be used
+
+        unix_seconds = int(time.time())
+        counter = unix_seconds // 10
+
+        binary_data = b"%d%b%b" % (
+            counter, otpkey.encode('utf-8'), motppin.encode('utf-8')
+            )
+        otp = md5(binary_data).hexdigest()[1:7]
+
+        params = {'serial': serial, 'otp': otp}
+        response = self.make_userselfservice_request(
+            'verify', params=params, auth_user=auth_user)
+
+        assert '"value": true' not in response, response
 
     @patch.object(linotp.provider.smsprovider.FileSMSProvider.FileSMSProvider,
                   'submitMessage', mocked_submitMessage)
