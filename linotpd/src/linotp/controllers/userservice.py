@@ -1652,14 +1652,27 @@ class UserserviceController(BaseController):
                 raise ParameterError(
                     "unsupported parameters: %r" % unknown_params)
 
-
             # -------------------------------------------------------------- --
 
             # identify the affected tokens
+            challenge = None
 
             if transaction_id:
-                _expired_challenges, valid_challenges = Challenges.get_challenges(
-                    transid=transaction_id)
+                reply = Challenges.get_challenges(transid=transaction_id)
+                _expired_challenges, valid_challenges = reply
+
+                if _expired_challenges:
+                    raise Exception('challenge already expired!')
+
+                if not valid_challenges:
+                    raise Exception('no valid challenge found!')
+
+                if len(valid_challenges) != 1:
+                    raise Exception(
+                        'Could not uniquely identify challenge for '
+                        'transaction id {} '.format(transaction_id))
+
+                challenge = valid_challenges[0]
 
                 serials = [c.tokenserial for c in valid_challenges]
                 serials = list(set(serials)) # remove duplicates
@@ -1691,162 +1704,154 @@ class UserserviceController(BaseController):
 
             # -------------------------------------------------------------- --
 
-            # challenge response:
-            # either transactionid + otp or only otp
+            # determine which action is meant
 
-            # verify the challenge belonging to the transaction or show its status
-            if transaction_id:
-                reply = Challenges.get_challenges(transid=transaction_id)
-                expired_challenges, valid_challenges = reply
+            action = None
 
-                if expired_challenges:
-                    raise Exception('challenge already expired!')
+            # verify the transaction if we have an otp
+            if transaction_id and 'otp' in params:
+                action = "verify transaction"
 
-                if not valid_challenges:
-                    raise Exception('no valid challenge found!')
+            # only a transaction id, so we query the transaction status
+            elif transaction_id and 'otp' not in params:
+                action = "query transaction"
 
-                otp = params.get('otp')
-                if otp: # we received an otp, verify the challenge
-                    res, reply = token.check_challenge_response(
-                        valid_challenges, self.authUser, otp, options=params)
+            # if no transaction id but otp, we directly verify the otp
+            elif not transaction_id and 'otp' in params:
+                action = "verify otp"
 
-                    if res:
-                        log.debug('successful verified transaction')
+            # no transaction id and no OTP - trigger a challenge
+            elif not transaction_id and 'otp' not in params:
+                action = "trigger challenge"
 
-                        token.incOtpCounter()
-                        token.statusValidationSuccess()
+            # -------------------------------------------------------------- --
 
-                        # finish as well related open challenges
-                        Challenges.finish_challenges(token, success=True)
-
-                        if token.count_auth_success_max > 0:
-                            token.inc_count_auth_success()
-
-                        if token.count_auth_max > 0:
-                            token.inc_count_auth()
-
-                    else:
-
-                        log.debug('failed to verify transaction')
-
-                        # count all token accesses
-                        if token.count_auth_max > 0:
-                            token.inc_count_auth()
-
-                        token.statusValidationFail()
-                        Challenges.finish_challenges(token, success=False)
-
-                    Session.commit()
-                    return sendResult(self.response, res >= 0)
-
-                else:
-
-                    # we only received a transaction id, so we query the
-                    # transaction status
-
-                    if len(valid_challenges) != 1:
-                        raise Exception(
-                            'Could not uniquely identify challenge for '
-                            'transaction id {} '.format(transaction_id))
-
-                    challenge = valid_challenges[0]
-
-                    challenge_session = challenge.getSession()
-                    if challenge_session:
-                        challenge_session = json.loads(challenge_session)
-                    else:
-                        challenge_session = {}
-
-                    details = {
-                        'received_count': challenge.received_count,
-                        'received_tan': challenge.received_tan,
-                        'valid_tan': challenge.valid_tan,
-                        'message': challenge.getChallenge(),
-                        'status': challenge.getStatus(),
-                        'accept': challenge_session.get('accept', False),
-                        'reject': challenge_session.get('reject', False),
-                    }
-
-                    Session.commit()
-                    return sendResult(
-                        self.response, details['valid_tan'], opt=details)
-
-            if 'otp' in params:
-
-                otp = params['otp']
-
-                res = token.check_otp_exist(otp=otp)
+            if action == "verify transaction":
+                vh = ValidationHandler()
+                (res, _opt) = vh.check_by_transactionid(
+                    transid=transaction_id, passw=params['otp'], options=params)
 
                 Session.commit()
-                return sendResult(self.response, res >= 0)
+                return sendResult(self.response, res)
+
+            # -------------------------------------------------------------- --
+
+            elif action == "query transaction":
+
+                challenge_session = challenge.getSession()
+                if challenge_session:
+                    challenge_session = json.loads(challenge_session)
+                else:
+                    challenge_session = {}
+
+                details = {
+                    'received_count': challenge.received_count,
+                    'received_tan': challenge.received_tan,
+                    'valid_tan': challenge.valid_tan,
+                    'message': challenge.getChallenge(),
+                    'status': challenge.getStatus(),
+                    'accept': challenge_session.get('accept', False),
+                    'reject': challenge_session.get('reject', False),
+                }
+
+                Session.commit()
+                return sendResult(
+                    self.response, details['valid_tan'], opt=details)
+
+            # -------------------------------------------------------------- --
+
+            elif action == "verify otp":
+
+                vh = ValidationHandler()
+                (res, _opt) = vh.checkUserPass(
+                    self.authUser, passw=params['otp'], options=params)
+
+                Session.commit()
+                return sendResult(self.response, res)
 
             # -------------------------------------------------------------- --
 
             # challenge request:
-            # when there is no transaction id and / or no OTP
 
-            transaction_data = None
-            transaction_id = None
+            elif action == "trigger challenge":
 
-            if 'authenticate' in token.mode:
-                # default for non-challenge response tokens like ['hmac', 'totp', +++]
-                message = _('Please enter your otp')
-            elif 'challenge' in token.mode:
-                # tokens that do not have a direct authentication mode need a challenge to be tested
-                data = _('SelfService token test\n\n Token: {0}\nSerial:{1}\nUser: {2}').format(
-                    token.type, token.token.LinOtpTokenSerialnumber, self.authUser.login)
-                options = {
-                    'content_type': '0',
-                    'data': data
-                }
-                res, reply = Challenges.create_challenge(token, options=options)
-                if not res:
-                    raise Exception('failed to trigger challenge {:r}'.format(reply))
+                transaction_data = None
+                transaction_id = None
 
-                if token.type is 'qr':
-                    transaction_data = reply['message']
-                    message = _('Please scan the provided qr code')
+                # 'authenticate': default for non-challenge response tokens
+                #                 like ['hmac', 'totp', 'motp']
+
+                if 'authenticate' in token.mode:
+                    message = _('Please enter your otp')
+
+                # 'challenge': tokens that do not have a direct authentication
+                #              mode need a challenge to be tested
+
+                elif 'challenge' in token.mode:
+                    data = _('SelfService token test\n\n Token: {0}\n'
+                             'Serial:{1}\nUser: {2}').format(
+                                token.type, token.token.LinOtpTokenSerialnumber,
+                                self.authUser.login)
+
+                    options = {
+                        'content_type': '0',
+                        'data': data
+                    }
+
+                    res, reply = Challenges.create_challenge(
+                        token, options=options)
+                    if not res:
+                        raise Exception(
+                            'failed to trigger challenge {:r}'.format(reply))
+
+                    if token.type is 'qr':
+                        transaction_data = reply['message']
+                        message = _('Please scan the provided qr code')
+
+                    else:
+                        message = reply['message']
+
+                    transaction_id = reply['transactionid']
+
                 else:
-                    message = reply['message']
-                transaction_id = reply['transactionid']
-            else:
-                raise Exception('unsupported token mode')
+                    raise Exception('unsupported token mode')
 
-            # announce available reply channels via reply_mode
-            # - online: token supports online mode where the user can independently
-            #   answer the challenge via a different channel without having to enter
-            #   an OTP.
-            # - offline: token supports offline mode where the user needs to manually
-            #   enter an OTP.
-            if token.type is 'push':
-                reply_mode =  ['online']
-            elif token.type is 'qr':
-                reply_mode =  ['offline', 'online']
-            else:
-                reply_mode = ['offline']
+                # announce available reply channels via reply_mode
+                # - online: token supports online mode where the user can
+                #   independently answer the challenge via a different channel
+                #   without having to enter an OTP.
+                # - offline: token supports offline mode where the user needs
+                #   to manually enter an OTP.
 
-            # -------------------------------------------------------------- --
+                if token.type is 'push':
+                    reply_mode =  ['online']
+                elif token.type is 'qr':
+                    reply_mode =  ['offline', 'online']
+                else:
+                    reply_mode = ['offline']
 
-            # create the challenge detail response
+                # ---------------------------------------------------------- --
 
-            detail_response = {
-                "message": message,  # localized user facing message
-                "reply_mode": reply_mode
-            }
+                # create the challenge detail response
 
-            if transaction_id:
-                detail_response['transactionid'] = transaction_id
+                detail_response = {
+                    "message": message,  # localized user facing message
+                    "reply_mode": reply_mode
+                }
 
-            if transaction_data:
-                detail_response['transactiondata'] = transaction_data
+                if transaction_id:
+                    detail_response['transactionid'] = transaction_id
 
-            # -------------------------------------------------------------- --
+                if transaction_data:
+                    detail_response['transactiondata'] = transaction_data
 
-            # close down the session and submit the result
+                # ---------------------------------------------------------- --
 
-            Session.commit()
-            return sendResult(
-                self.response, False, opt=detail_response)
+                # close down the session and submit the result
+
+                Session.commit()
+                return sendResult(
+                    self.response, False, opt=detail_response)
 
         except PolicyException as pe:
             log.error("policy failed: %r" % pe)
