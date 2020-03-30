@@ -140,6 +140,12 @@ setup(
                 ]
             ),
         (
+            '/etc/linotp2/apache-site-includes/',
+            [
+                'config/apache-site-includes/README.txt',
+            ]
+        ),
+        (
             'etc/linotp2/apache2.2-example/',
             [
                 'config/apache2.2-example/linotp2',
