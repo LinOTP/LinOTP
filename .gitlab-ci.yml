@@ -215,13 +215,33 @@ functional-test:
     - ci/update-debian-changelog linotpd/src
     - (cd linotpd/src && mk-build-deps --install --remove --tool "apt-get --yes --no-install-recommends")
     - make deb-install DESTDIR=pkg/apt/${DEBIAN_RELEASE_NAME}
+
+.normal_build: &normal_build
   artifacts:
     paths:
       - pkg/apt/${DEBIAN_RELEASE_NAME}
     expire_in: 2 weeks
+  except:
+    - tags
+
+.tag_build: &tag_build
+  artifacts:
+    paths:
+      - pkg/apt/${DEBIAN_RELEASE_NAME}
+    expire_in: 1000 years
+  only:
+    - tags
 
 build:buster:
   extends: .build-debs
+  <<: *normal_build
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+  allow_failure: true
+
+build:buster (tag):
+  extends: .build-debs
+  <<: *tag_build
   variables:
     DEBIAN_RELEASE_NAME: buster
 
