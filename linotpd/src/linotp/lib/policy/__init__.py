@@ -66,6 +66,7 @@ from linotp.lib.policy.util import _getUserRealms
 from linotp.lib.policy.util import letters, digits, special_characters
 from linotp.lib.policy.util import ascii_lowercase, ascii_uppercase
 
+from linotp.lib.policy.maxtoken import check_maxtoken
 
 # for generating random passwords
 from linotp.lib.crypto.utils import urandom
@@ -346,6 +347,15 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
     realm = param.get("realm")
     if realm is None or len(realm) == 0:
         realm = _getDefaultRealm()
+
+    # ---------------------------------------------------------------------- --
+
+    # check the maxtoken policy
+    #   which restricts the number of tokens for the user in a realm
+
+    check_maxtoken(method, user=user or authUser, param=param)
+
+    # ---------------------------------------------------------------------- --
 
     if method == "show":
         log.debug("[checkPolicyPre] entering method %s", method)
@@ -1095,6 +1105,15 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
         param = {}
 
     log.debug("entering controller %s", controller)
+
+    # ---------------------------------------------------------------------- --
+
+    # check the maxtoken policy
+    #   which restricts the number of tokens for the user in a realm
+
+    check_maxtoken(method, user=user or authUser, param=param)
+
+    # ---------------------------------------------------------------------- --
 
     if method[0: len('max_count')] == 'max_count':
         ret = 0
