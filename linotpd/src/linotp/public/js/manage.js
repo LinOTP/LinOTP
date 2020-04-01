@@ -2230,7 +2230,7 @@ function check_for_welcome_screen() {
         var text = '<p>' + i18n.gettext("Welcome to your fresh LinOTP installation.") + '</p>'
             + '<p>' + i18n.gettext("If you have questions about the setup or installation of LinOTP, please <a href='https://linotp.org/doc' target='_blank'>refer to our documentation</a>.") + '</p>'
             + '<p>' + i18n.gettext("<a href='https://keyidentity.com'>KeyIdentity</a> provides LinOTP as an enterprise 2FA solution.") + '</p>'
-            + '<p>' + i18n.gettext("If you are interested in the 2FA platform of KeyIdentity, and want to be informed about:") 
+            + '<p>' + i18n.gettext("If you are interested in the 2FA platform of KeyIdentity, and want to be informed about:")
             + '<ul>'
             + '<li>' + i18n.gettext("updates of our products,") + '</li>'
             + '<li>' + i18n.gettext("upcoming hackathons,") + '</li>'
@@ -2292,7 +2292,7 @@ function check_for_welcome_screen() {
 
             var title = i18n.gettext("Thank you for using LinOTP");
             var text = '<p>' + i18n.gettext("We are pleased that you are using LinOTP by KeyIdentity as your 2FA solution.") + '</p>'
-                + '<p>' + i18n.gettext("If you are interested in the 2FA platform of KeyIdentity using LinOTP at its core, and would like further information about:") 
+                + '<p>' + i18n.gettext("If you are interested in the 2FA platform of KeyIdentity using LinOTP at its core, and would like further information about:")
                 + '<ul>'
                 + '<li>' + i18n.gettext("product updates,") + '</li>'
                 + '<li>' + i18n.gettext("upcoming hackathons,") + '</li>'
@@ -2702,7 +2702,7 @@ function load_system_config(){
         }
 
         /*todo call the 'tok_fill_config.js */
-       
+
         /* caching settings */
         if (data.result.value['resolver_lookup_cache.enabled'] == "True") {
             $('#sys_resolver_cache_enable').prop('checked', true);
@@ -5185,7 +5185,7 @@ $(document).ready(function(){
     });
 
     /* end of voice provider config */
-    
+
     /*********************************************************************
      * System config
      */
@@ -5812,11 +5812,11 @@ $(document).ready(function(){
 //--------------------------------------------------------------------------------------
 // End of document ready
 
-/** 
+/**
  * openExpirationDialog
  *
  * is the handler to create and or open the dialog to set the expiration
- * on one or many tokens 
+ * on one or many tokens
  */
 function openExpirationDialog() {
     var setexpiration_validator;
