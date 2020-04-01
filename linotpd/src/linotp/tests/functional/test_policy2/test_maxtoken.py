@@ -139,4 +139,202 @@ class TestPolicyMaxtoken(TestController):
 
         return
 
-# eof ##
+    def test_maxtoken_selfservice(self):
+        """
+        verify the maxtoken policy in the selfservice scope
+
+        policies: overall allowed is 4, max email is 2, max hmac is 1
+
+        enrollment tests:
+
+        1. enroll email - ok
+        2. enroll hmac - ok
+        3. enroll hmac - fail, only one hmac allowed
+        4. enroll email - ok
+        5. enroll email - no more email token allowed
+        6. enroll sms - ok, the 4th token
+        7. enroll sms - fail, more than 4 token
+
+        assignment tests
+
+        8. admin creates hmac token
+        9. assign - fail, due to total token limit
+        10. admin removes one sms token
+        11. assign - fail, due to hmac token limit
+        12. admin removes old hmac token
+        13. assign - ok
+
+        """
+
+        policy = {
+            'name': 'maxtoken',
+            'realm': '*',
+            'active': "True",
+            'client': "",
+            'user': '*',
+            'time': "",
+            'action': "maxtoken=4, maxtokenEMAIL=2, maxtokenHMAC=1 ",
+            'scope': 'enrollment',
+        }
+
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response
+
+        policy = {
+            'name': 'T1',
+            'action': ('enrollEMAIL, enrollSMS, assign, '
+                       'webprovisionGOOGLE, webprovisionGOOGLEtime, '),
+            'user': ' passthru.*.myDefRes:',
+            'realm': '*',
+            'scope': 'selfservice'
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response, response
+
+        # 1. enroll email - ok
+
+        user = 'passthru_user1@myDefRealm'
+        pin = '123'
+
+        auth_user = {
+            'login': user,
+            'password': 'geheim1'}
+
+        params = {
+            'type': 'email',
+            'email_address': 'test@example.net',
+            'pin': pin
+        }
+        response = self.make_userselfservice_request(
+            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+
+        assert 'detail' in response, response
+
+        # 2. enroll hmac - ok
+
+        params = {
+            'type': 'googleauthenticator',
+            'serial': "myGoo"
+        }
+        response = self.make_userselfservice_request(
+            'webprovision', params=params,
+            auth_user=auth_user, new_auth_cookie=True)
+
+        assert 'oathtoken' in response, response
+
+        # 3. enroll hmac - fail, only one hmac allowed
+
+        params = {
+            'type': "googleauthenticator",
+        }
+        response = self.make_userselfservice_request(
+            'webprovision', params=params,
+            auth_user=auth_user, new_auth_cookie=True)
+
+        assert 'The maximum number of allowed tokens' in response, response
+
+        # 4. enroll email - ok
+
+        params = {
+            'type': 'email',
+            'email_address': 'test@example.net',
+            'pin': pin
+        }
+        response = self.make_userselfservice_request(
+            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+
+        assert 'detail' in response, response
+
+        # 5. enroll email - no more email token allowed
+
+        params = {
+            'type': 'email',
+            'email_address': 'test@example.net',
+            'pin': pin
+        }
+        response = self.make_userselfservice_request(
+            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+
+        assert 'allowed tokens of type email' in response, response
+
+        # 6. enroll sms - ok, the 4th token
+
+        params = {
+            'type': 'sms',
+            'phone': '1234456',
+            'pin': pin,
+            'serial': 'mysms'
+        }
+        response = self.make_userselfservice_request(
+            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+
+        assert 'detail' in response, response
+
+        # 7. enroll sms - fail, more than 4 token
+
+        params = {
+            'type': 'sms',
+            'phone': '1234456',
+            'pin': pin
+        }
+        response = self.make_userselfservice_request(
+            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+
+        assert 'The maximum number of allowed tokens' in response, response
+
+        # ------------------------------------------------------------------ --
+
+        # assignment tests
+
+        # 8. admin creates hmac token
+
+        params={'genkey': 1, 'serial': 'myHmac'}
+        response = self.make_admin_request('init', params=params)
+
+        assert 'false' not in response
+
+        # 9. assign - fail, due to total token limit
+
+        params = {
+            'serial': 'myHmac',
+        }
+        response = self.make_userselfservice_request(
+            'assign', params=params, auth_user=auth_user, new_auth_cookie=True)
+
+        assert 'The maximum number of allowed tokens' in response, response
+
+        # 10. admin removes one sms token
+
+        params={'serial': 'mysms'}
+        response = self.make_admin_request('remove', params=params)
+
+        assert 'false' not in response
+
+        # 11. assign - fail, due to hmac token limit
+
+        params = {
+            'serial': 'myHmac',
+        }
+        response = self.make_userselfservice_request(
+            'assign', params=params, auth_user=auth_user, new_auth_cookie=True)
+
+        assert 'allowed tokens of type hmac per user' in response, response
+
+        # 12. admin removes old hmac token
+
+        params={'serial': 'myGoo'}
+        response = self.make_admin_request('remove', params=params)
+
+        assert 'false' not in response
+
+        # 13. assign - ok
+
+        params = {
+            'serial': 'myHmac',
+        }
+        response = self.make_userselfservice_request(
+            'assign', params=params, auth_user=auth_user, new_auth_cookie=True)
+
+        assert 'false' not in response, response
+
+# eof
