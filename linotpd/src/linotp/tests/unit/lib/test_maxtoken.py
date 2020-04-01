@@ -1,9 +1,12 @@
 
 import unittest
+import pytest
 from mock import patch
 from collections import namedtuple
 
-from linotp.lib.policy import _checkTokenAssigned
+from linotp.lib.policy.maxtoken import check_maxtoken_for_user
+from linotp.lib.policy.maxtoken import check_maxtoken_for_user_by_type
+
 from linotp.lib.policy import PolicyException
 
 User = namedtuple('User', ['login'])
@@ -33,9 +36,11 @@ def fake_get_client_policy(client, scope, realm, user, userObj):
     raise Exception('fake_get_client_policy has no fake return value for '
                     'realm %s' % realm)
 
-
+@pytest.mark.usefixtures("app")
 class MaxTokenPolicyTest(unittest.TestCase):
 
+    @patch('linotp.lib.policy.util.context', new=fake_context)
+    @patch('linotp.lib.policy.maxtoken.context', new=fake_context)
     def test_no_or_empty_user(self):
 
         """
@@ -44,7 +49,7 @@ class MaxTokenPolicyTest(unittest.TestCase):
         """
 
         try:
-            _checkTokenAssigned(None)
+            check_maxtoken_for_user(None)
         except PolicyException:
             assert not True, '_checkTokenAssigned: None as argument ' \
                                    'should return without exception'
@@ -52,31 +57,43 @@ class MaxTokenPolicyTest(unittest.TestCase):
         empty_user = User('')
 
         try:
-            _checkTokenAssigned(empty_user)
+            check_maxtoken_for_user(empty_user)
         except PolicyException:
             assert not True, '_checkTokenAssigned: empty user as ' \
                                    'argument should return without exception'
 
-    @patch('linotp.lib.token.getTokens4UserOrSerial')
-    def test_no_tokens(self, mocked_getTokens4UserOrSerial):
 
+    @patch('linotp.lib.policy.util.context', new=fake_context)
+    @patch('linotp.lib.policy.maxtoken.context', new=fake_context)
+    @patch('linotp.lib.policy.maxtoken.get_client_policy', new=fake_get_client_policy)
+    @patch('linotp.lib.policy.maxtoken._getUserRealms')
+    @patch('linotp.lib.policy.maxtoken._get_client')
+    @patch('linotp.lib.token.getTokens4UserOrSerial')
+    def test_no_tokens(self,
+                       mocked_getTokens4UserOrSerial,
+                       mocked__get_client,
+                       mocked__getUserRealms):
         """
         checking if _checkTokenAssigned passes with empty token list
         """
 
         fake_user = User('fake_user')
         mocked_getTokens4UserOrSerial.return_value = []
+        mocked__get_client.return_value = '127.0.0.1'
+        mocked__getUserRealms.return_value = ['defaultrealm', 'otherrealm']
 
         try:
-            _checkTokenAssigned(fake_user)
+            check_maxtoken_for_user(fake_user)
         except PolicyException:
             assert not True, '_checkTokenAssigned: on empty token list ' \
                                    'function should return without exception'
 
-    @patch('linotp.lib.policy.context', new=fake_context)
-    @patch('linotp.lib.policy.get_client_policy', new=fake_get_client_policy)
-    @patch('linotp.lib.policy._getUserRealms')
-    @patch('linotp.lib.policy._get_client')
+
+    @patch('linotp.lib.policy.util.context', new=fake_context)
+    @patch('linotp.lib.policy.maxtoken.context', new=fake_context)
+    @patch('linotp.lib.policy.maxtoken.get_client_policy', new=fake_get_client_policy)
+    @patch('linotp.lib.policy.maxtoken._getUserRealms')
+    @patch('linotp.lib.policy.maxtoken._get_client')
     @patch('linotp.lib.token.getTokens4UserOrSerial')
     def test_maxtoken_all(self,
                           mocked_getTokens4UserOrSerial,
@@ -92,24 +109,24 @@ class MaxTokenPolicyTest(unittest.TestCase):
         token1 = Token('hmac')
         token2 = Token('push')
 
-        mocked_getTokens4UserOrSerial.return_value = [token1, token2]
+        # want to enroll a second push
+        mocked_getTokens4UserOrSerial.return_value = [token1]
         mocked__get_client.return_value = '127.0.0.1'
         mocked__getUserRealms.return_value = ['defaultrealm', 'otherrealm']
 
         try:
-            _checkTokenAssigned(fake_user)
+            check_maxtoken_for_user(user=fake_user)
         except PolicyException:
             assert not True, '_checkTokenAssigned: Exception raised, but ' \
                                    'token count was still in boundaries'
 
         # third token exceeds maxtoken in fake_get_client_policy
 
-        token3 = Token('qr')
-        mocked_getTokens4UserOrSerial.return_value = [token1, token2, token3]
+        mocked_getTokens4UserOrSerial.return_value = [token1, token2]
 
         exception_raised = False
         try:
-            _checkTokenAssigned(fake_user)
+            check_maxtoken_for_user(fake_user)
         except PolicyException:
             exception_raised = True
 
@@ -119,11 +136,11 @@ class MaxTokenPolicyTest(unittest.TestCase):
 
         # second push token exceeds maxtokenPUSH in fake_get_client_policy
 
-        mocked_getTokens4UserOrSerial.return_value = [token2, token2]
+        mocked_getTokens4UserOrSerial.return_value = [token2]
 
         exception_raised = False
         try:
-            _checkTokenAssigned(fake_user)
+            check_maxtoken_for_user_by_type(fake_user, type_of_token='push')
         except PolicyException:
             exception_raised = True
 
