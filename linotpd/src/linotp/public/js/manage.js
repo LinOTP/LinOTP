@@ -7274,7 +7274,7 @@ function view_policy() {
             dblClickResize: true
     });
 
-    $('#policy_export').attr("href", '/system/getPolicy/policy.cfg?display_inactive=true&session=' + getsession());
+    $('#policy_export').attr("href", '/system/getPolicy?export=true&display_inactive=true&session=' + getsession());
 
     $('#policy_import').click(function(){
         $dialog_import_policy.dialog("open");

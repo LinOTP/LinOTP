@@ -1656,10 +1656,7 @@ class SystemController(BaseController):
             system/getPolicy
 
         params:
-            id: (optional) The filename needs to be specified as the
-                            third part of the URL like
-                            /system/getPolicy/policy.cfg.
-                            It will then be exported to this file.
+            id: (optional) Unused (but left for compatibility).
 
         description:
             this function is used to retrieve the policies that you
@@ -1706,6 +1703,8 @@ class SystemController(BaseController):
             display_inactive = param.get("display_inactive", False)
             if display_inactive:
                 only_active = False
+
+            do_export = param.get("export", "false").lower() == "true"
 
             log.debug("[getPolicy] retrieving policy name: %s, realm: %s,"
                       " scope: %s", name, realm, scope)
@@ -1755,12 +1754,15 @@ class SystemController(BaseController):
 
             Session.commit()
 
-            # if id is set, this defines the export filename
-            # FIXME: This is potentially racy because the value of `id`
-            # is hard-coded in the policy management JavaScript file.
+            # The export filename is hard-coded to "policy.cfg".
+            # It used to be possible to pass this as the final part of
+            # the invocation URL, but this functionality was removed
+            # in LinOTP 3.x because it caused problems elsewhere and
+            # was never actually used; the management UI used "policy.cfg"
+            # as a fixed and unchangeable default.
 
-            if id:
-                filename = create_policy_export_file(pol, id)
+            if do_export:
+                filename = create_policy_export_file(pol, "policy.cfg")
                 return flask.send_file(filename, mimetype="text/plain",
                                        as_attachment=True)
             else:
