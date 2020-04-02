@@ -633,10 +633,53 @@ class TestPushToken(TestController):
         """ PushToken: Check if pairing works multiple times correctly """
         self.execute_correct_pairing(retry_pairing=3, retry_activation=3)
 
+    def test_pairing_spoofing_detection(self):
+        """ pairing with same pairing url and different gda will fail """
+
+        # ------------------------------------------------------------------ --
+
+        # enroll the push token and parse the pairing url
+
+        pairing_url = self.enroll_pushtoken(
+                            user=None, pin='123', serial='myPush')
+
+        user_token_id = self.create_user_token_by_pairing_url(
+                            pairing_url, pin='123')
+
+        # ------------------------------------------------------------------ --
+
+        # create and send the pairing response
+
+        pairing_response = self.create_pairing_response_by_serial(
+                                            user_token_id, gda="DEADBEEF")
+
+        response_dict = self.send_pairing_response(pairing_response)
+        assert response_dict['result']['status'] == True
+
+        # ------------------------------------------------------------------ --
+
+        # spoof the response:
+        # create and send the pairing response with a different gda
+
+        pairing_response = self.create_pairing_response_by_serial(
+                                            user_token_id, gda="BEEFDEAD")
+
+        response_dict = self.send_pairing_response(pairing_response)
+        assert response_dict['result']['status'] == False
+
+        # ------------------------------------------------------------------ --
+
+        # retry with same gda works
+
+        pairing_response = self.create_pairing_response_by_serial(
+                                            user_token_id, gda="DEADBEEF")
+
+        response_dict = self.send_pairing_response(pairing_response)
+        assert response_dict['result']['status'] == True
 
 # -------------------------------------------------------------------------- --
 
-    def create_pairing_response_by_serial(self, user_token_id):
+    def create_pairing_response_by_serial(self, user_token_id, gda=None):
 
         """
         Creates a base64-encoded pairing response that identifies
@@ -645,6 +688,9 @@ class TestPushToken(TestController):
         :param user_token_id: the token id (primary key for the user token db)
         :returns base64 encoded pairing response
         """
+
+        if not gda:
+            gda = self.gda
 
         token_serial = self.tokens[user_token_id]['serial']
         server_public_key = self.tokens[user_token_id]['server_public_key']
@@ -662,7 +708,7 @@ class TestPushToken(TestController):
         pairing_response += self.public_key
 
         pairing_response += token_serial.encode('utf8') + b'\x00\x00'
-        pairing_response += self.gda.encode('utf-8') + b'\x00'
+        pairing_response += gda.encode('utf-8') + b'\x00'
 
         signature = crypto_sign_detached(pairing_response, self.secret_key)
         pairing_response += signature
