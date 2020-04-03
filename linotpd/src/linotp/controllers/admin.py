@@ -1130,7 +1130,7 @@ class AdminController(BaseController):
         try:
 
             upin = param.get("pin")
-            serial = param.get("serial")
+            serial = param["serial"]
             user = getUserFromParam(param)
 
             # check admin authorization

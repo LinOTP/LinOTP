@@ -1877,15 +1877,16 @@ class UserserviceController(BaseController):
         res = {}
 
         try:
-            # check selfservice authorization
-            checkPolicyPre('selfservice', 'userassign', param, self.authUser)
-
-            upin = param.get("pin", None)
 
             try:
                 serial = param["serial"]
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%s'" % exx)
+
+            # check selfservice authorization
+            checkPolicyPre('selfservice', 'userassign', param, self.authUser)
+
+            upin = param.get("pin", None)
 
             # check if token is in another realm
             realm_list = getTokenRealms(serial)
@@ -1997,13 +1998,14 @@ class UserserviceController(BaseController):
         param = self.request_params.copy()
 
         try:
-            # check selfservice authorization
-            checkPolicyPre('selfservice', 'userinit', param, self.authUser)
 
             try:
                 tok_type = param["type"]
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%s'" % exx)
+
+            # check selfservice authorization
+            checkPolicyPre('selfservice', 'userinit', param, self.authUser)
 
             serial = param.get('serial', None)
             prefix = param.get('prefix', None)
@@ -2107,11 +2109,12 @@ class UserserviceController(BaseController):
             ret = {}
             ret1 = False
 
+            typ = param["type"]
+
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userwebprovision',
                            param, self.authUser)
 
-            typ = param["type"]
             t_type = "hmac"
 
             serial = param.get('serial', None)
