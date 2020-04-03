@@ -1140,7 +1140,8 @@ class AdminController(BaseController):
             c.audit['source_realm'] = getTokenRealms(serial)
             log.info("[assign] assigning token with serial %s to user %s@%s",
                      serial, user.login, user.realm)
-            res = th.assignToken(serial, user, upin, param)
+
+            res = th.assignToken(serial, user, upin, param=param)
 
             checkPolicyPost('admin', 'assign', param, user)
 
