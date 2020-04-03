@@ -117,6 +117,7 @@ def getPolicyDefinitions(scope=""):
                 'type': 'bool',
                 'desc': 'Allow to reset the failcounter of a token.'},
             'setOTPPIN': {'type': 'bool'},
+            'setDescription': {'type': 'bool'},
             'setMOTPPIN': {'type': 'bool'},
             'getotp': {'type': 'bool'},
             'otp_pin_maxlength': {'type': 'int', 'value': list(range(0, 100))},

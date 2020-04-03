@@ -1125,6 +1125,16 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
         ret = value
 
+    elif method == 'usersetdescription':
+
+        if 'setDescription' not in getSelfserviceActions(authUser):
+
+            log.warning("user %s@%s is not allowed to call this function!",
+                        authUser.login, authUser.realm)
+
+            raise PolicyException(_('The policy settings do not allow you '
+                                  'to issue this request!'))
+
     elif method == 'usersetpin':
 
         if 'setOTPPIN' not in getSelfserviceActions(authUser):
