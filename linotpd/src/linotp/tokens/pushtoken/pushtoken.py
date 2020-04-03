@@ -252,8 +252,12 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         supplied in the pairing response under the condition
         that the public key matches (re-pairing case)
 
+        If token is not in 'active' state and a new gda is supplied in the
+        pairing response, we reject this as this might be a pairing spoofing
+        from a second device
+
         :raises TokenStateError: If token state is not 'active'
-            or 'unpaired'
+            or 'unpaired' or 'pairing spoofing' has been detected
 
         :param pairing_data: A PushTokenPairingData object
         """
@@ -273,7 +277,18 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         self.ensure_state_is_in(valid_states)
 
-        # ------------------------------------------------------------------- --
+        # ------------------------------------------------------------------ --
+
+        # we allow rescan of the pairing qr code but only from the same device
+
+        if self.current_state != 'active':
+
+            current_gda = self.getFromTokenInfo('gda')
+
+            if current_gda and gda != current_gda:
+                raise ValueError('spoofing detected - aborted!')
+
+        # ------------------------------------------------------------------ --
 
         if self.current_state in ['pairing_challenge_sent',
                                   'pairing_response_received']:
