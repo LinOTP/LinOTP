@@ -717,6 +717,17 @@ class TestSelfserviceController(TestController):
         selfservice: testing set token description as normal user
         '''
 
+        policy = {
+            'name': 'T1',
+            'action': 'setDescription',
+            'user': ' *',
+            'realm': '*',
+            'scope': 'selfservice'
+        }
+
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response
+
         user = 'passthru_user1@myDefRealm'
         selfservice_user = {
             'login': user,
