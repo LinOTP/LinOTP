@@ -1030,7 +1030,7 @@ class TokenHandler(object):
 
         return len(tokenList)
 
-    def setDescription(self, description, user, serial):
+    def setDescription(self, description, user=None, serial=None):
 
         if user is None and serial is None:
             raise ParameterError("Parameter user or serial required!", id=1212)

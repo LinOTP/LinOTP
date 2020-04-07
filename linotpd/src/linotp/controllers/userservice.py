@@ -1878,6 +1878,9 @@ class UserserviceController(BaseController):
 
         try:
 
+            description = param.get("description", None)
+            upin = param.get("pin", None)
+
             try:
                 serial = param["serial"]
             except KeyError as exx:
@@ -1885,8 +1888,6 @@ class UserserviceController(BaseController):
 
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userassign', param, self.authUser)
-
-            upin = param.get("pin", None)
 
             # check if token is in another realm
             realm_list = getTokenRealms(serial)
@@ -1897,18 +1898,37 @@ class UserserviceController(BaseController):
                 raise Exception(_("The token you want to assign is "
                                   "not contained in your realm!"))
             th = TokenHandler()
-            if (False == th.hasOwner(serial)):
-                log.info("user %s@%s is assign the token with "
-                                                    "serial %s to himself."
-                        % (self.authUser.login, self.authUser.realm, serial))
-                ret = th.assignToken(serial, self.authUser, upin)
-                res["assign token"] = ret
 
-                c.audit['realm'] = self.authUser.realm
-                c.audit['success'] = ret
-            else:
+            if th.hasOwner(serial):
                 raise Exception(_("The token is already assigned "
                                              "to another user."))
+
+            # -------------------------------------------------------------- --
+
+            # assign  token to user
+
+            log.info("user %s@%s is assign the token with "
+                                                "serial %s to himself."
+                    % (self.authUser.login, self.authUser.realm, serial))
+            
+            ret_assign = th.assignToken(serial, self.authUser, upin)
+
+            # -------------------------------------------------------------- --
+
+            # if we have a description, we set it to the token
+
+            if ret_assign and description:
+
+                log.info("set description of token %s", serial)
+                th.setDescription(description, serial=serial)
+
+            # -------------------------------------------------------------- --
+
+            
+            res["assign token"] = ret_assign
+
+            c.audit['realm'] = self.authUser.realm
+            c.audit['success'] = ret_assign
 
             checkPolicyPost('selfservice', 'userassign', param, self.authUser)
 
@@ -2100,6 +2120,9 @@ class UserserviceController(BaseController):
         in param:
             type: valid values are "oathtoken" and "googleauthenticator" and
                         "googleauthenticator_time"
+
+            description: string containing a description for the token
+
         It returns the data and the URL containing the HMAC key
         '''
         log.debug("[userwebprovision] calling function")
@@ -2115,19 +2138,29 @@ class UserserviceController(BaseController):
             checkPolicyPre('selfservice', 'userwebprovision',
                            param, self.authUser)
 
+            # -------------------------------------------------------------- --
+
+            # handle description parameter
+
+            description = param.get('description')
+
+            # -------------------------------------------------------------- --
+
+            typ = param["type"]
             t_type = "hmac"
 
             serial = param.get('serial', None)
             prefix = param.get('prefix', None)
 
-            desc = ""
             # date = datetime.datetime.now().strftime("%y%m%d%H%M%S")
             # rNum = random.randrange(1000, 9999)
             th = TokenHandler()
 
             if typ.lower() == "oathtoken":
                 t_type = 'hmac'
-                desc = "OATHtoken web provisioning"
+
+                if description is None:
+                    description = "OATHtoken web provisioning"
 
                 if prefix is None:
                     prefix = 'LSAO'
@@ -2142,12 +2175,12 @@ class UserserviceController(BaseController):
 
                 log.debug("[userwebprovision] Initializing the token serial:"
                           " %s, desc: %s for user %s @ %s." %
-                          (serial, desc, self.authUser.login,
+                          (serial, description, self.authUser.login,
                            self.authUser.realm))
 
                 (ret1, _tokenObj) = th.initToken({'type': t_type,
                                 'serial': serial,
-                                'description': desc,
+                                'description': description,
                                 'otpkey': otpkey,
                                 'otplen': 6,
                                 'timeStep': 30,
@@ -2173,7 +2206,9 @@ class UserserviceController(BaseController):
 
             elif typ.lower() in ["googleauthenticator",
                                  "googleauthenticator_time"]:
-                desc = "Google Authenticator web prov"
+
+                if description is None:
+                    description = "Google Authenticator web prov"
 
                 # ideal: 32 byte.
                 otpkey = generate_otpkey(32)
@@ -2187,14 +2222,14 @@ class UserserviceController(BaseController):
                     serial = th.genSerial(t_type, prefix)
 
                 log.debug("Initializing the token serial: "
-                          "%s, desc: %s for user %s @ %s." %
-                        (serial, desc, self.authUser.login,
+                          "%s, description: %s for user %s @ %s." %
+                        (serial, description, self.authUser.login,
                          self.authUser.realm))
 
                 (ret1, _tokenObj) = th.initToken({'type': t_type,
                                 'serial': serial,
                                 'otplen': 6,
-                                'description': desc,
+                                'description': description,
                                 'otpkey': otpkey,
                                 'timeStep': 30,
                                 'timeWindow': 180,
@@ -2207,7 +2242,7 @@ class UserserviceController(BaseController):
                                   'otpkey': otpkey,
                                   'serial': serial,
                                   'type': t_type,
-                                  'description': desc,
+                                  'description': description,
                                   }
                         url = create_google_authenticator(pparam,
                                                 user=self.authUser)
@@ -2747,7 +2782,7 @@ class UserserviceController(BaseController):
 
     def setdescription(self):
         """
-        sets a description for a token
+        sets a description for a token, provided the setDescription policy is set.
 
         as this is a controller method, the parameters are taken from
         BaseController.request_params
@@ -2764,27 +2799,29 @@ class UserserviceController(BaseController):
         try:
 
             param = self.request_params
+    
+            try:
 
-            serial = param["serial"]
-            description = param["description"]
+                serial = param["serial"]
+                description = param["description"]
+    
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx)
 
-        except KeyError as exx:
-            raise ParameterError("Missing parameter: '%s'" % exx)
-
-        try:
-
-            # no policy required, the user must be the token owner though
+            checkPolicyPre(
+                'selfservice', 'usersetdescription', param, self.authUser)
 
             th = TokenHandler()
 
             if not th.isTokenOwner(serial, self.authUser):
-                raise "User %r is not owner of the token" % self.authUser.login
+                raise Exception("User %r is not owner of the token" % 
+                                self.authUser.login)
 
             log.info("user %s@%s is changing description of token with "
                      "serial %s.",
                      self.authUser.login, self.authUser.realm, serial)
 
-            ret = th.setDescription(description, None, serial)
+            ret = th.setDescription(description, serial=serial)
 
             res = {"set description": ret}
 
@@ -2793,6 +2830,11 @@ class UserserviceController(BaseController):
 
             Session.commit()
             return sendResult(self.response, res, 1)
+
+        except PolicyException as pex:
+            log.exception("[setdescription] policy failed")
+            Session.rollback()
+            return sendError(response, pex, 1)
 
         except Exception as exx:
             log.error("failed: %r", exx)
