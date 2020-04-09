@@ -78,7 +78,7 @@ log = logging.getLogger(__name__)
 SECRET_LEN = 32
 
 # const - timeformat used in session cookie
-TIMEFORMAT = "%Y-%m-%d %H:%M:%S"
+TIMEFORMAT = "%a, %d %b %Y %H:%M:%S GMT"
 
 Cookie_Cache = {}
 
