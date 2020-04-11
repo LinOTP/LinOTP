@@ -90,25 +90,6 @@ def escape_filter_chars(filterstr):
     return ''.join(ret)
 
 
-def _add_cacertificates_to_file(ca_file, cacertificates):
-    """
-    dump all certificates to a file
-
-    :param ca_file: the filename of the certfile
-    :param cacertificates: set of the certificates
-    :return: the filename of the certificates
-    """
-    with open(ca_file, "w") as fil:
-        for cacert in cacertificates:
-            cert = cacert.strip()
-            if ("-----BEGIN CERTIFICATE-----" in cert and
-               "-----END CERTIFICATE-----" in cert):
-                fil.write(cert)
-                fil.write("\n")
-
-    return ca_file
-
-
 @resolver_registry.class_entry('useridresolver.LDAPIdResolver.IdResolver')
 @resolver_registry.class_entry('useridresolveree.LDAPIdResolver.IdResolver')
 @resolver_registry.class_entry('useridresolver.ldapresolver')
@@ -167,19 +148,10 @@ class IdResolver(UserIdResolver):
 
         "TIMEOUT": (False, TIMEOUT_NO_LIMIT, text),
         "SIZELIMIT": (False, DEFAULT_SIZELIMIT, int),
-        "linotp.certificates.use_system_certificates": (False, False, boolean),
-        "CACERTIFICATE": (False, "", text),
 
         }
 
     resolver_parameters.update(UserIdResolver.resolver_parameters)
-
-    CERTFILE = None
-    CERTFILE_last_modified = None
-    SYS_CERTFILE = None
-    SYS_CERTDIR = None
-
-    ca_certs_dict: Dict[str, str] = {}
 
     @classmethod
     def primary_key_changed(cls, new_params, previous_params):
@@ -200,67 +172,14 @@ class IdResolver(UserIdResolver):
     @classmethod
     def setup(cls, config=None, cache_dir=None):
         '''
-        this setup hook is triggered, when the server
-        starts to serve the first request
-
-        On this first call the CA certificate for the LDAP module is
-        verified and set - if the CA certificate is specified.
+        this setup hook is triggered, when the server starts to serve the
+        first request
 
         :param config: the linotp config
         :return: -nothing-
         '''
 
         log.info("[setup] Setting up the LDAPResolver")
-        log.info("[setup] Finding CA certificate")
-
-        # preserve system certfile
-        log.info("Setting up cert %r ", ldap.OPT_X_TLS_CACERTFILE)
-        try:
-            cls.SYS_CERTFILE = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
-        except ValueError as exx:
-            log.info('unsupported option: ldap.OPT_X_TLS_CACERTFILE %r', exx)
-        try:
-            cls.SYS_CERTDIR = ldap.get_option(ldap.OPT_X_TLS_CACERTDIR)
-        except ValueError as exx:
-            log.info('unsupported option: ldap.OPT_X_TLS_CACERTDIR %r', exx)
-
-
-        ca_resolvers = set()
-
-        if not cache_dir:
-            # Either set the ca file to be located in the linotp cache_dir
-            # or if it does not exist, in a temporaty directory.
-            cache_dir = tempfile.gettempdir()
-
-        cls.cert_dir = cache_dir
-        cls.CERTFILE = os.path.join(cls.cert_dir, "linotp_ldap_cacerts.pem")
-
-        log.info("Setting up the LDAPResolver Class")
-        if config is not None:
-            for entry in config:
-                if entry.startswith('linotp.ldapresolver.CACERTIFICATE'):
-                    cacertificate = config.get(entry)
-                    if (cacertificate and
-                        "-----BEGIN CERTIFICATE-----" in cacertificate and
-                       "-----END CERTIFICATE-----" in cacertificate):
-                        cert = cacertificate.strip().replace('\r\n', '\n')
-                        if cert:
-                            key = sha1(cert.encode('utf-8')).hexdigest()
-                            cls.ca_certs_dict[key] = cert
-                            ca_resolvers.add(entry.split('.')[3])
-
-        # if there is any cert in the class dict, we build a certificate file
-
-        if cls.ca_certs_dict:
-            ca_certs = list(cls.ca_certs_dict.values())
-            _add_cacertificates_to_file(cls.CERTFILE, ca_certs)
-            try:
-                mtime = os.path.getmtime(cls.CERTFILE)
-            except OSError:
-                mtime = 0
-            cls.CERTFILE_last_modified = datetime.fromtimestamp(mtime)
-            log.info("Using CA certificate from the following resolvers: %r",
-                     ca_resolvers)
 
         return
 
@@ -310,30 +229,12 @@ class IdResolver(UserIdResolver):
                                  ldap.OPT_X_TLS_DEMAND)
 
         #
-        # handle local certificates
+        # Force lib ldap to create a new SSL context (must be last
+        # TLS option!) from:
+        # https://github.com/rbarrois/python-ldap/blob/master/Demo/initialize.py
         #
 
-        if caller.use_sys_cert:
-
-            sys_cert_file = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
-            sys_cert_dir = ldap.get_option(ldap.OPT_X_TLS_CACERTDIR)
-            log.info("using system certificate file:  %r or system "
-                     "certificate dir %r", sys_cert_file, sys_cert_dir)
-
-        else:
-
-            if caller.CERTFILE and os.path.isfile(caller.CERTFILE):
-
-                log.debug("using local cert file %r", caller.CERTFILE)
-                l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE, caller.CERTFILE)
-
-                #
-                # Force lib ldap to create a new SSL context (must be last
-                # TLS option!) from:
-                # https://github.com/rbarrois/python-ldap/blob/master/Demo/initialize.py
-                #
-
-                l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
+        l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
 
         if uri.startswith('ldap://'):
 
@@ -374,13 +275,6 @@ class IdResolver(UserIdResolver):
                     l_obj.set_option(ldap.OPT_TIMEOUT, caller.response_timeout)
 
 
-        # handle local certificates
-
-        if (not caller.use_sys_cert and caller.CERTFILE and
-           os.path.isfile(caller.CERTFILE)):
-            log.debug("using local cert file %r", caller.CERTFILE)
-            l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE, caller.CERTFILE)
-
         if caller.noreferrals:
             log.debug("using noreferrals: %r", caller.noreferrals)
             l_obj.set_option(ldap.OPT_REFERRALS, 0)
@@ -413,7 +307,6 @@ class IdResolver(UserIdResolver):
                 "givenname" : "givenName" }'
             - SIZELIMIT
             - NOREFERRALS
-            - CACERTIFICATE
             - EnforceTLS
         """
 
@@ -436,7 +329,6 @@ class IdResolver(UserIdResolver):
 
         l_config, missing = IdResolver.filter_config(params)
 
-        caller.CERTFILE = None
         caller.noreferrals = True
 
         caller.only_trusted_certs = False
@@ -444,39 +336,11 @@ class IdResolver(UserIdResolver):
                                                 True)).lower()
         caller.only_trusted_certs = param_selfsigned_certs == 'true'
 
-        caller.use_sys_cert = l_config['linotp.certificates.'
-                                       'use_system_certificates']
-
         caller.enforce_tls = l_config['EnforceTLS']
 
         try:
             # do a bind
             uri = l_config['LDAPURI']
-
-            if caller.use_sys_cert:
-
-                sys_cert_file = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
-                sys_cert_dir = ldap.get_option(ldap.OPT_X_TLS_CACERTDIR)
-                log.info("using system certificate file:  %r or system "
-                         "certificate dir %r", sys_cert_file, sys_cert_dir)
-
-            # if there is a cert given we create a temporary test cert file
-            cert = l_config['CACERTIFICATE'].strip().replace('\r\n', '\n')
-            if cert:
-                # preserve the old cert
-                old_cert_file = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
-
-                # use a temporary cert file
-                tmp_certfile = os.path.join(cls.cert_dir,
-                                            "linotp_test_cacerts.pem")
-
-                # put all certs in a set
-                test_certs = set(cls.ca_certs_dict.values())
-                # including the test one
-                test_certs.add(cert)
-
-                _add_cacertificates_to_file(tmp_certfile, test_certs)
-                caller.CERTFILE = tmp_certfile
 
             caller.noreferrals = l_config['NOREFERRALS']
 
@@ -561,13 +425,7 @@ class IdResolver(UserIdResolver):
             return (status, str(err))
 
         finally:
-            # restore the old_cert_file if no system certificate handling
-            if (not caller.use_sys_cert and old_cert_file and l_obj and
-               os.path.isfile(old_cert_file)):
-                l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE, old_cert_file)
-
-            # unbind
-            if l_obj:
+            if l_obj: # unbind
                 l_obj.unbind_s()
 
         return status, resultList
@@ -606,16 +464,6 @@ class IdResolver(UserIdResolver):
 
         try:
             if self.l_obj is not None:
-
-                # on close restore the system settings
-                if self.SYS_CERTFILE and os.path.isfile(self.SYS_CERTFILE):
-                    self.l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE,
-                                          self.SYS_CERTFILE)
-
-                if self.SYS_CERTDIR and os.path.isdir(self.SYS_CERTDIR):
-                    self.l_obj.set_option(ldap.OPT_X_TLS_CACERTDIR,
-                                          self.SYS_CERTDIR)
-
                 self.l_obj.unbind_s()
 
         except ldap.LDAPError as error:
@@ -1128,12 +976,6 @@ class IdResolver(UserIdResolver):
 
         self.enforce_tls = l_config["EnforceTLS"]
 
-        self.use_sys_cert = l_config["linotp.certificates."
-                                     "use_system_certificates"]
-
-        self.cacertificate = l_config["CACERTIFICATE"]
-        self.register_certificate(self.cacertificate)
-
         # ------------------------------------------------------------------ --
 
         # connection related parameters
@@ -1148,39 +990,6 @@ class IdResolver(UserIdResolver):
         self.proxy = l_config["PROXY"]
 
         return self
-
-    @classmethod
-    def register_certificate(cls, cacertificate: str):
-        """
-        add a certificate to the certificate store (file)
-
-        if we have a certificate, check if it is already registered
-        and if not regenerate the cert file
-
-        """
-
-        if not cacertificate:
-            return
-
-        cert_hash = sha1(cacertificate.encode('utf-8')).hexdigest()
-
-        # get last modified of local cert file
-        try:
-            mtime = os.path.getmtime(cls.CERTFILE)
-        except OSError:
-            mtime = 0
-
-        last_modified_date = datetime.fromtimestamp(mtime)
-
-        if (cert_hash not in cls.ca_certs_dict or
-           last_modified_date > cls.CERTFILE_last_modified):
-
-            IdResolver.ca_certs_dict[cert_hash] = cacertificate
-
-            _add_cacertificates_to_file(cls.CERTFILE,
-                                        list(IdResolver.ca_certs_dict.values()))
-
-            IdResolver.CERTFILE_last_modified = last_modified_date
 
     def getSearchFields(self, searchDict=None):
         '''
@@ -1930,9 +1739,6 @@ def get_params():
                         help="ldap server type: ad or ldap",
                         required=False)
 
-    parser.add_argument('--use_sys_cert', help='use system certificates',
-                        action='store_true')
-
     parser.add_argument('--cert_file', help='use certificate from file',
                         required=False)
 
@@ -1978,15 +1784,6 @@ def get_params():
         else:
             raise Exception('unknown ldap search type!')
     params.update(search)
-
-    # should we use system certfiles
-    params['certificates.use_system_certificates'] = args['use_sys_cert']
-
-    if not args['use_sys_cert'] and args['cert_file']:
-        certfile = args['cert_file']
-        with open(certfile, 'r') as fin:
-            certificates = fin.read()
-            params['CACERTIFICATE'] = certificates
 
     if args['filter']:
         params['LDAPFILTER'] = args['filter']
