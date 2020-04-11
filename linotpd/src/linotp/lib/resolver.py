@@ -769,6 +769,7 @@ def _delete_from_resolver_config_cache(resolver_spec):
 def setupResolvers(config=None, cache_dir="/tmp"):
     """
     hook at the server start to initialize the resolvers classes
+    - the resolver class setup should only be called once
 
     :param config: the linotp config
     :param cache_dir: the cache directory, which could be used in each resolver
@@ -786,7 +787,10 @@ def setupResolvers(config=None, cache_dir="/tmp"):
     for resolver_cls in unique_resolver_classes:
         if hasattr(resolver_cls, 'setup'):
             try:
-                resolver_cls.setup(config=config, cache_dir=cache_dir)
+                if not hasattr(resolver_cls, '_setup_done'):
+                    resolver_cls.setup(config=config, cache_dir=cache_dir)
+                    setattr(resolver_cls,'_setup_done', True)
+
             except Exception as exx:
                 log.exception("Resolver setup: Failed to call setup of %r. "
                               "Exception was %r", resolver_cls, exx)
