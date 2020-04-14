@@ -100,8 +100,7 @@ build-test-environment:debian-buster:
     - pip install bcrypt
     - pip freeze
     - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
-    #- pip install -e .[tests]
-    - python setup.py develop
+    - pip install -e .
     - python tools/linotp-create-enckey -f test.ini
     - python tools/linotp-create-auditkeys -f test.ini
     - export NOSE_WITH_COVERAGE=1
@@ -170,7 +169,7 @@ unit-test:debian-buster:
     - pip install coverage
     - pip install bcrypt
     - pip freeze
-    - python setup.py develop
+    - pip install -e .
     - python tools/linotp-create-enckey -f test.ini
     - python tools/linotp-create-auditkeys -f test.ini
     - cp encKey public.pem private.pem /tmp/
