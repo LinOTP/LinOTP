@@ -80,7 +80,6 @@ from .settings import configs
 from .tokens import reload_classes as reload_token_classes
 from .lib.audit.base import getAudit
 from .lib.config.global_api import initGlobalObject
-from .lib.ImportOTP.vasco import init_vasco
 
 from sqlalchemy import create_engine
 from .model import init_model, meta         # FIXME: Flask-SQLAlchemy
@@ -552,11 +551,6 @@ def init_logging(app):
                     'level': 'INFO',
                     'propagate': True,
                 },
-                'linotp.lib.ImportOTP.vasco': {
-                    'handlers': ['console'],
-                    'level': 'ERROR',
-                    'propagate': True,
-                },
             },
         }
 
@@ -727,7 +721,6 @@ def create_app(config_name='default', config_extra=None):
         initGlobalObject()
         setup_audit(app)
         setup_security_provider(app)
-        init_vasco()
 
     app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
 

@@ -34,8 +34,6 @@ define your own tokenclasses.
 You can add your own Tokens by adding the modules comma seperated to the
 directive 'linotpTokenModules' in the linotp.ini file.
 
-depends on several modules from linotp.lib but also in case of VascoTokenClass
-on linotp.lib.ImportOTP.vasco
 """
 
 import binascii
