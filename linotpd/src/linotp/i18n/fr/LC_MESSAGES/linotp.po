@@ -256,9 +256,6 @@ msgstr ""
 "Ici, une image QR est générée, ce qui vous permet de la numériser avec votre "
 "scanner token OCRA2."
 
-msgid "CA Certificate"
-msgstr "Certificat CA"
-
 msgid "CA Certificate:"
 msgstr "Certificat CA "
 
@@ -1339,9 +1336,6 @@ msgstr ""
 "choisir le domaine dans lequel il veut se connecter via le portail d'auto-"
 "gestion."
 
-msgid "If checked the linotp server will use system certificates"
-msgstr "Si coché, le serveur linotp utilisera des certificats système"
-
 msgid ""
 "If checked, users who are not found in the useridresolvers are authenticated "
 "successfully. USE WITH CAUTION!"
@@ -1387,14 +1381,6 @@ msgid ""
 msgstr ""
 "Si vous êtes intéressé par la plate-forme 2FA de KeyIdentity, et que vous "
 "souhaitez des informations :"
-
-#, fuzzy
-msgid ""
-"If you are using STARTTLS or LDAPS you can enter the CA certificate in PEM "
-"format here."
-msgstr ""
-"Si vous utilisez LDAPS, vous pouvez copier le certificat CA au format PEM "
-"ici."
 
 msgid ""
 "If you do not enter a remote serial or a remote user, the request will be "
@@ -3238,9 +3224,6 @@ msgstr "Charger le fichier eToken .dat :"
 msgid "Usage Count"
 msgstr ""
 
-msgid "Use system certificate"
-msgstr "Utiliser un certificat système"
-
 msgid "User"
 msgstr "Utilisateur"
 
@@ -4423,6 +4406,9 @@ msgstr "ui web générée"
 #~ msgid "Activate your QR token"
 #~ msgstr "Activer le token QR"
 
+#~ msgid "CA Certificate"
+#~ msgstr "Certificat CA"
+
 #~ msgid "Challenge validity (sec)"
 #~ msgstr "Email validité du défi (sec.)"
 
@@ -4443,6 +4429,17 @@ msgstr "ui web générée"
 
 #~ msgid "Here you can upload your Vasco DPX file."
 #~ msgstr "Ici, vous pouvez importer votre fichier VASCO DPX."
+
+#~ msgid "If checked the linotp server will use system certificates"
+#~ msgstr "Si coché, le serveur linotp utilisera des certificats système"
+
+#, fuzzy
+#~ msgid ""
+#~ "If you are using STARTTLS or LDAPS you can enter the CA certificate in "
+#~ "PEM format here."
+#~ msgstr ""
+#~ "Si vous utilisez LDAPS, vous pouvez copier le certificat CA au format PEM "
+#~ "ici."
 
 #~ msgid "Invalid License"
 #~ msgstr "Licence non valide"
@@ -4633,6 +4630,9 @@ msgstr "ui web générée"
 
 #~ msgid "Token defaults"
 #~ msgstr "Valeurs par défaut du token"
+
+#~ msgid "Use system certificate"
+#~ msgstr "Utiliser un certificat système"
 
 #~ msgid ""
 #~ "You do not have the administrative right to do monitoring.You are missing "

@@ -256,9 +256,6 @@ msgstr ""
 "Aquí se genera una imagen de QR que podrá escanear con su escáner de token "
 "OCRA2."
 
-msgid "CA Certificate"
-msgstr "Certificado CA"
-
 msgid "CA Certificate:"
 msgstr "Certificado CA:"
 
@@ -1325,9 +1322,6 @@ msgstr ""
 "Se mostrará una lista desplegable en la que el usuario podrá seleccionar el "
 "dominio en el que desea iniciar sesión en el portal de autogestión."
 
-msgid "If checked the linotp server will use system certificates"
-msgstr "Si está marcado, el servidor linotp usará certificados de sistema"
-
 msgid ""
 "If checked, users who are not found in the useridresolvers are authenticated "
 "successfully. USE WITH CAUTION!"
@@ -1373,12 +1367,6 @@ msgid ""
 msgstr ""
 "Si está interesado en la plataforma de autenticación de dos pasos de "
 "KeyIdentity y desea información sobre ello:"
-
-#, fuzzy
-msgid ""
-"If you are using STARTTLS or LDAPS you can enter the CA certificate in PEM "
-"format here."
-msgstr "Si utiliza LDAPS, puede copiar aquí el certificado CA en formato PEM."
 
 msgid ""
 "If you do not enter a remote serial or a remote user, the request will be "
@@ -3217,9 +3205,6 @@ msgstr "Cargar archivo eToken .dat:"
 msgid "Usage Count"
 msgstr ""
 
-msgid "Use system certificate"
-msgstr "Usar certificado de sistema"
-
 msgid "User"
 msgstr "Usuario"
 
@@ -4386,6 +4371,9 @@ msgstr "Generado UI web"
 #~ msgid "About LSE LinOTP"
 #~ msgstr "Sobre LSE LinOTP"
 
+#~ msgid "CA Certificate"
+#~ msgstr "Certificado CA"
+
 #~ msgid "Challenge validity (sec)"
 #~ msgstr "Validez del desafío del correo electrónico (seg.)"
 
@@ -4403,6 +4391,16 @@ msgstr "Generado UI web"
 
 #~ msgid "File configuration"
 #~ msgstr "Configuración del archivo"
+
+#~ msgid "If checked the linotp server will use system certificates"
+#~ msgstr "Si está marcado, el servidor linotp usará certificados de sistema"
+
+#, fuzzy
+#~ msgid ""
+#~ "If you are using STARTTLS or LDAPS you can enter the CA certificate in "
+#~ "PEM format here."
+#~ msgstr ""
+#~ "Si utiliza LDAPS, puede copiar aquí el certificado CA en formato PEM."
 
 #~ msgid "Invalid License"
 #~ msgstr "licencia no válida"
@@ -4577,6 +4575,9 @@ msgstr "Generado UI web"
 
 #~ msgid "Time between e-mails (sec)"
 #~ msgstr "Tiempo entre mensajes de correo electrónico (seg.)"
+
+#~ msgid "Use system certificate"
+#~ msgstr "Usar certificado de sistema"
 
 #~ msgid ""
 #~ "You do not have the administrative right to do monitoring.You are missing "

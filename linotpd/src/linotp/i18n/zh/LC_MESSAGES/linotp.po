@@ -251,9 +251,6 @@ msgid ""
 msgstr ""
 "通过对它的提交，您会生成一个二维码图片，允许您通过 OCRA2 令牌扫描仪扫描。"
 
-msgid "CA Certificate"
-msgstr "CA 证书"
-
 msgid "CA Certificate:"
 msgstr "CA 证书："
 
@@ -1281,9 +1278,6 @@ msgid ""
 "logon page."
 msgstr "会出现一个下拉列表，从中用户可以选择他需要在自助服务门户登录的域。"
 
-msgid "If checked the linotp server will use system certificates"
-msgstr "如果选中，linotp将使用系统证书"
-
 msgid ""
 "If checked, users who are not found in the useridresolvers are authenticated "
 "successfully. USE WITH CAUTION!"
@@ -1320,12 +1314,6 @@ msgid ""
 "If you are interested in the 2FA platform of KeyIdentity, and want to be "
 "informed about:"
 msgstr "如果您对KeyIdentity的2FA平台感兴趣，并想得到以下内容的通知："
-
-#, fuzzy
-msgid ""
-"If you are using STARTTLS or LDAPS you can enter the CA certificate in PEM "
-"format here."
-msgstr "如果您正在使用 LDAPS，您可以在此复制 PEM 格式的 CA 证书。"
 
 msgid ""
 "If you do not enter a remote serial or a remote user, the request will be "
@@ -3050,10 +3038,6 @@ msgstr "eToken .dat 文件上传："
 msgid "Usage Count"
 msgstr ""
 
-#, fuzzy
-msgid "Use system certificate"
-msgstr "公钥证书"
-
 msgid "User"
 msgstr "用户"
 
@@ -4109,6 +4093,9 @@ msgstr "生成的 Web 用户界面"
 #~ msgid "Activate your QR token"
 #~ msgstr "激活二维码令牌"
 
+#~ msgid "CA Certificate"
+#~ msgstr "CA 证书"
+
 #~ msgid "Challenge validity (sec)"
 #~ msgstr "电子邮件挑战码有效性（秒）"
 
@@ -4129,6 +4116,15 @@ msgstr "生成的 Web 用户界面"
 
 #~ msgid "Here you can upload your Vasco DPX file."
 #~ msgstr "您可以导入 VASCO DPX 文件。"
+
+#~ msgid "If checked the linotp server will use system certificates"
+#~ msgstr "如果选中，linotp将使用系统证书"
+
+#, fuzzy
+#~ msgid ""
+#~ "If you are using STARTTLS or LDAPS you can enter the CA certificate in "
+#~ "PEM format here."
+#~ msgstr "如果您正在使用 LDAPS，您可以在此复制 PEM 格式的 CA 证书。"
 
 #~ msgid "Invalid License"
 #~ msgstr "无效的许可证"
@@ -4301,6 +4297,10 @@ msgstr "生成的 Web 用户界面"
 
 #~ msgid "Token defaults"
 #~ msgstr "令牌默认"
+
+#, fuzzy
+#~ msgid "Use system certificate"
+#~ msgstr "公钥证书"
 
 #~ msgid ""
 #~ "You do not have the administrative right to do monitoring.You are missing "
