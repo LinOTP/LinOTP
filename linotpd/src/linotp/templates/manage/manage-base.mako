@@ -372,27 +372,6 @@ if isinstance(lang, list):
             </fieldset>
         </div>
         <!-- tab system settings client -->
-<!--
-        <div id='tab_content_system_cert'>
-            <fieldset>
-                <legend>${_("Certificates")}</legend>
-                    <table>
-                        <tr>
-                            <td>
-                                <label for=sys_cert>${_("Use system certificate")}</label>
-                            </td>
-                            <td>
-                                <input type='checkbox' name='sys_cert' id='sys_cert' value='sys_cert'
-                                       title='${_("If checked the linotp server will use system certificates")}'>
-                            </td>
-                        </tr>
-                        <!- - todo: button to display all used certificates, for migration - ->
-                    </table>
-            </fieldset>
-        </div>
--->
-        <!-- tab system certificate settings -->
-
 
     </div> <!-- tab container system settings -->
     </form>
@@ -2161,15 +2140,10 @@ if isinstance(lang, list):
                     <td><input type="text" name="ldap_resolvername" class="required"  id="ldap_resolvername" size="35" maxlength="20"></td></tr>
                 <tr><td><label for=ldap_uri>${_("Server-URI")}:</label></td>
                     <td><input type="text" name="ldap_uri" class="required"  id="ldap_uri" size="35"
-                        onkeyup="handler_ldap_certificate_show();"></td></tr>
+                        onkeyup="handler_ldaps_starttls_show();"></td></tr>
                 <tr><td> </td>
-                    <td><input type="checkbox" name="ldap_enforce_tls" id="ldap_enforce_tls" onchange="handler_ldap_certificate_show();">
+                    <td><input type="checkbox" name="ldap_enforce_tls" id="ldap_enforce_tls" onchange="handler_ldaps_starttls_show();">
                         <label id="ldap_enforce_tls_label" for="ldap_enforce_tls">${_("Enforce STARTTLS")}</label></td></tr>
-                <tr id="ldap_resolver_certificate"><td>
-                    <label for="ldap_certificate">${_("CA Certificate")}:</label></td>
-                    <td><textarea name="ldap_certificate" id="ldap_certificate" cols="34" rows="5"
-                        title='${_("If you are using STARTTLS or LDAPS you can enter the CA certificate in PEM format here.")}'> </textarea></td>
-                    </tr>
                 <tr><td><label for=ldap_basedn>${_("BaseDN")}:</label></td>
                     <td><input type="text" name="ldap_basedn" class="required"  id="ldap_basedn" size="35"></td></tr>
                 <tr><td><label for=ldap_binddn>${_("BindDN")}:</label></td>

@@ -1894,14 +1894,10 @@ function getSerialByOtp(otp, type, assigned, realm) {
 
 /**
  * handler for the ldap resolver form keyup event of the ldap uri and enforce tls flag,
- * which checks whether the certificate textarea should be shown
+ * which checks whether the enforce tls should be shown
  */
-function handler_ldap_certificate_show() {
+function handler_ldaps_starttls_show() {
     var isLdaps = $('#ldap_uri').val().toLowerCase().match(/^ldaps:/)!==null;
-    var show_cert_textarea = !g.use_system_certificates && (isLdaps || $('#ldap_enforce_tls').is(':checked'));
-
-    // show or hide the certificate input dependent on enforce_tls and ldaps:// url
-    $('#ldap_resolver_certificate').toggle(show_cert_textarea);
 
     // disable start_tls option in combination with ldaps:// url
     $('#ldap_enforce_tls').prop("disabled", isLdaps);
@@ -2694,13 +2690,6 @@ function load_system_config(){
 
         $('#sys_forwarded_proxy').val(data.result.value['client.FORWARDED_PROXY']);
 
-        /* should we use the system certificate handling*/
-        if (data.result.value['certificates.use_system_certificates'] == "True") {
-            $('#sys_cert').prop('checked', true);
-        } else {
-            $('#sys_cert').prop('checked', false);
-        }
-
         /*todo call the 'tok_fill_config.js */
 
         /* caching settings */
@@ -2783,11 +2772,6 @@ function save_system_config(){
         client_x_forward = "True";
     }
 
-    var use_sys_cert = "False";
-    if ($('#sys_cert').is(':checked')) {
-        use_sys_cert = "True";
-    }
-
     var user_cache_enabled = "False";
     if ($("#sys_user_cache_enable").is(':checked')) {
         user_cache_enabled = "True";
@@ -2809,7 +2793,6 @@ function save_system_config(){
         'client.FORWARDED' : client_forward,
         'client.X_FORWARDED_FOR' : client_x_forward,
         'allowSamlAttributes' : allowsaml,
-        'certificates.use_system_certificates': use_sys_cert,
         'user_lookup_cache.enabled': user_cache_enabled,
         'resolver_lookup_cache.enabled': resolver_cache_enabled,
         'user_lookup_cache.enabled': user_cache_enabled,
@@ -2858,7 +2841,6 @@ function save_ldap_config(){
         '#ldap_uidtype': 'UIDTYPE',
         '#ldap_noreferrals' : 'NOREFERRALS',
         '#ldap_enforce_tls': 'EnforceTLS',
-        '#ldap_certificate': 'CACERTIFICATE',
     };
     var url = '/system/setResolver';
     var params = {}
@@ -4104,7 +4086,6 @@ $(document).ready(function(){
         params['ldap_mapping']      = $('#ldap_mapping').val();
         params['ldap_sizelimit']    = $('#ldap_sizelimit').val();
         params['ldap_uidtype']      = $('#ldap_uidtype').val();
-        params['ldap_certificate']  = $('#ldap_certificate').val();
 
         if ($('#ldap_noreferrals').is(':checked')) {
             params["NOREFERRALS"] = "True";
@@ -6712,7 +6693,6 @@ function resolver_set_ldap(obj) {
     $('#ldap_userfilter').val(data.LDAPFILTER);
     $('#ldap_mapping').val(data.USERINFO);
     $('#ldap_uidtype').val(data.UIDTYPE);
-    $('#ldap_certificate').val(data.CACERTIFICATE);
 
     // get the configuration value of the enforce TLS (if exists) and adjust the checkbox
     var checked = !!data.EnforceTLS && data.EnforceTLS.toLowerCase() == "true";
@@ -6720,7 +6700,7 @@ function resolver_set_ldap(obj) {
 
     $('#ldap_noreferrals').prop('checked', data.NOREFERRALS == "True");
 
-    handler_ldap_certificate_show();
+    handler_ldaps_starttls_show();
 }
 
 
@@ -6749,7 +6729,6 @@ function resolver_ldap(name, duplicate){
                     'LDAPFILTER': '(&(sAMAccountName=%s)(objectClass=user))',
                     'USERINFO': '{ "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }',
                     'UIDTYPE': 'objectGUID',
-                    'CACERTIFICATE' : '',
                     'NOREFERRALS' : 'True',
                 }
             }
@@ -6758,11 +6737,6 @@ function resolver_ldap(name, duplicate){
 
     g.current_resolver_name = (duplicate ? "" : name);
      $('#ldap_resolvername').val(g.current_resolver_name);
-
-    var config_key = 'certificates.use_system_certificates';
-    var server_config = get_server_config(config_key);
-
-    g.use_system_certificates = isDefinedKey(server_config, config_key) && server_config[config_key] == 'True';
 
     var critical_inputs = $('#ldap_uri, #ldap_basedn, #ldap_binddn');
 
