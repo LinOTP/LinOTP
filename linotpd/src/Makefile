@@ -56,7 +56,7 @@ extract:
 	python setup.py extract_messages
 	$(foreach lang, \
 		$(I18N_LANGUAGES), \
-		msgmerge -U $(I18N_SRC)/$(lang)/LC_MESSAGES/linotp.po $(I18N_SRC)/linotp.pot \
+		msgmerge -U -s $(I18N_SRC)/$(lang)/LC_MESSAGES/linotp.po $(I18N_SRC)/linotp.pot \
 		;\
 	)
 
