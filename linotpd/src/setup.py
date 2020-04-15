@@ -164,13 +164,7 @@ setup(
         (
             'etc/linotp2/',
             [
-                # 'alembic.ini',
-                'config/linotp.ini.example',
-                'config/linotp.ini.paster',
                 'config/linotpapp.wsgi',
-                'config/who.ini',
-                'config/keyidentity-push-ca-bundle.crt',
-                'dictionary',
             ]
         ),
         (
@@ -183,12 +177,6 @@ setup(
             'etc/linotp2/apache2.4-example/',
             [
                 'config/apache2.4-example/linotp2.conf',
-            ]
-        ),
-        (
-            'etc/init.d/',
-            [
-                'config/linotp2-paster'
             ]
         ),
         (
