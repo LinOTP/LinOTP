@@ -51,12 +51,13 @@ def getTagName(elem):
 
 
 def getKnownTypes():
-    return ["feitian", "pskc", "dpw", 'dat', "vasco"]
+    return ["feitian", "pskc", "dpw", 'dat']
 
 
 def getImportText():
     return {'feitian': 'Feitian XML',
             'pskc': 'OATH compliant PSKC',
             'dpw': 'Tagespasswort Token File',
-            'dat': 'eToken DAT File',
-            'vasco': 'Vasco DPX'}
+            'dat': 'eToken DAT File'}
+
+# eof

@@ -2330,9 +2330,6 @@ class AdminController(BaseController):
         from linotp.lib.ImportOTP.eTokenDat import parse_dat_data
         log.info("[loadtokens] loaded parseDATdata")
 
-        from linotp.lib.ImportOTP.vasco import parseVASCOdata
-        log.info("[loadtokens] loaded parseVASCOdata")
-
         params = self.request_params
 
         try:
@@ -2449,16 +2446,6 @@ class AdminController(BaseController):
                     TOKENS = parsePSKCdata(
                         fileString, do_checkserial=pskc_checkserial)
 
-            elif typeString == "vasco":
-                # TODO: verify merge 2.8.1.2 with 2.9
-                vasco_otplen = int(params.get('vasco_otplen', 6))
-                TOKENS = parseVASCOdata(fileString, vasco_otplen, transportkey)
-                if TOKENS is None:
-                    raise ImportException("Vasco DLL was not properly loaded. "
-                                          "Importing of VASCO token not "
-                                          "possible. Please check the log file"
-                                          " for more details.")
-
             tokenrealm = ''
 
             # -------------------------------------------------------------- --
@@ -2544,15 +2531,6 @@ class AdminController(BaseController):
                         'otplen': TOKENS[serial].get('otplen'),
                         'timeStep': TOKENS[serial].get('timeStep'),
                         'hashlib': TOKENS[serial].get('hashlib')}
-
-                # add additional parameter for vasco tokens
-                if TOKENS[serial]['type'] == "vasco":
-                    init_param['vasco_appl'] = TOKENS[serial]['tokeninfo'].get(
-                        'application')
-                    init_param['vasco_type'] = TOKENS[serial]['tokeninfo'].get(
-                        'type')
-                    init_param['vasco_auth'] = TOKENS[serial]['tokeninfo'].get(
-                        'auth')
 
                 # add ocrasuite for ocra tokens, only if ocrasuite is not empty
                 if TOKENS[serial]['type'] in ['ocra', 'ocra2']:
