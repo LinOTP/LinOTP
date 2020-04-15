@@ -8,7 +8,7 @@ export PYBUILD_DISABLE=test
 export DEB_VERSION = $(shell sed -ne '1{s/^.* (//;s/).*$$//;p}' debian/changelog)
 
 %:
-	dh $@ --with python2 --buildsystem=pybuild
+	dh $@ --with python3 --buildsystem=pybuild
 
 override_dh_installdeb:
 	dh_installdeb
