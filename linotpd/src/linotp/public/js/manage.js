@@ -2103,15 +2103,6 @@ function load_tokenfile(type){
             dataType: "dat"
         });
     }
-    else if ("vasco" == type) {
-        $('#load_tokenfile_form_vasco').ajaxSubmit({
-            data: { session:getsession() },
-            type: "POST",
-            error: parseXML,
-            success: parseXML,
-            dataType: "xml"
-        });
-    }
     else if ("oathcsv" == type) {
         $('#load_tokenfile_form_oathcsv').ajaxSubmit({
             data: { session:getsession() },
@@ -4013,7 +4004,7 @@ $(document).ready(function(){
         modal: true,
         buttons: {
             'import policy file': { click: function(){
-                import_policy('vasco');
+                import_policy();
                 $(this).dialog('close');
                 },
                 id: "button_policy_load",
@@ -5362,7 +5353,6 @@ $(document).ready(function(){
      */
 
     var $dialog_load_tokens_pskc  = create_pskc_dialog();
-    var $dialog_load_tokens_vasco = create_vasco_dialog();
     var $dialog_load_tokens_feitian = create_feitian_dialog();
     var $dialog_load_tokens_dpw = create_dpw_dialog();
     var $dialog_load_tokens_dat = create_dat_dialog();
@@ -5390,9 +5380,6 @@ $(document).ready(function(){
     });
     $('#menu_load_dat').click(function(){
         $dialog_load_tokens_dat.dialog('open');
-    });
-    $('#menu_load_vasco').click(function(){
-        $dialog_load_tokens_vasco.dialog('open');
     });
 
 
