@@ -257,9 +257,6 @@ msgstr ""
 "Viene generata un'immagine QR che permette di eseguire la scansione con lo "
 "scanner token OCRA2."
 
-msgid "CA Certificate"
-msgstr "Certificato CA"
-
 msgid "CA Certificate:"
 msgstr "Certificato CA:"
 
@@ -1318,9 +1315,6 @@ msgstr ""
 "Viene visualizzato un elenco a discesa, da cui l'utente può selezionare il "
 "realm in cui vuole registrarsi nel portale di auto-gestione."
 
-msgid "If checked the linotp server will use system certificates"
-msgstr "Se selezionato, il server lineotp userà i certificati di sistema"
-
 msgid ""
 "If checked, users who are not found in the useridresolvers are authenticated "
 "successfully. USE WITH CAUTION!"
@@ -1365,14 +1359,6 @@ msgid ""
 msgstr ""
 "Se sei interessato alla piattaforma 2FA o KeyIdentity, e vuoi ricevere "
 "informazioni su:"
-
-#, fuzzy
-msgid ""
-"If you are using STARTTLS or LDAPS you can enter the CA certificate in PEM "
-"format here."
-msgstr ""
-"Se si utilizza LDAPS, è possibile copiare qui il certificato CA in formato "
-"PEM."
 
 msgid ""
 "If you do not enter a remote serial or a remote user, the request will be "
@@ -3188,9 +3174,6 @@ msgstr "caricare file eToken .dat:"
 msgid "Usage Count"
 msgstr ""
 
-msgid "Use system certificate"
-msgstr "Usa configurazione sistema"
-
 msgid "User"
 msgstr "Utente"
 
@@ -4347,6 +4330,9 @@ msgstr "Interfaccia utente web generato"
 #~ msgid "Activate your QR token"
 #~ msgstr "Attivare token QR"
 
+#~ msgid "CA Certificate"
+#~ msgstr "Certificato CA"
+
 #~ msgid "Challenge validity (sec)"
 #~ msgstr "Validità Email Challenge (sec.)"
 
@@ -4367,6 +4353,17 @@ msgstr "Interfaccia utente web generato"
 
 #~ msgid "Here you can upload your Vasco DPX file."
 #~ msgstr "Qui è possibile importare il file DPX VASCO."
+
+#~ msgid "If checked the linotp server will use system certificates"
+#~ msgstr "Se selezionato, il server lineotp userà i certificati di sistema"
+
+#, fuzzy
+#~ msgid ""
+#~ "If you are using STARTTLS or LDAPS you can enter the CA certificate in "
+#~ "PEM format here."
+#~ msgstr ""
+#~ "Se si utilizza LDAPS, è possibile copiare qui il certificato CA in "
+#~ "formato PEM."
 
 #~ msgid "Invalid License"
 #~ msgstr "licenza non valida"
@@ -4550,6 +4547,9 @@ msgstr "Interfaccia utente web generato"
 
 #~ msgid "Token defaults"
 #~ msgstr "Valori standard token"
+
+#~ msgid "Use system certificate"
+#~ msgstr "Usa configurazione sistema"
 
 #~ msgid ""
 #~ "You do not have the administrative right to do monitoring.You are missing "

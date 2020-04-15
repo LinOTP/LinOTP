@@ -256,9 +256,6 @@ msgstr ""
 "Hier wird ein QR-Bild generiert, dieses können Sie mit Ihrem OCRA2-Token-"
 "Scanner einscannen."
 
-msgid "CA Certificate"
-msgstr "CA-Zertifikat"
-
 msgid "CA Certificate:"
 msgstr "CA-Zertifikat"
 
@@ -1317,10 +1314,6 @@ msgstr ""
 "Eine Dropdown-Liste wird angezeigt, aus der der Benutzer den Realm auswählen "
 "kann, in dem er sich im Selbstverwaltungsportal anmelden will."
 
-msgid "If checked the linotp server will use system certificates"
-msgstr ""
-"Bei Aktivierung wird der LinOTP Server die Zertifikate des Systems verwenden."
-
 msgid ""
 "If checked, users who are not found in the useridresolvers are authenticated "
 "successfully. USE WITH CAUTION!"
@@ -1370,13 +1363,6 @@ msgid ""
 msgstr ""
 "Falls Sie sich für KeyIdentitys 2FA Plattform interessieren und informiert "
 "werden möchten über"
-
-msgid ""
-"If you are using STARTTLS or LDAPS you can enter the CA certificate in PEM "
-"format here."
-msgstr ""
-"Wenn Sie STARTTLS oder LDAPS verwenden, können Sie hier das CA-Zertifikat im "
-"PEM-Format einfügen."
 
 msgid ""
 "If you do not enter a remote serial or a remote user, the request will be "
@@ -3201,9 +3187,6 @@ msgstr "eToken .dat Datei hochladen:"
 msgid "Usage Count"
 msgstr "Anzahl der Verwendung"
 
-msgid "Use system certificate"
-msgstr "System Zertifikate verwenden"
-
 msgid "User"
 msgstr "Benutzer"
 
@@ -4417,6 +4400,9 @@ msgstr "WebUI generiert"
 #~ msgid "Alert"
 #~ msgstr "Achtung"
 
+#~ msgid "CA Certificate"
+#~ msgstr "CA-Zertifikat"
+
 #~ msgid "Challenge validity (sec)"
 #~ msgstr "E-Mail Challenge Gültigkeit (Sek.)"
 
@@ -4510,6 +4496,18 @@ msgstr "WebUI generiert"
 
 #~ msgid "Here you can upload your Vasco DPX file."
 #~ msgstr "Hier können Sie Ihre VASCO DPX-Datei importieren."
+
+#~ msgid "If checked the linotp server will use system certificates"
+#~ msgstr ""
+#~ "Bei Aktivierung wird der LinOTP Server die Zertifikate des Systems "
+#~ "verwenden."
+
+#~ msgid ""
+#~ "If you are using STARTTLS or LDAPS you can enter the CA certificate in "
+#~ "PEM format here."
+#~ msgstr ""
+#~ "Wenn Sie STARTTLS oder LDAPS verwenden, können Sie hier das CA-Zertifikat "
+#~ "im PEM-Format einfügen."
 
 #~ msgid "Invalid License"
 #~ msgstr "ungültige Lizenz"
@@ -4820,6 +4818,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "URL for google Authenticator"
 #~ msgstr "URL für Google Authenticator"
+
+#~ msgid "Use system certificate"
+#~ msgstr "System Zertifikate verwenden"
 
 #~ msgid ""
 #~ "Using the QR code you can directly go to install the google authenticator "
