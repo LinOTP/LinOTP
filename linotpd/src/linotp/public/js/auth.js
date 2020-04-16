@@ -42,33 +42,6 @@ function clientUrlFetchSync(myUrl, params) {
     return resp;
 }
 
-function getOcraChallenge() {
-    var user = $('#user').val();
-    var targetId = 'display';
-    var userId = 'user2';
-
-    var params = {};
-    params['user'] = $('#user').val();
-    params['data'] = $('#challenge').val();
-    params['qr'] = 'img';
-
-    var url = '/ocra/request';
-
-    try {
-        var data = clientUrlFetchSync(url, params);
-        if ( typeof (data) == "object") {
-            var err = data.result.error.message;
-            alert(err);
-        } else {
-            var img = data;
-            $('#' + targetId).html(img);
-            $('#' + userId).val(user);
-        }
-    } catch (e) {
-        alert(e);
-    }
-}
-
 function getOcra2Challenge() {
     var user = $('#user').val();
     var targetId = 'display';
@@ -278,17 +251,6 @@ $(document).ready(function() {
     $("#form_login3").submit(function(submit_event) {
         submit_event.preventDefault();
         login_user( column = 3);
-    });
-
-    // auth/ocra
-    $("#form_challenge_ocra").submit(function(submit_event) {
-        submit_event.preventDefault();
-        getOcraChallenge();
-    });
-
-    $("#form_login_ocra").submit(function(submit_event) {
-        submit_event.preventDefault();
-        login_user( column = 2);
     });
 
     // auth/qrtoken
