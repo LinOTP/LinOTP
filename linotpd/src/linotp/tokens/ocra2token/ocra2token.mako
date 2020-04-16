@@ -317,7 +317,7 @@ $( document ).ready(function() {
 </div>
 
 %endif
-<!-- -->
+
 
 %if c.scope == 'selfservice.title.activate':
 ${_("Activate your OCRA2 Token")}

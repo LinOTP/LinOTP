@@ -124,7 +124,7 @@ from linotp.lib.token import getRolloutToken4User
 from linotp.tokens import tokenclass_registry
 from linotp.lib.util import normalize_activation_code
 
-from .ocra import OcraSuite
+from . import OcraSuite
 
 from linotp.lib.challenges import Challenges
 from linotp.lib.reply import create_img
@@ -361,52 +361,61 @@ class Ocra2TokenClass(TokenClass):
         :rtype : s.o.
 
         '''
-
         _ = context['translate']
 
         res = {
-               'type' : 'ocra2',
-               'title' : _('OCRA2 Token'),
-               'description' :
-                    _('ocra challenge-response token - hmac event based'),
-               'init'         : { 'title'  : {'html'      : 'ocra2token.mako',
-                                             'scope'     : 'enroll.title', },
-                                  'page' : {'html'      : 'ocra2token.mako',
-                                            'scope'      : 'enroll', },
-                                   },
-
-               'config'         : {'title'  : {'html'      : 'ocra2token.mako',
-                                             'scope'     : 'config.title', },
-                                   'page' : {'html'      : 'ocra2token.mako',
-                                            'scope'      : 'config', },
-                                   },
-
-               'selfservice'   :  { 'enroll' :
-                                   {'title'  :
-                                    { 'html'      : 'ocra2token.mako',
-                                      'scope'     : 'selfservice.title.enroll',
-                                      },
-                                    'page' :
-                                    {'html'       : 'ocra2token.mako',
-                                     'scope'      : 'selfservice.enroll',
-                                     },
-                                    },
-                                   'activate_OCRA2' :
-                                   {'title'  :
-                                    { 'html'      : 'ocra2token.mako',
-                                      'scope'     : 'selfservice.title.activate',
-                                      },
-                                    'page' :
-                                    {'html'       : 'ocra2token.mako',
-                                     'scope'      : 'selfservice.activate',
-                                     },
-                                    },
-
-                                  },
-            'policy': {'selfservice': {
-                            'activate_OCRA2': {'type': 'bool'}
-                            },  # eof selfservice
-                      }  # eof policy
+            "type": "ocra2",
+            "title": _("OCRA2 Token"),
+            "description": _("ocra challenge-response token - hmac event based"),
+            "init": {
+                "title": {
+                    "html": "ocra2token/ocra2token.mako",
+                    "scope": "enroll.title",
+                },
+                "page": {
+                    "html": "ocra2token/ocra2token.mako",
+                    "scope": "enroll",
+                },
+            },
+            "config": {
+                "title": {
+                    "html": "ocra2token/ocra2token.mako",
+                    "scope": "config.title",
+                },
+                "page": {
+                    "html": "ocra2token/ocra2token.mako",
+                    "scope": "config",
+                },
+            },
+            "selfservice": {
+                "enroll": {
+                    "title": {
+                        "html": "ocra2token/ocra2token.mako",
+                        "scope": "selfservice.title.enroll",
+                    },
+                    "page": {
+                        "html": "ocra2token/ocra2token.mako",
+                        "scope": "selfservice.enroll",
+                    },
+                },
+                "activate_OCRA2": {
+                    "title": {
+                        "html": "ocra2token/ocra2token.mako",
+                        "scope": "selfservice.title.activate",
+                    },
+                    "page": {
+                        "html": "ocra2token/ocra2token.mako",
+                        "scope": "selfservice.activate",
+                    },
+                },
+            },
+            "policy": {
+                "selfservice": {
+                    "activate_OCRA2": {
+                        "type": "bool"
+                        }
+                },  # eof selfservice
+            },  # eof policy
         }
 
         if key and key in res:
@@ -447,16 +456,26 @@ class Ocra2TokenClass(TokenClass):
         update: add further definition for token from param in case of init
         '''
 
-        if 'ocrasuite' in params:
-            self.ocraSuite = params.get('ocrasuite')
-        else:
-            activationcode = params.get('activationcode', None)
-            sharedSecret = params.get('sharedsecret', None)
+        # ------------------------------------------------------------------ --
 
-            if activationcode is None and sharedSecret is None:
-                self.ocraSuite = self.getOcraSuiteSuite()
+        # if there is already an ocrasuite defined, we reuse it
+
+        self.ocraSuite = self.getFromTokenInfo('ocrasuite')
+
+        if not self.ocraSuite:
+
+            if 'ocrasuite' in params:
+                self.ocraSuite = params.get('ocrasuite')
             else:
-                self.ocraSuite = self.getQROcraSuiteSuite()
+                activationcode = params.get('activationcode', None)
+                sharedSecret = params.get('sharedsecret', None)
+
+                if activationcode is None and sharedSecret is None:
+                    self.ocraSuite = self.getOcraSuiteSuite()
+                else:
+                    self.ocraSuite = self.getQROcraSuiteSuite()
+
+            self.addToTokenInfo('ocrasuite', self.ocraSuite)
 
         if params.get('activationcode', None):
             ## due to changes in the tokenclass parameter handling
@@ -467,8 +486,6 @@ class Ocra2TokenClass(TokenClass):
                 params['genkey'] = 1
 
         TokenClass.update(self, params, reset_failcount=reset_failcount)
-
-        self.addToTokenInfo('ocrasuite', self.ocraSuite)
 
         ocraSuite = OcraSuite(self.ocraSuite)
         otplen = ocraSuite.truncation
