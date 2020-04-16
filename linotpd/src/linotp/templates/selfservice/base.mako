@@ -120,9 +120,6 @@ if isinstance(lang, list):
                 <span>${c.dynamic_actions[entry] |n}</span></a></li>
         % endfor
 
-        % if 'activateQR' in c.actions:
-            <li><a href="/selfservice/activateocratoken"><span>${_("Activate your OCRA token")}</span></a></li>
-        %endif
         % if 'webprovisionOATH' in c.actions:
             <li><a href="/selfservice/webprovisionoathtoken"><span>${_("Enroll OATH token")}</span></a></li>
         %endif
