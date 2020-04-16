@@ -107,8 +107,6 @@ from linotp.tokens import tokenclass_registry
 
 from linotp.lib.token import TokenHandler
 
-from linotp.tokens.ocra.ocratoken import OcraTokenClass
-
 from linotp.lib.apps import (create_google_authenticator,
                              create_oathtoken_url
                              )
@@ -389,8 +387,7 @@ class UserserviceController(BaseController):
                 # actions which change the token amount do some reporting
 
                 if action in ['assign', 'unassign', 'enable', 'disable',
-                              'enroll', 'delete', 'activateocratoken',
-                              'finishocra2token', 'finishocratoken']:
+                              'enroll', 'delete', 'finishocra2token']:
                     event = 'token_' + action
 
                     if c.audit.get('source_realm'):
@@ -2128,11 +2125,20 @@ class UserserviceController(BaseController):
         log.debug("[userwebprovision] calling function")
         param = self.request_params.copy()
 
+        valid_tokens = ["googleauthenticator", "googleauthenticator_time",
+                        "oathtoken", "ocra2"]
+
         try:
             ret = {}
             ret1 = False
 
             typ = param["type"]
+
+            if typ not in ["oathtoken", "googleauthenticator",
+                           "googleauthenticator_time", "ocra2"]:
+                raise Exception(
+                    "Unsupported token type: valid types are %s. "
+                    "You provided %s" % (', '.join(valid_tokens),typ))
 
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userwebprovision',
@@ -2431,7 +2437,7 @@ class UserserviceController(BaseController):
 
         activateocratoken - called from the selfservice web ui to activate the  OCRA token
 
-        :param type:    'ocra'
+        :param type:    'ocra2'
         :type type:     string
         :param serial:    serial number of the token
         :type  serial:    string
@@ -2452,16 +2458,18 @@ class UserserviceController(BaseController):
 
         try:
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'useractivateocratoken',
-                                                    param, self.authUser)
+
+            checkPolicyPre(
+                'selfservice', 'useractivateocra2token', param, self.authUser)
+
             try:
                 typ = param["type"]
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
-            if typ and typ.lower() not in ["ocra", "ocra2"]:
-                return sendError(response, _("valid types are 'ocra' "
-                                             "or 'ocra2'. You provided %s")
+            if typ and typ.lower() not in ["ocra2"]:
+                return sendError(response, _("valid types is 'ocra2'. "
+                                             "You provided %s")
                                  % typ)
 
             helper_param = {}
@@ -2523,112 +2531,11 @@ class UserserviceController(BaseController):
         finally:
             Session.close()
 
-    def finshocratoken(self):
+
+    def finishocra2token(self):
         '''
 
-        finshocratoken - called from the selfservice web ui to finish the
-                         OCRA token to run the final check_t for the token
-
-        :param passw: the calculated verificaton otp
-        :type  passw: string
-        :param transactionid: the transactionid
-        :type  transactionid: string
-
-        :return:    dict about the token
-        :rtype:     { 'result' = ok
-                      'failcount' = int(failcount)
-                    }
-
-        '''
-
-        param = self.request_params
-
-        try:
-            ''' check selfservice authorization '''
-
-            checkPolicyPre('selfservice', 'userwebprovision',
-                                                    param, self.authUser)
-
-            try:
-                transid = param['transactionid']
-                passw = param['pass']
-                p_serial = param['serial']
-            except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
-
-            value = {}
-
-            ocraChallenge = OcraTokenClass.getTransaction(transid)
-            if ocraChallenge is None:
-                error = ('[userfinshocratoken] No challenge for transaction'
-                            ' %s found' % str(transid))
-                raise Exception(error)
-
-            serial = ocraChallenge.tokenserial
-            if serial != p_serial:
-                error = ('[userfinshocratoken] token mismatch for token '
-                      'serial: %s - %s' % (str(serial), str(p_serial)))
-                raise Exception(error)
-
-            tokens = getTokens4UserOrSerial(serial=serial)
-            if len(tokens) == 0 or len(tokens) > 1:
-                error = ('[userfinshocratoken] no token found for '
-                         'serial: %s' % (str(serial)))
-                raise Exception(error)
-
-            theToken = tokens[0]
-            tok = theToken.token
-            desc = tok.get()
-            realms = desc.get('LinOtp.RealmNames')
-            if realms is None or len(realms) == 0:
-                realm = getDefaultRealm()
-            elif len(realms) > 0:
-                realm = realms[0]
-
-            userInfo = getUserInfo(tok.LinOtpUserid, tok.LinOtpIdResolver,
-                                                        tok.LinOtpIdResClass)
-            user = User(login=userInfo.get('username'), realm=realm)
-
-            vh= ValidationHandler()
-            (ok, opt) = vh.checkSerialPass(serial, passw, user=user,
-                                            options={'transactionid': transid})
-
-            failcount = tokens[0].getFailCount()
-            typ = tokens[0].type
-
-            value['result'] = ok
-            value['failcount'] = int(failcount)
-
-            c.audit['transactionid'] = transid
-            c.audit['token_type'] = typ
-
-            c.audit['success'] = value.get('result')
-
-            checkPolicyPost('selfservice', 'userwebprovision',
-                            param, self.authUser)
-
-            Session.commit()
-            return sendResult(self.response, value, opt)
-
-        except PolicyException as pe:
-            log.exception("policy failed: %r" % pe)
-            Session.rollback()
-            return sendError(response, str(pe), 1)
-
-        except Exception as e:
-            error = "token finitialization failed! %r" % e
-            log.exception(error)
-            Session.rollback()
-            return sendError(response, error, 1)
-
-        finally:
-            Session.close()
-
-# #--
-    def finshocra2token(self):
-        '''
-
-        finshocra2token - called from the selfservice web ui to finish
+        finishocra2token - called from the selfservice web ui to finish
                         the OCRA2 token to run the final check_t for the token
 
         :param passw: the calculated verificaton otp
@@ -2654,9 +2561,16 @@ class UserserviceController(BaseController):
         opt = None
 
         try:
+
+            typ = param.get("type", None)
+            if not typ:
+                raise ParameterError("Missing parameter: type")
+
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'userwebprovision',
-                                                        param, self.authUser)
+
+            checkPolicyPre(
+                'selfservice', 'userwebprovision', param, self.authUser)
+
             passw = param.get("pass", None)
             if not passw:
                 raise ParameterError("Missing parameter: pass")
@@ -2683,12 +2597,12 @@ class UserserviceController(BaseController):
             return sendResult(self.response, value, opt)
 
         except PolicyException as pe:
-            log.exception("[userfinshocra2token] policy failed: %r" % pe)
+            log.exception("[userfinishocra2token] policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
-            error = "[userfinshocra2token] token initialization failed! %r" % e
+            error = "[userfinishocra2token] token initialization failed! %r" % e
             log.exception(error)
             Session.rollback()
             return sendError(response, error, 1)

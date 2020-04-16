@@ -1022,38 +1022,6 @@ def _checkManagePolicyPre(method, param=None, authUser=None, user=None):
     return ret
 
 
-def _checkOcraPolicyPre(method, param=None, authUser=None, user=None):
-
-    ret = {}
-    _ = context['translate']
-    client = _get_client()
-
-    if not param:
-        param = {}
-
-    method_map = {'request': 'request',
-                  'status': 'checkstatus',
-                  'activationcode': 'getActivationCode',
-                  'calcOTP': 'calculateOtp'}
-
-    admin_user = _getAuthenticatedUser()
-
-    policies = search_policy({'user': admin_user.get('login'),
-                              'scope': 'ocra',
-                              'action': method,
-                              'client': client})
-
-    if len(policies) == 0:
-
-        log.warning("the admin >%r< is not allowed to do an ocra/%r",
-                    admin_user.get('login'), method_map.get(method))
-
-        raise PolicyException(_("You do not have the administrative right to"
-                                " do an ocra/%s") % method_map.get(method))
-
-    return ret
-
-
 def _checkToolsPolicyPre(method, param=None, authUser=None, user=None):
     ret = {}
     _ = context['translate']
@@ -1185,31 +1153,25 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
             raise PolicyException(_('The policy settings do not allow you '
                                   'to issue this request!'))
 
-    elif method == 'useractivateocratoken':
-
-        user_selfservice_actions = getSelfserviceActions(authUser)
-        typ = param.get('type').lower()
-
-        if (typ == 'ocra' and 'activateQR' not in user_selfservice_actions):
-
-            log.warning("user %r@%r is not allowed to call this function!",
-                        authUser.login, authUser.realm)
-
-            raise PolicyException(_('The policy settings do not allow you '
-                                  'to issue this request!'))
 
     elif method == 'useractivateocra2token':
 
         user_selfservice_actions = getSelfserviceActions(authUser)
         typ = param.get('type').lower()
 
-        if typ == 'ocra2' and 'activateQR2' not in user_selfservice_actions:
+        if typ == 'ocra2':
 
-            log.warning("user %r@%r is not allowed to call "
-                        "this function!", authUser.login, authUser.realm)
+            if 'activate_OCRA2' in user_selfservice_actions:
+                return ret
 
-            raise PolicyException(_('The policy settings do not allow you '
-                                  'to issue this request!'))
+            if 'activateQR2' in user_selfservice_actions:
+                return ret
+
+        log.warning("user %r@%r is not allowed to call "
+                    "this function!", authUser.login, authUser.realm)
+
+        raise PolicyException(_('The policy settings do not allow you '
+                              'to issue this request!'))
 
     elif method == 'userassign':
 
@@ -1278,21 +1240,31 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
                                   'to issue this request!'))
 
     elif method == 'userwebprovision':
-        user_selfservice_actions = getSelfserviceActions(authUser)
+
         typ = param.get('type').lower()
+        user_selfservice_actions = getSelfserviceActions(authUser)
 
-        if ((typ == 'oathtoken' and
-             'webprovisionOATH' not in user_selfservice_actions) or
-            (typ == 'googleauthenticator_time' and
-                'webprovisionGOOGLEtime' not in user_selfservice_actions) or
-            (typ == 'googleauthenticator' and
-                'webprovisionGOOGLE' not in user_selfservice_actions)):
+        if (typ == 'oathtoken' and
+            'webprovisionOATH' in user_selfservice_actions):
+            return ret
 
-            log.warning("[userwebprovision] user %r@%r is not allowed to "
-                        "call this function!",
-                        authUser.login, authUser.realm)
-            raise PolicyException(_('The policy settings do not allow you '
-                                  'to issue this request!'))
+        if (typ == 'googleauthenticator_time' and
+                'webprovisionGOOGLEtime' in user_selfservice_actions):
+            return ret
+
+        if (typ == 'googleauthenticator' and
+                'webprovisionGOOGLE' in user_selfservice_actions):
+            return ret
+
+        if (typ == 'ocra2' and
+            'enrollOCRA2' in user_selfservice_actions):
+            return ret
+
+        log.warning("[userwebprovision] user %r@%r is not allowed to "
+                    "call this function!",
+                    authUser.login, authUser.realm)
+        raise PolicyException(_('The policy settings do not allow you '
+                              'to issue this request!'))
 
         # Here we check, if the tokennum exceeds the allowed tokens
         if not _check_token_count():
@@ -2236,10 +2208,6 @@ def checkPolicyPre(controller, method, param=None, authUser=None, user=None):
     elif controller == 'system':
         ret = _checkSystemPolicyPre(method=method, param=param,
                                     authUser=authUser, user=user)
-
-    elif controller == 'ocra':
-        ret = _checkOcraPolicyPre(method=method, param=param,
-                                  authUser=authUser, user=user)
 
     else:
         # unknown controller
