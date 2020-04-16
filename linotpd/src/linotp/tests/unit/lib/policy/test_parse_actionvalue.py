@@ -115,6 +115,22 @@ class TestParseActionValue(unittest.TestCase):
 
         assert(res == res_dict)
 
+        res_dict = {
+            'a': 'blablub',
+            'b': 'bla blub',
+            'c': ",;'_",
+            'd': '",,",,"'
+        }
+
+        test_action =("a=blablub,"
+                      'b="bla blub",'
+                      'c=",;\'_", '
+                      'd=\'",,",,"\'')
+
+        res = parse_action_value(test_action)
+
+        assert(res == res_dict)
+
         return
 
     def test_parse_actionvalue_exception(self):
