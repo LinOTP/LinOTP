@@ -637,30 +637,6 @@ class TestController(TestCase):
             content_type=content_type
         )
 
-    def make_ocra_request(
-        self,
-        action,
-        params=None,
-        method=None,
-        auth_user="admin",
-        client=None,
-        upload_files=None,
-    ):
-        """
-        Makes an authenticated request to /admin/'action'
-        """
-        if not params:
-            params = {}
-        return self.make_authenticated_request(
-            "ocra",
-            action,
-            method=method,
-            params=params,
-            auth_user=auth_user,
-            upload_files=upload_files,
-            client=client,
-        )
-
     def make_gettoken_request(
         self,
         action,
@@ -1086,7 +1062,8 @@ class TestController(TestCase):
 
         assert content["result"]["status"]
         realms = content["result"]["value"]
-        assert len(realms) == 3
+        lookup_realm = set(['mydefrealm', 'mymixrealm', 'myotherrealm'])
+        assert lookup_realm == set(realms).intersection(lookup_realm)
         assert "mydefrealm" in realms
         assert "default" in realms["mydefrealm"]
         assert realms["mydefrealm"]["default"]

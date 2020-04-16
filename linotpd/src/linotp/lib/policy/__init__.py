@@ -2639,42 +2639,6 @@ def _get_auth_PinPolicy(realm=None, user=None):
     return pin_check
 
 
-def get_qrtan_url(realms):
-    '''
-    Returns the URL for the half automatic mode for the QR TAN token
-    for the given realm
-
-    :remark: there might be more than one url, if the token
-             belongs to more than one realm
-
-    :param realms: list of realms or None
-
-    :return: url string
-
-    '''
-    log.debug("getting qrtan callback url ")
-    url = ''
-    urls = []
-
-    if realms is None:
-        realms = []
-
-    for realm in realms:
-        pol = getPolicy({"scope": "authentication", 'realm': realm,
-                         'action': "qrtanurl"})
-        url = getPolicyActionValue(pol, "qrtanurl", is_string=True)
-        if url:
-            urls.append(url)
-
-    if len(urls) > 1:
-        raise Exception('multiple enrollement urls %r found for realm set: %r'
-                        % (urls, realms))
-
-    log.debug("got callback url %s for realms %r", url, realms)
-
-    return url
-
-
 ###############################################################################
 #
 #  Authorization

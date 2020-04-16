@@ -640,9 +640,8 @@ class TestSelfserviceController(TestController):
                                 params={'serial':'token01',
                                         'type': 'hmac'})
 
-        message = ("valid types are \'oathtoken\' and \'googleauthenticator\' "
-                   "and \'googleauthenticator_time\'. You provided hmac")
-        assert response.json['result']['error']['message'] == message, response
+        message = ("You provided hmac")
+        assert message in response.json['result']['error']['message'], response
 
         response = self.make_userselfservice_request('webprovision',
                                 auth_user=auth_user,
@@ -675,13 +674,6 @@ class TestSelfserviceController(TestController):
         assert "googletokenform" in response.body, response
 
         return
-
-
-    def test_ocra(self):
-        '''
-        TODO selfservice: testing ocra
-        '''
-        pass
 
 
     def test_getmultiotp(self):
