@@ -794,18 +794,36 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     def createChallenge(self, transaction_id, options):
         """
+        create a challenge - either for pairing or challenges when the token is
+        activated.
+
+        we support re-activation by the means that if we are in the state
+        'pairing_challenge_sent' the activation challenge could be triggered
+        again
+
+        :param transaction_id: scope of the challenge, will become part of the
+                               challenge url code
+        :param options: the request optional parameters
+        :return: tuple with (True, challenge_url, data, {})
+                 whereby the data is a dict with
+                   {'message': message, 'user_sig': user_sig}
         """
+
         _ = context['translate']
 
-        valid_states = ['pairing_response_received', 'pairing_complete']
+        valid_states = ['pairing_response_received', 'pairing_challenge_sent',
+                        'pairing_complete']
         self.ensure_state_is_in(valid_states)
 
         # ------------------------------------------------------------------- --
 
-        if self.current_state == 'pairing_response_received':
+        if self.current_state in ['pairing_challenge_sent',
+                                  'pairing_response_received']:
+
             content_type = CONTENT_TYPE_PAIRING
             reset_url = True
-        else:
+
+        elif self.current_state == 'pairing_complete':
 
             content_type_as_str = options.get('content_type')
             reset_url = False
