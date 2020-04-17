@@ -1372,9 +1372,6 @@ msgstr "导入策略文件"
 msgid "Import successful"
 msgstr "mOTP PIN 码设置成功"
 
-msgid "Import tokens from Vasco DPX file"
-msgstr "从  Vasco DPX 文件导入令牌"
-
 msgid "Incorrect or missing input at"
 msgstr "存在不正确或丢失的信息："
 
@@ -2967,9 +2964,6 @@ msgstr "工具"
 msgid "Transaction-ID"
 msgstr "交易 ID"
 
-msgid "Transport key:"
-msgstr "传输密钥："
-
 msgid "Trusted Forwarding Proxy"
 msgstr "受信任的正向代理"
 
@@ -3102,15 +3096,6 @@ msgstr "有效期结束"
 
 msgid "Validity start"
 msgstr "有效期开始"
-
-msgid "Vasco DPX File"
-msgstr "VASCO DPX 文件"
-
-msgid "Vasco Digipass Token Class - proprietary timebased tokens"
-msgstr "Vasco 动态密码令牌类，基于时间的私有令牌"
-
-msgid "Vasco Token"
-msgstr "Vasco 令牌"
 
 msgid "Version"
 msgstr "版本"
@@ -4126,6 +4111,9 @@ msgstr "生成的 Web 用户界面"
 #~ "PEM format here."
 #~ msgstr "如果您正在使用 LDAPS，您可以在此复制 PEM 格式的 CA 证书。"
 
+#~ msgid "Import tokens from Vasco DPX file"
+#~ msgstr "从  Vasco DPX 文件导入令牌"
+
 #~ msgid "Invalid License"
 #~ msgstr "无效的许可证"
 
@@ -4298,9 +4286,21 @@ msgstr "生成的 Web 用户界面"
 #~ msgid "Token defaults"
 #~ msgstr "令牌默认"
 
+#~ msgid "Transport key:"
+#~ msgstr "传输密钥："
+
 #, fuzzy
 #~ msgid "Use system certificate"
 #~ msgstr "公钥证书"
+
+#~ msgid "Vasco DPX File"
+#~ msgstr "VASCO DPX 文件"
+
+#~ msgid "Vasco Digipass Token Class - proprietary timebased tokens"
+#~ msgstr "Vasco 动态密码令牌类，基于时间的私有令牌"
+
+#~ msgid "Vasco Token"
+#~ msgstr "Vasco 令牌"
 
 #~ msgid ""
 #~ "You do not have the administrative right to do monitoring.You are missing "

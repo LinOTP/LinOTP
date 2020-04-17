@@ -1429,9 +1429,6 @@ msgstr "Importar archivo de directrices"
 msgid "Import successful"
 msgstr "PIN configurado correctamente"
 
-msgid "Import tokens from Vasco DPX file"
-msgstr "Importar token desde el archivo Vasco DPX"
-
 msgid "Incorrect or missing input at"
 msgstr "Entrada incorrecta o ausente en:"
 
@@ -3132,9 +3129,6 @@ msgstr "Herramientas"
 msgid "Transaction-ID"
 msgstr "Transaction-ID"
 
-msgid "Transport key:"
-msgstr "Clave de transporte:"
-
 msgid "Trusted Forwarding Proxy"
 msgstr "Proxy transmisor de confianza "
 
@@ -3271,17 +3265,6 @@ msgstr "Finalizar período de validez"
 
 msgid "Validity start"
 msgstr "Comenzar período de validez"
-
-msgid "Vasco DPX File"
-msgstr "Archivo DPX VASCO"
-
-msgid "Vasco Digipass Token Class - proprietary timebased tokens"
-msgstr ""
-"Categoría de token Vasco Digipass - Token basados ​​en el tiempo de propiedad "
-"exclusiva"
-
-msgid "Vasco Token"
-msgstr "Vasco Token"
 
 msgid "Version"
 msgstr "Versión"
@@ -4402,6 +4385,9 @@ msgstr "Generado UI web"
 #~ msgstr ""
 #~ "Si utiliza LDAPS, puede copiar aquí el certificado CA en formato PEM."
 
+#~ msgid "Import tokens from Vasco DPX file"
+#~ msgstr "Importar token desde el archivo Vasco DPX"
+
 #~ msgid "Invalid License"
 #~ msgstr "licencia no válida"
 
@@ -4576,8 +4562,22 @@ msgstr "Generado UI web"
 #~ msgid "Time between e-mails (sec)"
 #~ msgstr "Tiempo entre mensajes de correo electrónico (seg.)"
 
+#~ msgid "Transport key:"
+#~ msgstr "Clave de transporte:"
+
 #~ msgid "Use system certificate"
 #~ msgstr "Usar certificado de sistema"
+
+#~ msgid "Vasco DPX File"
+#~ msgstr "Archivo DPX VASCO"
+
+#~ msgid "Vasco Digipass Token Class - proprietary timebased tokens"
+#~ msgstr ""
+#~ "Categoría de token Vasco Digipass - Token basados ​​en el tiempo de "
+#~ "propiedad exclusiva"
+
+#~ msgid "Vasco Token"
+#~ msgstr "Vasco Token"
 
 #~ msgid ""
 #~ "You do not have the administrative right to do monitoring.You are missing "

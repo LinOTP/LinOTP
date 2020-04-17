@@ -92,7 +92,6 @@ if isinstance(lang, list):
 <script type="text/javascript" src="/static/js/feitian.js?ref=${c.version_ref}"></script>
 <script type="text/javascript" src="/static/js/dpw.js?ref=${c.version_ref}"></script>
 <script type="text/javascript" src="/static/js/dat.js?ref=${c.version_ref}"></script>
-<script type="text/javascript" src="/static/js/vasco.js?ref=${c.version_ref}"></script>
 <script type="text/javascript" src="/static/js/pskc.js?ref=${c.version_ref}"></script>
 <script type="text/javascript" src="/static/js/tools.js?ref=${c.version_ref}"></script>
 
@@ -1698,42 +1697,6 @@ if isinstance(lang, list):
         $("#dialog_import_feitian" ).dialog( "option", "title", '${_("Feitian XML Token file")}' );
         $('#button_feitian_load').button("option", "label", '${_("Load Token File")}');
         $('#button_feitian_cancel').button("option", "label", '${_("Cancel")}');
-    }
-</script>
-
-<!-- ################ import VASCO ################################## -->
-<div id='dialog_import_vasco'>
-    <form id="load_tokenfile_form_vasco" action="/admin/loadtokens" method="post"\
-        enctype="multipart/form-data" onsubmit="return false;">
-        <p><b>${_("Import tokens from Vasco DPX file")}</b></p>
-        <div>
-            <table>
-            <tr><td><label for="vasco_file">${_("Please choose the token file")}:</label></td>
-                <td><input id="vasco_file" name="file" type="file" size="30" accept="text/*"></td>
-            </tr>
-            <tr><td><label for=vasco_otplen>${_("OTP length")}:</label></td>
-                <td><select name='vasco_otplen' id='vasco_otplen'>
-                <option selected>6</option>
-                <option>8</option></select>
-                </td>
-            </tr>
-            <tr><td><label for="vasco_transportkey">${_("Transport key:")}</label></td>
-                <td><input id="vasco_transportkey" name="transportkey" value="" size="32"></td>
-            </tr>
-            <tr><td><label for="vasco_target_realm">${_("Target realm")}</label></td>
-                <td><input id="vasco_target_realm" name="realm" type="text" value="" size="32"></td>
-            </tr>
-            </table>
-            <input name="type" type="hidden" value="vasco">
-            <input name="session" id="loadtokens_session_vasco" type="hidden" value="">
-        </div>
-    </form>
-</div>
-<script type="text/javascript">
-    function translate_import_vasco() {
-        $("#dialog_import_vasco" ).dialog( "option", "title", '${_("Vasco DPX File")}' );
-        $('#button_vasco_load').button("option", "label", '${_("Load Token File")}');
-        $('#button_vasco_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
