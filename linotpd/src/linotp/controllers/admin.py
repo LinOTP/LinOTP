@@ -523,6 +523,8 @@ class AdminController(BaseController):
             log.info("[remove] removing token with serial %r for user %r",
                      serials, user.login)
 
+            ret = 0
+
             th = TokenHandler()
             for serial in set(serials):
                 ret = th.removeToken(user, serial)
