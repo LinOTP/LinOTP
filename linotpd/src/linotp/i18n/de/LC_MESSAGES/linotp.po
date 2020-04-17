@@ -1424,9 +1424,6 @@ msgstr "Richtliniendatei importieren"
 msgid "Import successful"
 msgstr "Erfolgreicher Import"
 
-msgid "Import tokens from Vasco DPX file"
-msgstr "VASCO-DPX-Tokendatei importieren"
-
 msgid "Incorrect or missing input at"
 msgstr "Fehlerhafte oder fehlende Angaben in:"
 
@@ -3113,9 +3110,6 @@ msgstr "Werkzeuge"
 msgid "Transaction-ID"
 msgstr "Transaktions-ID"
 
-msgid "Transport key:"
-msgstr "Transportschlüssel:"
-
 msgid "Trusted Forwarding Proxy"
 msgstr "Vertrauenswürdiger Proxy"
 
@@ -3250,15 +3244,6 @@ msgstr "Ende Gültigkeitszeitraum"
 
 msgid "Validity start"
 msgstr "Start Gültigkeitszeitraum"
-
-msgid "Vasco DPX File"
-msgstr "VASCO-DPX-Datei"
-
-msgid "Vasco Digipass Token Class - proprietary timebased tokens"
-msgstr "Vasco-Digipass-Token-Klasse - Proprietäre zeitbasierte Token"
-
-msgid "Vasco Token"
-msgstr "Vasco-Token"
 
 msgid "Version"
 msgstr "Version"
@@ -4509,6 +4494,9 @@ msgstr "WebUI generiert"
 #~ "Wenn Sie STARTTLS oder LDAPS verwenden, können Sie hier das CA-Zertifikat "
 #~ "im PEM-Format einfügen."
 
+#~ msgid "Import tokens from Vasco DPX file"
+#~ msgstr "VASCO-DPX-Tokendatei importieren"
+
 #~ msgid "Invalid License"
 #~ msgstr "ungültige Lizenz"
 
@@ -4816,6 +4804,9 @@ msgstr "WebUI generiert"
 #~ msgid "Tokentype"
 #~ msgstr "Token Typ"
 
+#~ msgid "Transport key:"
+#~ msgstr "Transportschlüssel:"
+
 #~ msgid "URL for google Authenticator"
 #~ msgstr "URL für Google Authenticator"
 
@@ -4828,6 +4819,15 @@ msgstr "WebUI generiert"
 #~ msgstr ""
 #~ "Indem Sie mit Ihrem iPhone den QR Code einscannen, können Sie direkt den "
 #~ "Google Authenticator auf Ihrem iPhone installieren."
+
+#~ msgid "Vasco DPX File"
+#~ msgstr "VASCO-DPX-Datei"
+
+#~ msgid "Vasco Digipass Token Class - proprietary timebased tokens"
+#~ msgstr "Vasco-Digipass-Token-Klasse - Proprietäre zeitbasierte Token"
+
+#~ msgid "Vasco Token"
+#~ msgstr "Vasco-Token"
 
 #~ msgid ""
 #~ "You are using the open source version with community support. For "
