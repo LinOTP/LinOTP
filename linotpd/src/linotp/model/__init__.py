@@ -572,102 +572,6 @@ class Realm(object):
         return True
 
 
-''' ''' '''
-ocra challenges are stored
-''' ''' '''
-
-ocra_table = sa.Table('ocra', meta.metadata,
-                      sa.Column('id', sa.types.Integer(), sa.Sequence(
-                          'token_seq_id', optional=True), primary_key=True, nullable=False),
-                      sa.Column('transid', sa.types.Unicode(20), unique=True,
-                                nullable=False, index=True),
-                      sa.Column('data', sa.types.Unicode(512), default=''),
-                      sa.Column(
-                          'challenge', sa.types.Unicode(256), default=''),
-                      sa.Column(
-                          session_column, sa.types.Unicode(512), default=''),
-                      sa.Column(
-                          'tokenserial', sa.types.Unicode(64), default=''),
-                      sa.Column(
-                          timestamp_column, sa.types.DateTime, default=datetime.now()),
-                      sa.Column(
-                          'received_count', sa.types.Integer(), default=0),
-                      sa.Column(
-                          'received_tan', sa.types.Boolean, default=False),
-                      sa.Column('valid_tan', sa.types.Boolean, default=False),
-                      implicit_returning=implicit_returning,
-                      )
-
-OCRA_ENCODE = ["data", "challenge", "tokenserial"]
-
-
-class OcraChallenge(object):
-    '''
-    '''
-
-    def __init__(self, transId, challenge, tokenserial, data, session=''):
-
-        self.transid = '' + transId
-        self.challenge = '' + challenge
-        self.tokenserial = '' + tokenserial
-        self.data = '' + data
-        self.timestamp = datetime.now()
-        self.session = '' + session
-        self.received_count = 0
-        self.received_tan = False
-        self.valid_tan = False
-
-    def setData(self, data):
-        self.data = str(data)
-
-    def getData(self):
-        return self.data
-
-    def getSession(self):
-        return self.session
-
-    def setSession(self, session):
-        self.session = str(session)
-
-    def setChallenge(self, challenge):
-        self.challenge = str(challenge)
-
-    def setTanStatus(self, received=False, valid=False):
-        self.received_tan = received
-        self.received_count += 1
-        self.valid_tan = valid
-
-    def getTanStatus(self):
-        return (self.received_tan, self.valid_tan)
-
-    def getChallenge(self):
-        return self.challenge
-
-    def getTransactionId(self):
-        return self.transid
-
-    def save(self):
-
-        Session.add(self)
-        Session.flush()
-
-        return self.transid
-
-    def __unicode__(self):
-        descr = {}
-        descr['id'] = self.id
-        descr['transid'] = self.transid
-        descr['challenge'] = self.challenge
-        descr['tokenserial'] = self.tokenserial
-        descr['data'] = self.data
-        descr['timestamp'] = self.timestamp
-        descr['received_tan'] = self.received_tan
-        descr['valid_tan'] = self.valid_tan
-
-        return "%s" % str(descr)
-
-    __str__ = __unicode__
-
 
 ''' ''' '''
 challenges are stored
@@ -1134,21 +1038,5 @@ orm.mapper(Token, token_table, properties={
 orm.mapper(Realm, realm_table)
 orm.mapper(TokenRealm, tokenrealm_table)
 orm.mapper(Config, config_table)
-
-
-# for oracle and the SQLAlchemy 0.7 we need a mapping of columns
-# due to reserved keywords session and timestamp
-mapping = {}
-mapping['session'] = "%ssession" % COL_PREFIX
-mapping['timestamp'] = "%stimestamp" % COL_PREFIX
-
-
-# # create Ocra ORM mapping to the Ocra class
-ocra_properties = {}
-if len(COL_PREFIX) > 0:
-    for key, value in list(mapping.items()):
-        ocra_properties[key] = ocra_table.columns[value]
-
-orm.mapper(OcraChallenge, ocra_table, properties=ocra_properties)
 
 ##eof#########################################################################
