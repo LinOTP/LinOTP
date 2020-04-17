@@ -24,7 +24,7 @@
 #    Support: www.keyidentity.com
 #
 import unittest
-from linotp.tokens.ocra import OcraSuite
+from linotp.tokens.ocra2token import OcraSuite
 
 
 
