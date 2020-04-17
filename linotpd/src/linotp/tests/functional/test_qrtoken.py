@@ -925,6 +925,69 @@ class TestQRToken(TestController):
         return encode_base64_urlsafe(header + R + ciphertext + tag)
 
 # --------------------------------------------------------------------------- --
+    def test_re_activate(self):
+        """
+        verify that activation can be done multiple times
+        """
+
+        # enroll token
+
+        pairing_url, pin = self.enroll_qrtoken()
+
+        user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
+
+        # ------------------------------------------------------------------- --
+
+        # create the pairing response
+
+        pairing_response = self.create_pairing_response_by_serial(
+            user_token_id)
+
+        # ------------------------------------------------------------------- --
+
+        # send pairing response
+
+        response_dict = self.send_pairing_response(pairing_response)
+
+        # ------------------------------------------------------------------- --
+
+        # check if returned json is correct
+
+        assert 'result' in response_dict
+        result = response_dict.get('result')
+
+        assert 'value' in result
+        value = result.get('value')
+        assert not value
+
+        assert 'status' in result
+        status = result.get('status')
+        assert status
+
+        # ------------------------------------------------------------------- --
+
+        # trigger activation challenge
+
+        serial = self.tokens[user_token_id]['serial']
+        pin = self.tokens[user_token_id]['pin']
+
+        params = {'serial': serial,
+                  'pass': pin,
+                  'data': serial}
+
+        response = self.make_validate_request('check_s', params)
+        response_dict = json.loads(response.body)
+
+        assert 'detail' in response_dict
+
+        # ------------------------------------------------------------------- --
+
+        # verify that a second request for activation will allowed
+
+        response = self.make_validate_request('check_s', params)
+        response_dict = json.loads(response.body)
+
+        assert 'detail' in response_dict
 
     def test_pairing_sig(self):
         """QRTOKEN: check if pairing mechanism works correctly (sig based)"""
