@@ -142,12 +142,6 @@ msgstr "Attiva il tuo Push Token"
 msgid "Activate token"
 msgstr "Attiva token"
 
-msgid "Activate your OCRA Token"
-msgstr "Attiva il token OCRA"
-
-msgid "Activate your OCRA token"
-msgstr "Attivare token OCRA"
-
 msgid "Activate your OCRA2 Token"
 msgstr "Attiva il token OCRA2"
 
@@ -480,12 +474,6 @@ msgstr "Data"
 
 msgid "Day OTP Token / Tagespasswort"
 msgstr "Password giornaliera"
-
-msgid "Default OCRA suite"
-msgstr "Suite OCRA standard"
-
-msgid "Default QR suite"
-msgstr "Suite QR standard"
 
 msgid "Default Settings"
 msgstr "Impostazioni predefinite"
@@ -1111,9 +1099,6 @@ msgstr "Dal Token"
 msgid "GUI settings"
 msgstr "Impostazioni GUI"
 
-msgid "Generate OCRA key."
-msgstr "Far generare la chiave OCRA dal server."
-
 msgid "Generate OCRA2 key."
 msgstr "Genera la chiave OCRA2."
 
@@ -1575,9 +1560,6 @@ msgstr "Sovrascrive client di autenticazione"
 msgid "Max. successful authentications"
 msgstr "Autenticazioni massime riuscite"
 
-msgid "Maximum concurrent OCRA challenges"
-msgstr "Numero massimo di challenge OCRA simultanee"
-
 msgid "Maximum concurrent OCRA2 challenges"
 msgstr "Numero massimo di sfide simultanee OCRA2"
 
@@ -1673,21 +1655,6 @@ msgstr "OATH CSV"
 msgid "OATH Soft Token"
 msgstr "OATH Softtoken"
 
-msgid "OCRA - challenge/response Token"
-msgstr "OCRA - Challenge/Response Token"
-
-msgid "OCRA Login"
-msgstr "Registrazione OCRA"
-
-msgid "OCRA Token"
-msgstr "Token OCRA"
-
-msgid "OCRA challenge timeout"
-msgstr "Timeout per challenge OCRA"
-
-msgid "OCRA key"
-msgstr "Chiave OCRA"
-
 #, python-format
 msgid "OCRA rollout for token %s completed!"
 msgstr "Lancio OCRA per token %s completato!"
@@ -1697,9 +1664,6 @@ msgstr "Suite OCRA"
 
 msgid "OCRA token rollout failed! Please retry"
 msgstr "Lancio del token OCRA fallito! Riprova"
-
-msgid "OCRA token settings"
-msgstr "Impostazioni token OCRA"
 
 msgid "OCRA2 - challenge/response Token"
 msgstr "OCRA2 - token challenge/risposta"
@@ -1873,9 +1837,6 @@ msgid ""
 msgstr ""
 "Inserisci una specifica Remote Server valida che soddisfi la forma http://"
 "server o https://server"
-
-msgid "Please enter or copy the OCRA key."
-msgstr "Inserisci la chiave OCRA."
 
 msgid "Please enter or copy the OCRA2 key."
 msgstr "Inserisci o copia la chiave OCRA2."
@@ -2890,29 +2851,10 @@ msgstr ""
 "token. Il token viene successivamente bloccato fino a quando il contatore "
 "errori non viene nuovamente resettato manualmente."
 
-msgid "This is the maximum concurrent challenges per OCRA Token."
-msgstr ""
-"Questo è il numero massimo di challenge OCRA simultanee, che possono essere "
-"richieste per un token OCRA."
-
 msgid "This is the maximum concurrent challenges per OCRA2 Token."
 msgstr ""
 "Questo è il numero massimo di sfide simultanee OCRA2 che possono essere "
 "richieste per un token OCRA2."
-
-msgid ""
-"This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
-"SHA256-6:C-QA64"
-msgstr ""
-"Questa è la suite per token OCRA appena iscritti. Predefinito è OCRA-1:HOTP-"
-"SHA256-6:C-QA64"
-
-msgid ""
-"This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
-"SHA256-8:C-QA08"
-msgstr ""
-"Questa è la suite OCRA di default per un token OCRA appena srotolato. "
-"Standard: OCRA-1:HOTP-SHA256-8:C-QA08"
 
 msgid ""
 "This is the time LinOTP will calculate before and after the current time. A "
@@ -3109,9 +3051,6 @@ msgstr "Tipo UID"
 
 msgid "URL for OATH token"
 msgstr "URL per token OATH"
-
-msgid "URL for OCRA token"
-msgstr "URL per token OCRA"
 
 msgid "URL for OCRA2 token"
 msgstr "URL per token OCRA2"
@@ -3395,10 +3334,6 @@ msgid ""
 msgstr ""
 "Non hai i diritti amministrativi per disattivare il token %s. Verifica i "
 "criteri."
-
-#, python-format
-msgid "You do not have the administrative right to do an ocra/%s"
-msgstr "Non hai i diritti amministrativi per la richiesta ocra/%s"
 
 #, python-format
 msgid ""
@@ -3738,9 +3673,6 @@ msgstr ""
 msgid "Your LinOTP support subscription"
 msgstr "Supporto e abbonamento LinOTP"
 
-msgid "Your OCRA Token :"
-msgstr "Il token OCRA:"
-
 msgid "Your OCRA2 Token :"
 msgstr "Il tuo Token OCRA2:"
 
@@ -3815,9 +3747,6 @@ msgstr "[?]"
 msgid "activate token"
 msgstr "attiva token"
 
-msgid "activate your OCRA Token"
-msgstr "attiva il token OCRA"
-
 msgid "activate your OCRA2 Token"
 msgstr "attiva il token OCRA2"
 
@@ -3845,9 +3774,6 @@ msgstr "per telefono "
 
 msgid "certificate id"
 msgstr "Certifica nome utente"
-
-msgid "challenge"
-msgstr "challenge"
 
 msgid "check status"
 msgstr "controlla stato"
@@ -3936,9 +3862,6 @@ msgstr "Nome file"
 
 msgid "finalize activation"
 msgstr "concludi attivazione"
-
-msgid "finish your OCRA Token"
-msgstr "Completare il token OCRA"
 
 msgid "finish your OCRA2 Token"
 msgstr "Terminare token OCRA2"
@@ -4295,8 +4218,8 @@ msgstr ""
 "i valori validi sono 'oathtoken', 'googleauthenticator' o "
 "'googleauthenticator_time'. Hai indicato %s"
 
-#, python-format
-msgid "valid types are 'ocra' or 'ocra2'. You provided %s"
+#, fuzzy, python-format
+msgid "valid types is 'ocra2'. You provided %s"
 msgstr "i valori validi sono 'ocra' o 'ocra2'. Hai indicato %s"
 
 #, fuzzy
@@ -4312,6 +4235,12 @@ msgstr "Interfaccia utente web generato"
 #~ msgid "About LSE LinOTP"
 #~ msgstr "Info su LinOTP"
 
+#~ msgid "Activate your OCRA Token"
+#~ msgstr "Attiva il token OCRA"
+
+#~ msgid "Activate your OCRA token"
+#~ msgstr "Attivare token OCRA"
+
 #~ msgid "Activate your QR token"
 #~ msgstr "Attivare token QR"
 
@@ -4320,6 +4249,12 @@ msgstr "Interfaccia utente web generato"
 
 #~ msgid "Challenge validity (sec)"
 #~ msgstr "Validità Email Challenge (sec.)"
+
+#~ msgid "Default OCRA suite"
+#~ msgstr "Suite OCRA standard"
+
+#~ msgid "Default QR suite"
+#~ msgstr "Suite QR standard"
 
 #~ msgid "Do you want to overwrite the existing definition?"
 #~ msgstr "Vuoi riscrivere la definizione esistente?"
@@ -4335,6 +4270,9 @@ msgstr "Interfaccia utente web generato"
 
 #~ msgid "File configuration"
 #~ msgstr "Configurazione file"
+
+#~ msgid "Generate OCRA key."
+#~ msgstr "Far generare la chiave OCRA dal server."
 
 #~ msgid "Here you can upload your Vasco DPX file."
 #~ msgstr "Qui è possibile importare il file DPX VASCO."
@@ -4369,6 +4307,9 @@ msgstr "Interfaccia utente web generato"
 #~ msgid "License uploaded"
 #~ msgstr "Licenza caricata"
 
+#~ msgid "Maximum concurrent OCRA challenges"
+#~ msgstr "Numero massimo di challenge OCRA simultanee"
+
 #~ msgid "Misc settings"
 #~ msgstr "Varie impostazioni"
 
@@ -4387,8 +4328,26 @@ msgstr "Interfaccia utente web generato"
 #~ msgid "OATH CSV Token File"
 #~ msgstr "File token OATH CSV"
 
+#~ msgid "OCRA - challenge/response Token"
+#~ msgstr "OCRA - Challenge/Response Token"
+
+#~ msgid "OCRA Login"
+#~ msgstr "Registrazione OCRA"
+
+#~ msgid "OCRA Token"
+#~ msgstr "Token OCRA"
+
+#~ msgid "OCRA challenge timeout"
+#~ msgstr "Timeout per challenge OCRA"
+
+#~ msgid "OCRA key"
+#~ msgstr "Chiave OCRA"
+
 #~ msgid "OCRA settings"
 #~ msgstr "Impostazioni OCRA"
+
+#~ msgid "OCRA token settings"
+#~ msgstr "Impostazioni token OCRA"
 
 #~ msgid "Overwrite"
 #~ msgstr "Riscrivi"
@@ -4478,6 +4437,9 @@ msgstr "Interfaccia utente web generato"
 #~ "Inserisci un filtro di ricerca utente valido, come: (&(sAMAccountName=%s)"
 #~ "(objectClass=user))"
 
+#~ msgid "Please enter or copy the OCRA key."
+#~ msgstr "Inserisci la chiave OCRA."
+
 #~ msgid ""
 #~ "Please enter the UID of your LDAP server like DN, entryUUID, objectGUID "
 #~ "or GUID"
@@ -4527,6 +4489,25 @@ msgstr "Interfaccia utente web generato"
 #~ "Questa restrizione è indipendente dalla restrizione indicata localmente e "
 #~ "non influisce sulla funzionalità in relazione al LinOTP."
 
+#~ msgid "This is the maximum concurrent challenges per OCRA Token."
+#~ msgstr ""
+#~ "Questo è il numero massimo di challenge OCRA simultanee, che possono "
+#~ "essere richieste per un token OCRA."
+
+#~ msgid ""
+#~ "This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
+#~ "SHA256-6:C-QA64"
+#~ msgstr ""
+#~ "Questa è la suite per token OCRA appena iscritti. Predefinito è OCRA-1:"
+#~ "HOTP-SHA256-6:C-QA64"
+
+#~ msgid ""
+#~ "This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
+#~ "SHA256-8:C-QA08"
+#~ msgstr ""
+#~ "Questa è la suite OCRA di default per un token OCRA appena srotolato. "
+#~ "Standard: OCRA-1:HOTP-SHA256-8:C-QA08"
+
 #~ msgid "Time between SMS (sec.)"
 #~ msgstr "Tempo tra SMS (sec.)"
 
@@ -4536,20 +4517,8 @@ msgstr "Interfaccia utente web generato"
 #~ msgid "Token defaults"
 #~ msgstr "Valori standard token"
 
-#~ msgid "Transport key:"
-#~ msgstr "Transport key:"
-
 #~ msgid "Use system certificate"
 #~ msgstr "Usa configurazione sistema"
-
-#~ msgid "Vasco DPX File"
-#~ msgstr "File DPX VASCO"
-
-#~ msgid "Vasco Digipass Token Class - proprietary timebased tokens"
-#~ msgstr "Classe Vasco Digipass token - token proprietari basati sul tempo"
-
-#~ msgid "Vasco Token"
-#~ msgstr "Vasco Token"
 
 #~ msgid ""
 #~ "You do not have the administrative right to do monitoring.You are missing "
@@ -4561,12 +4530,21 @@ msgstr "Interfaccia utente web generato"
 #~ msgid "You do not have the rights to monitor these realms."
 #~ msgstr "Non hai diritto a tenere sotto osservazione questi regni"
 
+#~ msgid "Your OCRA Token :"
+#~ msgstr "Il token OCRA:"
+
+#~ msgid "activate your OCRA Token"
+#~ msgstr "attiva il token OCRA"
+
 #, fuzzy
 #~ msgid "activate your qr token"
 #~ msgstr "Attivare token QR"
 
 #~ msgid "already exists."
 #~ msgstr "è già esistente."
+
+#~ msgid "challenge"
+#~ msgstr "challenge"
 
 #~ msgid "count auth"
 #~ msgstr "Contatore di autenticazione"
@@ -4576,6 +4554,9 @@ msgstr "Interfaccia utente web generato"
 
 #~ msgid "count auth success max"
 #~ msgstr "Contatore di autenticazioni massime riuscite"
+
+#~ msgid "finish your OCRA Token"
+#~ msgstr "Completare il token OCRA"
 
 #, fuzzy
 #~ msgid "no"

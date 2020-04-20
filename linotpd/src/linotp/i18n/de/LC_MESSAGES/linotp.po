@@ -144,12 +144,6 @@ msgstr "Aktivieren Sie Ihren PushToken"
 msgid "Activate token"
 msgstr "Token aktivieren"
 
-msgid "Activate your OCRA Token"
-msgstr "Aktivieren Sie Ihren OCRA-Token"
-
-msgid "Activate your OCRA token"
-msgstr "OCRA-Token aktivieren"
-
 msgid "Activate your OCRA2 Token"
 msgstr "Aktivieren Sie Ihren OCRA2-Token"
 
@@ -476,12 +470,6 @@ msgstr "Datum"
 
 msgid "Day OTP Token / Tagespasswort"
 msgstr "Tagespasswort"
-
-msgid "Default OCRA suite"
-msgstr "Standard OCRA-Suite"
-
-msgid "Default QR suite"
-msgstr "Standard QR-Suite"
 
 msgid "Default Settings"
 msgstr "Standardeinstellungen"
@@ -1105,9 +1093,6 @@ msgstr "Vom Token"
 msgid "GUI settings"
 msgstr "GUI-Einstellungen"
 
-msgid "Generate OCRA key."
-msgstr "OCRA-Key vom Server generieren lassen."
-
 msgid "Generate OCRA2 key."
 msgstr "OCRA2-Key vom Server generieren lassen."
 
@@ -1576,9 +1561,6 @@ msgstr "Maximum an Authentisierungsversuchen"
 msgid "Max. successful authentications"
 msgstr "Maximum an erfolgreichen Authentisierungen"
 
-msgid "Maximum concurrent OCRA challenges"
-msgstr "Maximale Anzahl an gleichzeitigen OCRA-Challenges"
-
 msgid "Maximum concurrent OCRA2 challenges"
 msgstr "Maximale Anzahl an gleichzeitigen OCRA2-Challenges"
 
@@ -1671,21 +1653,6 @@ msgstr "OATH-CSV"
 msgid "OATH Soft Token"
 msgstr "OATH-Softtoken"
 
-msgid "OCRA - challenge/response Token"
-msgstr "OCRA - Challenge/Response-Token"
-
-msgid "OCRA Login"
-msgstr "OCRA-Anmeldung"
-
-msgid "OCRA Token"
-msgstr "OCRA-Token"
-
-msgid "OCRA challenge timeout"
-msgstr "Timeout für OCRA-Challenge"
-
-msgid "OCRA key"
-msgstr "OCRA-Key"
-
 #, python-format
 msgid "OCRA rollout for token %s completed!"
 msgstr "Rollout des OCRA-Tokens %s abgeschlossen!"
@@ -1695,9 +1662,6 @@ msgstr "OCRA-Suite"
 
 msgid "OCRA token rollout failed! Please retry"
 msgstr "Rollout des OCRA-Tokens fehlgeschlagen. Bitte versuchen Sie es erneut!"
-
-msgid "OCRA token settings"
-msgstr "OCRA2-Token-Einstellungen"
 
 msgid "OCRA2 - challenge/response Token"
 msgstr "OCRA2 - Challenge/Response-Token"
@@ -1869,9 +1833,6 @@ msgid ""
 msgstr ""
 "Bitte geben Sie eine gültige Remote Server Spezifikation ein. Diese muss der "
 "Form http://server oder https://server genügen."
-
-msgid "Please enter or copy the OCRA key."
-msgstr "Bitte geben Sie den OCRA-Key ein."
 
 msgid "Please enter or copy the OCRA2 key."
 msgstr "Bitte geben Sie den OCRA2-Key ein."
@@ -2901,29 +2862,10 @@ msgstr ""
 "Token. Danach ist der Token gesperrt bis der Fehlzähler wieder manuell "
 "zurückgesetzt wird."
 
-msgid "This is the maximum concurrent challenges per OCRA Token."
-msgstr ""
-"Das ist die maximale Anzahl an gleichzeitigen OCRA-Challenges, die für einen "
-"OCRA-Token angefordert werden können."
-
 msgid "This is the maximum concurrent challenges per OCRA2 Token."
 msgstr ""
 "Das ist die maximale Anzahl an gleichzeitigen OCRA2-Challenges, die für "
 "einen OCRA2-Token angefordert werden können."
-
-msgid ""
-"This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
-"SHA256-6:C-QA64"
-msgstr ""
-"Dies ist die standardmäßige OCRA-Suite für einen neu ausgerollten QR-OCRA-"
-"Token. Standard: OCRA-1:HOTP-SHA256-6:C-QA64"
-
-msgid ""
-"This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
-"SHA256-8:C-QA08"
-msgstr ""
-"Dies ist die standardmäßige OCRA-Suite für einen neu ausgerollten OCRA-"
-"Token. Standard: OCRA-1:HOTP-SHA256-8:C-QA08"
 
 msgid ""
 "This is the time LinOTP will calculate before and after the current time. A "
@@ -3121,9 +3063,6 @@ msgstr "UID-Typ"
 
 msgid "URL for OATH token"
 msgstr "URL für OATH-Token"
-
-msgid "URL for OCRA token"
-msgstr "URL für OCRA-Token"
 
 msgid "URL for OCRA2 token"
 msgstr "URL für OCRA2-Token"
@@ -3409,11 +3348,6 @@ msgid ""
 msgstr ""
 "Sie haben nicht die administrativen Rechte, um den Token %s zu deaktivieren "
 "- überprüfen Sie ggf. die Richtlinien."
-
-#, python-format
-msgid "You do not have the administrative right to do an ocra/%s"
-msgstr ""
-"Sie haben nicht die administrativen Rechte für die OCRA-Anfrage: ocra/%s."
 
 #, python-format
 msgid ""
@@ -3763,9 +3697,6 @@ msgstr ""
 msgid "Your LinOTP support subscription"
 msgstr "Ihr LinOTP Support und Subskription"
 
-msgid "Your OCRA Token :"
-msgstr "Ihr OCRA-Token:"
-
 msgid "Your OCRA2 Token :"
 msgstr "Ihr OCRA2-Token:"
 
@@ -3840,9 +3771,6 @@ msgstr "[?]"
 msgid "activate token"
 msgstr "Token aktivieren"
 
-msgid "activate your OCRA Token"
-msgstr "Aktivieren Sie Ihren OCRA-Token"
-
 msgid "activate your OCRA2 Token"
 msgstr "Aktivieren Sie Ihren OCRA2-Token"
 
@@ -3870,9 +3798,6 @@ msgstr "über Telefon "
 
 msgid "certificate id"
 msgstr "Zertifikat-ID"
-
-msgid "challenge"
-msgstr "Challenge"
 
 msgid "check status"
 msgstr "Status prüfen"
@@ -3963,9 +3888,6 @@ msgstr "Dateiname"
 
 msgid "finalize activation"
 msgstr "Aktivierung abschließen"
-
-msgid "finish your OCRA Token"
-msgstr "OCRA-Token fertigstellen"
 
 msgid "finish your OCRA2 Token"
 msgstr "OCRA2-Token fertigstellen"
@@ -4329,8 +4251,8 @@ msgstr ""
 "Gültige Typen sind 'oathtoken', 'googleauthenticator' oder "
 "'googleauthenticator_time'. Angegeben wurde %s"
 
-#, python-format
-msgid "valid types are 'ocra' or 'ocra2'. You provided %s"
+#, fuzzy, python-format
+msgid "valid types is 'ocra2'. You provided %s"
 msgstr "Gültige Werte sind 'ocra' oder 'ocra2'. Sie gaben %s an"
 
 msgid "voice Provider"
@@ -4379,6 +4301,12 @@ msgstr "WebUI generiert"
 #~ msgid "Action detail"
 #~ msgstr "Aktionen"
 
+#~ msgid "Activate your OCRA Token"
+#~ msgstr "Aktivieren Sie Ihren OCRA-Token"
+
+#~ msgid "Activate your OCRA token"
+#~ msgstr "OCRA-Token aktivieren"
+
 #~ msgid "Activate your QR token"
 #~ msgstr "Aktivieren Sie Ihren QR Token"
 
@@ -4410,6 +4338,12 @@ msgstr "WebUI generiert"
 
 #~ msgid "Credits to:"
 #~ msgstr "Mit Unterstützung von:"
+
+#~ msgid "Default OCRA suite"
+#~ msgstr "Standard OCRA-Suite"
+
+#~ msgid "Default QR suite"
+#~ msgstr "Standard QR-Suite"
 
 #~ msgid "Discard Changes"
 #~ msgstr "Änderungen Verwerfen"
@@ -4461,6 +4395,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "Generate HMAC key."
 #~ msgstr "HMAC Seed vom Server generieren lassen."
+
+#~ msgid "Generate OCRA key."
+#~ msgstr "OCRA-Key vom Server generieren lassen."
 
 #~ msgid "Google Authenticator token successfully created!"
 #~ msgstr "Google Authenticator Token wurde erfolgreich angelegt!"
@@ -4541,6 +4478,9 @@ msgstr "WebUI generiert"
 #~ msgid "Max Fail Count"
 #~ msgstr "Maximalwert für den Fehlzähler"
 
+#~ msgid "Maximum concurrent OCRA challenges"
+#~ msgstr "Maximale Anzahl an gleichzeitigen OCRA-Challenges"
+
 #~ msgid "Misc settings"
 #~ msgstr "Diverse Einstellungen"
 
@@ -4559,11 +4499,29 @@ msgstr "WebUI generiert"
 #~ msgid "OATH CSV Token File"
 #~ msgstr "OATH-CSV-Tokendatei"
 
+#~ msgid "OCRA - challenge/response Token"
+#~ msgstr "OCRA - Challenge/Response-Token"
+
+#~ msgid "OCRA Login"
+#~ msgstr "OCRA-Anmeldung"
+
 #~ msgid "OCRA Suite"
 #~ msgstr "OCRA Suite"
 
+#~ msgid "OCRA Token"
+#~ msgstr "OCRA-Token"
+
+#~ msgid "OCRA challenge timeout"
+#~ msgstr "Timeout für OCRA-Challenge"
+
+#~ msgid "OCRA key"
+#~ msgstr "OCRA-Key"
+
 #~ msgid "OCRA settings"
 #~ msgstr "OCRA Einstellungen"
+
+#~ msgid "OCRA token settings"
+#~ msgstr "OCRA2-Token-Einstellungen"
 
 #~ msgid "OtpAuth Softtoken Url"
 #~ msgstr "OtpAuth Softtoken Url"
@@ -4671,6 +4629,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "Please enter or copy the HMAC key."
 #~ msgstr "Bitte geben Sie das HMAC Seed ein."
+
+#~ msgid "Please enter or copy the OCRA key."
+#~ msgstr "Bitte geben Sie den OCRA-Key ein."
 
 #~ msgid ""
 #~ "Please enter the UID of your LDAP server like DN, entryUUID, objectGUID "
@@ -4784,6 +4745,25 @@ msgstr "WebUI generiert"
 #~ msgstr ""
 #~ "Das ist der Ort, wo auf dem LinOTP-Server die index.html der Hilfe liegt."
 
+#~ msgid "This is the maximum concurrent challenges per OCRA Token."
+#~ msgstr ""
+#~ "Das ist die maximale Anzahl an gleichzeitigen OCRA-Challenges, die für "
+#~ "einen OCRA-Token angefordert werden können."
+
+#~ msgid ""
+#~ "This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
+#~ "SHA256-6:C-QA64"
+#~ msgstr ""
+#~ "Dies ist die standardmäßige OCRA-Suite für einen neu ausgerollten QR-OCRA-"
+#~ "Token. Standard: OCRA-1:HOTP-SHA256-6:C-QA64"
+
+#~ msgid ""
+#~ "This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
+#~ "SHA256-8:C-QA08"
+#~ msgstr ""
+#~ "Dies ist die standardmäßige OCRA-Suite für einen neu ausgerollten OCRA-"
+#~ "Token. Standard: OCRA-1:HOTP-SHA256-8:C-QA08"
+
 #~ msgid "Time between SMS (sec.)"
 #~ msgstr "Zeit zwischen SMS (Sek.)"
 
@@ -4803,9 +4783,6 @@ msgstr "WebUI generiert"
 
 #~ msgid "Tokentype"
 #~ msgstr "Token Typ"
-
-#~ msgid "Transport key:"
-#~ msgstr "Transportschlüssel:"
 
 #~ msgid "URL for google Authenticator"
 #~ msgstr "URL für Google Authenticator"
@@ -4842,6 +4819,11 @@ msgstr "WebUI generiert"
 #~ "Sie können einen \"lost token\" nur für einen zugewiesenen Token "
 #~ "erstellen."
 
+#, python-format
+#~ msgid "You do not have the administrative right to do an ocra/%s"
+#~ msgstr ""
+#~ "Sie haben nicht die administrativen Rechte für die OCRA-Anfrage: ocra/%s."
+
 #~ msgid ""
 #~ "You do not have the administrative right to do monitoring.You are missing "
 #~ "a policyscope=monitoring, action=%s"
@@ -4859,17 +4841,26 @@ msgstr "WebUI generiert"
 #~ "Sie können den Token <span id=tokenid_resync></span> synchronisieren. "
 #~ "Hierzu geben Sie bitte zwei aufeinanderfolgende OTP-Werte ein."
 
+#~ msgid "Your OCRA Token :"
+#~ msgstr "Ihr OCRA-Token:"
+
 #~ msgid "Yubikey csv"
 #~ msgstr "Yubikey CSV"
 
 #~ msgid "__undefined__"
 #~ msgstr "__inaktiv__"
 
+#~ msgid "activate your OCRA Token"
+#~ msgstr "Aktivieren Sie Ihren OCRA-Token"
+
 #~ msgid "activate your qr token"
 #~ msgstr "Aktivieren Sie Ihren QRToken"
 
 #~ msgid "already exists."
 #~ msgstr "existiert bereits."
+
+#~ msgid "challenge"
+#~ msgstr "Challenge"
 
 #~ msgid "check PIN locally"
 #~ msgstr "Überprüfe PIN"
@@ -4903,6 +4894,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "feel free to contact "
 #~ msgstr "professionellen LinOTP Support und Subskription für Unternehmen"
+
+#~ msgid "finish your OCRA Token"
+#~ msgstr "OCRA-Token fertigstellen"
 
 #~ msgid "for support agreement purchase."
 #~ msgstr "können Sie und gerne kontaktieren"
