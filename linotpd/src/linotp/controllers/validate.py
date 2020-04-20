@@ -152,7 +152,7 @@ class ValidateController(BaseController):
         passw = param.get("pass")
         user = getUserFromParam(param)
 
-        # support for ocra application challenge verification
+        # support for challenge verification
         challenge = param.get("challenge")
         if challenge is not None:
             options = {}

@@ -866,17 +866,17 @@ class AdminController(BaseController):
             * otplen (optional) length of the OTP value
             * hashlib (optional) used hashlib sha1 oder sha256
 
-        ocra arguments:
-            for generating OCRA Tokens type=ocra you can specify the
+        ocra2 arguments:
+            for generating OCRA2 Tokens type=ocra2 you can specify the
             following parameters:
 
             * ocrasuite (optional) - if you do not want to use the default
                 ocra suite OCRA-1:HOTP-SHA256-8:QA64
             * sharedsecret (optional) if you are in Step0 of enrolling an
-                OCRA token the sharedsecret=1 specifies,
+                OCRA2 token the sharedsecret=1 specifies,
               that you want to generate a shared secret
             * activationcode (optional) if you are in Step1 of enrolling
-                an OCRA token you need to pass the
+                an OCRA2 token you need to pass the
               activation code, that was generated in the QRTAN-App
 
         qrtoken arguments:
@@ -2535,7 +2535,7 @@ class AdminController(BaseController):
                         'hashlib': TOKENS[serial].get('hashlib')}
 
                 # add ocrasuite for ocra tokens, only if ocrasuite is not empty
-                if TOKENS[serial]['type'] in ['ocra', 'ocra2']:
+                if TOKENS[serial]['type'] in ['ocra2']:
                     if TOKENS[serial].get('ocrasuite', "") != "":
                         init_param['ocrasuite'] = TOKENS[serial].get(
                             'ocrasuite')

@@ -27,7 +27,7 @@
 
 """
     A mixin used by token types that have different
-    rollout states (e.g. QRToken and OCRA)
+    rollout states (e.g. QRToken and OCRA2)
 """
 
 import logging
@@ -42,7 +42,7 @@ class StatefulTokenMixin(object):
 
     """
     A mixin used by token types that have different
-    rollout states (e.g. QRToken and OCRA)
+    rollout states (e.g. QRToken and OCRA2)
     """
 
     @property

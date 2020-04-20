@@ -1572,7 +1572,7 @@ if isinstance(lang, list):
         <p>${_("Here you can upload a CSV file for your OATH token. The file is supposed to contain one token per line")}:</p>
         <p>${_("For HOTP and TOTP tokens:")}</p>
         <p>${_("Serial number, Seed, Type, OTP length, Time step")}</p>
-        <p>${_("For OCRA tokens:")}</p>
+        <p>${_("For OCRA2 tokens:")}</p>
         <p>${_("Serial Number, Seed, Type, Ocra Suite")}</p>
         <fieldset>
             <legend>${_("Default Values:")}</legend>

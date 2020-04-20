@@ -1385,7 +1385,7 @@ def get_tokenserial_of_transaction(transId):
     return serials
 
 
-def getRolloutToken4User(user=None, serial=None, tok_type='ocra'):
+def getRolloutToken4User(user=None, serial=None, tok_type='ocra2'):
 
     if (user is None or user.is_empty) and serial is None:
         return None
