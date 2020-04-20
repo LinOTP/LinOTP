@@ -39,11 +39,6 @@ stages:
   script:
     - pylint linotp/${LINTED_MODULE}
 
-lint-config:
-  extends: .lint
-  variables:
-    LINTED_MODULE: config
-
 lint-controllers:
   extends: .lint
   variables:
