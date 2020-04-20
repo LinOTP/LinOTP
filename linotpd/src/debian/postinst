@@ -175,7 +175,7 @@ configure_sql() {
 
 create_tables() {
   echo_log "Trying to create tables"
-  paster setup-app $LINOTP_INI || true
+  python -m flask init-db || true
 }
 
 # create_grant_strings
@@ -433,7 +433,7 @@ case "$1" in
             echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" < /etc/linotp2/linotpcreatedb.sql || true" >> /etc/rc.local
             echo "rm /etc/linotp2/linotpcreatedb.sql" >> /etc/rc.local
             # create tables
-            echo "paster setup-app $LINOTP_INI" >> /etc/rc.local
+            echo "python3 -m flask init-db" >> /etc/rc.local
             echo "chown -R \"$LINOTP_USER\" $LOGDIR/*" >> /etc/rc.local
             echo "chown \"$LINOTP_USER\" $ENCKEYFILE" >> /etc/rc.local
             # Finally we would clean the rc.local

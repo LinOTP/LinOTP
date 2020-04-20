@@ -24,7 +24,7 @@
 #
 
 ECHO    = echo
-PYTHON=`which python`
+PYTHON=`which python3`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/linotp
 PROJECT=LinOTPAdminClientCLI

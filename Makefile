@@ -37,7 +37,7 @@
 # export RANCHER_SECRET_KEY=copy-from-rancher-UI-API-section
 # export DOCKER_REGISTRY_URL=registry.local.domain
 
-PYTHON:=python2
+PYTHON:=python3
 
 # This directory is used as destination for the various parts of
 # the build phase. The various install targets default to this directory

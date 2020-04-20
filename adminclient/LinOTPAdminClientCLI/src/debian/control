@@ -2,14 +2,14 @@ Source: linotp-adminclient-cli
 Section: net
 Priority: optional
 Maintainer: KeyIdentity GmbH <linotp@keyidentity.com>
-Build-Depends: debhelper (>=9), python-all, python-setuptools, dh-python
+Build-Depends: debhelper (>=9), python3-all, python3-setuptools, dh-python
 Standards-Version: 3.9.8
-X-Python-Version: >= 2.7
+X-Python-Version: >= 3.7
 
 Package: linotp-adminclient-cli
 Architecture: all
 Homepage: https://www.linotp.org/
-Depends: ${misc:Depends}, ${python:Depends}, python-usb
+Depends: ${misc:Depends}, ${python3:Depends}, python3-usb
 Replaces: linotpadminclientce (<< 2.5.2-1~), linotp-adminclient-ce (<< 2.7)
 Breaks: linotpadminclientce (<< 2.5.2-1~), linotp-adminclient-ce (<< 2.7)
 Description: This package contains the LinOTP command line Admin Client.

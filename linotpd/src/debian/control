@@ -2,74 +2,38 @@ Source: linotp
 Section: net
 Priority: optional
 Maintainer: KeyIdentity GmbH <linotp@keyidentity.com>
-Build-Depends: cdbs,
-               debhelper (>=9),
+Build-Depends: debhelper (>=9),
                lsb-release,
                po-debconf,
-               python-all,
-               python-babel,
-               python-pastescript,
-               python-pylons (>=0.9.7),
-               python-flask,
-               python-setuptools,
-               dh-python
+               python3-all,
+               python3-babel,
+               python3-flask,
+               python3-setuptools,
+               dh-python,
 Standards-Version: 3.9.8
 Homepage: https://www.linotp.org/
-X-Python-Version: >= 2.7
+X-Python-Version: >= 3.7
 
 Package: linotp
 Architecture: all
-Depends: apache2,
-         libapache2-mod-wsgi | httpd-wsgi,
+Depends: adduser,
+         apache2,
+         debconf,
+         libapache2-mod-wsgi-py3 | httpd-wsgi,
          openssl,
-         python-pycryptodomex,
-         python-requests,
-         python-httplib2,
-         python-passlib,
+         pwgen,
          ${misc:Depends},
-         ${python:Depends}
-Pre-Depends: adduser,
-             debconf,
-             pwgen,
-             python-beaker,
-             python-bcrypt,
-             python-configobj,
-             python-decorator,
-             python-docutils,
-             python-formencode,
-             python-httplib2,
-             python-ldap,
-             python-m2crypto,
-             python-mako,
-             python-mysqldb,
-             python-netaddr,
-             python-passlib,
-             python-paste,
-             python-pastedeploy,
-             python-pastescript,
-             python-pygments,
-             python-pylons (>=0.9.7),
-             python-socks | python-pysocks,
-             python-pyrad,
-             python-pysodium,
-             python-qrcode,
-             python-routes,
-             python-simplejson,
-             python-sqlalchemy (>=0.6),
-             python-tempita,
-             python-weberror,
-             python-webhelpers,
-             python-webob
+         ${python3:Depends},
 Replaces: linotp-ee (<< 2.7-1~),
           linotp-smsprovider (<< 2.10),
           linotp-useridresolver (<< 2.10)
 Breaks: linotp-ee (<< 2.7-1~),
         linotp-smsprovider (<< 2.10),
         linotp-useridresolver (<< 2.10)
-Description: Server Core of the LinOTP 2 authentication solution
+Description: Server Core of the LinOTP authentication solution
  LinOTP is an open solution for strong two-factor authentication with One Time
  Passwords.
- LinOTP 2 is also open as far as its modular architecture is concerned.
- LinOTP 2 aims not to bind you to any decision of the authentication protocol
+ LinOTP is also open as far as its modular architecture is concerned.
+ LinOTP aims not to bind you to any decision of the authentication protocol
  and it does not dictate you where your user information should be stored.
  This is achieved by its new, totally modular architecture.
