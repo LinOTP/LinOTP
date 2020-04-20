@@ -229,7 +229,6 @@ build:buster:
   extends: .build-debs
   variables:
     DEBIAN_RELEASE_NAME: buster
-  allow_failure: true
 
 .build-linotp-docker-image:
   stage: build-linotp-docker-image
