@@ -51,7 +51,7 @@
         <div id="toolbar" class="ui-widget-header ui-corner-all">
             <button id="ti_button_hashlib">${_("hashlib")}</button>
             <button id="ti_button_expiration">${_("Set Expiration")}</button>
-            %if ttype in [ "totp", "ocra" ]:
+            %if ttype in [ "totp", "ocra2" ]:
             <button id="ti_button_time_window">${_("time window")}</button>
             <button id="ti_button_time_step">${_("time step")}</button>
             <button id="ti_button_time_shift">${_("time shift")}</button>

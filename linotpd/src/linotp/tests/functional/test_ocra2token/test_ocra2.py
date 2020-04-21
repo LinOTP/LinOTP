@@ -31,7 +31,7 @@
 import logging
 import binascii
 import random
-import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 import json
 
 from datetime import datetime
@@ -39,169 +39,27 @@ from datetime import timedelta
 
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
-from urllib.parse import urlsplit
 
 from Cryptodome.Hash import SHA256 as SHA256
 
-import linotp.lib.crypto
 from linotp.lib.ext.pbkdf2 import PBKDF2
 from linotp.lib.reply import create_img
 
-from linotp.tokens.ocra import OcraSuite
+from linotp.tokens.ocra2token import OcraSuite
 from linotp.lib.crypto.utils import kdf2
 from linotp.lib.crypto.utils import createActivationCode
 from linotp.lib.crypto.utils import check
+
+from . import OcraOtp
 
 import pytest
 from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 
+CHALLLENGE_RUNS = 4
 
-@pytest.mark.nightly
-class OcraOtp(TestController):
 
-    def __init__(self, ocrapin=None):
-        self.ocra = None
-        self.bkey = None
-        self.ocrapin = ocrapin
-        self.activationkey = None
-        self.sharedsecret = None
-        self.ocrasuite = None
-        self.serial = None
-        self.counter = 0
-
-    def init_1(self, response):
-        ''' take the response of the first init to setup the OcraOtp'''
-
-        jresp = json.loads(response.body)
-        assert 'detail' in jresp, response.body
-        app_import = str(jresp.get('detail', {}).get('app_import'))
-        self.sharedsecret = str(jresp.get('detail', {}).get('sharedsecret'))
-        self.serial = str(jresp.get('detail', {}).get('serial'))
-
-        # now parse the appurl for the ocrasuite
-        uri = urlparse(app_import.replace('lseqr://', 'http://'))
-        qs = uri.query
-        qdict = parse_qs(qs)
-
-        ocrasuite = qdict.get('os', None)
-        if ocrasuite is not None and len(ocrasuite) > 0:
-            ocrasuite = ocrasuite[0]
-
-        self.ocrasuite = ocrasuite
-
-        return (self.ocrasuite, self.sharedsecret, self.serial)
-
-    def check_signature(self, lseqr_url):
-
-        # parse the url
-
-        o = urlsplit(lseqr_url)
-        # due to different  behaviour of urlsplit, we introduce here the
-        # fallback for elder versions to use the path (o[2]) instead of the
-        # o[3] (query)
-        if o[3]:  # query
-            qs = o[3]
-        elif o[2]:  # path
-            qs = o[2].lstrip('?')
-        else:
-            raise Exception('no query parameter defined!')
-
-        params = parse_qs(qs)
-        if 'si' not in params:
-            return None
-        si = params['si'][0]
-        data = lseqr_url.split('&si=')[0]
-
-        if self.ocra is None:
-            self._setup_()
-
-        signature = self.ocra.signData(data.encode('utf-8'), key=self.bkey)
-        if si.encode('utf-8') == signature:
-            return True
-
-        return False
-
-    def init_2(self, response, activationKey):
-        self.activationkey = activationKey
-
-        jresp = json.loads(response.body)
-        assert 'detail' in jresp, response.body
-        self.nonce = str(jresp.get('detail', {}).get('nonce'))
-        self.transid = str(jresp.get('detail', {}).get('transactionid'))
-        app_import = str(jresp.get('detail', {}).get('app_import'))
-
-        # now parse the appurl for the ocrasuite
-        uri = urlparse(app_import.replace('lseqr://', 'http://'))
-        qs = uri.query
-        qdict = parse_qs(qs)
-        nonce = qdict.get('no', None)
-        if nonce is not None and len(nonce) > 0:
-            nonce = nonce[0]
-
-        challenge = qdict.get('ch', None)
-        if challenge is not None and len(challenge) > 0:
-            challenge = challenge[0]
-
-        self.challenge = challenge
-        self.ocra = None
-        self.bkey = None
-
-        return (self.challenge, self.transid)
-
-    def _setup_(self):
-
-        if self.ocra is not None and self.bkey is not None:
-            return
-
-        key_len = 20
-        if self.ocrasuite.find('-SHA256'):
-            key_len = 32
-        elif self.ocrasuite.find('-SHA512'):
-            key_len = 64
-
-        self.bkey = kdf2(self.sharedsecret, self.nonce, self.activationkey,
-                         len=key_len)
-        self.ocra = OcraSuite(self.ocrasuite)
-
-        self.counter = 0
-
-        return
-
-    def callcOtp(self, challenge=None, ocrapin=None, counter=-1):
-
-        if self.ocra is None:
-            self._setup_()
-
-        if ocrapin is None:
-            ocrapin = self.ocrapin
-
-        if challenge is None:
-            challenge = self.challenge
-        if counter == -1:
-            counter = self.counter
-
-        param = {}
-        param['C'] = counter
-        param['Q'] = challenge
-        param['P'] = ocrapin
-        param['S'] = ''
-        if self.ocra.T is not None:
-            # Default value for G is 1M, i.e., time-step size is one minute and
-            # the T represents the number of minutes since epoch time [UT].
-            now = datetime.utcnow()
-            stime = now.strftime("%s")
-            itime = int(stime)
-            param['T'] = itime
-
-        data = self.ocra.combineData(**param)
-        otp = self.ocra.compute(data, self.bkey)
-
-        if counter == -1:
-            self.counter += 1
-
-        return otp
 
 
 @pytest.mark.nightly
@@ -396,7 +254,7 @@ class OcraTest(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        self.set_config_selftest()
+        # self.set_config_selftest()
 
         self.create_common_resolvers()
         self.create_common_realms()
@@ -829,134 +687,6 @@ class OcraTest(TestController):
                 response = self.make_admin_request('remove',
                                                    params=p)
                 assert '"value": 1' in response, response
-
-    def test_QR_token_22(self):
-        '''
-            test_QR_token_22: enroll an QR Token but use server code to create Activation Code and server generated OTP
-
-            0. request for an token
-            1a. fetch the output and generate an AKTIVIERUNGSCODE
-            1b. send second init request with Activation code
-            2. finish token creation  and return first transaction Id
-            3. reply the challenge
-
-            @summary: this test is the first simple positive test, which uses
-                        the serial number of the token, to identify the
-                        transaction
-
-            @todo:     more tests,
-                    - which uses the user who could have multiple tokens, but
-                      only on QR-Token
-                    - check OCRA Token and TOTP tests
-                    - check OCRA with HOTP counter token
-                    - check OCRA Token with user pin
-        '''
-        ocrasuite = 'OCRA-1:HOTP-SHA256-8:QA64'
-        log.info('##################### %s' % ocrasuite)
-        ocrapin = 'myocrapin'
-
-        # -1- create an ocra token
-        parameters = {
-            "user": "root",
-            "pin": "pin",
-            "description": "first QRToken",
-            'type': 'ocra2',
-            'sharedsecret': '1',
-            'genkey': '1',
-                      'ocrapin': ocrapin,
-        }
-
-        response = self.make_admin_request('init',
-                                           params=parameters)
-        assert '"value": true' in response, response
-
-        # on the return we get the shared secret
-        jresp = json.loads(response.body)
-        assert 'detail' in jresp, response.body
-        app_import1 = str(jresp.get('detail', {}).get('app_import'))
-        sharedsecret = str(jresp.get('detail', {}).get('sharedsecret'))
-        serial = str(jresp.get('detail', {}).get('serial'))
-        log.debug("%r" % sharedsecret)
-
-        # now parse the appurl for the ocrasuite
-        uri = urlparse(app_import1.replace('lseqr://', 'http://'))
-        qs = uri.query
-        qdict = parse_qs(qs)
-
-        ocrasuite = qdict.get('os', None)
-        if ocrasuite is not None and len(ocrasuite) > 0:
-            ocrasuite = ocrasuite[0]
-
-        aparm = {'activationcode': '12345678'}
-        auth_user = 'ocra_admin'
-        response = self.make_ocra_request('getActivationCode',
-                                          params=aparm, auth_user=auth_user)
-        assert '"status": true' in response, response
-        jresp = json.loads(response.body)
-        assert 'result' in jresp, response.body
-        activationcode = str(jresp.get('result', {}).get('value', {})
-                                 .get('activationcode', None))
-
-        parameters = {"user": "root",
-                      "pin": "pin",
-                      "description": "first QRToken",
-                      'type': 'ocra2',
-                      'message': 'MESSAGE&',
-                      'genkey': '1',
-                      'ocrapin': ocrapin,
-                      }
-
-        parameters['activationcode'] = activationcode
-
-        response = self.make_admin_request('init',
-                                           params=parameters,
-                                           auth_user=auth_user)
-        assert '"value": true' in response, response
-
-        jresp = json.loads(response.body)
-        assert 'detail' in jresp, response.body
-        _nonce = str(jresp.get('detail', {}).get('nonce'))
-        transid = str(jresp.get('detail', {}).get('transactionid'))
-        app_import2 = str(jresp.get('detail', {}).get('app_import'))
-
-        # now parse the appurl for the ocrasuite
-        uri = urlparse(app_import2.replace('lseqr://', 'http://'))
-        qs = uri.query
-        qdict = parse_qs(qs)
-        nonce = qdict.get('no', None)
-        if nonce is not None and len(nonce) > 0:
-            nonce = nonce[0]
-
-        challenge = qdict.get('ch', None)
-        if challenge is not None and len(challenge) > 0:
-            challenge = challenge[0]
-
-        p = {'activationcode': activationcode,
-             'counter': 0,
-             'init1': app_import1,
-             'init2': app_import2,
-             }
-
-        # TODO!!!
-        response = self.make_ocra_request('calculateOtp',
-                                          params=p, auth_user=auth_user)
-        log.info("response %s\n", response)
-        jresp = json.loads(response.body)
-        assert 'result' in jresp, response.body
-        otp = str(jresp.get('result', {}).get('value', {}).get('otp'))
-
-        p = {"transactionid": transid, "pass": 'pin' + otp}
-
-        response = self.make_validate_request('check_t', params=p)
-        assert '"value": true' in response, response
-
-        # -remove the ocra token
-        parameters = {"serial": serial, }
-        response = self.make_admin_request('remove',
-                                           params=parameters)
-        assert '"value": 1' in response, response
-
-        return
 
     def test_QR_token(self):
         '''
@@ -1540,7 +1270,7 @@ class OcraTest(TestController):
         '''
         ocrasuite = 'OCRA-1:HOTP-SHA256-8:QA64'
         t_count = 0
-        for test in self.tests:
+        for test in self.tests[0:1]:
             t_count += 1
             ocrasuite = test['ocrasuite']
 
@@ -1567,7 +1297,7 @@ class OcraTest(TestController):
                                                params=parameters)
             assert '"value": true' in response, response
 
-            for count in range(0, 20):
+            for count in range(0, CHALLLENGE_RUNS):
                 # -2- fetch the challenge
                 p = {"serial": serial,
                      "data": "0105037311 Konto 50150850 BLZ 1752,03 Eur"
@@ -1645,7 +1375,7 @@ class OcraTest(TestController):
 
         '''
         ocrasuite = 'OCRA-1:HOTP-SHA256-8:QA64'
-        for test in self.tests:
+        for test in self.tests[1:2]:
             ocrasuite = test['ocrasuite']
             key = test['keyh']
             bkey = test['key']
@@ -1669,7 +1399,7 @@ class OcraTest(TestController):
                                                params=parameters)
             assert '"value": true' in response, response
 
-            for count in range(0, 20):
+            for count in range(0, 3):
                 log.error('fetching challenge %d for %s ' % (count, ocrasuite))
                 # -2- fetch the challenge
                 p = {"serial": serial,
@@ -1787,7 +1517,7 @@ class OcraTest(TestController):
         '''
         ocrasuite = 'OCRA-1:HOTP-SHA256-8:QA64'
         serial = "QR_One2"
-        for test in self.tests:
+        for test in self.tests[2:3]:
             ocrasuite = test['ocrasuite']
             key = test['keyh']
             bkey = test['key']
@@ -1811,7 +1541,7 @@ class OcraTest(TestController):
                                                params=parameters)
             assert '"value": true' in response, response
 
-            for count in range(0, 20):
+            for count in range(0, 3):
                 # -2- fetch the challenge
                 p = {"serial": serial,
                      "data": "0105037311 Konto 50150850 BLZ 1752,03 Eur"
@@ -1910,7 +1640,7 @@ class OcraTest(TestController):
         '''
         self.skipTest("temporary disabled")
         ocrasuite = 'OCRA-1:HOTP-SHA256-8:QA64'
-        for test in self.tests:
+        for test in self.tests[3:4]:
             ocrasuite = test['ocrasuite']
             key = test['keyh']
             bkey = test['key']
@@ -1938,7 +1668,7 @@ class OcraTest(TestController):
             assert '"value": true' in response, response
 
             fcount = 0
-            for _count in range(0, 4):
+            for _count in range(0, CHALLLENGE_RUNS):
                 # -2- fetch the challenge
                 p = {"serial": serial,
                      "data": "0105037311 Konto 50150850 BLZ 1752,03 Eur"
@@ -2004,7 +1734,7 @@ class OcraTest(TestController):
 
         '''
         ocrasuite = 'OCRA-1:HOTP-SHA256-8:QA64'
-        for test in self.tests:
+        for test in self.tests[0:1]:
             ocrasuite = test['ocrasuite']
             log.info("################# OCRASUITE: %s" % (ocrasuite))
             key = test['keyh']
@@ -2028,7 +1758,7 @@ class OcraTest(TestController):
                                                params=parameters)
             assert '"value": true' in response, response
 
-            for count in range(0, 20):
+            for count in range(0, CHALLLENGE_RUNS):
                 # -2a- fetch the challenge
                 p = {"serial": serial,
                      "data": "0105037311 Konto 50150850 BLZ 1752,03 Eur"
@@ -2137,7 +1867,7 @@ class OcraTest(TestController):
 
         '''
         ocrasuite = 'OCRA-1:HOTP-SHA256-8:QA64'
-        for test in self.tests:
+        for test in self.tests[2:3]:
 
             ocrasuite = test['ocrasuite']
             key = test['keyh']
@@ -2161,7 +1891,7 @@ class OcraTest(TestController):
                                                params=parameters)
             assert '"value": true' in response, response
 
-            for count in range(0, 20):
+            for count in range(0, CHALLLENGE_RUNS):
 
                 # -2a- fetch the challenge
                 p = {"serial": serial,

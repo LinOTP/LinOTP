@@ -228,8 +228,6 @@ class ManageController(BaseController):
             c.token_config_div = token_config_div
 
             #  add the enrollment fragments from the token definition
-            #  tab: <option value="ocra">${_("OCRA - challenge/response Token")}</option>
-            #  div: "<div id='"+ tt + "'>"+enroll+"</div>"
             enrolls = _getTokenTypeConfig('init')
 
             token_enroll_tab = {}

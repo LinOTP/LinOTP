@@ -711,7 +711,6 @@ if isinstance(lang, list):
         % for entry in c.token_config_tab:
             <li> <a href="#${entry}_token_settings">${c.token_config_tab[entry] |n}</a></li>
         % endfor
-            <li> <a href="#ocra_token_settings">${_("OCRA Token")}</a></li>
             <li> <a href="#tokendefault_token_settings">${_("Default Settings")}</a></li>
         </ul> <!-- tab with token settings -->
         % for entry in c.token_config_div:
@@ -720,69 +719,6 @@ if isinstance(lang, list):
             </div>
         % endfor
 
-        <%doc>
-            Ocra token config tab _static_
-        </%doc>
-        <script type="text/javascript">
-            /*
-             * 'typ'_get_config_val()
-             *
-             * this method is called, when the token config dialog is opened
-             * - it contains the mapping of config entries to the form id
-             * - according to the Config entries, the form entries will be filled
-             *
-             */
-
-            function ocra_get_config_val(){
-                var id_map = {};
-
-                id_map['OcraMaxChallenges'] = 'ocra_max_challenge';
-                id_map['OcraChallengeTimeout'] = 'ocra_challenge_timeout';
-                id_map['OcraDefaultSuite'] = 'ocra_default_suite';
-                id_map['QrOcraDefaultSuite'] = 'ocra_default_qr_suite';
-
-                return id_map;
-            }
-
-            /*
-             * 'typ'_get_config_params()
-             *
-             * this method is called, when the token config is submitted
-             * - it will return a hash of parameters for system/setConfig call
-             *
-             */
-            function ocra_get_config_params(){
-                var url_params ={};
-
-                url_params['OcraMaxChallenges'] = $('#ocra_max_challenge').val();
-                url_params['OcraChallengeTimeout'] = $('#ocra_challenge_timeout').val();
-                url_params['OcraDefaultSuite'] = $('#ocra_default_suite').val();
-                url_params['QrOcraDefaultSuite'] = $('#ocra_default_qr_suite').val();
-
-                return url_params;
-            }
-        </script>
-        <div id="ocra_token_settings">
-            <form class="cmxform" id="form_ocra_config" action="">
-                <fieldset id='ocra_config'>
-                    <legend>${_("OCRA token settings")}</legend>
-                    <table>
-                        <tr><td><label for=ocra_max_challenge>${_("Maximum concurrent OCRA challenges")}</label></td>
-                            <td><input type="text" id="ocra_max_challenge" maxlength="4" class=integer
-                                title='${_("This is the maximum concurrent challenges per OCRA Token.")}'></td></tr>
-                        <tr><td><label for=ocra_challenge_timeout>${_("OCRA challenge timeout")}</label></td>
-                            <td><input type="text" id="ocra_challenge_timeout" maxlength="6"
-                                title='${_("After this time a challenge can not be used anymore. Valid entries are like 1D, 2H or 5M where D=day, H=hour, M=minute.")}'></td></tr>
-                        <tr><td><label for=ocra_default_suite>${_("Default OCRA suite")}</label></td>
-                            <td><input type="text" name="ocra_default_suite" id="ocra_default_suite" size='30'
-                                title="${_('This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-SHA256-8:C-QA08')}"></td></tr>
-                        <tr><td><label for=ocra_default_qr_suite>${_("Default QR suite")}</label></td>
-                            <td><input type="text" name="ocra_default_qr_suite" id="ocra_default_qr_suite" size=30
-                                title='${_("This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-SHA256-6:C-QA64")}'></td></tr>
-                    </table>
-                </fieldset>
-            </form>
-        </div>
 
         <%doc>
             Default token config tab _static_
@@ -1155,7 +1091,6 @@ if isinstance(lang, list):
             <table>
                 <tr><td><label for="tokentype">${_("Token type")}</label></td><td>
                     <select name="tokentype" id="tokentype" onchange="tokentype_changed();">
-                        <option value="ocra">${_("OCRA - challenge/response Token")}</option>
                         <!-- we do not sort by the key/conf but for the value -->
                         %for tok in sorted(c.token_enroll_tab, key=lambda t: c.token_enroll_tab[t]):
                         %if tok == 'hmac':
@@ -1167,30 +1102,6 @@ if isinstance(lang, list):
                     </select>
                 </td></tr>
             </table>
-            <div class="token_enroll_frame" id="token_enroll_ocra">
-                <hr>
-                <p><span id='ocra_key_intro'>
-                    ${_("Please enter or copy the OCRA key.")}</span></p>
-                <table><tr>
-                <td><label for="ocra_key" id='ocra_key_label'>${_("OCRA key")}</label></td>
-                <td><input type="text" name="ocra_key" id="ocra_key" value="" class="text ui-widget-content ui-corner-all"></td>
-                </tr>
-                <tr><td> </td><td><input type='checkbox' id='ocra_key_cb' onclick="cb_changed('ocra_key_cb',['ocra_key','ocra_key_label','ocra_key_intro']);">
-                    <label for=ocra_key_cb>${_("Generate OCRA key.")}</label></td></tr>
-                <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
-                <tr name="set_pin_rows">
-                    <td class="description"><label for="ocra_pin1" id="ocra_pin1_label">${_("enter PIN")}:</label></td>
-                    <td><input type="password" autocomplete="off" name="pin1" id="ocra_pin1"
-                            class="text ui-widget-content ui-corner-all"></td>
-                </tr>
-                <tr name="set_pin_rows" >
-                    <td class="description"><label for="ocra_pin2" id="ocra_pin2_label">${_("confirm PIN")}:</label></td>
-                    <td><input type="password" autocomplete="off" name="pin2" id="ocra_pin2"
-                            class="text ui-widget-content ui-corner-all"></td>
-                </tr>
-                </table>
-            </div>
-
             %for tok in c.token_enroll_div:
              <div class="token_enroll_frame" id="token_enroll_${tok}">${c.token_enroll_div[tok] |n}</div>
             %endfor
@@ -1572,7 +1483,7 @@ if isinstance(lang, list):
         <p>${_("Here you can upload a CSV file for your OATH token. The file is supposed to contain one token per line")}:</p>
         <p>${_("For HOTP and TOTP tokens:")}</p>
         <p>${_("Serial number, Seed, Type, OTP length, Time step")}</p>
-        <p>${_("For OCRA tokens:")}</p>
+        <p>${_("For OCRA2 tokens:")}</p>
         <p>${_("Serial Number, Seed, Type, Ocra Suite")}</p>
         <fieldset>
             <legend>${_("Default Values:")}</legend>

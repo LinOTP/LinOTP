@@ -123,8 +123,6 @@ def getPolicyDefinitions(scope=""):
             'otp_pin_maxlength': {'type': 'int', 'value': list(range(0, 100))},
             'otp_pin_minlength': {'type': 'int', 'value': list(range(0, 100))},
             'otp_pin_contents': {'type': 'str'},
-            'activateQR': {'type': 'bool'},
-
             'webprovisionGOOGLE': {'type': 'bool'},
             'webprovisionGOOGLEtime': {'type': 'bool'},
             'max_count_dpw': {'type': 'int'},
@@ -399,20 +397,6 @@ def getPolicyDefinitions(scope=""):
                 'type': 'bool',
                 'desc': 'Import users from a file into a new resolver '
             },
-        },
-        'ocra': {
-            'request': {
-                'type': 'bool',
-                'desc': 'Allow to do a ocra/request'},
-            'status': {
-                'type': 'bool',
-                'desc': 'Allow to check the transaction status.'},
-            'activationcode': {
-                'type': 'bool',
-                'desc': 'Allow to do an ocra/getActivationCode.'},
-            'calcOTP': {
-                'type': 'bool',
-                'desc': 'Allow to do an ocra/calculateOtp.'}
         },
         'monitoring': {
             'config': {

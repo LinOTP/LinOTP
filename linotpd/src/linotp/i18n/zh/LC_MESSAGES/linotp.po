@@ -140,12 +140,6 @@ msgstr "激活您的二维码令牌"
 msgid "Activate token"
 msgstr "激活令牌"
 
-msgid "Activate your OCRA Token"
-msgstr "激活您的 OCRA 令牌"
-
-msgid "Activate your OCRA token"
-msgstr "激活 OCRA 令牌"
-
 msgid "Activate your OCRA2 Token"
 msgstr "激活您的 OCRA2 令牌"
 
@@ -474,12 +468,6 @@ msgstr "日期"
 
 msgid "Day OTP Token / Tagespasswort"
 msgstr "当日OTP 令牌/ 当日密码"
-
-msgid "Default OCRA suite"
-msgstr "标准 OCRA 套件"
-
-msgid "Default QR suite"
-msgstr "标准二维码套件"
 
 msgid "Default Settings"
 msgstr "默认设置"
@@ -1097,9 +1085,6 @@ msgstr "源令牌"
 msgid "GUI settings"
 msgstr "GUI 设置"
 
-msgid "Generate OCRA key."
-msgstr "OCRA 密钥由服务器生成。"
-
 msgid "Generate OCRA2 key."
 msgstr "生成 OCRA2 密钥"
 
@@ -1527,9 +1512,6 @@ msgstr "覆盖认证客户端"
 msgid "Max. successful authentications"
 msgstr "最大成功认证"
 
-msgid "Maximum concurrent OCRA challenges"
-msgstr "OCRA2 最大同时挑战数量"
-
 msgid "Maximum concurrent OCRA2 challenges"
 msgstr "OCRA2 最大同时挑战数量"
 
@@ -1625,21 +1607,6 @@ msgstr "OATH CSV"
 msgid "OATH Soft Token"
 msgstr "OATH 软令牌"
 
-msgid "OCRA - challenge/response Token"
-msgstr "OCRA，挑战/响应令牌"
-
-msgid "OCRA Login"
-msgstr "OCRA 登录"
-
-msgid "OCRA Token"
-msgstr "OCRA 令牌"
-
-msgid "OCRA challenge timeout"
-msgstr "OCRA 挑战超时"
-
-msgid "OCRA key"
-msgstr "OCRA 密钥"
-
 #, python-format
 msgid "OCRA rollout for token %s completed!"
 msgstr "OCRA 令牌 %s 部署完成！"
@@ -1649,9 +1616,6 @@ msgstr "OCRA 套件"
 
 msgid "OCRA token rollout failed! Please retry"
 msgstr "OCRA 令牌部署失败！请重试。"
-
-msgid "OCRA token settings"
-msgstr "OCRA 令牌设置"
 
 msgid "OCRA2 - challenge/response Token"
 msgstr "OCRA2，挑战/响应令牌"
@@ -1816,9 +1780,6 @@ msgid ""
 "Please enter a valid remote server specification. It needs to be of the form "
 "http://server or https://server"
 msgstr "请输入有效的远程服务器规范。形式应为 http://server 或 https://server"
-
-msgid "Please enter or copy the OCRA key."
-msgstr "请输入 OCRA 密钥。"
 
 msgid "Please enter or copy the OCRA2 key."
 msgstr "请您输入 OCRA2 密钥。"
@@ -2775,21 +2736,8 @@ msgid "This is the maximum allowed failed logins for a new enrolled token."
 msgstr ""
 "这是一个令牌登录尝试失败的最大数量。令牌将被锁定直到错误计数器手动复位。"
 
-msgid "This is the maximum concurrent challenges per OCRA Token."
-msgstr "这是以OCRA2 令牌同时挑战的最大数量。"
-
 msgid "This is the maximum concurrent challenges per OCRA2 Token."
 msgstr "OCRA2 最大并发挑战数量，可以请求一个 OCRA2 令牌的最大挑战数量。"
-
-msgid ""
-"This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
-"SHA256-6:C-QA64"
-msgstr "新注册二维码 OCRA 令牌的套件。默认为 OCRA-1:HOTP-SHA256-6:C-QA64"
-
-msgid ""
-"This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
-"SHA256-8:C-QA08"
-msgstr "新注册 OCRA 令牌的默认 OCRA 套件。标准：OCRA-1:HOTP-SHA256-8:C-QA08"
 
 msgid ""
 "This is the time LinOTP will calculate before and after the current time. A "
@@ -2975,9 +2923,6 @@ msgstr "UID 类型"
 
 msgid "URL for OATH token"
 msgstr "OATH 令牌链接"
-
-msgid "URL for OCRA token"
-msgstr "OCRA 令牌链接"
 
 msgid "URL for OCRA2 token"
 msgstr "OCRA2 令牌用链接"
@@ -3233,10 +3178,6 @@ msgid ""
 "You do not have the administrative right to disable token %s. Check the "
 "policies."
 msgstr "您没有管理权限取消令牌 %s 请检查策略。"
-
-#, python-format
-msgid "You do not have the administrative right to do an ocra/%s"
-msgstr "您没有管理权限执行 OCRA: ocra/%s"
 
 #, python-format
 msgid ""
@@ -3503,9 +3444,6 @@ msgstr ""
 msgid "Your LinOTP support subscription"
 msgstr "您的 LinOTP 订购支持"
 
-msgid "Your OCRA Token :"
-msgstr "您的 OCRA 令牌："
-
 msgid "Your OCRA2 Token :"
 msgstr "您的 OCRA2 令牌："
 
@@ -3578,9 +3516,6 @@ msgstr "[?]"
 msgid "activate token"
 msgstr "激活令牌"
 
-msgid "activate your OCRA Token"
-msgstr "激活您的 OCRA 令牌"
-
 msgid "activate your OCRA2 Token"
 msgstr "激活您的 OCRA2 令牌"
 
@@ -3609,9 +3544,6 @@ msgstr "通过电话 "
 
 msgid "certificate id"
 msgstr "证书 ID"
-
-msgid "challenge"
-msgstr "挑战"
 
 msgid "check status"
 msgstr "检查状态"
@@ -3701,9 +3633,6 @@ msgstr "文件名称"
 
 msgid "finalize activation"
 msgstr "完成激活"
-
-msgid "finish your OCRA Token"
-msgstr "OCRA 令牌设定完成"
 
 msgid "finish your OCRA2 Token"
 msgstr "结束 OCRA2 令牌"
@@ -4058,8 +3987,8 @@ msgstr ""
 "有效类型是 “oathtoken”、“googleauthenticator” 或 “googleauthenticator_time”。"
 "您提供的是 %s"
 
-#, python-format
-msgid "valid types are 'ocra' or 'ocra2'. You provided %s"
+#, fuzzy, python-format
+msgid "valid types is 'ocra2'. You provided %s"
 msgstr "有效类型是 'ocra' 或 'ocra2'. 您提供的是 %s"
 
 #, fuzzy
@@ -4075,6 +4004,12 @@ msgstr "生成的 Web 用户界面"
 #~ msgid "About LSE LinOTP"
 #~ msgstr "关于LSE LinOTP"
 
+#~ msgid "Activate your OCRA Token"
+#~ msgstr "激活您的 OCRA 令牌"
+
+#~ msgid "Activate your OCRA token"
+#~ msgstr "激活 OCRA 令牌"
+
 #~ msgid "Activate your QR token"
 #~ msgstr "激活二维码令牌"
 
@@ -4083,6 +4018,12 @@ msgstr "生成的 Web 用户界面"
 
 #~ msgid "Challenge validity (sec)"
 #~ msgstr "电子邮件挑战码有效性（秒）"
+
+#~ msgid "Default OCRA suite"
+#~ msgstr "标准 OCRA 套件"
+
+#~ msgid "Default QR suite"
+#~ msgstr "标准二维码套件"
 
 #~ msgid "Do you want to overwrite the existing definition?"
 #~ msgstr "您是否想覆盖现有解析器？"
@@ -4098,6 +4039,9 @@ msgstr "生成的 Web 用户界面"
 
 #~ msgid "File configuration"
 #~ msgstr "文件配置"
+
+#~ msgid "Generate OCRA key."
+#~ msgstr "OCRA 密钥由服务器生成。"
 
 #~ msgid "Here you can upload your Vasco DPX file."
 #~ msgstr "您可以导入 VASCO DPX 文件。"
@@ -4129,6 +4073,9 @@ msgstr "生成的 Web 用户界面"
 #~ msgid "License uploaded"
 #~ msgstr "许可证已上传"
 
+#~ msgid "Maximum concurrent OCRA challenges"
+#~ msgstr "OCRA2 最大同时挑战数量"
+
 #~ msgid "Misc settings"
 #~ msgstr "各项设定"
 
@@ -4147,8 +4094,26 @@ msgstr "生成的 Web 用户界面"
 #~ msgid "OATH CSV Token File"
 #~ msgstr "OATH CSV 令牌文件"
 
+#~ msgid "OCRA - challenge/response Token"
+#~ msgstr "OCRA，挑战/响应令牌"
+
+#~ msgid "OCRA Login"
+#~ msgstr "OCRA 登录"
+
+#~ msgid "OCRA Token"
+#~ msgstr "OCRA 令牌"
+
+#~ msgid "OCRA challenge timeout"
+#~ msgstr "OCRA 挑战超时"
+
+#~ msgid "OCRA key"
+#~ msgstr "OCRA 密钥"
+
 #~ msgid "OCRA settings"
 #~ msgstr "OCRA 设置"
+
+#~ msgid "OCRA token settings"
+#~ msgstr "OCRA 令牌设置"
 
 #~ msgid "Overwrite"
 #~ msgstr "覆盖"
@@ -4233,6 +4198,9 @@ msgstr "生成的 Web 用户界面"
 #~ "请指定有效的 LDAP 用户搜索过滤器名，如 (&(sAMAccountName=%s)"
 #~ "(objectClass=user))"
 
+#~ msgid "Please enter or copy the OCRA key."
+#~ msgstr "请输入 OCRA 密钥。"
+
 #~ msgid ""
 #~ "Please enter the UID of your LDAP server like DN, entryUUID, objectGUID "
 #~ "or GUID"
@@ -4277,6 +4245,19 @@ msgstr "生成的 Web 用户界面"
 #~ msgstr ""
 #~ "这些限制独立于本地指定限制之外，且不影响与 LinOTP 相关联的各项功能。"
 
+#~ msgid "This is the maximum concurrent challenges per OCRA Token."
+#~ msgstr "这是以OCRA2 令牌同时挑战的最大数量。"
+
+#~ msgid ""
+#~ "This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
+#~ "SHA256-6:C-QA64"
+#~ msgstr "新注册二维码 OCRA 令牌的套件。默认为 OCRA-1:HOTP-SHA256-6:C-QA64"
+
+#~ msgid ""
+#~ "This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
+#~ "SHA256-8:C-QA08"
+#~ msgstr "新注册 OCRA 令牌的默认 OCRA 套件。标准：OCRA-1:HOTP-SHA256-8:C-QA08"
+
 #~ msgid "Time between SMS (sec.)"
 #~ msgstr "短信间隔时间(秒)"
 
@@ -4286,21 +4267,9 @@ msgstr "生成的 Web 用户界面"
 #~ msgid "Token defaults"
 #~ msgstr "令牌默认"
 
-#~ msgid "Transport key:"
-#~ msgstr "传输密钥："
-
 #, fuzzy
 #~ msgid "Use system certificate"
 #~ msgstr "公钥证书"
-
-#~ msgid "Vasco DPX File"
-#~ msgstr "VASCO DPX 文件"
-
-#~ msgid "Vasco Digipass Token Class - proprietary timebased tokens"
-#~ msgstr "Vasco 动态密码令牌类，基于时间的私有令牌"
-
-#~ msgid "Vasco Token"
-#~ msgstr "Vasco 令牌"
 
 #~ msgid ""
 #~ "You do not have the administrative right to do monitoring.You are missing "
@@ -4310,12 +4279,21 @@ msgstr "生成的 Web 用户界面"
 #~ msgid "You do not have the rights to monitor these realms."
 #~ msgstr "您没有权限监测这些域。"
 
+#~ msgid "Your OCRA Token :"
+#~ msgstr "您的 OCRA 令牌："
+
+#~ msgid "activate your OCRA Token"
+#~ msgstr "激活您的 OCRA 令牌"
+
 #, fuzzy
 #~ msgid "activate your qr token"
 #~ msgstr "激活二维码令牌"
 
 #~ msgid "already exists."
 #~ msgstr "已存在。"
+
+#~ msgid "challenge"
+#~ msgstr "挑战"
 
 #~ msgid "count auth"
 #~ msgstr "认证计数器"
@@ -4326,6 +4304,9 @@ msgstr "生成的 Web 用户界面"
 #, fuzzy
 #~ msgid "count auth success max"
 #~ msgstr "最大认证数量"
+
+#~ msgid "finish your OCRA Token"
+#~ msgstr "OCRA 令牌设定完成"
 
 #, fuzzy
 #~ msgid "no"

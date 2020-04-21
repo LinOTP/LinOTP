@@ -507,7 +507,7 @@ realm = realm1
 client = None
 user = maria
 time = None
-action = "max_count_hotp=10, webprovisionGOOGLE, getotp, webprovisionOCRA, enrollYUBICO, "
+action = "max_count_hotp=10, webprovisionGOOGLE, getotp, enrollYUBICO, "
 scope = selfservice
 [SMS]
 realm = realm1
@@ -521,22 +521,8 @@ realm = realm1
 client = None
 user = None
 time = None
-action = "webprovisionGOOGLE, max_count_hotp=5, getotp, assign, webprovisionOCRA, webprovisionOCRA, enrollSMS, enrollMOTP, setMOTPPIN, history"
+action = "webprovisionGOOGLE, max_count_hotp=5, getotp, assign, enrollSMS, enrollMOTP, setMOTPPIN, history"
 scope = selfservice
-[ocra]
-realm = *
-client = *
-user = admin
-time = None
-action = "request, activationcode, status, "
-scope = ocra
-[ss1_ocra]
-realm = realm1
-client = None
-user = None
-time = None
-action = "qrtanurl=https://localhost, "
-scope = authentication
 [gettoken]
 realm = *
 client = ""
@@ -553,7 +539,7 @@ scope = gettoken
                                             upload_files=upload_files)
 
         assert '<status>True</status>' in response, response
-        assert '<value>8</value>' in response, response
+        assert '<value>6</value>' in response, response
 
         # Now check the policies, that we imported...
         response = self.make_system_request(action='getPolicy', method='POST',
@@ -564,8 +550,6 @@ scope = gettoken
         assert '"ss1_maria": {' in response, response
         assert '"SMS": {' in response, response
         assert '"ss1_raff": {' in response, response
-        assert '"ocra": {' in response, response
-        assert '"ss1_ocra": {' in response, response
         assert '"gettoken": {' in response, response
 
         # Now we try to upload with access policies.
@@ -601,7 +585,7 @@ scope = gettoken
                                             auth_user='superuser')
 
         assert '<status>True</status>' in response, response
-        assert '<value>8</value>' in response, response
+        assert '<value>6</value>' in response, response
 
         # readadmin is not allowed to import
         upload_files = [("file", "savedPolicy.txt", policy_content)]

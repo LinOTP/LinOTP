@@ -317,7 +317,7 @@ $( document ).ready(function() {
 </div>
 
 %endif
-<!-- -->
+
 
 %if c.scope == 'selfservice.title.activate':
 ${_("Activate your OCRA2 Token")}
@@ -424,7 +424,7 @@ function finishOcra2() {
 	var ocra_finish_ok = $('#ocra2_finish_ok').val();
 	var ocra_finish_fail = $('#ocra2_finish_fail').val();
 
-	$.post("/userservice/finshocra2token", {
+	$.post("/userservice/finishocra2token", {
 		'type' : 'ocra2',
 		'serial' : serial,
 		'transactionid' : trans,

@@ -133,16 +133,6 @@ class AuthController(BaseController):
         log.debug("[pushtoken] authenticating user")
         return render("/auth-push.mako")
 
-    def ocra(self):
-        '''
-        This is the method for testing ocra tokens
-
-        Call it directly in your browser like this
-            http(s)://server/auth/ocra
-        '''
-        log.debug("[ocra] authenticating user")
-        return render("/auth-ocra.mako")
-
     def ocra2(self):
         '''
         This is the method for testing ocra2 tokens

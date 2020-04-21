@@ -35,15 +35,9 @@ import logging
 
 import pytest
 
-from linotp.lib.config import getLinotpConfig
-from linotp.lib.policy.util import parse_policies
-from linotp.lib.policy import get_qrtan_url
-
 from linotp.tests.conftest import Base_App_Config as BAC
 
 from . import TestPoliciesBase
-from linotp.lib.context import request_context_safety
-from linotp.lib.context import request_context as context
 
 log = logging.getLogger(__name__)
 
@@ -73,6 +67,9 @@ class TestPolicies(TestPoliciesBase):
         '''
         Policy 00: Init the tests....
         '''
+        self.delete_all_realms()
+        self.delete_all_resolvers()
+
         self.delete_all_policies(auth_user='superadmin')
         self.delete_all_token()
 
@@ -3638,215 +3635,6 @@ class TestPolicies(TestPoliciesBase):
             assert '"status": true' in response, response
 
         return
-
-    @pytest.mark.skip('should become a unit test for getqrtanurl')
-    def test_801_getqrtanurl(self):
-        '''
-        Policy 801: Testing Authentication Scope: the QR-TAN Url with * realms
-        '''
-        URL = "https://testserver/ocra/check_t"
-        parameters = {'name': 'authQRTAN',
-                      'scope': 'authentication',
-                      'realm': '*',
-                      'action': 'qrtanurl=%s' % URL,
-                      }
-        auth_user = 'superadmin'
-        self.make_system_request(action='setPolicy',
-                                 params=parameters,
-                                 auth_user=auth_user)
-
-        auth_user = 'superadmin'
-        response = self.make_system_request(action='getPolicy',
-                                            auth_user=auth_user)
-        assert URL in response.body, response.body
-
-        # should be a unit test or should operate on mocked getPolicy
-        with request_context_safety():
-            context['Config'] = getLinotpConfig()
-            context['Policies'] = parse_policies(context['Config'])
-
-            u = get_qrtan_url(["testrealm"])
-
-        assert u == URL, u
-
-        return
-
-
-    @pytest.mark.skip('should become a unit test for getqrtanurl')
-    def test_802_getqrtanurl(self):
-        '''
-        Policy 802: Testing Authentication Scope: the QR-TAN Url with a single realm
-        '''
-        URL = "https://testserver/ocra/check_t"
-        parameters = {'name': 'authQRTAN',
-                      'scope': 'authentication',
-                      'realm': 'testrealm',
-                      'action': 'qrtanurl=%s' % URL,
-                      }
-        auth_user = 'superadmin'
-        _response = self.make_system_request(action='setPolicy',
-                                             params=parameters,
-                                             auth_user=auth_user)
-
-        with request_context_safety():
-
-            context['Config'] = getLinotpConfig()
-            context['Policies'] = parse_policies(context['Config'])
-
-            u = get_qrtan_url(["testrealm"])
-
-            assert u == URL, u
-
-        return
-
-
-    @pytest.mark.skip('should become a unit test for getqrtanurl')
-    def test_803_getqrtanurl(self):
-        '''
-        Policy 803: Testing Authentication Scope: the QR-TAN Url with 3 realms
-        '''
-        URL = "https://testserver/ocra/check_t"
-        parameters = {'name': 'authQRTAN',
-                      'scope': 'authentication',
-                      'realm': 'testrealm, realm2, realm3',
-                      'action': 'qrtanurl=%s' % URL,
-                      }
-        auth_user = 'superadmin'
-        _response = self.make_system_request(action='setPolicy',
-                                             params=parameters,
-                                             auth_user=auth_user)
-
-        with request_context_safety():
-            context['Config'] = getLinotpConfig()
-            context['Policies'] = parse_policies(context['Config'])
-
-            u = get_qrtan_url(["testrealm"])
-
-            assert u == URL, u
-
-        return
-
-    @pytest.mark.skip('ocra not supported')
-    def test_804_ocra_policy(self):
-        '''
-        Policy 804: Testing the ocra policies
-        '''
-        policies = [{
-                     'name': 'ocra_1',
-                     'scope': 'ocra',
-                     'realm': '*',
-                     'action': 'request, status',
-                     'user': 'ocra_admin_1',
-                     'client': ''
-                     },
-                    {
-                     'name': 'ocra_2',
-                     'scope': 'ocra',
-                     'realm': '*',
-                     'action': 'activationcode, calcOTP',
-                     'user': 'ocra_admin_2',
-                     'client': ''
-                     }
-                    ]
-        # create policies
-        for policy in policies:
-            auth_user = 'superadmin'
-            response = self.make_system_request(action='setPolicy',
-                                                params=policy,
-                                                auth_user=auth_user)
-
-            assert '"status": true' in response, response
-            assert '"setPolicy %s"' % policy.get('name') in response, \
-                            response
-
-        # check policies
-        for policy in policies:
-            params = {'name': policy.get('name')}
-            auth_user = 'superadmin'
-            response = self.make_system_request(action='getPolicy',
-                                                params=params,
-                                                auth_user=auth_user)
-
-            assert '"status": true' in response, response
-
-        params = {'user': 'user1', 'data': 'Testdaten'}
-        auth_user = 'ocra_admin_1'
-        response = self.make_ocra_request(action='request',
-                                          params=params,
-                                          auth_user=auth_user)
-
-        assert '"status": false' in response, response
-        assert '"No token found: unable to create challenge for ' in \
-                        response, response
-
-        params = {'user': 'user1'}
-        auth_user = 'ocra_admin_1'
-        response = self.make_ocra_request(action='checkstatus',
-                                          params=params,
-                                          auth_user=auth_user)
-
-        assert '"status": true' in response, response
-        assert '"values": []' in response, response
-
-        params = {'user': 'user1'}
-        auth_user = 'ocra_admin_2'
-        response = self.make_ocra_request(action='checkstatus',
-                                          params=params,
-                                          auth_user=auth_user)
-
-        assert '"status": false' in response, response
-        assert 'You do not have the administrative right to do an' \
-                        ' ocra/checkstatus' in response, response
-
-        params = {}
-        auth_user = 'ocra_admin_2'
-        response = self.make_ocra_request(action='getActivationCode',
-                                          params=params,
-                                          auth_user=auth_user)
-
-        assert '"status": true' in response, response
-        assert '"activationcode": "' in response, response
-
-        params = {}
-        auth_user = 'ocra_admin_2'
-        response = self.make_ocra_request(action='calculateOtp',
-                                          params=params,
-                                          auth_user=auth_user)
-
-        assert '"status": false' in response, response
-        assert '\'NoneType\' object has no attribute \'find\'' in \
-                        response, response
-
-        params = {}
-        auth_user = 'ocra_admin_1'
-        response = self.make_ocra_request(action='calculateOtp',
-                                          params=params,
-                                          auth_user=auth_user)
-
-        assert '"status": false' in response, response
-        assert '"code": 410' in response, response
-
-        params = {}
-        auth_user = 'ocra_admin_1'
-        response = self.make_ocra_request(action='getActivationCode',
-                                          params=params,
-                                          auth_user=auth_user)
-
-        assert '"status": false' in response, response
-        assert 'You do not have the administrative right to do an' \
-                        ' ocra/getActivationCode' in response, response
-
-        # delete policies
-        for policy in policies:
-            params = {'name': policy.get('name')}
-            auth_user = 'superadmin'
-            response = self.make_system_request(action='delPolicy',
-                                                params=params,
-                                                auth_user=auth_user)
-
-            assert '"status": true,' in response, response
-            assert '"linotp.Policy.%s.scope": true' \
-                            % policy.get('name') in response, response
 
     def test_810_admin_is_not_allowed_to_show(self):
         '''

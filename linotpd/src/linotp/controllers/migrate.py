@@ -88,7 +88,7 @@ class MigrateController(BaseController):
         """
         create a backup of
         - the encrypted token data, which could be
-            seed or pin (if encrypted) or userpin (used in motp, ocra)
+            seed or pin (if encrypted) or userpin (used in motp, ocra2)
         - the config entries of type password
 
         the data

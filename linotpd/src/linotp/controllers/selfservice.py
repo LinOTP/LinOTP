@@ -99,7 +99,6 @@ class SelfserviceController(BaseController):
     # the following actions don't require a session parameter
     # as they are only callbacks to render a form
     form_access_methods = [
-        "activateocratoken",
         "assign",
         "custom_style",
         "delete",
@@ -574,12 +573,6 @@ class SelfserviceController(BaseController):
         This is the form for an oathtoken to do web provisioning.
         '''
         return render('/selfservice/webprovisionoath.mako')
-
-    def activateocratoken(self):
-        '''
-        return the form for an ocra token activation
-        '''
-        return render('/selfservice/activateocra.mako')
 
     def webprovisiongoogletoken(self):
         '''

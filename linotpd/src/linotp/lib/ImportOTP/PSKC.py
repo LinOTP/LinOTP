@@ -296,7 +296,7 @@ def parsePSKCdata(xml, preshared_key_hex=None, password=None,
             elif 'totp' == algorithm.lower():
                 TOKEN_TYPE = "totp"
             elif 'ocra' == algorithm.lower():
-                TOKEN_TYPE = "ocra"
+                TOKEN_TYPE = "ocra2"
 
         if do_checkserial and not checkSerial(serial):
             log.warning("serial %s is not a valid OATH serial" % serial)
@@ -318,7 +318,7 @@ def parsePSKCdata(xml, preshared_key_hex=None, password=None,
                     KD_otplen = int(e.get("Length"))
                     log.debug("Found length = %s" % e.get("Length"))
                 elif "Suite" == eTag:
-                    if TOKEN_TYPE == "ocra":
+                    if TOKEN_TYPE == "ocra2":
                         KD_Suite = e.text
                         log.debug("Found OCRA Suite = %s" % KD_Suite)
                     else:

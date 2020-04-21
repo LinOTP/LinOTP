@@ -199,30 +199,6 @@ def set_defaults(app):
                value="240", typ="int",
                description="Autosync timeout for an totp token")
 
-    # setup for ocra defaults
-    # OcraDefaultSuite
-    # QrOcraDefaultSuite
-    # OcraMaxChallenges
-    # OcraChallengeTimeout
-
-    set_config(key="OcraDefaultSuite",
-               value="OCRA-1:HOTP-SHA256-8:C-QN08",
-               typ="string",
-               description="Default OCRA suite for an ocra token ")
-
-    set_config(key="QrOcraDefaultSuite",
-               value="OCRA-1:HOTP-SHA256-8:C-QA64",
-               typ="string",
-               description="Default OCRA suite for an ocra token ")
-
-    set_config(key="OcraMaxChallenges",
-               value="4", typ="int",
-               description="Maximum open ocra challenges")
-
-    set_config(key="OcraChallengeTimeout",
-               value="300", typ="int",
-               description="Timeout for an open ocra challenge")
-
     # emailtoken defaults
     set_config(key="EmailProvider",
                value="linotp.provider.emailprovider.SMTPEmailProvider",

@@ -47,7 +47,7 @@ def parseOATHcsv(csv):
        defined the tokens hashlib changes to sha265. For seeds with 64 bytes
        the hashlib is determined as sha512 if not other specified.
 
-    It can also import ocra token.
+    It can also import ocra2 token.
 
     * The default is hotp
     * if totp is set, the default seconds are 30
@@ -127,13 +127,13 @@ def parseOATHcsv(csv):
 
         # 4 column: otplen or ocrasuite
 
-        if ttype in ["ocra", "ocra2"]:
+        if ttype in ["ocra2"]:
 
             ocrasuite = line[3]
 
             if not ocrasuite:
                 log.error("[parseOATHcsv] the line %s did not contain"
-                          " the ocrasuite for the ocra token!" % csv_line)
+                          " the ocrasuite for the ocra2 token!" % csv_line)
                 continue
 
             token['ocrasuite'] = ocrasuite
