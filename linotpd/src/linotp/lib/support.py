@@ -23,7 +23,6 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-from linotp.lib.crypto.encrypted_data import EncryptedData
 """ methods to handle support files """
 
 import os
@@ -31,9 +30,9 @@ import os
 
 import base64
 import binascii
-import M2Crypto
 
 import datetime
+import logging
 
 from linotp.lib.config import refreshConfig
 from linotp.lib.config import getFromConfig
@@ -43,11 +42,12 @@ from linotp.lib.config import removeFromConfig
 from linotp.lib.token import getTokenNumResolver
 from linotp.lib.token import getNumTokenUsers
 
+from linotp.lib.crypto.encrypted_data import EncryptedData
+from linotp.lib.crypto.rsa import verify_rsa_signature
 
 from linotp.lib.context import request_context as context
 
 
-import logging
 log = logging.getLogger(__name__)
 
 __all__ = ["parseSupportLicense", "getSupportLicenseInfo", "readLicenseInfo",
@@ -691,16 +691,9 @@ def _verify_signature(pub_keys, lic_str, lic_sign):
     # verify signature with M2Crypto
     for pub_key_name, pub_key in list(pub_keys.items()):
 
-        # some M2Crypto magic
-        bio = M2Crypto.BIO.MemoryBuffer(pub_key.encode('utf-8'))
-        rsa = M2Crypto.RSA.load_pub_key_bio(bio)
-        pubkey = M2Crypto.EVP.PKey()
-        pubkey.assign_rsa(rsa)
-        pubkey.reset_context(md="sha256")
-        pubkey.verify_init()
-        pubkey.verify_update(lic_str.encode('utf-8'))
+        if verify_rsa_signature(pub_key.strip().encode('utf-8'),
+            lic_str.encode('utf-8'), lic_sign):
 
-        if (pubkey.verify_final(lic_sign) == 1):
             ret = pub_key_name
             break
 
