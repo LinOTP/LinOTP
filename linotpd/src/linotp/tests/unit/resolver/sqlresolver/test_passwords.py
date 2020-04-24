@@ -62,8 +62,8 @@ class TestSQLResolver_Password(unittest.TestCase):
         res = check_password(brahms_pw, wrong_brahms_hashed_pw)
         assert not res
 
-    def test_bcypt_password(self):
-        """ check the bcypt password verification method """
+    def test_bcrypt_password(self):
+        """ check the bcrypt password verification method """
 
         password = 'password'
         password_hash = ('$2a$12$NT0I31Sa7ihGEWpka9ASYeEFk'
