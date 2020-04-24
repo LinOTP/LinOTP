@@ -47,20 +47,20 @@ class TestSQLResolver_Password(unittest.TestCase):
         res = atlassian_pbkdf2_sha1.verify(brahms_pw, brahms_hashed_pw)
         assert res
 
-        res =check_password(brahms_pw, brahms_hashed_pw)
+        res = check_password(brahms_pw, brahms_hashed_pw)
         assert res
 
         wrong_brahms_hashed_pw = brahms_hashed_pw.replace('PKCS5S2', 'OKCS5S2')
         res = check_password(brahms_pw, wrong_brahms_hashed_pw)
-        assert res == False
+        assert not res
 
-        wrong_brahms_hashed_pw = brahms_hashed_pw.replace('+','-')
+        wrong_brahms_hashed_pw = brahms_hashed_pw.replace('+', '-')
         res = check_password(brahms_pw, wrong_brahms_hashed_pw)
-        assert res == False
+        assert not res
 
-        wrong_brahms_hashed_pw = brahms_hashed_pw.replace('G','Q')
+        wrong_brahms_hashed_pw = brahms_hashed_pw.replace('G', 'Q')
         res = check_password(brahms_pw, wrong_brahms_hashed_pw)
-        assert res == False
+        assert not res
 
     def test_bcypt_password(self):
         """ check the bcypt password verification method """
@@ -69,42 +69,41 @@ class TestSQLResolver_Password(unittest.TestCase):
         password_hash = ('$2a$12$NT0I31Sa7ihGEWpka9ASYeEFk'
                          'huTNeBQ2xfZskIiiJeyFXhRgS.Sy')
         res = check_password(password, password_hash)
-        assert res == True
+        assert res
 
-        wrong_password_hash = password_hash.replace('h','t')
+        wrong_password_hash = password_hash.replace('h', 't')
 
         res = check_password(password, wrong_password_hash)
-        assert res == False
+        assert not res
 
         wrong_password = password + '!'
 
         res = check_password(wrong_password, password_hash)
-        assert res == False
+        assert not res
 
     def test_php_passwords(self):
         """ check the php password verification method """
 
         password = 'password'
-        password_hash ='$P$8ohUJ.1sdFw09/bMaAQPTGDNi2BIUt1'
+        password_hash = '$P$8ohUJ.1sdFw09/bMaAQPTGDNi2BIUt1'
 
         res = check_password(password, password_hash)
-        assert res == True
+        assert res
 
-        wrong_password_hash = password_hash.replace('U','Z')
+        wrong_password_hash = password_hash.replace('U', 'Z')
 
         res = check_password(password, wrong_password_hash)
-        assert res == False
+        assert not res
 
         wrong_password = password + '!'
 
         res = check_password(wrong_password, password_hash)
-        assert res == False
+        assert not res
 
     def test_supported_passwords(self):
         """ check all supported password formats """
 
         test_vector = [
-
         ("ldap_sha1", True, "password",
          "{SHA}W6ph5Mm5Pz8GgiULbPgzG37mj9g="),
 
@@ -209,4 +208,3 @@ class TestSQLResolver_Password(unittest.TestCase):
         for _hash_type, expect, password, crypted_password in test_vector:
 
             assert expect == check_password(password, crypted_password)
-
