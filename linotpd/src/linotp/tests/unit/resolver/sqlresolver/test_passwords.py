@@ -28,14 +28,14 @@
 SQL Resolver unit test - test passwords formats
 """
 
-import unittest
+import pytest
 
 from passlib.hash import atlassian_pbkdf2_sha1
 
 from linotp.useridresolver.SQLIdResolver import check_password
 
 
-class TestSQLResolver_Password(unittest.TestCase):
+class TestSQLResolver_Password(object):
 
     def test_pbkdf2_password(self):
 
@@ -100,10 +100,7 @@ class TestSQLResolver_Password(unittest.TestCase):
         res = check_password(wrong_password, password_hash)
         assert not res
 
-    def test_supported_passwords(self):
-        """ check all supported password formats """
-
-        test_vector = [
+    @pytest.mark.parametrize('hash_type,expected,pwd,crypted_pwd', [
         ("ldap_sha1", True, "password",
          "{SHA}W6ph5Mm5Pz8GgiULbPgzG37mj9g="),
 
@@ -202,9 +199,6 @@ class TestSQLResolver_Password(unittest.TestCase):
 
         ("bigcrypt", True, "password",
          "p6cUugZyGjvRM"),
-
-        ]
-
-        for _hash_type, expect, password, crypted_password in test_vector:
-
-            assert expect == check_password(password, crypted_password)
+    ])
+    def test_supported_passwords(self, hash_type, expected, pwd, crypted_pwd):
+        assert expected == check_password(pwd, crypted_pwd)
