@@ -38,13 +38,15 @@ uses a public/private key for signing the log entries
 import datetime
 from sqlalchemy import schema, types, orm, and_, or_, asc, desc
 
-from M2Crypto import EVP, RSA
+
 from binascii import hexlify
 from binascii import unhexlify
 from sqlalchemy import create_engine
 from linotp.flap import config
 from linotp.lib.audit.base import AuditBase
 from linotp.model import meta
+
+from linotp.lib.crypto.rsa import RSA_Signature
 
 import logging.config
 import traceback
@@ -312,10 +314,8 @@ class Audit(AuditBase):
         # initialize signing keys
         self.readKeys()
 
-        self.PublicKey = RSA.load_pub_key(self.publicKeyFilename)
-        self.VerifyEVP = EVP.PKey()
-        self.VerifyEVP.reset_context(md='sha256')
-        self.VerifyEVP.assign_rsa(self.PublicKey)
+        self.rsa = RSA_Signature(private=self.private.encode('utf-8'))
+
 
     def _init_db(self):
         """
@@ -386,13 +386,8 @@ class Audit(AuditBase):
         line = self._attr_to_dict(audit_line)
         s_audit = getAsBytes(line)
 
-        key = EVP.load_key_string(bytes(self.private, 'utf-8'))
-        key.reset_context(md='sha256')
-        key.sign_init()
-        key.sign_update(s_audit)
-        signature = key.sign_final()
+        signature = self.rsa.sign(s_audit)
         return signature.hex()
-
 
     def _verify(self, auditline, signature):
         '''
@@ -405,11 +400,7 @@ class Audit(AuditBase):
 
         s_audit = getAsBytes(auditline)
 
-        self.VerifyEVP.verify_init()
-        self.VerifyEVP.verify_update(s_audit)
-        res = self.VerifyEVP.verify_final(unhexlify(signature))
-
-        return res
+        return self.rsa.verify(s_audit, unhexlify(signature))
 
     def log(self, param):
         '''
