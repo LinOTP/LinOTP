@@ -81,6 +81,7 @@ SECRET_LEN = 32
 
 
 
+Cookie_Secret = binascii.hexlify(os.urandom(SECRET_LEN))
 Cookie_Cache = {}
 
 
@@ -268,13 +269,7 @@ def get_cookie_secret():
 
     :return: return the cookie encryption secret
     """
-    config = request_context['Config']
-
-    if not config.get('selfservice_auth_secret'):
-        secret = binascii.hexlify(os.urandom(SECRET_LEN))
-        config['selfservice_auth_secret'] = secret
-
-    return config.get('selfservice_auth_secret')
+    return Cookie_Secret
 
 
 def get_cookie_expiry():
