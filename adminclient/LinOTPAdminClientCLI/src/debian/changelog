@@ -1,3 +1,9 @@
+linotp-adminclient-cli (2.11.2rc0-1) jessie; urgency=low
+
+  * Set new version 2.11.2rc0
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 24 Apr 2020 14:20:25 +0200
+
 linotp-adminclient-cli (2.11.1-1) jessie; urgency=low
 
   * Set new version 2.11.1
