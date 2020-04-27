@@ -30,6 +30,8 @@ SQL Resolver unit test - test passwords formats
 
 import pytest
 
+from passlib.context import CryptContext
+from passlib.exc import MissingBackendError
 from passlib.hash import atlassian_pbkdf2_sha1
 
 from linotp.useridresolver.SQLIdResolver import check_password
@@ -80,6 +82,20 @@ class TestSQLResolver_Password(object):
 
         res = check_password(wrong_password, password_hash)
         assert not res
+
+    def test_bcrypt_password_no_bcrypt(self, monkeypatch):
+        """Deal with a missing bcrypt backend."""
+
+        def mock_verify(pwd, crypted_pwd):
+            raise MissingBackendError(
+                "bcrypt: no backends available -- recommend you install one "
+                "(e.g., 'pip install bcrypt')")
+
+        context = CryptContext(schemes=['bcrypt'])
+        monkeypatch.setattr(context, 'verify', mock_verify)
+        with pytest.raises(MissingBackendError) as excinfo:
+            context.verify("foo", "bar")
+        assert 'bcrypt: no backends available' in str(excinfo.value)
 
     def test_php_passwords(self):
         """ check the php password verification method """
