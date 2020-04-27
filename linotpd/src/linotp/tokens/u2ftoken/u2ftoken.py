@@ -28,8 +28,16 @@ import json
 import base64
 import struct
 import binascii
-import re
-from M2Crypto import X509, m2, Err
+
+# x509 certificate support and signature verification
+
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import serialization
+from cryptography.exceptions import InvalidSignature
+
 from hashlib import sha256
 
 from linotp.lib.auth.validate import check_otp
@@ -276,26 +284,6 @@ class U2FTokenClass(TokenClass):
 
         return (True, message, data, attributes)
 
-    @staticmethod
-    def _is_supported_openssl_version():
-        """
-        check if the openssl version is supported by the U2FTokenClass
-
-        :return:          boolean - True if supported, False if unsupported
-        """
-        # U2F needs OpenSSL 1.0.0 or higher
-        # The EC OpenSSL API calls made by M2Crypto don't work with OpenSSl 0.9.8!
-        version_text = m2.OPENSSL_VERSION_TEXT
-
-        match = re.match(r"OpenSSL (?P<version>\d\.\d\.\d)", version_text)
-        if match is None:
-            log.warning("Could not detect OpenSSL version - unknown version string format: '%s'",
-                        version_text
-                        )
-        else:
-            if match.group('version')[0] == '0':
-                return False
-        return True
 
     def _is_valid_facet(self, origin):
         """
@@ -534,13 +522,6 @@ class U2FTokenClass(TokenClass):
         # add ASN1 prefix
         PUB_KEY_ASN1_PREFIX = bytes.fromhex("3059301306072a8648ce3d020106082a8648ce3d030107034200")
         publicKey = PUB_KEY_ASN1_PREFIX + publicKey
-
-        # Check for OpenSSL version 1.0.0 or higher
-        if not self._is_supported_openssl_version():
-            log.error("This version of OpenSSL is not supported! OpenSSL version 1.0.0 or higher "
-                      "is required for the U2F token.")
-            raise Exception("This version of OpenSSL is not supported! OpenSSL version 1.0.0 or "
-                            "higher is required for the U2F token.")
 
         try:
             # The following command needs support for ECDSA in OpenSSL!
@@ -785,19 +766,15 @@ class U2FTokenClass(TokenClass):
             raise ValueError("Wrong registration data format")
         registrationData = registrationData[keyHandleLength:]
 
+
         # load the X509 Certificate
-        try:
-            cert = X509.load_cert_der_string(registrationData)
-            registrationData = registrationData[len(cert.as_der()):]
-            # TODO: We could verify that the certificate was issued by a certification
-            # authority we trust.
-        except X509.X509Error as err:
-            log.exception(
-                "Wrong registration data format: could not interpret the X509 certificate")
-            raise Exception(err)
+        cert = x509.load_der_x509_certificate(
+                            registrationData, default_backend())
+
+        cert_len = len(cert.public_bytes(serialization.Encoding.DER))
 
         # The remaining registrationData is the ECDSA signature
-        signature = registrationData
+        signature = registrationData[cert_len:]
 
         return (userPublicKey, keyHandle, cert, signature)
 
@@ -823,27 +800,32 @@ class U2FTokenClass(TokenClass):
                                      registration data
         """
 
-        certPubKey = cert.get_pubkey()
-        certPubKey.reset_context('sha256')
-        certPubKey.verify_init()
-        if certPubKey.verify_update(b'\x00' +
-                                    applicationParameter +
-                                    challengeParameter +
-                                    keyHandle +
-                                    userPublicKey) != 1:
-            raise Exception("Error on verify_update.")
+        # ------------------------------------------------------------------ --
 
-        # Check for OpenSSL version 1.0.0 or higher
-        if not self._is_supported_openssl_version():
-            raise Exception("This version of OpenSSL is not supported! OpenSSL version 1.0.0 "
-                            "or higher is required for the U2F token.")
+        # compose the message from its parts
 
-        if certPubKey.verify_final(signature) != 1:
-            ssl_error = Err.get_error()
-            raise Exception("Signature verification failed! Maybe someone is doing "
-                            "something nasty! However, this error could possibly also be "
-                            "related to missing ECDSA support for the NIST P-256 curve in "
-                            "OpenSSL.\n\nOpenSSL says:\n{}".format(ssl_error))
+        message = (
+            b'\x00' + applicationParameter + challengeParameter +
+            keyHandle + userPublicKey
+            )
+
+        # ------------------------------------------------------------------ --
+
+        # verify the attestation ECDSA signature
+
+        pubkey = cert.public_key()
+
+        try:
+            pubkey.verify(signature, message, ec.ECDSA(hashes.SHA256()))
+
+        except InvalidSignature as exx:
+            log.info("Failed to verify signature %r" % exx)
+            raise ValueError('Attestation signature is invalid')
+
+        except Exception as exx:
+            log.error("Failed to verify signature %r" % exx)
+            raise
+
 
     def getInitDetail(self, params, user=None):
         """
@@ -946,7 +928,7 @@ class U2FTokenClass(TokenClass):
                 clientData = base64.urlsafe_b64decode(clientData.encode('ascii'))
 
                 # parse the raw registrationData according to the specification
-                (userPublicKey, keyHandle, X509cert, signature) = \
+                (userPublicKey, keyHandle, x509cert, signature) = \
                     self._parseRegistrationData(registrationData)
 
                 # check the received clientData object
@@ -965,7 +947,7 @@ class U2FTokenClass(TokenClass):
                                                     challengeParameter,
                                                     keyHandle,
                                                     userPublicKey,
-                                                    X509cert,
+                                                    x509cert,
                                                     signature
                                                     )
 
