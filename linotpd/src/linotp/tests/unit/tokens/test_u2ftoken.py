@@ -50,7 +50,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        from linotp.tokens.u2ftoken import U2FTokenClass
+        from linotp.tokens.u2ftoken.u2ftoken import U2FTokenClass
         # Without this logging in the tested class fails
         logging.basicConfig()
 
@@ -275,7 +275,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         and a correct pin
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value='registration')
-        patcher = patch('linotp.tokens.u2ftoken.check_pin', spec=True)
+        patcher = patch('linotp.tokens.u2ftoken.u2ftoken.check_pin', spec=True)
         check_pin_mock = patcher.start()
         check_pin_mock.return_value = True
         param = dict(description=None, phase='registration2', pin='test!pin')
@@ -290,7 +290,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         and a wrong pin
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value='registration')
-        patcher = patch('linotp.tokens.u2ftoken.check_pin', spec=True)
+        patcher = patch('linotp.tokens.u2ftoken.u2ftoken.check_pin', spec=True)
         check_pin_mock = patcher.start()
         check_pin_mock.return_value = False
         param = dict(description=None, phase='registration2', pin='test!pin')
