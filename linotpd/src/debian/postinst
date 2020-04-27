@@ -6,7 +6,6 @@ set -e
 
 NEW_VERSION='@@@DEB_VERSION@@@'
 
-APACHE_CONFIG=/etc/linotp2/apache-servername.conf
 LINOTP_INI=/etc/linotp2/linotp.ini
 WHO_INI=/etc/linotp2/who.ini
 ENCKEYFILE=/etc/linotp2/encKey
@@ -365,7 +364,6 @@ case "$1" in
           -nodes
         echo_log "Self-signed certificate created"
       fi
-      touch $APACHE_CONFIG
       invoke-rc.d apache2 reload
       echo_log "done setting up apache with ssl"
     else
