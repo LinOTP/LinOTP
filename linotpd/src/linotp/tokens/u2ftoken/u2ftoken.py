@@ -29,7 +29,7 @@ import base64
 import struct
 import binascii
 
-# x509 certificate support and signature verification
+# x509 certificate support and elliptic signature verification
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -37,6 +37,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.exceptions import InvalidSignature
+
 
 from hashlib import sha256
 
@@ -51,23 +52,14 @@ from linotp.lib.policy import getPolicy, getPolicyActionValue
 from linotp.lib.error import TokenTypeNotSupportedError
 from linotp.lib.error import ParameterError
 from linotp.tokens import tokenclass_registry
+
 """
     This file contains the U2F V2 token implementation as specified by the FIDO Alliance
 """
 
-optional = True
-required = False
-
 import logging
 log = logging.getLogger(__name__)
 
-# Elliptic Curves support is not available on all platforms
-try:
-    from M2Crypto import EC
-except (ImportError, AttributeError) as exx:
-    log.debug("Could not import EC from M2Crypto: %r", exx)
-    raise TokenTypeNotSupportedError("Missing EC support in M2Crypto (openssl). FIDO U2F token " \
-                                     "can't be used.")
 
 @tokenclass_registry.class_entry('u2f')
 @tokenclass_registry.class_entry('linotp.tokens.u2ftoken.U2FTokenClass')
@@ -519,29 +511,49 @@ class U2FTokenClass(TokenClass):
         :param signature:            The signature to be verified as retrieved on parsing the
                                      authentication response
         """
-        # add ASN1 prefix
-        PUB_KEY_ASN1_PREFIX = bytes.fromhex("3059301306072a8648ce3d020106082a8648ce3d030107034200")
-        publicKey = PUB_KEY_ASN1_PREFIX + publicKey
+
+        # ------------------------------------------------------------------ --
+
+        # we require an ASN1 prefix in front of the public key so that it
+        # could be imported
+
+        PUB_KEY_ASN1_PREFIX = bytes.fromhex(
+            "3059301306072a8648ce3d020106082a8648ce3d030107034200"
+            )
+
+        asn1_publicKey = PUB_KEY_ASN1_PREFIX + publicKey
+
+        # ------------------------------------------------------------------ --
+
+        # According to the FIDO U2F specification the signature is a ECDSA
+        # signature on the NIST P-256 curve over the SHA256 hash of the
+        # following byte string:
+
+        message = (
+            applicationParameter + userPresenceByte + counter +
+            challengeParameter
+            )
+
+        # ------------------------------------------------------------------ --
+
+        # verify with the asn1, der encoded public key
+
+        ecc_pub = serialization.load_der_public_key(
+                                asn1_publicKey, default_backend())
 
         try:
-            # The following command needs support for ECDSA in OpenSSL!
-            # Since Red Hat systems (including Fedora) use an OpenSSL version without
-            # support for the NIST P-256 curve (as of March 2015), this command will fail
-            # with a NULL pointer exception on these systems
-            ECPubKey = EC.pub_key_from_der(publicKey)
-        except ValueError as ex:
-            raise Exception(
-                "Could not get ECPubKey. Possibly missing ECDSA support for the NIST P-256 "
-                "curve in OpenSSL? %r" % ex)
 
-        # According to the FIDO U2F specification the signature is a ECDSA signature on the
-        # NIST P-256 curve over the SHA256 hash of the following byte string
-        toBeVerified = sha256(
-            applicationParameter + userPresenceByte + counter + challengeParameter).digest()
-        if ECPubKey.verify_dsa_asn1(toBeVerified, signature) != 1:
+            ecc_pub.verify(signature, message, ec.ECDSA(hashes.SHA256()))
+            return True
+
+        except InvalidSignature:
             log.debug("Signature verification failed!")
             return False
-        return True
+
+        except Exception as exx:
+            log.error("Signature verification failed! %r" % exx)
+            raise
+
 
     def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
         """
