@@ -27,7 +27,7 @@
 
 import json
 
-from flask import current_app
+
 from functools import partial
 
 from linotp.model import Realm, TokenRealm
@@ -39,8 +39,7 @@ from linotp.lib.config import getFromConfig
 from linotp.lib.config.parsing import ConfigTree
 from linotp.lib.config.parsing import ConfigNotRecognized
 from linotp.lib.context import request_context as context
-
-from linotp.lib.type_utils import get_duration
+from linotp.lib.cache import get_cache
 
 from sqlalchemy import func
 
@@ -318,33 +317,7 @@ def _get_realm_config_cache():
     :return: the realm config cache
     """
 
-    config = context['Config']
-
-    enabled = config.get('linotp.resolver_lookup_cache.enabled',
-                         'True') == 'True'
-    if not enabled:
-        return None
-
-    try:
-        expiration_conf = config.get('linotp.resolver_lookup_cache.expiration',
-                                     36 * 3600)
-        expiration = get_duration(expiration_conf)
-
-    except ValueError:
-        log.debug("resolver caching is disabled due to a value error in "
-                  "resolver_lookup_cache.expiration config")
-        return None
-
-    cache_manager = current_app.getCacheManager()
-    if not cache_manager:
-        return None
-
-    cache_name = 'realm_config'
-    realm_config_cache = cache_manager.get_cache(cache_name,
-                                                 type="memory",
-                                                 expiretime=expiration)
-
-    return realm_config_cache
+    return get_cache(cache_name='realm_lookup')
 
 
 def _delete_from_realm_config_cache(realm_name):
