@@ -38,6 +38,7 @@ from linotp.lib.context import request_context
 
 from linotp.lib.config import getFromConfig, storeConfig
 from linotp.lib.config import getLinotpConfig
+from linotp.lib.cache import get_cache
 
 from linotp.lib.realm import setDefaultRealm
 from linotp.lib.realm import getDefaultRealm
@@ -1043,37 +1044,13 @@ def get_resolvers_of_user(login, realm):
 
 def _get_resolver_lookup_cache(realm):
     """
-    helper - common getter to access the resolver_lookup cache
+    helper - common getter to access the user_lookup cache with scope realm
+             to lookup if the user is in a realm
 
     :param realm: realm description
     :return: the resolver lookup cache
     """
-    config = request_context['Config']
-
-    enabled = config.get('linotp.resolver_lookup_cache.enabled',
-                         'True') == 'True'
-    if not enabled:
-        return None
-
-    try:
-        expiration_conf = config.get('linotp.resolver_lookup_cache.expiration',
-                                     36 * 3600)
-        expiration = get_duration(expiration_conf)
-
-    except ValueError:
-        log.info("resolver caching is disabled due to a value error in "
-                 "resolver_lookup_cache.expiration config")
-        return None
-
-    cache_manager = current_app.getCacheManager()
-    if not cache_manager:
-        return None
-
-    cache_name = 'resolvers_lookup::%s' % realm
-    resolvers_lookup_cache = cache_manager.get_cache(cache_name,
-                                                     type="memory",
-                                                     expiretime=expiration)
-    return resolvers_lookup_cache
+    return get_cache(cache_name='user_lookup', scope=realm)
 
 
 def delete_realm_resolver_cache(realmname):
@@ -1297,42 +1274,14 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
 def _get_user_lookup_cache(resolver_spec):
     """
-    helper - common getter to access the user_lookup cache
+    helper - common getter to access the user_lookup cache with scope resolver
+             to lookup if the user is in a resolver
 
     :param resolver_spec: resolver description
     :return: the user lookup cache
     """
 
-    config = request_context['Config']
-
-    enabled = config.get('linotp.user_lookup_cache.enabled',
-                         'True') == 'True'
-
-    if not enabled:
-        return None
-
-    try:
-
-        expiration_conf = config.get(
-                            'linotp.user_lookup_cache.expiration', 36 * 3600)
-        expiration = get_duration(expiration_conf)
-
-    except ValueError:
-        log.info("user caching is disabled due to a value error in "
-                 "user_lookup_cache.expiration config")
-        return None
-
-    cache_manager = current_app.getCacheManager()
-    if not cache_manager:
-        return None
-
-    cache_name = 'user_lookup::%s' % resolver_spec
-    user_lookup_cache = cache_manager.get_cache(cache_name,
-                                                type="memory",
-                                                expiretime=expiration)
-
-    return user_lookup_cache
-
+    return get_cache('user_lookup', scope=resolver_spec)
 
 def delete_resolver_user_cache(resolver_spec):
     """

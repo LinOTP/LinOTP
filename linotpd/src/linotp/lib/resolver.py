@@ -31,10 +31,10 @@ import logging
 import json
 import re
 
-from flask import current_app
 from functools import partial
 
 from linotp.lib.context import request_context as context
+from linotp.lib.cache import get_cache
 
 from linotp.lib.config import storeConfig
 from linotp.lib.config import removeFromConfig
@@ -42,7 +42,6 @@ from linotp.lib.config import getLinotpConfig
 from linotp.lib.config.parsing import ConfigTree
 from linotp.lib.config.parsing import ConfigNotRecognized
 
-from linotp.lib.type_utils import get_duration
 from linotp.lib.type_utils import boolean
 from linotp.useridresolver import resolver_registry
 from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
@@ -724,35 +723,7 @@ def _get_resolver_config_cache():
     :return: the resolver config cache
     """
 
-    config = context['Config']
-
-    enabled = config.get('linotp.resolver_lookup_cache.enabled',
-                         'True') == 'True'
-    if not enabled:
-        return None
-
-    try:
-        expiration_conf = config.get('linotp.resolver_lookup_cache.expiration',
-                                     36 * 3600)
-
-        expiration = get_duration(expiration_conf)
-
-    except ValueError:
-        log.info("resolver caching is disabled due to a value error in "
-                 "resolver_lookup_cache.expiration config")
-        return None
-
-    cache_manager = current_app.getCacheManager()
-    if not cache_manager:
-        return None
-
-    cache_name = 'resolver_config'
-    resolver_config_cache = cache_manager.get_cache(cache_name,
-                                                    type="memory",
-                                                    expiretime=expiration)
-
-    return resolver_config_cache
-
+    return get_cache(cache_name='resolver_lookup')
 
 def _delete_from_resolver_config_cache(resolver_spec):
     """
