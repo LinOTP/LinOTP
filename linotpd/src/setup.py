@@ -57,9 +57,7 @@ install_requirements = [
     # apt.
     'python-ldap',
     'bcrypt',
-    # m2crypto needs libssl-dev and swig system packages on debian buster
-    # to be installable via pip or install python-m2crypto via apt.
-    'm2crypto',
+    'cryptography',
 ]
 
 # Requirements needed to run all the tests

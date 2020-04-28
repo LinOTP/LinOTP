@@ -643,7 +643,7 @@ def verifyLicenseInfo(lic_dict, lic_sign, raiseException=False,
 
 def verify_signature(lic_dict, lic_sign, licStr=None):
     """
-    verfiy the license signature with the m2crypto
+    verfiy the license signature with crypto.rsa
 
     :param lic_dict: the dict with the license data
     :param lic_sign: the license signature
@@ -688,7 +688,7 @@ def _verify_signature(pub_keys, lic_str, lic_sign):
     if base64.b64encode(lic_sign) in BLACK_SIGNATURES:
         return False
 
-    # verify signature with M2Crypto
+    # verify signature with crypto.rsa
     for pub_key_name, pub_key in list(pub_keys.items()):
 
         if verify_rsa_signature(pub_key.strip().encode('utf-8'),
