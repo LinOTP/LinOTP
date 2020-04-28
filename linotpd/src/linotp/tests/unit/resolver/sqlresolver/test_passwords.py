@@ -28,14 +28,16 @@
 SQL Resolver unit test - test passwords formats
 """
 
-import unittest
+import pytest
 
+from passlib.context import CryptContext
+from passlib.exc import MissingBackendError
 from passlib.hash import atlassian_pbkdf2_sha1
 
 from linotp.useridresolver.SQLIdResolver import check_password
 
 
-class TestSQLResolver_Password(unittest.TestCase):
+class TestSQLResolver_Password(object):
 
     def test_pbkdf2_password(self):
 
@@ -47,64 +49,74 @@ class TestSQLResolver_Password(unittest.TestCase):
         res = atlassian_pbkdf2_sha1.verify(brahms_pw, brahms_hashed_pw)
         assert res
 
-        res =check_password(brahms_pw, brahms_hashed_pw)
+        res = check_password(brahms_pw, brahms_hashed_pw)
         assert res
 
         wrong_brahms_hashed_pw = brahms_hashed_pw.replace('PKCS5S2', 'OKCS5S2')
         res = check_password(brahms_pw, wrong_brahms_hashed_pw)
-        assert res == False
+        assert not res
 
-        wrong_brahms_hashed_pw = brahms_hashed_pw.replace('+','-')
+        wrong_brahms_hashed_pw = brahms_hashed_pw.replace('+', '-')
         res = check_password(brahms_pw, wrong_brahms_hashed_pw)
-        assert res == False
+        assert not res
 
-        wrong_brahms_hashed_pw = brahms_hashed_pw.replace('G','Q')
+        wrong_brahms_hashed_pw = brahms_hashed_pw.replace('G', 'Q')
         res = check_password(brahms_pw, wrong_brahms_hashed_pw)
-        assert res == False
+        assert not res
 
-    def test_bcypt_password(self):
-        """ check the bcypt password verification method """
+    def test_bcrypt_password(self):
+        """ check the bcrypt password verification method """
 
         password = 'password'
         password_hash = ('$2a$12$NT0I31Sa7ihGEWpka9ASYeEFk'
                          'huTNeBQ2xfZskIiiJeyFXhRgS.Sy')
         res = check_password(password, password_hash)
-        assert res == True
+        assert res
 
-        wrong_password_hash = password_hash.replace('h','t')
+        wrong_password_hash = password_hash.replace('h', 't')
 
         res = check_password(password, wrong_password_hash)
-        assert res == False
+        assert not res
 
         wrong_password = password + '!'
 
         res = check_password(wrong_password, password_hash)
-        assert res == False
+        assert not res
+
+    def test_bcrypt_password_no_bcrypt(self, monkeypatch):
+        """Deal with a missing bcrypt backend."""
+
+        def mock_verify(pwd, crypted_pwd):
+            raise MissingBackendError(
+                "bcrypt: no backends available -- recommend you install one "
+                "(e.g., 'pip install bcrypt')")
+
+        context = CryptContext(schemes=['bcrypt'])
+        monkeypatch.setattr(context, 'verify', mock_verify)
+        with pytest.raises(MissingBackendError) as excinfo:
+            context.verify("foo", "bar")
+        assert 'bcrypt: no backends available' in str(excinfo.value)
 
     def test_php_passwords(self):
         """ check the php password verification method """
 
         password = 'password'
-        password_hash ='$P$8ohUJ.1sdFw09/bMaAQPTGDNi2BIUt1'
+        password_hash = '$P$8ohUJ.1sdFw09/bMaAQPTGDNi2BIUt1'
 
         res = check_password(password, password_hash)
-        assert res == True
+        assert res
 
-        wrong_password_hash = password_hash.replace('U','Z')
+        wrong_password_hash = password_hash.replace('U', 'Z')
 
         res = check_password(password, wrong_password_hash)
-        assert res == False
+        assert not res
 
         wrong_password = password + '!'
 
         res = check_password(wrong_password, password_hash)
-        assert res == False
+        assert not res
 
-    def test_supported_passwords(self):
-        """ check all supported password formats """
-
-        test_vector = [
-
+    @pytest.mark.parametrize('hash_type,expected,pwd,crypted_pwd', [
         ("ldap_sha1", True, "password",
          "{SHA}W6ph5Mm5Pz8GgiULbPgzG37mj9g="),
 
@@ -203,10 +215,6 @@ class TestSQLResolver_Password(unittest.TestCase):
 
         ("bigcrypt", True, "password",
          "p6cUugZyGjvRM"),
-
-        ]
-
-        for _hash_type, expect, password, crypted_password in test_vector:
-
-            assert expect == check_password(password, crypted_password)
-
+    ])
+    def test_supported_passwords(self, hash_type, expected, pwd, crypted_pwd):
+        assert expected == check_password(pwd, crypted_pwd)

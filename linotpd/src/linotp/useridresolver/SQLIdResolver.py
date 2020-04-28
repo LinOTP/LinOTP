@@ -61,6 +61,8 @@ from linotp.lib.type_utils import text
 
 # ------------------------------------------------------------------------- --
 
+from passlib.exc import MissingBackendError
+
 # establish the passlib crypt context different password formats
 
 from passlib.context import CryptContext
@@ -157,6 +159,9 @@ def check_password(password, crypted_password, salt=None):
 
         except ValueError as exx:
             log.error("Error while comparing password! %r", exx)
+            return False
+        except MissingBackendError as exx:
+            log.error("Missing passlib backend: %s", exx)
             return False
 
     log.info("password does not match any password schema!")
