@@ -188,9 +188,8 @@ class TotpToken(object):
                 to validate the hmac token against the defined test vectors
         '''
         if counter == -1:
-
             if self.jitter != 0 or jitter != 0:
-                jitter = random.randrange(-self.jitter , self.jitter)
+                jitter = random.uniform(-self.jitter , self.jitter)
             else:
                 jitter = 0
 

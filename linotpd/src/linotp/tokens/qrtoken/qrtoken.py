@@ -27,7 +27,8 @@
 import logging
 import struct
 import zlib
-from os import urandom
+import secrets
+
 from base64 import b64encode
 from base64 import b64decode
 from linotp.flap import config
@@ -327,7 +328,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         #            ---------------------------------------------------
         #
 
-        r = urandom(32)
+        r = secrets.token_bytes(32)
         R = calc_dh_base(r)
 
         user_token_id = self.getFromTokenInfo('user_token_id')

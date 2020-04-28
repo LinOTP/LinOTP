@@ -38,7 +38,7 @@ from linotp.lib.reply import sendResult, sendError
 
 from linotp.lib.policy import get_auth_AutoSMSPolicy
 
-from linotp.lib.crypto.utils import urandom
+import secrets
 
 import linotp.model
 
@@ -216,7 +216,7 @@ class TestingController(BaseController):
 
             elif account == "clickatel":
                 if username == "legit":
-                    return "ID %i" % int(urandom.randint(1000))
+                    return "ID %i" % int(secrets.randbelow(1000 + 1))
                 else:
                     return "FAILED"
 

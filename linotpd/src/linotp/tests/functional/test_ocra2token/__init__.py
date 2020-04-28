@@ -30,7 +30,7 @@
 
 import logging
 import binascii
-import random
+
 import urllib.request, urllib.parse, urllib.error
 import json
 

@@ -60,8 +60,6 @@ log = logging.getLogger(__name__)
 CHALLLENGE_RUNS = 4
 
 
-
-
 @pytest.mark.nightly
 class OcraTest(TestController):
     """
@@ -454,6 +452,7 @@ class OcraTest(TestController):
         ''' randomly change the chars in an otp - to gen a wrong otp '''
         rotp = otp
         text = list(otp)
+
         while rotp == otp:
             random.shuffle(text)
             rotp = ''.join(text)

@@ -209,7 +209,8 @@ from datetime import datetime
 
 import hmac
 import re
-from linotp.lib.crypto.utils import urandom
+import secrets
+
 from linotp.lib.crypto.utils import get_hashalgo_from_description
 
 
@@ -600,15 +601,15 @@ class OcraSuite():
 
         if c_type == 'A':
             for _c in range(0, c_len):
-                challenge += urandom.choice(alphnum)
+                challenge += secrets.choice(alphnum)
 
         elif c_type == 'N':
             for _c in range(0, c_len):
-                challenge += urandom.choice(digits)
+                challenge += secrets.choice(digits)
 
         elif c_type == 'H':
             for _c in range(0, c_len):
-                challenge += urandom.choice(hexs)
+                challenge += secrets.choice(hexs)
 
         challenge = challenge[:c_len]
         return str(challenge)

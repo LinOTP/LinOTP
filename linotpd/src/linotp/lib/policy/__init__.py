@@ -68,13 +68,12 @@ from linotp.lib.policy.util import ascii_lowercase, ascii_uppercase
 
 from linotp.lib.policy.maxtoken import check_maxtoken
 
-# for generating random passwords
-from linotp.lib.crypto.utils import urandom
+
 from linotp.lib.util import uniquify
 
 from linotp.lib.realm import getRealms
 
-
+# for generating random passwords
 from linotp.lib.util import generate_password
 
 from linotp.lib.context import request_context

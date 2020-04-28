@@ -32,10 +32,10 @@ import re
 import netaddr
 
 import logging
+import secrets
 
 from linotp.flap import config, abort
 
-from linotp.lib.crypto.utils import urandom
 from linotp.lib.crypto.utils import geturandom
 
 from linotp.lib.selftest import isSelfTest
@@ -53,6 +53,7 @@ from linotp import (__version__ as linotp_version,
                     )
 
 from linotp import __api__ as linotp_api
+
 
 SESSION_KEY_LENGTH = 32
 hostname_regex = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
@@ -162,7 +163,7 @@ def generate_password(size=6, characters=None):
         characters = string.ascii_lowercase + \
                      string.ascii_uppercase + string.digits
 
-    return ''.join(urandom.choice(characters) for _x in range(size))
+    return ''.join(secrets.choice(characters) for _x in range(size))
 
 
 def check_session(request, scope='admin'):

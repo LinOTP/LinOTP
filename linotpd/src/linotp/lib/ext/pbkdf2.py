@@ -51,9 +51,9 @@
 
 
 from struct import pack
-import linotp.lib.crypto
-import sys
 
+import sys
+import secrets
 import hmac
 from hashlib import sha1
 
@@ -278,9 +278,11 @@ def _makesalt():
 
     This function is not suitable for generating cryptographic secrets.
     """
+
+    random = secrets.SystemRandom()
     binarysalt = b("").join(
         [pack("@H",
-              linotp.lib.crypto.utils.urandom.randint(0, 0xffff))
+              random.randint(0, 0xffff))
          for _i in range(3)
          ])
     return b64encode(binarysalt, "./")
