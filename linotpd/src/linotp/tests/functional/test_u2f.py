@@ -31,15 +31,46 @@
 
 from linotp.tests import TestController
 from hashlib import sha256
-from M2Crypto import EC, BIO, m2
+
+
 import json
 import binascii
 import base64
 import sys
-import re
 
 import logging
+
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import serialization
+
 log = logging.getLogger(__name__)
+
+
+def ECDSA_verify(cert, message, signature):
+    """
+    helper code to verify the created ECDSA signature - useful for development
+    """
+
+    cert = x509.load_der_x509_certificate(cert, default_backend())
+    pubkey = cert.public_key()
+    try:
+        pubkey.verify(signature, message, ec.ECDSA(hashes.SHA256()))
+        return True
+    except Exception as _exx:
+        return False
+
+def ECDSA_sign(private_key, message):
+    """
+    helper - create a ECDSA signature - useful for development
+    """
+
+    priv = serialization.load_pem_private_key(
+        private_key, password=None, backend=default_backend())
+
+    return priv.sign(message, ec.ECDSA(hashes.SHA256()))
 
 
 class TestU2FController(TestController):
@@ -76,11 +107,12 @@ class TestU2FController(TestController):
                       'ef306f47fd45906e838401a6437270a45a37da9c25d8db8b559a888'
 
     # Generate ECC key, NIST P-256 elliptic curve
-    ECC_KEY1 = EC.gen_params(EC.NID_X9_62_prime256v1)
-    ECC_KEY1.gen_key()
 
-    ECC_KEY2 = EC.gen_params(EC.NID_X9_62_prime256v1)
-    ECC_KEY2.gen_key()
+    CURVE = ec.SECP256R1
+
+    ECC_KEY1 = ec.generate_private_key(CURVE(), default_backend())
+    ECC_KEY2 = ec.generate_private_key(CURVE(), default_backend())
+
 
     key_set = {1: (KEY_HANDLE_HEX1, ECC_KEY1),
                2: (KEY_HANDLE_HEX2, ECC_KEY2)
@@ -258,8 +290,17 @@ class TestU2FController(TestController):
         #
         registration_data = bytearray([5])  # First byte must be 0x05
 
-        # The public key length is set to a fixed length of 65 characters in the U2F specification
-        public_key = ecc_key.pub().get_der()[-65:]
+        # ------------------------------------------------------------------ --
+
+        # derive the public key in DER format from the private key
+        #  the public key length is set to a fixed length of 65 characters
+        #  in the U2F specification
+
+        public_key = ecc_key.public_key().public_bytes(
+                            serialization.Encoding.DER,
+                            serialization.PublicFormat.SubjectPublicKeyInfo,
+                        )[-65:]
+
         registration_data += public_key
 
         key_handle = bytearray.fromhex(key_handle_hex)
@@ -269,28 +310,36 @@ class TestU2FController(TestController):
         attestation_cert_der = bytearray.fromhex(self.ATTESTATION_CERT_HEX)
         registration_data += attestation_cert_der
 
-        # Create the ECDSA signature
-        digest = sha256()
-        digest.update(b'\x00' +
-                      sha256(self.origin.encode('utf-8')).digest() +
-                      sha256(client_data).digest() +
-                      key_handle +
-                      public_key
-                      )
+        # ------------------------------------------------------------------ --
 
-        cert_private_key = EC.load_key_bio(BIO.MemoryBuffer(
-            self.ATTESTATION_PRIVATE_KEY_PEM.encode('ascii')))
-        signature = cert_private_key.sign_dsa_asn1(digest.digest())
+        # Create the ECDSA signature:
+        #  derive the signature from the message for appending
+
+        private_key = self.ATTESTATION_PRIVATE_KEY_PEM.encode('ascii')
+
+        message = (
+            b'\x00' + sha256(self.origin.encode('utf-8')).digest() +
+            sha256(client_data).digest() + key_handle + public_key
+            )
+
+        signature = ECDSA_sign(private_key, message)
+
+        # ECDSA_verify(attestation_cert_der, message, signature)
+
+        # ------------------------------------------------------------------ --
+
+        # switch to change the signature to an invalid registration response
+        # by cutting of the last byte
 
         if correct is False:
-            # Change the signature to create an invalid registration response
             signature = signature[:-1]
 
         registration_data += signature
 
-        #
+        # ------------------------------------------------------------------ --
+
         # Create the registration_response
-        #
+#
         registration_response = {
             'registrationData': base64.urlsafe_b64encode(registration_data).decode('ascii'),
             'clientData': base64.urlsafe_b64encode(client_data).decode('ascii')
@@ -322,14 +371,21 @@ class TestU2FController(TestController):
         self.counter += 1
         authentication_data += self.counter.to_bytes(4, byteorder='big')
 
-        # signature
-        digest = sha256()
-        digest.update(sha256(self.origin.encode('utf-8')).digest() +
-                      b'\x01' +
-                      self.counter.to_bytes(4, byteorder='big') +
-                      sha256(client_data).digest()
-                      )
-        signature = ecc_key.sign_dsa_asn1(digest.digest())
+        # ------------------------------------------------------------------ --
+
+        # create the dsa_asn1 signature
+
+        message = (
+            sha256(self.origin.encode('utf-8')).digest() + b'\x01' +
+            self.counter.to_bytes(4, byteorder='big') +
+            sha256(client_data).digest()
+            )
+
+        signature = ecc_key.sign(message, ec.ECDSA(hashes.SHA256()))
+
+        # ------------------------------------------------------------------ --
+
+        # switch to invalidate the signature by removing the last byte
 
         if correct is False:
             # Change the signature to create an invalid authentication response
