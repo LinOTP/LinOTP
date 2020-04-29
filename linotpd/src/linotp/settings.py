@@ -95,6 +95,9 @@ class Config:
 
     # MAKO_TRANSLATE_EXCEPTIONS = False
 
+    # Enable html escaping in mako templates
+    MAKO_DEFAULT_FILTERS = ["h"]
+
     # Where the online help can be found. The `{0}` will be replaced
     # with the major version number of this LinOTP instance. (If there
     # is no `{0}` in the URL that is not a big deal.)
