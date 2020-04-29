@@ -43,6 +43,14 @@ fi
 # Determine the release name and number that we are building for
 DEBIAN_RELEASE_NAME="$(lsb_release -c -s)"
 
+# Keep any suffix defined on the distribution name such as
+#  buster-dev -> DISTRIBUTION_SUFFIX="-dev"
+#
+# We will use this to achieve a mapping such as
+#  buster-dev -> squeeze-dev
+# It will be left blank if there is no suffix
+DISTRIBUTION_SUFFIX="$(dpkg-parsechangelog -S Distribution | sed -ne '/-/ s/^[a-z]\+\(-[a-z]\+\)$/\1/p')"
+
 # Ensure generated changelog entries have the same
 export DEBEMAIL="$(dpkg-parsechangelog -S Maintainer)"
 
@@ -80,7 +88,7 @@ fi
 # In order to upload to our internal archive, we need to set the distribution to
 # correct destination distribution
 CURRENT_DISTRIBUTION="$(dpkg-parsechangelog -S Distribution)"
-sed "1s/ ${CURRENT_DISTRIBUTION}\(; urgency=\)/ ${DEBIAN_RELEASE_NAME}\1/" -i debian/changelog
+sed "1s/ ${CURRENT_DISTRIBUTION}\(; urgency=\)/ ${DEBIAN_RELEASE_NAME}${DISTRIBUTION_SUFFIX}\1/" -i debian/changelog
 
 # Show the results
 dpkg-parsechangelog
