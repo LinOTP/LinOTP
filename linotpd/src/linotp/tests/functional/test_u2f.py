@@ -31,15 +31,46 @@
 
 from linotp.tests import TestController
 from hashlib import sha256
-from M2Crypto import EC, BIO, m2
+
+
 import json
 import binascii
 import base64
 import sys
-import re
 
 import logging
+
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import serialization
+
 log = logging.getLogger(__name__)
+
+
+def ECDSA_verify(cert, message, signature):
+    """
+    helper code to verify the created ECDSA signature - useful for development
+    """
+
+    cert = x509.load_der_x509_certificate(cert, default_backend())
+    pubkey = cert.public_key()
+    try:
+        pubkey.verify(signature, message, ec.ECDSA(hashes.SHA256()))
+        return True
+    except Exception as _exx:
+        return False
+
+def ECDSA_sign(private_key, message):
+    """
+    helper - create a ECDSA signature - useful for development
+    """
+
+    priv = serialization.load_pem_private_key(
+        private_key, password=None, backend=default_backend())
+
+    return priv.sign(message, ec.ECDSA(hashes.SHA256()))
 
 
 class TestU2FController(TestController):
@@ -76,11 +107,12 @@ class TestU2FController(TestController):
                       'ef306f47fd45906e838401a6437270a45a37da9c25d8db8b559a888'
 
     # Generate ECC key, NIST P-256 elliptic curve
-    ECC_KEY1 = EC.gen_params(EC.NID_X9_62_prime256v1)
-    ECC_KEY1.gen_key()
 
-    ECC_KEY2 = EC.gen_params(EC.NID_X9_62_prime256v1)
-    ECC_KEY2.gen_key()
+    CURVE = ec.SECP256R1
+
+    ECC_KEY1 = ec.generate_private_key(CURVE(), default_backend())
+    ECC_KEY2 = ec.generate_private_key(CURVE(), default_backend())
+
 
     key_set = {1: (KEY_HANDLE_HEX1, ECC_KEY1),
                2: (KEY_HANDLE_HEX2, ECC_KEY2)
@@ -258,8 +290,17 @@ class TestU2FController(TestController):
         #
         registration_data = bytearray([5])  # First byte must be 0x05
 
-        # The public key length is set to a fixed length of 65 characters in the U2F specification
-        public_key = ecc_key.pub().get_der()[-65:]
+        # ------------------------------------------------------------------ --
+
+        # derive the public key in DER format from the private key
+        #  the public key length is set to a fixed length of 65 characters
+        #  in the U2F specification
+
+        public_key = ecc_key.public_key().public_bytes(
+                            serialization.Encoding.DER,
+                            serialization.PublicFormat.SubjectPublicKeyInfo,
+                        )[-65:]
+
         registration_data += public_key
 
         key_handle = bytearray.fromhex(key_handle_hex)
@@ -269,28 +310,36 @@ class TestU2FController(TestController):
         attestation_cert_der = bytearray.fromhex(self.ATTESTATION_CERT_HEX)
         registration_data += attestation_cert_der
 
-        # Create the ECDSA signature
-        digest = sha256()
-        digest.update(b'\x00' +
-                      sha256(self.origin.encode('utf-8')).digest() +
-                      sha256(client_data).digest() +
-                      key_handle +
-                      public_key
-                      )
+        # ------------------------------------------------------------------ --
 
-        cert_private_key = EC.load_key_bio(BIO.MemoryBuffer(
-            self.ATTESTATION_PRIVATE_KEY_PEM.encode('ascii')))
-        signature = cert_private_key.sign_dsa_asn1(digest.digest())
+        # Create the ECDSA signature:
+        #  derive the signature from the message for appending
+
+        private_key = self.ATTESTATION_PRIVATE_KEY_PEM.encode('ascii')
+
+        message = (
+            b'\x00' + sha256(self.origin.encode('utf-8')).digest() +
+            sha256(client_data).digest() + key_handle + public_key
+            )
+
+        signature = ECDSA_sign(private_key, message)
+
+        # ECDSA_verify(attestation_cert_der, message, signature)
+
+        # ------------------------------------------------------------------ --
+
+        # switch to change the signature to an invalid registration response
+        # by cutting of the last byte
 
         if correct is False:
-            # Change the signature to create an invalid registration response
             signature = signature[:-1]
 
         registration_data += signature
 
-        #
+        # ------------------------------------------------------------------ --
+
         # Create the registration_response
-        #
+#
         registration_response = {
             'registrationData': base64.urlsafe_b64encode(registration_data).decode('ascii'),
             'clientData': base64.urlsafe_b64encode(client_data).decode('ascii')
@@ -322,14 +371,21 @@ class TestU2FController(TestController):
         self.counter += 1
         authentication_data += self.counter.to_bytes(4, byteorder='big')
 
-        # signature
-        digest = sha256()
-        digest.update(sha256(self.origin.encode('utf-8')).digest() +
-                      b'\x01' +
-                      self.counter.to_bytes(4, byteorder='big') +
-                      sha256(client_data).digest()
-                      )
-        signature = ecc_key.sign_dsa_asn1(digest.digest())
+        # ------------------------------------------------------------------ --
+
+        # create the dsa_asn1 signature
+
+        message = (
+            sha256(self.origin.encode('utf-8')).digest() + b'\x01' +
+            self.counter.to_bytes(4, byteorder='big') +
+            sha256(client_data).digest()
+            )
+
+        signature = ecc_key.sign(message, ec.ECDSA(hashes.SHA256()))
+
+        # ------------------------------------------------------------------ --
+
+        # switch to invalidate the signature by removing the last byte
 
         if correct is False:
             # Change the signature to create an invalid authentication response
@@ -584,40 +640,12 @@ class TestU2FController(TestController):
 
         return response_authentication2
 
-    def _has_EC_support(self):
-        has_ec_support = True
-        # U2F needs OpenSSL 1.0.0 or higher
-        # The EC OpenSSL API calls made by M2Crypto don't work with OpenSSl 0.9.8!
-        version_text = m2.OPENSSL_VERSION_TEXT
-        match = re.match(r"OpenSSL (?P<version>\d\.\d\.\d)", version_text)
-        if match is None:
-            # Fail on unknown OpenSSL version string format
-            self.fail("Could not detect OpenSSL version - unknown version string format: '%s'"
-                      % version_text)
-        else:
-            if match.group('version')[0] == '0':
-                has_ec_support = False
-
-        # The following command needs support for ECDSA in openssl!
-        # Since Red Hat systems (including Fedora) use an openssl version without
-        # support for the NIST P-256 elliptic curve (as of March 2015),
-        # this command will fail with a NULL pointer exception on these systems
-        try:
-            EC.load_key_bio(BIO.MemoryBuffer(
-                self.ATTESTATION_PRIVATE_KEY_PEM.encode('utf-8')))
-        except ValueError:
-            has_ec_support = False
-
-        return has_ec_support
 
     def test_u2f_registration_and_authentication_without_pin(self):
         """
         Enroll a U2F token without a token pin and authenticate
         """
-        if not self._has_EC_support():
-            self.skipTest(
-                "Probably no OpenSSL support for the needed NIST P-256 curve!"
-                )
+
         self._registration()
         # Authenticate twice
         challenges = self._authentication_challenge()
@@ -630,10 +658,7 @@ class TestU2FController(TestController):
         """
         Enroll a U2F token without a token pin and authenticate
         """
-        if not self._has_EC_support():
-            self.skipTest(
-                "Probably no OpenSSL support for the needed NIST P-256 curve!"
-                )
+
         self._registration(key_num=1)
         self._registration(key_num=2)
 
@@ -652,10 +677,7 @@ class TestU2FController(TestController):
         """
         Enroll a U2F token without a token pin and perform an invalid authentication
         """
-        if not self._has_EC_support():
-            self.skipTest(
-                "Probably no OpenSSL support for the needed NIST P-256 curve!"
-                )
+
         self._registration()
         # Authenticate twice
         challenges = self._authentication_challenge()
@@ -666,10 +688,7 @@ class TestU2FController(TestController):
         """
         Enroll a U2F token without a token pin and authenticate
         """
-        if not self._has_EC_support():
-            self.skipTest(
-                "Probably no OpenSSL support for the needed NIST P-256 curve!"
-                )
+
         self._registration(key_num=1)
         self._registration(key_num=2)
 
@@ -684,20 +703,14 @@ class TestU2FController(TestController):
         """
         Try an invalid registration of a U2F token without pin
         """
-        if not self._has_EC_support():
-            self.skipTest(
-                "Probably no OpenSSL support for the needed NIST P-256 curve!"
-                )
+
         self._registration(correct=False)
 
     def test_u2f_registration_and_authentication_with_pin(self):
         """
         Enroll a U2F token with a token pin and authenticate
         """
-        if not self._has_EC_support():
-            self.skipTest(
-                "Probably no OpenSSL support for the needed NIST P-256 curve!"
-                )
+
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin)
         # Authenticate twice
@@ -711,10 +724,7 @@ class TestU2FController(TestController):
         """
         Enroll a U2F token without a token pin and authenticate
         """
-        if not self._has_EC_support():
-            self.skipTest(
-                "Probably no OpenSSL support for the needed NIST P-256 curve!"
-                )
+
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin=pin, key_num=1)
         self._registration(pin=pin, key_num=2)
@@ -734,10 +744,7 @@ class TestU2FController(TestController):
         """
         Enroll a U2F token with a token pin and authenticate
         """
-        if not self._has_EC_support():
-            self.skipTest(
-                "Probably no OpenSSL support for the needed NIST P-256 curve!"
-                )
+
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin)
         challenges = self._authentication_challenge(pin)
@@ -748,10 +755,7 @@ class TestU2FController(TestController):
         """
         Enroll a U2F token without a token pin and authenticate
         """
-        if not self._has_EC_support():
-            self.skipTest(
-                "Probably no OpenSSL support for the needed NIST P-256 curve!"
-                )
+
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin=pin, key_num=1)
         self._registration(pin=pin, key_num=2)
@@ -767,215 +771,10 @@ class TestU2FController(TestController):
         """
         Try an invalid registration of a U2F token with pin
         """
-        if not self._has_EC_support():
-            self.skipTest(
-                "Probably no OpenSSL support for the needed NIST P-256 curve!"
-                )
+
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin=pin, correct=False)
 
-    def test_u2f_unsupported_openssl_version(self):
-        """
-        Try a registration with an unsupported OpenSSL version and check the error messages
-        """
-        version_text = m2.OPENSSL_VERSION_TEXT
-        match = re.match(r"OpenSSL (?P<version>\d\.\d\.\d)", version_text)
-        if match is None:
-            # Fail on unknown OpenSSL version string format
-            self.fail("Could not detect OpenSSL version - unknown version string format: '%s'"
-                      % version_text)
-        else:
-            if match.group('version')[0] != '0':
-                # Supported OpenSSL version - skip test
-                self.skipTest(
-                    "This test can only be run with an unsupported OpenSSL "
-                    "version!"
-                    )
-
-        # Initial token registration step
-        response_registration1 = self.get_json_body(self._registration1())
-
-        # check for status and value
-        assert 'result' in response_registration1, \
-                      "Response: %r" % response_registration1
-        assert 'status' in response_registration1['result'], \
-                      "Response: %r" % response_registration1
-        assert response_registration1['result']['status']
-        assert 'value' in response_registration1['result'], \
-                      "Response: %r" % response_registration1
-        assert response_registration1['result']['value']
-
-        # check detail object containing serial and registerrequest
-        assert 'detail' in response_registration1, \
-                      "Response: %r" % response_registration1
-
-        # check for correct serial
-        assert 'serial' in response_registration1['detail'], \
-                      "Response: %r" % response_registration1
-        assert response_registration1['detail']['serial'][:3] == "U2F"
-
-        # check for correct registerrequest object
-        assert 'registerrequest' in response_registration1['detail'], \
-                      "Response: %r" % response_registration1
-        assert 'challenge' in response_registration1['detail']['registerrequest'], \
-                      "Response: %r" % response_registration1
-        # check for non-empty and correctly-padded challenge
-        assert response_registration1['detail']['registerrequest']['challenge'] != ''
-        assert len(response_registration1['detail']['registerrequest']['challenge']) % 4 == \
-                         0
-        assert 'version' in response_registration1['detail']['registerrequest'], \
-                      "Response: %r" % response_registration1
-        # only U2F_V2 is supported right now
-        assert response_registration1['detail']['registerrequest']['version'] == "U2F_V2"
-        assert 'appId' in response_registration1['detail']['registerrequest'], \
-                      "Response: %r" % response_registration1
-        assert response_registration1['detail']['registerrequest']['appId'] == self.origin
-
-        challenge_registration = response_registration1['detail']['registerrequest']['challenge']
-        self.serial = response_registration1['detail']['serial']
-        self.serials.add(self.serial)
-
-        client_data_registration = self._createClientDataObject('registration',
-                                                                challenge_registration,
-                                                                )
-        # Since we have no supported OpenSSL version to calculate the registration response
-        # we use a hard-coded correctly-formed fake registration response
-        registration_response = binascii.unhexlify(self.FAKE_REGISTRATION_DATA_HEX)
-        registration_response_message = {
-            'registrationData': base64.urlsafe_b64encode(registration_response),
-            'clientData': base64.urlsafe_b64encode(client_data_registration)
-        }
-
-        # Complete the token registration
-        response_registration2 = self.get_json_body(
-            self._registration2(json.dumps(registration_response_message))
-            )
-
-        # Registration must fail
-        # check for status and value
-        assert 'result' in response_registration2, \
-                      "Response: %r" % response_registration2
-        assert 'status' in response_registration2['result'], \
-                      "Response: %r" % response_registration2
-        assert not response_registration2['result']['status']
-        # check explicitly, that no "value: true" is responded
-        if 'value' in response_registration2['result']:
-            assert not response_registration2['result']['value']
-
-        # Check for correct error messages
-        assert 'error' in response_registration2['result'], \
-                      "Response: %r" % response_registration2
-        assert 'message' in response_registration2['result']['error'], \
-                      "Response: %r" % response_registration2
-        assert "This version of OpenSSL is not supported!" in \
-                      response_registration2['result']['error']['message']
-
-    def test_u2f_unsupported_openssl_missing_curve(self):
-        """
-        Try registration with an OpenSSL missing the NIST P-256 curve and check the error messages
-        """
-        skip_test = True
-
-        # Only allow OpenSSL >=1.0.0 with missing EC support
-        version_text = m2.OPENSSL_VERSION_TEXT
-        match = re.match(r"OpenSSL (?P<version>\d\.\d\.\d)", version_text)
-        if match is None:
-            # Fail on unknown OpenSSL version string format
-            self.fail("Could not detect OpenSSL version - unknown version string format: '%s'"
-                      % version_text)
-        else:
-            if match.group('version')[0] != '0':
-                # Only run test on missing NIST P-256 curve support
-                try:
-                    EC.load_key_bio(
-                        BIO.MemoryBuffer(
-                            self.ATTESTATION_PRIVATE_KEY_PEM.encode('utf-8')))
-                except ValueError:
-                    skip_test = False
-
-        if skip_test:
-            self.skipTest(
-                "This test can only be run with OpenSSL missing the "
-                "NIST P-256 curve!"
-                )
-
-        # Initial token registration step
-        response_registration1 = self.get_json_body(self._registration1())
-
-        # check for status and value
-        assert 'result' in response_registration1, \
-                      "Response: %r" % response_registration1
-        assert 'status' in response_registration1['result'], \
-                      "Response: %r" % response_registration1
-        assert response_registration1['result']['status']
-        assert 'value' in response_registration1['result'], \
-                      "Response: %r" % response_registration1
-        assert response_registration1['result']['value']
-
-        # check detail object containing serial and registerrequest
-        assert 'detail' in response_registration1, \
-                      "Response: %r" % response_registration1
-
-        # check for correct serial
-        assert 'serial' in response_registration1['detail'], \
-                      "Response: %r" % response_registration1
-        assert response_registration1['detail']['serial'][:3] == "U2F"
-
-        # check for correct registerrequest object
-        assert 'registerrequest' in response_registration1['detail'], \
-                      "Response: %r" % response_registration1
-        assert 'challenge' in response_registration1['detail']['registerrequest'], \
-                      "Response: %r" % response_registration1
-        # check for non-empty and correctly-padded challenge
-        assert response_registration1['detail']['registerrequest']['challenge'] != ''
-        assert len(response_registration1['detail']['registerrequest']['challenge']) % 4 == \
-                         0
-        assert 'version' in response_registration1['detail']['registerrequest'], \
-                      "Response: %r" % response_registration1
-        # only U2F_V2 is supported right now
-        assert response_registration1['detail']['registerrequest']['version'] == "U2F_V2"
-        assert 'appId' in response_registration1['detail']['registerrequest'], \
-                      "Response: %r" % response_registration1
-        assert response_registration1['detail']['registerrequest']['appId'] == self.origin
-
-        challenge_registration = response_registration1['detail']['registerrequest']['challenge']
-        self.serial = response_registration1['detail']['serial']
-        self.serials.add(self.serial)
-
-        client_data_registration = self._createClientDataObject('registration',
-                                                                challenge_registration,
-                                                                )
-        # Since we have no supported OpenSSL version to calculate the registration response
-        # we use a hard-coded correctly-formed fake registration response
-        registration_response = binascii.unhexlify(self.FAKE_REGISTRATION_DATA_HEX)
-        registration_response_message = {
-            'registrationData': base64.urlsafe_b64encode(registration_response),
-            'clientData': base64.urlsafe_b64encode(client_data_registration)
-        }
-
-        # Complete the token registration
-        response_registration2 = self.get_json_body(
-            self._registration2(json.dumps(registration_response_message))
-            )
-
-        # Registration must fail
-        # check for status and value
-        assert 'result' in response_registration2, \
-                      "Response: %r" % response_registration2
-        assert 'status' in response_registration2['result'], \
-                      "Response: %r" % response_registration2
-        assert not response_registration2['result']['status']
-        # check explicitly, that no "value: true" is responded
-        if 'value' in response_registration2['result']:
-            assert not response_registration2['result']['value']
-
-        # Check for correct error messages
-        assert 'error' in response_registration2['result'], \
-                      "Response: %r" % response_registration2
-        assert 'message' in response_registration2['result']['error'], \
-                      "Response: %r" % response_registration2
-        assert "missing ECDSA support for the NIST P-256 curve in OpenSSL" in \
-                      response_registration2['result']['error']['message']
 
     def setOfflinePolicy(self, realm='*', name='u2f_offline',
                          action='support_offline=u2f', active=True):
@@ -1000,11 +799,6 @@ class TestU2FController(TestController):
         """
         Tests, if info for U2F offline mode is transfered
         """
-
-        if not self._has_EC_support():
-            self.skipTest(
-                "Probably no OpenSSL support for the needed NIST P-256 curve!"
-                )
 
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin)

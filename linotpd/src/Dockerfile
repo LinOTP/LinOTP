@@ -119,7 +119,7 @@ RUN \
 		$extraPackages \
 		adduser debconf openssl pwgen python-beaker python-configobj \
 		python-decorator python-docutils python-formencode python-httplib2 \
-		python-ldap python-m2crypto python-mako python-mysqldb python-netaddr \
+		python-ldap python-cryptography python-mako python-mysqldb python-netaddr \
 		python-pyrad python-qrcode python-routes python-simplejson \
 		python-sqlalchemy python-tempita python-weberror python-webhelpers python-webob \
 		apache2 libapache2-mod-wsgi python-pycryptodomex python-pysodium python-requests

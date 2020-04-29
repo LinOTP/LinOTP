@@ -34,7 +34,7 @@ If you want to develop LinOTP you first need to install some packages. As superu
 
 Notes:
  - libsasl2-dev and libldap2-dev system packages are required to install the `python-ldap` dependency via pip
- - libssl-dev and swig system packages are required to install the `m2crypto` dependency via pip
+ - libssl package is required to install the `cryptography` dependency via pip
 
 Consider setting up a dedicated virtual environment now. This allows you to install the packages locally (without administrative rights) and prevents pollution of your host system.
 
