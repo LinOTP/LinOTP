@@ -198,9 +198,9 @@ class TestGetClientCase(unittest.TestCase):
     def test_ipaddr_value(self):
         """ unit test for get_ip_address """
 
-        ip_address = get_ip_address('www.example.com')
+        ip_address = get_ip_address('www.linotp.org')
         ip_tuple = ip_address.words
-        assert (93, 184, 216, 34) == ip_tuple
+        assert (91, 208, 83, 132) == ip_tuple
 
         ip_addr = get_ip_address('93.184.216.34')
         ip_tuple = ip_addr.words
