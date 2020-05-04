@@ -1827,6 +1827,11 @@ def add_time_info(list_of_tokens, mode='accessed'):
         else:
             token.token.LinOtpAccessed = now_stripped
 
+            # we softly migrate the last_access away from the token info
+
+            if token.getFromTokenInfo('last_access'):
+                token.removeFromTokenInfo('last_access')
+
 def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
     '''
     This function returns a list of OTP values for the given Token.
