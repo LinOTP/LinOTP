@@ -47,6 +47,8 @@ from linotp.lib.token import TokenHandler
 from linotp.lib.token import get_token_owner
 from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.token import add_last_accessed_info
+from linotp.lib.token import add_last_verified_info
+
 from linotp.tokens import tokenclass_registry
 
 from linotp.lib.user import User, getUserId, getUserInfo
@@ -853,10 +855,18 @@ class ValidationHandler(object):
 
         (res, reply) = fh.finish_checked_tokens()
 
-        # add to all tokens the last accessd time stamp
-        add_last_accessed_info([
-            valid_tokens, pin_matching_tokens, challenge_tokens, invalid_tokens
-            ])
+        # ------------------------------------------------------------------ --
+
+        # add to all tokens the last accessed time stamp
+
+        add_last_accessed_info(valid_tokens + pin_matching_tokens +
+                               challenge_tokens + invalid_tokens)
+
+        # add time stamp to all valid tokens
+
+        add_last_verified_info(valid_tokens)
+
+        # ------------------------------------------------------------------ --
 
         # now we care for all involved tokens and their challenges
         for token in (valid_tokens + pin_matching_tokens +
