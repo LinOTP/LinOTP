@@ -216,9 +216,9 @@ ul.ui-widget-header {
 }
 
 div#tabs {
-    flex: 1;
-    border-radius: 0;
-    border-bottom: 0;
+	flex: 1 1 auto;
+	border-radius: 0;
+	border-bottom: 0;
 	padding: 0;
 }
 
