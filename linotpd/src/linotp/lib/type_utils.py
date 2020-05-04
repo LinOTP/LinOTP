@@ -35,6 +35,8 @@ from netaddr.ip import IPNetwork
 
 from linotp.lib.crypto.encrypted_data import EncryptedData
 
+DEFAULT_TIMEFORMAT = "%a, %d %b %Y %H:%M:%S GMT"
+
 class DurationParsingException(Exception):
     pass
 

@@ -71,14 +71,15 @@ from linotp.lib.user import (getUserInfo,
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.context import request_context
 
+from linotp.lib.type_utils import DEFAULT_TIMEFORMAT as TIMEFORMAT
+
 import logging
 log = logging.getLogger(__name__)
 
 # const for encryption and iv
 SECRET_LEN = 32
 
-# const - timeformat used in session cookie
-TIMEFORMAT = "%a, %d %b %Y %H:%M:%S GMT"
+
 
 Cookie_Cache = {}
 
