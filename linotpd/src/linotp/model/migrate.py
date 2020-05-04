@@ -166,11 +166,11 @@ def run_data_model_migration(meta):
     """
 
     # define the most recent target version
-    target_version = "2.10.1.0"
+    target_version = "2.12.0.0"
 
     migration = Migration(meta)
 
-    # start with the current version, which is retreived from the db
+    # start with the current version, which is retrieved from the db
     current_version = migration.get_current_version()
 
     # run the steps in the migration chain
@@ -200,7 +200,8 @@ class Migration():
     migration_steps = [
         None,
         "2.9.1.0",
-        "2.10.1.0"
+        "2.10.1.0",
+        "2.12.0.0",
         ]
 
     def __init__(self, meta):
@@ -358,5 +359,35 @@ class Migration():
         if not has_column(self.meta, challenge_table, bdata):
             add_column(self.meta.engine, challenge_table, bdata)
 
+    # migration towards 2.12.
+
+    def migrate_2_12_0_0(self):
+        """
+        run the migration for token to add the time stamps for
+        created, accessed and verified
+        """
+
+        token_table = "Token"
+
+        # add created column to tokens
+        created = sa.Column('LinOtpCreated', sa.types.DateTime, index=True)
+
+        if not has_column(self.meta, token_table, created):
+            add_column(self.meta.engine, token_table, created)
+            add_index(self.meta.engine, token_table, 'LinOtpCreated', created)
+
+        # add verified column to tokens
+        verified = sa.Column('LinOtpVerified', sa.types.DateTime, index=True)
+
+        if not has_column(self.meta, token_table, verified):
+            add_column(self.meta.engine, token_table, verified)
+            add_index(self.meta.engine, token_table, 'LinOtpVerified', verified)
+
+        # add accessed column to tokens
+        accessed = sa.Column('LinOtpAccessed', sa.types.DateTime, index=True)
+
+        if not has_column(self.meta, token_table, accessed):
+            add_column(self.meta.engine, token_table, accessed)
+            add_index(self.meta.engine, token_table, 'LinOtpAccessed', accessed)
 
 # eof

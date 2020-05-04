@@ -161,6 +161,13 @@ token_table = sa.Table('Token', meta.metadata,
                            'LinOtpCountWindow', sa.types.Integer(), default=10),
                        sa.Column(
                            'LinOtpSyncWindow', sa.types.Integer(), default=1000),
+                       sa.Column('LinOtpCreated', sa.types.DateTime, index=True,
+                                 default=datetime.now().replace(microsecond=0)),
+                       sa.Column('LinOtpVerified', sa.types.DateTime, index=True,
+                                 default=None),
+                       sa.Column('LinOtpAccessed', sa.types.DateTime, index=True,
+                                 default=None),
+
                        implicit_returning=implicit_returning,
                        )
 
@@ -191,8 +198,11 @@ class Token(object):
         self.LinOtpIdResClass = None
         self.LinOtpUserid = None
 
-        # will be assigned automaticaly
-        # self.LinOtpTokenId      = 0
+        # when the token is created all time stamps are set to utc now
+
+        self.LinOtpCreated = datetime.utcnow().replace(microsecond=0)
+        self.LinOtpAccessed = None
+        self.LinOtpVerified = None
 
     def __setattr__(self, name, value):
         """
