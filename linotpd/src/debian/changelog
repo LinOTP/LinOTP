@@ -1,18 +1,21 @@
-linotp (2.11.2rc0-1) jessie; urgency=low
 
-  Fix
-   * Policy: respect maxtoken policy when creating new token in selfservice frontend
-   * Userservice: Cookie expiration date now reflects timezone. 
-                  Closes https://github.com/LinOTP/LinOTP/issues/136
-   * Email token: Accept a new challenge as soon as the previous challenge is correctly
-                  answered. Previously it was not possible before expiration of the
-                  challenge timeout.
+linotp (2.11.2rc1-1) jessie; urgency=low
+
+  Fix:
+  * Policy: respect maxtoken policy when creating new token in selfservice frontend
+  * Selfservice:
+    * Cookie expiration date now reflects timezone.
+      Closes https://github.com/LinOTP/LinOTP/issues/136
+    * IE11 Browser rendering fixed, where content height was not respected before.
+  * Email token: Accept a new challenge as soon as the previous challenge is correctly
+                 answered. Previously it was not possible before expiration of the
+                 challenge timeout.
 
   Chore:
-   * Update LinOTP Apache configuration file to include additional configuration
-       supplied by a related package such as the Smart Virtual Appliance
+  * Update LinOTP Apache configuration file to include additional configuration
+      supplied by a related package such as the Smart Virtual Appliance
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 24 Apr 2020 14:22:32 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 04 May 2020 14:38:11 +0200
 
 linotp (2.11.1-1) jessie; urgency=low
 
