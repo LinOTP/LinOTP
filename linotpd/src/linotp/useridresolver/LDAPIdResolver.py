@@ -32,20 +32,23 @@
 """
 
 
-import binascii
 import logging
-import os
-import tempfile
-import traceback
 from typing import Any, Callable, Dict, Tuple, Union
 
 import json
 import sys
 
 from datetime import datetime
-from hashlib import sha1
 
+import ldap
 import ldap.filter
+
+try:
+    from ldap import LDAP_CONTROL_PAGE_OID
+    ldap_api_version = 2.3
+except ImportError:
+    ldap_api_version = 2.4
+
 from ldap.controls import SimplePagedResultsControl
 
 from linotp.lib.type_utils import encrypted_data
@@ -63,7 +66,9 @@ from linotp.useridresolver import resolver_registry
 
 log = logging.getLogger(__name__)
 
-# here some defaults are defined
+log.info('using the %r cursoring api.', ldap_api_version)
+
+# resolver config default / fallback values
 
 DEFAULT_UID_TYPE = "DN"  # can be entryUUID, GUID, objectGUID or DN
 ENCODING = 'utf-8'
@@ -73,21 +78,32 @@ BIND_NOT_POSSIBLE_TIMEOUT = 30
 TIMEOUT_NO_LIMIT = -1
 
 
-def escape_filter_chars(filterstr):
-    """
-    Replace all special characters found in filterstr by quoted notation
-    - used especially for search with guid - which consists of binary data
-    from http://sourceforge.net/p/python-ldap/feature-requests/7/
+# -------------------------------------------------------------------------- --
 
-    :param filterstr: the unescaped filte string
-    :return: escaped filter string
+def escape_hex_for_search(hex_value: str) -> str:
     """
-    ret = []
-    for c in filterstr:
-        if c < '0' or c > 'z' or c in "\\*()":
-            c = "\\%02x" % ord(c)
-        ret.append(c)
-    return ''.join(ret)
+    transform an hex string for a byte search in ldap, especially used for objectGUID
+
+    From: https://ldapwiki.com/wiki/ObjectGUID
+
+    ObjectGUID LDAP in SearchFilters
+
+    In order to form an LDAP SearchFilter that searches based on an ObjectGUID,
+    the GUID value must be entered in a special syntax in the filter - where
+    each byte in the hexadecimal representation of the GUID must be escaped
+    with a Backslash (\) symbol.
+
+    To provide an example, in order to search for an object with hexadecimal
+        GUID "90395F191AB51B4A9E9686C66CB18D11",
+    the corresponding filter should be set as:
+        (objectGUID=\90\39\5F\19\1A\B5\1B\4A\9E\96\86\C6\6C\B1\8D\11)
+
+    :param hex_value: e.g. the objectGuid in hex representation
+    :return: str escaped hex representation, to be used for search
+    """
+
+    return '\\' + '\\'.join([hex_value[idx:idx+2] for idx in range(0, len(hex_value), 2)])
+# -------------------------------------------------------------------------- --
 
 
 @resolver_registry.class_entry('useridresolver.LDAPIdResolver.IdResolver')
@@ -107,23 +123,23 @@ class IdResolver(UserIdResolver):
     # stored in self.userinfo
 
     fields = {
-          "username": 1,
-          "userid": 1,
-          "description": 0,
-          "phone": 0,
-          "mobile": 0,
-          "email": 0,
-          "givenname": 0,
-          "surname": 0,
-          "gender": 0}
+        "username": 1,
+        "userid": 1,
+        "description": 0,
+        "phone": 0,
+        "mobile": 0,
+        "email": 0,
+        "givenname": 0,
+        "surname": 0,
+        "gender": 0}
 
     searchFields = {
-          "username": "text",
-          "userid": "text",
-          "description": "text",
-          "email": "text",
-          "givenname": "text",
-          "surname": "text"}
+        "username": "text",
+        "userid": "text",
+        "description": "text",
+        "email": "text",
+        "givenname": "text",
+        "surname": "text"}
 
     critical_parameters = ['LDAPBASE', 'BINDDN', 'LDAPURI']
 
@@ -149,7 +165,7 @@ class IdResolver(UserIdResolver):
         "TIMEOUT": (False, TIMEOUT_NO_LIMIT, text),
         "SIZELIMIT": (False, DEFAULT_SIZELIMIT, int),
 
-        }
+    }
 
     resolver_parameters.update(UserIdResolver.resolver_parameters)
 
@@ -180,7 +196,6 @@ class IdResolver(UserIdResolver):
         '''
 
         log.info("[setup] Setting up the LDAPResolver")
-
         return
 
     @classmethod
@@ -507,7 +522,6 @@ class IdResolver(UserIdResolver):
 
         raise ResolverNotAvailable("Unable to bind to servers %r" % urilist)
 
-
     def unbind(self, lobj):
         """
         unbind() - this function formarly freed the ldap connection
@@ -536,7 +550,7 @@ class IdResolver(UserIdResolver):
             return ''
 
         ufilter = self._replace_macros(self.filter)
-        fil = ldap.filter.filter_format(ufilter,[loginname])
+        fil = ldap.filter.filter_format(ufilter, [loginname])
         l_obj = self.bind()
 
         if not l_obj:
@@ -583,8 +597,8 @@ class IdResolver(UserIdResolver):
         relevant_entries = False
         for entry in resultList:
             if (isinstance(entry, tuple) and
-               len(entry) > 0 and
-               entry[0] is not None):
+                len(entry) > 0 and
+                    entry[0] is not None):
                 relevant_entries = True
 
         if not relevant_entries:
@@ -617,17 +631,16 @@ class IdResolver(UserIdResolver):
         :rtype:  string
         '''
 
-
         username = ''
 
-        # getUserLDAPInfo returns (now) a list of unicode values
-        l_user = self.getUserLDAPInfo(userid)
+        l_user = self.getUserLDAPInfo(
+            userid, attrlist=[self.loginnameattribute])
 
         if self.loginnameattribute in l_user:
             username = l_user[self.loginnameattribute]
         return username
 
-    def getUserLDAPInfo(self, userid):
+    def getUserLDAPInfo(self, userid, attrlist=None):
         """
         getUserLDAPInfo(UserId)
 
@@ -638,68 +651,70 @@ class IdResolver(UserIdResolver):
         :param userid: user identifier (in unicode)
         :type  userid: unicode or str
 
+        :param attrlist: the list of attributes, which should be returned
+                         if None, the attributes are not filtered on the server
+                         side and all are returned
+        :type attrlist: list
+
         :return: user info dict
         :rtype: dict
 
         """
         log.debug("[getUserLDAPInfo]")
 
-        if isinstance(userid, bytes):
-            userid = userid.decode('utf-8')
+        if attrlist:
+            attrlist.append(self.uidType)
 
-        l_id = 0
-        l_obj = self.bind()
+        # -------------------------------------------------------------- --
 
-        if not l_obj:
-            return {}
+        # setup the search parameters
 
-        result_data = None
+        s_base = self.base
+        s_scope = ldap.SCOPE_SUBTREE
+        s_filter = "(%s=%s)" % (self.uidType, userid)
+
+        if self.uidType.lower() == "dn":
+
+            s_base = userid
+            s_scope = ldap.SCOPE_BASE
+            s_filter = None
+
+        elif self.uidType.lower() == "objectguid":
+
+            s_base = "<guid=%s>" % (userid)
+            s_scope = ldap.SCOPE_BASE
+            s_filter = None
+
+            if self.proxy:
+
+                s_base = self.base
+                s_scope = ldap.SCOPE_SUBTREE
+                s_filter = "(objectGuid=%s)" % escape_hex_for_search(userid)
+
+        # ------------------------------------------------------------------ --
+
+        # do the search
 
         try:
 
-            if self.uidType.lower() == "dn":
-                l_id = l_obj.search_ext(userid,
-                                        ldap.SCOPE_BASE,
-                                        filterstr="ObjectClass=*",
-                                        sizelimit=self.sizelimit)
+            l_obj = self.bind()
 
-            elif self.uidType.lower() == "objectguid":
-                if not self.proxy:
-                    l_id = l_obj.search_ext("<guid=%s>" % (userid),
-                                            ldap.SCOPE_BASE,
-                                            sizelimit=self.sizelimit,
-                                            timeout=self.response_timeout)
-                else:
-                    e_u = escape_filter_chars(binascii.unhexlify(userid))
+            if not l_obj:
+                return {}
 
-                    filterstr = "(ObjectGUID=%s)" % (e_u)
-                    l_id = l_obj.search_ext(self.base,
-                                            ldap.SCOPE_SUBTREE,
-                                            filterstr=filterstr,
-                                            sizelimit=self.sizelimit,
-                                            timeout=self.response_timeout)
-            else:
-                # ------------------------------------------------------ --
-
-                # any other uid type ends up here
-
-                # we have to build up the search filter which must end up
-                # in an uft-8 encoding
-
-                filterstr = "(%s=%s)" % (self.uidType,userid)
-
-                l_id = l_obj.search_ext(
-                                    self.base,
-                                    ldap.SCOPE_SUBTREE,
-                                    filterstr=filterstr,
-                                    sizelimit=self.sizelimit,
-                                    timeout=self.response_timeout)
+            l_id = l_obj.search_ext(
+                s_base, s_scope, filterstr=s_filter, attrlist=attrlist,
+                sizelimit=self.sizelimit, timeout=self.response_timeout)
 
             result_data = l_obj.result(l_id, all=1)[1]
 
-        except ldap.LDAPError as error:
+        except ldap.LDAPError as _error:
             log.exception("[getUserLDAPInfo] LDAP error")
             return {}
+
+        except Exception as exx:
+            log.exception("[getUserLDAPInfo] LDAP error")
+            raise exx
 
         finally:
             if l_obj is not None:
@@ -726,14 +741,14 @@ class IdResolver(UserIdResolver):
             for udata in uval:
 
                 if key == 'objectGUID':
-                    udata = self.guid2str(udata)
+                    udata = udata.hex()
 
                 if isinstance(udata, bytes):
                     try:
                         udata = udata.decode()
                     except Exception as _exx:
-                        log.warning('Failed to convert entry %r: %r',
-                                    key, udata)
+                        log.info('Failed to decode entry %r: %r',
+                                 key, udata)
 
                 entries.append(udata)
 
@@ -767,7 +782,8 @@ class IdResolver(UserIdResolver):
         """
         log.debug("[getUserInfo]")
 
-        user = self.getUserLDAPInfo(userid)
+        user = self.getUserLDAPInfo(
+            userid, attrlist=list(self.userinfo.values()))
 
         if not user:
             return {}
@@ -1005,8 +1021,8 @@ class IdResolver(UserIdResolver):
         '''
         This function takes the UID and returns the DN of the user object
         '''
-        DN = self.getUserLDAPInfo(uid).get("dn")[0]
-        return DN
+        user_info = self.getUserLDAPInfo(uid, attrlist=['dn'])
+        return user_info['dn'][0]
 
     def checkPass(self, uid, password):
         '''
@@ -1079,23 +1095,6 @@ class IdResolver(UserIdResolver):
 
         raise ResolverNotAvailable("unable to bind to servers %r" % urilist)
 
-
-    @staticmethod
-    def guid2str(guid):
-        '''
-        convert the binary MS AD GUID to something that could be displayed
-          http://support.microsoft.com/kb/325649
-
-        :param guid: binary value
-        :type  guid: binary
-
-        :return: string representation of the guid
-        :rtype:  string
-        '''
-        log.debug("[guid2str] converting MS AD GUID: %r", guid)
-        res = binascii.hexlify(guid)
-        return res
-
     def _is_ad(self):
         """
         this is a heuristic approach to check if we are running against an AD
@@ -1105,7 +1104,7 @@ class IdResolver(UserIdResolver):
         ret = False
         if ('sAMAccountName' in self.loginnameattribute or
             'sAMAccountName' in self.searchfilter or
-           'sAMAccountName' in self.filter):
+                'sAMAccountName' in self.filter):
             ret = True
         return ret
 
@@ -1200,7 +1199,6 @@ class IdResolver(UserIdResolver):
                           exep)
             raise exep
 
-
         l_obj = self.bind()
 
         if not l_obj:
@@ -1227,9 +1225,9 @@ class IdResolver(UserIdResolver):
             # ---------------------------------------------------------- --
 
             ldap_result_id = l_obj.search_ext(
-                        self.base, ldap.SCOPE_SUBTREE,
-                        filterstr=searchFilter, sizelimit=self.sizelimit,
-                        attrlist=attrlist, timeout=self.response_timeout)
+                self.base, ldap.SCOPE_SUBTREE,
+                filterstr=searchFilter, sizelimit=self.sizelimit,
+                attrlist=attrlist, timeout=self.response_timeout)
 
             log.debug('[getUserList] uidType: %r', self.uidType)
 
@@ -1238,7 +1236,7 @@ class IdResolver(UserIdResolver):
                 userdata = {}
 
                 result_type, result_data = l_obj.result(
-                     ldap_result_id, 0, timeout=self.response_timeout)
+                    ldap_result_id, 0, timeout=self.response_timeout)
 
                 if result_type != ldap.RES_SEARCH_ENTRY or not result_data:
                     break
@@ -1303,7 +1301,7 @@ class IdResolver(UserIdResolver):
                     log.warning("[getUserList] Unknown searchkey: %r", skey)
 
             # finaly embedd the filter in the ldap query string
-            searchFilter = "(& %s )" % searchFilter
+            searchFilter = "(&%s)" % searchFilter
             log.debug("[getUserList] searchfilter: %r", searchFilter)
         except Exception as exep:
             log.exception("[getUserList] Error creating searchFilter: %r",
@@ -1312,7 +1310,7 @@ class IdResolver(UserIdResolver):
         return searchFilter
 
     def _set_cursor(self, searchFilter, attrlist, l_obj=None, lc=None,
-                    serverctrls=None, api_ver=2.4):
+                    serverctrls=None):
         """
         helper function to setup the paging query and shift the cursor
 
@@ -1321,7 +1319,6 @@ class IdResolver(UserIdResolver):
         :param l_obj: the ldap connection object - if none, we bind() it
         :param lc: the page result controller
         :param serverctrls: the srv.ctrl response of the ldap.result3
-        :param api_ver: either 2.3 or 2.4, the ldap api changed in between :-(
         :return: tupple of (message id, ldap connection object and page
                  controller)
         """
@@ -1333,26 +1330,26 @@ class IdResolver(UserIdResolver):
         # first request: if lc is not set, we are initializing
         if lc is None:
             l_obj = self.bind()
-            if api_ver == 2.4:
+            if ldap_api_version == 2.4:
                 lc = SimplePagedResultsControl(True, size=page_size, cookie='')
-            elif api_ver == 2.3:
-                PAGE_OID = ldap.LDAP_CONTROL_PAGE_OID
+            elif ldap_api_version == 2.3:
+                PAGE_OID = LDAP_CONTROL_PAGE_OID
                 lc = SimplePagedResultsControl(PAGE_OID, True, (page_size, ''))
 
         else:
             cookie = None
             pctrls = []
 
-            if api_ver == 2.4:
+            if ldap_api_version == 2.4:
                 for c in serverctrls:
                     if c.controlType == SimplePagedResultsControl.controlType:
                         pctrls.append(c)
                         cookie = c.cookie
                         lc.cookie = cookie
 
-            elif api_ver == 2.3:
+            elif ldap_api_version == 2.3:
                 for c in serverctrls:
-                    if c.controlType == ldap.LDAP_CONTROL_PAGE_OID:
+                    if c.controlType == LDAP_CONTROL_PAGE_OID:
                         pctrls.append(c)
                         cookie = c.controlValue[1]
                         lc.controlValue = (page_size, cookie)
@@ -1370,24 +1367,9 @@ class IdResolver(UserIdResolver):
                                  attrlist=attrlist,
                                  serverctrls=[lc],
                                  timeout=self.response_timeout
-            )
+                                 )
 
         return (msgid, l_obj, lc)
-
-    def _api_version(self):
-        """
-        helper method to detect if the python ldap module supports cursoring
-         * debian python-ldap==2.3.11 has support, while pip python-ldap-2.4.19
-           has not :-(
-        :return: True or False
-        """
-        ret = 2.3
-        try:
-            _PAGE_OID = ldap.LDAP_CONTROL_PAGE_OID
-        except AttributeError as _exx:
-            log.info('using the 2.4 cursoring api.')
-            ret = 2.4
-        return ret
 
     def getUserListIterator(self, searchDict, limit_size=True):
         """
@@ -1416,11 +1398,7 @@ class IdResolver(UserIdResolver):
 
         # ------------------------------------------------------------------ --
 
-        # replace the method pointer to the right place
-        api_ver = self._api_version()
-
-        (msgid, l_obj, lc) = self._set_cursor(
-                        searchFilter, attrlist, api_ver=api_ver)
+        (msgid, l_obj, lc) = self._set_cursor(searchFilter, attrlist)
 
         done = False
         results_size = 0
@@ -1441,8 +1419,8 @@ class IdResolver(UserIdResolver):
 
                 # shift the cursor to the next page
                 (msgid, l_obj, lc) = self._set_cursor(
-                                 searchFilter, attrlist, l_obj=l_obj, lc=lc,
-                                 serverctrls=serverctrls, api_ver=api_ver)
+                    searchFilter, attrlist, l_obj=l_obj, lc=lc,
+                    serverctrls=serverctrls)
 
                 if not msgid:
                     done = True
@@ -1499,9 +1477,6 @@ class IdResolver(UserIdResolver):
         if uidType.lower() == "dn":
             userid = result_dn
 
-            if isinstance(userid, bytes):
-                userid = userid.decode()
-
             return userid
 
         # ------------------------------------------------------------------ --
@@ -1518,10 +1493,10 @@ class IdResolver(UserIdResolver):
         if not userid:
             raise Exception('No Userid found')
 
-        # objectguid requires a special conversion to become readable
+        # objectguid is converted to hex
 
         if uidType.lower() == "objectguid":
-            return IdResolver.guid2str(userid).decode()
+            return userid.hex()
 
         if isinstance(userid, bytes):
             userid = userid.decode()
@@ -1546,7 +1521,7 @@ class IdResolver(UserIdResolver):
             return {}
 
         userdata["userid"] = self._get_uid_from_result(
-                                            result_data, self.uidType)
+            result_data, self.uidType)
 
         # finally add all existing userinfos (wrt the mapping)
         for user_key, ldap_key in self.userinfo.items():
@@ -1561,7 +1536,7 @@ class IdResolver(UserIdResolver):
                 udata = account_info[ldap_key][0]
 
                 if ldap_key == 'objectGUID':
-                    udata = self.guid2str(udata)
+                    udata = udata.hex()
 
                 if isinstance(udata, bytes):
                     try:
@@ -1573,6 +1548,7 @@ class IdResolver(UserIdResolver):
                 userdata[user_key] = udata
 
         return userdata
+
 
 def getLdapUsers(params):
 
@@ -1822,6 +1798,7 @@ def main():
         resolver_request(params)
 
 # -- --------------------------------------------------------------------- --
+
 
 if __name__ == "__main__":
     main()
