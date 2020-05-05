@@ -66,7 +66,7 @@ from linotp.useridresolver import resolver_registry
 
 log = logging.getLogger(__name__)
 
-log.info('using the %r cursoring api.' % ldap_api_version)
+log.info('using the %r cursoring api.', ldap_api_version)
 
 # resolver config default / fallback values
 
