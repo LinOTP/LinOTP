@@ -32,18 +32,16 @@
 """
 
 
-import binascii
 import logging
-import os
-import tempfile
-import traceback
 from typing import Any, Callable, Dict, Tuple, Union
 
 import json
 import sys
 
 from datetime import datetime
-from hashlib import sha1
+
+import ldap
+import ldap.filter
 
 try:
     from ldap import LDAP_CONTROL_PAGE_OID
@@ -51,7 +49,6 @@ try:
 except ImportError:
     ldap_api_version = 2.4
 
-import ldap.filter
 from ldap.controls import SimplePagedResultsControl
 
 from linotp.lib.type_utils import encrypted_data
@@ -673,7 +670,7 @@ class IdResolver(UserIdResolver):
         # setup the search parameters
 
         s_base = self.base
-        s_scope = SCOPE_SUBTREE
+        s_scope = ldap.SCOPE_SUBTREE
         s_filter = "(%s=%s)" % (self.uidType, userid)
 
         if self.uidType.lower() == "dn":
@@ -691,7 +688,7 @@ class IdResolver(UserIdResolver):
             if self.proxy:
 
                 s_base = self.base
-                s_scope = SCOPE_SUBTREE
+                s_scope = ldap.SCOPE_SUBTREE
                 s_filter = "(objectGuid=%s)" % escape_hex_for_search(userid)
 
         # ------------------------------------------------------------------ --
