@@ -28,9 +28,12 @@
 """ check if last access configuration does work """
 
 import json
-from datetime import datetime
+import freezegun
+
+from datetime import datetime, timedelta
 
 from linotp.tests import TestController
+from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
 
 
 class TestLastAccess(TestController):
@@ -52,11 +55,28 @@ class TestLastAccess(TestController):
         response = self.make_admin_request('init', params=params)
         assert '<img' in response, response.body
 
+        params = {
+            'serial': serial
+        }
+        response = self.make_admin_request('show', params)
+        assert '"status": true' in response, response.body
+
+        jresp = json.loads(response.body)
+        token = jresp['result']['value']['data'][0]
+        assert 'LinOtp.Created' in token
+
+        # get the time from the string
+        created = token['LinOtp.Created']
+        created_date = datetime.strptime(created, DEFAULT_TIMEFORMAT)
+
+        accessed = token['LinOtp.Accessed']
+        assert not accessed
+
         # ------------------------------------------------------------------ --
 
         # now define a different time format "%Y/%m/%d %H:%M"
 
-        time_fmt = "%Y/%m/%d %H:%M:%S:%f"
+        time_fmt = "%Y/%m/%d %H:%M:%S"
 
         params = {
             'token.last_access': time_fmt
@@ -64,53 +84,60 @@ class TestLastAccess(TestController):
         response = self.make_system_request('setConfig', params=params)
         assert 'token.last_access' in response, response.body
 
-        params = {
-            'serial': serial,
-            'pass': '123!geheimXXX'
-        }
-        response = self.make_validate_request('check_s', params=params)
-        assert '"status": true' in response, response.body
-        assert '"value": false' in response, response.body
+        frozen1 = datetime.now() + timedelta(seconds=3)
 
-        params = {
-            'serial': serial
-        }
-        response = self.make_admin_request('show', params)
-        assert '"status": true' in response, response.body
+        with freezegun.freeze_time(frozen1):
+            params = {
+                'serial': serial,
+                'pass': '123!geheimXXX'
+            }
+            response = self.make_validate_request('check_s', params=params)
+            assert '"status": true' in response, response.body
+            assert '"value": false' in response, response.body
 
-        jresp = json.loads(response.body)
-        t_info = jresp['result']['value']['data'][0]['LinOtp.TokenInfo']
-        token_info = json.loads(t_info)
-        assert 'last_access' in token_info
+            params = {
+                'serial': serial
+            }
+            response = self.make_admin_request('show', params)
+            assert '"status": true' in response, response.body
 
-        # verify that we can parse the iso format
-        invalid_access = token_info['last_access']
-        _invalid_access_date = datetime.strptime(invalid_access, time_fmt)
+            jresp = json.loads(response.body)
+            token = jresp['result']['value']['data'][0]
+            assert 'LinOtp.Accessed' in token
 
-        params = {
-            'serial': serial,
-            'pass': '123!geheim'
-        }
-        response = self.make_validate_request('check_s', params=params)
-        assert '"status": true' in response, response.body
-        assert '"value": true' in response, response.body
+            # get the time from the string
+            invalid_access = token['LinOtp.Accessed']
+            invalid_access_date = datetime.strptime(
+                                            invalid_access, DEFAULT_TIMEFORMAT)
 
-        params = {
-            'serial': serial
-        }
-        response = self.make_admin_request('show', params)
-        assert '"status": true' in response, response.body
+        frozen2 = frozen1 + timedelta(seconds=3)
 
-        jresp = json.loads(response.body)
-        t_info = jresp['result']['value']['data'][0]['LinOtp.TokenInfo']
-        token_info = json.loads(t_info)
-        assert 'last_access' in token_info
+        with freezegun.freeze_time(frozen2):
 
-        # verify that we can parse the iso format
-        valid_access = token_info['last_access']
-        _valid_access_date = datetime.strptime(valid_access, time_fmt)
+            params = {
+                'serial': serial,
+                'pass': '123!geheim'
+            }
+            response = self.make_validate_request('check_s', params=params)
+            assert '"status": true' in response, response.body
+            assert '"value": true' in response, response.body
 
-        assert invalid_access != valid_access
+            params = {
+                'serial': serial
+            }
+            response = self.make_admin_request('show', params)
+            assert '"status": true' in response, response.body
+
+            jresp = json.loads(response.body)
+            token = jresp['result']['value']['data'][0]
+            assert 'LinOtp.Verified' in token
+
+            # verify that we can parse the iso format
+            valid_access = invalid_access = token['LinOtp.Verified']
+            valid_access_date = datetime.strptime(
+                                    valid_access, DEFAULT_TIMEFORMAT)
+
+        assert created_date < invalid_access_date < valid_access_date
 
         self.delete_all_token()
         return

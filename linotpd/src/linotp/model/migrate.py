@@ -70,6 +70,18 @@ def has_column(meta, table_name, column):
             return True
     return False
 
+def _compile_name(name, dialect):
+    """
+    helper - to adjust the names of table / column / index to quoted or not
+
+    in postgresql the tablenames / column /index names must be quotes
+    while not so in mysql
+
+    :param name: tablename, index name of column name
+    :param engine: the corresponding engine for mysql / postgresql
+    :return: the adjusted name
+    """
+    return sa.Column(name, sa.types.Integer()).compile(dialect=dialect)
 
 def add_column(engine, table_name, column):
     """
@@ -86,13 +98,17 @@ def add_column(engine, table_name, column):
     :return: - nothing -
 
     """
-    column_name = column.compile(dialect=engine.dialect)
-    column_type = column.type.compile(engine.dialect)
+
+    c_table_name = _compile_name(table_name, dialect=engine.dialect)
+
+    c_column_name = column.compile(dialect=engine.dialect)
+    c_column_type = column.type.compile(engine.dialect)
+
     engine.execute('ALTER TABLE %s ADD COLUMN %s %s' %
-                   (table_name, column_name, column_type))
+                   (c_table_name, c_column_name, c_column_type))
 
 
-def add_index(engine,table_name, index, column):
+def add_index(engine, table_name, index, column):
     """
     create an index based on the column index definition
 
@@ -104,16 +120,21 @@ def add_index(engine,table_name, index, column):
     :param engine: the bound sql database engine
     :param index: the name of the index - string
     :param table_name: the name of the table with the column
-    :param column: the instantiated column defintion
+    :param column: the instantiated column definition
 
     :return: - nothing -
 
     """
 
-    column_name = column.compile(dialect=engine.dialect)
-    column_index = "ix_%s_%s" % (table_name, column_name)
+    c_table_name = _compile_name(table_name, dialect=engine.dialect)
+
+    c_column_name = column.compile(dialect=engine.dialect)
+
+    index_name = "ix_%s_%s" % (table_name, column.name)
+    c_index_name = _compile_name(index_name, dialect=engine.dialect)
+
     engine.execute('CREATE INDEX %s ON %s ( %s )' %
-                   (column_index, table_name, column_name))
+                   (c_index_name, c_table_name, c_column_name))
 
 
 def drop_column(engine, table_name, column):
@@ -131,9 +152,11 @@ def drop_column(engine, table_name, column):
 
     """
 
-    column_name = column.compile(dialect=engine.dialect)
+    c_table_name = _compile_name(table_name, dialect=engine.dialect)
+
+    c_column_name = column.compile(dialect=engine.dialect)
     engine.execute('ALTER TABLE %s drop COLUMN %s ' %
-                   (table_name, column_name))
+                   (c_table_name, c_column_name))
 
 
 def run_data_model_migration(meta):
@@ -143,11 +166,11 @@ def run_data_model_migration(meta):
     """
 
     # define the most recent target version
-    target_version = "2.10.1.0"
+    target_version = "2.12.0.0"
 
     migration = Migration(meta)
 
-    # start with the current version, which is retreived from the db
+    # start with the current version, which is retrieved from the db
     current_version = migration.get_current_version()
 
     # run the steps in the migration chain
@@ -177,7 +200,8 @@ class Migration():
     migration_steps = [
         None,
         "2.9.1.0",
-        "2.10.1.0"
+        "2.10.1.0",
+        "2.12.0.0",
         ]
 
     def __init__(self, meta):
@@ -335,5 +359,35 @@ class Migration():
         if not has_column(self.meta, challenge_table, bdata):
             add_column(self.meta.engine, challenge_table, bdata)
 
+    # migration towards 2.12.
+
+    def migrate_2_12_0_0(self):
+        """
+        run the migration for token to add the time stamps for
+        created, accessed and verified
+        """
+
+        token_table = "Token"
+
+        # add created column to tokens
+        created = sa.Column('LinOtpCreated', sa.types.DateTime, index=True)
+
+        if not has_column(self.meta, token_table, created):
+            add_column(self.meta.engine, token_table, created)
+            add_index(self.meta.engine, token_table, 'LinOtpCreated', created)
+
+        # add verified column to tokens
+        verified = sa.Column('LinOtpVerified', sa.types.DateTime, index=True)
+
+        if not has_column(self.meta, token_table, verified):
+            add_column(self.meta.engine, token_table, verified)
+            add_index(self.meta.engine, token_table, 'LinOtpVerified', verified)
+
+        # add accessed column to tokens
+        accessed = sa.Column('LinOtpAccessed', sa.types.DateTime, index=True)
+
+        if not has_column(self.meta, token_table, accessed):
+            add_column(self.meta.engine, token_table, accessed)
+            add_index(self.meta.engine, token_table, 'LinOtpAccessed', accessed)
 
 # eof

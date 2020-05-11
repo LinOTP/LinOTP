@@ -48,6 +48,8 @@ import logging
 import traceback
 from datetime import datetime
 
+from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
+
 try:
     import json
 except ImportError:
@@ -149,7 +151,6 @@ token_table = sa.Table('Token', meta.metadata,
                            'LinOtpKeyEnc', sa.types.Unicode(1024), default=u''),
                        sa.Column(
                            'LinOtpKeyIV', sa.types.Unicode(32), default=u''),
-
                        sa.Column(
                            'LinOtpMaxFail', sa.types.Integer(), default=10),
                        sa.Column(
@@ -161,6 +162,13 @@ token_table = sa.Table('Token', meta.metadata,
                            'LinOtpCountWindow', sa.types.Integer(), default=10),
                        sa.Column(
                            'LinOtpSyncWindow', sa.types.Integer(), default=1000),
+                       sa.Column('LinOtpCreated', sa.types.DateTime, index=True,
+                                 default=datetime.now().replace(microsecond=0)),
+                       sa.Column('LinOtpVerified', sa.types.DateTime, index=True,
+                                 default=None),
+                       sa.Column('LinOtpAccessed', sa.types.DateTime, index=True,
+                                 default=None),
+
                        implicit_returning=implicit_returning,
                        )
 
@@ -191,8 +199,11 @@ class Token(object):
         self.LinOtpIdResClass = None
         self.LinOtpUserid = None
 
-        # will be assigned automaticaly
-        # self.LinOtpTokenId      = 0
+        # when the token is created all time stamps are set to utc now
+
+        self.LinOtpCreated = datetime.utcnow().replace(microsecond=0)
+        self.LinOtpAccessed = None
+        self.LinOtpVerified = None
 
     def __setattr__(self, name, value):
         """
@@ -422,7 +433,31 @@ class Token(object):
         ret['LinOtp.Count'] = self.LinOtpCount
         ret['LinOtp.CountWindow'] = self.LinOtpCountWindow
         ret['LinOtp.SyncWindow'] = self.LinOtpSyncWindow
+        # ------------------------------------------------------------------ --
 
+        # handle representation of created, accessed and verified:
+
+        # - could be None, if not (newly) created  / accessed / verified
+        # - if type is datetime it must be converted to a string as the result
+        #   will be used as part of a json output
+
+        created = ''
+        if self.LinOtpCreated is not None:
+            created = self.LinOtpCreated.strftime(DEFAULT_TIMEFORMAT)
+
+        ret['LinOtp.Created'] = created
+
+        verified = ''
+        if self.LinOtpVerified is not None:
+            verified = self.LinOtpVerified.strftime(DEFAULT_TIMEFORMAT)
+
+        ret['LinOtp.Verified'] = verified
+
+        accessed = ''
+        if self.LinOtpAccessed is not None:
+            accessed = self.LinOtpAccessed.strftime(DEFAULT_TIMEFORMAT)
+
+        ret['LinOtp.Accessed'] = accessed
         # list of Realm names
         ret['LinOtp.RealmNames'] = self.getRealmNames()
 

@@ -33,11 +33,16 @@
 from linotp.lib.type_utils import is_duration
 from linotp.lib.type_utils import encrypted_data
 from linotp.lib.type_utils import check_networks_expression
+from linotp.lib.type_utils import check_time_format_string
+
 
 Config_Types = {
     'linotp.user_lookup_cache.expiration': ('duration', is_duration),
     'linotp.resolver_lookup_cache.expiration': ('duration', is_duration),
     'linotp.client.FORWARDED_PROXY': ('network', check_networks_expression),
+    'linotp.token.last_access': (
+                        'time_format_string', check_time_format_string
+                        ),
     }
 
 

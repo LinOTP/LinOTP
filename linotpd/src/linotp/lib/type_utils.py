@@ -29,11 +29,17 @@
 import re
 import socket
 import netaddr
+import logging
 
+from datetime import datetime
 from datetime import timedelta
 from netaddr.ip import IPNetwork
 
 from linotp.lib.crypto.encrypted_data import EncryptedData
+
+DEFAULT_TIMEFORMAT = "%a, %d %b %Y %H:%M:%S GMT"
+
+log = logging.getLogger(__name__)
 
 class DurationParsingException(Exception):
     pass
@@ -209,6 +215,33 @@ def boolean(value):
 
     return value.lower() in true_def
 
+def check_time_format_string(time_format_string):
+    """
+    check if a given parameter is a valid time filter format
+
+    :param timefilter_format: the term which should describe datetime format
+                    eg. "%d, %m, %H, %I, %M, %S, %J"
+    :return: boolean - true if this is valid format string
+    """
+    # due to historical reasons we have to support as well booleans
+
+    if time_format_string in [True, False]:
+        return True
+    if time_format_string.lower() in ('true','false'):
+        return True
+
+    # verify that the given format could be applied
+
+    try:
+        now = datetime.utcnow()
+        dt_str = now.strftime(time_format_string)
+        _now_stripped = datetime.strptime(dt_str, time_format_string)
+        return True
+    except ValueError as exx:
+        log.error(
+            'invalid time filter format: %r: %r', time_format_string, exx
+            )
+        return False
 
 def check_networks_expression(networks):
     """
