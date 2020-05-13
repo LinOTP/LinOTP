@@ -162,11 +162,11 @@ token_table = sa.Table('Token', meta.metadata,
                            'LinOtpCountWindow', sa.types.Integer(), default=10),
                        sa.Column(
                            'LinOtpSyncWindow', sa.types.Integer(), default=1000),
-                       sa.Column('LinOtpCreated', sa.types.DateTime, index=True,
+                       sa.Column('LinOtpCreationDate', sa.types.DateTime, index=True,
                                  default=datetime.now().replace(microsecond=0)),
-                       sa.Column('LinOtpVerified', sa.types.DateTime, index=True,
+                       sa.Column('LinOtpLastAuthSuccess', sa.types.DateTime, index=True,
                                  default=None),
-                       sa.Column('LinOtpAccessed', sa.types.DateTime, index=True,
+                       sa.Column('LinOtpLastAuthMatch', sa.types.DateTime, index=True,
                                  default=None),
 
                        implicit_returning=implicit_returning,
@@ -201,9 +201,9 @@ class Token(object):
 
         # when the token is created all time stamps are set to utc now
 
-        self.LinOtpCreated = datetime.utcnow().replace(microsecond=0)
-        self.LinOtpAccessed = None
-        self.LinOtpVerified = None
+        self.LinOtpCreationDate = datetime.utcnow().replace(microsecond=0)
+        self.LinOtpLastAuthMatch = None
+        self.LinOtpLastAuthSuccess = None
 
     def __setattr__(self, name, value):
         """
@@ -442,22 +442,22 @@ class Token(object):
         #   will be used as part of a json output
 
         created = ''
-        if self.LinOtpCreated is not None:
-            created = self.LinOtpCreated.strftime(DEFAULT_TIMEFORMAT)
+        if self.LinOtpCreationDate is not None:
+            created = self.LinOtpCreationDate.strftime(DEFAULT_TIMEFORMAT)
 
-        ret['LinOtp.Created'] = created
+        ret['LinOtp.CreationDate'] = created
 
         verified = ''
-        if self.LinOtpVerified is not None:
-            verified = self.LinOtpVerified.strftime(DEFAULT_TIMEFORMAT)
+        if self.LinOtpLastAuthSuccess is not None:
+            verified = self.LinOtpLastAuthSuccess.strftime(DEFAULT_TIMEFORMAT)
 
-        ret['LinOtp.Verified'] = verified
+        ret['LinOtp.LastAuthSuccess'] = verified
 
         accessed = ''
-        if self.LinOtpAccessed is not None:
-            accessed = self.LinOtpAccessed.strftime(DEFAULT_TIMEFORMAT)
+        if self.LinOtpLastAuthMatch is not None:
+            accessed = self.LinOtpLastAuthMatch.strftime(DEFAULT_TIMEFORMAT)
 
-        ret['LinOtp.Accessed'] = accessed
+        ret['LinOtp.LastAuthMatch'] = accessed
         # list of Realm names
         ret['LinOtp.RealmNames'] = self.getRealmNames()
 
@@ -1020,7 +1020,7 @@ class Challenge(object):
         """
         set the session state information like open or closed
         - contains in addition the mac of the whole challenge entry
-        
+
         :param session: dictionary of the session info
         """
         self.session = unicode(session)

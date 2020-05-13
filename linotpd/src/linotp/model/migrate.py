@@ -370,24 +370,24 @@ class Migration():
         token_table = "Token"
 
         # add created column to tokens
-        created = sa.Column('LinOtpCreated', sa.types.DateTime, index=True)
+        created = sa.Column('LinOtpCreationDate', sa.types.DateTime, index=True)
 
         if not has_column(self.meta, token_table, created):
             add_column(self.meta.engine, token_table, created)
-            add_index(self.meta.engine, token_table, 'LinOtpCreated', created)
+            add_index(self.meta.engine, token_table, 'LinOtpCreationDate', created)
 
         # add verified column to tokens
-        verified = sa.Column('LinOtpVerified', sa.types.DateTime, index=True)
+        verified = sa.Column('LinOtpLastAuthSuccess', sa.types.DateTime, index=True)
 
         if not has_column(self.meta, token_table, verified):
             add_column(self.meta.engine, token_table, verified)
-            add_index(self.meta.engine, token_table, 'LinOtpVerified', verified)
+            add_index(self.meta.engine, token_table, 'LinOtpLastAuthSuccess', verified)
 
         # add accessed column to tokens
-        accessed = sa.Column('LinOtpAccessed', sa.types.DateTime, index=True)
+        accessed = sa.Column('LinOtpLastAuthMatch', sa.types.DateTime, index=True)
 
         if not has_column(self.meta, token_table, accessed):
             add_column(self.meta.engine, token_table, accessed)
-            add_index(self.meta.engine, token_table, 'LinOtpAccessed', accessed)
+            add_index(self.meta.engine, token_table, 'LinOtpLastAuthMatch', accessed)
 
 # eof

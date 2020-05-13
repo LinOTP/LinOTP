@@ -1823,9 +1823,9 @@ def add_time_info(list_of_tokens, mode='accessed'):
 
     for token in list_of_tokens:
         if mode == 'verified':
-            token.token.LinOtpVerified = now_stripped
+            token.token.LinOtpLastAuthSuccess = now_stripped
         else:
-            token.token.LinOtpAccessed = now_stripped
+            token.token.LinOtpLastAuthMatch = now_stripped
 
             # we softly migrate the last_access away from the token info
 
