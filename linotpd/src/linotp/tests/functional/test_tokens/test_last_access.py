@@ -63,13 +63,13 @@ class TestLastAccess(TestController):
 
         jresp = json.loads(response.body)
         token = jresp['result']['value']['data'][0]
-        assert 'LinOtp.Created' in token
+        assert 'LinOtp.CreationDate' in token
 
         # get the time from the string
-        created = token['LinOtp.Created']
+        created = token['LinOtp.CreationDate']
         created_date = datetime.strptime(created, DEFAULT_TIMEFORMAT)
 
-        accessed = token['LinOtp.Accessed']
+        accessed = token['LinOtp.LastAuthMatch']
         assert not accessed
 
         # ------------------------------------------------------------------ --
@@ -103,10 +103,10 @@ class TestLastAccess(TestController):
 
             jresp = json.loads(response.body)
             token = jresp['result']['value']['data'][0]
-            assert 'LinOtp.Accessed' in token
+            assert 'LinOtp.LastAuthMatch' in token
 
             # get the time from the string
-            invalid_access = token['LinOtp.Accessed']
+            invalid_access = token['LinOtp.LastAuthMatch']
             invalid_access_date = datetime.strptime(
                                             invalid_access, DEFAULT_TIMEFORMAT)
 
@@ -130,10 +130,10 @@ class TestLastAccess(TestController):
 
             jresp = json.loads(response.body)
             token = jresp['result']['value']['data'][0]
-            assert 'LinOtp.Verified' in token
+            assert 'LinOtp.LastAuthSuccess' in token
 
             # verify that we can parse the iso format
-            valid_access = invalid_access = token['LinOtp.Verified']
+            valid_access = invalid_access = token['LinOtp.LastAuthSuccess']
             valid_access_date = datetime.strptime(
                                     valid_access, DEFAULT_TIMEFORMAT)
 
