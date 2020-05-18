@@ -188,6 +188,49 @@ class TestHotpController(TestController):
         self.create_common_resolvers()
         self.create_common_realms()
 
+    def test_hmac_seed_with_seperator(self):
+        """
+        test support for seperators in otpkey
+        """
+
+        test_vector = TEST_VECTORS[0]
+
+        test_params = test_vector['params']
+        hotp_test = HotpTest(**test_params)
+
+        # ------------------------------------------------------------------ --
+
+        # create params for token enrollment
+
+        params = {}
+        params.update(test_params)
+
+        # ------------------------------------------------------------------ --
+
+        # create mixed string with '-', ' ' and chars of seed
+
+        params['otpkey'] = ' -'.join(params['otpkey'])
+
+        assert '-' in params['otpkey']
+
+        # ------------------------------------------------------------------ --
+
+        params['pin'] = '123'
+        params['user'] = 'passthru_user1@myDefRealm'
+
+        response = self.make_admin_request('init', params=params)
+        assert '"status": true' in response
+
+        for counter in range(1,3):
+            calc_otp = hotp_test.get_otp(counter=counter)
+
+            params = {
+                'user': 'passthru_user1@myDefRealm',
+                'pass': '123' + calc_otp
+                }
+            response = self.make_validate_request('check', params=params)
+            assert 'false' not in response
+
     def test_gettoken_otps(self):
         """
         Iterate through test data for different hashlibs and verify that our
@@ -243,8 +286,13 @@ class TestHotpController(TestController):
 
         for test_vector in TEST_VECTORS:
 
-            params = test_vector['params']
-            hotp_test = HotpTest(**params)
+            test_params = test_vector['params']
+            hotp_test = HotpTest(**test_params)
+
+            # create params for token enrollment
+
+            params = {}
+            params.update(test_params)
 
             params['user'] = 'passthru_user1@myDefRealm'
             response = self.make_admin_request('init', params=params)

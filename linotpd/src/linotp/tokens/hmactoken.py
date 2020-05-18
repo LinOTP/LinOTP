@@ -193,6 +193,17 @@ class HmacTokenClass(TokenClass):
         param['hashlib'] = self.hashlibStr
         self.addToTokenInfo("hashlib", self.hashlibStr)
 
+        # ------------------------------------------------------------------ --
+
+        # for usability reason we can accept otpkeys with white spaces or
+        # separators like '-', we just replace them before storing it
+
+        if 'otpkey' in param:
+            otpkey = param['otpkey']
+            param['otpkey'] = otpkey.replace(' ','').replace('-','')
+
+        # ------------------------------------------------------------------ --
+
         TokenClass.update(self, param, reset_failcount)
 
         return
