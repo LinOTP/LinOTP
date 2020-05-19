@@ -410,10 +410,24 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         try:
             validity = int(getFromConfig('DefaultChallengeValidityTime', 120))
 
-            # handle the token specific validity
+            # -------------------------------------------------------------- --
+
+            # handle the token specific validity:
+            #
+            # we have to support config variables with prefix formats like:
+            #
+            # - capitalize: 'EmailChallengeValidityTime' (historically) and
+            # - upper: 'QRChallengeValidityTime' (historically) and
+            # - lower: 'emailChallengeValidityTime' (due to limitations in the
+            #           mako / js automatic processing of config values)
+
             typ = self.getType()
-            lookup_for = typ.capitalize() + 'ChallengeValidityTime'
-            validity = int(getFromConfig(lookup_for, validity))
+            for token_typ in [typ.capitalize(), typ.upper(), typ.lower()] :
+
+                lookup_for = token_typ + 'ChallengeValidityTime'
+                validity = int(getFromConfig(lookup_for, validity))
+
+            # -------------------------------------------------------------- --
 
             # instance specific timeout
             validity = int(self.getFromTokenInfo('challenge_validity_time',
