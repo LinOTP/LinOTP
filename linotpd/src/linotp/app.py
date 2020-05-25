@@ -574,8 +574,11 @@ def setup_cache(app):
 
 
 def setup_db(app, drop_data=False):
-    """Set up the database for LinOTP. This used to be part of the
-    `lib.base.setup_app()` function.
+    """Set up the database for LinOTP.
+
+    This method is used during create_app() phase and as a separate
+    flask command `init-db` in init_db_command() to initialize and setup
+    the linotp database.
 
     FIXME: This is not how we would do this in Flask. We want to
     rewrite it once we get Flask-SQLAlchemy and Flask-Migrate
@@ -599,25 +602,44 @@ def setup_db(app, drop_data=False):
     app.logger.info("Creating tables...")
     meta.metadata.create_all(bind=meta.engine)
 
-    # For the cloud mode, we require the `admin_user` table to
-    # manage the admin users to allow password setting
+    try:
+        app.logger.info("Setting up config database default values...")
+        set_defaults(app)
 
-    admin_username = app.config.get('ADMIN_USERNAME', None)
-    admin_password = app.config.get('ADMIN_PASSWORD', None)
+    except Exception as exx:
+        app.logger.error("Exception occured during database setup: %r", exx)
+        meta.Session.rollback()
+        raise exx
 
-    if admin_username is not None and admin_password is not None:
-        from .lib.tools.set_password import (
-            SetPasswordHandler, DataBaseContext
-        )
-        db_context = DataBaseContext(sql_url=meta.engine.url)
-        SetPasswordHandler.create_table(db_context)
-        SetPasswordHandler.create_admin_user(
-            db_context,
-            username=admin_username, crypted_password=admin_password)
+    try:
+        # For the cloud mode, we require the `admin_user` table to
+        # manage the admin users to allow password setting
+
+        admin_username = app.config.get('ADMIN_USERNAME', None)
+        admin_password = app.config.get('ADMIN_PASSWORD', None)
+
+        if admin_username is not None and admin_password is not None:
+            app.logger.info("Setting up cloud admin user...")
+            from .lib.tools.set_password import (
+                SetPasswordHandler, DataBaseContext
+            )
+            db_context = DataBaseContext(sql_url=meta.engine.url)
+            SetPasswordHandler.create_table(db_context)
+            SetPasswordHandler.create_admin_user(
+                db_context,
+                username=admin_username, crypted_password=admin_password)
+
+    except Exception as exx:
+        app.logger.error(
+            "Exception occured during cloud admin user setup: %r", exx)
+        meta.Session.rollback()
+        raise exx
 
     # Hook for schema upgrade (Don't bother with this for the time being).
 
     # run_data_model_migration(meta)
+
+    meta.Session.commit()
 
 
 def generate_secret_key_file(app):
@@ -697,7 +719,6 @@ def create_app(config_name='default', config_extra=None):
         set_config()       # ensure `request_context` exists
         initGlobalObject()
         generate_secret_key_file(app)
-        set_defaults(app)
         reload_token_classes()
         app.check_license()
         app.load_providers()

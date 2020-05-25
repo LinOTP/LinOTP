@@ -247,5 +247,3 @@ def set_defaults(app):
                    value="False", typ="boolean",
                    description=("compare the new policy engine with "
                                 "the old one"))
-
-    Session.commit()
