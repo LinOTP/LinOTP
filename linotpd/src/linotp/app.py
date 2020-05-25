@@ -606,6 +606,9 @@ def setup_db(app, drop_data=False):
         app.logger.info("Setting up config database default values...")
         set_defaults(app)
 
+        app.logger.info("Check for database migration steps...")
+        run_data_model_migration(meta)
+
     except Exception as exx:
         app.logger.error("Exception occured during database setup: %r", exx)
         meta.Session.rollback()
@@ -634,10 +637,6 @@ def setup_db(app, drop_data=False):
             "Exception occured during cloud admin user setup: %r", exx)
         meta.Session.rollback()
         raise exx
-
-    # Hook for schema upgrade (Don't bother with this for the time being).
-
-    # run_data_model_migration(meta)
 
     meta.Session.commit()
 
