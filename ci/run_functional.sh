@@ -17,7 +17,7 @@ function run_functional_test() {
         GRANT ALL ON ${database_name}.* to '${MYSQL_USER}'@'%';" | \
         mysql -uroot -p${MYSQL_ROOT_PASSWORD} -h "db"
 
-  paster setup-app /tmp/worker_${WORKER_NUM}.ini
+  python -m flask init-db
   nohup paster serve /tmp/worker_${WORKER_NUM}.ini &
   PASTER_PID=$!
 

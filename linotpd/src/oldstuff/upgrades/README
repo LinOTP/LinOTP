@@ -21,7 +21,7 @@ definiton (audit, linotp, openid)
 In the context of LinOTP the updates would be triggerd from the websetup.py,
 by
 
-    paster setup-app linotp.ini
+    flask init-db
 
 the sqlalchemy.url of your linotp.ini will replace the urls in the alembic.ini
 file.
