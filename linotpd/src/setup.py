@@ -59,6 +59,8 @@ install_requirements = [
     'bcrypt',
     'cryptography',
     'click',
+    # Pygments 2.6.0,1 breaks tests so exclude it
+    "Pygments < 2.6.0",
 ]
 
 # Requirements needed to run all the tests

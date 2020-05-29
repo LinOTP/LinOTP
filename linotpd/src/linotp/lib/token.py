@@ -50,6 +50,8 @@ from linotp.lib.user import get_authenticated_user
 from linotp.lib.util import generate_password
 from linotp.lib.type_utils import boolean
 
+from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
+
 from linotp.lib.realm import realm2Objects
 
 import linotp
@@ -1849,56 +1851,73 @@ def getTokenType(serial):
 
     return typ
 
+def add_last_accessed_info(list_of_tokens):
+    """" small wrapper to set the accessed time info """
+    add_time_info(list_of_tokens, mode='accessed')
 
-def add_last_accessed_info(list_of_tokenlist):
+def add_last_verified_info(list_of_tokens):
+    """" small wrapper to set the verified time info """
+    add_time_info(list_of_tokens, mode='verified')
+
+def add_time_info(list_of_tokens, mode='accessed'):
     """
-    if token_last_access is defined in the config, add this to the token info
+    add time info to token
+    if token_last_access is defined in the config. it is used as a filter to
+    only preserve information which is compliant with the data preserving policy
 
-    we receive a list of tokens, coming from the validation with e.g.
-    pin-match and challenge match token list
-
-    :param list_of_tokenlists: list of token lists
-    :return: - nothing -
+    :param list_of_tokens: all tokens which should get a time stamp update
+    :param mode: which token data should be stored
     """
 
-    token_last_access = getFromConfig('token.last_access', None)
+    token_access = getFromConfig('linotp.token.last_access', None)
 
-    if not token_last_access:
+    if token_access in [None, False]:
+        return
+    elif token_access is True:
+        token_access_fmt = DEFAULT_TIMEFORMAT
+    elif token_access.lower() == 'false':
+        return
+    elif token_access.lower() == 'true':
+        token_access_fmt = DEFAULT_TIMEFORMAT
+    else:
+        token_access_fmt = token_access
+
+    # ---------------------------------------------------------------------- --
+
+    # we take the given time format as a filter and keep only
+    # relevant information. but first we remove the microsecond as these
+    # causes problem in case of mysql
+
+    now = datetime.datetime.utcnow().replace(microsecond=0)
+
+    try:
+
+        dt_str = now.strftime(token_access_fmt)
+        now_stripped = datetime.datetime.strptime(dt_str, token_access_fmt)
+
+    except ValueError as err:
+
+        # in case of a time string format error we do not filter the time
+        # and only log an error as it's not acceptable to stop a validation
+        # caused by a formatting error
+
+        log.error('linotp.token.last_access time format error: %r' % err)
         return
 
     # ---------------------------------------------------------------------- --
 
-    # we support a default fallback if in the config the last access format was
-    # was misused as boolean - so we fallback to ISO format
+    # finally add the time to the token
 
-    try:
-        if not boolean(token_last_access):
-            return
+    for token in list_of_tokens:
+        if mode == 'verified':
+            token.token.LinOtpLastAuthSuccess = now_stripped
+        else:
+            token.token.LinOtpLastAuthMatch = now_stripped
 
-        token_last_access = True
-        log.debug('last_access defined as True - falling back to iso format')
+            # we softly migrate the last_access away from the token info
 
-    except:
-        log.debug('using token.last_access format: %r', token_last_access)
-
-    now = datetime.datetime.utcnow()
-
-    if token_last_access is True:
-        access_info = now.isoformat()
-    else:
-        access_info = now.strftime(token_last_access)
-
-    # ---------------------------------------------------------------------- --
-
-    # we receive a list of tokens, coming from the validation with e.g.
-    # pin-match and challenge match token list
-
-    for token_list in list_of_tokenlist:
-        for token in token_list:
-            token.addToTokenInfo('last_access', access_info)
-
-    return
-
+            if token.getFromTokenInfo('last_access'):
+                token.removeFromTokenInfo('last_access')
 
 def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
     '''

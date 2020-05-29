@@ -216,9 +216,9 @@ ul.ui-widget-header {
 }
 
 div#tabs {
-    flex: 1;
-    border-radius: 0;
-    border-bottom: 0;
+	flex: 1 1 auto;
+	border-radius: 0;
+	border-bottom: 0;
 	padding: 0;
 }
 
@@ -415,11 +415,11 @@ div.empty-token-list {
     color: white;
     -webkit-box-shadow: inset 0px 0px 5px 0px rgba(255,255,255,0.5);
     -moz-box-shadow: inset 0px 0px 5px 0px rgba(255,255,255,0.5);
-    /* box-shadow: inset 0px 0px 5px 0px rgba(255,255,255,0.5); */
+    box-shadow: inset 0px 0px 5px 0px rgba(255,255,255,0.5);
 }
 
 .info-box .info-box-icon {
-    padding 0 .5em:;
+    padding: 0 .5em;
     padding-right: .5em;
-    font-weight:bold
+    font-weight: bold
 }

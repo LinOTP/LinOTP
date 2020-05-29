@@ -15,7 +15,25 @@ linotp (2.90rc0-1) buster-dev; urgency=low
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 23 Jan 2020 11:42:00 +0200
 
-linotp (2.11.1rc0-1) jessie; urgency=low
+linotp (2.11.2-1) jessie; urgency=low
+
+  Fix:
+  * Policy: respect maxtoken policy when creating new token in selfservice frontend
+  * Selfservice:
+    * Cookie expiration date now reflects timezone.
+      Closes https://github.com/LinOTP/LinOTP/issues/136
+    * IE11 Browser rendering fixed, where content height was not respected before.
+  * Email token: Accept a new challenge as soon as the previous challenge is correctly
+                 answered. Previously it was not possible before expiration of the
+                 challenge timeout.
+
+  Chore:
+  * Update LinOTP Apache configuration file to include additional configuration
+      supplied by a related package such as the Smart Virtual Appliance
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 05 May 2020 17:24:35 +0200
+
+linotp (2.11.1-1) jessie; urgency=low
 
   Feature:
    * Server: add support for autoenrollment enrollment notification
