@@ -912,11 +912,11 @@ if isinstance(lang, list):
                         </tr>
                         <tr>
                             <td>
-                                <label for='default_token_challengeTimeout'> ${_("DefaultChallengeValidityTime")}: </label>
+                                <label for='default_token_challengeTimeout'> ${_("Challenge expiration time (sec)")}: </label>
                             </td>
                             <td>
                                 <input type="number" name="default_token_challengeTimeout" id="default_token_challengeTimeout"
-                                    title='${_("Default validity timeframe of a challenge.")}' placeholder="120">
+                                    title='${_("Default validity time of a challenge in seconds.")}' placeholder="120">
                             </td>
                         </tr>
                     </table>
