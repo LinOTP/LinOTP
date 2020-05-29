@@ -419,7 +419,6 @@ case "$1" in
 			# executed after MySQL is successfully started. That's why we
 			# poll for MySQL.
 			DEBIAN_VERSION=`cat /etc/debian_version`
-			set -x
 			if dpkg --compare-versions "${DEBIAN_VERSION}" ge 8.0 && dpkg --compare-versions "${DEBIAN_VERSION}" lt 9.0; then
 			    echo "while ! mysqladmin ping --host=$DBHOST --user=root --password=${ROOTPW}; do" >> /etc/rc.local
 			    echo "echo \"MySQL is not running, yet. Waiting...\"" >> /etc/rc.local
