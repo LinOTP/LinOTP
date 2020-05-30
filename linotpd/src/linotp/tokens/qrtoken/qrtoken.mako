@@ -92,7 +92,7 @@ function qr_get_config_params(){
             <tr>
                 <td>
                     <label for="qrconfig_challenge_timeout">
-                        ${_("Challenge Timeout")}
+                        ${_("Challenge expiration time (sec)")}
                     </label>
                 </td>
                 <td>

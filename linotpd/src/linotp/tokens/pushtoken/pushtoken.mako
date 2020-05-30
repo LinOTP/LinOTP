@@ -90,7 +90,7 @@ function push_get_config_params(){
             <tr>
                 <td>
                     <label for="pushconfig_challenge_timeout">
-                        ${_("Challenge Timeout")}
+                        ${_("Challenge expiration time (sec)")}
                     </label>
                 </td>
                 <td>
