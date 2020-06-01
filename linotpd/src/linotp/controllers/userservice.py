@@ -738,7 +738,7 @@ class UserserviceController(BaseController):
         if otp:
 
             vh = ValidationHandler()
-            res, reply = vh.checkUserPass(user, otp)
+            res, reply = vh.checkUserPass(user, passw + otp)
 
             if res:
                 log.debug("Successfully authenticated user %r:", user)
