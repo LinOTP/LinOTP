@@ -56,6 +56,8 @@ try:
 except ImportError:
     import simplejson as json
 
+import webob
+
 from pylons import request
 from pylons import response
 from pylons import config
@@ -648,6 +650,7 @@ class UserserviceController(BaseController):
                                         transid=transid, filter_open=True)
         if not challenges:
             log.info("cannot login with challenge as challenges are expired!")
+            abort(401, _('challenge expired!'))
 
         if 'otp' in params:
 
@@ -850,6 +853,8 @@ class UserserviceController(BaseController):
 
                 response.delete_cookie('user_selfservice')
 
+                abort(401, _("No valid session!"))
+
             # -------------------------------------------------------------- --
 
             # identify the user
@@ -887,6 +892,15 @@ class UserserviceController(BaseController):
                 return self._login_with_password_only(user, password)
 
             # -------------------------------------------------------------- --
+
+        except (webob.exc.HTTPUnauthorized, webob.exc.HTTPForbidden) as exx:
+
+            log.exception('userservice login failed: %r', exx)
+
+            c.audit['info'] = ("%r" % exx)[:80]
+            c.audit['success'] = False
+
+            return exx
 
         except Exception as exx:
 

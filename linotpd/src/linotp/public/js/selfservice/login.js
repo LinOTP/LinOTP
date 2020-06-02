@@ -243,8 +243,13 @@ function ssLoginAbortPolling(intervalID) {
     }, 10000);
 }
 
-function ssLoginErrorCallback() {
-    alert(i18n.gettext("Connection Error during login"));
+function ssLoginErrorCallback(data, status) {
+    if (data.status == 401) {
+        alert(i18n.gettext("Invalid session - please try again."));
+        location.reload();
+    } else {
+        alert(i18n.gettext("Connection Error during login"));
+    }
 }
 
 function getTokenAction(type) {
