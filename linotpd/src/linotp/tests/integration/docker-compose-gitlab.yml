@@ -27,14 +27,9 @@ services:
      - "5900"
 
   test-linotp:
-    image: "${INTEGRATION_TEST_LINOTP}"
+    image: "${LINOTP_IMAGE}"
     depends_on:
       - test-db
-    build:
-      context: .
-      dockerfile: Dockerfile.linotp
-      args:
-        - LINOTP_BASE_IMAGE=${LINOTP_IMAGE}
     environment:
       LINOTP_DB_TYPE: "mysql"
       LINOTP_DB_HOST: "test-db"
