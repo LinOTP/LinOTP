@@ -27,33 +27,18 @@ WORKDIR /opt/linotp/tests
 RUN echo "deb [trusted=yes] file:/opt/linotp/tests/apt ./" > /etc/apt/sources.list.d/linotp-local.list
 
 RUN apt-get update && apt-get install -y \
-  		make \
-  		python-nose-testconfig \
-  		linotp-adminclient-cli
-
-# Get latest pip
-RUN apt-get install curl
-RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-RUN python get-pip.py
-RUN pip --version
-RUN python -m pip install --upgrade pip
-RUN pip --version
-
-RUN pip freeze
-RUN pip install wheel
-RUN pip install packaging
-RUN pip install selenium
-RUN pip install flaky
-RUN pip install pysocks
-RUN pip freeze
-
+		make \
+		python3-pytest-flask \
+		python3-pytest-cov \
+		python3-selenium \
+		linotp-adminclient-cli
 
 ENTRYPOINT [ \
 		"/usr/local/bin/dockerfy", \
 			"--template", "docker_cfg.ini.tmpl:server_cfg.ini", \
 			"--wait", "tcp://{{ .Env.SELENIUM_HOST }}:{{ .Env.SELENIUM_PORT }}", "--timeout", "60s", \
 			"--wait", "tcp://{{ .Env.LINOTP_HOST }}:{{ .Env.LINOTP_PORT }}", "--timeout", "60s", \
-		    "--" \
+			"--" \
 	]
 
 CMD /usr/bin/make $TEST_BUNCH

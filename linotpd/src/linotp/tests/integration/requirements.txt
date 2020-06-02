@@ -24,8 +24,6 @@
 #    Support: www.keyidentity.com
 #
 
-nose
-nose-testconfig
 selenium
 requests
 LinOTP

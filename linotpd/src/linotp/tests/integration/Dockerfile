@@ -12,17 +12,19 @@ ENV LINOTP_HOST=linotp \
 	SELENIUM_HOST=selenium \
 	SELENIUM_PORT=4444
 
-RUN apt-get update && apt-get install \
-  		make \
-  		python-nose-testconfig \
-  		python-requests \
-		python-pip \
-  		linotp-adminclient-cli
+RUN apt-get update && \
+	apt-get install \
+			linotp-adminclient-cli \
+		make \
+		python3-pytest-flask \
+		python3-pytest-cov \
+		python3-flaky \
+		python3-selenium \
+		python3-packaging \
+		python3-pip \
+		python3-wheel
 
-RUN pip install packaging
-RUN pip install selenium
-RUN pip install flaky
-RUN pip install pysocks
+RUN pip3 install pytest-testconfig
 
 # Integration tests dir gets mounted in the WORKDIR below.
 # See docker-compose.yml
