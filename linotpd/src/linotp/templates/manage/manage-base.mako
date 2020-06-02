@@ -40,7 +40,7 @@ if isinstance(lang, list):
 <html>
 
 <head>
-<title>${_("LinOTP 2 Management")}</title>
+<title>${_("Management - LinOTP")}</title>
 
 <meta name="copyright" content="KeyIdentity GmbH">
 <meta name="keywords" content="LinOTP 2 manage">
