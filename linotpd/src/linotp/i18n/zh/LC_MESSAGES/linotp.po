@@ -1364,8 +1364,8 @@ msgstr "请输入您的用户名，OTP PIN 码和 OTP 值。"
 msgid "Login"
 msgstr "登录"
 
-msgid "LinOTP 2 Management"
-msgstr "LinOTP 管理"
+msgid "Management - LinOTP"
+msgstr "管理 - LinOTP"
 
 msgid "You need to enable Javascript to use the LinOTP Management Web UI."
 msgstr "您必须启用 Javascript 才能使用 LinOTP Web 管理界面。"

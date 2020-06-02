@@ -1493,8 +1493,8 @@ msgstr "Entrez votre nom d'utilisateur, le code PIN OTP et la valeur OTP."
 msgid "Login"
 msgstr "Connexion"
 
-msgid "LinOTP 2 Management"
-msgstr "Gestion LinOTP"
+msgid "Management - LinOTP"
+msgstr "Gestion - LinOTP"
 
 msgid "You need to enable Javascript to use the LinOTP Management Web UI."
 msgstr ""

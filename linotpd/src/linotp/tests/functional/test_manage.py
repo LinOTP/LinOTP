@@ -141,7 +141,7 @@ class TestManageController(TestController):
         response = self.app.get(url(controller='manage', action='index'),
                                 params={})
         log.info("index response: %r" % response)
-        self.assertTrue('<title>LinOTP 2 Management</title>'in response,
+        self.assertTrue('<title>Management - LinOTP</title>'in response,
                         response)
 
     def test_policies(self):

@@ -1453,8 +1453,8 @@ msgstr "Geben Sie Ihren Benutzernamen, die OTP-PIN und den OTP-Wert ein."
 msgid "Login"
 msgstr "Login"
 
-msgid "LinOTP 2 Management"
-msgstr "LinOTP Management"
+msgid "Management - LinOTP"
+msgstr "Management - LinOTP"
 
 msgid "You need to enable Javascript to use the LinOTP Management Web UI."
 msgstr ""
