@@ -436,6 +436,39 @@ class TestUserserviceAuthController(TestController):
 
         # ------------------------------------------------------------------ --
 
+        # next request replies to the challenge response with an emptyotp
+        # and check if the fail counter is incremented
+
+        params = {
+            'serial': 'LoginToken'
+            }
+        response = self.make_admin_request('show', params)
+        token_data = json.loads(response.body)['result']['value']['data'][0]
+        failcount = token_data["LinOtp.FailCount"]
+
+        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+
+        params = {}
+        params['session'] = auth_cookie
+        otp = self.otps.pop()
+        params['otp'] = ''
+
+        response = self.app.get(url(controller='userservice',
+                                    action='login'), params=params)
+
+        self.assertTrue('"value": false' in response, response)
+
+        params = {
+            'serial': 'LoginToken'
+            }
+        response = self.make_admin_request('show', params)
+        token_data = json.loads(response.body)['result']['value']['data'][0]
+        new_failcount = token_data["LinOtp.FailCount"]
+
+        assert new_failcount > failcount
+
+        # ------------------------------------------------------------------ --
+
         # next request replies to the challenge response and
         # finishes the authorisation
 

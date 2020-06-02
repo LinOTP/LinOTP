@@ -649,7 +649,7 @@ class UserserviceController(BaseController):
         if not challenges:
             log.info("cannot login with challenge as challenges are expired!")
 
-        if params.get('otp'):
+        if 'otp' in params:
 
             params['transactionid'] = transid
 
