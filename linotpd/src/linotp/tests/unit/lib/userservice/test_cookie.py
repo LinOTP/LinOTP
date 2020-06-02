@@ -27,6 +27,8 @@
 
 import binascii
 import datetime
+import pytest
+
 from linotp.lib.userservice import create_auth_cookie
 
 import unittest
@@ -47,7 +49,8 @@ class TestCookieActivation(unittest.TestCase):
         verify that the userservice cookie format is rfc6265 compliant
         """
 
-        mock_get_cookie_secret.return_value = binascii.hexlify(Secret)
+        mock_get_cookie_secret.return_value = binascii.hexlify(
+                                                Secret.encode('utf-8'))
         mock_get_cookie_expiry.return_value = False
 
         ret = create_auth_cookie('hans', '127.0.0.1')
@@ -55,9 +58,7 @@ class TestCookieActivation(unittest.TestCase):
 
         datetime.datetime.strptime(expiration_str, RFC6265_TIMEFORMAT)
 
-        with self.assertRaises(ValueError) as exx:
+        with pytest.raises(ValueError, match='does not match format'):
             datetime.datetime.strptime(expiration_str, OLD_TIMEFORMAT)
-
-        assert 'does not match format' in exx.exception.message
 
 # eof
