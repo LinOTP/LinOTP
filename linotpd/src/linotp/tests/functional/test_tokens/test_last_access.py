@@ -80,8 +80,8 @@ class TestLastAccess(TestController):
         assert '"status": true' in response, response.body
 
         jresp = json.loads(response.body)
-        t_info = jresp['result']['value']['data'][0]['LinOtp.TokenInfo']
-        assert 'last_access' not in t_info
+        t_info = jresp['result']['value']['data'][0]
+        assert t_info['LinOtp.LastAuthMatch'] == ''
 
         # ------------------------------------------------------------------ --
 
@@ -108,13 +108,12 @@ class TestLastAccess(TestController):
         assert '"status": true' in response, response.body
 
         jresp = json.loads(response.body)
-        t_info = jresp['result']['value']['data'][0]['LinOtp.TokenInfo']
-        token_info = json.loads(t_info)
-        assert 'last_access' in token_info
+        t_info = jresp['result']['value']['data'][0]
+        assert t_info['LinOtp.LastAuthMatch']
 
         # verify that we can parse the iso format
         _access_date = datetime.strptime(
-            token_info['last_access'][:19], "%Y-%m-%dT%H:%M:%S")
+            t_info['LinOtp.LastAuthMatch'], DEFAULT_TIMEFORMAT)
 
         self.delete_all_token()
         return
