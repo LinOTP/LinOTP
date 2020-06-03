@@ -895,7 +895,7 @@ class UserserviceController(BaseController):
 
         except (webob.exc.HTTPUnauthorized, webob.exc.HTTPForbidden) as exx:
 
-            log.exception('userservice login failed: %r', exx)
+            log.error('userservice login failed: %r', exx)
 
             c.audit['info'] = ("%r" % exx)[:80]
             c.audit['success'] = False
@@ -904,7 +904,7 @@ class UserserviceController(BaseController):
 
         except Exception as exx:
 
-            log.exception('userservice login failed: %r', exx)
+            log.error('userservice login failed: %r', exx)
 
             c.audit['info'] = ("%r" % exx)[:80]
             c.audit['success'] = False
