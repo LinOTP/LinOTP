@@ -29,8 +29,6 @@
 <html>
 <head>
 <title>LinOTP 2 OpenID Service</title>
-<meta name="author" content="Cornelius Kölbel">
-<meta name="date" content="2011-06-09T23:23:25+0200">
 <meta name="copyright" content="KeyIdentity GmbH">
 <meta name="keywords" content="LinOTP 2, self service">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
