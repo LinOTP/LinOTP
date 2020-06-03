@@ -70,15 +70,17 @@ from linotp.lib.user import (getUserInfo,
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.context import request_context
 
+from linotp.lib.type_utils import DEFAULT_TIMEFORMAT as TIMEFORMAT
+
 import logging
 log = logging.getLogger(__name__)
 
 # const for encryption and iv
 SECRET_LEN = 32
 
-# const - timeformat used in session cookie
-TIMEFORMAT = "%Y-%m-%d %H:%M:%S"
 
+
+Cookie_Secret = binascii.hexlify(os.urandom(SECRET_LEN))
 Cookie_Cache = {}
 
 
@@ -268,13 +270,7 @@ def get_cookie_secret():
 
     :return: return the cookie encryption secret
     """
-    config = request_context['Config']
-
-    if not config.get('selfservice_auth_secret'):
-        secret = binascii.hexlify(os.urandom(SECRET_LEN)).decode()
-        config['selfservice_auth_secret'] = secret
-
-    return config.get('selfservice_auth_secret')
+    return Cookie_Secret
 
 
 def get_cookie_expiry():

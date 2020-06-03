@@ -313,6 +313,11 @@ class EmailTokenClass(HmacTokenClass):
                                           self.DEFAULT_EMAIL_BLOCKING_TIMEOUT))
 
         for challenge in challenges:
+
+            # only care about open challenges
+            if not challenge.is_open():
+                continue
+
             challenge_timestamp = challenge.get('timestamp')
             block_timeout = challenge_timestamp + \
                              datetime.timedelta(seconds=blocking_time)

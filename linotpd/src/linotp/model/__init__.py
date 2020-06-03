@@ -47,6 +47,8 @@ import logging
 import traceback
 from datetime import datetime
 
+from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
+
 import json
 
 """The application's model objects"""
@@ -161,6 +163,12 @@ token_table = sa.Table(
         'LinOtpCountWindow', sa.types.Integer(), default=10),
     sa.Column(
         'LinOtpSyncWindow', sa.types.Integer(), default=1000),
+    sa.Column('LinOtpCreationDate', sa.types.DateTime, index=True,
+              default=datetime.now().replace(microsecond=0)),
+    sa.Column('LinOtpLastAuthSuccess', sa.types.DateTime, index=True,
+              default=None),
+    sa.Column('LinOtpLastAuthMatch', sa.types.DateTime, index=True,
+              default=None),
     implicit_returning=implicit_returning,
 )
 
@@ -191,8 +199,11 @@ class Token(object):
         self.LinOtpIdResClass = None
         self.LinOtpUserid = None
 
-        # will be assigned automaticaly
-        # self.LinOtpTokenId      = 0
+        # when the token is created all time stamps are set to utc now
+
+        self.LinOtpCreationDate = datetime.utcnow().replace(microsecond=0)
+        self.LinOtpLastAuthMatch = None
+        self.LinOtpLastAuthSuccess = None
 
     def _fix_spaces(self, data):
         '''
@@ -383,7 +394,31 @@ class Token(object):
         ret['LinOtp.Count'] = self.LinOtpCount
         ret['LinOtp.CountWindow'] = self.LinOtpCountWindow
         ret['LinOtp.SyncWindow'] = self.LinOtpSyncWindow
+        # ------------------------------------------------------------------ --
 
+        # handle representation of created, accessed and verified:
+
+        # - could be None, if not (newly) created  / accessed / verified
+        # - if type is datetime it must be converted to a string as the result
+        #   will be used as part of a json output
+
+        created = ''
+        if self.LinOtpCreationDate is not None:
+            created = self.LinOtpCreationDate.strftime(DEFAULT_TIMEFORMAT)
+
+        ret['LinOtp.CreationDate'] = created
+
+        verified = ''
+        if self.LinOtpLastAuthSuccess is not None:
+            verified = self.LinOtpLastAuthSuccess.strftime(DEFAULT_TIMEFORMAT)
+
+        ret['LinOtp.LastAuthSuccess'] = verified
+
+        accessed = ''
+        if self.LinOtpLastAuthMatch is not None:
+            accessed = self.LinOtpLastAuthMatch.strftime(DEFAULT_TIMEFORMAT)
+
+        ret['LinOtp.LastAuthMatch'] = accessed
         # list of Realm names
         ret['LinOtp.RealmNames'] = self.getRealmNames()
 

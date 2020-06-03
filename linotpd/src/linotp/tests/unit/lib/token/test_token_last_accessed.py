@@ -20,20 +20,33 @@ Tests the last_access token info
 import unittest
 from mock import patch
 
+from datetime import datetime
+
 from linotp.lib.token import add_last_accessed_info
 
 # -------------------------------------------------------------------------- --
 
 # we use a fake token which supports the interface: addToTokenInfo
+class dbToken():
+    def __init__(self):
+        self.LinOtpLastAuthSuccess = ''
+        self.LinOtpLastAuthMatch = ''
 
 class FakeToken():
 
     def __init__(self):
         self.info = {}
+        self.token = dbToken()
 
     def addToTokenInfo(self, key, value):
         self.info[key] = value
 
+    def getFromTokenInfo(self, key, fallback=None):
+        return self.info.get(key, fallback)
+
+    def removeFromTokenInfo(self, key):
+        if key in self.info:
+            del self.info[key]
 
 
 class TestTokenLastAcces(unittest.TestCase):
@@ -53,11 +66,10 @@ class TestTokenLastAcces(unittest.TestCase):
         for _i in range(1,5):
             token_list.append(FakeToken())
 
-        add_last_accessed_info([token_list])
+        add_last_accessed_info(token_list)
 
         for token in token_list:
-            assert 'last_access' in token.info
-            assert ':' in token.info['last_access']
+            assert token.token.LinOtpLastAuthMatch != ''
 
         return
 
@@ -67,18 +79,18 @@ class TestTokenLastAcces(unittest.TestCase):
         test if last accessed info is written into token info
         """
 
-        m_getFromConfig.return_value = "%d.%m.%Y"
+        custom_time_format = "%d.%m.%Y"
+        m_getFromConfig.return_value = custom_time_format
 
         token_list = []
         for _i in range(1,5):
             token_list.append(FakeToken())
 
-        add_last_accessed_info([token_list])
+        add_last_accessed_info(token_list)
 
         for token in token_list:
-            assert 'last_access' in token.info
-            assert ':' not in token.info['last_access']
-
+            access_time = token.token.LinOtpLastAuthMatch
+            assert isinstance(access_time, datetime)
         return
 
     @patch('linotp.lib.token.getFromConfig')
@@ -93,11 +105,10 @@ class TestTokenLastAcces(unittest.TestCase):
         for _i in range(1,5):
             token_list.append(FakeToken())
 
-        add_last_accessed_info([token_list])
+        add_last_accessed_info(token_list)
 
         for token in token_list:
-            assert not 'last_access' in token.info
-
+            assert not token.token.LinOtpLastAuthMatch
         return
 
     @patch('linotp.lib.token.getFromConfig')
@@ -112,10 +123,10 @@ class TestTokenLastAcces(unittest.TestCase):
         for _i in range(1,5):
             token_list.append(FakeToken())
 
-        add_last_accessed_info([token_list])
+        add_last_accessed_info(token_list)
 
         for token in token_list:
-            assert not 'last_access' in token.info
+            assert not token.token.LinOtpLastAuthMatch
 
         return
 
@@ -131,10 +142,10 @@ class TestTokenLastAcces(unittest.TestCase):
         for _i in range(1,5):
             token_list.append(FakeToken())
 
-        add_last_accessed_info([token_list])
+        add_last_accessed_info(token_list)
 
         for token in token_list:
-            assert not 'last_access' in token.info
+            assert not token.token.LinOtpLastAuthMatch
 
         return
 
