@@ -47,13 +47,14 @@ if isinstance(lang, list):
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
 <meta http-equiv="content-style-type" content="text/css">
 
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+
 <link type="text/css" rel="stylesheet" href="/css/linotp.css">
 <link type="text/css" rel="stylesheet" href="/selfservice/style.css">
 <link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
 <link type="text/css" rel="stylesheet" href="/css/flexigrid/flexigrid.css">
 
 <link type="text/css" href="/css/jquery-ui/jquery-ui.min.css" rel="stylesheet">
-
 
 <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
 <script type="text/javascript" src="/js/jquery-migrate-3.1.0.min.js"></script>

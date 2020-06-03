@@ -48,6 +48,8 @@ if isinstance(lang, list):
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
 <meta http-equiv="content-style-type" content="text/css">
 
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+
 %if c.debug:
     <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.structure.css">
     <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.theme.css">
