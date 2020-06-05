@@ -333,7 +333,10 @@ class TestUserserviceAuthController(TestController):
             2. by calling the login with the 'credentials_verified' cookie
                and no otp, we trigger a challenge
 
-            3. reply with the previous cookie 'challenge_triggered'
+            3a. reply with the previous cookie 'challenge_triggered'
+               and an wrong otp should increment the token fail count
+
+            3b. reply with the previous cookie 'challenge_triggered'
                and the otp should return the final 'authenticated' cookie
 
         After the 3 step any operation could be made, like history
@@ -400,8 +403,76 @@ class TestUserserviceAuthController(TestController):
 
         # ------------------------------------------------------------------ --
 
+        # next request replies to the challenge response with a wrong otp
+        # and check if the fail counter is incremented
+
+        params = {
+            'serial': 'LoginToken'
+            }
+        response = self.make_admin_request('show', params)
+        token_data = json.loads(response.body)['result']['value']['data'][0]
+        failcount = token_data["LinOtp.FailCount"]
+
+        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+
+        params = {}
+        params['session'] = auth_cookie
+        otp = self.otps.pop()
+        params['otp'] = otp[::-1]
+
+        response = self.app.get(url(controller='userservice',
+                                    action='login'), params=params)
+
+        self.assertTrue('"value": false' in response, response)
+
+        params = {
+            'serial': 'LoginToken'
+            }
+        response = self.make_admin_request('show', params)
+        token_data = json.loads(response.body)['result']['value']['data'][0]
+        new_failcount = token_data["LinOtp.FailCount"]
+
+        assert new_failcount > failcount
+
+        # ------------------------------------------------------------------ --
+
+        # next request replies to the challenge response with an emptyotp
+        # and check if the fail counter is incremented
+
+        params = {
+            'serial': 'LoginToken'
+            }
+        response = self.make_admin_request('show', params)
+        token_data = json.loads(response.body)['result']['value']['data'][0]
+        failcount = token_data["LinOtp.FailCount"]
+
+        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+
+        params = {}
+        params['session'] = auth_cookie
+        otp = self.otps.pop()
+        params['otp'] = ''
+
+        response = self.app.get(url(controller='userservice',
+                                    action='login'), params=params)
+
+        self.assertTrue('"value": false' in response, response)
+
+        params = {
+            'serial': 'LoginToken'
+            }
+        response = self.make_admin_request('show', params)
+        token_data = json.loads(response.body)['result']['value']['data'][0]
+        new_failcount = token_data["LinOtp.FailCount"]
+
+        assert new_failcount > failcount
+
+        # ------------------------------------------------------------------ --
+
         # next request replies to the challenge response and
         # finishes the authorisation
+
+        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
 
         params = {}
         params['session'] = auth_cookie

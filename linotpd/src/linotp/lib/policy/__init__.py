@@ -2996,7 +2996,7 @@ def get_pin_policies(user):
     # so thate the password could be ignored at all
 
     if request_context['Path'] == '/userservice/login':
-        pin_policies = [3]
+        return [1]
 
     if len(pin_policies) > 1:
         msg = ("conflicting authentication polices. "

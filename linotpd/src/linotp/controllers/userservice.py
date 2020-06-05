@@ -56,6 +56,8 @@ try:
 except ImportError:
     import simplejson as json
 
+import webob
+
 from pylons import request
 from pylons import response
 from pylons import config
@@ -69,6 +71,7 @@ from mako.exceptions import CompileException
 
 from linotp.lib.base import BaseController
 from linotp.lib.auth.validate import ValidationHandler
+from linotp.lib.challenges import Challenges
 
 from linotp.lib.policy import (checkPolicyPre,
                                checkPolicyPost,
@@ -519,164 +522,197 @@ class UserserviceController(BaseController):
 
     def _login_with_cookie(self, cookie, params):
         """
+        verify the mfa login second step
+        - the credentials have been verified in the first step, so that the
+          authentication state is either 'credentials_verified' or
+          'challenge_triggered'
 
-        if credentials are already verified, the state of authenticaion
-        is stored in the cookie cache
-
-        :param cookie: the authentication state
+        :param cookie: preserving the authentication state
         :param params: the request parameters
         """
-        user, _client, auth_state, state_data = get_cookie_authinfo(cookie)
+        user, _client, auth_state, _state_data = get_cookie_authinfo(cookie)
 
         if not user:
             raise UserNotFound('no user info in authentication cache')
 
+        request_context['selfservice'] = {
+            'state': auth_state,
+            'user': user
+            }
+
         if auth_state == 'credentials_verified':
+            return self._login_with_cookie_credentials(cookie, params)
 
-            # TODO: finish implementation in checkUserPass / checkSerialPass:
-            # the cookie and the path should be part of the request context
-            # so that checkUserPass could skip the password check
+        elif auth_state == 'challenge_triggered':
+            return self._login_with_cookie_challenge(cookie, params)
 
-            # -------------------------------------------------------------- --
+        else:
+            raise NotImplementedError('unknown state %r' % auth_state)
 
-            otp = params.get('otp', '')
-            serial = params.get('serial')
+    def _login_with_cookie_credentials(self, cookie, params):
+        """
+        verify the mfa login second step
+        - the credentials have been verified in the first step, so that the
+          authentication state is 'credentials_verified'
 
-            vh = ValidationHandler()
+        :param cookie: preserving the authentication state
 
-            if 'serial' in params:
-                res, reply = vh.checkSerialPass(serial, passw=otp,
-                                                options=params)
-            else:
-                request_context['selfservice'] = {'state': auth_state,
-                                                  'user': user}
-                res, reply = vh.checkUserPass(user, passw=otp, options=params)
+        :param params: the request parameters
+        """
 
-            # -------------------------------------------------------------- --
+        user, _client, _auth_state, _state_data = get_cookie_authinfo(cookie)
 
-            # if an otp is provided we can do a direct authentication
-
-            if otp:
-                if res:
-                    (cookie, expires, _exp) = create_auth_cookie(
-                                                        user, self.client)
-
-                    response.set_cookie('user_selfservice', cookie,
-                                        secure=secure_cookie,
-                                        expires=expires)
-
-                    c.audit['info'] = ("User %r authenticated from otp" % user)
-
-                Session.commit()
-                return sendResult(response, res, 0)
-
-            # -------------------------------------------------------------- --
-
-            # if no otp is provided, we check if a challenge is triggered
-
-            c.audit['action_detail'] = ("User %r authenticated with "
-                                        "credentials_verified state" %
-                                        user)
-
-            if not res and reply:
-
-                if 'message' in reply and "://chal/" in reply['message']:
-                    reply['img_src'] = create_img_src(reply['message'])
-
-                (cookie, expires,
-                 expiration) = create_auth_cookie(
-                                        user, self.client,
-                                        state='challenge_triggered',
-                                        state_data=reply)
-
-                response.set_cookie('user_selfservice', cookie,
-                                    secure=secure_cookie,
-                                    expires=expires)
-
-                c.audit['success'] = False
-
-                Session.commit()
-                return sendResult(response, False, 0, opt=reply)
-
-            Session.commit()
-            return sendResult(response, res, 0, opt=reply)
 
         # -------------------------------------------------------------- --
 
-        elif auth_state == 'challenge_triggered':
+        otp = params.get('otp', '')
+        serial = params.get('serial')
 
-            if params.get('otp'):
-                # -------------------------------------------------------------- --
+        vh = ValidationHandler()
 
-                # if there has been a challenge triggerd before, we can extract
-                # the the transaction info from the cookie cached data
+        if 'serial' in params:
+            res, reply = vh.checkSerialPass(
+                                        serial, passw=otp, options=params)
+        else:
+            res, reply = vh.checkUserPass(user, passw=otp, options=params)
 
-                if not state_data:
-                    raise Exception('invalid state data')
+        # -------------------------------------------------------------- --
 
-                # TODO: adjust the state_data for multiple challenges
+        # if res is True: success for direct authentication and we can
+        # set the cookie for successful authenticated
 
-                transid = state_data.get('transactionid')
-                params['transactionid'] = transid
+        if res:
+            ret = create_auth_cookie(user, self.client)
+            (cookie, expires, _exp) = ret
 
-                otp_value = params['otp']
+            response.set_cookie('user_selfservice', cookie,
+                                secure=secure_cookie,
+                                expires=expires)
 
-                vh = ValidationHandler()
-                res, reply = vh.check_by_transactionid(transid, passw=otp_value,
-                                                       options=params)
+            c.audit['info'] = ("User %r authenticated from otp" % user)
 
-                c.audit['success'] = res
+            Session.commit()
+            return sendResult(response, res, 0)
 
-                if res:
-                    (cookie, expires,
-                     expiration) = create_auth_cookie(user, self.client)
+        # -------------------------------------------------------------- --
 
-                    response.set_cookie('user_selfservice', cookie,
-                                        secure=secure_cookie,
-                                        expires=expires)
+        # if res is False and reply is provided, a challenge was triggered
+        # and we set the state 'challenge_triggered'
 
-                    c.audit['action_detail'] = "expires: %s " % expiration
-                    c.audit['info'] = "%r logged in " % user
+        if not res and reply:
 
-                Session.commit()
-                return sendResult(response, res, 0)
+            if 'message' in reply and "://chal/" in reply['message']:
+                reply['img_src'] = create_img_src(reply['message'])
 
-            # -------------------------------------------------------------- --
+            ret = create_auth_cookie(
+                user, self.client, state='challenge_triggered', state_data=reply
+            )
+            cookie, expires, expiration = ret
 
-            # if there is no otp in the request, we assume that we
-            # have to poll for the transaction state
+            response.set_cookie('user_selfservice', cookie,
+                                secure=secure_cookie,
+                                expires=expires)
 
-            if not state_data:
-                raise Exception('invalid state data')
+            c.audit['success'] = False
 
-            verified = False
-            transid = state_data.get('transactionid')
+            Session.commit()
+            return sendResult(response, False, 0, opt=reply)
 
-            va = ValidationHandler()
-            ok, opt = va.check_status(transid=transid, user=user,
-                                      serial=None, password='passw',
-                                      )
-            if ok and opt and opt.get('transactions', {}).get(transid):
-                verified = opt.get(
-                    'transactions', {}).get(
-                        transid).get(
-                            'valid_tan')
+        # -------------------------------------------------------------- --
 
-            if verified:
+        # if no reply and res is False, the authentication failed
+
+        if not res and not reply:
+
+            Session.commit()
+            return sendResult(response, False, 0)
+
+    def _login_with_cookie_challenge(self, cookie, params):
+        """
+        verify the mfa login second step
+        - the credentials have been verified in the first step and a challenge
+          has been triggered, so that the authentication state is
+          'challenge_triggered'
+
+        :param cookie: preserving the authentication state
+        :param params: the request parameters
+        """
+        user, _client, _auth_state, state_data = get_cookie_authinfo(cookie)
+
+        if not state_data:
+            raise Exception('invalid state data')
+
+        # if there has been a challenge triggerd before, we can extract
+        # the the transaction info from the cookie cached data
+
+        transid = state_data.get('transactionid')
+        _exp, challenges = Challenges.get_challenges(
+                                        transid=transid, filter_open=True)
+        if not challenges:
+            log.info("cannot login with challenge as challenges are expired!")
+            abort(401, _('challenge expired!'))
+
+        if 'otp' in params:
+
+            params['transactionid'] = transid
+
+            otp_value = params['otp']
+
+            vh = ValidationHandler()
+            res, _reply = vh.check_by_transactionid(
+                transid, passw=otp_value, options=params)
+
+
+            c.audit['success'] = res
+
+            if res:
                 (cookie, expires,
                  expiration) = create_auth_cookie(user, self.client)
 
                 response.set_cookie('user_selfservice', cookie,
                                     secure=secure_cookie,
                                     expires=expires)
+
                 c.audit['action_detail'] = "expires: %s " % expiration
                 c.audit['info'] = "%r logged in " % user
 
             Session.commit()
-            return sendResult(response, verified, 0)
+            return sendResult(response, res, 0)
 
-        else:
-            raise NotImplementedError('unknown state %r' % auth_state)
+        # -------------------------------------------------------------- --
+
+        # if there is no otp in the request, we assume that we
+        # have to poll for the transaction state
+
+        if not state_data:
+            raise Exception('invalid state data')
+
+        verified = False
+        transid = state_data.get('transactionid')
+
+        va = ValidationHandler()
+        ok, opt = va.check_status(transid=transid, user=user,
+                                  serial=None, password='passw',
+                                  )
+        if ok and opt and opt.get('transactions', {}).get(transid):
+            verified = opt.get(
+                'transactions', {}).get(
+                    transid).get(
+                        'valid_tan')
+
+        if verified:
+            (cookie, expires,
+             expiration) = create_auth_cookie(user, self.client)
+
+            response.set_cookie('user_selfservice', cookie,
+                                secure=secure_cookie,
+                                expires=expires)
+            c.audit['action_detail'] = "expires: %s " % expiration
+            c.audit['info'] = "%r logged in " % user
+
+        Session.commit()
+        return sendResult(response, verified, 0)
+
 
     def _login_with_otp(self, user, passw, param):
         """
@@ -705,7 +741,7 @@ class UserserviceController(BaseController):
         if otp:
 
             vh = ValidationHandler()
-            res, reply = vh.checkUserPass(user, otp)
+            res, reply = vh.checkUserPass(user, passw + otp)
 
             if res:
                 log.debug("Successfully authenticated user %r:", user)
@@ -796,8 +832,8 @@ class UserserviceController(BaseController):
 
             # -------------------------------------------------------------- --
 
-            # if this is an preauthenticated login we continue
-            # with the authetication states
+            # if this is an pre-authenticated login we continue
+            # with the authentication states
 
             user_selfservice_cookie = request.cookies.get('user_selfservice')
 
@@ -811,11 +847,13 @@ class UserserviceController(BaseController):
                 return self._login_with_cookie(user_selfservice_cookie, param)
 
             # if there is a cookie but could not be found in cache
-            # we remove the outdated client cookie
+            # we remove the out dated client cookie
 
             if user_selfservice_cookie and not auth_info[0]:
 
                 response.delete_cookie('user_selfservice')
+
+                abort(401, _("No valid session!"))
 
             # -------------------------------------------------------------- --
 
@@ -855,9 +893,18 @@ class UserserviceController(BaseController):
 
             # -------------------------------------------------------------- --
 
+        except (webob.exc.HTTPUnauthorized, webob.exc.HTTPForbidden) as exx:
+
+            log.error('userservice login failed: %r', exx)
+
+            c.audit['info'] = ("%r" % exx)[:80]
+            c.audit['success'] = False
+
+            return exx
+
         except Exception as exx:
 
-            log.exception('userservice login failed: %r', exx)
+            log.error('userservice login failed: %r', exx)
 
             c.audit['info'] = ("%r" % exx)[:80]
             c.audit['success'] = False

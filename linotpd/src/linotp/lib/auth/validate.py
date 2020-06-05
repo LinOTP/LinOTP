@@ -112,6 +112,11 @@ def check_pin(token, passw, user=None, options=None):
         if not options:
             options = {}
 
+        if context.get(
+            'selfservice', {}).get(
+                'state', '') == 'credentials_verified':
+            return True
+
         if 'pin_match' not in options:
             options['pin_match'] = {}
 
