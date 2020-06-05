@@ -1525,6 +1525,9 @@ msgstr "Iniciar sesión"
 msgid "Login Attempts Failed"
 msgstr "Intento fallido de inicio de sesión"
 
+msgid "Management - LinOTP"
+msgstr "Gestión - LinOTP"
+
 msgid "Login Name"
 msgstr "Nombre de inicio de sesión"
 

@@ -1285,6 +1285,9 @@ msgstr "Hier müssen Sie die Token-ID des YubiKeys eingeben."
 msgid "History"
 msgstr "Verlauf"
 
+msgid "Management - LinOTP"
+msgstr "Management - LinOTP"
+
 msgid ""
 "If LinOTP is setup to manage its administration users, you can change your "
 "LinOTP management password now."

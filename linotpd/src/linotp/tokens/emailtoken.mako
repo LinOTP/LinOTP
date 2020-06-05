@@ -27,6 +27,57 @@
  *  contains the email token web interface
 </%doc>
 
+%if c.scope == 'config.title' :
+ ${_("E-Mail Token")}
+%endif
+
+
+%if c.scope == 'config' :
+<script type="text/javascript">
+/*
+ * 'typ'_get_config_val()
+ *
+ * this method is called, when the token config dialog is opened
+ * - it contains the mapping of config entries to the form id
+ * - according to the Config entries, the form entries will be filled
+ *
+ */
+
+
+function email_get_config_val(){
+    var id_map = {};
+    id_map['emailChallengeValidityTime'] = 'email_challenge_validity_time';
+    return id_map;
+
+}
+
+/*
+ * 'typ'_get_config_params()
+ *
+ * this method is called, when the token config is submitted
+ * - it will return a hash of parameters for system/setConfig call
+ *
+ */
+function email_get_config_params(){
+    var url_params ={};
+    url_params['emailChallengeValidityTime'] = $('#email_challenge_validity_time').val();
+    return url_params;
+}
+</script>
+
+<form class="cmxform" id="form_email_config" action="">
+<fieldset>
+    <legend>${_("E-Mail token settings")}</legend>
+<table>
+    <tr><td><label for=email_challenge_validity_time>${_("Challenge expiration time (sec)")}</label></td>
+        <td><input type="number" id="email_challenge_validity_time" placeholder="120"
+            title='${_("Default expiration time of a challenge in seconds.")}'></td></tr>
+</table>
+</fieldset>
+</form>
+%endif
+
+
 %if c.scope == 'enroll.title' :
 ${_("E-mail token")}
 %endif

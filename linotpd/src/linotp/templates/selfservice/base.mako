@@ -36,12 +36,14 @@ if isinstance(lang, list):
 
 <html>
 <head>
-<title>${_("LinOTP 2 User self service")}</title>
+<title>${_("Token Self Service - LinOTP")}</title>
 <meta name="copyright" content="KeyIdentity GmbH">
 <meta name="keywords" content="LinOTP 2, self service">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
 <meta http-equiv="content-style-type" content="text/css">
+
+<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 
 <link type="text/css" rel="stylesheet" href="/static/css/linotp.css">
 <link type="text/css" rel="stylesheet" href="/static/selfservice/style.css">
@@ -49,7 +51,6 @@ if isinstance(lang, list):
 <link type="text/css" rel="stylesheet" href="/static/css/flexigrid/flexigrid.css">
 
 <link type="text/css" href="/static/css/jquery-ui/jquery-ui.min.css" rel="stylesheet">
-
 
 <script type="text/javascript" src="/static/js/jquery-3.4.1.min.js"></script>
 <script type="text/javascript" src="/static/js/jquery-migrate-3.1.0.min.js"></script>
