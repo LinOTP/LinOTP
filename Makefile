@@ -390,10 +390,6 @@ docker-run-linotp-sqlite: docker-build-linotp
 	# Run linotp in a standalone container
 	cd linotpd/src \
 		&& $(DOCKER_RUN) -it \
-			 -e LINOTP_DB_TYPE=sqlite \
-			 -e LINOTP_DB_NAME=//tmp/sqlite \
-			 -e LINOTP_DB_HOST= \
-			 -e LINOTP_DB_PORT= \
 			 -e HEALTHCHECK_PORT=80 \
 			 -e LINOTP_LOGLEVEL=$(LINOTP_LOGLEVEL) \
 			 -e LINOTP_CONSOLE_LOGLEVEL=$(LINOTP_CONSOLE_LOGLEVEL) \

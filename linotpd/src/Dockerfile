@@ -43,14 +43,14 @@ ARG DEPENDENCY_GPG_KEY_URL
 # To disable HTTP authentication for the manage UI,
 # set LINOTP_APACHE_AUTH=false.
 #
-# To use a MySQL database:
-#  LINOTP_DB_TYPE=mysql
-# and also substitute suitable values:
-#  LINOTP_DB_HOST=hostname
-#  LINOTP_DB_PORT=3306
-#  LINOTP_DB_USER=user
-#  LINOTP_DB_PASSWORD=password
-#  LINOTP_DB_NAME=database-name
+# To use a database server:
+#  LINOTP_DATABASE_URI=<sqlalchemy url>
+#
+# In order to wait for a database service to start,
+# set LINOTP_DB_HOST and LINOTP_DB_PORT to point
+# to the port that should be waited for. The default
+# wait time is 30s, and can be overriden using
+# LINOTP_DB_WAITTIME.
 #
 # Unencrypted healthchecks can be performed by
 # checking http://HOSTNAME:81/validate/ok
@@ -72,12 +72,10 @@ ARG DEPENDENCY_GPG_KEY_URL
 
 ENV TZ="Europe/Berlin" \
     LINOTP_USER=linotp \
-    LINOTP_DB_TYPE=sqlite \
-    LINOTP_DB_NAME=//tmp/linotp.db \
-    LINOTP_DB_HOST=dbhost \
+    LINOTP_DATABASE_URI=sqlite:////var/lib/linotp/linotp.db \
+    LINOTP_DB_HOST= \
     LINOTP_DB_PORT=3306 \
-    LINOTP_DB_USER=dbuser \
-    LINOTP_DB_PASSWORD=dbpass \
+    LINOTP_DB_WAITTIME=30s \
     LINOTP_ADMIN_USER=admin \
     LINOTP_ADMIN_PASSWORD=admin \
     LINOTP_APACHE_AUTH=true \
@@ -173,7 +171,7 @@ ENTRYPOINT [ "/usr/local/bin/dockerfy", \
     "--template", "/etc/linotp2/linotp-docker.cfg.tmpl:/etc/linotp2/linotp.cfg", \
     "--template", "/etc/linotp2/apache-docker.conf.tmpl:/etc/apache2/sites-enabled/linotp2.conf", \
     "--run", "/bin/sh", "-c", \
-    "if [ {{ .Env.LINOTP_DB_TYPE }} != sqlite ]; then /usr/local/bin/dockerfy --wait tcp://{{ .Env.LINOTP_DB_HOST }}:{{ .Env.LINOTP_DB_PORT }} --timeout 30s; fi", \
+        "if [ -n \"{{ .Env.LINOTP_DB_HOST }}\" ]; then /usr/local/bin/dockerfy --wait tcp://{{ .Env.LINOTP_DB_HOST }}:{{ .Env.LINOTP_DB_PORT }} --timeout {{ .Env.LINOTP_DB_WAITTIME }}; fi", \
     "--", \
     "--run", "/var/lib/dpkg/info/linotp.postinst", "configure", "--", \
     "--run", "/bin/sh", "-c", \
