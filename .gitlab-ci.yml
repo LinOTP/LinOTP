@@ -284,20 +284,8 @@ build:buster (tag):
   script:
     - export BUILDDIR=build
     - mkdir -p ${BUILDDIR}
-    - make ${BUILDDIR}/dockerfy BUILDDIR=${BUILDDIR}
     - cp -r pkg/apt/${DEBIAN_RELEASE_NAME} ${BUILDDIR}/apt
-    - cp ci/Dockerfile.linotp linotpd/src/linotp/tests/integration/testdata/se_mypasswd linotpd/src/config/*.tmpl linotpd/src/tools/linotp-create-htdigest $BUILDDIR
-    - >
-      docker build
-      --build-arg=DEBIAN_MIRROR=$DEBIAN_MIRROR
-      --build-arg=LINOTP_MIRROR=$LINOTP_MIRROR
-      --build-arg=BASE_IMAGE="debian:${DEBIAN_RELEASE_NAME}"
-      --build-arg="DEBIAN_RELEASE_NAME=${DEBIAN_RELEASE_NAME}"
-      --build-arg="DEPENDENCY_SOURCE=${DEPENDENCY_SOURCE}"
-      --build-arg="DEPENDENCY_COMPONENT=${DEPENDENCY_COMPONENT}"
-      --build-arg="DEPENDENCY_GPG_KEYID=${DEPENDENCY_GPG_KEYID}"
-      --build-arg="DEPENDENCY_GPG_KEY_URL=${DEPENDENCY_GPG_KEY_URL}"
-      --tag="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}" -f $BUILDDIR/Dockerfile.linotp $BUILDDIR
+    - make DOCKER_IMAGE="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp" DOCKER_TAGS="${CI_PIPELINE_ID}" docker-build-linotp
     - docker push "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
 
 build-linotp-docker-image:buster:
