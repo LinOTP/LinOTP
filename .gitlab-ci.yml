@@ -441,6 +441,7 @@ e2e-2:jessie:mariadb-10.1:
     DB: mariadb:10.1
 
 e2e-1:stretch:mariadb-10.1:
+  allow_failure: true
   retry:
     max: 1
   extends: .e2e-test
@@ -451,6 +452,7 @@ e2e-1:stretch:mariadb-10.1:
     DB: mariadb:10.1
 
 e2e-2:stretch:mariadb-10.1:
+  allow_failure: true
   retry:
     max: 1
   extends: .e2e-test
