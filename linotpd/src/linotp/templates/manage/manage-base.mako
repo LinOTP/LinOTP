@@ -315,6 +315,13 @@ if isinstance(lang, list):
                     <tr><td><label for=sys_passOnUserNoToken>${_("Pass on user no token")}: </label></td>
                         <td><input type="checkbox" name="sys_passOnUserNoToken" id="sys_passOnUserNoToken" value="sys_passOnUserNoToken"
                             title="${_('If checked, users who have no token get authenticated automatically successful. USE WITH CAUTION!')}"></td></tr>
+                    <tr><td><label for=token_last_access_check>${_("Log usage timestamps in token info")}: </label></td>
+                        <td><input type="checkbox" name="token_last_access_check" id="token_last_access_check" value="token_last_access_check"
+                            title="${_('If checked, timestamps are saved during authentication')}"></td></tr>
+                    <tr><td><label for=token_last_access_entry>${_("Custom timestamp format (optional)")}: </label></td>
+                        <td><input type="input" name="token_last_access_entry" id="token_last_access_entry" value="token_last_access_entry"
+                            title="${_('Specify a custom timestamp format to reduce information detail')}" placeholder="%Y-%M-%d %h:%m"></td></tr>
+
                 </table>
             </fieldset>
             <fieldset>

@@ -608,7 +608,7 @@ table.tokeninfoInnerTable {
 
 .cmxform table td {
     vertical-align: top;
-    padding: 0 0 .3em 0;
+    padding: 0 0 .3em .3em;
 }
 
 .cmxform table table td {
@@ -621,11 +621,6 @@ table.tokeninfoInnerTable {
 .ui-dialog form.cmxform select {
 	width: 100%;
     box-sizing: border-box;
-}
-
-.ui-dialog form.cmxform input[type="checkbox"],
-.ui-dialog form.cmxform input[type="radio"]{
-	width: inherit;
 }
 
 .input-placeholder-warning::-webkit-input-placeholder {
