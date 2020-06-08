@@ -44,6 +44,9 @@ import linotp.model
 
 Session = linotp.model.Session
 
+
+CLICKATEL_ID_MAX = 1000
+
 log = logging.getLogger(__name__)
 
 # from paste.debug.profile import profile_decorator
@@ -216,7 +219,7 @@ class TestingController(BaseController):
 
             elif account == "clickatel":
                 if username == "legit":
-                    return "ID %i" % int(secrets.randbelow(1000 + 1))
+                    return "ID %i" % int(secrets.randbelow(CLICKATEL_ID_MAX + 1))
                 else:
                     return "FAILED"
 
