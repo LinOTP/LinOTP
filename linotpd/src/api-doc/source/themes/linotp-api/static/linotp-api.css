@@ -1,0 +1,22 @@
+@import url("default.css");
+
+.sphinxsidebarwrapper .toctree-l1 li {
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+.sphinxsidebarwrapper li.toctree-l1 {
+    font-size: 90%;
+}
+
+.sphinxsidebarwrapper li.toctree-l1 ul {
+    margin-left: 15px;
+}
+
+div.bodywrapper {
+    margin-left: 300px;
+}
+
+div.sphinxsidebar {
+    width: 300px;
+}

@@ -25,6 +25,7 @@ stages:
   - lint
   - build-test-environment
   - test
+  - apidocs
   - coverage-report
   - build-debian-packages
   - build-linotp-docker-image
@@ -190,6 +191,26 @@ functional-test:
 #   allow_failure: true
 #   variables:
 #     DEBIAN_RELEASE_NAME: buster
+
+# Auto-generate API docs using Sphinx.
+
+apidocs:
+  stage: apidocs
+  image: $CI_IMAGE_PREFIX/buster/linotp:${CI_PIPELINE_ID}
+  script:
+    - python3 --version
+    - cd linotpd/src
+    - pip3 install -e ".[apidocs]"
+    - cd ${CI_PROJECT_DIR}/linotpd/src/api-doc
+    - make apidocs
+    - make html
+    - mkdir ${CI_PROJECT_DIR}/api-doc
+    - cp -a build/html/. ${CI_PROJECT_DIR}/api-doc
+  artifacts:
+    name: "linotp-apidocs"
+    paths:
+      - api-doc
+    expire_in: 2 weeks
 
 # .coverage-report:
 #   stage: coverage-report

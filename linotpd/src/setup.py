@@ -83,6 +83,11 @@ test_requirements = [
     'flaky',
 ]
 
+apidocs_requirements = [
+    'Sphinx>=3.0',
+    'mock',
+]
+
 # packages needed during package build phase
 setup_requirements = [
     'Babel',
@@ -132,6 +137,7 @@ setup(
         'postgres': postgres_requirements,
         'mysql': mysql_requirements,
         'test': test_requirements,
+        'apidocs': apidocs_requirements,
     },
     tests_require=test_requirements,
 
