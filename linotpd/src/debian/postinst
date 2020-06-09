@@ -13,8 +13,8 @@ DIGESTFILE=/etc/linotp2/admins
 LOGDIR=/var/log/linotp
 CACHEDIR=/etc/linotp2/data
 TEMPLATEDIR=/etc/linotp2/custom-templates
-DBFILE='\/%(here)s\/token.db'
-DBFILE_FS=/etc/linotp2/token.db
+LIBDIR=/var/lib/linotp
+DBFILE_FS=$LIBDIR/token.db
 RAND_DEVICE=/dev/urandom
 FAKE_PASSWORD=This_is_not_the_real_password_we_just_do_not_want_to_be_asked_again_in_case_of_updating_the_package
 LSB_RELEASE=`which lsb_release || true`
@@ -245,8 +245,6 @@ evaluate_answers() {
 
   case "$TOKENDB" in
     SQLite)
-      DBFILE='\/%(here)s/token.db'
-      DBFILE_FS=/etc/linotp2/token.db
       db_get linotp/sqlite/ask_createdb || true
       CREATEDB_SQLITE=$RET
     ;;
@@ -296,6 +294,7 @@ case "$1" in
     check_user "$LINOTP_USER" "LinOTP Server"
 
     create_dir "log" "$LOGDIR"
+    create_dir "lib" "$LIBDIR"
     create_dir "cache" "$CACHEDIR" clear
     create_dir "template" "$TEMPLATEDIR"
 
@@ -372,8 +371,7 @@ case "$1" in
     case "$TOKENDB" in
       MySQL)
         echo_log "Setting up MySQL ..."
-        SQLALCHEMY="sqlalchemy.url = mysql:\/\/$DBUSER:$DBPASSWORD1@$DBHOST\/$DBNAME"
-        SQLAUDIT="linotpAudit.sql.url = mysql:\/\/$DBUSER:$DBPASSWORD1@$DBHOST\/$DBNAME"
+        SQLALCHEMY="mysql:\/\/$DBUSER:$DBPASSWORD1@$DBHOST\/$DBNAME"
         configure_sql
         # The SVA3 configuration process will overwrite this.
         if [ "$CREATEDB" = "true" ]; then
@@ -461,8 +459,7 @@ case "$1" in
 
       SQLite)
         echo_log "Setting up SQLite ..."
-        SQLALCHEMY="sqlalchemy.url = sqlite:\/\/$DBFILE"
-        SQLAUDIT="linotpAudit.sql.url = sqlite:\/\/$DBFILE"
+        SQLALCHEMY="sqlite:\/\/$DBFILE_FS"
         configure_sql
         if [ "$CREATEDB_SQLITE" = "true" ]; then
           if [ -f $DBFILE_FS ]; then
@@ -470,9 +467,6 @@ case "$1" in
           fi
           create_tables
         fi
-        create_dir "SQLite" /var/run/linotp
-        chown "$LINOTP_USER" /etc/linotp2
-        chown "$LINOTP_USER" /etc/linotp2/token.db
       ;;
     esac #TOKENDB
 
