@@ -6,7 +6,7 @@ set -e
 
 NEW_VERSION='@@@DEB_VERSION@@@'
 
-LINOTP_INI=/etc/linotp2/linotp.ini
+LINOTP_CFG=/etc/linotp2/linotp.cfg
 ENCKEYFILE=/etc/linotp2/encKey
 REALM="LinOTP2 admin area"
 DIGESTFILE=/etc/linotp2/admins
@@ -153,17 +153,14 @@ check_apache_disabled() {
 # configure_sql
 #
 # This incorporates previously-determined SQL configuration
-# information into the LINOTP_INI file.
+# information into the linotp.cfg file.
 
 configure_sql() {
   if [ "$DBPASSWORD1" = "" -o "$DBPASSWORD1" = "1234" ]; then
-    echo_log "SQL user password empty or known - not changing linotp.ini"
+    echo_log "SQL user password empty or known - not changing linotp.cfg"
   else
-    sed -i -e "s/^sqlalchemy.url.*/${SQLALCHEMY}/" $LINOTP_INI
-    if [ "$APPLIANCE_INSTALL" = "true" ]; then
-      sed -i -e "s/^#\?linotpAudit.sql.url \?=.*/${SQLAUDIT}/" $LINOTP_INI
-    fi
-    echo_log "SQL configuration in $LINOTP_INI changed."
+    sed -i -e "s/^SQLALCHEMY_DATABASE_URI=.*/SQLALCHEMY_DATABASE_URI=${SQLALCHEMY}/" $LINOTP_CFG
+    echo_log "SQL configuration in $LINOTP_CFG changed."
   fi
 }
 
@@ -295,11 +292,6 @@ evaluate_answers() {
 
 case "$1" in
   configure)
-    # Initialize linotp.ini
-    if ! [ -f "$LINOTP_INI" ]; then
-      cp /etc/linotp2/linotp.ini.example "$LINOTP_INI"
-    fi
-
     # Make sure the LinOTP user exists
     check_user "$LINOTP_USER" "LinOTP Server"
 

@@ -1,21 +1,16 @@
 #!/usr/bin/env python3
 import os
+from pathlib import Path
 from linotp.app import create_app
 
-root_dir = os.path.abspath(os.path.dirname(__file__))
+root_dir = Path(__file__).parent
 
-conf = {
-    'LOGFILE_DIR': '/var/log/linotp',
-    'ROOT_DIR': root_dir,
-}
+config_file_path = root_dir / 'linotp.cfg'
+# Configure from linotp.cfg in the same directory as this wsgi file
+os.environ['LINOTP_CONFIG_FILE'] = str(config_file_path)
 
-# Configure from files in the same directory as this wsgi file:
-# linotp.cfg - new style config
-# linotp.ini - old style config
-os.environ['LINOTP_CONFIG_FILE'] = os.path.join(root_dir, 'linotp.cfg')
-os.environ['LINOTP_INI_FILE'] = os.path.join(root_dir, 'linotp.ini')
 
-application = create_app('production', config_extra=conf)
+application = create_app('production')
 
 ## To enable the interactive debugger uncomment
 ## the following lines. You can find the debugger PIN in
