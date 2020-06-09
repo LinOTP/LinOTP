@@ -164,13 +164,13 @@ configure_sql() {
   fi
 }
 
-# create_tables
+# init_database
 #
 # Create and setup required SQL database tables
 
-create_tables() {
-  echo_log "Trying to create tables"
-  python3 -m flask init-db || true
+init_database() {
+  echo_log "Initialising database"
+  flask init-db || true
 }
 
 # create_grant_strings
@@ -446,13 +446,13 @@ case "$1" in
           true
         elif [ "$CREATE_TABLES" = "true" -a "$APPLIANCE_INSTALL" != "true" ]; then
           # we create the database tables if not an appliance
-          create_tables
+          init_database
         fi
         # On an Appliance we create the tables in case of an upgrade!
         if [ "$APPLIANCE_INSTALL" = "true" ] ; then
           if check_upgrade; then
             echo_log "Doing an upgrade, creating tables"
-            create_tables
+            init_database
           fi
         fi
       ;;
@@ -465,7 +465,7 @@ case "$1" in
           if [ -f $DBFILE_FS ]; then
             mv $DBFILE_FS $DBFILE_FS.old
           fi
-          create_tables
+          init_database
         fi
       ;;
     esac #TOKENDB
