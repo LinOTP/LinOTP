@@ -141,7 +141,7 @@ setup(
     },
     tests_require=test_requirements,
 
-    packages=find_packages(exclude=['ez_setup']),
+    packages=find_packages(),
     include_package_data=True,
     package_data={'linotp': ['linotp/i18n/*/LC_MESSAGES/*.mo']},
     scripts=[

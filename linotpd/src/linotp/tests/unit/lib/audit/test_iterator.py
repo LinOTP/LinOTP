@@ -26,15 +26,7 @@
 
 import pytest
 import sys
-if sys.version_info < (2, 7):
-    try:
-        import unittest2 as unittest
-    except ImportError as exc:
-        print("You need to install unittest2 on Python 2.6. unittest2 is a "\
-              "backport of new unittest features.")
-        raise exc
-else:
-    import unittest
+import unittest
 from mock import MagicMock
 
 try:

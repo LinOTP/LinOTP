@@ -61,8 +61,6 @@ from linotp.lib.util import get_request_param
 
 from functools import partial
 
-from linotp.lib._compat import str_
-
 ENCODING = 'utf-8'
 
 log = logging.getLogger(__name__)
@@ -204,13 +202,13 @@ class User(object):
             return 'None'
 
         try:
-            login = str_(self.login)
+            login = str(self.login)
         except UnicodeEncodeError:
-            login = str_(self.login.encode(ENCODING))
+            login = str(self.login.encode(ENCODING))
 
-        resolver_config_id = str_(self.resolver_config_identifier or '')
+        resolver_config_id = str(self.resolver_config_identifier or '')
 
-        realm = str_(self.realm)
+        realm = str(self.realm)
 
         return '<%s.%s@%s>' % (login, resolver_config_id, realm)
 

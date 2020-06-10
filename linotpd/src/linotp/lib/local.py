@@ -24,7 +24,7 @@
 #    Support: www.keyidentity.com
 #
 
-from linotp.lib._compat import get_thread_ident
+from threading import get_ident as get_thread_ident
 from linotp.lib.error import ProgrammingError
 
 """
