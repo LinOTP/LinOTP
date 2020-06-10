@@ -145,10 +145,6 @@ develop:
 # test - all tests
 ###############################################################################
 
-ifndef NOSETESTS_ARGS
-    NOSETESTS_ARGS?=-v
-endif
-
 test: unittests integrationtests functionaltests
 
 unittests:
@@ -263,7 +259,7 @@ FUNCTIONAL_TESTS_DIR=$(TESTS_DIR)/functional
 
 ## Toplevel targets
 # Toplevel target to build all containers
-docker-build-all: docker-build-debs  docker-build-linotp docker-build-selenium
+docker-build-all: docker-build-debs docker-build-linotp docker-build-linotp-test-image docker-build-selenium
 
 # Toplevel target to build linotp container
 docker-linotp: docker-build-debs  docker-build-linotp
@@ -271,6 +267,7 @@ docker-linotp: docker-build-debs  docker-build-linotp
 # Build and run Selenium /integration tests
 docker-selenium: docker-build-linotp docker-build-selenium docker-run-selenium
 
+# Build and run Unit tests
 docker-unit: docker-build-linotp docker-build-linotp-test-image docker-run-linotp-unit
 
 docker-functional: docker-run-linotp-functional-test
@@ -420,29 +417,29 @@ $(BUILDDIR)/dockerfy:
 #
 
 # Build Unittest Docker Container, based on linotp image
+# This needs an existing linotp image available
+# which can be built by make docker-build-linotp
 .PHONY: docker-build-linotp-test-image
-docker-build-linotp-test-image: docker-build-linotp
+docker-build-linotp-test-image:
 	cd $(UNIT_TESTS_DIR) \
 		&& $(DOCKER_BUILD) \
 			-t linotp_unit_tester .
 
-# Run Unit tests. Use $NOSETESTS_ARGS for additional nosetest settings
+# Run Unit tests. Use $PYTESTARGS for additional pytest settings
 .PHONY: docker-run-linotp-unit
-docker-run-linotp-unit: docker-build-linotp-test-image
+docker-run-linotp-unit:
 	cd $(UNIT_TESTS_DIR) \
 		&& $(DOCKER_RUN) \
 			--name=$(DOCKER_CONTAINER_NAME)-unit \
 			--volume=$(PWD):/linotpsrc:ro \
-			--entrypoint="" \
-			--env NOSETESTS_ARGS="$(NOSETESTS_ARGS)" \
 			-t linotp_unit_tester \
-			/usr/bin/make test
+			/usr/bin/make test PYTESTARGS="$(PYTESTARGS)"
 
 #jenkins pipeline uses this make rule
 .PHONY: docker-run-linotp-unit-pipeline
-NOSETESTS_ARGS=-v --with-xunit --xunit-file=/tmp/nosetests.xml
+PYTESTARGS=-v -p no:cacheprovider --junitxml=/tmp/pytests.xml
 docker-run-linotp-unit-pipeline: docker-run-linotp-unit
-	docker cp $(DOCKER_CONTAINER_NAME)-unit:/tmp/nosetests.xml $(PWD)
+	docker cp $(DOCKER_CONTAINER_NAME)-unit:/tmp/pytests.xml $(PWD)
 	docker rm $(DOCKER_CONTAINER_NAME)-unit
 
 #
