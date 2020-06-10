@@ -26,10 +26,15 @@
 #
 # LinOTP Docker build script
 
-FROM debian:buster
+ARG BASE_IMAGE=debian:buster
+FROM $BASE_IMAGE
 
 ARG DEBIAN_MIRROR=deb.debian.org
-ARG LINOTP_MIRROR=www.linotp.org
+ARG DEBIAN_RELEASE_NAME=buster
+ARG DEPENDENCY_SOURCE
+ARG DEPENDENCY_GPG_KEYID
+ARG DEPENDENCY_COMPONENT
+ARG DEPENDENCY_GPG_KEY_URL
 
 # The following environment variables can be set to
 # configure the runtime behaviour of the container.
@@ -103,15 +108,18 @@ RUN echo 'APT::Install-Recommends "0"; \n\
 
 # Add LinOTP packaging key to keyring in order to install
 # dependencies
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 \
-        --recv-keys 913DFF12F86258E5
+RUN apt-get update && apt-get install curl gnupg
+RUN test -z "$DEPENDENCY_SOURCE" \
+        || echo "deb $DEPENDENCY_SOURCE $DEBIAN_RELEASE_NAME $DEPENDENCY_COMPONENT" > /etc/apt/sources.list.d/kideps.list
+RUN test -z "$DEPENDENCY_GPG_KEYID" \
+        || apt-key adv --keyserver hkp://hkps.pool.sks-keyservers.net --recv-keys $DEPENDENCY_GPG_KEYID
+RUN test -z "$DEPENDENCY_GPG_KEY_URL" \
+        || curl $DEPENDENCY_GPG_KEY_URL | apt-key adv --import
 
 # Install some dependencies which will be cached. This does not
 # need to be an exhaustive list because apt will install any
 # missing packages.
-RUN \
-    echo "deb http://${LINOTP_MIRROR}/apt/debian jessie linotp" > /etc/apt/sources.list.d/linotp.list \
-    && apt-get update \
+RUN apt-get update \
     && apt-get install \
         make \
         adduser debconf openssl pwgen python3-configobj \

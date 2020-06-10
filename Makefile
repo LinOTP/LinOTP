@@ -230,10 +230,21 @@ DOCKER_TAGS=latest
 # Override to change the mirror used for image building
 DEBIAN_MIRROR=ftp.debian.org
 
+# Override to change the Debian release used to build with
+DEBIAN_RELEASE_NAME=buster
+BASE_IMAGE=debian:$(DEBIAN_RELEASE_NAME)
+
 # Pass proxy environment variables through to docker build by default
 DOCKER_PROXY_BUILD_ARGS= --build-arg=http_proxy --build-arg=https_proxy --build-arg=no_proxy
 
-DOCKER_BUILD_ARGS+= --build-arg=DEBIAN_MIRROR=$(DEBIAN_MIRROR)
+# Arguments passed to Docker build commands
+DOCKER_BUILD_ARGS+= --build-arg BASE_IMAGE=$(BASE_IMAGE) \
+					--build-arg DEBIAN_MIRROR=$(DEBIAN_MIRROR) \
+					--build-arg DEBIAN_RELEASE_NAME=$(DEBIAN_RELEASE_NAME) \
+					--build-arg DEPENDENCY_SOURCE=$(DEPENDENCY_SOURCE) \
+					--build-arg DEPENDENCY_COMPONENT=$(DEPENDENCY_COMPONENT) \
+					--build-arg DEPENDENCY_GPG_KEYID=$(DEPENDENCY_GPG_KEYID) \
+					--build-arg DEPENDENCY_GPG_KEY_URL=$(DEPENDENCY_GPG_KEY_URL)
 
 # Default Docker run arguments.
 # Extra run arguments can be given here. It can also be used to

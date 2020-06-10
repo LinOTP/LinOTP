@@ -26,7 +26,8 @@
 #
 # This container contains build dependencies for building linotp packages
 
-FROM debian:buster
+ARG BASE_IMAGE=debian:buster
+FROM $BASE_IMAGE
 
 ARG DEBIAN_MIRROR=deb.debian.org
 
