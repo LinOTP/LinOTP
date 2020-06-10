@@ -45,10 +45,7 @@ from hashlib import sha1
 import hmac, struct, binascii
 
 
-if sys.version_info[0:2] >= (2, 6):
-    from json import loads
-else:
-    from simplejson import loads
+from json import loads
 import logging
 
 def usage():

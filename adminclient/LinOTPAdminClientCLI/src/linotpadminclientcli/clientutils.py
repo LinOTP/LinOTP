@@ -38,10 +38,7 @@ import logging
 import logging.handlers
 import http.cookiejar
 
-if sys.version_info[0:2] >= (2, 6):
-    import json
-else:
-    import simplejson as json
+import json
 import gettext
 
 _ = gettext.gettext
