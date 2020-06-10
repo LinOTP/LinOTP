@@ -39,7 +39,7 @@ from Cryptodome.Hash import HMAC
 from Cryptodome.Hash import SHA as SHA1
 from Cryptodome.Hash import SHA256 as SHA256
 
-from linotp.tokens.ocra import OcraSuite
+# FIXME:  from linotp.tokens.ocra import OcraSuite
 from linotp.lib.crypto.utils import kdf2
 from linotp.lib.crypto.utils import geturandom
 from linotp.lib.crypto.utils import encrypt, decrypt
