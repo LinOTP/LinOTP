@@ -66,44 +66,44 @@ ARG LINOTP_MIRROR=www.linotp.org
 #   SECRET_FILE_LOCATION=/path/to/encKey
 
 ENV TZ="Europe/Berlin" \
-	LINOTP_USER=linotp \
-	LINOTP_DB_TYPE=sqlite \
-	LINOTP_DB_NAME=//tmp/linotp.db \
-	LINOTP_DB_HOST=dbhost \
-	LINOTP_DB_PORT=3306 \
-	LINOTP_DB_USER=dbuser \
-	LINOTP_DB_PASSWORD=dbpass \
-	LINOTP_ADMIN_USER=admin \
-	LINOTP_ADMIN_PASSWORD=admin \
-	LINOTP_APACHE_AUTH=true \
-	LINOTP_APACHE_SSL=true \
-	LINOTP_APACHE_HSTS=true \
-	LINOTP_LOGLEVEL=INFO \
-	LINOTP_CONSOLE_LOGLEVEL=DEBUG \
-	SQLALCHEMY_LOGLEVEL=ERROR \
-	APACHE_LOGLEVEL=info \
-	LOGSTASH_HOST= \
-	LOGSTASH_PORT= \
-	LOGSTASH_TAGS=() \
-	SECRET_FILE_LOCATION=
+    LINOTP_USER=linotp \
+    LINOTP_DB_TYPE=sqlite \
+    LINOTP_DB_NAME=//tmp/linotp.db \
+    LINOTP_DB_HOST=dbhost \
+    LINOTP_DB_PORT=3306 \
+    LINOTP_DB_USER=dbuser \
+    LINOTP_DB_PASSWORD=dbpass \
+    LINOTP_ADMIN_USER=admin \
+    LINOTP_ADMIN_PASSWORD=admin \
+    LINOTP_APACHE_AUTH=true \
+    LINOTP_APACHE_SSL=true \
+    LINOTP_APACHE_HSTS=true \
+    LINOTP_LOGLEVEL=INFO \
+    LINOTP_CONSOLE_LOGLEVEL=DEBUG \
+    SQLALCHEMY_LOGLEVEL=ERROR \
+    APACHE_LOGLEVEL=info \
+    LOGSTASH_HOST= \
+    LOGSTASH_PORT= \
+    LOGSTASH_TAGS=() \
+    SECRET_FILE_LOCATION=
 
 # Internal environment variables used by the docker images
 ENV LINOTP_INI_TEMPLATE=/etc/linotp/linotp-docker.ini.tmpl \
-	LINOTP_HOME=/opt/linotp \
-	DEBIAN_FRONTEND=noninteractive
+    LINOTP_HOME=/opt/linotp \
+    DEBIAN_FRONTEND=noninteractive
 
 RUN echo 'APT::Install-Recommends "0"; \n\
-			APT::Get::Assume-Yes "true"; \n\
-			APT::Install-Suggests "0";' \
-		> /etc/apt/apt.conf.d/01buildconfig
+            APT::Get::Assume-Yes "true"; \n\
+            APT::Install-Suggests "0";' \
+            > /etc/apt/apt.conf.d/01buildconfig
 
 RUN sed "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" \
-    < /etc/apt/sources.list > /etc/apt/sources.list.new && mv -f /etc/apt/sources.list.new /etc/apt/sources.list
+        < /etc/apt/sources.list > /etc/apt/sources.list.new && mv -f /etc/apt/sources.list.new /etc/apt/sources.list
 
 # Add LinOTP packaging key to keyring in order to install
 # dependencies
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 \
-		--recv-keys 913DFF12F86258E5
+        --recv-keys 913DFF12F86258E5
 
 # Install some dependencies which will be cached. This does not
 # need to be an exhaustive list because apt will install any
@@ -112,31 +112,31 @@ RUN \
     echo "deb http://${LINOTP_MIRROR}/apt/debian jessie linotp" > /etc/apt/sources.list.d/linotp.list \
     && apt-get update \
     && extraPackages=' \
-	make \
-	python-psycopg2 \
+    make \
+    python-psycopg2 \
     ' \
     && apt-get install \
-		$extraPackages \
-		adduser debconf openssl pwgen python-beaker python-configobj \
-		python-decorator python-docutils python-formencode python-httplib2 \
-		python-ldap python-cryptography python-mako python-mysqldb python-netaddr \
-		python-pyrad python-qrcode python-routes python-simplejson \
-		python-sqlalchemy python-tempita python-weberror python-webhelpers python-webob \
-		apache2 libapache2-mod-wsgi python-pycryptodomex python-pysodium python-requests
+        $extraPackages \
+        adduser debconf openssl pwgen python-beaker python-configobj \
+        python-decorator python-docutils python-formencode python-httplib2 \
+        python-ldap python-cryptography python-mako python-mysqldb python-netaddr \
+        python-pyrad python-qrcode python-routes python-simplejson \
+        python-sqlalchemy python-tempita python-weberror python-webhelpers python-webob \
+        apache2 libapache2-mod-wsgi python-pycryptodomex python-pysodium python-requests
 
 # Install linotp packages from local files.
 COPY apt /opt/linotp/apt
 
 RUN echo "linotp linotp/apache/activate boolean true" > /opt/linotp/apt/debconf-selections \
-	&& echo "linotp linotp/apache/ssl_create boolean true" >> /opt/linotp/apt/debconf-selections \
-	&& debconf-set-selections /opt/linotp/apt/debconf-selections \
-	&& echo "deb [trusted=yes] file:/opt/linotp/apt ./" > /etc/apt/sources.list.d/linotp-local.list \
-	&& (echo "Package: *"; echo "Pin: origin \"\""; echo "Pin-Priority: 900") > /etc/apt/preferences.d/linotp \
-	&& apt-get update \
-	&& apt-get install linotp \
-	&& rm /etc/apt/sources.list.d/linotp-local.list \
-	&& rm -r /opt/linotp/apt /etc/apache2/sites-enabled/000-default.conf \
-	&& rm /etc/linotp2/linotp.ini /etc/linotp2/encKey /etc/linotp2/*.pem
+    && echo "linotp linotp/apache/ssl_create boolean true" >> /opt/linotp/apt/debconf-selections \
+    && debconf-set-selections /opt/linotp/apt/debconf-selections \
+    && echo "deb [trusted=yes] file:/opt/linotp/apt ./" > /etc/apt/sources.list.d/linotp-local.list \
+    && (echo "Package: *"; echo "Pin: origin \"\""; echo "Pin-Priority: 900") > /etc/apt/preferences.d/linotp \
+    && apt-get update \
+    && apt-get install linotp \
+    && rm /etc/apt/sources.list.d/linotp-local.list \
+    && rm -r /opt/linotp/apt /etc/apache2/sites-enabled/000-default.conf \
+    && rm /etc/linotp2/linotp.ini /etc/linotp2/encKey /etc/linotp2/*.pem
 
 WORKDIR $LINOTP_HOME
 
@@ -147,24 +147,24 @@ COPY linotp-create-htdigest /usr/local/bin/
 RUN chmod 755 /usr/local/bin/linotp-create-htdigest
 
 ENTRYPOINT [ "/usr/local/bin/dockerfy", \
-     "--template", "/etc/linotp2/linotp-docker.ini.tmpl:/etc/linotp2/linotp.ini", \
-     "--template", "/etc/linotp2/apache-docker.conf.tmpl:/etc/apache2/sites-enabled/linotp2.conf", \
-     "--run", "/var/lib/dpkg/info/linotp.postinst", "configure", "--", \
-     "--run", "/bin/grep", "url", "/etc/linotp2/linotp.ini", "--", \
-     "--run", "mkdir", "-p", "/etc/ssl/private", "/etc/ssl/certs", "--", \
-     "--run", "/bin/sh", "-c", \
-        "openssl req -new -x509 -newkey rsa:2048 -subj /CN=`hostname`.`dnsdomainname` -days 768 -out /etc/ssl/certs/linotpserver.pem  -keyout /etc/ssl/private/linotpserver.key -nodes", \
-        "--", \
-     "--run", "/usr/local/bin/linotp-create-htdigest", "{{ .Env.LINOTP_ADMIN_USER }}", "{{ .Env.LINOTP_ADMIN_PASSWORD }}", "--", \
-     "--run", "/bin/sh", "-c", \
-        "if [ {{ .Env.LINOTP_DB_TYPE }} != sqlite ]; then /usr/local/bin/dockerfy --wait tcp://{{ .Env.LINOTP_DB_HOST }}:{{ .Env.LINOTP_DB_PORT }} --timeout 30s; fi", \
-        "--", \
-     "--run", "/bin/su", "linotp", "-s", "/bin/sh", "-c", "python -m flask init-db", "--" \
-     ]
+    "--template", "/etc/linotp2/linotp-docker.ini.tmpl:/etc/linotp2/linotp.ini", \
+    "--template", "/etc/linotp2/apache-docker.conf.tmpl:/etc/apache2/sites-enabled/linotp2.conf", \
+    "--run", "/var/lib/dpkg/info/linotp.postinst", "configure", "--", \
+    "--run", "/bin/grep", "url", "/etc/linotp2/linotp.ini", "--", \
+    "--run", "mkdir", "-p", "/etc/ssl/private", "/etc/ssl/certs", "--", \
+    "--run", "/bin/sh", "-c", \
+    "openssl req -new -x509 -newkey rsa:2048 -subj /CN=`hostname`.`dnsdomainname` -days 768 -out /etc/ssl/certs/linotpserver.pem  -keyout /etc/ssl/private/linotpserver.key -nodes", \
+    "--", \
+    "--run", "/usr/local/bin/linotp-create-htdigest", "{{ .Env.LINOTP_ADMIN_USER }}", "{{ .Env.LINOTP_ADMIN_PASSWORD }}", "--", \
+    "--run", "/bin/sh", "-c", \
+    "if [ {{ .Env.LINOTP_DB_TYPE }} != sqlite ]; then /usr/local/bin/dockerfy --wait tcp://{{ .Env.LINOTP_DB_HOST }}:{{ .Env.LINOTP_DB_PORT }} --timeout 30s; fi", \
+    "--", \
+    "--run", "/bin/su", "linotp", "-s", "/bin/sh", "-c", "python -m flask init-db", "--" \
+]
 
 CMD [ \
-	"/usr/sbin/apache2ctl", "-DFOREGROUND" \
-	]
+    "/usr/sbin/apache2ctl", "-DFOREGROUND" \
+]
 
 COPY ./se_mypasswd /etc/se_mypasswd
 
