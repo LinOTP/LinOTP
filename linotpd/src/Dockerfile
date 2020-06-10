@@ -26,7 +26,7 @@
 #
 # LinOTP Docker build script
 
-FROM debian:jessie
+FROM debian:buster
 
 ARG DEBIAN_MIRROR=deb.debian.org
 ARG LINOTP_MIRROR=www.linotp.org
@@ -110,18 +110,24 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 \
 RUN \
     echo "deb http://${LINOTP_MIRROR}/apt/debian jessie linotp" > /etc/apt/sources.list.d/linotp.list \
     && apt-get update \
-    && extraPackages=' \
-    make \
-    python-psycopg2 \
-    ' \
     && apt-get install \
-        $extraPackages \
-        adduser debconf openssl pwgen python-beaker python-configobj \
+        make \
+        adduser debconf openssl pwgen python-configobj \
         python-decorator python-docutils python-formencode python-httplib2 \
         python-ldap python-cryptography python-mako python-mysqldb python-netaddr \
         python-pyrad python-qrcode python-routes python-simplejson \
-        python-sqlalchemy python-tempita python-weberror python-webhelpers python-webob \
-        apache2 libapache2-mod-wsgi python-pycryptodomex python-pysodium python-requests
+        python-sqlalchemy \
+        apache2 libapache2-mod-wsgi \
+        python-pysodium python-requests \
+        python-setuptools \
+        distro-info-data \
+        python-babel-localedata \
+        libjs-jquery \
+        lsb-release \
+        dh-python \
+        python2 \
+        python-flask \
+        python-psycopg2
 
 # Install linotp packages from local files.
 COPY apt /opt/linotp/apt
