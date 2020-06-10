@@ -90,7 +90,9 @@ ENV TZ="Europe/Berlin" \
 # Internal environment variables used by the docker images
 ENV LINOTP_INI_TEMPLATE=/etc/linotp/linotp-docker.ini.tmpl \
     LINOTP_HOME=/opt/linotp \
-    DEBIAN_FRONTEND=noninteractive
+    DEBIAN_FRONTEND=noninteractive \
+    FLASK_APP=linotp.app \
+    FLASK_ENV=production
 
 RUN echo 'APT::Install-Recommends "0"; \n\
             APT::Get::Assume-Yes "true"; \n\
@@ -112,22 +114,21 @@ RUN \
     && apt-get update \
     && apt-get install \
         make \
-        adduser debconf openssl pwgen python-configobj \
-        python-decorator python-docutils python-formencode python-httplib2 \
-        python-ldap python-cryptography python-mako python-mysqldb python-netaddr \
-        python-pyrad python-qrcode python-routes python-simplejson \
-        python-sqlalchemy \
-        apache2 libapache2-mod-wsgi \
-        python-pysodium python-requests \
-        python-setuptools \
+        adduser debconf openssl pwgen python3-configobj \
+        python3-beaker python3-passlib python3-cryptography python3-bcrypt python3-pygments \
+        python3-decorator python3-docutils python3-formencode python3-httplib2 \
+        python3-ldap python3-mako python3-mysqldb python3-netaddr \
+        python3-pyrad python3-qrcode python3-routes python3-simplejson \
+        python3-sqlalchemy \
+        apache2 libapache2-mod-wsgi-py3 \
+        python3-pysodium python3-requests \
+        python3-setuptools \
         distro-info-data \
-        python-babel-localedata \
         libjs-jquery \
         lsb-release \
         dh-python \
-        python2 \
-        python-flask \
-        python-psycopg2
+        python3-flask \
+        python3-psycopg2
 
 # Install linotp packages from local files.
 COPY apt /opt/linotp/apt
@@ -138,10 +139,12 @@ RUN echo "linotp linotp/apache/activate boolean true" > /opt/linotp/apt/debconf-
     && echo "deb [trusted=yes] file:/opt/linotp/apt ./" > /etc/apt/sources.list.d/linotp-local.list \
     && (echo "Package: *"; echo "Pin: origin \"\""; echo "Pin-Priority: 900") > /etc/apt/preferences.d/linotp \
     && apt-get update \
-    && apt-get install linotp \
+    && apt-get install linotp linotp-adminclient-cli \
     && rm /etc/apt/sources.list.d/linotp-local.list \
     && rm -r /opt/linotp/apt /etc/apache2/sites-enabled/000-default.conf \
     && rm /etc/linotp2/linotp.ini /etc/linotp2/encKey /etc/linotp2/*.pem
+    && mkdir -p /etc/ssl/private /etc/ssl/certs \
+    && chown linotp /var/log/linotp
 
 WORKDIR $LINOTP_HOME
 
@@ -154,16 +157,15 @@ RUN chmod 755 /usr/local/bin/linotp-create-htdigest
 ENTRYPOINT [ "/usr/local/bin/dockerfy", \
     "--template", "/etc/linotp2/linotp-docker.ini.tmpl:/etc/linotp2/linotp.ini", \
     "--template", "/etc/linotp2/apache-docker.conf.tmpl:/etc/apache2/sites-enabled/linotp2.conf", \
+    "--run", "/bin/sh", "-c", \
+    "if [ {{ .Env.LINOTP_DB_TYPE }} != sqlite ]; then /usr/local/bin/dockerfy --wait tcp://{{ .Env.LINOTP_DB_HOST }}:{{ .Env.LINOTP_DB_PORT }} --timeout 30s; fi", \
+    "--", \
     "--run", "/var/lib/dpkg/info/linotp.postinst", "configure", "--", \
     "--run", "/bin/grep", "url", "/etc/linotp2/linotp.ini", "--", \
-    "--run", "mkdir", "-p", "/etc/ssl/private", "/etc/ssl/certs", "--", \
     "--run", "/bin/sh", "-c", \
     "openssl req -new -x509 -newkey rsa:2048 -subj /CN=`hostname`.`dnsdomainname` -days 768 -out /etc/ssl/certs/linotpserver.pem  -keyout /etc/ssl/private/linotpserver.key -nodes", \
     "--", \
     "--run", "/usr/local/bin/linotp-create-htdigest", "{{ .Env.LINOTP_ADMIN_USER }}", "{{ .Env.LINOTP_ADMIN_PASSWORD }}", "--", \
-    "--run", "/bin/sh", "-c", \
-    "if [ {{ .Env.LINOTP_DB_TYPE }} != sqlite ]; then /usr/local/bin/dockerfy --wait tcp://{{ .Env.LINOTP_DB_HOST }}:{{ .Env.LINOTP_DB_PORT }} --timeout 30s; fi", \
-    "--", \
     "--run", "/bin/su", "linotp", "-s", "/bin/sh", "-c", "python -m flask init-db", "--" \
 ]
 
