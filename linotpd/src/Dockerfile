@@ -95,10 +95,9 @@ ENV LINOTP_INI_TEMPLATE=/etc/linotp/linotp-docker.ini.tmpl \
 RUN echo 'APT::Install-Recommends "0"; \n\
             APT::Get::Assume-Yes "true"; \n\
             APT::Install-Suggests "0";' \
-            > /etc/apt/apt.conf.d/01buildconfig
-
-RUN sed "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" \
-        < /etc/apt/sources.list > /etc/apt/sources.list.new && mv -f /etc/apt/sources.list.new /etc/apt/sources.list
+            > /etc/apt/apt.conf.d/01buildconfig \
+    && sed -i "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" \
+        /etc/apt/sources.list
 
 # Add LinOTP packaging key to keyring in order to install
 # dependencies
