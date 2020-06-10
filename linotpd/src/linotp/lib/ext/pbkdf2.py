@@ -57,73 +57,44 @@ import sys
 import hmac
 from hashlib import sha1
 
-#
-# Python 2.1 thru 3.2 compatibility
-#
-
 __version__ = "1.3"
 __all__ = ['PBKDF2', 'crypt']
 
 
-if sys.version_info[0] == 2:
-    _0xffffffffL = int(1) << 32
+_0xffffffffL = 0xffffffff
 
-    def isunicode(s):
-        return isinstance(s, str)
+def isunicode(s):
+    return isinstance(s, str)
 
-    def isbytes(s):
-        return isinstance(s, str)
+def isbytes(s):
+    return isinstance(s, bytes)
 
-    def isinteger(n):
-        return isinstance(n, int)
+def isinteger(n):
+    return isinstance(n, int)
 
-    def b(s):
-        return s
+def callable(obj):
+    return hasattr(obj, '__call__')
 
-    def binxor(a, b):
-        return "".join([chr(ord(x) ^ ord(y)) for (x, y) in zip(a, b)])
+def b(s):
+    return s.encode("latin-1")
 
-    def b64encode(data, chars="+/"):
-        tt = str.maketrans("+/", chars)
-        return data.encode('base64').replace("\n", "").translate(tt)
-    from binascii import b2a_hex
+def binxor(a, b):
+    return bytes([x ^ y for (x, y) in zip(a, b)])
 
-else:
+from base64 import b64encode as _b64encode
 
-    _0xffffffffL = 0xffffffff
+def b64encode(data, chars="+/"):
+    if isunicode(chars):
+        return _b64encode(data, chars.encode('utf-8')).decode('utf-8')
+    else:
+        return _b64encode(data, chars)
 
-    def isunicode(s):
-        return isinstance(s, str)
+from binascii import b2a_hex as _b2a_hex
 
-    def isbytes(s):
-        return isinstance(s, bytes)
+def b2a_hex(s):
+    return _b2a_hex(s).decode('us-ascii')
 
-    def isinteger(n):
-        return isinstance(n, int)
-
-    def callable(obj):
-        return hasattr(obj, '__call__')
-
-    def b(s):
-        return s.encode("latin-1")
-
-    def binxor(a, b):
-        return bytes([x ^ y for (x, y) in zip(a, b)])
-
-    from base64 import b64encode as _b64encode
-
-    def b64encode(data, chars="+/"):
-        if isunicode(chars):
-            return _b64encode(data, chars.encode('utf-8')).decode('utf-8')
-        else:
-            return _b64encode(data, chars)
-
-    from binascii import b2a_hex as _b2a_hex
-
-    def b2a_hex(s):
-        return _b2a_hex(s).decode('us-ascii')
-
-    xrange = range
+xrange = range
 
 
 class PBKDF2(object):
