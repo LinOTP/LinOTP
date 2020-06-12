@@ -37,13 +37,15 @@ if isinstance(lang, list):
 <html>
 
 <head>
-<title>${_("LinOTP 2 Management")}</title>
+<title>${_("Management - LinOTP")}</title>
 
 <meta name="copyright" content="KeyIdentity GmbH">
 <meta name="keywords" content="LinOTP 2 manage">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
 <meta http-equiv="content-style-type" content="text/css">
+
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
 
 %if c.debug:
     <link type="text/css" rel="stylesheet" href="/static/css/jquery-ui/jquery-ui.structure.css">
@@ -823,11 +825,11 @@ if isinstance(lang, list):
                         </tr>
                         <tr>
                             <td>
-                                <label for='default_token_challengeTimeout'> ${_("DefaultChallengeValidityTime")}: </label>
+                                <label for='default_token_challengeTimeout'> ${_("Challenge expiration time (sec)")}: </label>
                             </td>
                             <td>
                                 <input type="number" name="default_token_challengeTimeout" id="default_token_challengeTimeout"
-                                    title='${_("Default validity timeframe of a challenge.")}' placeholder="120">
+                                    title='${_("Default validity time of a challenge in seconds.")}' placeholder="120">
                             </td>
                         </tr>
                     </table>

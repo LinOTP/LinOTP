@@ -1302,6 +1302,9 @@ msgstr ""
 "(HOTP) ou sur le temps (TOTP). Si les seeds HMAC sont cryptées, vous devez - "
 "en fonction du cryptage - spécifier un mot de passe ou la clé de cryptage."
 
+msgid "Management - LinOTP"
+msgstr "Gestion - LinOTP"
+
 msgid "Here you need to enter the token ID of the YubiKey."
 msgstr "Ici, vous devez entrer le token ID de YubiKey."
 

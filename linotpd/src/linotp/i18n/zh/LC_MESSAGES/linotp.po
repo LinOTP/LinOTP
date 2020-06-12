@@ -1247,6 +1247,9 @@ msgstr ""
 "令牌是基于事件的采样（HOTP）还是基于时间的采样（TOTP）。如果 HMAC 有加密，则"
 "取决于加密情况，您需要输入密码或加密密钥。"
 
+msgid "Management - LinOTP"
+msgstr "管理 - LinOTP"
+
 msgid "Here you need to enter the token ID of the YubiKey."
 msgstr "在此，必须输入您 YubiKeys 的令牌 ID。"
 
