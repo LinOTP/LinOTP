@@ -1,4 +1,3 @@
-# Italian translations for LinOTP package - Italian messages for LinOTP.
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
@@ -22,6 +21,8 @@
 #    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
+#
+# Italian translations for LinOTP
 #
 msgid ""
 msgstr ""

@@ -1,4 +1,3 @@
-# German translations for LinOTP package - German messages for LinOTP.
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
@@ -22,8 +21,8 @@
 #    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
-# linotp@keyidentity.com <>, 2015, 2019.
-# Fabian Vallon <fabian.vallon@keyidentity.com>, 2019.
+#
+# German translations for LinOTP
 #
 msgid ""
 msgstr ""
