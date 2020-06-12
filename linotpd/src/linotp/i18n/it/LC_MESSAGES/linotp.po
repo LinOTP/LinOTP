@@ -274,8 +274,9 @@ msgstr "Certificati"
 msgid "Challenge Response Login"
 msgstr "OCRA - Challenge/Response Token"
 
-msgid "Challenge Timeout"
-msgstr "Attesa per challenge"
+#, fuzzy
+msgid "Challenge expiration time (sec)"
+msgstr "Validità Email Challenge (sec.)"
 
 msgid "Challenge sent"
 msgstr "Sfida inviata"
@@ -481,17 +482,19 @@ msgstr "Impostazioni predefinite"
 msgid "Default Values:"
 msgstr "Valori di default:"
 
+#, fuzzy
+msgid "Default expiration time of a challenge in seconds."
+msgstr "Finestra temporale standard di validità per una challenge"
+
 msgid "Default provider could not be deleted!"
 msgstr "Il provider predefinito non può essere cancellato!"
 
 msgid "Default token settings"
 msgstr "Impostazioni token predefinite"
 
-msgid "Default validity timeframe of a challenge."
+#, fuzzy
+msgid "Default validity time of a challenge in seconds."
 msgstr "Finestra temporale standard di validità per una challenge"
-
-msgid "DefaultChallengeValidityTime"
-msgstr "Periodo di validità standard di una challenge"
 
 msgid "DefaultCountWindow"
 msgstr "Finestra contatore standard"
@@ -603,6 +606,14 @@ msgstr ""
 
 msgid "Duplicate"
 msgstr "Duplica"
+
+#, fuzzy
+msgid "E-Mail Token"
+msgstr "e-mail Token"
+
+#, fuzzy
+msgid "E-Mail token settings"
+msgstr "Impostazioni token predefinite"
 
 msgid "E-mail address"
 msgstr "Indirizzo e-mail"
@@ -964,9 +975,6 @@ msgstr "Eliminazione del Realm fallita"
 msgid "Failed deleting resolver"
 msgstr "Eliminazione del Resolver fallita"
 
-msgid "Failed to activate token! \n"
-msgstr "Errore durante l'attivazione del token!\n"
-
 msgid "Failed to communicate to LinOTP server"
 msgstr "Comunicazione con il server LinOTP fallita!"
 
@@ -1061,7 +1069,8 @@ msgstr "Flatfile"
 msgid "For HOTP and TOTP tokens:"
 msgstr "Per token HOTP e TOTP:"
 
-msgid "For OCRA tokens:"
+#, fuzzy
+msgid "For OCRA2 tokens:"
 msgstr "Per token OCRA:"
 
 msgid "For more information please visit:"
@@ -1288,9 +1297,6 @@ msgstr "Qui è necessario inserire l'ID token della YubiKey."
 msgid "History"
 msgstr "Andamento"
 
-msgid "Management - LinOTP"
-msgstr "Gestione - LinOTP"
-
 msgid ""
 "If LinOTP is setup to manage its administration users, you can change your "
 "LinOTP management password now."
@@ -1480,12 +1486,6 @@ msgstr "Limite"
 msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP - la soluzione Open Source per l'autenticazione a due fattori."
 
-msgid "LinOTP 2 Management"
-msgstr "Gestione LinOTP 2"
-
-msgid "LinOTP 2 User self service"
-msgstr "Portale di auto-gestione LinOTP"
-
 msgid "LinOTP Config"
 msgstr "Configurazione LinOTP"
 
@@ -1539,6 +1539,9 @@ msgstr "Disconnetti"
 
 msgid "Lost Token"
 msgstr "Token perso"
+
+msgid "Management - LinOTP"
+msgstr "Gestione - LinOTP"
 
 msgid "Mapping Attributes"
 msgstr "Attributi di mappatura"
@@ -1635,6 +1638,13 @@ msgstr "generato con successo!"
 
 msgid "No users will be deleted!"
 msgstr ""
+
+msgid "No valid session"
+msgstr "Nessuna sessione valida"
+
+#, fuzzy
+msgid "No valid session!"
+msgstr "Nessuna sessione valida"
 
 msgid "Number"
 msgstr "Numero"
@@ -2172,6 +2182,10 @@ msgstr "Provider SMS: crea e modifica"
 
 msgid "SMS Token"
 msgstr "Token SMS"
+
+#, fuzzy
+msgid "SMS token settings"
+msgstr "Impostazioni RADIUS token"
 
 msgid "SQL"
 msgstr "SQL"
@@ -2962,6 +2976,10 @@ msgstr "Pin del token:"
 
 msgid "Token Seed:"
 msgstr "Seme Token:"
+
+#, fuzzy
+msgid "Token Self Service - LinOTP"
+msgstr "Portale di auto-gestione LinOTP"
 
 msgid "Token Settings:"
 msgstr "Impostazioni token:"
@@ -3778,6 +3796,10 @@ msgstr "per telefono "
 msgid "certificate id"
 msgstr "Certifica nome utente"
 
+#, fuzzy
+msgid "challenge expired!"
+msgstr "challenge"
+
 msgid "check status"
 msgstr "controlla stato"
 
@@ -4250,14 +4272,17 @@ msgstr "Interfaccia utente web generato"
 #~ msgid "CA Certificate"
 #~ msgstr "Certificato CA"
 
-#~ msgid "Challenge validity (sec)"
-#~ msgstr "Validità Email Challenge (sec.)"
+#~ msgid "Challenge Timeout"
+#~ msgstr "Attesa per challenge"
 
 #~ msgid "Default OCRA suite"
 #~ msgstr "Suite OCRA standard"
 
 #~ msgid "Default QR suite"
 #~ msgstr "Suite QR standard"
+
+#~ msgid "DefaultChallengeValidityTime"
+#~ msgstr "Periodo di validità standard di una challenge"
 
 #~ msgid "Do you want to overwrite the existing definition?"
 #~ msgstr "Vuoi riscrivere la definizione esistente?"
@@ -4270,6 +4295,9 @@ msgstr "Interfaccia utente web generato"
 
 #~ msgid "Enter pin: "
 #~ msgstr "Inserisci pin:"
+
+#~ msgid "Failed to activate token! \n"
+#~ msgstr "Errore durante l'attivazione del token!\n"
 
 #~ msgid "File configuration"
 #~ msgstr "Configurazione file"
@@ -4310,6 +4338,12 @@ msgstr "Interfaccia utente web generato"
 #~ msgid "License uploaded"
 #~ msgstr "Licenza caricata"
 
+#~ msgid "LinOTP 2 Management"
+#~ msgstr "Gestione LinOTP 2"
+
+#~ msgid "LinOTP 2 User self service"
+#~ msgstr "Portale di auto-gestione LinOTP"
+
 #~ msgid "Maximum concurrent OCRA challenges"
 #~ msgstr "Numero massimo di challenge OCRA simultanee"
 
@@ -4321,9 +4355,6 @@ msgstr "Interfaccia utente web generato"
 
 #~ msgid "No valid authentication session %r"
 #~ msgstr "Sessione di autenticazione non valida %r"
-
-#~ msgid "No valid session"
-#~ msgstr "Nessuna sessione valida"
 
 #~ msgid "Not a valid json string!"
 #~ msgstr "Serie json non valida!"
@@ -4545,9 +4576,6 @@ msgstr "Interfaccia utente web generato"
 
 #~ msgid "already exists."
 #~ msgstr "è già esistente."
-
-#~ msgid "challenge"
-#~ msgstr "challenge"
 
 #~ msgid "count auth"
 #~ msgstr "Contatore di autenticazione"
