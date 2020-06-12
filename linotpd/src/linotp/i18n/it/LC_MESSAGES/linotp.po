@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2019-02-14 13:49+0100\n"
+"PO-Revision-Date: 2020-06-12 17:09+0200\n"
 "Last-Translator: linotp@keyidentity.com\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
@@ -2716,9 +2716,9 @@ msgstr "Il PIN inserito è troppo breve. Deve contenere almeno %i caratteri."
 msgid "The realm the policy applies to"
 msgstr "Realm per il quale vale il criterio"
 
-#, fuzzy
-msgid "The resolver  was successfully updated."
-msgstr "Il token è stato registrato con successo "
+#, fuzzy, python-format
+msgid "The resolver %s was successfully updated."
+msgstr "Il token è stato registrato con successo."
 
 #, python-format
 msgid "The serial %s does not belong to user %s@%s"

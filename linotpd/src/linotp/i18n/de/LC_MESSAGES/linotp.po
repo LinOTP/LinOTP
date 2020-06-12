@@ -2715,8 +2715,9 @@ msgstr "Die angegebene PIN ist zu kurz. Es sollten mindestens %i Zeichen sein."
 msgid "The realm the policy applies to"
 msgstr "Der Realm, für den die Richtlinie gelten soll"
 
-msgid "The resolver  was successfully updated."
-msgstr "Der Resolver wurde erfolgreich geändert."
+#, python-format
+msgid "The resolver %s was successfully updated."
+msgstr "Der Resolver %s wurde erfolgreich geändert."
 
 #, python-format
 msgid "The serial %s does not belong to user %s@%s"

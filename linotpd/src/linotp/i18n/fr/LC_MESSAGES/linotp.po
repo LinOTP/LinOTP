@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2019-02-14 15:01+0100\n"
+"PO-Revision-Date: 2020-06-12 17:09+0200\n"
 "Last-Translator: linotp@keyidentity.com\n"
 "Language-Team: French <>\n"
 "Language: fr\n"
@@ -2767,9 +2767,9 @@ msgstr ""
 msgid "The realm the policy applies to"
 msgstr "Le domaine auquel la directive s'applique"
 
-#, fuzzy
-msgid "The resolver  was successfully updated."
-msgstr "Le token a été déployé avec succès"
+#, fuzzy, python-format
+msgid "The resolver %s was successfully updated."
+msgstr "Le token a été déployé avec succès."
 
 #, python-format
 msgid "The serial %s does not belong to user %s@%s"

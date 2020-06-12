@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2019-02-13 21:05+0800\n"
+"PO-Revision-Date: 2020-06-12 17:09+0200\n"
 "Last-Translator: linotp@keyidentity.com\n"
 "Language-Team: Chinese <>\n"
 "Language: zh\n"
@@ -2624,8 +2624,8 @@ msgstr "输入的 PIN 码太短。它至少应该有 %i 个字符。"
 msgid "The realm the policy applies to"
 msgstr "应用策略的域"
 
-#, fuzzy
-msgid "The resolver  was successfully updated."
+#, fuzzy, python-format
+msgid "The resolver %s was successfully updated."
 msgstr "令牌已成功注册"
 
 #, python-format
