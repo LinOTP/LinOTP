@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2020-06-12 18:52+0200\n"
+"PO-Revision-Date: 2020-06-12 19:52+0200\n"
 "Language-Team: German <>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
@@ -270,9 +270,8 @@ msgstr "Zertifikate"
 msgid "Challenge Response Login"
 msgstr "Anmeldung mit Challenge/Response"
 
-#, fuzzy
 msgid "Challenge expiration time (sec)"
-msgstr "E-Mail Challenge Gültigkeit (Sek.)"
+msgstr "Gültigkeitszeitfenster für Challenges (Sek.)"
 
 msgid "Challenge sent"
 msgstr "Challenge wurde verschickt"
@@ -304,17 +303,17 @@ msgstr ""
 "die nicht compliant sind, werden ignoriert."
 
 msgid "Check the status of your challenge:"
-msgstr "Prüfen Sie den Status ihrer Challenge:"
+msgstr "Prüfen Sie den Status Ihrer Challenge:"
 
 msgid "Check your mobile and confirm the login"
 msgstr ""
 "Überprüfen Sie ihr Handy und bestätigen Sie die Anmeldung bzw. Transaktion"
 
 msgid "Choose your preferred method to authenticate"
-msgstr "Wählen Sie ihre bevorzugte Methode zur Authentisierung"
+msgstr "Wählen Sie Ihre bevorzugte Methode zur Authentisierung"
 
 msgid "Choose your token profile "
-msgstr "Bitte wählen Sie ihren Tokentyp "
+msgstr "Bitte wählen Sie Ihren Tokentyp "
 
 msgid "Class"
 msgstr "Klasse"
@@ -477,19 +476,18 @@ msgstr "Standardeinstellungen"
 msgid "Default Values:"
 msgstr "Standardwerte:"
 
-#, fuzzy
 msgid "Default expiration time of a challenge in seconds."
-msgstr "Standardwert des Gültigkeitszeitfensters für eine Challenge"
+msgstr "Standardwert des Gültigkeitszeitfensters für Challenges in Sekunden"
 
 msgid "Default provider could not be deleted!"
 msgstr "Der Standardprovider kann nicht gelöscht werden!"
 
 msgid "Default token settings"
-msgstr "Standardeinstellungen Token"
+msgstr "Token-Standardeinstellungen"
 
-#, fuzzy
 msgid "Default validity time of a challenge in seconds."
-msgstr "Standardwert des Gültigkeitszeitfensters für eine Challenge"
+msgstr ""
+"Standardwert des Gültigkeitszeitfensters für eine Challenge in Sekunden."
 
 msgid "DefaultCountWindow"
 msgstr "Standardwert des Zählerfensters"
@@ -602,13 +600,11 @@ msgstr ""
 msgid "Duplicate"
 msgstr "Duplizieren"
 
-#, fuzzy
 msgid "E-Mail Token"
 msgstr "E-Mail-Token"
 
-#, fuzzy
 msgid "E-Mail token settings"
-msgstr "Standardeinstellungen Token"
+msgstr "E-Mail-Token-Einstellungen"
 
 msgid "E-mail address"
 msgstr "E-Mail-Adresse"
@@ -698,7 +694,7 @@ msgid "Enroll YubiKey"
 msgstr "YubiKey ausrollen"
 
 msgid "Enroll static password token"
-msgstr "Erstellen Sie ihren einfachen Passworttoken"
+msgstr "Erstellen Sie Ihren Passworttoken"
 
 msgid "Enroll token"
 msgstr "Token ausrollen"
@@ -777,13 +773,12 @@ msgstr "Geben Sie Ihren Benutzernamen, die OTP-PIN und den OTP-Wert ein."
 msgid "Enter your username, the OTP PIN and the OTP value."
 msgstr "Geben Sie Ihren Benutzernamen, die OTP-PIN und den OTP-Wert ein."
 
-#, fuzzy
 msgid ""
 "Enter your username, the OTP PIN and the data you want to display to verify "
 "the authentication."
 msgstr ""
-"Geben Sie Ihren Benutzernamen, die OTP-PIN und den Text für die Challenge "
-"ein."
+"Geben Sie Ihren Benutzernamen, die OTP-PIN und den Anzeigetext zur Prüfung "
+"der Authentisierung ein."
 
 msgid "Enter your username, the OTP PIN and the input for the challenge."
 msgstr ""
@@ -1062,9 +1057,8 @@ msgstr "Flatfile"
 msgid "For HOTP and TOTP tokens:"
 msgstr "Für HOTP- und TOTP-Token:"
 
-#, fuzzy
 msgid "For OCRA2 tokens:"
-msgstr "Für OCRA-Token:"
+msgstr "Für OCRA2-Token:"
 
 msgid "For more information please visit:"
 msgstr "Weitere Informationen finden Sie unter:"
@@ -1135,7 +1129,7 @@ msgid "Google Authenticator compliant"
 msgstr "Google Authenticator konform"
 
 msgid "HMAC Token Settings"
-msgstr "HMAC-Token Einstellungen"
+msgstr "HMAC-Token-Einstellungen"
 
 msgid "HMAC eventbased"
 msgstr "HMAC ereignisbasiert"
@@ -1483,12 +1477,11 @@ msgid "Limit"
 msgstr "Limit"
 
 msgid "LinOTP - the open source solution for two factor authentication."
-msgstr "LinOTP - die Open Source Lösung für zwei Faktor Authentisierung."
+msgstr "LinOTP - die Open Source Lösung für Zwei-Faktor-Authentisierung."
 
 msgid "LinOTP Config"
 msgstr "LinOTP Konfiguration"
 
-#, fuzzy
 msgid "LinOTP Self Service"
 msgstr "LinOTP Selbstverwaltungsportal"
 
@@ -1639,9 +1632,8 @@ msgstr "Es werden keine Benutzer gelöscht!"
 msgid "No valid session"
 msgstr "Keine gültige Session"
 
-#, fuzzy
 msgid "No valid session!"
-msgstr "Keine gültige Session"
+msgstr "Keine gültige Session!"
 
 msgid "Number"
 msgstr "Nummer"
@@ -1691,7 +1683,7 @@ msgid "OCRA2 key"
 msgstr "OCRA2-Key"
 
 msgid "OCRA2 token settings"
-msgstr "OCRA2-Token Einstellungen"
+msgstr "OCRA2-Token-Einstellungen"
 
 msgid "OK"
 msgstr "OK"
@@ -1870,9 +1862,8 @@ msgstr ""
 "Bitte geben Sie die Seriennummer des Tokens mit der existierenden PIN und "
 "die Seriennummer des Tokens ein, auf den die PIN übertragen werden soll."
 
-#, fuzzy
 msgid "Please enter your otp"
-msgstr "Bitte geben Sie den OCRA-Key ein."
+msgstr "Bitte geben Sie einen OTP ein"
 
 msgid "Please have a look at each of the forms for more details."
 msgstr ""
@@ -1958,7 +1949,7 @@ msgid "Professional LinOTP support and enterprise subscription"
 msgstr "Professionellen LinOTP Support und Subskription für Unternehmen"
 
 msgid "Protect your token with a static PIN"
-msgstr "Schützen Sie ihren Token durch einen festen PIN"
+msgstr "Schützen Sie Ihren Token durch einen festen PIN"
 
 msgid "Protect your token with a static pin"
 msgstr "Schützen Sie Ihren Token durch eine feste PIN"
@@ -1978,7 +1969,7 @@ msgid "Provision your OATH Token"
 msgstr "OATH-Token registrieren"
 
 msgid "Provision your OATH soft token"
-msgstr "Rollen sie ihren OATH-Token aus"
+msgstr "Rollen sie Ihren OATH-Token aus"
 
 msgid "Provision your soft token in LinOTP"
 msgstr "Legen Sie Ihren Softtoken im LinOTP an"
@@ -2046,7 +2037,7 @@ msgid "RADIUS token"
 msgstr "RADIUS-Token"
 
 msgid "RADIUS token settings"
-msgstr "RADIUS Tokeneinstellungen"
+msgstr "RADIUS-Token-Einstellungen"
 
 msgid "RADIUS user"
 msgstr "RADIUS Benutzer"
@@ -2141,9 +2132,8 @@ msgstr "Resolvername"
 msgid "Resolver name:"
 msgstr "Resolvername:"
 
-#, fuzzy
 msgid "Resolver:"
-msgstr "Resolver"
+msgstr "Resolver:"
 
 msgid "Result path:"
 msgstr "Zielpfad:"
@@ -2181,9 +2171,8 @@ msgstr "SMS-Provider: Erstellen und Bearbeiten"
 msgid "SMS Token"
 msgstr "SMS-Token"
 
-#, fuzzy
 msgid "SMS token settings"
-msgstr "RADIUS Tokeneinstellungen:"
+msgstr "RADIUS-Token-Einstellungen"
 
 msgid "SQL"
 msgstr "SQL"
@@ -2209,7 +2198,6 @@ msgstr "Speichern"
 msgid "Save Config"
 msgstr "Konfiguration speichern"
 
-#, fuzzy
 msgid "Save config"
 msgstr "Konfiguration speichern"
 
@@ -2218,12 +2206,11 @@ msgstr ""
 "Scannen Sie den QR-Code und bestätigen Sie auf Ihrem Handy bzw geben Sie "
 "unten die vom Handy generierte TAN an"
 
-#, fuzzy
 msgid "Scan the challenge and get your OTP:"
-msgstr "Scannen Sie die Challenge und bekommen Sie Ihren OTP Wert:"
+msgstr "Scannen Sie die Challenge und erhalten Sie einen OTP Wert:"
 
 msgid "Scan your challenge and get your OTP:"
-msgstr "Scannen Sie die Challenge um eine OTP Wert zu bekommen:"
+msgstr "Scannen Sie die Challenge um eine OTP Wert zu erhalten:"
 
 msgid "Scope"
 msgstr "Bereich"
@@ -2265,9 +2252,8 @@ msgstr ""
 "Seriennummer: {1}\n"
 "Benutzername: {2}"
 
-#, fuzzy
 msgid "Selfservice Home"
-msgstr "Selbstverwaltungsportal"
+msgstr "Selbstverwaltungsportal Start"
 
 msgid "Selfservice Portal"
 msgstr "Selbstverwaltungsportal"
@@ -2373,12 +2359,11 @@ msgstr ""
 msgid "Split at @ sign (splitAtSign)"
 msgstr "Trenne am @-Zeichen"
 
-#, fuzzy
 msgid "Static Password Token"
-msgstr "Einfacher Passworttoken"
+msgstr "Passworttoken"
 
 msgid "Static Password Token Settings"
-msgstr "Einstellungen für einfachen Passworttoken"
+msgstr "Passworttoken-Einstellungen"
 
 msgid "Submit a challenge:"
 msgstr "Challenge eingeben:"
@@ -2438,7 +2423,7 @@ msgid "TOTP Token"
 msgstr "TOTP-Token"
 
 msgid "TOTP token settings"
-msgstr "TOTP-Token Einstellungen"
+msgstr "TOTP-Token-Einstellungen"
 
 msgid "Tagespasswort Token File"
 msgstr "Tagespasswort-Tokendatei"
@@ -2582,12 +2567,12 @@ msgstr ""
 msgid "The entered PINs do not match!"
 msgstr "Die eingegebenen PINs stimmen nicht überein!"
 
-#, fuzzy
 msgid ""
 "The expiration of the resolver lookup caching in seconds or as duration "
 "format for days, hours and minutes: >1d 3h 4m<"
 msgstr ""
-"Ablaufzeit des Resolver-Lookup-Cachings in Sekunden oder im Format >1d 3h 4m<"
+"Ablaufzeit des Resolver-Lookup-Cachings in Sekunden oder als Dauer in Tagen, "
+"Stunden und Minuten:  >1d 3h 4m<"
 
 msgid ""
 "The expiration of the user lookup caching in seconds or as duration format "
@@ -2609,8 +2594,8 @@ msgid ""
 "that these settings match your hardware token or software token capabilities."
 msgstr ""
 "Der HMAC-Algorithmus kann durch die folgenden Einstellungen beeinflusst "
-"werden. Bitte stellen Sie sicher, dass diese Einstellungen zu ihrem "
-"Hardwaretoken bzw. zu den Fähigkeiten ihres Softtokens passen."
+"werden. Bitte stellen Sie sicher, dass diese Einstellungen zu Ihrem "
+"Hardwaretoken bzw. zu den Fähigkeiten Ihres Softtokens passen."
 
 msgid ""
 "The ip address of the trusted forwarding proxy, which provides the "
@@ -2780,9 +2765,8 @@ msgstr ""
 msgid "The token will be enrolled for user"
 msgstr "Ausrollen des Tokens für Benutzer"
 
-#, fuzzy
 msgid "The token you want to assign is not contained in your realm!"
-msgstr "Der Token den Sie zuweisen wollen, ist nicht in Ihrem Realm enthalten!"
+msgstr "Der Token den Sie zuweisen wollen ist nicht in Ihrem Realm enthalten!"
 
 #, python-format
 msgid "The tokentype '%s' could not be found."
@@ -2849,14 +2833,13 @@ msgstr "Diese Aktion wird durch die folgende Richtlinie erlaubt:"
 msgid "This action is not allowed by any policy!"
 msgstr "Diese Aktion wird von keiner Richtlinie erlaubt!"
 
-#, fuzzy
 msgid ""
 "This is a comma-separated list of the LinOTP clients, for example a RADIUS "
 "Server, which are allowed to pass their own clients IP-address as a "
 "parameter. This modified address can then be used in policy definitions."
 msgstr ""
 "Dies ist eine kommaseparierte Liste der LinOTP Clients, z.B. Radiusserver, "
-"denen gestattet wird, die IPs ihrer Clients als Parameter an LinOTP "
+"denen gestattet wird, die IP-Adresse ihrer Clients als Parameter an LinOTP "
 "weiterzureichen. Diese können als Grundlage für Authorisierungsrichtlinien "
 "verwendet werden."
 
@@ -2960,7 +2943,7 @@ msgid ""
 "To install the token on your mobile device, scan the QR code below with your "
 "soft token app or follow the link"
 msgstr ""
-"Um den Token in ihrem Mobilgerät zu installieren, scannen Sie bitte den "
+"Um den Token in Ihrem Mobilgerät zu installieren, scannen Sie bitte den "
 "unten stehenden QRCode ein oder folgen Sie dem Link"
 
 msgid "To resolver"
@@ -2993,9 +2976,8 @@ msgstr "Token-PIN:"
 msgid "Token Seed:"
 msgstr "Tokenschlüssel:"
 
-#, fuzzy
 msgid "Token Self Service - LinOTP"
-msgstr "LinOTP Selbstverwaltungsportal Anmeldung"
+msgstr "Token Selbstverwaltung - LinOTP"
 
 msgid "Token Settings:"
 msgstr "Tokeneinstellungen:"
@@ -3052,9 +3034,8 @@ msgstr "Tokenseed:"
 msgid "Token serial: "
 msgstr "Seriennummer: "
 
-#, fuzzy
 msgid "Token settings"
-msgstr "Tokeneinstellungen:"
+msgstr "Tokeneinstellungen"
 
 msgid "Token settings:"
 msgstr "Tokeneinstellungen:"
@@ -3123,9 +3104,8 @@ msgstr "Zuweisung der ausgewählten Token aufheben?"
 msgid "Unknown PIN type"
 msgstr "Unbekannter PIN-Typ"
 
-#, fuzzy
 msgid "Unknown error"
-msgstr "Verbindungsfehler"
+msgstr "Unbekannter Fehler"
 
 #, python-format
 msgid "Unknown method in selfservice: %s"
@@ -3240,9 +3220,8 @@ msgstr "Wir würden uns freuen, Ihr Feedbach zu LinOTP zu erhalten."
 msgid "Welcome to LinOTP"
 msgstr "Willkommen bei LinOTP"
 
-#, fuzzy
 msgid "Welcome to the LinOTP Selfservice Portal"
-msgstr "Anmeldung am LinOTP Selbstverwaltungsportal"
+msgstr "Willkommen im LinOTP Selbstverwaltungsportal"
 
 msgid "Welcome to your fresh LinOTP installation."
 msgstr "Willkommen zu Ihrer neuen LinOTP Installation."
@@ -3418,12 +3397,11 @@ msgstr ""
 "Sie haben nicht die administrativen Rechte zum Anzeigen der Tokenbesitzer im "
 "Realm %s(%s)."
 
-#, fuzzy
 msgid ""
 "You do not have the administrative right to get token info in this realm!"
 msgstr ""
-"Sie haben nicht die administrativen Rechte, um die Seriennummern dieses "
-"Realms zu erfragen!"
+"Sie haben nicht die administrativen Rechte, um eine Token-Infoin diesem "
+"Realm abzufragen!"
 
 #, python-format
 msgid ""
@@ -3564,7 +3542,7 @@ msgstr ""
 "Sie haben nicht die administrativen Rechte, um die Benutzerzuweisung für den "
 "Token %s aufzuheben - überprüfen Sie ggf. die Richtlinien."
 
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "You do not have the administrative right to unpair token %s. Check the "
 "policies."
@@ -3660,7 +3638,7 @@ msgstr "Resynchronisieren des Tokens:"
 msgid ""
 "You need an OATH compatible soft token app installed on your mobile device."
 msgstr ""
-"Sie müssen einen OATH-kompatible Softtoken-App auf ihrem Handy installiert "
+"Sie müssen einen OATH-kompatible Softtoken-App auf Ihrem Handy installiert "
 "haben."
 
 msgid "You need to enable Javascript to use the LinOTP Management Web UI."
@@ -3682,9 +3660,8 @@ msgstr "Sie müssen eine gültige API-ID angeben"
 msgid "You need to enter a valid API key"
 msgstr "Sie müssen einen gültigen API Key eingeben"
 
-#, fuzzy
 msgid "You need to enter a valid Yubico url"
-msgstr "Sie müssen eine gültige API-ID angeben."
+msgstr "Sie müssen eine gültige Yubico-URL angeben"
 
 msgid "You need to enter an OTP value"
 msgstr "Sie müssen einen OTP-Wert angeben"
@@ -3774,17 +3751,14 @@ msgstr "Yubico API-Key"
 msgid "Yubico ID"
 msgstr "Yubico-ID"
 
-#, fuzzy
 msgid "Yubico Timeout"
-msgstr "Timeout"
+msgstr "Yubico-Timeout"
 
-#, fuzzy
 msgid "Yubico Url"
-msgstr "Yubico"
+msgstr "Yubico-URL"
 
-#, fuzzy
 msgid "Yubico connection and read timeout"
-msgstr "Zusätzliche Verbindungsparameter"
+msgstr "Yubico Verbindungs- und Lese-Timeout"
 
 msgid "Yubico settings"
 msgstr "Yubico-Einstellungen"
@@ -3823,9 +3797,8 @@ msgstr "über Telefon"
 msgid "certificate id"
 msgstr "Zertifikat-ID"
 
-#, fuzzy
 msgid "challenge expired!"
-msgstr "Challenge"
+msgstr "Challenge abgelaufen!"
 
 msgid "check status"
 msgstr "Status prüfen"
@@ -3891,7 +3864,7 @@ msgid "enroll your event based token"
 msgstr "erstellen Sie Ihren ereignisbasierten Token"
 
 msgid "enroll your time based token"
-msgstr "Erstellen Sie ihren zeitbasierten Token"
+msgstr "Erstellen Sie Ihren zeitbasierten Token"
 
 msgid "enroll your token"
 msgstr "erstellen Sie Ihren Token"
@@ -3961,13 +3934,12 @@ msgstr "'getotp' ist nicht aktiv."
 msgid "hashlib"
 msgstr "Hash-Algorithmus"
 
-#, fuzzy
 msgid ""
 "if set, a new email address will be retrieved from the user info instead of "
 "the token"
 msgstr ""
-"Falls gesetzt wird eine neue Handy-Nummer aus der User-Info anstelle des "
-"Token-Datensatzes geladen"
+"Falls gesetzt, wird eine neue E-Mail-Adresse aus der User-Info geladen "
+"anstelle des Wertes aus dem Token"
 
 msgid ""
 "if set, a new mobile number will be retrieved from the user info instead of "
@@ -4016,7 +3988,7 @@ msgid "mOTP PIN set successfully"
 msgstr "mOTP-PIN erfolgreich gesetzt"
 
 msgid "mOTP Token Settings"
-msgstr "mOTP Einstellungen"
+msgstr "mOTP-Token-Einstellungen"
 
 msgid "managed"
 msgstr "intern verwaltet"
@@ -4223,13 +4195,11 @@ msgstr "Zeitfenster"
 msgid "token enrollment"
 msgstr "Token ausgerollt"
 
-#, fuzzy
 msgid "token user used"
-msgstr "verwendete Token"
+msgstr "verwendete Token-Nutzer"
 
-#, fuzzy
 msgid "token users supported"
-msgstr "lizensierte Token"
+msgstr "lizensierte Token-Nutzer"
 
 msgid "tokens supported"
 msgstr "lizensierte Token"
@@ -4279,9 +4249,9 @@ msgstr ""
 "Gültige Typen sind 'oathtoken', 'googleauthenticator' oder "
 "'googleauthenticator_time'. Angegeben wurde %s"
 
-#, fuzzy, python-format
+#, python-format
 msgid "valid types is 'ocra2'. You provided %s"
-msgstr "Gültige Werte sind 'ocra' oder 'ocra2'. Sie gaben %s an"
+msgstr "Gültige Werte sind 'ocra2'. Sie gaben %s an"
 
 msgid "voice Provider"
 msgstr "Voice-Provider"
@@ -4298,7 +4268,7 @@ msgstr "WebUI generiert"
 #~ msgid ""
 #~ " or scan the QR code below with your Google Authenticator mobile app."
 #~ msgstr ""
-#~ " oder scannen den fogenden QR Code mit ihrer Google Authenticator App ein."
+#~ " oder scannen den fogenden QR Code mit Ihrer Google Authenticator App ein."
 
 #~ msgid ""
 #~ "1. You first need to install the google authenticator to your Android or "
@@ -4809,7 +4779,7 @@ msgstr "WebUI generiert"
 
 #~ msgid "To install the profile on your mobil, click on the QR code image"
 #~ msgstr ""
-#~ "Um das angelegte Profil auf ihrem Handy zu aktivieren, klicken sie auf "
+#~ "Um das angelegte Profil auf Ihrem Handy zu aktivieren, klicken sie auf "
 #~ "das QR Code Bild"
 
 #~ msgid "Token defaults"
