@@ -6,16 +6,15 @@ set -e
 
 NEW_VERSION='@@@DEB_VERSION@@@'
 
-LINOTP_INI=/etc/linotp2/linotp.ini
-WHO_INI=/etc/linotp2/who.ini
+LINOTP_CFG=/etc/linotp2/linotp.cfg
 ENCKEYFILE=/etc/linotp2/encKey
 REALM="LinOTP2 admin area"
 DIGESTFILE=/etc/linotp2/admins
 LOGDIR=/var/log/linotp
 CACHEDIR=/etc/linotp2/data
 TEMPLATEDIR=/etc/linotp2/custom-templates
-DBFILE='\/%(here)s\/token.db'
-DBFILE_FS=/etc/linotp2/token.db
+LIBDIR=/var/lib/linotp
+DBFILE_FS=$LIBDIR/token.db
 RAND_DEVICE=/dev/urandom
 FAKE_PASSWORD=This_is_not_the_real_password_we_just_do_not_want_to_be_asked_again_in_case_of_updating_the_package
 LSB_RELEASE=`which lsb_release || true`
@@ -154,27 +153,24 @@ check_apache_disabled() {
 # configure_sql
 #
 # This incorporates previously-determined SQL configuration
-# information into the LINOTP_INI file.
+# information into the linotp.cfg file.
 
 configure_sql() {
   if [ "$DBPASSWORD1" = "" -o "$DBPASSWORD1" = "1234" ]; then
-    echo_log "SQL user password empty or known - not changing linotp.ini"
+    echo_log "SQL user password empty or known - not changing linotp.cfg"
   else
-    sed -i -e "s/^sqlalchemy.url.*/${SQLALCHEMY}/" $LINOTP_INI
-    if [ "$APPLIANCE_INSTALL" = "true" ]; then
-      sed -i -e "s/^#\?linotpAudit.sql.url \?=.*/${SQLAUDIT}/" $LINOTP_INI
-    fi
-    echo_log "SQL configuration in $LINOTP_INI changed."
+    sed -i -e "s/^SQLALCHEMY_DATABASE_URI=.*/SQLALCHEMY_DATABASE_URI=${SQLALCHEMY}/" $LINOTP_CFG
+    echo_log "SQL configuration in $LINOTP_CFG changed."
   fi
 }
 
-# create_tables
+# init_database
 #
 # Create and setup required SQL database tables
 
-create_tables() {
-  echo_log "Trying to create tables"
-  python3 -m flask init-db || true
+init_database() {
+  echo_log "Initialising database"
+  flask init-db || true
 }
 
 # create_grant_strings
@@ -249,8 +245,6 @@ evaluate_answers() {
 
   case "$TOKENDB" in
     SQLite)
-      DBFILE='\/%(here)s/token.db'
-      DBFILE_FS=/etc/linotp2/token.db
       db_get linotp/sqlite/ask_createdb || true
       CREATEDB_SQLITE=$RET
     ;;
@@ -296,15 +290,11 @@ evaluate_answers() {
 
 case "$1" in
   configure)
-    # Initialize linotp.ini
-    if ! [ -f "$LINOTP_INI" ]; then
-      cp /etc/linotp2/linotp.ini.example "$LINOTP_INI"
-    fi
-
     # Make sure the LinOTP user exists
     check_user "$LINOTP_USER" "LinOTP Server"
 
     create_dir "log" "$LOGDIR"
+    create_dir "lib" "$LIBDIR"
     create_dir "cache" "$CACHEDIR" clear
     create_dir "template" "$TEMPLATEDIR"
 
@@ -381,8 +371,7 @@ case "$1" in
     case "$TOKENDB" in
       MySQL)
         echo_log "Setting up MySQL ..."
-        SQLALCHEMY="sqlalchemy.url = mysql:\/\/$DBUSER:$DBPASSWORD1@$DBHOST\/$DBNAME"
-        SQLAUDIT="linotpAudit.sql.url = mysql:\/\/$DBUSER:$DBPASSWORD1@$DBHOST\/$DBNAME"
+        SQLALCHEMY="mysql:\/\/$DBUSER:$DBPASSWORD1@$DBHOST\/$DBNAME"
         configure_sql
         # The SVA3 configuration process will overwrite this.
         if [ "$CREATEDB" = "true" ]; then
@@ -457,41 +446,32 @@ case "$1" in
           true
         elif [ "$CREATE_TABLES" = "true" -a "$APPLIANCE_INSTALL" != "true" ]; then
           # we create the database tables if not an appliance
-          create_tables
+          init_database
         fi
         # On an Appliance we create the tables in case of an upgrade!
         if [ "$APPLIANCE_INSTALL" = "true" ] ; then
           if check_upgrade; then
             echo_log "Doing an upgrade, creating tables"
-            create_tables
+            init_database
           fi
         fi
       ;;
 
       SQLite)
         echo_log "Setting up SQLite ..."
-        SQLALCHEMY="sqlalchemy.url = sqlite:\/\/$DBFILE"
-        SQLAUDIT="linotpAudit.sql.url = sqlite:\/\/$DBFILE"
+        SQLALCHEMY="sqlite:\/\/$DBFILE_FS"
         configure_sql
         if [ "$CREATEDB_SQLITE" = "true" ]; then
           if [ -f $DBFILE_FS ]; then
             mv $DBFILE_FS $DBFILE_FS.old
           fi
-          create_tables
+          init_database
         fi
-        create_dir "SQLite" /var/run/linotp
-        chown "$LINOTP_USER" /etc/linotp2
-        chown "$LINOTP_USER" /etc/linotp2/token.db
       ;;
     esac #TOKENDB
 
     # TODO: probably not needed
     chown -R "$LINOTP_USER" "$LOGDIR"
-
-    # adapt who.ini
-    sed -ie "s/^secret\ =\ .*/secret\ =\ $(pwgen 16 1)/" "$WHO_INI"
-    chown "$LINOTP_USER" "$WHO_INI"
-    chmod 600 "$WHO_INI"
 
     # remove the template cache, as the templates might have changed
     # TODO: probably not needed

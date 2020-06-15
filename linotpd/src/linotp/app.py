@@ -704,7 +704,9 @@ def create_app(config_name='default', config_extra=None):
     app.config.from_object(configs[config_name])
     configs[config_name].init_app(app)
 
-    app.config.from_envvar(CONFIG_FILE_ENVVAR, silent=True)
+    configured_from_env = app.config.from_envvar(CONFIG_FILE_ENVVAR, silent=True)
+    if configured_from_env:
+        log.info(f"Configuration loaded from {os.environ[CONFIG_FILE_ENVVAR]}")
 
     if config_extra is not None:
         app.config.update(config_extra)

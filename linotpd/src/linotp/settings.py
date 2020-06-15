@@ -37,7 +37,7 @@ class Config:
     )
     LOGFILE_MAX_LENGTH = 10240
     LOGFILE_MAX_VERSIONS = 10
-    LOGFILE_NAME = "linotp3.log"
+    LOGFILE_NAME = "linotp.log"
 
     # LOGGING_FILE_LEVEL determines which messages are written to the log
     # file, while LOGGING_LEVEL determines which messages are logged in
