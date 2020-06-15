@@ -26,7 +26,8 @@
 #
 # This container contains build dependencies for building linotp packages
 
-FROM debian:jessie
+ARG BASE_IMAGE=debian:buster
+FROM $BASE_IMAGE
 
 ARG DEBIAN_MIRROR=deb.debian.org
 
@@ -35,7 +36,7 @@ RUN sed "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" \
 
 RUN apt-get update && apt-get \
 		--no-install-recommends --yes install \
-		build-essential devscripts equivs libfile-fcntllock-perl
+		build-essential devscripts equivs libfile-fcntllock-perl rename
 
 # Use the control files from the packages to install a list of packages needed for builds.
 # We copy in just the control files at this point in order to make maximum use of

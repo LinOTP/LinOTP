@@ -32,9 +32,6 @@
 # set these environment variables to configure make behaviour:
 # export http_proxy=http://proxy.hostname:port
 # export no_proxy=localhost,127.0.0.1,.my.local.domain
-# export RANCHER_URL=https://rancher.hostname/v1
-# export RANCHER_ACCESS_KEY=copy-from-rancher-UI-API-section
-# export RANCHER_SECRET_KEY=copy-from-rancher-UI-API-section
 # export DOCKER_REGISTRY_URL=registry.local.domain
 
 PYTHON:=python3
@@ -233,10 +230,21 @@ DOCKER_TAGS=latest
 # Override to change the mirror used for image building
 DEBIAN_MIRROR=ftp.debian.org
 
+# Override to change the Debian release used to build with
+DEBIAN_RELEASE_NAME=buster
+BASE_IMAGE=debian:$(DEBIAN_RELEASE_NAME)
+
 # Pass proxy environment variables through to docker build by default
 DOCKER_PROXY_BUILD_ARGS= --build-arg=http_proxy --build-arg=https_proxy --build-arg=no_proxy
 
-DOCKER_BUILD_ARGS+= --build-arg=DEBIAN_MIRROR=$(DEBIAN_MIRROR)
+# Arguments passed to Docker build commands
+DOCKER_BUILD_ARGS+= --build-arg BASE_IMAGE=$(BASE_IMAGE) \
+					--build-arg DEBIAN_MIRROR=$(DEBIAN_MIRROR) \
+					--build-arg DEBIAN_RELEASE_NAME=$(DEBIAN_RELEASE_NAME) \
+					--build-arg DEPENDENCY_SOURCE=$(DEPENDENCY_SOURCE) \
+					--build-arg DEPENDENCY_COMPONENT=$(DEPENDENCY_COMPONENT) \
+					--build-arg DEPENDENCY_GPG_KEYID=$(DEPENDENCY_GPG_KEYID) \
+					--build-arg DEPENDENCY_GPG_KEY_URL=$(DEPENDENCY_GPG_KEY_URL)
 
 # Default Docker run arguments.
 # Extra run arguments can be given here. It can also be used to
@@ -382,10 +390,6 @@ docker-run-linotp-sqlite: docker-build-linotp
 	# Run linotp in a standalone container
 	cd linotpd/src \
 		&& $(DOCKER_RUN) -it \
-			 -e LINOTP_DB_TYPE=sqlite \
-			 -e LINOTP_DB_NAME=//tmp/sqlite \
-			 -e LINOTP_DB_HOST= \
-			 -e LINOTP_DB_PORT= \
 			 -e HEALTHCHECK_PORT=80 \
 			 -e LINOTP_LOGLEVEL=$(LINOTP_LOGLEVEL) \
 			 -e LINOTP_CONSOLE_LOGLEVEL=$(LINOTP_CONSOLE_LOGLEVEL) \
@@ -491,74 +495,3 @@ docker-run-linotp-functional-test: docker-build-linotp-test-image
 	rm -rf $(BUILDDIR)/../nose
 	docker cp $(FUNCTIONAL_DOCKER_CONTAINER_NAME):$(LOCAL_NOSE_BASE_DIR) $(BUILDDIR)/../
 	docker rm $(FUNCTIONAL_DOCKER_CONTAINER_NAME) $(FUNCTIONAL_MYSQL_CONTAINER_NAME)
-
-
-###############################################################################
-# Rancher targets
-#
-# These targets are for deploying built linotp images to rancher
-#
-###############################################################################
-
-
-# Override with ID e.g. branch name, tag or git commit
-LINOTP_IMAGE_TAG=$(shell git rev-parse --short HEAD)
-RANCHER_STACK_ID=$(shell git rev-parse --short HEAD)
-
-# Override with type, e.g. prod, qa
-RANCHER_STACK_TYPE=dev
-
-RANCHER_STACK_NAME=linotp-$(RANCHER_STACK_TYPE)-$(RANCHER_STACK_ID)
-
-DOCKER_REGISTRY=$(subst https://,,$(DOCKER_REGISTRY_URL))
-
-RANCHER_DOCKER_COMPOSER_FILE=$(BUILDDIR)/rancher/docker-compose.yml
-
-$(RANCHER_DOCKER_COMPOSER_FILE):
-	$(MAKE) rancher-prepare
-
-
-.PHONY: rancher-prepare
-rancher-prepare:
-	# Overrides to compose file specific to this stack
-	mkdir -pv $(BUILDDIR)/rancher
-	( echo 'version: "2"' ;\
-	  echo 'services:' ;\
-	  echo '  linotp:' ;\
-	  echo '    image: $(DOCKER_REGISTRY)/linotp:$(LINOTP_IMAGE_TAG)' ;\
-	) > $(RANCHER_DOCKER_COMPOSER_FILE)
-
-RANCHER_COMPOSE=rancher-compose --project-name $(RANCHER_STACK_NAME)
-RANCHER_COMPOSE_FILES_LINOTP=-f linotpd/src/docker-compose.yml \
-								-f $(RANCHER_DOCKER_COMPOSER_FILE)
-
-# Uncomment to aid debugging
-# export RANCHER_CLIENT_DEBUG=true
-
-# Run a given command
-
-.PHONY: rancher-linotp-do
-rancher-linotp-do:
-	$(RANCHER_COMPOSE) $(RANCHER_COMPOSE_FILES_LINOTP) $(CMD)
-
-rancher-linotp-create: rancher-prepare
-	$(MAKE) rancher-linotp-do CMD=create
-
-rancher-linotp-rm: $(RANCHER_DOCKER_COMPOSER_FILE)
-	$(MAKE) rancher-linotp-do CMD=rm
-
-rancher-linotp-start: $(RANCHER_DOCKER_COMPOSER_FILE)
-	$(MAKE) rancher-linotp-do CMD="start -d"
-
-rancher-linotp-stop: $(RANCHER_DOCKER_COMPOSER_FILE)
-	$(MAKE) rancher-linotp-do CMD=stop
-
-rancher-linotp-up: $(RANCHER_DOCKER_COMPOSER_FILE)
-	$(MAKE) rancher-linotp-do CMD="up -d"
-
-rancher-linotp-down: $(RANCHER_DOCKER_COMPOSER_FILE)
-	$(MAKE) rancher-linotp-do CMD=down
-
-.PHONY: rancher-linotp-create rancher-linotp-rm
-.PHONY: rancher-linotp-start rancher-linotp-stop
-.PHONY: rancher-linotp-up rancher-linotp-down

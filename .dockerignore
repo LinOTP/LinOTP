@@ -1,1 +1,4 @@
 .git
+linotpd/build
+linotpd/src/Dockerfile
+Dockerfile.builder
