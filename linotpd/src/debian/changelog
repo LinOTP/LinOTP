@@ -1,3 +1,28 @@
+linotp (2.12-1) buster; urgency=low
+
+  Feature:
+  * Server: Expired or wrong cookies in userservice requests will return a 
+          HTTP 401 (session abort) error
+  * Server and UI: Add three new columns to the token table:
+        LinOtpCreationDate, LinOtpLastAuthSuccess and LinOtpLastAuthMatch; they
+        can be viewed under the `admin/show` endpoint, and in the Manage UI
+        under TokenInfo; the system settings dialog in the Manage UI provides
+        an option to enable and configure their visualisation
+  * UI: Browser tab icons match the current LinOTP logo
+  * UI: Browser tab titles start with the name of the web application, to make
+        it easier to distinguish between Manage and Selfservice UI in small
+        tabs
+  * UI: Challenge validity time for SMS and email tokens can now be set via the
+        Manage UI
+
+  Fix:
+  * Server: Failed userservice 2nd factor logins increase the fail counter of
+            the respective token
+  * Server: Replication setups on the SVA no longer fail due to faulty
+            userservice cookie handling
+
+ -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Mon, 15 June 2020 10:28:00 +0200
+
 linotp (2.11.2-1) jessie; urgency=low
 
   Fix:

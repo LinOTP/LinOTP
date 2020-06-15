@@ -93,6 +93,14 @@ msgstr "+49 6151 86086 277"
 msgid "No valid session"
 msgstr "Pas de session valide"
 
+#, fuzzy
+msgid "challenge expired!"
+msgstr "Défi"
+
+#, fuzzy
+msgid "No valid session!"
+msgstr "Pas de session valide"
+
 #, python-format
 msgid "Error: %s"
 msgstr "Erreur : %s"
@@ -137,9 +145,6 @@ msgstr "Les valeurs valides sont \"ocra\" ou \"ocra2\". Vous avez entré %s"
 msgid "Missing required parameter \"state\" or \"transactionid\"!"
 msgstr ""
 "Le paramètre requis « statut » ou « numéro de transaction » est manquant !"
-
-msgid "Missing required parameter \"serial\" or \"user\"!"
-msgstr "Le paramètre requis « série » ou « utilisateur » est manquant !"
 
 msgid "Missing required parameter \"pass\"!"
 msgstr "Le paramètre requis « réussi »  est manquant !"
@@ -244,6 +249,13 @@ msgstr ""
 msgid "You do not have any rights in any realm! Check the policies."
 msgstr ""
 "Vous avez pas de droit dans tous les domaines : vérifiez les directives."
+
+#, fuzzy
+msgid ""
+"You do not have the administrative right to get token info in this realm!"
+msgstr ""
+"Vous ne disposez pas de droits d'administration pour demander les numéros de "
+"série de ce domaine !"
 
 #, python-format
 msgid ""
@@ -739,17 +751,18 @@ msgstr "Token trouvé : "
 msgid "The token belongs to "
 msgstr "Le token appartient à "
 
+msgid "Support license installed successfully."
+msgstr "La licence de support a été installée avec succès."
+
 msgid "The upload of your support and subscription license failed: "
 msgstr "Échec du chargement du fichier de support et d'abonnement : "
 
+#, fuzzy
+msgid "Unknown error"
+msgstr "Test de connexion LDAP"
+
 msgid "License upload"
 msgstr "Télécharger la licence"
-
-msgid "License uploaded"
-msgstr "Licence téléchargée"
-
-msgid "Invalid License"
-msgstr "Licence non valide"
 
 msgid "Professional LinOTP support and enterprise subscription"
 msgstr "Support LinOTP professionnel et abonnement pour les entreprises"
@@ -1710,6 +1723,18 @@ msgstr ""
 "Si l'utilisateur existe certes, mais s'il n'a pas de token, l'utilisateur "
 "sera authentifié avec succès. ATTENTION LORS DE L'UTILISATION !"
 
+msgid "Log usage timestamps in token info"
+msgstr ""
+
+msgid "If checked, timestamps are saved during authentication"
+msgstr ""
+
+msgid "Custom timestamp format (optional)"
+msgstr ""
+
+msgid "Specify a custom timestamp format to reduce information detail"
+msgstr ""
+
 msgid "Authorization"
 msgstr "Autorisation"
 
@@ -1964,10 +1989,12 @@ msgstr "8 chiffres"
 msgid "10 digits"
 msgstr "10 chiffres"
 
-msgid "DefaultChallengeValidityTime"
-msgstr "Période de validité standard d'un défi"
+#, fuzzy
+msgid "Challenge expiration time (sec)"
+msgstr "Email validité du défi (sec.)"
 
-msgid "Default validity timeframe of a challenge."
+#, fuzzy
+msgid "Default validity time of a challenge in seconds."
 msgstr "Fenêtre temporelle de validité pour un défi"
 
 msgid "Tokentype Configuration"
@@ -2013,8 +2040,8 @@ msgid "LinOTP - the open source solution for two factor authentication."
 msgstr ""
 "LinOTP - la solution Open Source pour l'authentification à deux facteurs."
 
-msgid "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
-msgstr "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
+msgid "Copyright (c) arxes-tolina GmbH"
+msgstr "Copyright (c) arxes-tolina GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Distribué sous licence AGPLv3"
@@ -3082,9 +3109,6 @@ msgstr ""
 msgid "License reminder:"
 msgstr "Rappel de licence :"
 
-msgid "Support license installed successfully."
-msgstr "La licence de support a été installée avec succès."
-
 msgid "OATH Soft Token"
 msgstr "Softtoken OATH"
 
@@ -3234,7 +3258,8 @@ msgstr "Numéro de série du nouveau token OTP"
 msgid "Assign Token"
 msgstr "Attribuer le token"
 
-msgid "LinOTP 2 User self service"
+#, fuzzy
+msgid "Token Self Service - LinOTP"
 msgstr "Portail d'auto-gestion LinOTP"
 
 msgid "Selfservice Portal"
@@ -3248,6 +3273,10 @@ msgstr "dans le domaine"
 
 msgid "Logged in as"
 msgstr "Connecté en tant que"
+
+#, fuzzy
+msgid "Selfservice Home"
+msgstr "Utilisez un certificat système"
 
 msgid "Activate your OCRA token"
 msgstr "Activer le token OCRA"
@@ -3321,6 +3350,10 @@ msgstr "Interroger les valeurs OTP du token"
 
 msgid "Number of OTP values to retrieve"
 msgstr "Nombre des valeurs OTP à interroger"
+
+#, fuzzy
+msgid "Welcome to the LinOTP Selfservice Portal"
+msgstr "Connexion au portail d'auto-gestion LinOTP"
 
 msgid ""
 "This is the LinOTP self service portal. You may login here with your "
@@ -3526,6 +3559,18 @@ msgstr ""
 "Sinon, numérisez le code QR affiché ci-dessous avec votre iPhone pour "
 "importer le profil."
 
+#, fuzzy
+msgid "E-Mail Token"
+msgstr "Token e-mail"
+
+#, fuzzy
+msgid "E-Mail token settings"
+msgstr "Paramètres par défaut du token"
+
+#, fuzzy
+msgid "Default expiration time of a challenge in seconds."
+msgstr "Fenêtre temporelle de validité pour un défi"
+
 msgid "E-mail token"
 msgstr "Token e-mail"
 
@@ -3571,6 +3616,11 @@ msgid ""
 msgstr ""
 "Texte de l'e-mail qui est envoyé via e-mail pour un token e-mail. Les "
 "paramètres sont <opt> et <serial>."
+
+msgid ""
+"if set, a new email address will be retrieved from the user info instead of "
+"the token"
+msgstr ""
 
 msgid "User is not allowed to set email address"
 msgstr "L'utilisateur n'est pas autorisé à définir l'adresse e-mail !"
@@ -3976,6 +4026,10 @@ msgstr "Domaine de l'utilisateur remote"
 msgid "Remote user UserIdResolver"
 msgstr "UserIdResolver de l'utilisateur remote"
 
+#, fuzzy
+msgid "SMS token settings"
+msgstr "Paramètres du token RADIUS :"
+
 msgid "SMS OTP"
 msgstr "SMS OTP"
 
@@ -4148,6 +4202,14 @@ msgstr "Vous devez entrer une clé API valide."
 msgid "Yubico API key"
 msgstr "Clé Yubico API"
 
+#, fuzzy
+msgid "You need to enter a valid Yubico url"
+msgstr "Vous devez entrer une API ID valide."
+
+#, fuzzy
+msgid "Yubico Url"
+msgstr "Yubico"
+
 msgid "YubiKey"
 msgstr "YubiKey"
 
@@ -4230,9 +4292,6 @@ msgstr "Paramètres PushToken"
 
 msgid "Maximum concurrent challenges"
 msgstr "Nombre maximum de défis simultanés"
-
-msgid "Challenge Timeout"
-msgstr "Délai défi"
 
 msgid "Public key certificate"
 msgstr "Certificat de clé publique"
@@ -4362,6 +4421,24 @@ msgid ""
 "the token"
 msgstr ""
 
+#~ msgid "Missing required parameter \"serial\" or \"user\"!"
+#~ msgstr "Le paramètre requis « série » ou « utilisateur » est manquant !"
+
+#~ msgid "License uploaded"
+#~ msgstr "Licence téléchargée"
+
+#~ msgid "Invalid License"
+#~ msgstr "Licence non valide"
+
+#~ msgid "DefaultChallengeValidityTime"
+#~ msgstr "Période de validité standard d'un défi"
+
+#~ msgid "LinOTP 2 User self service"
+#~ msgstr "Portail d'auto-gestion LinOTP"
+
+#~ msgid "Challenge Timeout"
+#~ msgstr "Délai défi"
+
 #~ msgid ""
 #~ "This is a comma separated list of clients, that may send another client "
 #~ "IP for authorization policies."
@@ -4369,9 +4446,6 @@ msgstr ""
 #~ "C'est une liste d'adresses IP séparées par des virgules qui sont "
 #~ "autorisées à envoyer une adresse IP différente de la leur pour les "
 #~ "directives d'autorisation."
-
-#~ msgid "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
-#~ msgstr "Copyright (C) 2010-2019 KeyIdentity GmbH"
 
 #~ msgid "No valid authentication session %r"
 #~ msgstr "Aucune session d'identification valide %r"
@@ -4578,9 +4652,6 @@ msgstr ""
 
 #~ msgid "Provider config"
 #~ msgstr "Configuration du fournisseur d'accès"
-
-#~ msgid "Challenge validity (sec)"
-#~ msgstr "Email validité du défi (sec.)"
 
 #~ msgid "Time between e-mails (sec)"
 #~ msgstr "Temps entre les e-mails (sec.)"

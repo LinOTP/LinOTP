@@ -43,11 +43,11 @@ log = logging.getLogger(__name__)
 # indirectly) import any module that might not yet be installed when installing
 # LinOtpUserIdResolver.
 
-__copyright__ = "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
+__copyright__ = "Copyright (c) arxes-tolina GmbH"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
 __email__ = "linotp@keyidentity.com"
-__version__ = '2.9.3'
+__version__ = '2.12'
 
 
 # ------------------------------------------------------------------------------

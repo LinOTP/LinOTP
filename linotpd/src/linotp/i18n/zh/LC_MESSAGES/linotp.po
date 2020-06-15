@@ -89,6 +89,14 @@ msgstr "+49 6151 86086 277"
 msgid "No valid session"
 msgstr "无有效会话"
 
+#, fuzzy
+msgid "challenge expired!"
+msgstr "挑战"
+
+#, fuzzy
+msgid "No valid session!"
+msgstr "无有效会话"
+
 #, python-format
 msgid "Error: %s"
 msgstr "出错: %s"
@@ -131,9 +139,6 @@ msgstr "有效类型是 'ocra' 或 'ocra2'. 您提供的是 %s"
 
 msgid "Missing required parameter \"state\" or \"transactionid\"!"
 msgstr "缺少必需参数 \"state\" 或 \"transactionid\"！"
-
-msgid "Missing required parameter \"serial\" or \"user\"!"
-msgstr "缺少必需参数 \"serial\" 或 \"user\"！"
 
 msgid "Missing required parameter \"pass\"!"
 msgstr "缺少必需参数 \"pass\"！"
@@ -222,6 +227,11 @@ msgstr "您没有权限浏览系统配置或域管理策略。"
 
 msgid "You do not have any rights in any realm! Check the policies."
 msgstr "您在所有域均没有权限！请检查您的策略。"
+
+#, fuzzy
+msgid ""
+"You do not have the administrative right to get token info in this realm!"
+msgstr "您没有管理权限请求本域的序列号！"
 
 #, python-format
 msgid ""
@@ -621,17 +631,18 @@ msgstr "找到的令牌："
 msgid "The token belongs to "
 msgstr "令牌属于 "
 
+msgid "Support license installed successfully."
+msgstr "支持许可证已成功安装。"
+
 msgid "The upload of your support and subscription license failed: "
 msgstr "支持和订阅加载失败： "
 
+#, fuzzy
+msgid "Unknown error"
+msgstr "LDAP 连接测试"
+
 msgid "License upload"
 msgstr "上传许可证"
-
-msgid "License uploaded"
-msgstr "许可证已上传"
-
-msgid "Invalid License"
-msgstr "无效的许可证"
 
 msgid "Professional LinOTP support and enterprise subscription"
 msgstr "专业的 LinOTP 支持和企业级订阅"
@@ -1571,6 +1582,18 @@ msgid ""
 "successful. USE WITH CAUTION!"
 msgstr "如果发现，没有令牌的用户却自动验证成功。请小心！"
 
+msgid "Log usage timestamps in token info"
+msgstr ""
+
+msgid "If checked, timestamps are saved during authentication"
+msgstr ""
+
+msgid "Custom timestamp format (optional)"
+msgstr ""
+
+msgid "Specify a custom timestamp format to reduce information detail"
+msgstr ""
+
 msgid "Authorization"
 msgstr "授权"
 
@@ -1807,10 +1830,12 @@ msgstr "8 位"
 msgid "10 digits"
 msgstr "10 位"
 
-msgid "DefaultChallengeValidityTime"
-msgstr "挑战的标准有效期"
+#, fuzzy
+msgid "Challenge expiration time (sec)"
+msgstr "电子邮件挑战码有效性（秒）"
 
-msgid "Default validity timeframe of a challenge."
+#, fuzzy
+msgid "Default validity time of a challenge in seconds."
 msgstr "一个挑战的标准有效时间窗口"
 
 msgid "Tokentype Configuration"
@@ -1857,8 +1882,8 @@ msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP，双因素身份验证的开源解决方案。"
 
 #, fuzzy
-msgid "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
-msgstr "版权所有 (C) 2010 - 2019 LSE Leading Security Experts GmbH"
+msgid "Copyright (c) arxes-tolina GmbH"
+msgstr "版权所有 (c) arxes-tolina GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "AGPLv3 版权公约"
@@ -2864,9 +2889,6 @@ msgstr "详细信息，请检查个人配置设置。"
 msgid "License reminder:"
 msgstr "许可提醒："
 
-msgid "Support license installed successfully."
-msgstr "支持许可证已成功安装。"
-
 msgid "OATH Soft Token"
 msgstr "OATH 软令牌"
 
@@ -3007,7 +3029,8 @@ msgstr "新的 OTP 令牌序列号"
 msgid "Assign Token"
 msgstr "分配令牌"
 
-msgid "LinOTP 2 User self service"
+#, fuzzy
+msgid "Token Self Service - LinOTP"
 msgstr "LinOTP 自助服务门户"
 
 msgid "Selfservice Portal"
@@ -3021,6 +3044,10 @@ msgstr "域"
 
 msgid "Logged in as"
 msgstr "登录作为"
+
+#, fuzzy
+msgid "Selfservice Home"
+msgstr "自助服务门户"
 
 msgid "Activate your OCRA token"
 msgstr "激活 OCRA 令牌"
@@ -3094,6 +3121,10 @@ msgstr "请求令牌 OTP 值"
 
 msgid "Number of OTP values to retrieve"
 msgstr "请求 OTP 值的数量"
+
+#, fuzzy
+msgid "Welcome to the LinOTP Selfservice Portal"
+msgstr "登录 LinOTP 自助服务门户"
 
 msgid ""
 "This is the LinOTP self service portal. You may login here with your "
@@ -3280,6 +3311,18 @@ msgstr "安装配置文件"
 msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr "或者您也可通过 iPhone 扫描下面的二维码，导入配置文件。"
 
+#, fuzzy
+msgid "E-Mail Token"
+msgstr "电子邮件令牌"
+
+#, fuzzy
+msgid "E-Mail token settings"
+msgstr "默认令牌设置"
+
+#, fuzzy
+msgid "Default expiration time of a challenge in seconds."
+msgstr "一个挑战的标准有效时间窗口"
+
 msgid "E-mail token"
 msgstr "电子邮件令牌"
 
@@ -3319,6 +3362,11 @@ msgid ""
 "The subject that will be send via email for an email token. Use <otp> and "
 "<serial> as parameters."
 msgstr "通过电子邮件发送的电子邮件令牌标题。参数为 <opt> 和 <serial>。"
+
+msgid ""
+"if set, a new email address will be retrieved from the user info instead of "
+"the token"
+msgstr ""
 
 msgid "User is not allowed to set email address"
 msgstr "用户不允许设置电子邮件地址！"
@@ -3680,6 +3728,10 @@ msgstr "远程用户的域"
 msgid "Remote user UserIdResolver"
 msgstr "远程用户的用户 ID 解析器"
 
+#, fuzzy
+msgid "SMS token settings"
+msgstr "RADIUS 令牌设置"
+
 msgid "SMS OTP"
 msgstr "短信 OTP"
 
@@ -3832,6 +3884,14 @@ msgstr "您必须输入一个有效的 API 密钥。"
 msgid "Yubico API key"
 msgstr "Yubico API 密钥"
 
+#, fuzzy
+msgid "You need to enter a valid Yubico url"
+msgstr "您必须输入有效的 API ID。"
+
+#, fuzzy
+msgid "Yubico Url"
+msgstr "Yubico"
+
 msgid "YubiKey"
 msgstr "YubiKey"
 
@@ -3911,9 +3971,6 @@ msgstr "令牌设置："
 
 msgid "Maximum concurrent challenges"
 msgstr "最大同时挑战数量"
-
-msgid "Challenge Timeout"
-msgstr "挑战超时"
 
 msgid "Public key certificate"
 msgstr "公钥证书"
@@ -4050,16 +4107,30 @@ msgid ""
 "the token"
 msgstr ""
 
+#~ msgid "Missing required parameter \"serial\" or \"user\"!"
+#~ msgstr "缺少必需参数 \"serial\" 或 \"user\"！"
+
+#~ msgid "License uploaded"
+#~ msgstr "许可证已上传"
+
+#~ msgid "Invalid License"
+#~ msgstr "无效的许可证"
+
+#~ msgid "DefaultChallengeValidityTime"
+#~ msgstr "挑战的标准有效期"
+
+#~ msgid "LinOTP 2 User self service"
+#~ msgstr "LinOTP 自助服务门户"
+
+#~ msgid "Challenge Timeout"
+#~ msgstr "挑战超时"
+
 #~ msgid ""
 #~ "This is a comma separated list of clients, that may send another client "
 #~ "IP for authorization policies."
 #~ msgstr ""
 #~ "这是一个用逗号分隔的 IP 地址列表，将自有的 IP 地址用其它地址覆盖，并和授权"
 #~ "策略共同发送。"
-
-#, fuzzy
-#~ msgid "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
-#~ msgstr "版权所有 (C) 2010 - 2019 LSE Leading Security Experts GmbH"
 
 #~ msgid "No valid authentication session %r"
 #~ msgstr "无有效的验证会话 %r"
@@ -4251,9 +4322,6 @@ msgstr ""
 
 #~ msgid "Provider config"
 #~ msgstr "供应商配置"
-
-#~ msgid "Challenge validity (sec)"
-#~ msgstr "电子邮件挑战码有效性（秒）"
 
 #~ msgid "Time between e-mails (sec)"
 #~ msgstr "电子邮件间隔时间（秒）"
