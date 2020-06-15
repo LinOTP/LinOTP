@@ -44,3 +44,7 @@ SECRET_FILE="{{ . }}"
 SECRET_FILE="/etc/linotp2/encKey"
 {{end}}
 LOGFILE_DIR="/var/log/linotp"
+
+# FIXME: The testing controller is enabled by default so we want to disable
+# it here. This is only possible by listing all the other controllers instead
+CONTROLLERS="admin audit auth gettoken helpdesk:/api/helpdesk:HelpdeskController manage selfservice system test tools maintenance monitoring validate userservice reporting"
