@@ -51,9 +51,9 @@
 
 
 from struct import pack
-import linotp.lib.crypto
-import sys
 
+import sys
+import secrets
 import hmac
 from hashlib import sha1
 
@@ -274,15 +274,11 @@ PBKDF2.crypt = staticmethod(crypt)  # type: ignore
 
 
 def _makesalt():
-    """Return a 48-bit pseudorandom salt for crypt().
+    """Return a 48-bit pseudorandom salt for crypt(). (6 bytes = 48 bits)
 
     This function is not suitable for generating cryptographic secrets.
     """
-    binarysalt = b("").join(
-        [pack("@H",
-              linotp.lib.crypto.utils.urandom.randint(0, 0xffff))
-         for _i in range(3)
-         ])
-    return b64encode(binarysalt, "./")
+    return b64encode(secrets.token_bytes(6), b'./')
+
 
 # vim:set ts=4 sw=4 sts=4 expandtab:

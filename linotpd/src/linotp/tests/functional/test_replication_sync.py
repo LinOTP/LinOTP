@@ -42,7 +42,6 @@ import pytest
 
 log = logging.getLogger(__name__)
 
-
 class SQLData(object):
 
     def __init__(self, connect='sqlite:///:memory:'):
@@ -151,7 +150,6 @@ class TestReplication(TestController):
 
         sqlData = SQLData(connect=self.sqlconnect)
         sqlData.delData(key)
-
         sec = random.randrange(1, 9)
         sqlData.updateData("linotp.Config",
                            str(datetime.now() + timedelta(milliseconds=sec)))

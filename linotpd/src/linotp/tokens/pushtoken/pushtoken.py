@@ -27,7 +27,8 @@
 import struct
 import time
 
-from os import urandom
+import secrets
+
 from linotp.tokens.base import TokenClass
 from linotp.tokens.base.stateful_mixin import StatefulTokenMixin
 from linotp.lib.challenges import transaction_id_to_u64
@@ -906,7 +907,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         # create body
 
-        r = urandom(32)
+        r = secrets.token_bytes(32)
         R = calc_dh_base(r)
 
         b64_user_dsa_public_key = self.getFromTokenInfo('user_dsa_public_key')

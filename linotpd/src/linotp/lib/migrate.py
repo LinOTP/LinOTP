@@ -29,8 +29,7 @@ from Cryptodome.Protocol.KDF import PBKDF2
 
 import hmac
 import binascii
-import random  # for test id genretator using random.choice
-import os
+import secrets
 from hashlib import sha256
 
 
@@ -86,7 +85,7 @@ class MigrationHandler(object):
             self.salt = salt
 
         if not self.salt:
-            self.salt = os.urandom(AES.block_size)
+            self.salt = secrets.token_bytes(AES.block_size)
 
         self.crypter = Crypter(passphrase, self.salt)
         return self.salt
@@ -294,7 +293,7 @@ class Crypter(object):
         :return: dictionary with hexlified iv and crypted_data
         """
         # generate new iv
-        iv = os.urandom(AES.block_size)
+        iv = secrets.token_bytes(AES.block_size)
 
         # init cipher
         cipher = AES.new(self.enc_key, AES.MODE_CBC, iv)

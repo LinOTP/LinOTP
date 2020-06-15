@@ -34,7 +34,8 @@ import ctypes
 import hmac
 import json
 import logging
-import os
+import secrets
+
 from linotp.flap import config as env
 from pysodium import sodium as c_libsodium
 from pysodium import __check as __libsodium_check
@@ -212,7 +213,7 @@ def createNonce(len=64):
     :param len: len of bytes to return
     :return: hext string
     """
-    key = os.urandom(len)
+    key = secrets.token_bytes(len)
     return binascii.hexlify(key).decode()
 
 
@@ -461,10 +462,10 @@ def get_rand_digit_str(length=16):
     :return: return string, which will contain length digits
     '''
 
-    digit_str = str(1 + (struct.unpack(">I", os.urandom(4))[0] % 9))
+    digit_str = str(1 + (struct.unpack(">I", secrets.token_bytes(4))[0] % 9))
 
     for _i in range(length - 1):
-        digit_str += str(struct.unpack("<I", os.urandom(4))[0] % 10)
+        digit_str += str(struct.unpack("<I", secrets.token_bytes(4))[0] % 10)
 
     return digit_str
 
@@ -599,121 +600,7 @@ def geturandom(len=20):
         hsm_obj = _get_hsm_obj_from_context()
         return hsm_obj.random(len)
     except (HSMException, ProgrammingError):
-        return os.urandom(len)
-
-
-class urandom(object):
-    """ Some utility functions based on geturandom. """
-
-    precision = 12
-
-    @classmethod
-    def random(cls):
-        """
-        get random float value between 0.0 and 1.0
-
-        :return: float value
-        """
-        # get a binary random string
-        randstr = geturandom(urandom.precision).hex()
-
-        # convert this to an integer
-        randi = int(randstr, 16)
-
-        # get the max integer
-        intmax = 2 ** (8 * urandom.precision)
-
-        # scale the integer to an float between 0.0 and 1.0
-        randf = randi / intmax
-
-        assert randf >= 0.0
-        assert randf <= 1.0
-
-        return randf
-
-    @classmethod
-    def uniform(cls, start, end=None):
-        """
-        get a floating value between start and end
-
-        :param start: start floating value
-        :param end: end floating value
-        :return: floating value between start and end
-        """
-        if end is None:
-            end = start
-            start = 0.0
-
-        # make sure we have a float
-        startf = start * 1.0
-
-        dist = (end - start)
-        # if end lower than start invert the distance and start at the end
-        if dist < 0:
-            dist = dist * -1.0
-            startf = end * 1.0
-
-        ret = urandom.random()
-
-        # result is start value + stretched distance
-        res = startf + ret * dist
-
-        return res
-
-    @classmethod
-    def randint(cls, start, end=None):
-        """
-        get random integer in between of start and end
-
-        :return: random int
-        """
-        if end is None:
-            end = start
-            start = 0
-
-        dist = end - start
-        # if end lower than start invert the distance and start at the end
-        if dist < 0:
-            dist = dist * -1
-            start = end
-
-        randf = urandom.random()
-
-        # result is start value + stretched distance
-        ret = int(start + randf * dist)
-
-        return ret
-
-    @classmethod
-    def choice(cls, array):
-        '''
-        get one out of an array
-
-        :param array: sequence - string or list
-        :return: array element
-        '''
-        size = len(array)
-        idx = urandom.randint(0, size)
-        return array[idx]
-
-    @classmethod
-    def randrange(cls, start, stop=None, step=1):
-        """
-        get one out of a range of values
-
-        :param start: start of range
-        :param stop: end value
-        :param step: the step distance beween two values
-
-        :return: int value
-        """
-        if stop is None:
-            stop = start
-            start = 0
-        # see python definition of randrange
-        res = urandom.choice(list(range(start, stop, step)))
-        return res
-
+        return secrets.token_bytes(len)
 
 def get_dh_secret_key(partition):
     """ transforms the ed25519 secret key (which is used for DSA) into
