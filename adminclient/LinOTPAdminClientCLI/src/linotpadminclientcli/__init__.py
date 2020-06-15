@@ -33,7 +33,7 @@ client library to comunicate with LinOTP and token enrollment
 # indirectly) import any module that might not yet be installed when installing
 # LinOTPAdminClientCLI.
 
-__copyright__ = "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
+__copyright__ = "Copyright (c) arxes-tolina GmbH"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
 __email__ = "linotp@keyidentity.com"

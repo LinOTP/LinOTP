@@ -2005,8 +2005,8 @@ msgstr "Password Bind"
 msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP - la soluzione Open Source per l'autenticazione a due fattori."
 
-msgid "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
-msgstr "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
+msgid "Copyright (c) arxes-tolina GmbH"
+msgstr "Copyright (c) arxes-tolina GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Autorizzato da AGPLv3"
