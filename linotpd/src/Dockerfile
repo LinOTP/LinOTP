@@ -93,7 +93,8 @@ ENV TZ="Europe/Berlin" \
     SECRET_FILE_LOCATION=
 
 # Internal environment variables used by the docker images
-ENV LINOTP_INI_TEMPLATE=/etc/linotp/linotp-docker.ini.tmpl \
+ENV LINOTP_CFG_TEMPLATE=/etc/linotp/linotp-docker.cfg.tmpl \
+    LINOTP_CONFIG_FILE=/etc/linotp2/linotp.cfg \
     LINOTP_HOME=/opt/linotp \
     DEBIAN_FRONTEND=noninteractive \
     FLASK_APP=linotp.app \
@@ -156,7 +157,7 @@ RUN echo "linotp linotp/apache/activate boolean true" > /opt/linotp/apt/debconf-
     && apt-get install linotp linotp-adminclient-cli \
     && rm /etc/apt/sources.list.d/linotp-local.list \
     && rm -r /opt/linotp/apt /etc/apache2/sites-enabled/000-default.conf \
-    && rm /etc/linotp2/linotp.ini /etc/linotp2/encKey /etc/linotp2/*.pem
+    && rm /etc/linotp2/encKey /etc/linotp2/*.pem \
     && mkdir -p /etc/ssl/private /etc/ssl/certs \
     && chown linotp /var/log/linotp
 
@@ -169,18 +170,17 @@ COPY linotp-create-htdigest /usr/local/bin/
 RUN chmod 755 /usr/local/bin/linotp-create-htdigest
 
 ENTRYPOINT [ "/usr/local/bin/dockerfy", \
-    "--template", "/etc/linotp2/linotp-docker.ini.tmpl:/etc/linotp2/linotp.ini", \
+    "--template", "/etc/linotp2/linotp-docker.cfg.tmpl:/etc/linotp2/linotp.cfg", \
     "--template", "/etc/linotp2/apache-docker.conf.tmpl:/etc/apache2/sites-enabled/linotp2.conf", \
     "--run", "/bin/sh", "-c", \
     "if [ {{ .Env.LINOTP_DB_TYPE }} != sqlite ]; then /usr/local/bin/dockerfy --wait tcp://{{ .Env.LINOTP_DB_HOST }}:{{ .Env.LINOTP_DB_PORT }} --timeout 30s; fi", \
     "--", \
     "--run", "/var/lib/dpkg/info/linotp.postinst", "configure", "--", \
-    "--run", "/bin/grep", "url", "/etc/linotp2/linotp.ini", "--", \
     "--run", "/bin/sh", "-c", \
     "openssl req -new -x509 -newkey rsa:2048 -subj /CN=`hostname`.`dnsdomainname` -days 768 -out /etc/ssl/certs/linotpserver.pem  -keyout /etc/ssl/private/linotpserver.key -nodes", \
     "--", \
     "--run", "/usr/local/bin/linotp-create-htdigest", "{{ .Env.LINOTP_ADMIN_USER }}", "{{ .Env.LINOTP_ADMIN_PASSWORD }}", "--", \
-    "--run", "/bin/su", "linotp", "-s", "/bin/sh", "-c", "python -m flask init-db", "--" \
+    "--run", "/bin/su", "linotp", "-s", "/bin/sh", "-w", "LINOTP_CONFIG_FILE,FLASK_APP,FLASK_ENV", "-c", "flask init-db", "--" \
 ]
 
 CMD [ \
