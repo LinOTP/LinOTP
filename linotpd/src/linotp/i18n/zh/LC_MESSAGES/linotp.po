@@ -1,4 +1,3 @@
-# Chinese translations for LinOTP package - Chinese messages for LinOTP.
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
@@ -23,11 +22,13 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+# Chinese translations for LinOTP
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2019-02-13 21:05+0800\n"
+"PO-Revision-Date: 2020-06-12 18:52+0200\n"
 "Last-Translator: linotp@keyidentity.com\n"
 "Language-Team: Chinese <>\n"
 "Language: zh\n"
@@ -269,8 +270,9 @@ msgstr "CA 证书"
 msgid "Challenge Response Login"
 msgstr "OCRA，挑战/响应令牌"
 
-msgid "Challenge Timeout"
-msgstr "挑战超时"
+#, fuzzy
+msgid "Challenge expiration time (sec)"
+msgstr "电子邮件挑战码有效性（秒）"
 
 #, fuzzy
 msgid "Challenge sent"
@@ -475,17 +477,19 @@ msgstr "默认设置"
 msgid "Default Values:"
 msgstr "默认值："
 
+#, fuzzy
+msgid "Default expiration time of a challenge in seconds."
+msgstr "一个挑战的标准有效时间窗口"
+
 msgid "Default provider could not be deleted!"
 msgstr "无法删除默认供应商！"
 
 msgid "Default token settings"
 msgstr "默认令牌设置"
 
-msgid "Default validity timeframe of a challenge."
+#, fuzzy
+msgid "Default validity time of a challenge in seconds."
 msgstr "一个挑战的标准有效时间窗口"
-
-msgid "DefaultChallengeValidityTime"
-msgstr "挑战的标准有效期"
 
 msgid "DefaultCountWindow"
 msgstr "标准计数器窗口"
@@ -595,6 +599,14 @@ msgstr "由于许可证限制，不能注册更多令牌！"
 
 msgid "Duplicate"
 msgstr "重复"
+
+#, fuzzy
+msgid "E-Mail Token"
+msgstr "电子邮件令牌"
+
+#, fuzzy
+msgid "E-Mail token settings"
+msgstr "默认令牌设置"
 
 msgid "E-mail address"
 msgstr "电子邮件地址"
@@ -947,9 +959,6 @@ msgstr "删除域时，发生错误"
 msgid "Failed deleting resolver"
 msgstr "删除解析器时，发生错误"
 
-msgid "Failed to activate token! \n"
-msgstr "激活令牌时，发生错误！\n"
-
 msgid "Failed to communicate to LinOTP server"
 msgstr "与 LinOTP 服务器通信失败！"
 
@@ -1046,7 +1055,8 @@ msgstr "扁平文件"
 msgid "For HOTP and TOTP tokens:"
 msgstr "对于 HOTP 以及 TOTP 令牌："
 
-msgid "For OCRA tokens:"
+#, fuzzy
+msgid "For OCRA2 tokens:"
 msgstr "对于 OCRA 令牌："
 
 msgid "For more information please visit:"
@@ -1247,9 +1257,6 @@ msgstr ""
 "令牌是基于事件的采样（HOTP）还是基于时间的采样（TOTP）。如果 HMAC 有加密，则"
 "取决于加密情况，您需要输入密码或加密密钥。"
 
-msgid "Management - LinOTP"
-msgstr "管理 - LinOTP"
-
 msgid "Here you need to enter the token ID of the YubiKey."
 msgstr "在此，必须输入您 YubiKeys 的令牌 ID。"
 
@@ -1432,12 +1439,6 @@ msgstr "极限"
 msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP，双因素身份验证的开源解决方案。"
 
-msgid "LinOTP 2 Management"
-msgstr "LinOTP 管理"
-
-msgid "LinOTP 2 User self service"
-msgstr "LinOTP 自助服务门户"
-
 msgid "LinOTP Config"
 msgstr "LinOTP 配置"
 
@@ -1491,6 +1492,9 @@ msgstr "退出"
 
 msgid "Lost Token"
 msgstr "丢失令牌"
+
+msgid "Management - LinOTP"
+msgstr "管理 - LinOTP"
 
 msgid "Mapping Attributes"
 msgstr "映射属性"
@@ -1587,6 +1591,13 @@ msgstr "创建成功！"
 
 msgid "No users will be deleted!"
 msgstr ""
+
+msgid "No valid session"
+msgstr "无有效会话"
+
+#, fuzzy
+msgid "No valid session!"
+msgstr "无有效会话"
 
 msgid "Number"
 msgstr "编号"
@@ -2117,6 +2128,10 @@ msgstr "短信供应商：创建和编辑"
 msgid "SMS Token"
 msgstr "短信 OTP 令牌"
 
+#, fuzzy
+msgid "SMS token settings"
+msgstr "RADIUS 令牌设置"
+
 msgid "SQL"
 msgstr "SQL"
 
@@ -2188,8 +2203,8 @@ msgstr "不支持一个用户以上的选择！"
 msgid ""
 "SelfService token test\n"
 "\n"
-" Token: {0}\n"
-"Serial:{1}\n"
+"Token: {0}\n"
+"Serial: {1}\n"
 "User: {2}"
 msgstr ""
 
@@ -2609,8 +2624,8 @@ msgstr "输入的 PIN 码太短。它至少应该有 %i 个字符。"
 msgid "The realm the policy applies to"
 msgstr "应用策略的域"
 
-#, fuzzy
-msgid "The resolver  was successfully updated."
+#, fuzzy, python-format
+msgid "The resolver %s was successfully updated."
 msgstr "令牌已成功注册"
 
 #, python-format
@@ -2836,6 +2851,10 @@ msgstr "令牌 PIN 码："
 
 msgid "Token Seed:"
 msgstr "令牌密钥："
+
+#, fuzzy
+msgid "Token Self Service - LinOTP"
+msgstr "LinOTP 自助服务门户"
 
 msgid "Token Settings:"
 msgstr "令牌设置："
@@ -3548,6 +3567,10 @@ msgstr "通过电话 "
 msgid "certificate id"
 msgstr "证书 ID"
 
+#, fuzzy
+msgid "challenge expired!"
+msgstr "挑战"
+
 msgid "check status"
 msgstr "检查状态"
 
@@ -4019,14 +4042,17 @@ msgstr "生成的 Web 用户界面"
 #~ msgid "CA Certificate"
 #~ msgstr "CA 证书"
 
-#~ msgid "Challenge validity (sec)"
-#~ msgstr "电子邮件挑战码有效性（秒）"
+#~ msgid "Challenge Timeout"
+#~ msgstr "挑战超时"
 
 #~ msgid "Default OCRA suite"
 #~ msgstr "标准 OCRA 套件"
 
 #~ msgid "Default QR suite"
 #~ msgstr "标准二维码套件"
+
+#~ msgid "DefaultChallengeValidityTime"
+#~ msgstr "挑战的标准有效期"
 
 #~ msgid "Do you want to overwrite the existing definition?"
 #~ msgstr "您是否想覆盖现有解析器？"
@@ -4039,6 +4065,9 @@ msgstr "生成的 Web 用户界面"
 
 #~ msgid "Enter pin: "
 #~ msgstr "输入 PIN 码"
+
+#~ msgid "Failed to activate token! \n"
+#~ msgstr "激活令牌时，发生错误！\n"
 
 #~ msgid "File configuration"
 #~ msgstr "文件配置"
@@ -4076,6 +4105,12 @@ msgstr "生成的 Web 用户界面"
 #~ msgid "License uploaded"
 #~ msgstr "许可证已上传"
 
+#~ msgid "LinOTP 2 Management"
+#~ msgstr "LinOTP 管理"
+
+#~ msgid "LinOTP 2 User self service"
+#~ msgstr "LinOTP 自助服务门户"
+
 #~ msgid "Maximum concurrent OCRA challenges"
 #~ msgstr "OCRA2 最大同时挑战数量"
 
@@ -4087,9 +4122,6 @@ msgstr "生成的 Web 用户界面"
 
 #~ msgid "No valid authentication session %r"
 #~ msgstr "无有效的验证会话 %r"
-
-#~ msgid "No valid session"
-#~ msgstr "无有效会话"
 
 #~ msgid "Not a valid json string!"
 #~ msgstr "缺少有效的 JSON 文本！"
@@ -4294,9 +4326,6 @@ msgstr "生成的 Web 用户界面"
 
 #~ msgid "already exists."
 #~ msgstr "已存在。"
-
-#~ msgid "challenge"
-#~ msgstr "挑战"
 
 #~ msgid "count auth"
 #~ msgstr "认证计数器"

@@ -1819,8 +1819,8 @@ class UserserviceController(BaseController):
                 #              mode need a challenge to be tested
 
                 elif 'challenge' in token.mode:
-                    data = _('SelfService token test\n\n Token: {0}\n'
-                             'Serial:{1}\nUser: {2}').format(
+                    data = _('SelfService token test\n\nToken: {0}\n'
+                             'Serial: {1}\nUser: {2}').format(
                                 token.type, token.token.LinOtpTokenSerialnumber,
                                 self.authUser.login)
 

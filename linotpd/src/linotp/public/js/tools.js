@@ -439,7 +439,7 @@ function import_users_callback(response, status) {
     }
 
     alert_box({'title': i18n.gettext('Import successful'),
-        'text': i18n.gettext('The resolver ' + $('#import_users_resolver').val() + ' was successfully updated.'),
+        'text': sprintf(i18n.gettext('The resolver %s was successfully updated.'), $('#import_users_resolver').val()),
         'is_escaped': false});
 }
 
