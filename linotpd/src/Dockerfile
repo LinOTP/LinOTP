@@ -130,6 +130,12 @@ RUN \
         python3-flask \
         python3-psycopg2
 
+# flask-mako is not yet packaged, so install using pip
+RUN apt-get install python3-pip python3-dev python3-wheel swig gcc libssl-dev \
+    && pip3 install flask-mako \
+    && apt-get remove python3-dev swig gcc libssl-dev python3-wheel \
+    && apt-get autoremove
+
 # Install linotp packages from local files.
 COPY apt /opt/linotp/apt
 
