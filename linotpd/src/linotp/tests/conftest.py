@@ -41,21 +41,40 @@ from . import TestController
 from flask.testing import FlaskClient
 
 
-Base_App_Config = {
-    'TESTING': True,
-    'SQLALCHEMY_DATABASE_URI':
-                os.environ.get('SQLALCHEMY_DATABASE_URI', "sqlite:///{}")
-    }
-
-
 def pytest_configure(config):
-    config.addinivalue_line(
-        "markers", "nightly: mark test to run only nightly",
-    )
+    add_marks = [
+        "nightly: mark test to run only nightly",
+        "exclude_sqlite: mark test to always skip with sqlite database",
+    ]
+    for mark in add_marks:
+        config.addinivalue_line("markers", mark)
+
+
+# Definition of Database
+
+def pytest_addoption(parser):
+    """Allow the developer to specify a database to test against directly"""
+
+    parser.addoption(
+        "--database-uri",
+        dest="database_uri",
+        action="store",
+        default=os.environ.get(
+            'SQLALCHEMY_DATABASE_URI', "sqlite:///{}"),
+        help=("sqlalchemy database URI to allow tests to run "
+              "against a particular database")
+        )
 
 
 @pytest.fixture
-def base_app(tmpdir):
+def sqlalchemy_uri(request):
+    """The SQL alchemy URI to use to configure the database used for tests"""
+    uri = request.config.getoption("database_uri")
+    return uri
+
+
+@pytest.fixture
+def base_app(tmpdir, request, sqlalchemy_uri):
     """
     App instance without context
 
@@ -64,34 +83,52 @@ def base_app(tmpdir):
     use the `app` fixture instead
     """
 
-    base_app_config = dict(Base_App_Config, LOGFILE_DIR=tmpdir)
+    db_fd, db_path = None, None
 
-    # in case of sqlite we use create a temporary file to isolate
-    # the database for each test
+    try:
 
-    db_fd = None
-    db_path = None
+        # ------------------------------------------------------------------ --
 
-    db_type = base_app_config['SQLALCHEMY_DATABASE_URI']
+        # if sqlalchemy_uri is the fallback, establish a temp file
 
-    if db_type == "sqlite:///{}":
+        if sqlalchemy_uri == 'sqlite:///{}':
+            db_fd, db_path = tempfile.mkstemp()
+            sqlalchemy_uri = sqlalchemy_uri.format(db_path)
 
-        db_fd, db_path = tempfile.mkstemp()
-        base_app_config['SQLALCHEMY_DATABASE_URI'] = db_type.format(db_path)
+        # ------------------------------------------------------------------ --
 
+        # Skip test if incompatible with sqlite
 
-    # create the app with common test config
-    app = create_app('testing', base_app_config)
+        if sqlalchemy_uri.startswith("sqlite:"):
 
-    yield app
+            if request.node.get_closest_marker('exclude_sqlite'):
+                pytest.skip("non sqlite database required for test")
 
-    # in case of sqlite, close and remove the temporary database
+        # ------------------------------------------------------------------ --
 
-    if db_fd:
-        os.close(db_fd)
+        # create the app with common test config
 
-    if db_path:
-        os.unlink(db_path)
+        base_app_config = dict(
+            TESTING=True,
+            SQLALCHEMY_DATABASE_URI=sqlalchemy_uri,
+            LOGFILE_DIR=tmpdir
+        )
+
+        app = create_app('testing', base_app_config)
+
+        yield app
+
+    finally:
+
+        # ------------------------------------------------------------------ --
+
+        # in case of sqlite tempfile fallback, we have to wipe the dishes here
+
+        if db_fd:
+            os.close(db_fd)
+
+        if db_path:
+            os.unlink(db_path)
 
 
 from linotp import app as app_py
