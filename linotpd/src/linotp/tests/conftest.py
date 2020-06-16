@@ -55,7 +55,7 @@ def pytest_configure(config):
 
 
 @pytest.fixture
-def base_app():
+def base_app(tmpdir):
     """
     App instance without context
 
@@ -64,7 +64,7 @@ def base_app():
     use the `app` fixture instead
     """
 
-    base_app_config = dict(Base_App_Config)
+    base_app_config = dict(Base_App_Config, LOGFILE_DIR=tmpdir)
 
     # in case of sqlite we use create a temporary file to isolate
     # the database for each test
