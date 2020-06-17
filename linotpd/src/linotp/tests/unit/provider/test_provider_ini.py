@@ -49,7 +49,7 @@ class TestProviderTestCase(unittest.TestCase):
             'config': '{\n'
                       '"push_url": "https://push.keyidentity.com/send",\n'
                       '"access_certificate": "/etc/linotp2/push-license.pem",\n'
-                      '"server_certificate": "/etc/linotp2/keyidentity-push-ca-bundle.crt"\n'
+                      '"server_certificate": "/etc/linotp2/push-ca-bundle.crt"\n'
                       '}',
             'timeout': '120',
             'type': 'push',

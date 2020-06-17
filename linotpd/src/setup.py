@@ -173,7 +173,7 @@ setup(
             [
                 'config/linotp.cfg',
                 'config/linotpapp.wsgi',
-                # 'config/keyidentity-push-ca-bundle.crt',
+                'config/push-ca-bundle.crt',
                 # 'dictionary',
             ]
         ),
