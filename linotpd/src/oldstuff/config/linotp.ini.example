@@ -161,10 +161,6 @@ use = egg:LinOTP
 #service.ocra = False
 #linotpGetotp.active = False
 
-alembic.ini = %(here)s/alembic.ini
-#alembic.writeback = True
-#alembic.auto_update = False
-
 
 ## define location of the LinOTP Token Database
 sqlalchemy.url = mysql://linotp2:1234@localhost/LinOTP2
