@@ -148,7 +148,6 @@ setup(
         'tools/linotp-convert-token',
         'tools/linotp-create-pwidresolver-user',
         'tools/linotp-create-sqlidresolver-user',
-        'tools/linotp-migrate',
         'tools/linotp-setpins',
         'tools/linotp-pip-update',
         'tools/linotp-create-enckey',
@@ -193,7 +192,6 @@ setup(
         (
             'share/doc/linotp/',
             [
-                "tools/README-migrate.txt"
             ]
         ),
         (
@@ -203,7 +201,6 @@ setup(
                 "tools/linotp-create-pwidresolver-user.1",
                 "tools/linotp-create-sqlidresolver-user.1",
                 "tools/totp-token.1",
-                "tools/linotp-migrate.1",
                 "tools/linotp-setpins.1",
                 "tools/linotp-pip-update.1",
                 "tools/linotp-create-enckey.1",
