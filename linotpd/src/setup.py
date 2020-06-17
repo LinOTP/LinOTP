@@ -184,14 +184,9 @@ setup(
             ]
         ),
         (
-            'etc/linotp2/apache2.4-example/',
+            'share/doc/linotp/examples',
             [
-                'config/apache2.4-example/linotp2.conf',
-            ]
-        ),
-        (
-            'share/doc/linotp/',
-            [
+                'examples/apache-site.conf'
             ]
         ),
         (
