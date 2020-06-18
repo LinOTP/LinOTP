@@ -329,7 +329,7 @@ docker-build-linotp: docker-build-linotp-builder $(BUILDDIR)/dockerfy $(BUILDDIR
 		$(BUILDDIR)
 
 	# We show the files sent to Docker context here to aid in debugging
-	find $(BUILDDIR) -ls
+	find $(BUILDDIR)
 
 	$(DOCKER_BUILD) \
 		$(DOCKER_TAG_ARGS) \
