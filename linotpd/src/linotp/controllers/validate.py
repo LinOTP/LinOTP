@@ -30,9 +30,11 @@ validate controller - to check the authentication request
 
 import logging
 
+from flask_babel import gettext as _
+
 from linotp import flap
 from linotp.flap import (
-    _, request, response, config,
+    request, response, config,
     tmpl_context as c, abort
 )
 

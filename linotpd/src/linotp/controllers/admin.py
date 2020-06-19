@@ -32,7 +32,7 @@ from datetime import datetime
 import json
 from linotp.controllers.base import BaseController
 from linotp.flap import (
-    config, request, response, tmpl_context as c, _,
+    config, request, response, tmpl_context as c,
     HTTPUnauthorized,
 )
 from linotp.lib.audit.base import get_token_num_info
@@ -97,6 +97,7 @@ import os
 from flask import Response, after_this_request
 from flask import stream_with_context
 from werkzeug.datastructures import FileStorage
+from flask_babel import gettext as _
 
 from linotp.lib.ImportOTP.oath import parseOATHcsv
 from linotp.lib.ImportOTP.safenet import ImportException

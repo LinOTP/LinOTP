@@ -34,10 +34,11 @@ import binascii
 from configobj import ConfigObj
 
 import flask
+from flask_babel import gettext as _
 from werkzeug.datastructures import FileStorage
 
 from linotp import flap
-from linotp.flap import config, request, response, tmpl_context as c, _
+from linotp.flap import config, request, response, tmpl_context as c
 
 from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 

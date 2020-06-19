@@ -32,7 +32,7 @@ import logging
 from functools import partial
 from configparser import ConfigParser
 
-from linotp.flap import _
+from flask_babel import gettext as _
 
 from linotp.lib.config import storeConfig
 from linotp.lib.config import getLinotpConfig
