@@ -186,7 +186,10 @@ setup(
         (
             'share/doc/linotp/examples',
             [
-                'examples/apache-site.conf'
+                'examples/apache-site.conf',
+                'examples/mailtemplate-authenticate.eml',
+                'examples/mailtemplate-enroll.eml',
+                'examples/mailtemplate-set-pin.eml',
             ]
         ),
         (
