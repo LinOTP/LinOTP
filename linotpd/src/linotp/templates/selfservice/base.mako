@@ -27,13 +27,6 @@
  *
 </%doc>
 
-<%
-lang = "en" # TODO
-allang = "%r" % lang
-if isinstance(lang, list):
-    lang = lang[0]
-%>
-
 <html>
 <head>
 <title>${_("Token Self Service - LinOTP")}</title>
@@ -70,7 +63,6 @@ if isinstance(lang, list):
 <!-- load language settings befor selfservice.js -->
 <script type="text/javascript">
     window.CURRENT_LANGUAGE = "${lang}";
-    window.ALL_CURRENT_LANGUAGE = "${allang}";
 </script>
 
 <script type="text/javascript" src="/static/js/selfservice.js"></script>
