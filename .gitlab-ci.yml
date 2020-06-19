@@ -274,7 +274,6 @@ build:buster:
   <<: *normal_build
   variables:
     DEBIAN_RELEASE_NAME: buster
-  allow_failure: true
 
 build:buster (tag):
   extends: .build-debs
@@ -299,7 +298,6 @@ build:buster (tag):
 
 build-linotp-docker-image:buster:
   extends: .build-linotp-docker-image
-  allow_failure: true
   needs: ["build:buster"]
   variables:
     DEPENDENCY_SOURCE: ""
