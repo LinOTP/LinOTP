@@ -79,6 +79,8 @@ from .lib.audit.base import getAudit
 from .lib.config.global_api import initGlobalObject
 
 from sqlalchemy import create_engine
+from sqlalchemy.pool import StaticPool
+
 from .model import init_model, meta         # FIXME: With Flask-SQLAlchemy
 from .model.migrate import run_data_model_migration
 
@@ -654,10 +656,22 @@ def setup_db(app, drop_data=False):
     :param drop_data: If True, all data will be cleared. Use with caution!
     """
 
-    # Initialise the SQLAlchemy engine (this used to be in
-    # linotp.config.environment and done once per request (barf)).
+    # Initialise the SQLAlchemy engine
 
-    engine = create_engine(app.config.get("SQLALCHEMY_DATABASE_URI"))
+    sql_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
+
+    # sqlite in-memory databases require special sqlalchemy setup:
+    # https://docs.sqlalchemy.org/en/13/dialects/sqlite.html#using-a-memory-database-in-multiple-threads
+
+    if sql_uri == "sqlite://":
+        engine = create_engine(sql_uri,
+                               connect_args={'check_same_thread': False},
+                               poolclass=StaticPool)
+    else:
+        engine = create_engine(sql_uri)
+
+    # Initialise database table model
+
     init_model(engine)
 
     # (Re)create and setup database tables if they don't already exist
