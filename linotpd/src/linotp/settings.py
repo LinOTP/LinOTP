@@ -50,7 +50,6 @@ class Config:
 
     LOGGING_LEVEL = logging.WARNING
     LOGGING_FILE_LEVEL = logging.INFO
-    LOGGING_LEVEL_ALEMBIC = logging.DEBUG
 
     # You can completely redefine the logging setup by passing a
     # configuration dictionary in `LOGGING`.

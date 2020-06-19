@@ -329,7 +329,7 @@ case "$1" in
 
         echo_log "Setting up for Apache $APACHE2_VERSION"
         if [ ! -f /etc/apache2/sites-available/linotp2.conf ]; then
-          cp /etc/linotp2/apache2.4-example/linotp2.conf /etc/apache2/sites-available/linotp2.conf
+          cp /usr/share/doc/linotp/examples/apache-site.conf /etc/apache2/sites-available/linotp2.conf
         else
           echo_log "Apache already configured, leaving intact."
         fi

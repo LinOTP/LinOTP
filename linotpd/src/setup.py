@@ -148,7 +148,6 @@ setup(
         'tools/linotp-convert-token',
         'tools/linotp-create-pwidresolver-user',
         'tools/linotp-create-sqlidresolver-user',
-        'tools/linotp-migrate',
         'tools/linotp-setpins',
         'tools/linotp-pip-update',
         'tools/linotp-create-enckey',
@@ -174,7 +173,7 @@ setup(
             [
                 'config/linotp.cfg',
                 'config/linotpapp.wsgi',
-                # 'config/keyidentity-push-ca-bundle.crt',
+                'config/push-ca-bundle.crt',
                 # 'dictionary',
             ]
         ),
@@ -185,15 +184,12 @@ setup(
             ]
         ),
         (
-            'etc/linotp2/apache2.4-example/',
+            'share/doc/linotp/examples',
             [
-                'config/apache2.4-example/linotp2.conf',
-            ]
-        ),
-        (
-            'share/doc/linotp/',
-            [
-                "tools/README-migrate.txt"
+                'examples/apache-site.conf',
+                'examples/mailtemplate-authenticate.eml',
+                'examples/mailtemplate-enroll.eml',
+                'examples/mailtemplate-set-pin.eml',
             ]
         ),
         (
@@ -203,7 +199,6 @@ setup(
                 "tools/linotp-create-pwidresolver-user.1",
                 "tools/linotp-create-sqlidresolver-user.1",
                 "tools/totp-token.1",
-                "tools/linotp-migrate.1",
                 "tools/linotp-setpins.1",
                 "tools/linotp-pip-update.1",
                 "tools/linotp-create-enckey.1",

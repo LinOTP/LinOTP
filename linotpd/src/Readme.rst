@@ -1,9 +1,9 @@
 LinOTP
 =======
 LinOTP is an open solution for strong two-factor authentication with One Time Passwords.
-LinOTP 2 is also open as far as its modular architecture is concerned. 
-LinOTP 2 aims to not bind you to any  decision of the authentication protocol or 
-it does not dictate you where your user information should be stored. 
+LinOTP 2 is also open as far as its modular architecture is concerned.
+LinOTP 2 aims to not bind you to any  decision of the authentication protocol or
+it does not dictate you where your user information should be stored.
 This is achieved by its new, totally modular architecture.
 
 This package contains the LinOTP Server Core.
@@ -15,13 +15,12 @@ Installing LinOTP can be performed easily by issuing the commands::
 
     $ pip install linotp
     $ pip install linotpuseridresolver
-    
+
 You can start directly by creating the database::
 
     $ flask init-db
 
-In the config file linotp.ini.paster the already shipped encryption key "dummy-encKey" is referenced.
-Of course, you need to create an encryption key and change in in the linotp.ini.paster:
+You need to create an encryption key and configure it in the linotp.ini.paster:
 
     $ dd if=/dev/random of=etc/linotp2/encKey bs=1 count=96
 
