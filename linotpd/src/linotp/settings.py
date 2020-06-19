@@ -97,6 +97,15 @@ class Config:
     # Enable html escaping in mako templates
     MAKO_DEFAULT_FILTERS = ["h"]
 
+    # Where `*.mo` files for translations can be found. Note that this
+    # is actually a PATH-type sequence of directories; add more
+    # directories -- separated by semicolons -- if you want.
+    BABEL_TRANSLATION_DIRECTORIES = os.path.join(basedir, "linotp", "i18n")
+
+    # LinOTP message catalog files are called `linotp.mo`. Tweak at your
+    # own risk.
+    BABEL_DOMAIN = 'linotp'
+
     # Where the online help can be found. The `{0}` will be replaced
     # with the major version number of this LinOTP instance. (If there
     # is no `{0}` in the URL that is not a big deal.)
