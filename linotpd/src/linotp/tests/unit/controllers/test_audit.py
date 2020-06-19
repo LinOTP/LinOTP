@@ -29,8 +29,6 @@
 import pytest
 
 from linotp.lib.audit.SQLAudit import AuditTable
-from linotp.tests.conftest import Base_App_Config as BAC
-
 
 @pytest.fixture
 def auditparams():
@@ -85,8 +83,7 @@ def search(adminclient):
     return _search
 
 
-@pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
-                    reason="non sqlite database required for this test!")
+@pytest.mark.exclude_sqlite
 class TestAuditSearch(object):
     def test_audit_json_empty(self, search):
         response = search()

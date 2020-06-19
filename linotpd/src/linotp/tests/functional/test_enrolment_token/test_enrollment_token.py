@@ -33,8 +33,6 @@ import pytest
 
 from linotp.tests import TestController
 
-from linotp.tests.conftest import Base_App_Config as BAC
-
 
 class TestRolloutToken(TestController):
     """
@@ -291,8 +289,7 @@ class TestRolloutToken(TestController):
 
         return
 
-    @pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
-                        reason="non sqlite database required for this test!")
+    @pytest.mark.exclude_sqlite
     def test_enrollment_janitor(self):
         """
         test janitor - remove rollout token via validate/check

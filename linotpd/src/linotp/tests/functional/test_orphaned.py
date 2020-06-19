@@ -39,7 +39,6 @@ import sqlalchemy
 
 import unittest
 import pytest
-from ..conftest import Base_App_Config as BAC
 
 
 
@@ -383,8 +382,7 @@ class OrphandTestHelpers(object):
         assert '"status": true,' in response, response
         return response
 
-@pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
-                    reason="non sqlite database required for this test!")
+@pytest.mark.exclude_sqlite
 class TestOrphandTokens(TestController, OrphandTestHelpers):
 
     def setUp(self):

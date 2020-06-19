@@ -36,15 +36,12 @@ from passlib.hash import atlassian_pbkdf2_sha1
 from passlib.hash import bcrypt as passlib_bcrypt
 from passlib.hash import phpass as passlib_phpass
 
-from linotp.tests.conftest import Base_App_Config as BAC
-
 from .sql_test_controller import SQLTestController
 
 log = logging.getLogger(__name__)
 
 
-@pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
-                    reason="non sqlite database required for this test!")
+@pytest.mark.exclude_sqlite
 class SQLResolverPasswordTest(SQLTestController):
 
     def setUp(self):

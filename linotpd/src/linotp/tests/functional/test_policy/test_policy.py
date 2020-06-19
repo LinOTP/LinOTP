@@ -35,15 +35,12 @@ import logging
 
 import pytest
 
-from linotp.tests.conftest import Base_App_Config as BAC
-
 from . import TestPoliciesBase
 
 log = logging.getLogger(__name__)
 
 
-@pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
-                    reason="non sqlite database required for this test!")
+@pytest.mark.exclude_sqlite
 class TestPolicies(TestPoliciesBase):
 
     def setUp(self):
