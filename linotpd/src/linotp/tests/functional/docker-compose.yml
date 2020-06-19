@@ -16,14 +16,11 @@ services:
       MYSQL_ROOT_PASSWORD: "Test123!"
       NIGHTLY: "${NIGHTLY:-no}"
       COVERAGE_ENABLED: "${COVERAGE_ENABLED:-no}"
-      LOCAL_NOSE_BASE_DIR: "${LOCAL_NOSE_BASE_DIR:-/tmp/nose}"
     volumes:
       - .:/linotpsrc:ro
     depends_on:
       - db
-    entrypoint:
-      - ""
-    command: bash /linotpsrc/linotpd/src/linotp/tests/functional/docker-run-functional-tsts.sh
+    command: make -C /linotpsrc functionaltests
 
 
   db:
