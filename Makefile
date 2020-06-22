@@ -270,7 +270,7 @@ docker-selenium: docker-build-linotp docker-build-selenium docker-run-selenium
 # Build and run Unit tests
 docker-unit: docker-build-linotp docker-build-linotp-test-image docker-run-linotp-unit
 
-docker-functional: docker-run-linotp-functional-test
+docker-functional: docker-build-linotp docker-build-linotp-test-image docker-run-linotp-functional-test
 
 docker-pylint: docker-run-linotp-pylint
 
@@ -479,7 +479,7 @@ FUNCTIONAL_DOCKER_CONTAINER_NAME=linotp-$(DOCKER_CONTAINER_TIMESTAMP)-functional
 FUNCTIONAL_MYSQL_CONTAINER_NAME=mysql-$(DOCKER_CONTAINER_TIMESTAMP)-functional
 
 .PHONY: docker-run-linotp-functional-test
-docker-run-linotp-functional-test: docker-build-linotp-test-image
+docker-run-linotp-functional-test:
 	cd $(FUNCTIONAL_TESTS_DIR) && \
 		NIGHTLY=${NIGHTLY} \
 		FUNCTIONAL_DOCKER_CONTAINER_NAME=$(FUNCTIONAL_DOCKER_CONTAINER_NAME) \
