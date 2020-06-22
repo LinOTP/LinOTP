@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
     python3-flask-testing \
     python3-freezegun \
     python3-mock \
+    python3-psycopg2 \
     python3-pytest \
     python3-pytest-cov \
     python3-pytest-flask \
@@ -52,7 +53,8 @@ RUN pip3 install --upgrade \
     pytest-freezegun \
     pytest-testconfig \
     pytest-test-groups \
-    pytest-selenium
+    pytest-selenium \
+    PyMySQL
 
 USER tester
 
