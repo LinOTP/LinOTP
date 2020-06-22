@@ -13,7 +13,6 @@ variables:
   CI_IMAGE_PREFIX: $REGISTRY_URL/$CI_PROJECT_NAME/ci
   NOSE_COVER_PACKAGE: linotp
   DOCKER_COMPOSE_VERSION: "1.22.0"
-  LINTED_MODULE: ""
 
 workflow:
   rules:
@@ -22,10 +21,10 @@ workflow:
     - if: '$CI_COMMIT_BRANCH =~ /^(branch-v|master)/' # Execute jobs when a new commit is pushed to stable or master branch
 
 stages:
-  - lint
   - build-debian-packages
   - build-linotp-docker-image
   - build-test-images
+  - lint
   - test
   - coverage-report
   - apidocs
@@ -37,16 +36,45 @@ stages:
   before_script:
     - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
 
+include:
+  - template: Code-Quality.gitlab-ci.yml
+
+# The test environment image is based on the linotp image
+# and is used to run the unit, functional and e2e tests
+build-testenv-image:debian-buster:
+  stage: build-test-images
+  image: docker:latest
+  needs: ["build-linotp-docker-image:buster"]
+  <<: *docker-registry
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+    LINOTP_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
+    TESTENV_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  script:
+    - docker pull ${CI_IMAGE_PREFIX}/${LINOTP_IMAGE}
+    - docker tag ${CI_IMAGE_PREFIX}/${LINOTP_IMAGE} linotp:latest
+    - apk add --no-cache make
+    - make docker-build-linotp-test-image
+    - docker tag linotp_test_env ${CI_IMAGE_PREFIX}/${TESTENV_IMAGE}
+    - docker push "${CI_IMAGE_PREFIX}/${TESTENV_IMAGE}"
+
 .lint:
   stage: lint
-  image: python:3
-  allow_failure: true
-  needs: []
-  before_script:
-    - pip install pylint
-    - cd linotpd/src
+  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  needs: ["build-testenv-image:debian-buster"]
+  variables:
+    LINTED_MODULE: ""
+    DEBIAN_RELEASE_NAME: buster
+    EXIT_ON_FATAL: "1"
+    EXIT_ON_ERROR: "0"
+    EXIT_ON_WARNING: "0"
   script:
-    - pylint linotp/${LINTED_MODULE}
+    - pylint3 linotp/${LINTED_MODULE} && STATUS=0 || STATUS=$?
+    - echo STATUS:$STATUS
+    - "test $(( $STATUS & 32 )) -eq 0 || (echo 'Fail: usage error'; false)"
+    - "test $(( $EXIT_ON_FATAL && $STATUS & 1 )) -eq 0 || (echo 'Fail: Fatal errors'; false)"
+    - "test $(( $EXIT_ON_ERROR && $STATUS & 2 )) -eq 0 || (echo 'Fail: Errors'; false)"
+    - "test $(( $EXIT_ON_WARNING && $STATUS & 4 )) -eq 0 || (echo 'Fail: Warnings'; false)"
 
 lint-controllers:
   extends: .lint
@@ -78,27 +106,6 @@ lint-useridresolver:
   variables:
     LINTED_MODULE: useridresolver
 
-include:
-  - template: Code-Quality.gitlab-ci.yml
-
-# The test environment image is based on the linotp image
-# and is used to run the unit, functional and e2e tests
-build-testenv-image:debian-buster:
-  stage: build-test-images
-  image: docker:latest
-  needs: ["build-linotp-docker-image:buster"]
-  <<: *docker-registry
-  variables:
-    DEBIAN_RELEASE_NAME: buster
-    LINOTP_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
-    TESTENV_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
-  script:
-    - docker pull ${CI_IMAGE_PREFIX}/${LINOTP_IMAGE}
-    - docker tag ${CI_IMAGE_PREFIX}/${LINOTP_IMAGE} linotp:latest
-    - apk add --no-cache make
-    - make docker-build-linotp-test-image
-    - docker tag linotp_test_env ${CI_IMAGE_PREFIX}/${TESTENV_IMAGE}
-    - docker push "${CI_IMAGE_PREFIX}/${TESTENV_IMAGE}"
 
 .unit-test-base:
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
@@ -155,6 +162,7 @@ functional-test:
 #   allow_failure: true
 #   variables:
 #     DEBIAN_RELEASE_NAME: buster
+
 
 # Auto-generate API docs using Sphinx.
 
