@@ -23,12 +23,12 @@ workflow:
 
 stages:
   - lint
-  - build-test-environment
-  - test
-  - apidocs
-  - coverage-report
   - build-debian-packages
   - build-linotp-docker-image
+  - build-test-images
+  - test
+  - coverage-report
+  - apidocs
   - selenium-test
   - upload-debian-packages
   - copy-to-golden
@@ -81,7 +81,7 @@ include:
   - template: Code-Quality.gitlab-ci.yml
 
 .build-test-environment-debian:
-  stage: build-test-environment
+  stage: build-test-images
   image: docker:latest
   <<: *docker-registry
   script:
@@ -112,6 +112,22 @@ include:
     - docker push "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
     - docker images
 
+build-unittest-image:debian-buster:
+  stage: build-test-images
+  image: docker:latest
+  <<: *docker-registry
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+    LINOTP_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
+    UNITTEST_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp-unittest:${CI_PIPELINE_ID}
+  script:
+    - docker pull ${CI_IMAGE_PREFIX}/${LINOTP_IMAGE}
+    - docker tag ${CI_IMAGE_PREFIX}/${LINOTP_IMAGE} linotp:latest
+    - apk add --no-cache make
+    - make docker-build-linotp-test-image
+    - docker tag linotp_unit_tester ${CI_IMAGE_PREFIX}/${UNITTEST_IMAGE}
+    - docker push "${CI_IMAGE_PREFIX}/${UNITTEST_IMAGE}"
+
 build-test-environment:debian-buster:
   extends: .build-test-environment-debian
   variables:
@@ -120,20 +136,9 @@ build-test-environment:debian-buster:
     DEBIAN_RELEASE_NAME: buster
 
 .unit-test-base:
-  image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
-  before_script:
-    - python3 --version
-    - cd linotpd/src
-    - pip3 install -e ".[test]"
-    - cd ${CI_PROJECT_DIR}
-    - pip3 install pytest-test-groups
-#    - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
-#    - export PYTEST_COVER_DIR=${CI_PROJECT_DIR}/coverage/${DEBIAN_RELEASE_NAME}/
-#    - export COVERAGE_FILE=${PYTEST_COVER_DIR}/unit
-#    - mkdir -p ${PYTEST_COVER_DIR}
-#  artifacts:
-#    paths:
-#      - coverage/${DEBIAN_RELEASE_NAME}
+  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-unittest:${CI_PIPELINE_ID}
+  script:
+      - make unittests PYTESTARGS="--test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX"
 
 unit-test:
   extends: .unit-test-base
@@ -141,9 +146,6 @@ unit-test:
   parallel: 4
   variables:
     DEBIAN_RELEASE_NAME: buster
-  script:
-    - make unittests PYTESTARGS="--test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX"
-
 
 .functional-test-base:
   stage: test
