@@ -26,17 +26,15 @@
 #
 #
 
+# Definition of PYTEST and PYTESTARGS
+include ../common-vars.mk
+
 #####################
 # Unit tests
-
-# Overrides can be specified on the make command line
-# For example:
-#   make functionaltests PYTESTARGS=-v
-PYTESTARGS=
 
 test: unittests
 
 unittests:
-	pytest $(PYTESTARGS)
+	$(PYTEST) $(PYTESTARGS)
 
 .PHONY: test unittests

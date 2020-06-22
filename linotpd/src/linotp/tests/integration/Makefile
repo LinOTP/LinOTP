@@ -26,40 +26,36 @@
 #
 #
 
+# Definition of PYTEST and PYTESTARGS
+include ../common-vars.mk
+
 #####################
-# Unit test configuration
+# Integration test configuration
 #
 # Overrides can be specified on the make command line
 # For example:
-#   make integrationtests TCFILE=my_cfg.ini LOGGINGFILTER=
+#   make integrationtests TCFILE=my_cfg.ini
 
 # The test settings ini file to use. Override to use a different file.
 TCFILE=server_cfg.ini
 
-# Pytest arguments. You can override this to provide a specific configuration
-PYTEST_ARGS=-v
-
-ifdef TEST_DEBUG
-DEBUG_ARGS=--pdb
-endif
-
 #####################
-# Unit test targets
+# Integration test targets
 #
 
 test: integrationtests
 
 integrationtests:
 	# integrationtests - selenium integration tests
-	pytest $(PYTEST_ARGS) --tc-file=$(TCFILE) $(DEBUG_ARGS) $(TEST_CASE)
+	$(PYTEST) $(PYTESTARGS) --tc-file=$(TCFILE) $(TEST_CASE)
 
 integrationtests-bunch1:
 	# integrationtests - selenium integration tests
-	pytest $(PYTEST_ARGS) --tc-file=$(TCFILE) $(DEBUG_ARGS) test_create_useridresolvers.py test_selfservice.py test_token_view.py test_policies.py test_manage.py test_emailtoken.py
+	$(PYTEST) $(PYTESTARGS) --tc-file=$(TCFILE) test_create_useridresolvers.py test_selfservice.py test_token_view.py test_policies.py test_manage.py test_emailtoken.py
 
 integrationtests-bunch2:
 	# integrationtests - selenium integration tests
-	pytest $(PYTEST_ARGS) --tc-file=$(TCFILE) $(DEBUG_ARGS) test_scenario01.py test_yubikey.py test_user_view.py test_system_config.py test_smstoken.py test_auth.py test_realm_dialog.py
+	$(PYTEST) $(PYTESTARGS) --tc-file=$(TCFILE) test_scenario01.py test_yubikey.py test_user_view.py test_system_config.py test_smstoken.py test_auth.py test_realm_dialog.py
 
 
 .PHONY: test integrationtests

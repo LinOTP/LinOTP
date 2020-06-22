@@ -23,12 +23,12 @@ workflow:
 
 stages:
   - lint
-  - build-test-environment
-  - test
-  - apidocs
-  - coverage-report
   - build-debian-packages
   - build-linotp-docker-image
+  - build-test-images
+  - test
+  - coverage-report
+  - apidocs
   - selenium-test
   - upload-debian-packages
   - copy-to-golden
@@ -41,6 +41,7 @@ stages:
   stage: lint
   image: python:3
   allow_failure: true
+  needs: []
   before_script:
     - pip install pylint
     - cd linotpd/src
@@ -81,8 +82,9 @@ include:
   - template: Code-Quality.gitlab-ci.yml
 
 .build-test-environment-debian:
-  stage: build-test-environment
+  stage: build-test-images
   image: docker:latest
+  needs: []
   <<: *docker-registry
   script:
     # pull the old image to speedup the build process, the hope is
@@ -112,6 +114,23 @@ include:
     - docker push "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
     - docker images
 
+build-unittest-image:debian-buster:
+  stage: build-test-images
+  image: docker:latest
+  needs: ["build-linotp-docker-image:buster"]
+  <<: *docker-registry
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+    LINOTP_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
+    UNITTEST_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp-unittest:${CI_PIPELINE_ID}
+  script:
+    - docker pull ${CI_IMAGE_PREFIX}/${LINOTP_IMAGE}
+    - docker tag ${CI_IMAGE_PREFIX}/${LINOTP_IMAGE} linotp:latest
+    - apk add --no-cache make
+    - make docker-build-linotp-test-image
+    - docker tag linotp_unit_tester ${CI_IMAGE_PREFIX}/${UNITTEST_IMAGE}
+    - docker push "${CI_IMAGE_PREFIX}/${UNITTEST_IMAGE}"
+
 build-test-environment:debian-buster:
   extends: .build-test-environment-debian
   variables:
@@ -120,20 +139,9 @@ build-test-environment:debian-buster:
     DEBIAN_RELEASE_NAME: buster
 
 .unit-test-base:
-  image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
-  before_script:
-    - python3 --version
-    - cd linotpd/src
-    - pip3 install -e ".[test]"
-    - cd ${CI_PROJECT_DIR}
-    - pip3 install pytest-test-groups
-#    - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
-#    - export PYTEST_COVER_DIR=${CI_PROJECT_DIR}/coverage/${DEBIAN_RELEASE_NAME}/
-#    - export COVERAGE_FILE=${PYTEST_COVER_DIR}/unit
-#    - mkdir -p ${PYTEST_COVER_DIR}
-#  artifacts:
-#    paths:
-#      - coverage/${DEBIAN_RELEASE_NAME}
+  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-unittest:${CI_PIPELINE_ID}
+  script:
+      - make unittests PYTESTARGS="--test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX"
 
 unit-test:
   extends: .unit-test-base
@@ -141,13 +149,12 @@ unit-test:
   parallel: 4
   variables:
     DEBIAN_RELEASE_NAME: buster
-  script:
-    - make unittests PYTESTARGS="--test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX"
-
+  needs: ["build-unittest-image:debian-buster"]
 
 .functional-test-base:
   stage: test
   image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
+  needs: ["build-unittest-image:debian-buster"]
   services:
     - name: mysql:5.5
       alias: db
@@ -174,6 +181,7 @@ functional-test:
   parallel: 6
   variables:
     DEBIAN_RELEASE_NAME: buster
+  allow_failure: true
   script:
     - make functionaltests PYTESTARGS="--test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX"
 
@@ -197,6 +205,7 @@ functional-test:
 apidocs:
   stage: apidocs
   image: $CI_IMAGE_PREFIX/buster/linotp:${CI_PIPELINE_ID}
+  needs: ["build-test-environment:debian-buster"]
   script:
     - python3 --version
     - cd linotpd/src
@@ -235,6 +244,7 @@ apidocs:
 .build-debs:
   stage: build-debian-packages
   image: debian:${DEBIAN_RELEASE_NAME}
+  needs: []
   script:
     - apt-get update
     - apt-get install --yes --no-install-recommends equivs git-buildpackage lsb-release rename
@@ -265,7 +275,6 @@ build:buster:
   <<: *normal_build
   variables:
     DEBIAN_RELEASE_NAME: buster
-  allow_failure: true
 
 build:buster (tag):
   extends: .build-debs
@@ -284,25 +293,13 @@ build:buster (tag):
   script:
     - export BUILDDIR=build
     - mkdir -p ${BUILDDIR}
-    - make ${BUILDDIR}/dockerfy BUILDDIR=${BUILDDIR}
     - cp -r pkg/apt/${DEBIAN_RELEASE_NAME} ${BUILDDIR}/apt
-    - cp ci/Dockerfile.linotp linotpd/src/linotp/tests/integration/testdata/se_mypasswd linotpd/src/config/*.tmpl linotpd/src/tools/linotp-create-htdigest $BUILDDIR
-    - >
-      docker build
-      --build-arg=DEBIAN_MIRROR=$DEBIAN_MIRROR
-      --build-arg=LINOTP_MIRROR=$LINOTP_MIRROR
-      --build-arg=BASE_IMAGE="debian:${DEBIAN_RELEASE_NAME}"
-      --build-arg="DEBIAN_RELEASE_NAME=${DEBIAN_RELEASE_NAME}"
-      --build-arg="DEPENDENCY_SOURCE=${DEPENDENCY_SOURCE}"
-      --build-arg="DEPENDENCY_COMPONENT=${DEPENDENCY_COMPONENT}"
-      --build-arg="DEPENDENCY_GPG_KEYID=${DEPENDENCY_GPG_KEYID}"
-      --build-arg="DEPENDENCY_GPG_KEY_URL=${DEPENDENCY_GPG_KEY_URL}"
-      --tag="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}" -f $BUILDDIR/Dockerfile.linotp $BUILDDIR
+    - make DOCKER_IMAGE="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp" DOCKER_TAGS="${CI_PIPELINE_ID}" docker-build-linotp
     - docker push "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
 
 build-linotp-docker-image:buster:
   extends: .build-linotp-docker-image
-  allow_failure: true
+  needs: ["build:buster"]
   variables:
     DEPENDENCY_SOURCE: ""
     DEPENDENCY_GPG_KEYID: ""

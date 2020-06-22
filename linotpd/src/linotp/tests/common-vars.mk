@@ -26,15 +26,31 @@
 #
 #
 
-# Definition of PYTEST and PYTESTARGS
-include ../common-vars.mk
+# Common rules for test makefiles
+#
+# This file is to be included by subdirectory makefiles like this:
+#  include ../common-vars.mk
 
-#####################
-# Functional tests
+# Executable to run tests against
+# this is pytest-3 on plain Debian, but pytest in a pip virtual environment
+# By default we autodetect this, but the user can provide an override
+PYTEST=
 
-test: functionaltests
+ifndef PYTEST
+    # Autodetect pytest binary name. If we are running in a virtual environment,
+    # the executable 'pytest' will be on the path. If it is not available,
+    # try pytest-3, which is the name of the system installed version
+    PYTEST=$(shell which pytest)
+    ifeq ($(PYTEST),)
+        PYTEST=$(shell which pytest-3)
+        ifeq ($(PYTEST),)
+            $(error could not find a pytest executable)
+        endif
+    endif
+endif
 
-functionaltests:
-	$(PYTEST) $(PYTESTARGS)
+# Overrides can be specified on the make command line
+# For example:
+#   make functionaltests PYTESTARGS=-v
+PYTESTARGS=
 
-.PHONY: test functionaltests
