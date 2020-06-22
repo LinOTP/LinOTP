@@ -181,6 +181,7 @@ functional-test:
   parallel: 6
   variables:
     DEBIAN_RELEASE_NAME: buster
+  allow_failure: true
   script:
     - make functionaltests PYTESTARGS="--test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX"
 
