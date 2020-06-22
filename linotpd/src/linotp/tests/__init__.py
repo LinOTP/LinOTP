@@ -176,17 +176,26 @@ class TestController(TestCase):
     )
 
     @pytest.fixture(autouse=True)
-    def setup_self_app_and_client(self, app, client):
+    def setup_self_app_and_client(self, app):
         """
         Make the `app` and `client` fixtures available
         as class atributes
         """
         self.app = app
 
-        # Support '<STRING> in response' style tests in client
-        client.response_wrapper = CompatibleTestResponse
+        # Provide a test client instance via class variable
+        #
+        # In order to work with streamed responses, we need to ensure that all client
+        # context is popped once a test has finished. In order to do that, we provide
+        # the client within a context manager.
+        # For more information see:
+        # https://github.com/pytest-dev/pytest-flask/issues/42#issuecomment-188289728
+        with app.test_client() as client:
+            # Support '<STRING> in response' style tests in client
+            client.response_wrapper = CompatibleTestResponse
 
-        self.client = client
+            self.client = client
+            yield
 
     @classmethod
     def setup_class(cls):
