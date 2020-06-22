@@ -1,4 +1,28 @@
+# Linotp source tree dockerignore file
+# This list was created by using the following Dockerfile.test:
+#  FROM debian:buster
+#  RUN mkdir /src
+#  COPY . /src
+#  RUN cd /src; find -ls; exit 1
+# and then examining the output of:
+#  docker build -f Dockerfile.test .
 .git
-linotpd/build
+.vscode
+**/__pycache__
+**/.cache
+**/.coverage
+**/.pybuild
+**/.pytest_cache
+**/.mypy_cache
+**/*.pyc
+**/*.egg-info
+**/*.sqlite
+**/build
+**/coverage.xml
+ci
+linotpd/logs
+linotpd/src/.coverage
+linotpd/src/.eggs
+linotpd/src/dist
 linotpd/src/Dockerfile
 Dockerfile.builder
