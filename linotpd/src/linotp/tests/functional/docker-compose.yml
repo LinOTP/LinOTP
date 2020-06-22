@@ -16,11 +16,13 @@ services:
       MYSQL_ROOT_PASSWORD: "Test123!"
       NIGHTLY: "${NIGHTLY:-no}"
       COVERAGE_ENABLED: "${COVERAGE_ENABLED:-no}"
+      PYTESTARGS: ""
     volumes:
-      - .:/linotpsrc:ro
+      - .:/linotpsrc/linotpd/src/linotp/tests/functional:ro
+    working_dir: /linotpsrc/linotpd/src/linotp/tests/functional
     depends_on:
       - db
-    command: make -C /linotpsrc functionaltests
+    command: make -C /linotpsrc functionaltests PYTESTARGS="${PYTESTARGS}"
 
 
   db:
