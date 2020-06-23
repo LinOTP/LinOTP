@@ -670,11 +670,11 @@ def setup_db(app, drop_data=False):
     meta.metadata.create_all(bind=meta.engine)
 
     try:
-        app.logger.info("Setting up config database default values...")
-        set_defaults(app)
-
         app.logger.info("Check for database migration steps...")
         run_data_model_migration(meta)
+
+        app.logger.info("Setting up config database default values...")
+        set_defaults(app)
 
     except Exception as exx:
         app.logger.error("Exception occured during database setup: %r", exx)
