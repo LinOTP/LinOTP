@@ -50,7 +50,7 @@ class ManageElement(object):
         The manage element can be initialised with an existing manage object, or a testcase.
         If the testcase is supplied, it will be used to determine the manage ui instance.
         """
-        self.manage = manage_ui
+        self.manage: 'ManageUI' = manage_ui
 
     @property
     def driver(self):

@@ -110,10 +110,10 @@ class ManageUi(object):
         self.welcome_screen = ManageDialog(
             self, 'welcome_screen', 'welcome_screen_close')
 
-        self.useridresolver_manager = UserIdResolverManager(self)
-        self.realm_manager = RealmManager(self)
-        self.token_view = TokenView(self)
-        self.user_view = UserView(self)
+        self.useridresolver_manager: UserIdResolverManager = UserIdResolverManager(self)
+        self.realm_manager: RealmManager = RealmManager(self)
+        self.token_view: TokenView = TokenView(self)
+        self.user_view: UserView = UserView(self)
         self.policy_view = PolicyManager(self)
         self.system_config = SystemConfig(self)
         self.token_enroll = EnrollTokenDialog(self)
