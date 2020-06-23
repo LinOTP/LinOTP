@@ -281,15 +281,28 @@ build:buster (tag):
   image: docker:latest
   retry:
     max: 2
-  before_script:
-    - apk add --no-cache make
-    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+  <<: *docker-registry
+  variables:
+    LINOTP_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp
+    DOCKERFILE_PATH: linotpd/src/Dockerfile
   script:
     - export BUILDDIR=build
     - mkdir -p ${BUILDDIR}
     - cp -r pkg/apt/${DEBIAN_RELEASE_NAME} ${BUILDDIR}/apt
-    - make DOCKER_IMAGE="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp" DOCKER_TAGS="${CI_PIPELINE_ID}" docker-build-linotp
+    - apk add --no-cache make
+    # pull the old image to speedup the build process, the hope is
+    # that the modified time will always be the same unless the file
+    # has actually been changed
+    - DOCKERFILE_CACHE_KEY=$(sha256sum ${DOCKERFILE_PATH} | cut -d ' ' -f1)
+    - docker pull "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp-testenv:${DOCKERFILE_CACHE_KEY}" || true
+    # Do the build itself
+    - make DOCKER_IMAGE="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp" DOCKER_TAGS="${CI_PIPELINE_ID} ${DOCKERFILE_CACHE_KEY}" docker-build-linotp
+    # Push images to repository in the form:
+    #  registry/ci/release/linotp:pipelineID
+    #  registry/ci/release/linotp:sha256
     - docker push "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
+    - docker push "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
+    - docker images
 
 build-linotp-docker-image:buster:
   extends: .build-linotp-docker-image
