@@ -14,6 +14,8 @@ from werkzeug.exceptions import Forbidden as HTTPForbidden
 from werkzeug.exceptions import Unauthorized as HTTPUnauthorized
 from werkzeug.local import LocalProxy
 
+from flask_babel import get_locale
+
 log = logging.getLogger(__name__)
 
 config = LocalProxy(lambda: flask.g.request_context['config'])
@@ -106,19 +108,6 @@ def set_config():
     flask.g.request_context['config'].update(flask.current_app.config)
 
 
-def _(s):
-    """Mickey Mouse translation utility."""
-    return s
-
-
-def set_lang(*_args, **_kwargs):
-    pass
-
-
-class LanguageError(Exception):
-    pass
-
-
 def render_mako(template_name, extra_context=None):
     """This is loosely compatible with the Pylons `render_mako()`
     function, so we don't need to change all the occurrences of this
@@ -134,8 +123,9 @@ def render_mako(template_name, extra_context=None):
         flask.g.request_context.update(extra_context)
 
     try:
-        ret = render_template(template_name.lstrip(
-            '/'), c=tmpl_context, _=lambda s: s)
+        ret = render_template(template_name.lstrip('/'),
+                              c=tmpl_context,
+                              lang=get_locale().language)
     except TemplateError as e:
         log.error(e.text)
         raise

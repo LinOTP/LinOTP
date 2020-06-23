@@ -53,11 +53,12 @@ import json
 
 
 from flask import Response
+from flask_babel import gettext as _
 from werkzeug.exceptions import Unauthorized, Forbidden
 
 from linotp.flap import (
     request, response, config, tmpl_context as c,
-    render_mako as render, _,
+    render_mako as render
 )
 
 from mako.exceptions import CompileException

@@ -36,12 +36,13 @@ import os
 import json
 
 from flask import redirect, Response
+from flask_babel import gettext as _
 from werkzeug.exceptions import Unauthorized
 
 from linotp import flap
 from linotp.flap import (
     request, response, config, tmpl_context as c,
-    _, render_mako as render, url
+    render_mako as render, url
 )
 
 from mako.exceptions import CompileException

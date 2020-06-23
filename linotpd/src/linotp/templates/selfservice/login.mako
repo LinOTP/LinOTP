@@ -28,11 +28,6 @@
  * contains the template login web interface
 </%doc>
 
-<%
-lang = "en" # TODO
-if isinstance(lang, list):
-    lang = lang[0]
-%>
 <html>
 
 <head>
@@ -193,8 +188,3 @@ if isinstance(lang, list):
 </body>
 
 </html>
-
-
-
-
-

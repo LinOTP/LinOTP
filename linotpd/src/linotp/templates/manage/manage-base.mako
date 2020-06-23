@@ -27,13 +27,6 @@
  *
 </%doc>
 
-<%
-lang = "en" # TODO
-allang = "%r" % lang
-if isinstance(lang, list):
-    lang = lang[0]
-%>
-
 <html>
 
 <head>
@@ -101,7 +94,6 @@ if isinstance(lang, list):
 <script type="text/javascript" src="/static/js/libmanage.js?ref=${c.version_ref}"></script>
 <script type="text/javascript">
     window.CURRENT_LANGUAGE = "${lang}";
-    window.ALL_CURRENT_LANGUAGE = "${allang}";
 </script>
 
 <script type="text/javascript" src="/static/js/manage.js?ref=${c.version_ref}"></script>
@@ -2378,4 +2370,3 @@ if isinstance(lang, list):
 
 </body>
 </html>
-

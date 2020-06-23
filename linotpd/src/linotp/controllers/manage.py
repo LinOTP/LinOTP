@@ -34,9 +34,10 @@ import json
 
 import flask
 from flask import redirect
+from flask_babel import gettext as _
 
 from linotp.flap import (
-    config, render_mako as render, request, response, tmpl_context as c, _,
+    config, render_mako as render, request, response, tmpl_context as c
 )
 
 from mako.exceptions import CompileException

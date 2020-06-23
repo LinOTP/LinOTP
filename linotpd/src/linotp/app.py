@@ -34,7 +34,8 @@ from uuid import uuid4
 
 from flask import Flask, current_app, g as flask_g, jsonify, Blueprint, redirect
 from flask.cli import with_appcontext
-from flask_mako import MakoTemplates
+from flask_babel import Babel, gettext
+import flask_mako
 
 from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
@@ -70,7 +71,7 @@ from .lib.type_utils import boolean
 from .lib.util import get_client
 
 from . import __version__
-from .flap import LanguageError, config, set_config, set_lang, tmpl_context as c, request, _ as translate
+from .flap import config, set_config, tmpl_context as c, request
 from .defaults import set_defaults
 from .settings import configs
 from .tokens import reload_classes as reload_token_classes
@@ -91,11 +92,18 @@ CONFIG_FILE_NAME = os.path.join(os.path.dirname(this_dir), "linotp.cfg")
 if os.getenv(CONFIG_FILE_ENVVAR) is None:
     os.environ[CONFIG_FILE_ENVVAR] = CONFIG_FILE_NAME
 
-mako = MakoTemplates()
+# Monkey-patch the value of `_BABEL_IMPORTS`, which in the original
+# Flask-Mako package refers to the old-style Flask extension import
+# mechanism that no longer works, and would make LinOTP crash. The
+# Flask-Mako guys may eventually get their act together and fix this
+# (it's not as if this is a new thing), at which point this line won't
+# hurt and we can get rid of it again.
 
-# HTTP-ACCEPT-LANGUAGE strings are in the form of i.e.
-# de-DE, de; q=0.7, en; q=0.3
-accept_language_regexp = re.compile(r'\s*([^\s;,]+)\s*[;\s*q=[0-9.]*]?\s*,?')
+flask_mako._BABEL_IMPORTS = flask_mako._BABEL_IMPORTS.replace(
+    "flask.ext.babel", "flask_babel")
+
+mako = flask_mako.MakoTemplates()
+
 
 class ConfigurationError(Exception):
     pass
@@ -120,9 +128,6 @@ class LinOTPApp(Flask):
         intended to be done only once and could be refactored into a
         before_first_request function
         """
-
-        # TODO - language
-        #self.set_language(request.headers)
 
         try:
             hsm = self.security_provider.getSecurityModule()
@@ -171,7 +176,7 @@ class LinOTPApp(Flask):
             if not license_str:
                 log.error("empty license file: %s", filename)
             else:
-                request_context['translate'] = translate
+                request_context['translate'] = gettext
 
                 import linotp.lib.support
                 res, msg = linotp.lib.support.setSupportLicense(
@@ -225,37 +230,6 @@ class LinOTPApp(Flask):
 
         log_request_timedelta(log)
 
-    def set_language(self, headers):
-        '''Invoke before everything else. And set the translation language'''
-        languages = headers.get('Accept-Language', '')
-
-        found_lang = False
-
-        for match in accept_language_regexp.finditer(languages):
-            # make sure we have a correct language code format
-            language = match.group(1)
-            if not language:
-                continue
-            language = language.replace('_', '-').lower()
-
-            # en is the default language
-            if language.split('-')[0] == 'en':
-                found_lang = True
-                break
-
-            try:
-                set_lang(language.split('-')[0])
-                found_lang = True
-                break
-            except LanguageError:
-                log.debug("Cannot set requested language: %s. Trying next"
-                          " language if available.", language)
-
-        if not found_lang and languages:
-            log.warning("Cannot set preferred language: %r", languages)
-
-        return
-
     def create_context(self, request, environment):
         """
         create the request context for all controllers
@@ -274,7 +248,7 @@ class LinOTPApp(Flask):
 
         request_context['Config'] = linotp_config
         request_context['Policies'] = parse_policies(linotp_config)
-        request_context['translate'] = translate
+        request_context['translate'] = gettext
 
         request_context['CacheManager'] = self.cache
 
@@ -711,6 +685,15 @@ def create_app(config_name='default', config_extra=None):
     if config_extra is not None:
         app.config.update(config_extra)
 
+    babel = Babel(app, configure_jinja=False, default_domain="linotp")
+
+    # Determine which languages are available in the i18n directory.
+    # Note that we always have English even without a translation file.
+
+    app.available_languages = list(
+        {'en'} | {t.language for t in babel.list_translations()}
+    )
+
     mako.init_app(app)
     init_logging(app)
 
@@ -781,6 +764,16 @@ def create_app(config_name='default', config_extra=None):
         returned to the user.
         """
         return sendError(None, e)
+
+    @babel.localeselector
+    def get_locale():
+        """Figure out the locale for this request. We look at the
+        request's `Accept-Language` header and pick the first language
+        in the list that matches one of the languages that we actually
+        support.
+        """
+        return request.accept_languages.best_match(app.available_languages,
+                                                   "en")
 
     # Command line handler
     app.cli.add_command(init_db_command)
