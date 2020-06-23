@@ -202,7 +202,6 @@ class UserIdResolverManager(ManageDialog):
                 'EnforceTLS' : 'False',
                 'TIMEOUT': '5',
                 'SIZELIMIT' : '500',
-                'CACERTIFICATE' : '',
                 'NOREFERRALS' : 'True',
             }
             if 'preset_ldap' in data:
@@ -241,7 +240,6 @@ class UserIdResolverManager(ManageDialog):
             'loginattr': 'LOGINNAMEATTRIBUTE',
             'timeout': 'TIMEOUT',
             'sizelimit': 'SIZELIMIT',
-            'certificate': 'CACERTIFICATE',
 
             'filename': 'fileName',
 
@@ -470,10 +468,6 @@ class LdapUserIdResolver(UserIdResolver):
         if enforce_tls:
             assert data['uri'].startswith('ldap:')
             find_by_id(driver, 'ldap_enforce_tls').click()
-
-        if data['uri'].startswith('ldaps:') or enforce_tls:
-            fill_element_from_dict(
-                driver, 'ldap_certificate', 'certificate', data)
 
         fill_element_from_dict(driver, 'ldap_basedn', 'basedn', data)
         fill_element_from_dict(driver, 'ldap_binddn', 'binddn', data)
