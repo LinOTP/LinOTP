@@ -29,7 +29,6 @@ stages:
   - test
   - coverage-report
   - apidocs
-  - selenium-test
   - upload-debian-packages
   - copy-to-golden
 
@@ -341,44 +340,51 @@ build-linotp-docker-image:buster:
     DEBIAN_RELEASE_NAME: buster
 
 .e2e-test:
-  stage: selenium-test
-  image: docker:latest
+  stage: test
+  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  needs: ["build-testenv-image:debian-buster"]
+  services:
+    - name: ${DB}
+      alias: db
+    - name: "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
+      alias: test-linotp
+    - name: selenium/standalone-chrome-debug
+      alias: test-chrome
   variables:
-    INTEGRATION_TEST_CHROME: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/tests/integration/chrome:${CI_PIPELINE_ID}"
-    DELETE_OLD_SCRIPT_EXECUTORS: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/tests/integration/script-executor"
-    INTEGRATION_TEST_SCRIPT_EXECUTOR: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/tests/integration/script-executor:${CI_PIPELINE_ID}"
-    DELETE_OLD_INTEGRATION_LINOTPS: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/tests/integration/linotp"
-    INTEGRATION_TEST_LINOTP: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/tests/integration/linotp:${CI_PIPELINE_ID}"
-    DELETE_OLD_LINOTPS: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/linotp"
-    LINOTP_IMAGE: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
-  before_script:
-    - apk add --no-cache py-pip
-    - pip install "docker-compose==${DOCKER_COMPOSE_VERSION}"
-    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
-    - cp -r pkg/apt/${DEBIAN_RELEASE_NAME} linotpd/src/linotp/tests/integration/apt
-    - cd linotpd/src/linotp/tests/integration
-    - docker-compose -f docker-compose-gitlab.yml down --rmi all --remove-orphans
-    - echo $INTEGRATION_TEST_LINOTP
-    - echo $INTEGRATION_TEST_SCRIPT_EXECUTOR
-    - echo $INTEGRATION_TEST_CHROME
-    - echo $LINOTP_IMAGE
-    - echo $DELETE_OLD_SCRIPT_EXECUTORS
-    - echo $DELETE_OLD_INTEGRATION_LINOTPS
-    - echo $DELETE_OLD_LINOTPS
-    - docker images -a |  grep "$DELETE_OLD_LINOTPS" | awk '{print $3}' | xargs docker rmi -f || true
-    - docker images -a |  grep "$DELETE_OLD_INTEGRATION_LINOTPS" | awk '{print $3}' | xargs docker rmi -f || true
-    - docker images -a |  grep "$DELETE_OLD_SCRIPT_EXECUTORS" | awk '{print $3}' | xargs docker rmi -f || true
-    - docker-compose -f docker-compose-gitlab.yml config
-    - docker-compose -f docker-compose-gitlab.yml build --force-rm --no-cache
-    - docker-compose -f docker-compose-gitlab.yml push --ignore-push-failures test-script-executor
-    - docker-compose -f docker-compose-gitlab.yml push --ignore-push-failures test-chrome
-    - docker-compose -f docker-compose-gitlab.yml push --ignore-push-failures test-linotp
-  script:
-    - docker-compose -f docker-compose-gitlab.yml run --rm test-script-executor
-  after_script:
-    - cd linotpd/src/linotp/tests/integration
-    - docker-compose -f docker-compose-gitlab.yml down --rmi all --remove-orphans
+    DEBIAN_RELEASE_NAME: buster
+    MYSQL_DATABASE: linotp_db
+    MYSQL_ROOT_PASSWORD: linotppass
+    MYSQL_USER: linotpuser
+    MYSQL_PASSWORD: linotppass
+    MYSQL_HOST: mysql
+    LINOTP_DB_HOST: "db"
+    LINOTP_DB_WAITTIME: 2m
+    LINOTP_HOST: "test-linotp"
+    LINOTP_PORT: "443"
+    LINOTP_PROTOCOL: "https"
+    LINOTP_USERNAME: "admin"
+    LINOTP_PASSWORD: "admin"
+    HEALTHCHECK_PORT: "80"
+    SELENIUM_DRIVER: "chrome"
+    SELENIUM_PROTOCOL: "http"
+    SELENIUM_HOST: "test-chrome"
+    SELENIUM_PORT: "4444"
+  artifacts:
+    reports:
+      junit: linotpd/src/linotp/tests/integration/e2e-*.xml
 
+e2e-test-mariadb:
+  extends: .e2e-test
+  parallel: 2
+  variables:
+    DB: mariadb:10.1
+    LINOTP_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"
+    LINOTP_DB_PORT: "3306"
+  allow_failure: true
+  script:
+    - cd linotpd/src/linotp/tests/integration
+    - /usr/local/bin/dockerfy --template docker_cfg.ini.tmpl:/tmp/server_cfg.ini --wait tcp://$SELENIUM_HOST:$SELENIUM_PORT --timeout 60m --wait tcp://$LINOTP_HOST:$LINOTP_PORT --timeout 60m
+    - make integrationtests TCFILE=/tmp/server_cfg.ini PYTESTARGS="-v --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX  --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
 
 # Upload deb packages to development repository.
 # We use scp to upload all the files to an incoming directory.
