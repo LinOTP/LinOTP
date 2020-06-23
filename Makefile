@@ -270,7 +270,7 @@ docker-selenium: docker-build-linotp docker-build-selenium docker-run-selenium
 # Build and run Unit tests
 docker-unit: docker-build-linotp docker-build-linotp-test-image docker-run-linotp-unit
 
-docker-functional: docker-run-linotp-functional-test
+docker-functional: docker-build-linotp docker-build-linotp-test-image docker-run-linotp-functional-test
 
 docker-pylint: docker-run-linotp-pylint
 
@@ -475,20 +475,17 @@ docker-run-linotp-pylint: docker-build-linotp-test-image
 # $ export NIGHTLY="yes"
 # $ make docker-run-linotp-functional-test
 
-LOCAL_NOSE_BASE_DIR=/tmp/nose
 FUNCTIONAL_DOCKER_CONTAINER_NAME=linotp-$(DOCKER_CONTAINER_TIMESTAMP)-functional
 FUNCTIONAL_MYSQL_CONTAINER_NAME=mysql-$(DOCKER_CONTAINER_TIMESTAMP)-functional
 
 .PHONY: docker-run-linotp-functional-test
-docker-run-linotp-functional-test: docker-build-linotp-test-image
+docker-run-linotp-functional-test:
 	cd $(FUNCTIONAL_TESTS_DIR) && \
-		export NIGHTLY=${NIGHTLY} && \
-		export LOCAL_NOSE_BASE_DIR=$(LOCAL_NOSE_BASE_DIR) && \
-		export FUNCTIONAL_DOCKER_CONTAINER_NAME=$(FUNCTIONAL_DOCKER_CONTAINER_NAME) && \
-		export FUNCTIONAL_MYSQL_CONTAINER_NAME=$(FUNCTIONAL_MYSQL_CONTAINER_NAME) && \
-		docker-compose --project-directory $(PWD) up \
-			--abort-on-container-exit \
-			--force-recreate
-	rm -rf $(BUILDDIR)/../nose
-	docker cp $(FUNCTIONAL_DOCKER_CONTAINER_NAME):$(LOCAL_NOSE_BASE_DIR) $(BUILDDIR)/../
+		NIGHTLY=${NIGHTLY} \
+		FUNCTIONAL_DOCKER_CONTAINER_NAME=$(FUNCTIONAL_DOCKER_CONTAINER_NAME) \
+		FUNCTIONAL_MYSQL_CONTAINER_NAME=$(FUNCTIONAL_MYSQL_CONTAINER_NAME) \
+		PYTESTARGS="$(PYTESTARGS)" \
+			docker-compose --project-directory $(PWD) up \
+				--abort-on-container-exit \
+				--force-recreate
 	docker rm $(FUNCTIONAL_DOCKER_CONTAINER_NAME) $(FUNCTIONAL_MYSQL_CONTAINER_NAME)

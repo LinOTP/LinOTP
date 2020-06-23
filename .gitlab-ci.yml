@@ -153,7 +153,7 @@ unit-test:
 
 .functional-test-base:
   stage: test
-  image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
+  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-unittest:${CI_PIPELINE_ID}
   needs: ["build-unittest-image:debian-buster"]
   services:
     - name: mysql:5.5
@@ -165,12 +165,6 @@ unit-test:
     MYSQL_PASSWORD: linotppass
     MYSQL_HOST: mysql
     SHELL: /bin/bash
-  before_script:
-    - python3 --version
-    - cd linotpd/src
-    - pip3 install -e ".[test]"
-    - pip3 install pytest-test-groups
-    - cd ${CI_PROJECT_DIR}
 
 #  artifacts:
 #    paths:
