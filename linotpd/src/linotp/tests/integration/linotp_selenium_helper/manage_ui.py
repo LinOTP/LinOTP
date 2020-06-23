@@ -115,7 +115,7 @@ class ManageUi(object):
 
         self.alert_dialog = ManageDialog(self, 'alert_box')
 
-    def _is_url_open(self):
+    def is_url_open(self):
         possible_urls = (self.URL, self.URL + '/', self.URL + '/#')
         return self.driver.current_url.endswith(possible_urls)
 
@@ -144,7 +144,7 @@ class ManageUi(object):
         """
         Check we are on the right page
         """
-        assert self._is_url_open(), \
+        assert self.is_url_open(), \
             'URL %s should end with %s - page not loaded?' % \
             (self.driver.current_url, self.URL)
         assert self.driver.title == 'Management - LinOTP'
@@ -183,7 +183,7 @@ class ManageUi(object):
         return helper.find_by_xpath(self.driver, xpath)
 
     def open_manage(self):
-        if not self._is_url_open():
+        if not self.is_url_open():
             self.driver.get(self.manage_url)
 
             self.welcome_screen.close_if_open()
@@ -277,7 +277,7 @@ class ManageUi(object):
         """
         Check whether a given element is visible without waiting
         """
-        if not self._is_url_open():
+        if not self.is_url_open():
             return False
 
         try:
