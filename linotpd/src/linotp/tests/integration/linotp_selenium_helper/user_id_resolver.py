@@ -28,10 +28,6 @@
 import re
 import logging
 
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.keys import Keys
-
 from .helper import find_by_css, find_by_id, fill_element_from_dict
 from .manage_elements import ManageDialog
 

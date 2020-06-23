@@ -23,7 +23,6 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-import unittest
 import logging
 import re
 from contextlib import contextmanager
