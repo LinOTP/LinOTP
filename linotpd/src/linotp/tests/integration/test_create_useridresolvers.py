@@ -47,7 +47,7 @@ class TestCreateUserIdResolvers(TestCase):
 
         self.clear_realms()
         m = self.manage_ui.useridresolver_manager
-        m.clear_resolvers()
+        m.clear_resolvers_via_api()
 
         for d in resolver_data:
             expected_users = d['expected_users']
