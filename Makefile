@@ -423,7 +423,7 @@ $(BUILDDIR)/dockerfy:
 docker-build-linotp-test-image:
 	cd $(UNIT_TESTS_DIR) \
 		&& $(DOCKER_BUILD) \
-			-t linotp_unit_tester .
+			-t linotp_test_env .
 
 # Run Unit tests. Use $PYTESTARGS for additional pytest settings
 .PHONY: docker-run-linotp-unit
@@ -432,7 +432,7 @@ docker-run-linotp-unit:
 		&& $(DOCKER_RUN) \
 			--name=$(DOCKER_CONTAINER_NAME)-unit \
 			--volume=$(PWD):/linotpsrc:ro \
-			-t linotp_unit_tester \
+			-t linotp_test_env \
 			/usr/bin/make test PYTESTARGS="$(PYTESTARGS)"
 
 #jenkins pipeline uses this make rule
@@ -456,7 +456,7 @@ docker-run-linotp-pylint: docker-build-linotp-test-image
 		-w="/linotpsrc" \
 		--entrypoint="" \
 		--env "LANG=C.UTF-8" \
-		-t linotp_unit_tester \
+		-t linotp_test_env \
 	 	pylint --output-format=parseable --reports=y --rcfile=.pylintrc \
 		--disable=E1101,maybe-no-member --ignore tests,functional,integration linotp > pylint.log; exit 0
 

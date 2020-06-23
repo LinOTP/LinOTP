@@ -114,7 +114,7 @@ include:
     - docker push "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
     - docker images
 
-build-unittest-image:debian-buster:
+build-testenv-image:debian-buster:
   stage: build-test-images
   image: docker:latest
   needs: ["build-linotp-docker-image:buster"]
@@ -122,14 +122,14 @@ build-unittest-image:debian-buster:
   variables:
     DEBIAN_RELEASE_NAME: buster
     LINOTP_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
-    UNITTEST_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp-unittest:${CI_PIPELINE_ID}
+    TESTENV_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
   script:
     - docker pull ${CI_IMAGE_PREFIX}/${LINOTP_IMAGE}
     - docker tag ${CI_IMAGE_PREFIX}/${LINOTP_IMAGE} linotp:latest
     - apk add --no-cache make
     - make docker-build-linotp-test-image
-    - docker tag linotp_unit_tester ${CI_IMAGE_PREFIX}/${UNITTEST_IMAGE}
-    - docker push "${CI_IMAGE_PREFIX}/${UNITTEST_IMAGE}"
+    - docker tag linotp_test_env ${CI_IMAGE_PREFIX}/${TESTENV_IMAGE}
+    - docker push "${CI_IMAGE_PREFIX}/${TESTENV_IMAGE}"
 
 build-test-environment:debian-buster:
   extends: .build-test-environment-debian
@@ -139,7 +139,7 @@ build-test-environment:debian-buster:
     DEBIAN_RELEASE_NAME: buster
 
 .unit-test-base:
-  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-unittest:${CI_PIPELINE_ID}
+  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
   script:
       - make unittests PYTESTARGS="--test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX"
 
@@ -149,12 +149,12 @@ unit-test:
   parallel: 4
   variables:
     DEBIAN_RELEASE_NAME: buster
-  needs: ["build-unittest-image:debian-buster"]
+  needs: ["build-testenv-image:debian-buster"]
 
 .functional-test-base:
   stage: test
-  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-unittest:${CI_PIPELINE_ID}
-  needs: ["build-unittest-image:debian-buster"]
+  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  needs: ["build-testenv-image:debian-buster"]
   services:
     - name: mysql:5.5
       alias: db
