@@ -7,13 +7,12 @@ variables:
   DEBIAN_MIRROR: ftp.de.debian.org
   DEPENDENCY_SOURCE: http://avocado.corp.lsexperts.de/deb-repo
   DEPENDENCY_SOURCE_COMPONENT: kideps
-  DEPENDENCY_GPG_KEYID: 47868600E7533829
+  DEPENDENCY_GPG_KEYID: "47868600E7533829"
   DEPENDENCY_GPG_KEYID_URL: ""
   DOCKER_TAGS: $CI_PIPELINE_ID
   CI_IMAGE_PREFIX: $REGISTRY_URL/$CI_PROJECT_NAME/ci
   NOSE_COVER_PACKAGE: linotp
   DOCKER_COMPOSE_VERSION: "1.22.0"
-  LINTED_MODULE: ""
 
 workflow:
   rules:
@@ -22,10 +21,10 @@ workflow:
     - if: '$CI_COMMIT_BRANCH =~ /^(branch-v|master)/' # Execute jobs when a new commit is pushed to stable or master branch
 
 stages:
-  - lint
   - build-debian-packages
   - build-linotp-docker-image
   - build-test-images
+  - lint
   - test
   - coverage-report
   - apidocs
@@ -37,16 +36,45 @@ stages:
   before_script:
     - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
 
+include:
+  - template: Code-Quality.gitlab-ci.yml
+
+# The test environment image is based on the linotp image
+# and is used to run the unit, functional and e2e tests
+build-testenv-image:debian-buster:
+  stage: build-test-images
+  image: docker:latest
+  needs: ["build-linotp-docker-image:buster"]
+  <<: *docker-registry
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+    LINOTP_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
+    TESTENV_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  script:
+    - docker pull ${CI_IMAGE_PREFIX}/${LINOTP_IMAGE}
+    - docker tag ${CI_IMAGE_PREFIX}/${LINOTP_IMAGE} linotp:latest
+    - apk add --no-cache make
+    - make docker-build-linotp-test-image
+    - docker tag linotp_test_env ${CI_IMAGE_PREFIX}/${TESTENV_IMAGE}
+    - docker push "${CI_IMAGE_PREFIX}/${TESTENV_IMAGE}"
+
 .lint:
   stage: lint
-  image: python:3
-  allow_failure: true
-  needs: []
-  before_script:
-    - pip install pylint
-    - cd linotpd/src
+  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  needs: ["build-testenv-image:debian-buster"]
+  variables:
+    LINTED_MODULE: ""
+    DEBIAN_RELEASE_NAME: buster
+    EXIT_ON_FATAL: "1"
+    EXIT_ON_ERROR: "0"
+    EXIT_ON_WARNING: "0"
   script:
-    - pylint linotp/${LINTED_MODULE}
+    - pylint3 linotp/${LINTED_MODULE} && STATUS=0 || STATUS=$?
+    - echo STATUS:$STATUS
+    - "test $(( $STATUS & 32 )) -eq 0 || (echo 'Fail: usage error'; false)"
+    - "test $(( $EXIT_ON_FATAL && $STATUS & 1 )) -eq 0 || (echo 'Fail: Fatal errors'; false)"
+    - "test $(( $EXIT_ON_ERROR && $STATUS & 2 )) -eq 0 || (echo 'Fail: Errors'; false)"
+    - "test $(( $EXIT_ON_WARNING && $STATUS & 4 )) -eq 0 || (echo 'Fail: Warnings'; false)"
 
 lint-controllers:
   extends: .lint
@@ -78,68 +106,9 @@ lint-useridresolver:
   variables:
     LINTED_MODULE: useridresolver
 
-include:
-  - template: Code-Quality.gitlab-ci.yml
-
-.build-test-environment-debian:
-  stage: build-test-images
-  image: docker:latest
-  needs: []
-  <<: *docker-registry
-  script:
-    # pull the old image to speedup the build process, the hope is
-    # that the modified time will always be the same unless the file
-    # has actually been changed
-    - DOCKERFILE_CACHE_KEY=$(sha256sum ci/Dockerfile.debian-base | cut -d ' ' -f1)
-    - docker pull "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}" || true
-    # update the base image, if there was no change this is a noop. If there was a change we will start
-    # rebuilding the image. Worst case we downloaded an older image
-    # that was based on an outdated image and rebuild it from
-    # scratch. This should happen at most once a day.
-    - docker pull debian:${DEBIAN_RELEASE_NAME} || true
-    - mkdir -p /var/lib/empty
-    - >
-      docker build
-      --cache-from="$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
-      --build-arg=BASE_IMAGE="debian:${DEBIAN_RELEASE_NAME}"
-      --build-arg="DEBIAN_RELEASE_NAME=${DEBIAN_RELEASE_NAME}"
-      --build-arg="DEPENDENCY_SOURCE=${DEPENDENCY_SOURCE}"
-      --build-arg="DEPENDENCY_COMPONENT=${DEPENDENCY_COMPONENT}"
-      --build-arg="DEPENDENCY_GPG_KEYID=${DEPENDENCY_GPG_KEYID}"
-      --build-arg="DEPENDENCY_GPG_KEY_URL=${DEPENDENCY_GPG_KEY_URL}"
-      --tag="$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
-      --tag="$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
-      -f ci/Dockerfile.debian-base /var/lib/empty
-    - docker push "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
-    - docker push "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
-    - docker images
-
-build-unittest-image:debian-buster:
-  stage: build-test-images
-  image: docker:latest
-  needs: ["build-linotp-docker-image:buster"]
-  <<: *docker-registry
-  variables:
-    DEBIAN_RELEASE_NAME: buster
-    LINOTP_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
-    UNITTEST_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp-unittest:${CI_PIPELINE_ID}
-  script:
-    - docker pull ${CI_IMAGE_PREFIX}/${LINOTP_IMAGE}
-    - docker tag ${CI_IMAGE_PREFIX}/${LINOTP_IMAGE} linotp:latest
-    - apk add --no-cache make
-    - make docker-build-linotp-test-image
-    - docker tag linotp_unit_tester ${CI_IMAGE_PREFIX}/${UNITTEST_IMAGE}
-    - docker push "${CI_IMAGE_PREFIX}/${UNITTEST_IMAGE}"
-
-build-test-environment:debian-buster:
-  extends: .build-test-environment-debian
-  variables:
-    DEPENDENCY_SOURCE: ""
-    DEPENDENCY_GPG_KEYID: ""
-    DEBIAN_RELEASE_NAME: buster
 
 .unit-test-base:
-  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-unittest:${CI_PIPELINE_ID}
+  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
   script:
       - make unittests PYTESTARGS="--test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX"
 
@@ -149,12 +118,12 @@ unit-test:
   parallel: 4
   variables:
     DEBIAN_RELEASE_NAME: buster
-  needs: ["build-unittest-image:debian-buster"]
+  needs: ["build-testenv-image:debian-buster"]
 
 .functional-test-base:
   stage: test
-  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-unittest:${CI_PIPELINE_ID}
-  needs: ["build-unittest-image:debian-buster"]
+  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  needs: ["build-testenv-image:debian-buster"]
   services:
     - name: mysql:5.5
       alias: db
@@ -194,12 +163,13 @@ functional-test:
 #   variables:
 #     DEBIAN_RELEASE_NAME: buster
 
+
 # Auto-generate API docs using Sphinx.
 
 apidocs:
   stage: apidocs
   image: $CI_IMAGE_PREFIX/buster/linotp:${CI_PIPELINE_ID}
-  needs: ["build-test-environment:debian-buster"]
+  needs: ["build-linotp-docker-image:buster"]
   script:
     - python3 --version
     - cd linotpd/src
@@ -281,22 +251,35 @@ build:buster (tag):
   image: docker:latest
   retry:
     max: 2
-  before_script:
-    - apk add --no-cache make
-    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+  <<: *docker-registry
+  variables:
+    DEPENDENCY_SOURCE: ""
+    DEPENDENCY_GPG_KEYID: ""
+    LINOTP_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp
+    DOCKERFILE_PATH: linotpd/src/Dockerfile
   script:
     - export BUILDDIR=build
     - mkdir -p ${BUILDDIR}
     - cp -r pkg/apt/${DEBIAN_RELEASE_NAME} ${BUILDDIR}/apt
-    - make DOCKER_IMAGE="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp" DOCKER_TAGS="${CI_PIPELINE_ID}" docker-build-linotp
+    - apk add --no-cache make
+    # pull the old image to speedup the build process, the hope is
+    # that the modified time will always be the same unless the file
+    # has actually been changed
+    - DOCKERFILE_CACHE_KEY=$(sha256sum ${DOCKERFILE_PATH} | cut -d ' ' -f1)
+    - docker pull "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp-testenv:${DOCKERFILE_CACHE_KEY}" || true
+    # Do the build itself
+    - make DOCKER_IMAGE="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp" DOCKER_TAGS="${CI_PIPELINE_ID} ${DOCKERFILE_CACHE_KEY}" docker-build-linotp
+    # Push images to repository in the form:
+    #  registry/ci/release/linotp:pipelineID
+    #  registry/ci/release/linotp:sha256
     - docker push "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
+    - docker push "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
+    - docker images
 
 build-linotp-docker-image:buster:
   extends: .build-linotp-docker-image
   needs: ["build:buster"]
   variables:
-    DEPENDENCY_SOURCE: ""
-    DEPENDENCY_GPG_KEYID: ""
     DEBIAN_RELEASE_NAME: buster
 
 .e2e-test:

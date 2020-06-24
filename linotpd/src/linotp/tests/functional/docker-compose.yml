@@ -1,7 +1,7 @@
 version: "3"
 services:
   linotp:
-    image: linotp_unit_tester
+    image: linotp_test_env
     container_name: ${FUNCTIONAL_DOCKER_CONTAINER_NAME:-linotp_functional_tests}
     restart: "no"
     environment:

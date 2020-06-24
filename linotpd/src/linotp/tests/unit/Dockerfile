@@ -3,7 +3,7 @@ FROM linotp
 ENV LINOTP_CONFIG_FILE=
 
 #
-# Docker-Image >> linotp_unit_tester <<
+# Docker-Image >> linotp_test_env <<
 #
 
 
