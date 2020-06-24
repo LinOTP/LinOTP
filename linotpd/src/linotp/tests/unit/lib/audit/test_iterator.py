@@ -24,15 +24,10 @@
 #    Support: www.keyidentity.com
 #
 
+import json
 import pytest
-import sys
 import unittest
 from mock import MagicMock
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
 
 @pytest.mark.usefixtures("app")

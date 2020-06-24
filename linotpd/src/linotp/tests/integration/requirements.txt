@@ -27,7 +27,6 @@
 nose
 nose-testconfig
 selenium
-simplejson
 requests
 LinOTP
 LinOTPAdminClientCLI
