@@ -27,14 +27,14 @@
 Dependencies
 ============================================
 
-You need to install all dependencies listed in requirements.txt
+You need to install all test dependencies listed in setup.py
 
 I recommend creating a virtualenv and installing the dependencies there:
 
 $ mkdir /opt/selenium-venv
 $ virtualenv /opt/selenium-venv
 $ source /opt/selenium-venv/bin/activate
-$ pip install -r requirements.txt
+$ pip install -e ".[test]"
 
 If you are not using a remote instance, you also need an X-Server on your
 machine (or a virtual framebuffer such as xvfb) and Firefox or Chrome.
