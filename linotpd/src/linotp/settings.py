@@ -31,7 +31,7 @@ class Config:
     # `LOGFILE_MAX_VERSIONS` old log files; older ones will be deleted
     # as newer ones get rotated in.
 
-    LOGFILE_DIR = os.path.join(os.path.dirname(basedir), "logs")
+    LOGFILE_DIR = "logs"
     LOGFILE_FILE_LINE_FORMAT = (
         "%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]"
     )
@@ -62,9 +62,9 @@ class Config:
     # Beaker cache setup
 
     BEAKER_CACHE_TYPE = "memory"     # In-memory cache (or `"file"`)
-    BEAKER_CACHE_DIR = os.path.join(ROOT_DIR, "cache")  # for `"file"`
+    BEAKER_CACHE_DIR = "cache"       # for `"file"`
 
-    SECRET_FILE = os.path.join(ROOT_DIR, "encKey")
+    SECRET_FILE = "encKey"
 
     # AUDIT_DATABASE_URI determines the audit logging method. These methods
     # are supported:
@@ -87,8 +87,8 @@ class Config:
 
     # The filename of the audit public/private key files can be
     # set here
-    # AUDIT_PUBLIC_KEYFILE = os.path.join(ROOT_DIR, "public.pem")
-    # AUDIT_PRIVATE_KEYFILE = os.path.join(ROOT_DIR, "private.pem")
+    # AUDIT_PUBLIC_KEY_FILE = os.path.join(ROOT_DIR, "public.pem")
+    # AUDIT_PRIVATE_KEY_FILE = os.path.join(ROOT_DIR, "private.pem")
 
     # AUDIT_POOL_RECYCLE = 3600
 
@@ -100,7 +100,7 @@ class Config:
     # Where `*.mo` files for translations can be found. Note that this
     # is actually a PATH-type sequence of directories; add more
     # directories -- separated by semicolons -- if you want.
-    BABEL_TRANSLATION_DIRECTORIES = os.path.join(basedir, "linotp", "i18n")
+    BABEL_TRANSLATION_DIRECTORIES = "linotp/i18n"
 
     # LinOTP message catalog files are called `linotp.mo`. Tweak at your
     # own risk.

@@ -18,8 +18,6 @@
 # settings are not to be confused with the actual configuration for
 # what LinOTP is doing, which is kept in the SQL database.
 
-
-
 import importlib
 import logging
 from logging.config import dictConfig as logging_dictConfig
@@ -32,7 +30,8 @@ import click
 from datetime import datetime
 from uuid import uuid4
 
-from flask import Flask, current_app, g as flask_g, jsonify, Blueprint, redirect
+from flask import (Flask, Config as FlaskConfig, current_app, g as flask_g,
+                   jsonify, Blueprint, redirect)
 from flask.cli import with_appcontext
 from flask_babel import Babel, gettext
 import flask_mako
@@ -108,6 +107,53 @@ mako = flask_mako.MakoTemplates()
 class ConfigurationError(Exception):
     pass
 
+
+class ExtFlaskConfig(FlaskConfig):
+    """This is a variation on Flask's `Config` class which handles
+    directory and file names specially. If the name of a configuration
+    setting ends with `_DIR` (except `ROOT_DIR`) or `_FILE`, then if
+    its value is not an absolute name (i.e., doesn't begin with a slash),
+    the value of `ROOT_DIR` is prepended to it whenever the configuration
+    setting is looked at. This means that relative directory and file names
+    in the configuration are relative to `ROOT_DIR`.
+    """
+
+    class RelativePathName(str):
+        """“Marker” that a string is really a relative path name.
+        """
+        pass
+
+    def __setitem__(self, key, value):
+        if (key.endswith(('_DIR', '_FILE')) and key != 'ROOT_DIR'
+                and value[0] != '/'):
+            value = ExtFlaskConfig.RelativePathName(value)
+        super().__setitem__(key, value)
+
+    def __getitem__(self, key):
+        """Returns the value of a configuration item. As a special case,
+        configuration items that represent relative path names for files or
+        directories have the value of `ROOT_DIR` prepended. We insert a `.`
+        between the value of `ROOT_DIR` and the actual value to help with
+        debugging. If `ROOT_DIR` is undefined, we use `/ROOT_DIR_UNSET` as
+        a default value, which should at least make somewhat clear what is
+        going on; it would be nicer to raise an exception but that doesn't
+        seem to show up.
+        """
+        value = super().__getitem__(key)
+        root_dir = self.get('ROOT_DIR', '/ROOT_DIR_UNSET')
+        if isinstance(value, ExtFlaskConfig.RelativePathName):
+            return os.path.join(root_dir, '.', value)
+        if key == 'BABEL_TRANSLATION_DIRECTORIES':
+            # This is a Flask-Babel setting that we can't really change,
+            # so it needs to be special-cased – it is a semicolon-separated
+            # search path of directory names, any of which could be relative.
+
+            return ";".join(
+                [os.path.join(root_dir, '.', fn) if fn[0] != '/' else fn
+                 for fn in value.split(';')])
+        return value
+
+
 class LinOTPApp(Flask):
     """
     The main LinOTP Flask application instance
@@ -120,7 +166,9 @@ class LinOTPApp(Flask):
     """Currently activated controller names"""
 
     def __init__(self):
-        super(LinOTPApp, self).__init__(__name__, static_folder='public', static_url_path='/static')
+        self.config_class = ExtFlaskConfig  # our special `Config` class
+        super().__init__(__name__,
+                         static_folder='public', static_url_path='/static')
 
     def _run_setup(self):
         """

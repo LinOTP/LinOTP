@@ -86,11 +86,11 @@ class AuditBase(object):
 
         rootdir = current_app.getConfigRootDirectory()
 
-        self.publicKeyFilename = self.config.get("AUDIT_PUBLIC_KEYFILE")
+        self.publicKeyFilename = self.config.get("AUDIT_PUBLIC_KEY_FILE")
         if not self.publicKeyFilename:
             self.publicKeyFilename = os.path.join(rootdir, "public.pem")
 
-        self.privateKeyFilename = self.config.get("AUDIT_PRIVATE_KEYFILE")
+        self.privateKeyFilename = self.config.get("AUDIT_PRIVATE_KEY_FILE")
         if not self.privateKeyFilename:
             self.privateKeyFilename = os.path.join(rootdir, "private.pem")
 
