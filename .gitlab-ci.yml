@@ -81,6 +81,8 @@ lint-useridresolver:
 include:
   - template: Code-Quality.gitlab-ci.yml
 
+# The test environment image is based on the linotp image
+# and is used to run the unit, functional and e2e tests
 build-testenv-image:debian-buster:
   stage: build-test-images
   image: docker:latest
@@ -243,6 +245,8 @@ build:buster (tag):
     max: 2
   <<: *docker-registry
   variables:
+    DEPENDENCY_SOURCE: ""
+    DEPENDENCY_GPG_KEYID: ""
     LINOTP_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp
     DOCKERFILE_PATH: linotpd/src/Dockerfile
   script:
@@ -268,8 +272,6 @@ build-linotp-docker-image:buster:
   extends: .build-linotp-docker-image
   needs: ["build:buster"]
   variables:
-    DEPENDENCY_SOURCE: ""
-    DEPENDENCY_GPG_KEYID: ""
     DEBIAN_RELEASE_NAME: buster
 
 .e2e-test:
