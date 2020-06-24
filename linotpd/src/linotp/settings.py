@@ -83,7 +83,7 @@ class Config:
     # AUDIT_DATABASE_URI='OFF'
     #  No audit logs are generated. Not recommended for production use.
     #
-    AUDIT_DATABASE_URI='SHARED'
+    AUDIT_DATABASE_URI = 'SHARED'
 
     # The filename of the audit public/private key files can be
     # set here
@@ -120,8 +120,8 @@ class Config:
     # Default: No checking
     MAINTENANCE_VERIFY_CLIENT_ENV_VAR = None
 
-    # RADIUS identifier to support outgoing radius requests like in radius token
-    # or with policy forwarding server to radius server
+    # RADIUS identifier to support outgoing radius requests like in radius
+    # token or with policy forwarding server to radius server
     RADIUS_NAS_IDENTIFIER = "LinOTP"
 
     @staticmethod
