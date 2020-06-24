@@ -28,6 +28,5 @@ selenium
 requests
 LinOTP
 LinOTPAdminClientCLI
-packaging
 flaky
 pysocks

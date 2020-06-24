@@ -26,13 +26,13 @@
 import logging
 import re
 from contextlib import contextmanager
-from packaging import version
 from typing import Optional
 from flaky import flaky
 import time
 import urllib3
 
 
+from pkg_resources import parse_version
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.common.exceptions import StaleElementReferenceException
@@ -307,8 +307,8 @@ class TestCase(object):
 
         filtered_version_string = '.'.join(filtered_version)
 
-        if(version.parse(filtered_version_string) <
-                version.parse(version_minimum)):
+        if(parse_version(filtered_version_string) <
+                parse_version(version_minimum)):
             raise SkipTest(
                 'LinOTP version %s (%s) <  %s' % (filtered_version_string,
                                                   self.linotp_version,
