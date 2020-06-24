@@ -35,7 +35,7 @@ class Config:
     LOGFILE_FILE_LINE_FORMAT = (
         "%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]"
     )
-    LOGFILE_MAX_LENGTH = 10240
+    LOGFILE_MAX_LENGTH = 10 * 1024 * 1024
     LOGFILE_MAX_VERSIONS = 10
     LOGFILE_NAME = "linotp.log"
 
