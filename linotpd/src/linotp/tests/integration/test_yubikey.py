@@ -25,13 +25,10 @@
 #
 
 
-import unittest
-import requests
 from requests.auth import HTTPDigestAuth
 
 import pytest
 
-from linotpadminclientcli.clientutils import linotpclient
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.validate import Validate
 
@@ -70,12 +67,6 @@ class TestYubikey(TestCase):
         if self.http_port:
             url = '%s:%s' % (self.http_host, self.http_port)
         # Enroll Yubikey
-        lotpc = linotpclient(self.http_protocol,
-                             url,
-                             admin=self.http_username,
-                             adminpw=self.http_password,
-                             cert=None, key=None,
-                             disable_ssl_certificate_validation=True)
         serialnum = "01382015"
         yubi_slot = 1
         serial = "UBAM%s_%s" % (serialnum, yubi_slot)
@@ -83,13 +74,21 @@ class TestYubikey(TestCase):
         yubi_otplen = 48
         description = "Enrolled by TestYubikey"
         public_uid = "ecebeeejedecebeg"
-        r1 = lotpc.inittoken({'type': 'yubikey',
-                              'serial': serial,
-                              'otpkey': otpkey,
-                              'otplen': yubi_otplen,
-                              'description': description})
-        assert r1['result']['status'], "Error enrolling Yubikey"
-        assert r1['result']['value'], "Error enrolling Yubikey"
+
+        inittoken_response = self.manage.admin_api_call(
+            "admin/init",
+            {
+                "type": "yubikey",
+                "serial": serial,
+                "otpkey": otpkey,
+                "otplen": yubi_otplen,
+                "description": description,
+            },
+        )
+        assert inittoken_response["result"]["status"], \
+            f"Error enrolling Yubikey: {inittoken_response}"
+        assert inittoken_response["result"]["value"], \
+            f"Error enrolling Yubikey: {inittoken_response}"
 
         self.user_view.select_user(self.user_name)
         pin = "asdf1234"

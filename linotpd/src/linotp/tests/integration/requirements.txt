@@ -27,6 +27,5 @@
 selenium
 requests
 LinOTP
-LinOTPAdminClientCLI
 flaky
 pysocks
