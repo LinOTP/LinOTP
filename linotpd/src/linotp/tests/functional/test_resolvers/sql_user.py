@@ -48,7 +48,7 @@ class SqlUserDB(object):
             self.engine = create_engine(connect)
             connection = self.engine.connect()
             self.sqlurl = self.engine.url
-            if self.sqlurl.drivername == 'mysql':
+            if self.sqlurl.drivername.startswith('mysql'):
                 self.userTable = ("%s.%s"
                                   % (self.sqlurl.database, self.tableName))
                 self.usercol = 'user'
