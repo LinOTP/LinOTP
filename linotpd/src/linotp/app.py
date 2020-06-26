@@ -22,6 +22,7 @@ import importlib
 import logging
 from logging.config import dictConfig as logging_dictConfig
 import re
+import sys
 import os
 import time
 from typing import List
@@ -86,10 +87,7 @@ log = logging.getLogger(__name__)
 start_time = time.time()
 this_dir = os.path.dirname(os.path.abspath(__file__))
 
-CONFIG_FILE_ENVVAR = "LINOTP_CONFIG_FILE"  # DRY
-CONFIG_FILE_NAME = os.path.join(os.path.dirname(this_dir), "linotp.cfg")
-if os.getenv(CONFIG_FILE_ENVVAR) is None:
-    os.environ[CONFIG_FILE_ENVVAR] = CONFIG_FILE_NAME
+LINOTP_CFG_DEFAULT = "linotp.cfg"  # within app.root_path
 
 # Monkey-patch the value of `_BABEL_IMPORTS`, which in the original
 # Flask-Mako package refers to the old-style Flask extension import
@@ -726,9 +724,17 @@ def create_app(config_name='default', config_extra=None):
     app.config.from_object(configs[config_name])
     configs[config_name].init_app(app)
 
-    configured_from_env = app.config.from_envvar(CONFIG_FILE_ENVVAR, silent=True)
-    if configured_from_env:
-        log.info(f"Configuration loaded from {os.environ[CONFIG_FILE_ENVVAR]}")
+    # Read the configuration files
+
+    linotp_cfg_files = os.environ.get("LINOTP_CFG", LINOTP_CFG_DEFAULT)
+    for fn in linotp_cfg_files.split(':'):
+        fn = os.path.join(app.config.root_path, fn)  # better message
+        if app.config.from_pyfile(fn, silent=True):
+            print(f"Configuration loaded from {fn}", file=sys.stderr)
+        else:
+            print(f"Configuration from {fn} failed"
+                  " (check location and permissions)",
+                  file=sys.stderr)
 
     if config_extra is not None:
         app.config.update(config_extra)
