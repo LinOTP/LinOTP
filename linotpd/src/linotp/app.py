@@ -141,6 +141,26 @@ class ExtFlaskConfig(FlaskConfig):
         """
         self.config_schema = config_schema
 
+    def from_env_variables(self):
+        """Take configuration settings from environment variables. E.g.,
+        an environment variable called `LINOTP_XYZ` can be used to set the
+        `XYZ` configuration item, where its value will be appropriately
+        converted from a string to whatever type `XYZ` uses (courtesy of
+        `ConfigSchema.check_item()` by way of `self.__setitem__()`). This
+        works only for configuration items that are listed in the
+        configuration schema (which can be construed as a security feature).
+
+        This is particularly useful when using LinOTP in a Docker-like
+        environment.
+        """
+        if self.config_schema is not None:
+            for key, value in os.environ.items():
+                if key.startswith('LINOTP_') and key != 'LINOTP_CFG':
+                    config_key = key[7:]
+                    item = self.config_schema.find_item(config_key)
+                    if item is not None:
+                        self[config_key] = os.environ[key]
+
     def __setitem__(self, key, value):
         """Implementation of `self[key] = value` with some additional magic.
         If a configuration schema is defined and `key` occurs in the schema,
@@ -767,6 +787,10 @@ def create_app(config_name='default', config_extra=None):
 
     if config_extra is not None:
         app.config.update(config_extra)
+
+    # Check the environment
+
+    app.config.from_env_variables()
 
     babel = Babel(app, configure_jinja=False, default_domain="linotp")
 
