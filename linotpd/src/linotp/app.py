@@ -116,12 +116,41 @@ class ExtFlaskConfig(FlaskConfig):
     in the configuration are relative to `ROOT_DIR`.
     """
 
+    config_schema = None
+
     class RelativePathName(str):
         """“Marker” that a string is really a relative path name.
         """
         pass
 
+    def __init__(self, *args, **kwargs):
+        """Initialise the LinOTP config mechanism. The `config_schema`
+        parameter, which isn't part of Flask's `Config` mechanism, lets us
+        associate a `ConfigSchema` object with this app (see `settings.py`);
+        this can later be used to convert and verify configuration items
+        as they are assigned.
+        """
+        self.set_schema(kwargs.pop('config_schema', None))
+        super().__init__(*args, **kwargs)
+
+    def set_schema(self, config_schema):
+        """Use `config_schema` as the configuration schema for this app.
+        The configuration schema specifies data types, conversion functions,
+        validation functions, and default values for configuration items; see
+        `settings.py` for details.
+        """
+        self.config_schema = config_schema
+
     def __setitem__(self, key, value):
+        """Implementation of `self[key] = value` with some additional magic.
+        If a configuration schema is defined and `key` occurs in the schema,
+        then use the schema to convert the `value` if necessary, and to
+        check its validity if appropriate. We also take special care of
+        relative path names to make sure they get the value of `ROOT_DIR`
+        prepended to them when they are retrieved.
+        """
+        if self.config_schema is not None:
+            value = self.config_schema.check_item(key, value)
         if (key.endswith(('_DIR', '_FILE')) and key != 'ROOT_DIR'
                 and value[0] != '/'):
             value = ExtFlaskConfig.RelativePathName(value)
