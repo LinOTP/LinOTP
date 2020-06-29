@@ -236,6 +236,9 @@ _config_schema = ConfigSchema([
                 "the audit database (in seconds). Connections that are older "
                 "than the value of this parameter are invalidated and "
                 "replaced when the application requests a new connection.")),
+    ConfigItem("CUSTOM_TEMPLATES_DIR", str, None, None, None,
+               ("Directory for custom Mako templates (in addition to the "
+                "ones provided by default).")),
     ConfigItem("MAKO_TRANSLATE_EXCEPTIONS", bool, to_boolean, None, False,
                ("Whether Mako should translate exceptions.")),
     ConfigItem("MAKO_DEFAULT_FILTERS", list, lambda s: s.split(','), None,

@@ -172,7 +172,7 @@ class ExtFlaskConfig(FlaskConfig):
         if self.config_schema is not None:
             value = self.config_schema.check_item(key, value)
         if (key.endswith(('_DIR', '_FILE')) and key != 'ROOT_DIR'
-                and value[0] != '/'):
+                and value and value[0] != '/'):
             value = ExtFlaskConfig.RelativePathName(value)
         super().__setitem__(key, value)
 
@@ -791,6 +791,16 @@ def create_app(config_name='default', config_extra=None):
     # Check the environment
 
     app.config.from_env_variables()
+
+    # Enable custom template directory for Mako. We can get away with this
+    # because Mako's `TemplateLookup` object is only created when the first
+    # template is rendered. Note that “`app.template_folder` as a tuple” is
+    # a Flask-Mako thing and won't work with Jinja2; if we ever decide we
+    # want to move over, we will need to come up with something else.
+
+    if app.config["CUSTOM_TEMPLATES_DIR"] is not None:
+        app.template_folder = (app.config["CUSTOM_TEMPLATES_DIR"],
+                               app.template_folder)
 
     babel = Babel(app, configure_jinja=False, default_domain="linotp")
 
