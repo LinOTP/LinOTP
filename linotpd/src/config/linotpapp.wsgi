@@ -1,14 +1,22 @@
 #!/usr/bin/env python3
+
 import os
-from pathlib import Path
 from linotp.app import create_app
 
-root_dir = Path(__file__).parent
+# We're assuming that there are distribution defaults in
+# /usr/share/linotp/linotp.cfg and local adaptations in
+# /etc/linotp2/linotp.cfg.
 
-config_file_path = root_dir / 'linotp.cfg'
-# Configure from linotp.cfg in the same directory as this wsgi file
-os.environ['LINOTP_CONFIG_FILE'] = str(config_file_path)
+cfg_files = (
+    "/usr/share/linotp/linotp.cfg",
+    "/etc/linotp2/linotp.cfg",
+)
+os.environ['LINOTP_CFG'] = ":".join(cfg_files)
 
+# Relative paths in the linotp.cfg files will be taken as
+# relative to /etc/linotp2
+
+os.environ['LINOTP_ROOT_DIR'] = os.path.dirname(cfg_files[-1])
 
 application = create_app('production')
 
