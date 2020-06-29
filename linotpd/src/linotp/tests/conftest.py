@@ -60,7 +60,7 @@ def pytest_addoption(parser):
         dest="database_uri",
         action="store",
         default=os.environ.get(
-            'SQLALCHEMY_DATABASE_URI', "sqlite:///{}"),
+            'LINOTP_DATABASE_URL', "sqlite:///{}"),
         help=("sqlalchemy database URI to allow tests to run "
               "against a particular database")
         )
