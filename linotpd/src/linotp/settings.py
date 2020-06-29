@@ -153,6 +153,8 @@ _config_schema = ConfigSchema([
     ConfigItem("ROOT_DIR", str, None, None, "/ROOT_DIR_UNSET",
                ("The directory prepended to relative directory and file "
                 "names in configuration files.")),
+    ConfigItem("CACHE_DIR", str, None, None, "cache",
+               ("Directory for miscellaneous resolver caches.")),
     ConfigItem("CONTROLLERS", str, None, None,
                ("admin audit auth gettoken "
                 "helpdesk:/api/helpdesk:HelpdeskController "
@@ -211,7 +213,7 @@ _config_schema = ConfigSchema([
                ("What type of Beaker cache to use (`memory` or `file`). "
                 "If you don't know what this does, you probably don't "
                 "want to mess with it.")),
-    ConfigItem("BEAKER_CACHE_DIR", str, None, None, "cache",
+    ConfigItem("BEAKER_CACHE_DIR", str, None, None, "beaker_cache",
                ("Directory used for the Beaker cache if `BEAKER_CACHE_TYPE` "
                 "is `file`.")),
     ConfigItem("SECRET_FILE", str, None, None, "encKey",

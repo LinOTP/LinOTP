@@ -232,12 +232,12 @@ class LinOTPApp(Flask):
             log.exception('failed to assign hsm device: %r' % exx)
             raise exx
 
-        l_config = getLinotpConfig()
+        l_config = getLinotpConfig()  # SQL-based configuration
 
         resolver_setup_done = config.get('resolver_setup_done', False)
         if resolver_setup_done is False:
             try:
-                cache_dir = config.get("app_conf", {}).get("cache_dir", None)
+                cache_dir = self.config["CACHE_DIR"]
                 setupResolvers(config=l_config, cache_dir=cache_dir)
                 config['resolver_setup_done'] = True
             except Exception as exx:
@@ -330,7 +330,7 @@ class LinOTPApp(Flask):
         create the request context for all controllers
         """
 
-        linotp_config = getLinotpConfig()
+        linotp_config = getLinotpConfig()  # SQL-based configuration
 
         # make the request id available in the request context
         request_context['RequestId'] = environment['REQUEST_ID']
@@ -632,11 +632,9 @@ def setup_cache(app):
     """Initialise the Beaker cache for this app."""
 
     cache_opts = {}
-    cache_opts['cache_type'] = app.config.get("BEAKER_CACHE_TYPE", "memory")
+    cache_opts['cache_type'] = app.config["BEAKER_CACHE_TYPE"]
     if cache_opts['cache_type'] == 'file':
-        beaker_dir = app.config.get(
-            "BEAKER_CACHE_DIR",
-            os.path.join(app.getConfigRootDirectory(), "cache"))
+        beaker_dir = app.config["BEAKER_CACHE_DIR"]
         cache_opts['cache.data_dir'] = os.path.join(beaker_dir, 'data')
         cache_opts['cache.lock_dir'] = os.path.join(beaker_dir, 'lock')
     app.cache = CacheManager(**parse_cache_config_options(cache_opts))
