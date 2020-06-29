@@ -33,7 +33,7 @@ import logging
 import json
 
 import flask
-from flask import redirect
+from flask import current_app, redirect
 from flask_babel import gettext as _
 
 from linotp.flap import (
@@ -181,7 +181,7 @@ class ManageController(BaseController):
         '''
 
         try:
-            c.debug = bool(config.get('debug', False))
+            c.debug = current_app.config['DEBUG']
             c.title = "LinOTP Management"
             admin_user = getUserFromRequest(request)
 
