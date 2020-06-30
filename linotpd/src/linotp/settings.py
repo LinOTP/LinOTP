@@ -77,6 +77,19 @@ def check_membership(allowed={}):
     return f
 
 
+def check_absolute_pathname():
+    """Factory function that will return a function that ensures that
+    `value` is an absolute path name. Used to check `ROOT_DIR`.
+    """
+    def f(key, value):
+        if not value or value[0] != '/':
+            raise LinOTPConfigValueError(
+                f"{key} must be an absolute path name but {value} is relative."
+            )
+    f.__doc__ = f"value is an absolute path name"
+    return f
+
+
 @dataclass
 class ConfigItem:
     """This class represents individual configuration settings. A
@@ -150,7 +163,9 @@ class ConfigSchema:
 
 
 _config_schema = ConfigSchema([
-    ConfigItem("ROOT_DIR", str, default="/ROOT_DIR_UNSET",
+    ConfigItem("ROOT_DIR", str, default="",
+               # `ROOT_DIR` defaults to `app.root_path` in `init_app()` below.
+               validate=check_absolute_pathname(),
                help=("The directory prepended to relative directory and file "
                      "names in configuration files.")),
     ConfigItem("CACHE_DIR", str, default="cache",
