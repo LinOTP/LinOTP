@@ -150,134 +150,139 @@ class ConfigSchema:
 
 
 _config_schema = ConfigSchema([
-    ConfigItem("ROOT_DIR", str, None, None, "/ROOT_DIR_UNSET",
-               ("The directory prepended to relative directory and file "
-                "names in configuration files.")),
-    ConfigItem("CACHE_DIR", str, None, None, "cache",
-               ("Directory for miscellaneous resolver caches.")),
-    ConfigItem("CONTROLLERS", str, None, None,
-               ("admin audit auth gettoken "
-                "helpdesk:/api/helpdesk:HelpdeskController "
-                "manage selfservice system "
-                "test testing tools maintenance monitoring validate "
-                "userservice reporting"),
-               ("List of all enabled controllers. Any controller `FOO` "
-                "mentioned here will be imported from "
-                "`linotp3.controllers.FOO` and registered on `/FOO`. "
-                "You can specify a different URL prefix by listing the "
-                "controller as `FOO:/bar`, which will register it "
-                "on `/bar` instead.")),
-    ConfigItem("TOKEN_MODULES", str, None, None, "",
-               ("Token support modules to enable. If this parameter is "
-                "empty, all available token modules will be loaded.")),
-    ConfigItem("LOGFILE_DIR", str, None, None, "logs",
-               ("Directory for log files. We're using a "
-                "`RotatingFileHandler` to manage log files, and the main "
-                "log file is written to `LOGFILE_DIR/LOGFILE_NAME`.")),
-    ConfigItem("LOGFILE_NAME", str, None, None, "linotp.log",
-               ("Name for the main log file. We're using a "
-                "`RotatingFileHandler` to manage log files, and the main "
-                "log file is written to `LOGFILE_DIR/LOGFILE_NAME`.")),
-    ConfigItem("LOGFILE_FILE_LINE_FORMAT", str, None, None,
-               ("%(asctime)s %(levelname)s: %(message)s "
-                "[in %(pathname)s:%(lineno)d]"),
-               ("Format for individual lines in the main log file. "
-                "Refer to the Python documentation for the details on "
-                "log file format strings.")),
-    ConfigItem("LOGFILE_MAX_LENGTH", int, None,
-               check_int_in_range(min=0), 10*1024*1024,
-               ("Log files will be rotated when they reach this length "
-                "(in bytes)")),
-    ConfigItem("LOGFILE_MAX_VERSIONS", int, None,
-               check_int_in_range(min=0), 10,
-               ("Up to this many old log files will be kept.")),
-    ConfigItem("LOGGING_FILE_LEVEL", str, None,
-               check_membership(VALID_LOG_LEVELS), "WARNING",
-               ("Messages will be written to the log file only if they "
-                "are at this level or above. Messages must clear "
-                "`LOGGING_LEVEL` first, i.e., even if `LOGGING_FILE_LEVEL` "
-                "is more relaxed than `LOGGING_LEVEL`, only messages "
-                "at `LOGGING_LEVEL` or above will be logged to the file.")),
-    ConfigItem("LOGGING_LEVEL", str, None,
-               check_membership(VALID_LOG_LEVELS), "INFO",
-               ("Messages will be logged only if the are at this level or "
-                "above.")),
-    ConfigItem("LOGGING", dict, json.loads, None, None,
-               ("You can completely redefine the LinOTP logging setup by "
-                "passing a configuration dictionary in `LOGGING`. Do this "
-                "only if you know what you are doing. The default value "
-                "of `None`  enables a basic setup based on the "
-                "`LOGFILE_*` and `LOGGING_*` parameters.")),
-    ConfigItem("BEAKER_CACHE_TYPE", str, None,
-               check_membership({"memory", "file"}), "memory",
-               ("What type of Beaker cache to use (`memory` or `file`). "
-                "If you don't know what this does, you probably don't "
-                "want to mess with it.")),
-    ConfigItem("BEAKER_CACHE_DIR", str, None, None, "beaker_cache",
-               ("Directory used for the Beaker cache if `BEAKER_CACHE_TYPE` "
-                "is `file`.")),
-    ConfigItem("SECRET_FILE", str, None, None, "encKey",
-               ("Contains a server-specific encryption key.")),
-    ConfigItem("AUDIT_DATABASE_URI", str, None, None, "SHARED",
-               ("Determines the method used for audit logging. Valid values "
-                "are: `OFF` (no audit logs are generated, not recommended "
-                "for production use), `SHARED` (audit logs are written to "
-                "a table in the main LinOTP database as specified by "
-                "`SQLALCHEMY_DATABASE_URI`, simple but not recommended "
-                "for production use), or an SQLAlchemy database URI "
-                "which specifies the database to be used. You need to "
-                "ensure that the database exists and is accessed with the "
-                "proper credentials and permissions.")),
-    ConfigItem("AUDIT_PUBLIC_KEY_FILE", str, None, None, "public.pem",
-               ("The public key used for the audit log.")),
-    ConfigItem("AUDIT_PRIVATE_KEY_FILE", str, None, None, "private.pem",
-               ("The private key used for the audit log.")),
-    ConfigItem("AUDIT_POOL_RECYCLE", int, None,
-               check_int_in_range(min=0), 3600,
-               ("Recycle time for the SQLAlchemy connection pool used for "
-                "the audit database (in seconds). Connections that are older "
-                "than the value of this parameter are invalidated and "
-                "replaced when the application requests a new connection.")),
-    ConfigItem("CUSTOM_TEMPLATES_DIR", str, None, None, None,
-               ("Directory for custom Mako templates (in addition to the "
-                "ones provided by default).")),
-    ConfigItem("MAKO_TRANSLATE_EXCEPTIONS", bool, to_boolean, None, False,
-               ("Whether Mako should translate exceptions.")),
-    ConfigItem("MAKO_DEFAULT_FILTERS", list, lambda s: s.split(','), None,
-               ["h"],
-               ("Default filters applied when Mako renders variables into "
-                "templates. You will definitely want `h` here because not "
-                "escaping HTML can lead to subtle security issues. You can "
-                "add other values separated by commas but please, please, "
-                "PLEASE do that only if you know what you're doing. Or, "
-                "even better, don't do it at all.")),
-    ConfigItem("BABEL_TRANSLATION_DIRECTORIES", str, None, None, "i18n",
-               ("Where LinOTP will look for `*.mo` files for translations. "
-                "This is actually a PATH-type sequence of directories in "
-                "a string, separated by semicolons. (Don't blame us; it's "
-                "a Flask-Babel thing.)")),
-    ConfigItem("BABEL_DOMAIN", str, None, None, "linotp",
-               ("LinOTP message catalog files are called `linotp.mo`. Tweak "
-                "this setting at your own risk.")),
-    ConfigItem("HELP_URL", str, None, None,
-               "https://linotp.org/doc/{0}/index.html",
-               ("Where the LinOTP online help may be found. A `{0}` will "
-                "be replaced with the major version number of the running "
-                "LinOTP instance. (If there is no `{0}` in the URL that is "
-                "not a big deal.) You can change this, but if you know a "
-                "better place to get LinOTP help than the default value "
-                "then by all means let us know about it.")),
-    ConfigItem("MAINTENANCE_VERIFY_CLIENT_ENV_VAR", str, None, None, "",
-               ("The maintenance controller can be configured to only serve "
-                "responses to clients that offer a valid client certificate. "
-                "If set, we will check that this variable exists before "
-                "processing a request. For Apache, a useful value "
-                "might be `SSL_CLIENT_S_DN_CN`.")),
-    ConfigItem("RADIUS_NAS_IDENTIFIER", str, None, None, "LinOTP",
-               ("A RADIUS identifier to support outgoing RADIUS requests "
-                "like in RADIUS token or with policy forwarding server to "
-                "RADIUS server. If you don't understand the previous sentence "
-                "you are in good company.")),
+    ConfigItem("ROOT_DIR", str, default="/ROOT_DIR_UNSET",
+               help=("The directory prepended to relative directory and file "
+                     "names in configuration files.")),
+    ConfigItem("CACHE_DIR", str, default="cache",
+               help=("Directory for miscellaneous resolver caches.")),
+    ConfigItem("CONTROLLERS", str,
+               default=("admin audit auth gettoken "
+                        "helpdesk:/api/helpdesk:HelpdeskController "
+                        "manage selfservice system "
+                        "test testing tools maintenance monitoring validate "
+                        "userservice reporting"),
+               help=("List of all enabled controllers. Any controller `FOO` "
+                     "mentioned here will be imported from "
+                     "`linotp3.controllers.FOO` and registered on `/FOO`. "
+                     "You can specify a different URL prefix by listing the "
+                     "controller as `FOO:/bar`, which will register it "
+                     "on `/bar` instead.")),
+    ConfigItem("TOKEN_MODULES", str, default="",
+               help=("Token support modules to enable. If this parameter is "
+                     "empty, all available token modules will be loaded.")),
+    ConfigItem("LOGFILE_DIR", str, default="logs",
+               help=("Directory for log files. We're using a "
+                     "`RotatingFileHandler` to manage log files, and the main "
+                     "log file is written to `LOGFILE_DIR/LOGFILE_NAME`.")),
+    ConfigItem("LOGFILE_NAME", str, default="linotp.log",
+               help=("Name for the main log file. We're using a "
+                     "`RotatingFileHandler` to manage log files, and the main "
+                     "log file is written to `LOGFILE_DIR/LOGFILE_NAME`.")),
+    ConfigItem("LOGFILE_FILE_LINE_FORMAT", str,
+               default=("%(asctime)s %(levelname)s: %(message)s "
+                        "[in %(pathname)s:%(lineno)d]"),
+               help=("Format for individual lines in the main log file. "
+                     "Refer to the Python documentation for the details on "
+                     "log file format strings.")),
+    ConfigItem("LOGFILE_MAX_LENGTH", int, validate=check_int_in_range(min=0),
+               default=10*1024*1024,
+               help=("Log files will be rotated when they reach this length "
+                     "(in bytes)")),
+    ConfigItem("LOGFILE_MAX_VERSIONS", int, validate=check_int_in_range(min=0),
+               default=10,
+               help=("Up to this many old log files will be kept.")),
+    ConfigItem("LOGGING_FILE_LEVEL", str,
+               validate=check_membership(VALID_LOG_LEVELS), default="WARNING",
+               help=("Messages will be written to the log file only if they "
+                     "are at this level or above. Messages must clear "
+                     "`LOGGING_LEVEL` first, i.e., even if "
+                     "`LOGGING_FILE_LEVEL` is more relaxed than "
+                     "`LOGGING_LEVEL`, only messages at `LOGGING_LEVEL` or "
+                     "above will be logged to the file.")),
+    ConfigItem("LOGGING_LEVEL", str,
+               validate=check_membership(VALID_LOG_LEVELS), default="INFO",
+               help=("Messages will be logged only if the are at this level "
+                     "or above.")),
+    ConfigItem("LOGGING", dict, convert=json.loads, default=None,
+               help=("You can completely redefine the LinOTP logging setup by "
+                     "passing a configuration dictionary in `LOGGING`. Do "
+                     "this only if you know what you are doing. The default "
+                     "value of `None`  enables a basic setup based on the "
+                     "`LOGFILE_*` and `LOGGING_*` parameters.")),
+    ConfigItem("BEAKER_CACHE_TYPE", str,
+               validate=check_membership({"memory", "file"}), default="memory",
+               help=("What type of Beaker cache to use (`memory` or `file`). "
+                     "If you don't know what this does, you probably don't "
+                     "want to mess with it.")),
+    ConfigItem("BEAKER_CACHE_DIR", str, default="beaker_cache",
+               help=("Directory used for the Beaker cache if "
+                     "`BEAKER_CACHE_TYPE` is `file`.")),
+    ConfigItem("SECRET_FILE", str, default="encKey",
+               help=("Contains a server-specific encryption key.")),
+    ConfigItem("AUDIT_DATABASE_URI", str, default="SHARED",
+               help=("Determines the method used for audit logging. Valid "
+                     "values are: `OFF` (no audit logs are generated, not "
+                     "recommended for production use), `SHARED` (audit logs "
+                     "are written to a table in the main LinOTP database as "
+                     "specified by `SQLALCHEMY_DATABASE_URI`, simple but not "
+                     "recommended for production use), or an SQLAlchemy "
+                     "database URI which specifies the database to be used. "
+                     "You need to ensure that the database exists and is "
+                     "accessed with the proper credentials and permissions.")),
+    ConfigItem("AUDIT_PUBLIC_KEY_FILE", str, default="public.pem",
+               help=("The public key used for the audit log.")),
+    ConfigItem("AUDIT_PRIVATE_KEY_FILE", str, default="private.pem",
+               help=("The private key used for the audit log.")),
+    ConfigItem("AUDIT_POOL_RECYCLE", int, validate=check_int_in_range(min=0),
+               default=3600,
+               help=("Recycle time for the SQLAlchemy connection pool used "
+                     "for the audit database (in seconds). Connections that "
+                     "are older than the value of this parameter are "
+                     "invalidated and replaced when the application requests "
+                     "a new connection.")),
+    ConfigItem("CUSTOM_TEMPLATES_DIR", str, default=None,
+               help=("Directory for custom Mako templates (in addition to the "
+                     "ones provided by default).")),
+    ConfigItem("MAKO_TRANSLATE_EXCEPTIONS", bool, convert=to_boolean,
+               default=False,
+               help=("Whether Mako should translate exceptions.")),
+    ConfigItem("MAKO_DEFAULT_FILTERS", list, convert=lambda s: s.split(','),
+               default=["h"],
+               help=("Default filters applied when Mako renders variables "
+                     "into templates. You will definitely want `h` here "
+                     "because not escaping HTML can lead to subtle security "
+                     "issues. You can add other values separated by commas "
+                     "but please, please, PLEASE do that only if you know "
+                     "what you're doing. Or, even better, don't do it at "
+                     "all.")),
+    ConfigItem("BABEL_TRANSLATION_DIRECTORIES", str, default="i18n",
+               help=("Where LinOTP will look for `*.mo` files for "
+                     "translations. This is actually a PATH-type sequence of "
+                     "directories in a string, separated by semicolons. "
+                     "(Don't blame us; it's a Flask-Babel thing.)")),
+    ConfigItem("BABEL_DOMAIN", str, default="linotp",
+               help=("LinOTP message catalog files are called `linotp.mo`. "
+                     "Tweak this setting at your own risk.")),
+    ConfigItem("HELP_URL", str,
+               default="https://linotp.org/doc/{0}/index.html",
+               help=("Where the LinOTP online help may be found. A `{0}` will "
+                     "be replaced with the major version number of the "
+                     "running LinOTP instance. (If there is no `{0}` in the "
+                     "URL that is not a big deal.) You can change this, but "
+                     "if you know a better place to get LinOTP help than the "
+                     "default value then by all means let us know about it; "
+                     "we might want to offer whomever wrote it a job.")),
+    ConfigItem("MAINTENANCE_VERIFY_CLIENT_ENV_VAR", str, default="",
+               help=("The maintenance controller can be configured to only "
+                     "serve responses to clients that offer a valid client "
+                     "certificate. If set, we will check that this variable "
+                     "exists before processing a request. For Apache, a "
+                     "useful value might be `SSL_CLIENT_S_DN_CN`.")),
+    ConfigItem("RADIUS_NAS_IDENTIFIER", str, default="LinOTP",
+               help=("A RADIUS identifier to support outgoing RADIUS requests "
+                     "like in RADIUS token or with policy forwarding server "
+                     "to RADIUS server. If you don't understand the previous "
+                     "sentence you are in good company.")),
 ])
 
 
