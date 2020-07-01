@@ -42,7 +42,7 @@ if isinstance(lang, list):
 <head>
 <title>${_("Management - LinOTP")}</title>
 
-<meta name="copyright" content="KeyIdentity GmbH">
+<meta name="copyright" content="arxes-tolina GmbH">
 <meta name="keywords" content="LinOTP 2 manage">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
@@ -263,7 +263,7 @@ if isinstance(lang, list):
 
 </div>
 <div id="footer">
-    <span id="linotp_version">${c.version}</span> --- &copy; ${c.licenseinfo}
+    <span id="linotp_version">${c.version}</span> – ${c.licenseinfo}
 </div>
 
 <span id="include_footer"> </span>
@@ -1025,7 +1025,7 @@ if isinstance(lang, list):
 
 <div id='dialog_about'>
     <p id='about_id'>${_("LinOTP - the open source solution for two factor authentication.")}</p>
-    <p id='about_copyright'>${_("Copyright (C) 2010 - 2019 KeyIdentity GmbH")}</p>
+    <p id='about_copyright'>${_("Copyright (C) arxes-tolina GmbH")}</p>
     <p id='about_licens'>${_("Licensed under AGPLv3")}</p>
     <p id='about_lse_id'>${_("For more information please visit:")}</p>
     <p><a href="https://www.linotp.org" rel="noreferrer" target="_blank">https://www.linotp.org</a>
