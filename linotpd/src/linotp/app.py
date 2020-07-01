@@ -755,6 +755,36 @@ def setup_audit(app):
     c['audit'] = getAudit(c)
 
 
+def configure_app(app, config_name='default', config_extra=None):
+    """
+    This used to be part of `create_app()` but it is easier to test if
+    it is its own function.
+    """
+
+    app.config.from_object(configs[config_name])
+    configs[config_name].init_app(app)
+
+    # Read the configuration files
+
+    linotp_cfg_files = os.environ.get("LINOTP_CFG", LINOTP_CFG_DEFAULT)
+    if linotp_cfg_files:
+        for fn in linotp_cfg_files.split(':'):
+            fn = os.path.join(app.config.root_path, fn)  # better message
+            if app.config.from_pyfile(fn, silent=True):
+                print(f"Configuration loaded from {fn}", file=sys.stderr)
+            else:
+                print(f"Configuration from {fn} failed"
+                      " (check location and permissions)",
+                      file=sys.stderr)
+
+    if config_extra is not None:
+        app.config.update(config_extra)
+
+    # Check the environment for further settings
+
+    app.config.from_env_variables()
+
+
 def create_app(config_name='default', config_extra=None):
     """
     Generate a new instance of the Flask app
@@ -768,27 +798,7 @@ def create_app(config_name='default', config_extra=None):
     """
     app = LinOTPApp()
 
-    app.config.from_object(configs[config_name])
-    configs[config_name].init_app(app)
-
-    # Read the configuration files
-
-    linotp_cfg_files = os.environ.get("LINOTP_CFG", LINOTP_CFG_DEFAULT)
-    for fn in linotp_cfg_files.split(':'):
-        fn = os.path.join(app.config.root_path, fn)  # better message
-        if app.config.from_pyfile(fn, silent=True):
-            print(f"Configuration loaded from {fn}", file=sys.stderr)
-        else:
-            print(f"Configuration from {fn} failed"
-                  " (check location and permissions)",
-                  file=sys.stderr)
-
-    if config_extra is not None:
-        app.config.update(config_extra)
-
-    # Check the environment
-
-    app.config.from_env_variables()
+    configure_app(app, config_name, config_extra)
 
     # Enable custom template directory for Mako. We can get away with this
     # because Mako's `TemplateLookup` object is only created when the first
