@@ -333,6 +333,17 @@ docker-build-linotp: docker-build-linotp-builder $(BUILDDIR)/dockerfy $(BUILDDIR
 		-t $(DOCKER_IMAGE) \
 		$(BUILDDIR)
 
+# Build testing Docker Container
+# This container is based on the linotp image and includes additional
+# dependencies for testing targets.
+# It needs an existing linotp image available
+# which can be built by make docker-build-linotp
+.PHONY: docker-build-testenv
+docker-build-linotp-test-image:
+	cd $(TESTS_DIR) \
+		&& $(DOCKER_BUILD) \
+			-t linotp_test_env .
+
 SELENIUM_DB_IMAGE=mysql:latest
 .PHONY: docker-build-selenium
 docker-build-selenium: docker-build-linotp
@@ -415,15 +426,6 @@ $(BUILDDIR)/dockerfy:
 #
 # # Unit tests
 #
-
-# Build Unittest Docker Container, based on linotp image
-# This needs an existing linotp image available
-# which can be built by make docker-build-linotp
-.PHONY: docker-build-linotp-test-image
-docker-build-linotp-test-image:
-	cd $(UNIT_TESTS_DIR) \
-		&& $(DOCKER_BUILD) \
-			-t linotp_test_env .
 
 # Run Unit tests. Use $PYTESTARGS for additional pytest settings
 .PHONY: docker-run-linotp-unit
