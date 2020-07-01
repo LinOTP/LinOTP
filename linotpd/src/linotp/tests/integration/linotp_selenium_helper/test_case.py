@@ -68,7 +68,6 @@ def is_flaky_exception(err, *args):
     return False
 
 
-@flaky(rerun_filter=is_flaky_exception)
 class TestCase(object):
     """Basic LinOTP TestCase class"""
 
