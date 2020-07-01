@@ -5,6 +5,13 @@ ENV LINOTP_CONFIG_FILE=
 #
 # Docker-Image >> linotp_test_env <<
 #
+# This container is based on the linotp image and includes additional
+# dependencies for testing targets.
+# It needs an existing linotp image available
+# which can be built by make docker-build-linotp
+#
+# The container can be built by running the toplevel target:
+#   make docker-build-testenv
 
 
 #Unit test specific packages
