@@ -13,16 +13,18 @@ ENV LINOTP_CONFIG_FILE=
 # The container can be built by running the toplevel target:
 #   make docker-build-testenv
 
-
-#Unit test specific packages
+#Unit test specific packages - Debian packages
 RUN apt-get update && apt-get install --no-install-recommends --yes \
     make \
+    python3-autopep8 \
     python3-coverage \
     python3-dev \
     python3-flask-testing \
+    python3-flaky \
     python3-freezegun \
     python3-mock \
     python3-pytest \
+    python3-pytest-cov \
     python3-pytest-flask \
     python3-wheel \
     pylint3 \
@@ -42,14 +44,17 @@ VOLUME /linotpsrc
 WORKDIR /linotpsrc/linotpd/src/linotp/tests/unit
 
 RUN useradd -ms /bin/bash tester
-USER tester
 
-#set Env Variable so pip install puts required files into venv folder
-ENV PYTHONUSERBASE=/tmp/venv
-
-RUN pip3 install --user --upgrade \
+# Install python modules which do not have equivalent Debian packages
+RUN pip3 install --upgrade \
     mockldap \
-    pytest-test-groups
+    "pytest>=5.0" \
+    pytest-freezegun \
+    pytest-testconfig \
+    pytest-test-groups \
+    pytest-selenium
+
+USER tester
 
 ENTRYPOINT []
 
