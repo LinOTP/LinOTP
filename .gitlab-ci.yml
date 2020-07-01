@@ -13,7 +13,8 @@ variables:
   CI_IMAGE_PREFIX: $REGISTRY_URL/$CI_PROJECT_NAME/ci
   NOSE_COVER_PACKAGE: linotp
   DOCKER_COMPOSE_VERSION: "1.22.0"
-
+  # Docker network per build - needed for DNS resolution between services (service linotp needs db)
+  FF_NETWORK_PER_BUILD: 1
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'schedule'           # Execute nightly jobs
