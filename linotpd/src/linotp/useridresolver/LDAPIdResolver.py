@@ -1770,7 +1770,6 @@ def get_params():
 
     return simple, params
 
-
 def main():
 
     # assume that with console usage, we are interested to see every detail
@@ -1801,6 +1800,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    from linotp.app import create_app
+    app = create_app('testing')
+    with app.test_request_context():
+        app.preprocess_request()
+        main()
 
 # eof #########################################################################
