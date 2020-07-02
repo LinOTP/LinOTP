@@ -498,7 +498,10 @@ class SqlUserIdResolver(UserIdResolver):
 
         fill_element_from_dict(driver, 'sql_resolvername', 'name', data)
 
-        for field in ('server', 'database', 'user', 'password',
+        if 'driver' in data:
+            fill_element_from_dict(driver, 'sql_driver', 'driver', data)
+
+        for field in ('driver', 'server', 'database', 'user', 'password',
                       'table', 'limit', 'encoding'):
             fill_element_from_dict(driver, 'sql_' + field, field, data)
 
