@@ -48,7 +48,7 @@ log = logging.getLogger(__name__)
 
 class SQLUser(object):
 
-    def __init__(self, connect='sqlite:///:memory:'):
+    def __init__(self, connect='sqlite://'):
         self.tableName = 'User2'
         self.usercol = '"user"'
         self.userTable = '"%s"' % (self.tableName)

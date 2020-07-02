@@ -44,7 +44,7 @@ log = logging.getLogger(__name__)
 
 class SQLData(object):
 
-    def __init__(self, connect='sqlite:///:memory:'):
+    def __init__(self, connect='sqlite://'):
         self.userTable = 'Config'
 
         self.connection = None
