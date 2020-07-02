@@ -30,9 +30,9 @@
 #
 # rev01: initial release
 
-ENCFILE=/etc/linotp2/encKey
-LINOTPCONFIG=/etc/linotp2/linotp.ini
-ALCHEMYURL=`grep ^sqlalchemy.url /etc/linotp2/linotp.ini | cut -d '=' -f2`
+ENCFILE=/etc/linotp/encKey
+LINOTPCONFIG=/etc/linotp/linotp.ini
+ALCHEMYURL=`grep ^sqlalchemy.url /etc/linotp/linotp.ini | cut -d '=' -f2`
 
 USERNAME=`echo $ALCHEMYURL | cut -d: -f2 | cut -d'/' -f 3-`
 PASSWORD=`echo $ALCHEMYURL | cut -d: -f3- | cut -d '@' -f1`
@@ -43,13 +43,13 @@ BACKUPFILE=linotp_backup_${DATUM}.sql
 BACKUPKEY=encKey_${DATUM}.gpg
 
 echo "--------- LSE LinOTP 2 backup -----------------------"
-echo "----- Backing up encryption Key ---------------------" 
+echo "----- Backing up encryption Key ---------------------"
 echo "Think of a good passphrase you can remember well..."
 echo
 
 gpg -c --cipher-algo AES256 -o $BACKUPKEY $ENCFILE
 
-echo "----- Backing up token database ---------------------" 
+echo "----- Backing up token database ---------------------"
 echo "We will now backup the database <<$DATABASE>> on the host <<$HOST>>."
 echo "This will be done with the user <<$USERNAME>>."
 echo "The database will be written to <<$BACKUPFILE>>."
@@ -61,6 +61,3 @@ else
 	echo "failed!"
 	exit 1
 fi
-
-
-

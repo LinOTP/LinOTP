@@ -44,7 +44,7 @@ from linotp.lib.context import request_context
 
 DEFAULT_MESSAGE = '<otp>'
 
-EMAIL_PROVIDER_TEMPLATE_ROOT = '/etc/linotp2/custom-templates/mailtemplates'
+EMAIL_PROVIDER_TEMPLATE_ROOT = '/etc/linotp/custom-templates/mailtemplates'
 EMAIL_PROVIDER_TEMPLATE_KEY = 'email_provider_template_root'
 
 LOG = logging.getLogger(__name__)

@@ -6,7 +6,7 @@
 #    dbc_go linotp "$@"
 #fi
 
-msg="LinOTP2: "
+msg="LinOTP: "
 
 echo_prio() {
     t=$(date +"%Y/%m/%d - %T")
@@ -46,11 +46,11 @@ echo_log() {
 #     INFO [linotp config] Installing new package?: true
 #     INFO [linotp config] Re-installing package?: false
 #     INFO [linotp config] Reconfiguring package?: false
-#     INFO [linotp config] Currently installed version: 
+#     INFO [linotp config] Currently installed version:
 #     INFO [linotp config] New version: 2.8~0dev0+g09d8dab-1~trusty
-#     INFO [linotp config] Version equal: 
-#     INFO [linotp config] Version upgrade: 
-#     INFO [linotp config] Version downgrade: 
+#     INFO [linotp config] Version equal:
+#     INFO [linotp config] Version upgrade:
+#     INFO [linotp config] Version downgrade:
 #
 #
 #  During installation following 'apt-get remove' this script is invoked twice
@@ -58,11 +58,11 @@ echo_log() {
 #     INFO [linotp config] Installing new package?: true
 #     INFO [linotp config] Re-installing package?: false
 #     INFO [linotp config] Reconfiguring package?: false
-#     INFO [linotp config] Currently installed version: 
+#     INFO [linotp config] Currently installed version:
 #     INFO [linotp config] New version: 2.8~0dev0+g09d8dab-1~trusty
-#     INFO [linotp config] Version equal: 
-#     INFO [linotp config] Version upgrade: 
-#     INFO [linotp config] Version downgrade: 
+#     INFO [linotp config] Version equal:
+#     INFO [linotp config] Version upgrade:
+#     INFO [linotp config] Version downgrade:
 #
 #     INFO [linotp config] Installing new package?: false
 #     INFO [linotp config] Re-installing package?: true
@@ -70,8 +70,8 @@ echo_log() {
 #     INFO [linotp config] Currently installed version: 2.8~0dev0+g09d8dab-1~trusty
 #     INFO [linotp config] New version: 2.8~0dev0+g09d8dab-1~trusty
 #     INFO [linotp config] Version equal: true
-#     INFO [linotp config] Version upgrade: 
-#     INFO [linotp config] Version downgrade: 
+#     INFO [linotp config] Version upgrade:
+#     INFO [linotp config] Version downgrade:
 #
 #
 #  During 'dpkg-reconfigure' this script is invoked once with following output:
@@ -81,8 +81,8 @@ echo_log() {
 #     INFO [linotp config] Currently installed version: 2.8~0dev0+g09d8dab-1~trusty
 #     INFO [linotp config] New version: 2.8~0dev0+g09d8dab-1~trusty
 #     INFO [linotp config] Version equal: true
-#     INFO [linotp config] Version upgrade: 
-#     INFO [linotp config] Version downgrade: 
+#     INFO [linotp config] Version upgrade:
+#     INFO [linotp config] Version downgrade:
 #
 #
 #  During package upgrade (dpkg -i) this script is invoked once with following output:
@@ -91,9 +91,9 @@ echo_log() {
 #     INFO [linotp config] Reconfiguring package?: false
 #     INFO [linotp config] Currently installed version: 2.8~0dev0+g09d8dab-1~trusty
 #     INFO [linotp config] New version: 2.9-1~trusty
-#     INFO [linotp config] Version equal: 
+#     INFO [linotp config] Version equal:
 #     INFO [linotp config] Version upgrade: true
-#     INFO [linotp config] Version downgrade: 
+#     INFO [linotp config] Version downgrade:
 #
 #
 #  During package downgrade (dpkg -i) this script is invoked once with following output:
@@ -102,14 +102,14 @@ echo_log() {
 #     INFO [linotp config] Reconfiguring package?: false
 #     INFO [linotp config] Currently installed version: 2.8~0dev0+g09d8dab-1~trusty
 #     INFO [linotp config] New version: 2.7.1-1~trusty
-#     INFO [linotp config] Version equal: 
+#     INFO [linotp config] Version equal:
 #     INFO [linotp config] Version upgrade:
 #     INFO [linotp config] Version downgrade: true
 
 
 MYSQLSERVER=/usr/sbin/mysqld
 MYSQLCLIENT=/usr/bin/mysql
-DBFILE_FS=/etc/linotp2/token.db
+DBFILE_FS=/etc/linotp/token.db
 
 
 # this function checks, if we are on a univention corparate server

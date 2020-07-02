@@ -28,7 +28,7 @@ override_dh_installdeb:
 	find debian/linotp/usr -ls | grep public
 	# Add a symlink to the custom style directory for apache to follow
 	find debian/linotp/usr -type d -name public -ls \
-		-execdir ln -s /etc/linotp2/custom-style {}/custom \;
+		-execdir ln -s /etc/linotp/custom-style {}/custom \;
 
 override_dh_compress:
 	# Prevent these files from being compressed to make it easier for the

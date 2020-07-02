@@ -29,12 +29,12 @@ WSGIPassAuthorization On
 Listen 81
 <VirtualHost _default_:81>
 
-    <Directory /etc/linotp2>
+    <Directory /etc/linotp>
         <Files linotpapp.wsgi>
             Require all granted
         </Files>
     </Directory>
-    WSGIScriptAlias /       /etc/linotp2/linotpapp.wsgi
+    WSGIScriptAlias /       /etc/linotp/linotpapp.wsgi
 
     # Do not serve unencrypted by default
     <Location / >
@@ -54,34 +54,34 @@ Listen 81
 <VirtualHost _default_:80>
 
 {{define "Server"}}
-    <Directory /etc/linotp2>
+    <Directory /etc/linotp>
         <Files linotpapp.wsgi>
             Require all granted
         </Files>
     </Directory>
-    WSGIScriptAlias /       /etc/linotp2/linotpapp.wsgi
+    WSGIScriptAlias /       /etc/linotp/linotpapp.wsgi
 
     <LocationMatch /ocra/(request|checkstatus|getActivationCode|calculateOtp)>
         AuthType Digest
-        AuthName "LinOTP2 admin area"
+        AuthName "LinOTP admin area"
         AuthDigestProvider file
-        AuthUserFile /etc/linotp2/admins
+        AuthUserFile /etc/linotp/admins
         Require valid-user
     </LocationMatch>
 
     <LocationMatch /(audit|manage|system|license|admin)>
         AuthType Digest
-        AuthName "LinOTP2 admin area"
+        AuthName "LinOTP admin area"
         AuthDigestProvider file
-        AuthUserFile /etc/linotp2/admins
+        AuthUserFile /etc/linotp/admins
         Require valid-user
     </LocationMatch>
 
     <Location /gettoken>
         AuthType Digest
-        AuthName "LinOTP2 gettoken"
+        AuthName "LinOTP gettoken"
         AuthDigestProvider file
-        AuthUserFile /etc/linotp2/gettoken-api
+        AuthUserFile /etc/linotp/gettoken-api
         Require valid-user
     </Location>
 
@@ -123,5 +123,5 @@ ErrorLog /dev/stderr
 
 # Do not use %q! This will reveal all parameters, including setting PINs and Keys!
 # Using SSL_CLINET_S_DN_CN will show you, which administrator did what task
-LogFormat "%h %l %u %t %>s \"%m %U %H\"  %b \"%{Referer}i\" \"%{User-agent}i\" \"%{SSL_CLIENT_S_DN_CN}x\"" LinOTP2
-CustomLog /dev/stdout LinOTP2
+LogFormat "%h %l %u %t %>s \"%m %U %H\"  %b \"%{Referer}i\" \"%{User-agent}i\" \"%{SSL_CLIENT_S_DN_CN}x\"" LinOTP
+CustomLog /dev/stdout LinOTP

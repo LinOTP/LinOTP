@@ -25,7 +25,7 @@
 #
 
 import configparser
-INI_FILE = "/etc/linotp2/linotp.ini"
+INI_FILE = "/etc/linotp/linotp.ini"
 
 def config_get(section, option, default="", ini_file=INI_FILE):
     config = configparser.ConfigParser()

@@ -56,10 +56,10 @@ def usage():
     Parameter:
     --otp=<encrypted OTP key, LinOtpKeyEnc>
     --iv=<LinOtpKeyIV>
-    --enckey=/etc/linotp2/encKey  (Filename of enckey)
+    --enckey=/etc/linotp/encKey  (Filename of enckey)
 
     program can be called this way:
-    linotp-decrypt-otpkey --otp=1c224d3e174ef69272413a0ece198215fa5c7fda12446ff9ac9406377b700d62246e151e0f4314ab7f25e76f27a5d979363ba46e0c0f80b51ea64b68ef4a36e38d290129641fb1670899c570010263ef8724b94ea5d08f91c0d106aab4d703e4 --iv=14c6d84d04b4e2a7a5f04e1134761f7e --enckey=/etc/linotp2/encKey
+    linotp-decrypt-otpkey --otp=1c224d3e174ef69272413a0ece198215fa5c7fda12446ff9ac9406377b700d62246e151e0f4314ab7f25e76f27a5d979363ba46e0c0f80b51ea64b68ef4a36e38d290129641fb1670899c570010263ef8724b94ea5d08f91c0d106aab4d703e4 --iv=14c6d84d04b4e2a7a5f04e1134761f7e --enckey=/etc/linotp/encKey
 
     response would be:
     CB4F416398FA7725F521DBCCCC19F3E9F8DF4727

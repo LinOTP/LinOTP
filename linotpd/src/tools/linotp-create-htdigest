@@ -29,13 +29,13 @@
 # Create the htdigest entries for LinOTP manage page with static user authentication
 #
 REALM="LinOTP2 admin area"
-DIGESTFILE=/etc/linotp2/admins
+DIGESTFILE=/etc/linotp/admins
 
 if [ $# -ne 2 ];
   then
 	echo "syntax: linotp-create-digest <username> <password>"
 	echo
-	echo "This file creates a user entry for LinOTP authentication in the manage area" 
+	echo "This file creates a user entry for LinOTP authentication in the manage area"
 	exit 1
 fi
 

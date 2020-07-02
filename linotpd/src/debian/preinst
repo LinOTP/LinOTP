@@ -1,9 +1,9 @@
 #!/bin/sh
 
-mkdir -p /etc/linotp2
+mkdir -p /etc/linotp
 
 if [ "$1" = "upgrade" ]; then
-	touch /etc/linotp2/we_are_doing_an_upgrade
+	touch /etc/linotp/we_are_doing_an_upgrade
 
 	# If user supplied stylesheets were placed under /usr/share/, move these
 	# to /etc/custom-style.
@@ -21,9 +21,9 @@ if [ "$1" = "upgrade" ]; then
 					echo "Removing old symlink: $oldfile"
 					rm $oldfile || exit 1
 				elif [ -f $oldfile ]; then
-					newfile=/etc/linotp2/custom-style/$controller-style.css
+					newfile=/etc/linotp/custom-style/$controller-style.css
 					echo "Moving custom file $oldfile -> $newfile"
-					mkdir -p /etc/linotp2/custom-style || exit 1
+					mkdir -p /etc/linotp/custom-style || exit 1
 					mv $oldfile $newfile || exit 1
 				fi
 			done
