@@ -660,28 +660,20 @@ def setup_db(app, drop_data=False):
     engine = create_engine(app.config.get("SQLALCHEMY_DATABASE_URI"))
     init_model(engine)
 
-    if drop_data:
-        app.logger.info("Dropping tables to erase all data...")
-        meta.metadata.drop_all(bind=meta.engine)
+    # (Re)create and setup database tables if they don't already exist
 
-    # Create database tables if they don't already exist
-
-    app.logger.info("Creating tables...")
-    meta.metadata.create_all(bind=meta.engine)
+    app.logger.info("Setting up database...")
 
     try:
-        app.logger.info("Check for database migration steps...")
-        run_data_model_migration(meta)
+        if drop_data:
+            app.logger.info("Dropping tables to erase all data...")
+            meta.metadata.drop_all(bind=meta.engine)
 
-        app.logger.info("Setting up config database default values...")
+        meta.metadata.create_all(bind=meta.engine)
+
+        run_data_model_migration(meta)
         set_defaults(app)
 
-    except Exception as exx:
-        app.logger.error("Exception occured during database setup: %r", exx)
-        meta.Session.rollback()
-        raise exx
-
-    try:
         # For the cloud mode, we require the `admin_user` table to
         # manage the admin users to allow password setting
 
@@ -700,8 +692,8 @@ def setup_db(app, drop_data=False):
                 username=admin_username, crypted_password=admin_password)
 
     except Exception as exx:
-        app.logger.error(
-            "Exception occured during cloud admin user setup: %r", exx)
+        app.logger.exception(
+            "Exception occured during database setup: %r", exx)
         meta.Session.rollback()
         raise exx
 
