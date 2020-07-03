@@ -172,7 +172,6 @@ setup(
         (
             'etc/linotp/',
             [
-                'config/linotp.cfg',
                 'config/linotpapp.wsgi',
                 'config/push-ca-bundle.crt',
                 # 'dictionary',
@@ -219,7 +218,8 @@ setup(
         (
             'share/linotp',
             [
-                'tools/LinotpLDAPProxy.pm'
+                'tools/LinotpLDAPProxy.pm',
+                'config/linotp.cfg',
             ]
         ),
     ],

@@ -18,12 +18,11 @@
 # settings are not to be confused with the actual configuration for
 # what LinOTP is doing, which is kept in the SQL database.
 
-
-
 import importlib
 import logging
 from logging.config import dictConfig as logging_dictConfig
 import re
+import sys
 import os
 import time
 from typing import List
@@ -32,7 +31,8 @@ import click
 from datetime import datetime
 from uuid import uuid4
 
-from flask import Flask, current_app, g as flask_g, jsonify, Blueprint, redirect
+from flask import (Flask, Config as FlaskConfig, current_app, g as flask_g,
+                   jsonify, Blueprint, redirect)
 from flask.cli import with_appcontext
 from flask_babel import Babel, gettext
 import flask_mako
@@ -87,10 +87,7 @@ log = logging.getLogger(__name__)
 start_time = time.time()
 this_dir = os.path.dirname(os.path.abspath(__file__))
 
-CONFIG_FILE_ENVVAR = "LINOTP_CONFIG_FILE"  # DRY
-CONFIG_FILE_NAME = os.path.join(os.path.dirname(this_dir), "linotp.cfg")
-if os.getenv(CONFIG_FILE_ENVVAR) is None:
-    os.environ[CONFIG_FILE_ENVVAR] = CONFIG_FILE_NAME
+LINOTP_CFG_DEFAULT = "linotp.cfg"  # within app.root_path
 
 # Monkey-patch the value of `_BABEL_IMPORTS`, which in the original
 # Flask-Mako package refers to the old-style Flask extension import
@@ -108,6 +105,102 @@ mako = flask_mako.MakoTemplates()
 class ConfigurationError(Exception):
     pass
 
+
+class ExtFlaskConfig(FlaskConfig):
+    """This is a variation on Flask's `Config` class which handles
+    directory and file names specially. If the name of a configuration
+    setting ends with `_DIR` (except `ROOT_DIR`) or `_FILE`, then if
+    its value is not an absolute name (i.e., doesn't begin with a slash),
+    the value of `ROOT_DIR` is prepended to it whenever the configuration
+    setting is looked at. This means that relative directory and file names
+    in the configuration are relative to `ROOT_DIR`.
+    """
+
+    config_schema = None
+
+    class RelativePathName(str):
+        """“Marker” that a string is really a relative path name.
+        """
+        pass
+
+    def __init__(self, *args, **kwargs):
+        """Initialise the LinOTP config mechanism. The `config_schema`
+        parameter, which isn't part of Flask's `Config` mechanism, lets us
+        associate a `ConfigSchema` object with this app (see `settings.py`);
+        this can later be used to convert and verify configuration items
+        as they are assigned.
+        """
+        self.set_schema(kwargs.pop('config_schema', None))
+        super().__init__(*args, **kwargs)
+
+    def set_schema(self, config_schema):
+        """Use `config_schema` as the configuration schema for this app.
+        The configuration schema specifies data types, conversion functions,
+        validation functions, and default values for configuration items; see
+        `settings.py` for details.
+        """
+        self.config_schema = config_schema
+
+    def from_env_variables(self):
+        """Take configuration settings from environment variables. E.g.,
+        an environment variable called `LINOTP_XYZ` can be used to set the
+        `XYZ` configuration item, where its value will be appropriately
+        converted from a string to whatever type `XYZ` uses (courtesy of
+        `ConfigSchema.check_item()` by way of `self.__setitem__()`). This
+        works only for configuration items that are listed in the
+        configuration schema (which can be construed as a security feature).
+
+        This is particularly useful when using LinOTP in a Docker-like
+        environment.
+        """
+        if self.config_schema is not None:
+            for key, value in os.environ.items():
+                if key.startswith('LINOTP_') and key != 'LINOTP_CFG':
+                    config_key = key[7:]
+                    item = self.config_schema.find_item(config_key)
+                    if item is not None:
+                        self[config_key] = os.environ[key]
+
+    def __setitem__(self, key, value):
+        """Implementation of `self[key] = value` with some additional magic.
+        If a configuration schema is defined and `key` occurs in the schema,
+        then use the schema to convert the `value` if necessary, and to
+        check its validity if appropriate. We also take special care of
+        relative path names to make sure they get the value of `ROOT_DIR`
+        prepended to them when they are retrieved.
+        """
+        if self.config_schema is not None:
+            value = self.config_schema.check_item(key, value)
+        if (key.endswith(('_DIR', '_FILE')) and key != 'ROOT_DIR'
+                and value and value[0] != '/'):
+            value = ExtFlaskConfig.RelativePathName(value)
+        super().__setitem__(key, value)
+
+    def __getitem__(self, key):
+        """Returns the value of a configuration item. As a special case,
+        configuration items that represent relative path names for files or
+        directories have the value of `ROOT_DIR` prepended. We insert a `.`
+        between the value of `ROOT_DIR` and the actual value to help with
+        debugging. If `ROOT_DIR` is undefined, we use `/ROOT_DIR_UNSET` as
+        a default value, which should at least make somewhat clear what is
+        going on; it would be nicer to raise an exception but that doesn't
+        seem to show up.
+        """
+        value = super().__getitem__(key)
+        root_dir = self.get('ROOT_DIR', '/ROOT_DIR_UNSET')
+        if isinstance(value, ExtFlaskConfig.RelativePathName):
+            return os.path.join(root_dir, '.', value)
+        if key == 'BABEL_TRANSLATION_DIRECTORIES':
+            # This is a Flask-Babel setting that we can't really change,
+            # so it needs to be special-cased – it is a semicolon-separated
+            # search path of directory names, any of which could be relative.
+
+            return ";".join(
+                [os.path.join(root_dir, '.', fn) if fn[0] != '/' else fn
+                 for fn in value.split(';')])
+        return value
+
+
 class LinOTPApp(Flask):
     """
     The main LinOTP Flask application instance
@@ -120,7 +213,9 @@ class LinOTPApp(Flask):
     """Currently activated controller names"""
 
     def __init__(self):
-        super(LinOTPApp, self).__init__(__name__, static_folder='public', static_url_path='/static')
+        self.config_class = ExtFlaskConfig  # our special `Config` class
+        super().__init__(__name__,
+                         static_folder='public', static_url_path='/static')
 
     def _run_setup(self):
         """
@@ -137,12 +232,12 @@ class LinOTPApp(Flask):
             log.exception('failed to assign hsm device: %r' % exx)
             raise exx
 
-        l_config = getLinotpConfig()
+        l_config = getLinotpConfig()  # SQL-based configuration
 
         resolver_setup_done = config.get('resolver_setup_done', False)
         if resolver_setup_done is False:
             try:
-                cache_dir = config.get("app_conf", {}).get("cache_dir", None)
+                cache_dir = self.config["CACHE_DIR"]
                 setupResolvers(config=l_config, cache_dir=cache_dir)
                 config['resolver_setup_done'] = True
             except Exception as exx:
@@ -235,7 +330,7 @@ class LinOTPApp(Flask):
         create the request context for all controllers
         """
 
-        linotp_config = getLinotpConfig()
+        linotp_config = getLinotpConfig()  # SQL-based configuration
 
         # make the request id available in the request context
         request_context['RequestId'] = environment['REQUEST_ID']
@@ -537,11 +632,9 @@ def setup_cache(app):
     """Initialise the Beaker cache for this app."""
 
     cache_opts = {}
-    cache_opts['cache_type'] = app.config.get("BEAKER_CACHE_TYPE", "memory")
+    cache_opts['cache_type'] = app.config["BEAKER_CACHE_TYPE"]
     if cache_opts['cache_type'] == 'file':
-        beaker_dir = app.config.get(
-            "BEAKER_CACHE_DIR",
-            os.path.join(app.getConfigRootDirectory(), "cache"))
+        beaker_dir = app.config["BEAKER_CACHE_DIR"]
         cache_opts['cache.data_dir'] = os.path.join(beaker_dir, 'data')
         cache_opts['cache.lock_dir'] = os.path.join(beaker_dir, 'lock')
     app.cache = CacheManager(**parse_cache_config_options(cache_opts))
@@ -662,6 +755,38 @@ def setup_audit(app):
     c['audit'] = getAudit(c)
 
 
+def _configure_app(app, config_name='default', config_extra=None):
+    """
+    Testing the configuration mechanism is a lot easier if it can be
+    invoked separately from `create_app()`, which does a lot of other
+    stuff, too. Therefore we have pulled out all the configuration-related
+    code from `create_app()` into this function.
+    """
+
+    app.config.from_object(configs[config_name])
+    configs[config_name].init_app(app)
+
+    # Read the configuration files
+
+    linotp_cfg_files = os.environ.get("LINOTP_CFG", LINOTP_CFG_DEFAULT)
+    if linotp_cfg_files:
+        for fn in linotp_cfg_files.split(':'):
+            fn = os.path.join(app.config.root_path, fn)  # better message
+            if app.config.from_pyfile(fn, silent=True):
+                print(f"Configuration loaded from {fn}", file=sys.stderr)
+            else:
+                print(f"Configuration from {fn} failed"
+                      " (check location and permissions)",
+                      file=sys.stderr)
+
+    if config_extra is not None:
+        app.config.update(config_extra)
+
+    # Check the environment for further settings
+
+    app.config.from_env_variables()
+
+
 def create_app(config_name='default', config_extra=None):
     """
     Generate a new instance of the Flask app
@@ -675,15 +800,17 @@ def create_app(config_name='default', config_extra=None):
     """
     app = LinOTPApp()
 
-    app.config.from_object(configs[config_name])
-    configs[config_name].init_app(app)
+    _configure_app(app, config_name, config_extra)
 
-    configured_from_env = app.config.from_envvar(CONFIG_FILE_ENVVAR, silent=True)
-    if configured_from_env:
-        log.info(f"Configuration loaded from {os.environ[CONFIG_FILE_ENVVAR]}")
+    # Enable custom template directory for Mako. We can get away with this
+    # because Mako's `TemplateLookup` object is only created when the first
+    # template is rendered. Note that “`app.template_folder` as a tuple” is
+    # a Flask-Mako thing and won't work with Jinja2; if we ever decide we
+    # want to move over, we will need to come up with something else.
 
-    if config_extra is not None:
-        app.config.update(config_extra)
+    if app.config["CUSTOM_TEMPLATES_DIR"] is not None:
+        app.template_folder = (app.config["CUSTOM_TEMPLATES_DIR"],
+                               app.template_folder)
 
     babel = Babel(app, configure_jinja=False, default_domain="linotp")
 
