@@ -290,6 +290,10 @@ setup(
     },
     zip_safe=False,
     long_description=DESCRIPTION,
-    cmdclass={'build_py': Build}
-
+    cmdclass={'build_py': Build},
+    entry_points={
+        'console_scripts': [
+            'linotp = linotp.cli:main',  # LinOTP command line interface
+        ],
+    },
 )
