@@ -117,11 +117,7 @@ class TestScenario01(TestCase):
 
         aladdin_xml_path = os.path.join(self.manage_ui.test_data_dir,
                                         'aladdin.xml')
-        err_import = token_import_aladdin.do_import(file_content=None,
-                                                    file_path=aladdin_xml_path)
-        # There shouldn't raise an error
-        assert not err_import, \
-                         "Error during Aladdin token import!"
+        token_import_aladdin.do_import(file_path=aladdin_xml_path)
 
         serial_token_bach = "oath137332"
         test1_realm = realm_name1.lower()

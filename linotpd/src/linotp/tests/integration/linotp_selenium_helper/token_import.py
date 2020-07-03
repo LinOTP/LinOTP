@@ -27,6 +27,7 @@
 
 from .manage_ui import ManageDialog
 from linotp_selenium_helper.manage_ui import MsgType
+from selenium.webdriver.remote.file_detector import LocalFileDetector
 
 import tempfile
 import os
@@ -70,6 +71,7 @@ class TokenImport(ManageDialog):
         :param file_path: the file path of provided xml token file
         :raises TokenImportError if the import failed
         """
+
         if(not file_content and not file_path):
             raise Exception("""Wrong test implementation. TokenImport.do_import
                             needs file_content or file_path!
@@ -77,24 +79,14 @@ class TokenImport(ManageDialog):
 
         if file_content:
             # Create the temp xml file with the given file_content.
-            tf = tempfile.NamedTemporaryFile(delete=False, suffix=".xml")
+            tf = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix=".xml")
             tf.write(file_content)
             tf.close()
             self.file_path = tf.name
 
             # We need to make the created file available in the selenium
             # docker container (Where the browser interaction is done).
-            # For this reason we move the temp file in the shared
-            # volume (integration tests dir), which is mounted inside
-            # the selenium docker container (see docker-compose.yml).
-            cwd = os.getcwd()
-            subprocess.call(["mv",self.file_path,cwd])
-
-            filename = os.path.basename(self.file_path)
-            self.file_path = cwd + "/" + filename
-            # Maybe created by root in the docker container.
-            subprocess.call(["chmod","a+rw",self.file_path])
-
+            self.driver.file_detector = LocalFileDetector()
         else:
             # Use the provided xml token file.
             self.file_path = file_path
@@ -114,13 +106,8 @@ class TokenImport(ManageDialog):
         self.manage.wait_for_waiting_finished()
 
         # delete the temp file if necessary
-        if(not file_path):
-            # In this case, we did not receive a pre-created file
-            # So: delete the temp file.
-            try:
-                os.unlink(self.file_path)
-            except:
-                pass
+        if(file_content):
+            os.unlink(self.file_path)
 
         # Check the alert boxes on the top of the LinOTP UI
         info = self.manage.alert_box_handler.last_line

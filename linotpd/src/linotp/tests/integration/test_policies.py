@@ -362,7 +362,4 @@ class TestPolicies(TestCase):
     </Tokens>"""
 
         token_import_aladdin = TokenImportAladdin(self.manage_ui)
-        error_raised = token_import_aladdin.do_import(file_content)
-        # There shouldn't raise an error
-        assert not error_raised, \
-                         "Error during Aladdin token import!"
+        token_import_aladdin.do_import(file_content)
