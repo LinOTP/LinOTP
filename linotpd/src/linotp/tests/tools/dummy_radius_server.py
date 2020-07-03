@@ -149,7 +149,7 @@ def usage(prog):
 Usage:
         %s [--dict=###] [--authport=###] [--acctport=###] [--help]
 
-        --dict=, -d         The path to a dictionary file (default is /etc/linotp2/dictionary)
+        --dict=, -d         The path to a dictionary file (default is /etc/linotp/dictionary)
         --authport=, -t     Port used for RADIUS authentication packets (default is 18012)
         --acctport=, -c     Port used for RADIUS accounting packets (default is 18013)
         --help, -h          Show this message and exit
@@ -169,7 +169,7 @@ def main():
     client2 = RemoteHost("127.0.0.1", "testing123", "localhost")
 
     # Set default values (overwritten by command-line args)
-    r_dict = "/etc/linotp2/dictionary"
+    r_dict = "/etc/linotp/dictionary"
     authport = 18012
     acctport = 18013
 

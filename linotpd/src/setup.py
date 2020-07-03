@@ -170,7 +170,7 @@ setup(
     ],
     data_files=[
         (
-            'etc/linotp2/',
+            'etc/linotp/',
             [
                 'config/linotp.cfg',
                 'config/linotpapp.wsgi',
@@ -179,7 +179,7 @@ setup(
             ]
         ),
         (
-            '/etc/linotp2/apache-site-includes/',
+            '/etc/linotp/apache-site-includes/',
             [
                 'config/apache-site-includes/README.txt',
             ]

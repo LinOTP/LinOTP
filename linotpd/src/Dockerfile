@@ -92,7 +92,7 @@ ENV TZ="Europe/Berlin" \
 
 # Internal environment variables used by the docker images
 ENV LINOTP_CFG_TEMPLATE=/etc/linotp/linotp-docker.cfg.tmpl \
-    LINOTP_CONFIG_FILE=/etc/linotp2/linotp.cfg \
+    LINOTP_CONFIG_FILE=/etc/linotp/linotp.cfg \
     LINOTP_HOME=/opt/linotp \
     DEBIAN_FRONTEND=noninteractive \
     FLASK_APP=linotp.app \
@@ -155,21 +155,21 @@ RUN echo "linotp linotp/apache/activate boolean true" > /opt/linotp/apt/debconf-
     && apt-get install linotp linotp-adminclient-cli \
     && rm /etc/apt/sources.list.d/linotp-local.list \
     && rm -r /opt/linotp/apt /etc/apache2/sites-enabled/000-default.conf \
-    && rm /etc/linotp2/encKey /etc/linotp2/*.pem \
+    && rm /etc/linotp/encKey /etc/linotp/*.pem \
     && mkdir -p /etc/ssl/private /etc/ssl/certs \
     && chown linotp /var/log/linotp
 
 WORKDIR $LINOTP_HOME
 
 # Get dockerfy and configuration template files from build context
-COPY *.tmpl /etc/linotp2/
+COPY *.tmpl /etc/linotp/
 COPY dockerfy /usr/local/bin/
 COPY linotp-create-htdigest /usr/local/bin/
 RUN chmod 755 /usr/local/bin/linotp-create-htdigest
 
 ENTRYPOINT [ "/usr/local/bin/dockerfy", \
-    "--template", "/etc/linotp2/linotp-docker.cfg.tmpl:/etc/linotp2/linotp.cfg", \
-    "--template", "/etc/linotp2/apache-docker.conf.tmpl:/etc/apache2/sites-enabled/linotp2.conf", \
+    "--template", "/etc/linotp/linotp-docker.cfg.tmpl:/etc/linotp/linotp.cfg", \
+    "--template", "/etc/linotp/apache-docker.conf.tmpl:/etc/apache2/sites-enabled/linotp.conf", \
     "--run", "/bin/sh", "-c", \
         "if [ -n \"{{ .Env.LINOTP_DB_HOST }}\" ]; then /usr/local/bin/dockerfy --wait tcp://{{ .Env.LINOTP_DB_HOST }}:{{ .Env.LINOTP_DB_PORT }} --timeout {{ .Env.LINOTP_DB_WAITTIME }}; fi", \
     "--", \

@@ -48,14 +48,14 @@ log = logging.getLogger(__name__)
                                'custom_voice_provider.CustomVoiceProvider')
 class CustomVoiceProvider(ProviderBase, TwillioMixin):
     """
-    Send a Voice notification through the Custom Voice Provider to the 
+    Send a Voice notification through the Custom Voice Provider to the
     Voice Challenge Service. The CustomVoiceProvider allows to define all
     required config definitions directly and expects the following parameter:
 
     {
     "server_url": "https://vcs.*/v1/twilio/call"
-    "access_certificate": "/etc/linotp2/voice-license.pem",
-    "server_certificate": "/etc/linotp2/keyidentity-voice-ca-bundle.crt"
+    "access_certificate": "/etc/linotp/voice-license.pem",
+    "server_certificate": "/etc/linotp/keyidentity-voice-ca-bundle.crt"
     'callerNumber': '+4989231234567'
     }
 
@@ -189,7 +189,7 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
               'locale': 'en',
             }
         }
-        
+
         the other information is joined in the lower level of the http call
 
         :param calleeNumber: the destination phone number

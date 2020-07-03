@@ -55,7 +55,7 @@ import configparser
 try:
     from linotp.lib.utils import INI_FILE
 except ImportError:
-    INI_FILE = "/etc/linotp2/linotp.ini"
+    INI_FILE = "/etc/linotp/linotp.ini"
 
 
 import logging

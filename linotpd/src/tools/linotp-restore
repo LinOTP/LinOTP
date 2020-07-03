@@ -38,9 +38,9 @@ fi
 DUMPFILE=$1
 BACKUPKEY=$2
 
-ENCFILE=/etc/linotp2/encKey
-LINOTPCONFIG=/etc/linotp2/linotp.ini
-ALCHEMYURL=`grep ^sqlalchemy.url /etc/linotp2/linotp.ini | cut -d '=' -f2`
+ENCFILE=/etc/linotp/encKey
+LINOTPCONFIG=/etc/linotp/linotp.ini
+ALCHEMYURL=`grep ^sqlalchemy.url /etc/linotp/linotp.ini | cut -d '=' -f2`
 USERNAME=`echo $ALCHEMYURL | cut -d: -f2 | cut -d'/' -f 3-`
 PASSWORD=`echo $ALCHEMYURL | cut -d: -f3- | cut -d '@' -f1`
 HOST=`echo $ALCHEMYURL | cut -d'@' -f2- | cut -d'/' -f1`
@@ -49,7 +49,7 @@ DATUM=`date +%y%m%d%H%M`
 
 
 echo "--------- LSE LinOTP 2 Restore-----------------------"
-echo "----- Restoring encryption Key ----------------------" 
+echo "----- Restoring encryption Key ----------------------"
 echo "You need to enter the passphrase you provided when you backed up the encryption key"
 echo
 
@@ -59,7 +59,7 @@ if [ $? != 0 ]; then
 	exit 1
 fi
 
-echo "----- Restoring token database ----------------------" 
+echo "----- Restoring token database ----------------------"
 echo "We will now restore the database <<$DATABASE>> on the host <<$HOST>>."
 echo "This will be done with the user <<$USERNAME>>."
 echo "The database will be read from <<$DUMPFILE>>."
@@ -71,6 +71,3 @@ else
 	echo "failed!"
 	exit 1
 fi
-
-
-

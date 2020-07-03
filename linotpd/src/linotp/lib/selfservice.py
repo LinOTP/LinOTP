@@ -39,7 +39,7 @@ def get_imprint(realm):
     '''
     res = ""
     realm = realm.lower()
-    directory = config.get("linotp.imprint_directory", "/etc/linotp2/imprint")
+    directory = config.get("linotp.imprint_directory", "/etc/linotp/imprint")
     filename = "%s/%s.imprint" % (directory, realm)
     try:
         pass

@@ -37,11 +37,11 @@
 # Local LinOTP settings
 LOGGING_FILE_LEVEL="{{.Env.LINOTP_LOGLEVEL}}"
 SQLALCHEMY_DATABASE_URI="{{.Env.LINOTP_DATABASE_URI}}"
-ROOT_DIR="/etc/linotp2"
+ROOT_DIR="/etc/linotp"
 {{with .Env.SECRET_FILE_LOCATION }}
 SECRET_FILE="{{ . }}"
 {{else}}
-SECRET_FILE="/etc/linotp2/encKey"
+SECRET_FILE="/etc/linotp/encKey"
 {{end}}
 LOGFILE_DIR="/var/log/linotp"
 
