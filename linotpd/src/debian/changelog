@@ -1,4 +1,4 @@
-linotp (2.12-1) buster; urgency=low
+linotp (2.12rc1-1) buster; urgency=low
 
   Feature:
   * Server: Expired or wrong cookies in userservice requests will return a 
@@ -21,7 +21,7 @@ linotp (2.12-1) buster; urgency=low
   * Server: Replication setups on the SVA no longer fail due to faulty
             userservice cookie handling
 
- -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Mon, 15 June 2020 10:28:00 +0200
+ -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Fri, 03 Jul 2020 12:14:00 +0200
 
 linotp (2.11.2-1) jessie; urgency=low
 
