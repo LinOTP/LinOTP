@@ -3,6 +3,14 @@
 mkdir -p /etc/linotp
 
 if [ "$1" = "upgrade" ]; then
+	# If there is an /etc/linotp2 directory and the /etc/linotp directory
+	# is empty, then move /etc/linotp2 to /etc/linotp.
+	if [ -d /etc/linotp2 ] && [ -z "`ls /etc/linotp`" ]; then
+	    echo "Moving LinOTP config directory from /etc/linotp2 to /etc/linotp"
+	    rmdir /etc/linotp
+	    mv /etc/linotp2 /etc/linotp
+	fi
+
 	touch /etc/linotp/we_are_doing_an_upgrade
 
 	# If user supplied stylesheets were placed under /usr/share/, move these
