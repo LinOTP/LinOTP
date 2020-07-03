@@ -755,10 +755,12 @@ def setup_audit(app):
     c['audit'] = getAudit(c)
 
 
-def configure_app(app, config_name='default', config_extra=None):
+def _configure_app(app, config_name='default', config_extra=None):
     """
-    This used to be part of `create_app()` but it is easier to test if
-    it is its own function.
+    Testing the configuration mechanism is a lot easier if it can be
+    invoked separately from `create_app()`, which does a lot of other
+    stuff, too. Therefore we have pulled out all the configuration-related
+    code from `create_app()` into this function.
     """
 
     app.config.from_object(configs[config_name])
@@ -798,7 +800,7 @@ def create_app(config_name='default', config_extra=None):
     """
     app = LinOTPApp()
 
-    configure_app(app, config_name, config_extra)
+    _configure_app(app, config_name, config_extra)
 
     # Enable custom template directory for Mako. We can get away with this
     # because Mako's `TemplateLookup` object is only created when the first

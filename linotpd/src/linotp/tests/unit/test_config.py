@@ -5,7 +5,7 @@ import os
 import pytest                   # noqa: F401
 
 from linotp import settings as s
-from linotp.app import ExtFlaskConfig, configure_app
+from linotp.app import ExtFlaskConfig, _configure_app
 
 
 # Tests for validation functions.
@@ -235,7 +235,7 @@ def test_efc_from_env_variables(monkeypatch, schema):
     assert "QUUX" not in efc
 
 
-# Tests for `configure_app`.
+# Tests for `_configure_app`.
 
 # We don't need a full-blown `LinOTPApp()` here, so we can lose a lot of
 # baggage and just stick with the basics we need for configuration.
@@ -279,7 +279,7 @@ def test_configure_app_linotp_cfg_path(monkeypatch, app_, path, expected_seen):
     files_seen = []
     monkeypatch.setattr(ExtFlaskConfig, "from_pyfile",
                         lambda self, fn, **kwargs: files_seen.append(fn))
-    configure_app(app_)
+    _configure_app(app_)
     assert files_seen == expected_seen
 
 
@@ -290,7 +290,7 @@ def test_configure_app_from_env_variables(monkeypatch, app_):
         'LINOTP_QUUX': "xyzzy",  # This should also be ignored (not in schema)
     }
     monkeypatch.setattr(os, "environ", mock_env)
-    configure_app(app_)
+    _configure_app(app_)
     assert app_.config["FOO"] == "quux"
     assert "CFG" not in app_.config
     assert "QUUX" not in app_.config
