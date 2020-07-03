@@ -227,7 +227,7 @@ class ManageUi(object):
         """
 
         # Find all open dialogs
-        dialogs = self.find_all_by_css('.ui-dialog[style*="display: block"]')
+        dialogs = self.find_all_by_css('.ui-dialog:not([style*="display: none"])')
 
         # Sort by depth (the z-index attribute in reverse order)
         dialogs.sort(
