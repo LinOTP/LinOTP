@@ -64,7 +64,6 @@ from linotp.tests import TestController
 log = logging.getLogger(__name__)
 
 
-@pytest.mark.exclude_sqlite
 class TestImportUser(TestController):
 
     resolver_name = "myresolv"
