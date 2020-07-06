@@ -87,7 +87,7 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
         Loads the configuration for this Voice notification provider
 
         :param configDict: A dictionary that contains all configuration entries
-                          you defined (e.g. in the linotp.ini file)
+                          you defined (e.g. in a linotp.cfg file)
 
         {
             "server_url":

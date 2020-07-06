@@ -50,9 +50,9 @@ def reload_classes():
 
     # ---------------------------------------------------------------------- --
 
-    # if there is a list of predefined tokens in the linotp.ini
+    # if there is a list of predefined tokens in a linotp.cfg file
 
-    activated_modules = flask.current_app.config.get("TOKEN_MODULES", "")
+    activated_modules = flask.current_app.config["TOKEN_MODULES"]
     if activated_modules:
         for activated_module in activated_modules.split():
             load_module(activated_module)
