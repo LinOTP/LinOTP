@@ -38,7 +38,7 @@ class TestSetPasswordTool(unittest.TestCase):
 
         unittest.TestCase.setUp(self)
 
-        self.db_context = DataBaseContext('sqlite:///:memory:')
+        self.db_context = DataBaseContext('sqlite://')
 
     def check_for_exeption(self, pw_handler,
                            username, old_password, new_password,

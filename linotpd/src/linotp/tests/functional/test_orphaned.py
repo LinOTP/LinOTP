@@ -39,7 +39,6 @@ import sqlalchemy
 
 import unittest
 import pytest
-from ..conftest import Base_App_Config as BAC
 
 
 
@@ -49,7 +48,7 @@ log = logging.getLogger(__name__)
 
 class SQLUser(object):
 
-    def __init__(self, connect='sqlite:///:memory:'):
+    def __init__(self, connect='sqlite://'):
         self.tableName = 'User2'
         self.usercol = '"user"'
         self.userTable = '"%s"' % (self.tableName)
@@ -383,8 +382,7 @@ class OrphandTestHelpers(object):
         assert '"status": true,' in response, response
         return response
 
-@pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
-                    reason="non sqlite database required for this test!")
+@pytest.mark.exclude_sqlite
 class TestOrphandTokens(TestController, OrphandTestHelpers):
 
     def setUp(self):

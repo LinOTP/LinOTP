@@ -32,20 +32,18 @@ import logging
 import json
 import pytest
 
-from linotp.tests.conftest import Base_App_Config as BAC
-
 from .sql_test_controller import SQLTestController
 
 log = logging.getLogger(__name__)
 
 
-@pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
-                    reason="non sqlite database required for this test!")
+@pytest.mark.exclude_sqlite
 class SQLResolverTest(SQLTestController):
 
     def setUp(self):
         """ create an sql user table some users and the sql resolver """
 
+        self.delete_all_policies()
         SQLTestController.setUp(self)
         self.setUpSQL()
 
@@ -56,6 +54,7 @@ class SQLResolverTest(SQLTestController):
 
         self.dropUsers()
         self.delete_all_token()
+        self.delete_all_policies()
 
         return SQLTestController.tearDown(self)
 
@@ -81,9 +80,11 @@ class SQLResolverTest(SQLTestController):
         # ------------------------------------------------------------------ --
 
         # define resolver and realm
+        response = self.make_system_request('getRealms',params={})
 
-        self.addSqlResolver('my_sql_users')
-        self.addSqlRealm(realm, 'my_sql_users', defaultRealm=True)
+        if realm.lower() not in response.json['result']['value']:
+            self.addSqlResolver('my_sql_users')
+            self.addSqlRealm(realm, 'my_sql_users', defaultRealm=True)
 
         # ------------------------------------------------------------------ --
 

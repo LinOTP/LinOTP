@@ -30,8 +30,6 @@ import pytest
 import logging
 import json
 
-from linotp.tests.conftest import Base_App_Config as BAC
-
 from linotp.tests import TestController, url
 
 log = logging.getLogger(__name__)
@@ -256,8 +254,7 @@ class TestUserserviceAuthController(TestController):
 
         return
 
-    @pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
-                        reason="non sqlite database required for this test!")
+    @pytest.mark.exclude_sqlite
     def test_login_with_false_password(self):
         """
         check that the login generate a cookie, which does not require
@@ -285,9 +282,8 @@ class TestUserserviceAuthController(TestController):
         unbound_msg = ('UnboundLocalError("local variable \'reply\' '
                        'referenced before assignment",)')
 
-        failed_auth_msg = ("User User(login='passthru_user1', "
-                           "realm='mydefrealm', conf='' ::resolverUid:{}, "
-                           "resolverConf:{}) failed to authenticate!")
+        failed_auth_msg1 = "User(login='passthru_user1'"
+        failed_auth_msg2 = "failed to authenticate!"
 
         unbound_not_found = True
         failed_auth_found = False
@@ -298,7 +294,7 @@ class TestUserserviceAuthController(TestController):
             if unbound_msg in entry:
                 unbound_not_found = False
 
-            if failed_auth_msg in entry[11]:
+            if failed_auth_msg1 in entry[11] and failed_auth_msg2 in entry[11]:
                 failed_auth_found = True
 
         assert unbound_not_found, entries

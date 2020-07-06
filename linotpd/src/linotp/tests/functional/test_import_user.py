@@ -59,15 +59,12 @@ from sqlalchemy.engine import create_engine
 from sqlalchemy import sql
 from sqlalchemy.exc import ProgrammingError
 
-from ..conftest import Base_App_Config as BAC
-
 from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 
 
-@pytest.mark.skipif(BAC['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'),
-                    reason="non sqlite database required for this test!")
+@pytest.mark.exclude_sqlite
 class TestImportUser(TestController):
 
     resolver_name = "myresolv"

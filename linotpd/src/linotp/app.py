@@ -79,6 +79,8 @@ from .lib.audit.base import getAudit
 from .lib.config.global_api import initGlobalObject
 
 from sqlalchemy import create_engine
+from sqlalchemy.pool import StaticPool
+
 from .model import init_model, meta         # FIXME: With Flask-SQLAlchemy
 from .model.migrate import run_data_model_migration
 
@@ -654,34 +656,38 @@ def setup_db(app, drop_data=False):
     :param drop_data: If True, all data will be cleared. Use with caution!
     """
 
-    # Initialise the SQLAlchemy engine (this used to be in
-    # linotp.config.environment and done once per request (barf)).
+    # Initialise the SQLAlchemy engine
 
-    engine = create_engine(app.config.get("SQLALCHEMY_DATABASE_URI"))
+    sql_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
+
+    # sqlite in-memory databases require special sqlalchemy setup:
+    # https://docs.sqlalchemy.org/en/13/dialects/sqlite.html#using-a-memory-database-in-multiple-threads
+
+    if sql_uri == "sqlite://":
+        engine = create_engine(sql_uri,
+                               connect_args={'check_same_thread': False},
+                               poolclass=StaticPool)
+    else:
+        engine = create_engine(sql_uri)
+
+    # Initialise database table model
+
     init_model(engine)
 
-    if drop_data:
-        app.logger.info("Dropping tables to erase all data...")
-        meta.metadata.drop_all(bind=meta.engine)
+    # (Re)create and setup database tables if they don't already exist
 
-    # Create database tables if they don't already exist
-
-    app.logger.info("Creating tables...")
-    meta.metadata.create_all(bind=meta.engine)
+    app.logger.info("Setting up database...")
 
     try:
-        app.logger.info("Setting up config database default values...")
+        if drop_data:
+            app.logger.info("Dropping tables to erase all data...")
+            meta.metadata.drop_all(bind=meta.engine)
+
+        meta.metadata.create_all(bind=meta.engine)
+
+        run_data_model_migration(meta)
         set_defaults(app)
 
-        app.logger.info("Check for database migration steps...")
-        run_data_model_migration(meta)
-
-    except Exception as exx:
-        app.logger.error("Exception occured during database setup: %r", exx)
-        meta.Session.rollback()
-        raise exx
-
-    try:
         # For the cloud mode, we require the `admin_user` table to
         # manage the admin users to allow password setting
 
@@ -700,8 +706,8 @@ def setup_db(app, drop_data=False):
                 username=admin_username, crypted_password=admin_password)
 
     except Exception as exx:
-        app.logger.error(
-            "Exception occured during cloud admin user setup: %r", exx)
+        app.logger.exception(
+            "Exception occured during database setup: %r", exx)
         meta.Session.rollback()
         raise exx
 

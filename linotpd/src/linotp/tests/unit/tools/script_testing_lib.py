@@ -92,7 +92,7 @@ class ScriptTester(unittest.TestCase):
         assert self.script_module is not None
 
     def setup_database_in_memory(self):
-        engine = create_engine('sqlite:///:memory:')
+        engine = create_engine('sqlite://')
 
         # Create blank databases
         metadata.create_all(engine)
