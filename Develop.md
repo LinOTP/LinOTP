@@ -1,58 +1,69 @@
-Howto: Developing with LinOTP Server
-====================================
+# HOWTO: LinOTP Server Development Setup
 
-This document guides you through the process of setting up a development environment for LinOTP. By the end of it you should have a running LinOTP system that you can easily modify and test.
+This document guides you through the process of setting up a
+development environment for LinOTP. In the end you should have a
+running LinOTP system that you can easily modify and test.
 
 The steps in a nutshell:
 
-1. get the LinOTP source code
-2. set up your environment by installing all required packages and tools
-3. configure LinOTP
-4. run a LinOTP test server
-5. run unit, functional and integration tests
+1. Get the LinOTP source code
+2. Set up your LinOTP development environment
+3. Configure LinOTP
+4. Run the LinOTP development server
+5. Run unit, functional and integration tests
+6. Use MyPy for typechecking
 
 
-Get the source code
--------------------
-
-Obtain the LinOTP source code from [LinOTP GitHub](https://github.com/LinOTP/LinOTP "LinOTP on GitHub"):
-
-    git clone https://github.com/LinOTP/LinOTP.git
+## Get the LinOTP source code
 
 
-Set up your LinOTP development environment
-------------------------------------------
+Obtain the LinOTP source code from [LinOTP
+GitHub](https://github.com/LinOTP/LinOTP "LinOTP on GitHub"):
 
-If you want to develop LinOTP you first need to install some packages. As superuser on a Debian-based system, run:
-
-    apt-get install python3-virtualenv python3-dev \
-                    python3-paste python3-pastedeploy \
-                    python3-pastescript python3-mysqldb \
-                    swig gcc libssl-dev libldap2-dev \
-                    mariadb-server libmariadbclient-dev \
-                    libsasl2-dev
-
-Notes:
- - libsasl2-dev and libldap2-dev system packages are required to install the `python-ldap` dependency via pip
- - libssl package is required to install the `cryptography` dependency via pip
-
-Consider setting up a dedicated virtual environment now. This allows you to install the packages locally (without administrative rights) and prevents pollution of your host system.
-
-    virtualenv linotp_dev_venv
-    source linotp_dev_venv/bin/activate
-
-Then go to the *source code directory* and install the development dependencies:
-
-    cd linotpd/src
-    pip3 install -e .
-
-In order to run tests you must also install the test dependencies:
-
-    pip3 install -e ".[test]"
+    $ git clone https://github.com/LinOTP/LinOTP.git
 
 
-Configuration
--------------
+## Set up your LinOTP development environment
+
+If you want to develop LinOTP, you first need to install some software
+packages that LinOTP depends upon. As superuser on a Debian-based
+system, run:
+
+    # apt-get install build-essential python3-dev \
+                      python3-mysqldb mariadb-server libmariadbclient-dev \
+                      libldap2-dev libsasl2-dev \
+					  libssl-dev
+
+LinOTP can use a variety of SQL databases but MySQL/MariaDB is most
+widely used. Other options include PostgreSQL and SQLite, although
+SQLite is not recommended for production setups.
+
+The `libldap2-dev` and `libsasl2-dev` system packages are needed when
+installing the `python-ldap` dependency via `pip`. Similarly, the
+`libssl-dev` package is needed when installing the `cryptography`
+dependency via `pip`.
+
+A “virtual environment” lets you install additional packages locally
+(without administrator privileges) using Python's `pip` tool. It also
+prevents the pollution of your host system with non-distribution
+packages. We strongly recommend installing a virtual environment as
+follows:
+
+    $ python3 -m venv linotp_dev       # Pick a name but be consistent
+    $ source linotp_dev/bin/activate
+
+Then go to the source code subdirectory for the LinOTP server, and
+install its development dependencies:
+
+    $ cd linotpd/src
+    $ pip3 install -e .
+
+In order to run automated tests you must also install the test dependencies:
+
+    $ pip3 install -e ".[test]"
+
+
+## Configure LinOTP
 
 Configuration settings are hard-coded in
 `linotpd/src/linotp/settings.py`, which also defines a small set of
@@ -61,8 +72,8 @@ Configuration settings are hard-coded in
 - _development_ is aimed at LinOTP developers running LinOTP on their
   local machine. It enables debugging (including copious log messages,
   auto-reload if source code files change, and the interactive Flask
-  debugger) and uses a local SQLite database. *This is not safe to use
-  in a production setting.*
+  debugger) and defaults to using a local SQLite database. *This is
+  not safe to use in a production setting.*
 - _testing_ is an environment that facilitates running system
   tests. Like _development_, it enables more prolific logging output.
 - _production_ is a more streamlined and secure setup to be used on
@@ -157,62 +168,95 @@ amuse yourself by investigating what happens to the value of
 `LINOTP_LOGGING`.
 
 
-Run LinOTP
-----------
+## Run the LinOTP development server
 
-To run LinOTP execute flask from the *linotp source directory* (linotpd/src/) as follows:
+To run LinOTP for development, execute Flask from the LinOTP source
+directory (`linotpd/src`) as follows:
 
-    FLASK_APP=linotpapp flask run
+    $ FLASK_APP=linotp.app flask run
+
+This starts the Flask development server. Unless you specify otherwise
+using the `--host` and `--port` options, the development server will
+bind to TCP port 5000 on the loopback address (127.0.0.1).
+
+The development server is fine for local experiments but should *under
+no circumstances* be used to run LinOTP in a production
+environment. The officially approved method for running LinOTP
+productively uses Apache and `mod_wsgi`, and the details of this are
+beyond the scope of this document. Refer to the content of the LinOTP
+source directory's `config` subdirectory for inspiration, or –
+preferably – check the [LinOTP Installation
+Guide](http://www.linotp.org/doc/latest/part-installation/index.html).
+
+To make life easier, LinOTP offers a `linotp` command which you can
+run anywhere without having to define `FLASK_APP`. To enable this on
+your development system, go to the LinOTP source directory and execute
+the
+
+    $ python3 setup.py develop
+
+command. (This installs the `linotp` command in the virtualenv's `bin`
+directory.) After this, a simple
+
+    $ linotp run
+
+will launch the Flask development server. (You can still use
+`FLASK_ENV` to specify the desired environment.)
 
 
-Test LinOTP
------------
+## Run unit, functional, and integration tests
+
 
 ### Unit and functional tests
 
-You can run unit and functional tests by entering the respective commands below in the *project root directory*:
+You can run unit and functional tests by entering the respective
+commands below from the top-level directory of the LinOTP distribution:
 
-    make unittests
-
-    make functionaltests
+    $ make unittests
+    $ make functionaltests
 
 You can also run the tests directly in their directories:
 
-    pytest linotpd/src/linotp/tests/unit/
+    $ pytest linotpd/src/linotp/tests/unit
 
-or:
+or
 
-    pytest linotpd/src/linotp/tests/functional/
+    $ pytest linotpd/src/linotp/tests/functional
 
-Additionally you can execute the tests in a single file by passing the path to the file the same way.
+If you want to run only the tests in a single file, invoke `pytest`
+with the path to that file.
 
-See the [Pytest documentation](https://docs.pytest.org/) for more information about using pytest.
+See the [Pytest documentation](https://docs.pytest.org/) for more
+information about using pytest.
 
 ### Integration tests
 
-To run integration tests with selenium, please make sure that your system has `chromedriver` installed.
+To run integration tests with Selenium, please make sure that your system has `chromedriver` installed.
 
-Then start a LinOTP flask instance, and edit `linotpd/src/linotp/tests/integration/server_cfg.ini` so that the `[linotp]` section points to it.
+Then start a LinOTP development server and edit
+`linotpd/src/linotp/tests/integration/server_cfg.ini` so that the
+`[linotp]` section contains its hostname/IP address and port number.
 
 You can now execute integration tests with:
 
-    pytest --tc-file=linotpd/src/linotp/tests/integration/server_cfg.ini <path_to_test_file>
+    $ pytest --tc-file=linotpd/src/linotp/tests/integration/server_cfg.ini <path_to_test_file>
 
 You can find sample test files under `linotpd/src/linotp/tests/integration`.
 
-Typechecking with mypy
-----------------------
 
-To run a type check on the source code, install mypy and the stubs for sqlalchemy:
-```
-pip3 install mypy sqlalchemy-stubs
-```
+## Use MyPy for typechecking
 
-Then run mypy on a directory of your choice like so:
-```
-mypy some/python/dir
-```
+To run a type check on the source code, install MyPy and the stubs for
+SQLAlchemy:
 
-If you do not wish to be shown type errors recursively. i.e. from imported modules, use the flag `--follow-imports=silent`.
+    $ pip3 install mypy sqlalchemy-stubs
 
-The flag `--show-column-numbers` can also be helpful tracking the exact location of a problem.
+Then run `mypy` on a directory of your choice like
+
+    $ mypy some/python/dir
+
+If you do not wish to be shown type errors from imported modules, use
+the `--follow-imports=silent` flag.
+
+The `--show-column-numbers` flag can also be helpful when looking for
+the exact location of a problem.
