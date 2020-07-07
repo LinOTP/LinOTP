@@ -1,7 +1,8 @@
-LinOTP
-======
+# LinOTP
 
-LinOTP is an open solution for strong two-factor authentication with One Time Passwords.
+## About LinOTP
+
+LinOTP is an open solution for strong two-factor authentication with One-Time Passwords.
 LinOTP is also open as far as its modular architecture is concerned.
 LinOTP aims to not bind you to any  decision of the authentication protocol or
 it does not dictate you where your user information should be stored.
@@ -9,28 +10,26 @@ This is achieved by its new, totally modular architecture.
 
 This package contains the LinOTP Server Core.
 
-Installation
-------------
+## Installation
 
 Installing LinOTP can be performed easily by issuing the command::
-
-    $ pip install linotp
-
+```terminal
+$ pip install linotp
+```
 (note that we recommend using a virtual environment).
 
 You can start directly by creating the database::
-
-    $ FLASK_APP=linotp.app flask init-db
-
+```terminal
+$ linotp init-db
+```
 Then start the webserver by issuing::
-
-    $ FLASK_APP=linotp.app flask run
-
+```terminal
+$ linotp run
+```
 Now you could go the the web interface at http://localhost:5000/manage
 and start creating the UserIdResolver, a Realm and enroll tokens.
 
-Options
--------
+## Options
 
 You can adapt the `/etc/linotp/linotp.cfg` file. There you need to
 configure the database connection with an existing database and user:
@@ -38,15 +37,15 @@ configure the database connection with an existing database and user:
     SQLALCHEMY_DATABASE_URI = mysql://user:password@localhost/LinOTP2
 
 Then you can create the database as above:
-
-    $ FLASK_APP=linotp.app flask init-db
-
+```terminal
+$ linotp init-db
+```
 You can change the location of your log file:
+```terminal
+$ mkdir /var/log/linotp
+```
 
-    $ mkdir /var/log/linotp
-
-Apache and Authentication
--------------------------
+## Apache and Authentication
 
 Please note that the Flask development server which LinOTP uses by
 default is not suitable for productive use. One issue is that there is
