@@ -226,12 +226,18 @@ or
 If you want to run only the tests in a single file, invoke `pytest`
 with the path to that file.
 
+When using `make`, you can pass command-line arguments to `pytest` by
+assigning them to `PYTESTARGS`:
+
+    $ make unittests PYTESTARGS="-vv"
+
 See the [Pytest documentation](https://docs.pytest.org/) for more
 information about using pytest.
 
 ### Integration tests
 
-To run integration tests with Selenium, please make sure that your system has `chromedriver` installed.
+To run integration tests with Selenium, please make sure that your
+system has the `chromedriver` executable installed.
 
 Then start a LinOTP development server and edit
 `linotpd/src/linotp/tests/integration/server_cfg.ini` so that the
