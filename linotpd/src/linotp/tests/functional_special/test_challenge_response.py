@@ -1657,7 +1657,7 @@ class TestChallengeResponseController(TestSpecialController):
                                                   params=params)
 
         found = False
-        # self.assertTrue('SMS could not be sent' in response, response)
+        #assert 'SMS could not be sent' in response, response
         entries = self.get_audit_entries(num=3, page=1)
         for entry in entries:
             for info in entry:
@@ -1829,7 +1829,7 @@ class TestChallengeResponseController(TestSpecialController):
             "user": "passthru_user1",
         }
         #response = self.make_admin_request(action='checkstatus', params=params)
-        #self.assertTrue(transactionid not in response, response)
+        #assert transactionid not in response, response
 
         (transactionid, state1, state2, otp1, otp2) = transactions[3]
 

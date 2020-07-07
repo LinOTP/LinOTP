@@ -1639,7 +1639,7 @@ class TestValidateController(TestController):
 
         parameters = {"user": "root", "otp1": otp1, "otp2": otp2}
         response = self.make_admin_request('resync', params=parameters)
-        # self.assertTrue('"value": true' in response
+        #assert '"value": true' in response
 
         #
         #    now test TOTP resync - forward lookup

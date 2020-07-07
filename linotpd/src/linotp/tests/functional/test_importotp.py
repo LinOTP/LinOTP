@@ -474,7 +474,7 @@ class TestImportOTP(TestController):
         params = {'type':'yubikeycsv'}
         response = self.upload_tokens("yubi_hmac.csv", params=params)
 
-        self.assertTrue('<imported>2</imported>' in response, response)
+        assert '<imported>2</imported>' in response, response
 
         # now verify that we have one token loaded and the otplen is 8
         response = self.make_admin_request('show')

@@ -235,11 +235,11 @@ class TestScenario01(TestCase):
         remote_token_otp = "666666"
         access_granted, _ = validate.validate(user="debussy@" + test1_realm,
                                             password="debussynewpin" + remote_token_otp)
-        self.assertTrue(access_granted, "OTP: " + remote_token_otp + " for user " +
-                        "debussy@" + test1_realm + " returned False")
+        assert access_granted is True, "OTP: " + remote_token_otp + " for user " +
+                        "debussy@" + test1_realm + " returned False"
         access_granted, _ = validate.validate(user="debussy@" + test1_realm,
                                             password="1234111111")
-        self.assertFalse(access_granted, "OTP: 1234111111 should be False for user debussy")'''
+        assert access_granted is False, "OTP: 1234111111 should be False for user debussy"'''
 
         # Validate Spass token - beethoven
 
