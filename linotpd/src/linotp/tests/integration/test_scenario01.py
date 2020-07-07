@@ -31,13 +31,10 @@ import re
 import binascii
 import logging
 import os
-import pytest
 
 from linotp_selenium_helper import TestCase, Policy
 from linotp_selenium_helper.token_import import TokenImportAladdin
 from linotp_selenium_helper.validate import Validate
-from linotp_selenium_helper.remote_token import RemoteToken
-from linotp_selenium_helper.spass_token import SpassToken
 
 from linotp.lib.HMAC import HmacOtp
 
@@ -78,6 +75,7 @@ class TestScenario01(TestCase):
 
         token_view = self.manage_ui.token_view
         user_view = self.manage_ui.user_view
+        token_enroll = self.manage_ui.token_enroll
 
         selfservice = SelfService(self.driver, self.base_url)
 
@@ -139,14 +137,12 @@ class TestScenario01(TestCase):
         self._announce_test("6. Remote Token zuweisen")
 
         user_view.select_user("debussy")
-        remote_token = RemoteToken(driver=self.driver,
-                                   base_url=self.base_url,
+        serial_token_debussy = token_enroll.create_remote_token(
                                    url="https://billybones",
                                    remote_serial="LSSP0002F653",
                                    pin="1234",
                                    remote_otp_length=6,
                                    )
-        serial_token_debussy = remote_token.serial
 
         self._announce_test("7. Spass-Token zuweisen")
 

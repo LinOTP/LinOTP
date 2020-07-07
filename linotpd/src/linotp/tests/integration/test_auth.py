@@ -28,9 +28,6 @@ import pytest
 
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.auth_ui import AuthUi
-from linotp_selenium_helper.hotp_token import HotpToken
-from linotp_selenium_helper.manage_ui import ManageUi
-from linotp_selenium_helper.user_view import UserView
 
 import integration_data as data
 
@@ -45,8 +42,7 @@ class TestAuth(TestCase):
         self.realm_name = "se_test_auth"
         self.reset_resolvers_and_realms(
             data.sepasswd_resolver, self.realm_name)
-        self.manage = ManageUi(self)
-        self.manage.token_view.delete_all_tokens()
+        self.manage_ui.token_view.delete_all_tokens()
 
     def test_auth_index(self):
         """
@@ -55,12 +51,10 @@ class TestAuth(TestCase):
 
         # Enroll HOTP token
         # Seed and OTP values: https://tools.ietf.org/html/rfc4226#appendix-D
-        user_view = UserView(self.manage, self.realm_name)
         username = "susi"
-        user_view.select_user(username)
+        self.manage_ui.user_view.select_user(username)
         pin = "myauthpin"
-        HotpToken(self.driver,
-                  self.base_url,
+        self.manage_ui.token_enroll.create_hotp_token(
                   pin=pin,
                   hmac_key="3132333435363738393031323334353637383930")
 

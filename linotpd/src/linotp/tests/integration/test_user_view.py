@@ -25,12 +25,9 @@
 #
 
 
-import time
-
 import pytest
 
 from linotp_selenium_helper import TestCase
-from linotp_selenium_helper.hotp_token import HotpToken
 from linotp_selenium_helper.manage_ui import ManageUi
 from linotp_selenium_helper.user_view import UserView
 

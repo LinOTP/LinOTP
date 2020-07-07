@@ -35,7 +35,6 @@ import pytest
 from linotp_selenium_helper import TestCase, Policy
 from linotp_selenium_helper.token_import import TokenImportAladdin
 from linotp_selenium_helper.validate import Validate
-from linotp_selenium_helper.hotp_token import HotpToken
 
 from linotp.lib.HMAC import HmacOtp
 
@@ -140,8 +139,7 @@ class TestPolicies(TestCase):
 
         # Create Token
         self.user_view.select_user(user_b)
-        HotpToken(self.driver,
-                  self.base_url,
+        self.manage_ui.token_enroll.create_hotp_token(
                   pin=user_b_token_pin,
                   hmac_key=user_b_token_key)
 
