@@ -44,6 +44,7 @@ from .system_config import SystemConfig
 from .user_id_resolver import UserIdResolverManager
 from .user_view import UserView
 from .token_view import TokenView
+from .token_enroll import EnrollTokenDialog
 
 """
 This file contains the main manage page class
@@ -71,6 +72,9 @@ class ManageUi(object):
     "Realm manager dialog"
     token_view = None
     "Tokens tab"
+
+    token_enroll = None
+    "Enroll token dialog"
 
     user_view = None
     "Users tab"
@@ -112,6 +116,7 @@ class ManageUi(object):
         self.user_view = UserView(self)
         self.policy_view = PolicyManager(self)
         self.system_config = SystemConfig(self)
+        self.token_enroll = EnrollTokenDialog(self)
 
         self.alert_dialog = ManageDialog(self, 'alert_box')
 
