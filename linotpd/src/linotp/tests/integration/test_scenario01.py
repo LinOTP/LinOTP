@@ -147,13 +147,11 @@ class TestScenario01(TestCase):
         self._announce_test("7. Spass-Token zuweisen")
 
         user_view.select_user("beethoven")
-        spass_token = SpassToken(
-            driver=self.driver,
-            base_url=self.base_url,
-            pin="beethovenspass#ñô",
-            description="SPass Token enrolled with Selenium"
+        beethoven_token_password = "beethovenspass#ñô"
+        serial_token_beethoven = token_enroll.create_static_password_token(
+            password=beethoven_token_password,
+            description="Password Token enrolled with Selenium"
         )
-        serial_token_beethoven = spass_token.serial
 
         self._announce_test("8. Selfservice mOTP")
 
@@ -244,13 +242,29 @@ class TestScenario01(TestCase):
         self.assertFalse(access_granted, "OTP: 1234111111 should be False for user debussy")'''
 
         # Validate Spass token - beethoven
+
+        # Correct PIN + password = success
         access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
-                                              password="beethovennewpin")
+                                              password="beethovennewpin" + beethoven_token_password)
         assert access_granted, "OTP: " + "beethovennewpin" + " for user " + \
                         "beethoven@" + test1_realm + " returned False"
+        # wrong PIN + empty password = fail
         access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
                                               password="randominvalidpin")
         assert not access_granted, "OTP: randominvalidpin should be False for user beethoven"
+        # correct PIN + wrong password = fail
+        access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
+                                              password="beethovennewpin" + "wrongpassword")
+        assert not access_granted, "beethoven should not auth with wrong token password"
+        # Password without pin = fail
+        access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
+                                              password=beethoven_token_password)
+        assert not access_granted, "beethoven should not auth with password and old pin"
+        # Correct PIN + password = success (again)
+        access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
+                                              password="beethovennewpin" + beethoven_token_password)
+        assert access_granted, "OTP: " + "beethovennewpin" + " for user " + \
+                        "beethoven@" + test1_realm + " returned False"
 
         # Validate mOTP token - mozart
         current_epoch = time.time()
@@ -330,7 +344,7 @@ class TestScenario01(TestCase):
 
         # beethoven should be unable to authenticate
         access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
-                                              password="beethovennewpin")
+                                              password="beethovennewpin" + beethoven_token_password)
         assert not access_granted, "OTP: beethovennewpin should be False for user beethoven"
 
         self._announce_test(
@@ -341,7 +355,7 @@ class TestScenario01(TestCase):
 
         # beethoven should be able to authenticate
         access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
-                                              password="beethovennewpin")
+                                              password="beethovennewpin" + beethoven_token_password)
         assert access_granted, "OTP: beethovennewpin should be able to authenticate after re-enabled token."
 
     def check_users(self, realm, data):
