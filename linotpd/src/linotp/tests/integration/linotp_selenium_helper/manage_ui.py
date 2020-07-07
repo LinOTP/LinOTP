@@ -388,6 +388,12 @@ class AlertBoxHandler(object):
     The AlertBoxHandler class allows to check the info/error
     messages on the /manage page thrown by admin actions
        e.g. after creating realms, tokens, etc.
+
+    The alert box handler can be accessed through the manage class.
+    For example:
+        info = self.manage.alert_box_handler.last_line
+        if info.type != 'info' or not info.text.startswith('Token import result:'):
+            raise TokenImportError('Import failure:{}'.format(info))
     """
 
     manageui = None
