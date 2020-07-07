@@ -121,13 +121,16 @@ class Build(build_py):
         build_py.run(self)
 
 
-with open('DESCRIPTION') as f:
-    DESCRIPTION = f.read()
+with open(os.path.join(package_directory, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 setup(
     name='LinOTP',
     version=__version__,
-    description='LinOTP Service',
+    description=('The Open Source solution for multi-factor authentication '
+                 '(server component)'),
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author='KeyIdentity GmbH',
     license='AGPL v3, (C) KeyIdentity GmbH',
     author_email='linotp@keyidentity.com',
@@ -289,7 +292,10 @@ setup(
         ]
     },
     zip_safe=False,
-    long_description=DESCRIPTION,
-    cmdclass={'build_py': Build}
-
+    cmdclass={'build_py': Build},
+    entry_points={
+        'console_scripts': [
+            'linotp = linotp.cli:main',  # LinOTP command line interface
+        ],
+    },
 )

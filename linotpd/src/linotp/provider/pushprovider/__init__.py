@@ -79,6 +79,6 @@ class IPushProvider(object):
         Loads the configuration for this push notification provider
 
         :param configDict: A dictionary that contains all configuration entries
-                          you defined (e.g. in the linotp.ini file)
+                          you defined (e.g. in a linotp.cfg file)
         """
         pass

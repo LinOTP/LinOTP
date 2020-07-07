@@ -98,7 +98,7 @@ class IEmailProvider(object):
         entries, then you may leave this method unimplemented.
 
         :param configDict: A dictionary that contains all configuration
-                           entries you defined (e.g. in the linotp.ini file)
+                           entries you defined (e.g. in a linotp.cfg file)
         :type configDict: dict
         """
         pass
@@ -133,7 +133,7 @@ class SMTPEmailProvider(IEmailProvider):
         Loads the configuration for this e-mail e-mail provider
 
         :param configDict: A dictionary that contains all configuration entries
-                          you defined (e.g. in the linotp.ini file)
+                          you defined (e.g. in a linotp.cfg file)
         :type configDict: dict
 
         """

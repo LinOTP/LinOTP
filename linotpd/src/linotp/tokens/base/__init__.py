@@ -32,7 +32,7 @@ the base class "TokenClass", that you may use to
 define your own tokenclasses.
 
 You can add your own Tokens by adding the modules comma seperated to the
-directive 'linotpTokenModules' in the linotp.ini file.
+directive 'TOKEN_MODULES' in a linotp.cfg file.
 
 """
 

@@ -78,8 +78,8 @@ class DefaultSecurityModule(SecurityModule):
                 self.is_ready = False
 
         if 'file' not in config:
-            log.error("[getSecret] no secret file defined. A parameter "
-                      "linotpSecretFile is missing in your linotp.ini.")
+            log.error("[getSecret] no secret file defined. The SECRET_FILE "
+                      " parameter is missing in your linotp.cfg.")
             raise Exception("no secret file defined: linotpSecretFile!")
 
         self.secFile = config.get('file')

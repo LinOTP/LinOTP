@@ -24,6 +24,7 @@
 #    Support: www.keyidentity.com
 #
 
+import pytest
 from mock import patch
 
 from .script_testing_lib import ScriptTester
@@ -48,15 +49,18 @@ class TestLinotpTokensUsed(ScriptTester):
                 with patch('sys.exit'):
                     self.script_module.main()
 
+    @pytest.mark.xfail(reason="old-style INI-based configuration")
     def test_main_config(self):
         with patch.object(self.script_module, 'print_config', wraps=self.script_module.print_config) as mock_config:
             self.run_main("config")
             mock_config.assert_called_with()
 
+    @pytest.mark.xfail(reason="old-style INI-based configuration")
     @patch('sys.exit')
     def test_config(self, mock_exit):
         with patch.object(self.script_module, 'print_config') as mock_config:
             self.script_module.main()
 
+    @pytest.mark.xfail(reason="old-style INI-based configuration")
     def test_token_usage(self):
         self.script_module.tokens_used(None)

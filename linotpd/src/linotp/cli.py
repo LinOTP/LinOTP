@@ -22,15 +22,30 @@
 #    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
-#
 
-import configparser
-INI_FILE = "/etc/linotp/linotp.ini"
+"""Entry point for LinOTP CLI.
 
-def config_get(section, option, default="", ini_file=INI_FILE):
-    config = configparser.ConfigParser()
-    config.read([ini_file])
-    if config.has_option(section, option):
-        return config.get(section, option)
-    else:
-        return default
+The `main()` function in this file is installed as a console entry point
+in `setup.py()`, so that the shell command `linotp` calls that function.
+We use this to ensure that Flask is initialised with the correct value
+for `FLASK_APP`.
+
+"""
+
+import os
+
+from flask.cli import main as flask_main
+
+FLASK_APP_DEFAULT = "linotp.app"   # Contains default `create_app()` factory
+FLASK_ENV_DEFAULT = "development"  # Default Flask environment, for debugging
+
+
+def main():
+    """Main CLI entry point for LinOTP. All the heavy lifting is delegated
+    to Flask.
+    """
+
+    os.environ["FLASK_APP"] = FLASK_APP_DEFAULT
+    if "FLASK_ENV" not in os.environ:
+        os.environ["FLASK_ENV"] = FLASK_ENV_DEFAULT
+    flask_main()

@@ -471,7 +471,7 @@ class Audit(AuditBase):
     def set(self):
         '''
         This function could be used to set certain things like the signing key.
-        But maybe it should only be read from linotp.ini?
+        But maybe it should only be read from linotp.cfg?
         '''
         pass
 

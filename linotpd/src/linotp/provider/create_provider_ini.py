@@ -25,7 +25,7 @@
 #
 
 import io
-from linotp.lib.utils.UConfigParser import UConfigParser
+from configparser import ConfigParser
 
 
 def create_provider_config():
@@ -44,7 +44,7 @@ def create_provider_config():
 
         provider_config[provider_type] = providers
 
-    ini = UConfigParser()
+    ini = ConfigParser()
 
     for provider_type, providers in list(provider_config.items()):
         for provider in list(providers.keys()):
@@ -53,9 +53,6 @@ def create_provider_config():
 
             provider_config = providers.get(provider)
             for key, value in list(provider_config.items()):
-                if isinstance(value, str):
-                    value = value.encode('utf-8')
-
                 ini.set(section, key, value)
 
     output = io.StringIO()

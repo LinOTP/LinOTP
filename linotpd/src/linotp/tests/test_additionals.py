@@ -31,7 +31,6 @@
 
 from unittest import TestCase
 from linotp.lib.crypto.pbkdf2 import pbkdf2
-from linotp.lib.utils import config_get
 from linotp.lib.ImportOTP.PSKC import parsePSKCdata
 from linotp.lib.ImportOTP.DPWplain import parseDPWdata
 
@@ -53,29 +52,6 @@ class PBKDF2(TestCase):
             key = pbkdf2("my password", "salt", 10, key_length).hex()
             print(key, expected_key[key_length])
             assert key == expected_key[key_length]
-
-
-def test_get_config(tmp_path):
-    '''
-    Test get_config
-    '''
-    ini_file = '''
-[section1]
-key1 = value1
-key2 = value2
-[section2]
-key3 = value3
-'''
-
-    ini_path = tmp_path / 'test_get_config.ini'
-    ini_path.write(ini_file)
-
-    print("section1,key1:", config_get("section1", "key1", ini_file=ini_path.name))
-    assert config_get("section1", "key1", ini_file=ini_path.name) == "value1"
-    assert config_get("section1", "key2", ini_file=ini_path.name) == "value2"
-    assert config_get("section2", "key3", ini_file=ini_path.name) == "value3"
-    assert config_get("section3", "key4", default="Hallo", ini_file=ini_path.name) == "Hallo"
-    assert config_get("section2", "key4", default="Bubu", ini_file=ini_path.name) == "Bubu"
 
 
 class TestPSKC(TestCase):
@@ -361,4 +337,3 @@ dpw23456789		3434343434343434'''
         assert len(res) == 2
         assert res.get("dpw23456789").get("hmac_key") == "3434343434343434"
         assert res.get("dpw123456").get("hmac_key") == "12121212121212"
-
