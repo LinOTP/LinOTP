@@ -337,10 +337,8 @@ class TestScenario01(TestCase):
             "14. Der Admin entsperrt diesen Token, der Benutzer beethoven kann sich wieder anmelden.")
 
         token_view.open()
-        token_view.select_token(serial_token_beethoven)
-        driver.find_element_by_id("button_enable").click()
+        token_view.enable_token(serial_token_beethoven)
 
-        time.sleep(1)
         # beethoven should be able to authenticate
         access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
                                               password="beethovennewpin")
