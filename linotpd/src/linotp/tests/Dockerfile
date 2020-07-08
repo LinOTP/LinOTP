@@ -20,7 +20,6 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
     python3-coverage \
     python3-dev \
     python3-flask-testing \
-    python3-flaky \
     python3-freezegun \
     python3-mock \
     python3-pytest \
@@ -47,6 +46,7 @@ RUN useradd -ms /bin/bash tester
 
 # Install python modules which do not have equivalent Debian packages
 RUN pip3 install --upgrade \
+    flaky \
     mockldap \
     "pytest>=5.0" \
     pytest-freezegun \
