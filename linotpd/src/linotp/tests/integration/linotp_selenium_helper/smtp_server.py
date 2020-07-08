@@ -49,10 +49,10 @@ class SmtpListener(SMTPServer):
     """
 
     def __init__(self, localaddr, queue):
-        SMTPServer.__init__(self, localaddr, None)
+        SMTPServer.__init__(self, localaddr, None, decode_data=True)
         self.queue = queue
 
-    def process_message(self, peer, mailfrom, rcpttos, data):
+    def process_message(self, peer, mailfrom, rcpttos, data, **_kwargs):
         logger.debug("Mail from:%s to:%s data:<%s>", mailfrom, rcpttos, data)
         self.queue.put(data)
 

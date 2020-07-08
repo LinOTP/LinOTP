@@ -220,6 +220,16 @@ class TokenView(ManageTab):
         driver.find_element_by_id("button_setpin_setpin").click()
         self.wait_for_waiting_finished()  # Wait for delete API call
 
+    def enable_token(self, token_serial):
+        self.select_token(token_serial)
+        self.driver.find_element_by_id("button_enable").click()
+        self.wait_for_waiting_finished()
+
+    def disable_token(self, token_serial):
+        self.select_token(token_serial)
+        self.driver.find_element_by_id("button_enable").click()
+        self.wait_for_waiting_finished()
+
     def get_token_info(self, token_serial):
         """
         Extracts the token info from the WebUI and returns it as a dictionary.

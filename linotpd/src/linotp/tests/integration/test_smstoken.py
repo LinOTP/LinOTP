@@ -25,14 +25,10 @@
 #
 from subprocess import check_output
 import pytest
-import unittest
 import re
 
 from linotp_selenium_helper import TestCase
-from linotp_selenium_helper.user_view import UserView
-from linotp_selenium_helper.token_view import TokenView
-from linotp_selenium_helper.sms_token import SmsToken
-from linotp_selenium_helper.helper import get_from_tconfig, is_radius_disabled
+from linotp_selenium_helper.helper import get_from_tconfig
 from linotp_selenium_helper.validate import Validate
 from linotp_selenium_helper.smtp_server import SMSProviderServer
 
@@ -76,14 +72,13 @@ class TestSmsToken(TestCase):
         user_view.select_realm(realm_name)
         user_view.select_user(username)
 
-        sms_token = SmsToken(driver=self.driver,
-                             base_url=self.base_url,
+        sms_token = self.manage_ui.token_enroll.create_sms_token(
                              pin=sms_token_pin,
                              phone=phone_number,
                              description=description)
 
         token_view = self.manage_ui.token_view
-        token_info = token_view.get_token_info(sms_token.serial)
+        token_info = token_view.get_token_info(sms_token)
         assert phone_number == token_info['LinOtp.TokenInfo']['phone'], \
                          "Wrong phone number was set for sms token."
 

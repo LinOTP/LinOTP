@@ -23,11 +23,11 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-import unittest
 import logging
 import re
 from contextlib import contextmanager
 from packaging import version
+from typing import Optional
 from flaky import flaky
 import time
 import urllib3
@@ -68,7 +68,6 @@ def is_flaky_exception(err, *args):
     return False
 
 
-@flaky(rerun_filter=is_flaky_exception)
 class TestCase(object):
     """Basic LinOTP TestCase class"""
 
@@ -78,7 +77,7 @@ class TestCase(object):
     "Selenium driver"
 
     _linotp_version = None  # LinOTP server version
-    _manage = None  # Manage UI
+    _manage: Optional[ManageUi] = None  # Manage UI
 
     @classmethod
     def setup_class(cls):
@@ -249,7 +248,7 @@ class TestCase(object):
         return elements  # Return elements without the parent
 
     @property
-    def manage_ui(self):
+    def manage_ui(self) -> ManageUi:
         """
         Return page manager
         """

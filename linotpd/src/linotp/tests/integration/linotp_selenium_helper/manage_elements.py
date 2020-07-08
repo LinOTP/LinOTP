@@ -50,7 +50,7 @@ class ManageElement(object):
         The manage element can be initialised with an existing manage object, or a testcase.
         If the testcase is supplied, it will be used to determine the manage ui instance.
         """
-        self.manage = manage_ui
+        self.manage: 'ManageUI' = manage_ui
 
     @property
     def driver(self):
@@ -172,7 +172,7 @@ class ManageTab(ManageElement):
         return tab_element
 
     def _activate_tab(self, tab_id, reload_page=False):
-        if reload_page or not self._is_url_open():
+        if reload_page or not self.manage.is_url_open():
             self.open_manage()
 
 

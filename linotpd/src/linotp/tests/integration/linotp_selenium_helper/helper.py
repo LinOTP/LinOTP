@@ -146,7 +146,7 @@ def get_session(base_url, user=None, pwd=None):
 
         LOG.debug("Content:\n%s" % r.text)
         if r.status_code != 200:
-            raise Exception('Admin login failed')
+            raise Exception(f'Admin login failed: {r}')
         session = None
         domain = urlparse(base_url).netloc.split(':')[0]
         exceptions = []

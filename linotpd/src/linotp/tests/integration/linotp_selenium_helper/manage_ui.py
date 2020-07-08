@@ -44,6 +44,7 @@ from .system_config import SystemConfig
 from .user_id_resolver import UserIdResolverManager
 from .user_view import UserView
 from .token_view import TokenView
+from .token_enroll import EnrollTokenDialog
 
 """
 This file contains the main manage page class
@@ -71,6 +72,9 @@ class ManageUi(object):
     "Realm manager dialog"
     token_view = None
     "Tokens tab"
+
+    token_enroll = None
+    "Enroll token dialog"
 
     user_view = None
     "Users tab"
@@ -106,16 +110,17 @@ class ManageUi(object):
         self.welcome_screen = ManageDialog(
             self, 'welcome_screen', 'welcome_screen_close')
 
-        self.useridresolver_manager = UserIdResolverManager(self)
-        self.realm_manager = RealmManager(self)
-        self.token_view = TokenView(self)
-        self.user_view = UserView(self)
+        self.useridresolver_manager: UserIdResolverManager = UserIdResolverManager(self)
+        self.realm_manager: RealmManager = RealmManager(self)
+        self.token_view: TokenView = TokenView(self)
+        self.user_view: UserView = UserView(self)
         self.policy_view = PolicyManager(self)
         self.system_config = SystemConfig(self)
+        self.token_enroll = EnrollTokenDialog(self)
 
         self.alert_dialog = ManageDialog(self, 'alert_box')
 
-    def _is_url_open(self):
+    def is_url_open(self):
         possible_urls = (self.URL, self.URL + '/', self.URL + '/#')
         return self.driver.current_url.endswith(possible_urls)
 
@@ -144,7 +149,7 @@ class ManageUi(object):
         """
         Check we are on the right page
         """
-        assert self._is_url_open(), \
+        assert self.is_url_open(), \
             'URL %s should end with %s - page not loaded?' % \
             (self.driver.current_url, self.URL)
         assert self.driver.title == 'Management - LinOTP'
@@ -183,7 +188,7 @@ class ManageUi(object):
         return helper.find_by_xpath(self.driver, xpath)
 
     def open_manage(self):
-        if not self._is_url_open():
+        if not self.is_url_open():
             self.driver.get(self.manage_url)
 
             self.welcome_screen.close_if_open()
@@ -227,7 +232,7 @@ class ManageUi(object):
         """
 
         # Find all open dialogs
-        dialogs = self.find_all_by_css('.ui-dialog[style*="display: block"]')
+        dialogs = self.find_all_by_css('.ui-dialog:not([style*="display: none"])')
 
         # Sort by depth (the z-index attribute in reverse order)
         dialogs.sort(
@@ -277,7 +282,7 @@ class ManageUi(object):
         """
         Check whether a given element is visible without waiting
         """
-        if not self._is_url_open():
+        if not self.is_url_open():
             return False
 
         try:
@@ -383,6 +388,12 @@ class AlertBoxHandler(object):
     The AlertBoxHandler class allows to check the info/error
     messages on the /manage page thrown by admin actions
        e.g. after creating realms, tokens, etc.
+
+    The alert box handler can be accessed through the manage class.
+    For example:
+        info = self.manage.alert_box_handler.last_line
+        if info.type != 'info' or not info.text.startswith('Token import result:'):
+            raise TokenImportError('Import failure:{}'.format(info))
     """
 
     manageui = None

@@ -45,8 +45,7 @@ class TestCreateRealmDialog(TestCase):
         m.clear_resolvers_via_api()
 
         resolver_data = data.musicians_ldap_resolver
-        m.create_resolver(resolver_data)
-        m.close_if_open()
+        m.create_resolver_via_api(resolver_data)
 
         r.create("test_clear_realm", resolver_data['name'])
 

@@ -31,9 +31,6 @@ import re
 import pytest
 
 from linotp_selenium_helper import TestCase
-from linotp_selenium_helper.user_view import UserView
-from linotp_selenium_helper.token_view import TokenView
-from linotp_selenium_helper.email_token import EmailToken
 from linotp_selenium_helper.helper import get_from_tconfig, is_radius_disabled
 from linotp_selenium_helper.validate import Validate
 from linotp_selenium_helper.smtp_server import EmailProviderServer
@@ -67,10 +64,9 @@ class TestEmailToken(TestCase):
         user_view.select_user(self.username)
         description = "Rolled out by Selenium"
         expected_email_address = self.email_recipient
-        email_token = EmailToken(driver=self.driver,
-                                 base_url=self.base_url,
+        email_token = self.manage_ui.token_enroll.create_email_token(
                                  pin=self.email_token_pin,
-                                 email=expected_email_address,
+                                 email_address=expected_email_address,
                                  description=description)
         return email_token
 
@@ -87,7 +83,7 @@ class TestEmailTokenEnroll(TestEmailToken):
         expected_email_address = self.email_recipient
         email_token = self.enroll_email_token()
 
-        token_info = self.token_view.get_token_info(email_token.serial)
+        token_info = self.token_view.get_token_info(email_token)
         description = "Rolled out by Selenium"
         expected_description = expected_email_address + " " + description
         assert expected_email_address == token_info['LinOtp.TokenInfo']['email_address'], \

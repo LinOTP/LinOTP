@@ -28,10 +28,6 @@
 import re
 import logging
 
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.keys import Keys
-
 from .helper import find_by_css, find_by_id, fill_element_from_dict
 from .manage_elements import ManageDialog
 
@@ -202,7 +198,6 @@ class UserIdResolverManager(ManageDialog):
                 'EnforceTLS' : 'False',
                 'TIMEOUT': '5',
                 'SIZELIMIT' : '500',
-                'CACERTIFICATE' : '',
                 'NOREFERRALS' : 'True',
             }
             if 'preset_ldap' in data:
@@ -241,7 +236,6 @@ class UserIdResolverManager(ManageDialog):
             'loginattr': 'LOGINNAMEATTRIBUTE',
             'timeout': 'TIMEOUT',
             'sizelimit': 'SIZELIMIT',
-            'certificate': 'CACERTIFICATE',
 
             'filename': 'fileName',
 
@@ -471,10 +465,6 @@ class LdapUserIdResolver(UserIdResolver):
             assert data['uri'].startswith('ldap:')
             find_by_id(driver, 'ldap_enforce_tls').click()
 
-        if data['uri'].startswith('ldaps:') or enforce_tls:
-            fill_element_from_dict(
-                driver, 'ldap_certificate', 'certificate', data)
-
         fill_element_from_dict(driver, 'ldap_basedn', 'basedn', data)
         fill_element_from_dict(driver, 'ldap_binddn', 'binddn', data)
         fill_element_from_dict(driver, 'ldap_password', 'password', data)
@@ -504,7 +494,10 @@ class SqlUserIdResolver(UserIdResolver):
 
         fill_element_from_dict(driver, 'sql_resolvername', 'name', data)
 
-        for field in ('server', 'database', 'user', 'password',
+        if 'driver' in data:
+            fill_element_from_dict(driver, 'sql_driver', 'driver', data)
+
+        for field in ('driver', 'server', 'database', 'user', 'password',
                       'table', 'limit', 'encoding'):
             fill_element_from_dict(driver, 'sql_' + field, field, data)
 

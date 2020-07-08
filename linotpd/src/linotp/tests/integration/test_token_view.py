@@ -28,20 +28,15 @@
 import pytest
 
 from linotp_selenium_helper import TestCase
-from linotp_selenium_helper.token_view import TokenView
-from linotp_selenium_helper.spass_token import SpassToken
 
 
-def _create_test_token(driver, base_url):
-    s = SpassToken(driver, base_url, pin="1234")
-    return s
-
-
-class TestTokenView(TestCase):
+class TestTokenView():
 
     @pytest.fixture(autouse=True)
-    def setUp(self):
-        self.token_view = self.manage_ui.token_view
+    def setUp(self, manage_ui):
+        self.manage_ui = manage_ui
+        self.token_view = manage_ui.token_view
+        self.token_enroll = manage_ui.token_enroll
 
     def test_01_open_view(self):
         self.token_view.open()
@@ -49,28 +44,26 @@ class TestTokenView(TestCase):
     def test_02_clear_tokens(self):
         self.token_view.delete_all_tokens()
 
-    def test_03_create_token(self):
-        v = self.token_view
-        v.open()
-        _create_test_token(self.driver, self.base_url)
+    def test_03_create_static_password_token(self):
+        self.token_enroll.create_static_password_token("testPassword")
 
     def test_04_create_and_clear_tokens(self):
         v = self.token_view
         v.delete_all_tokens()
         # Create 10 tokens so UI delays are introduced while fetching tokens
         for _ in range(0, 10):
-            _create_test_token(self.driver, self.base_url)
+            self.token_enroll.create_static_password_token("testPassword")
         v.delete_all_tokens()
 
 
-class TestTokenViewOperations(TestCase):
+class TestTokenViewOperations():
 
     @pytest.fixture(autouse=True)
-    def setUp(self):
+    def setUp(self, manage_ui):
+        self.manage_ui = manage_ui
         self.token_view = self.manage_ui.token_view
         self.token_view.delete_all_tokens()
-        self.token_serial = _create_test_token(
-            self.driver, self.base_url).serial
+        self.token_serial = self.manage_ui.token_enroll.create_static_password_token("testPassword")
 
     def test_01_select(self):
         self.token_view.select_token(self.token_serial)

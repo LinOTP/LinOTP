@@ -31,13 +31,10 @@ import re
 import binascii
 import logging
 import os
-import pytest
 
 from linotp_selenium_helper import TestCase, Policy
 from linotp_selenium_helper.token_import import TokenImportAladdin
 from linotp_selenium_helper.validate import Validate
-from linotp_selenium_helper.remote_token import RemoteToken
-from linotp_selenium_helper.spass_token import SpassToken
 
 from linotp.lib.HMAC import HmacOtp
 
@@ -78,6 +75,7 @@ class TestScenario01(TestCase):
 
         token_view = self.manage_ui.token_view
         user_view = self.manage_ui.user_view
+        token_enroll = self.manage_ui.token_enroll
 
         selfservice = SelfService(self.driver, self.base_url)
 
@@ -117,11 +115,7 @@ class TestScenario01(TestCase):
 
         aladdin_xml_path = os.path.join(self.manage_ui.test_data_dir,
                                         'aladdin.xml')
-        err_import = token_import_aladdin.do_import(file_content=None,
-                                                    file_path=aladdin_xml_path)
-        # There shouldn't raise an error
-        assert not err_import, \
-                         "Error during Aladdin token import!"
+        token_import_aladdin.do_import(file_path=aladdin_xml_path)
 
         serial_token_bach = "oath137332"
         test1_realm = realm_name1.lower()
@@ -143,25 +137,21 @@ class TestScenario01(TestCase):
         self._announce_test("6. Remote Token zuweisen")
 
         user_view.select_user("debussy")
-        remote_token = RemoteToken(driver=self.driver,
-                                   base_url=self.base_url,
+        serial_token_debussy = token_enroll.create_remote_token(
                                    url="https://billybones",
                                    remote_serial="LSSP0002F653",
                                    pin="1234",
                                    remote_otp_length=6,
                                    )
-        serial_token_debussy = remote_token.serial
 
         self._announce_test("7. Spass-Token zuweisen")
 
         user_view.select_user("beethoven")
-        spass_token = SpassToken(
-            driver=self.driver,
-            base_url=self.base_url,
-            pin="beethovenspass#ñô",
-            description="SPass Token enrolled with Selenium"
+        beethoven_token_password = "beethovenspass#ñô"
+        serial_token_beethoven = token_enroll.create_static_password_token(
+            password=beethoven_token_password,
+            description="Password Token enrolled with Selenium"
         )
-        serial_token_beethoven = spass_token.serial
 
         self._announce_test("8. Selfservice mOTP")
 
@@ -252,13 +242,29 @@ class TestScenario01(TestCase):
         self.assertFalse(access_granted, "OTP: 1234111111 should be False for user debussy")'''
 
         # Validate Spass token - beethoven
+
+        # Correct PIN + password = success
         access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
-                                              password="beethovennewpin")
+                                              password="beethovennewpin" + beethoven_token_password)
         assert access_granted, "OTP: " + "beethovennewpin" + " for user " + \
                         "beethoven@" + test1_realm + " returned False"
+        # wrong PIN + empty password = fail
         access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
                                               password="randominvalidpin")
         assert not access_granted, "OTP: randominvalidpin should be False for user beethoven"
+        # correct PIN + wrong password = fail
+        access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
+                                              password="beethovennewpin" + "wrongpassword")
+        assert not access_granted, "beethoven should not auth with wrong token password"
+        # Password without pin = fail
+        access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
+                                              password=beethoven_token_password)
+        assert not access_granted, "beethoven should not auth with password and old pin"
+        # Correct PIN + password = success (again)
+        access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
+                                              password="beethovennewpin" + beethoven_token_password)
+        assert access_granted, "OTP: " + "beethovennewpin" + " for user " + \
+                        "beethoven@" + test1_realm + " returned False"
 
         # Validate mOTP token - mozart
         current_epoch = time.time()
@@ -338,20 +344,18 @@ class TestScenario01(TestCase):
 
         # beethoven should be unable to authenticate
         access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
-                                              password="beethovennewpin")
+                                              password="beethovennewpin" + beethoven_token_password)
         assert not access_granted, "OTP: beethovennewpin should be False for user beethoven"
 
         self._announce_test(
             "14. Der Admin entsperrt diesen Token, der Benutzer beethoven kann sich wieder anmelden.")
 
         token_view.open()
-        token_view.select_token(serial_token_beethoven)
-        driver.find_element_by_id("button_enable").click()
+        token_view.enable_token(serial_token_beethoven)
 
-        time.sleep(1)
         # beethoven should be able to authenticate
         access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
-                                              password="beethovennewpin")
+                                              password="beethovennewpin" + beethoven_token_password)
         assert access_granted, "OTP: beethovennewpin should be able to authenticate after re-enabled token."
 
     def check_users(self, realm, data):
