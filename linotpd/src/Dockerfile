@@ -82,7 +82,7 @@ ENV TZ="Europe/Berlin" \
     LINOTP_APACHE_SSL=true \
     LINOTP_APACHE_HSTS=true \
     LINOTP_LOGLEVEL=INFO \
-    LINOTP_CONSOLE_LOGLEVEL=DEBUG \
+    LINOTP_CONSOLE_LOGLEVEL=INFO \
     SQLALCHEMY_LOGLEVEL=ERROR \
     APACHE_LOGLEVEL=info \
     LOGSTASH_HOST= \
@@ -125,7 +125,7 @@ RUN apt-get update \
         python3-beaker python3-passlib python3-cryptography python3-bcrypt python3-pygments \
         python3-decorator python3-docutils python3-formencode python3-httplib2 \
         python3-ldap python3-mako python3-mysqldb python3-netaddr \
-        python3-pyrad python3-qrcode python3-routes python3-simplejson \
+        python3-pyrad python3-qrcode python3-routes \
         python3-sqlalchemy \
         apache2 libapache2-mod-wsgi-py3 \
         python3-pysodium python3-requests \

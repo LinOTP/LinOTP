@@ -42,7 +42,6 @@ install_requirements = [
     'SQLAlchemy>=0.6',
     'beaker',
     'docutils>=0.4',
-    'simplejson>=2.0',
     'pycryptodomex>=3.4',
     'pyrad>=1.1',
     'netaddr',

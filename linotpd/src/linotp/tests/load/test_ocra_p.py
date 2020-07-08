@@ -47,7 +47,6 @@ from linotp.lib.crypto.utils import createActivationCode, check
 
 from linotp.tests import *
 from linotp.lib.selftest import isSelfTest
-from simplejson import loads
 
 from datetime import datetime
 from datetime import timedelta
