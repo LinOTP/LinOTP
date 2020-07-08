@@ -321,7 +321,7 @@ build:buster (tag):
     - DOCKERFILE_CACHE_KEY=$(sha256sum ${DOCKERFILE_PATH} | cut -d ' ' -f1)
     - docker pull "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}" || true
     # Do the build itself
-    - make DOCKER_IMAGE="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp" DOCKER_TAGS="${CI_PIPELINE_ID} ${DOCKERFILE_CACHE_KEY}" docker-build-linotp
+    - make DOCKER_BUILD_ARGS=--cache-from="$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}" DOCKER_IMAGE="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp" DOCKER_TAGS="${CI_PIPELINE_ID} ${DOCKERFILE_CACHE_KEY}" docker-build-linotp
     # Push images to repository in the form:
     #  registry/ci/release/linotp:pipelineID
     #  registry/ci/release/linotp:sha256
