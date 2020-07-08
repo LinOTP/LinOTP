@@ -8,8 +8,10 @@ services:
      - "5900"
 
   selenium_tester:
+    image: selenium_tester
     build:
-      context: .
+      context: ..
+      dockerfile: Dockerfile.script-executor
       args:
         - http_proxy
         - https_proxy
@@ -17,9 +19,9 @@ services:
         - DEBIAN_MIRROR=deb.debian.org
     environment:
       SELENIUM_DRIVER: "chrome"
-      NOSETESTS_ARGS: "-v"
+      TEST_BUNCH: "integrationtests PYTESTARGS='-v'"
     volumes:
-      - .:/opt/linotp/tests
+      - ..:/opt/linotp/tests:ro
     depends_on:
       - selenium
       - linotp
@@ -28,12 +30,9 @@ services:
     image: linotp
     restart: always
     environment:
-      LINOTP_DB_TYPE: "mysql"
+      LINOTP_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"
       LINOTP_DB_HOST: "db"
       LINOTP_DB_PORT: "3306"
-      LINOTP_DB_USER: "linotpuser"
-      LINOTP_DB_PASSWORD: "linotppass"
-      LINOTP_DB_NAME: "linotp_db"
       LINOTP_APACHE_AUTH: "false"
     depends_on: 
       - db
