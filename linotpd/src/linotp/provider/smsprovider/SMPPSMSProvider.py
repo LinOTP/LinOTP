@@ -106,7 +106,7 @@ class SMPPSMSProvider(ISMSProvider):
 
         except Exception as exx:
             log.exception("Failed to connect to server")
-            raise ProviderNotAvailable("Failed to connect to server %r" % exc)
+            raise ProviderNotAvailable("Failed to connect to server %r" % exx)
 
         try:
             log.debug("binding to system_id %r (system_type %r)",
