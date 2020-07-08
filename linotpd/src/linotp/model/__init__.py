@@ -949,6 +949,10 @@ challenge_mapping['odata'] = challenges_table.c.data
 challenge_mapping['challenge'] = challenges_table.c.bchallenge
 challenge_mapping['data'] = challenges_table.c.bdata
 
+# for oracle we need a mapping of columns due to reserved keywords 'session' and 'timestamp'
+challenge_mapping['session'] = challenges_table.c.get(session_column)
+challenge_mapping['timestamp'] = challenges_table.c.get(timestamp_column)
+
 orm.mapper(Challenge, challenges_table, properties=challenge_mapping,)
 
 
