@@ -344,7 +344,7 @@ class TestHelpdeskEnrollment(TestController):
 
             # first call is the enrollment notification
 
-            _email_from, email_to, email_message = call_args_list[0].args
+            _email_from, email_to, email_message = call_args_list[0][0]
             assert email_to == 'pass.true@example.com'
             assert 'Subject: New email token enrolled' in email_message
 
@@ -353,7 +353,7 @@ class TestHelpdeskEnrollment(TestController):
 
             # second call is the otp notification
 
-            _email_from, email_to, email_message = call_args_list[1].args
+            _email_from, email_to, email_message = call_args_list[1][0]
             assert email_to == 'pass.true@example.com'
             assert 'Subject: Your requested otp' in email_message
 

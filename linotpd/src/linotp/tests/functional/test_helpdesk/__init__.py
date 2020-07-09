@@ -31,7 +31,7 @@
 """
 
 import smtplib
-from mock import patch
+from unittest.mock import patch
 
 def enable_helpdesk_controller(pylons_config):
     """
