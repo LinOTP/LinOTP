@@ -871,57 +871,6 @@ class IdResolver(UserIdResolver):
             resolver = resolver + "." + self.conf
         return resolver
 
-    def getConfigEntry(self, config, key, conf, required=True, default=""):
-        '''
-        getConfigEntry - retrieve an entry from the config
-
-        :param config: dict of all configs
-        :type  config: dict
-        :param key: key which is searched
-        :type key: string
-        :param conf: scope of the config eg. connect.sql
-        :type conf: string
-        :param required: if this value ist true and the key is not defined, an
-                         exception sill be raised
-        :type required:  boolean
-        :param default: fallback value if confg has no such entry
-        :type default: any
-
-        :return: the value of the specified key
-        :rtype:  value type - in most cases string ;-)
-
-        '''
-        log.debug("[getConfigEntry]")
-
-        ckey = key
-        cval = default
-        config_found = False
-        log.debug("[getConfigEntry] searching key %r in config %r",
-                  key, conf)
-        if conf:
-            ckey = ckey + "." + conf
-            if ckey in config:
-                config_found = True
-                cval = config[ckey]
-
-        if cval == "":
-            if key in config:
-                config_found = True
-                cval = config[key]
-
-        if required and not config_found:
-            log.error("[getConfigEntry] missing config entry %s "
-                      "in config %s", key, conf)
-
-            self.brokenconfig = True
-            self.brokenconfig_text = ("Broken Config: missing config entry "
-                                      "%s in config %s" % (key, conf))
-
-            raise Exception("missing config entry: %s "
-                            "in config %s", key, config)
-
-        return cval
-
     @classmethod
     def getResolverClassType(cls):
         return 'ldapresolver'
