@@ -305,6 +305,14 @@ _config_schema = ConfigSchema([
                      "the OpenSSL verify(1) manual page for more information. "
                      "Do not change this unless you know what you are "
                      "doing.")),
+    ConfigItem("TLS_ONLY_TRUSTED_CERTS", bool, default=False,  # Yuck.
+               convert=to_boolean,
+               help=("If true, check TLS server certificates for validity "
+                     "(i.e., do they match the desired host name, are they "
+                     "correctly signed by a CA, etc.). Otherwise, don't "
+                     "insist on valid TLS server certificates. The default "
+                     "is `False` for backwards compatibility, even though "
+                     "this is obviously Wrong.")),
 ])
 
 

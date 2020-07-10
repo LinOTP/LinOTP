@@ -509,7 +509,12 @@ class IdResolver(UserIdResolver):
         self.proxy = False
         self.uidType = DEFAULT_UID_TYPE
         self.l_obj = None
-        self.only_trusted_certs = False
+
+        # As of now this can only be controlled via a global configuration
+        # setting (it used to be hard-coded to `False`, with a special
+        # exception in `testconnection()`).
+
+        self.only_trusted_certs = current_app.config["TLS_ONLY_TRUSTED_CERTS"]
 
     def close(self):
         """
@@ -1592,20 +1597,22 @@ class IdResolver(UserIdResolver):
 
 def getLdapUsers(params):
 
-    # ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
-    ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_DEMAND)
+    cert_req = (ldap.OPT_X_TLS_DEMAND if params['only_trusted_certs']
+                else ldap.OPT_X_TLS_NEVER)
+    ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, cert_req)
+    ldap.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
     ldap.set_option(ldap.OPT_PROTOCOL_VERSION, ldap.VERSION3)
 
     uri = params['LDAPURI']
-
     l = ldap.initialize(uri)
-    l.set_option(ldap.OPT_X_TLS_DEMAND, True)
 
     # ldap v3 required for start_tls
     l.set_option(ldap.OPT_PROTOCOL_VERSION, ldap.VERSION3)
 
     if not uri.startswith('ldaps://'):
         try:
+            l.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, cert_req)
+            l.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
             l.start_tls_s()
         except ldap.LDAPError as exx:
             log.info("failed to start_tls for %r: %r", uri, exx)
