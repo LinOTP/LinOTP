@@ -371,7 +371,6 @@ class IdResolver(UserIdResolver):
         status = "success"
         resultList = []
 
-        old_cert_file = None
         l_obj = None
 
         # for the testconection we are using a simple class
