@@ -80,6 +80,7 @@ class TestCreateUserIdResolvers(TestCase):
         m.close()
 
     def test_01_ldap_resolver(self):
+        # ldaps URL
         self.create_resolver(data.musicians_ldap_resolver)
 
     def test_02_passwd_resolver_creation(self):
@@ -94,6 +95,13 @@ class TestCreateUserIdResolvers(TestCase):
     def test_05_ldap_enforce_starttls(self):
         ldap_data = data.musicians_ldap_resolver.copy()
         ldap_data['enforce_tls'] = True
+        ldap_data['uri'] = ldap_data['uri'].replace('ldaps:', 'ldap:')
+
+        self.create_resolver(ldap_data)
+
+    def test_06_ldap_dont_enforce_starttls(self):
+        ldap_data = data.musicians_ldap_resolver.copy()
+        ldap_data['enforce_tls'] = False
         ldap_data['uri'] = ldap_data['uri'].replace('ldaps:', 'ldap:')
 
         self.create_resolver(ldap_data)
