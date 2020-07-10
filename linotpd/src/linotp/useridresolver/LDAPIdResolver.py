@@ -1692,10 +1692,14 @@ def resolver_request(params, silent=False):
 @click.option('--searchfilter', help='Define object search filter')
 @click.option('--loginattribute', default='uid',
               help='define user login attribute, default is uid')
+@click.option('--all-cases', is_flag=True,
+              help=("Exhaustively test all non-TLS/TLS connection options. "
+                    "This means that the `-e`, `-c`, and `-s` flags and the "
+                    "protocol part of the LDAP server URL are ignored."))
 @with_appcontext
 def ldap_test(url, base, binddn, bindpw, enforce_tls, trace_level,
               only_trusted_certs, simple, ldap_type, cert_file, filter,
-              searchfilter, loginattribute):
+              searchfilter, loginattribute, all_cases):
     user_mapping = {
         "username": "uid",
         "phone": "telephoneNumber",
@@ -1741,13 +1745,68 @@ def ldap_test(url, base, binddn, bindpw, enforce_tls, trace_level,
     if loginattribute:
         params['LOGINNAMEATTRIBUTE'] = loginattribute
 
-    log.setLevel(logging.DEBUG)
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s %(levelname)s: [%(name)s]'
-                                  ' %(message)s')
-    ch.setFormatter(formatter)
-    log.addHandler(ch)
+    if not all_cases or current_app.config['LOGGING_LEVEL'] == 'DEBUG':
+        log.setLevel(logging.DEBUG)
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s %(levelname)s: [%(name)s]'
+                                      ' %(message)s')
+        ch.setFormatter(formatter)
+        log.addHandler(ch)
+
+    if all_cases:
+        # This does an exhaustive test of all possible combinations of
+        # LDAP, LDAP+STARTTLS, LDAPS, with or without certificate checking
+        # and with or without available CA certificates. The root-level CA
+        # certificate for the LDAP server used for testing should be
+        # specified using the `TLS_CA_CERTIFICATES_FILE` configuration
+        # setting.
+
+        ca_cert_file = current_app.config['TLS_CA_CERTIFICATES_FILE']
+        cases = [
+            # proto   S-TLS  certs         checking  should connect?
+            # ---------------------------------------------------------
+            ("ldap",  False, "/dev/null",  False,    True),
+            # In the following line, “should connect?” should be `True`
+            # except that with LDAP+STARTTLS, certificate checking is forced
+            # irrespective of the `only_trusted_certs` setting.
+            ("ldap",  True,  "/dev/null",  False,    False),
+            ("ldap",  True,  "/dev/null",  True,     False),
+            ("ldap",  True,  ca_cert_file, False,    True),
+            ("ldap",  True,  ca_cert_file, True,     True),
+            ("ldaps", False, "/dev/null",  False,    True),
+            ("ldaps", False, "/dev/null",  True,     False),
+            ("ldaps", False, ca_cert_file, False,    True),
+            ("ldaps", False, ca_cert_file, True,     True),
+        ]
+
+        print("Proto  STARTTLS  CA cert      Checking  Result        Happy?")
+        print("------------------------------------------------------------")
+        ok_cases = 0
+        for proto, start_tls, cert_file, checking, expected in cases:
+            params0 = params.copy()
+            uri = params['LDAPURI']
+            params0['LDAPURI'] = proto + uri[uri.find(':'):]
+            params0['EnforceTLS'] = start_tls
+            current_app.config["TLS_CA_CERTIFICATES_FILE"] = cert_file
+            params0['only_trusted_certs'] = checking
+            with current_app.test_request_context():
+                current_app.preprocess_request()
+                try:
+                    result = resolver_request(params0, silent=True)
+                except ldap.SERVER_DOWN:
+                    pass
+                cf_available = (
+                    "Unavailable" if cert_file == '/dev/null'
+                    else 'Available')
+                print(f"{proto:5s}   {start_tls!r:5s}    {cf_available:11s}  "
+                      f"{'Enabled' if checking else 'Disabled':8s}  "
+                      f"{'Connected' if result else 'Not connected':13s}  "
+                      f"{'Yes' if result == expected else 'No'}")
+                if result == expected:
+                    ok_cases += 1
+        print(f"\n{ok_cases} out of {len(cases)} cases correct")
+        sys.exit(1 - (ok_cases == len(cases)))  # 0=OK, 1=failure
 
     with current_app.test_request_context():
         current_app.preprocess_request()
