@@ -19,6 +19,11 @@ Header always set Strict-Transport-Security "max-age=315360000; includeSubDomain
 
 Alias /doc/html         /usr/share/doc/linotpdoc/html
 
+<Directory /usr/lib/python3/dist-packages/linotp/public>
+    Require all granted
+</Directory>
+Alias /static /usr/lib/python3/dist-packages/linotp/public
+
 #
 # The daemon is running as user 'linotp'
 # This user should have access to the encKey database encryption file
