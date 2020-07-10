@@ -1,30 +1,45 @@
-version: "2"
+version: "3"
 services:
   selenium:
     image: selenium/standalone-chrome-debug
     volumes:
-      - .:/opt/linotp/tests
+      - /dev/shm:/dev/shm
     ports:
      - "5900"
 
   selenium_tester:
-    image: selenium_tester
+    image: linotp_test_env
     build:
       context: ..
-      dockerfile: Dockerfile.script-executor
       args:
         - http_proxy
         - https_proxy
         - no_proxy
         - DEBIAN_MIRROR=deb.debian.org
     environment:
-      SELENIUM_DRIVER: "chrome"
-      TEST_BUNCH: "integrationtests PYTESTARGS='-v'"
+        SELENIUM_HOST: "selenium"
+        SELENIUM_PORT: "4444"
+        SELENIUM_DRIVER: "chrome"
+        SELENIUM_PROTOCOL: "http"
+        LINOTP_HOST: "linotp"
+        LINOTP_PORT: "443"
+        LINOTP_PROTOCOL: "https"
+        LINOTP_USERNAME: "admin"
+        LINOTP_PASSWORD: "admin"
     volumes:
-      - ..:/opt/linotp/tests:ro
+      - ../..:/linotp
     depends_on:
       - selenium
       - linotp
+    working_dir: /linotp/tests/integration
+    entrypoint: [
+      "/usr/local/bin/dockerfy",
+        "--template", "docker_cfg.ini.tmpl:/tmp/test_cfg.ini",
+        "--wait", "tcp://{{ .Env.SELENIUM_HOST }}:{{ .Env.SELENIUM_PORT }}", "--timeout", "60s",
+        "--wait", "tcp://{{ .Env.LINOTP_HOST }}:{{ .Env.LINOTP_PORT }}", "--timeout", "60s",
+        "--"
+      ]
+    command: make TCFILE=/tmp/test_cfg.ini PYTESTARGS="${PYTESTARGS}"
 
   linotp:
     image: linotp
@@ -34,7 +49,7 @@ services:
       LINOTP_DB_HOST: "db"
       LINOTP_DB_PORT: "3306"
       LINOTP_APACHE_AUTH: "false"
-    depends_on: 
+    depends_on:
       - db
     ports:
       - "443"

@@ -353,20 +353,18 @@ docker-build-selenium: docker-build-linotp
 		&& $(DOCKER_BUILD) \
 			-t selenium_tester .
 
-# Pass TEST_CASE=test_manage.py for picking a specific test case (!No list! Only one test case)
-# Pass TEST_DEBUG=<some val> e.g. TEST_DEBUG=1 - So your pdb.set_trace() hooks will be recognize
-#                                                and execution stops in case of errors/exceptions.
-#
-#                 Remark: Omit TEST_DEBUG completely to disable stop on fails because of error or
-#                         pdb.set_trace() statements.
+# Pass PYTESTARGS=test_manage.py for picking a specific test file
+#      PYTESTARGS="-k testname" for picking a specific test
 #
 # e.g.
-#      make docker-run-selenium TEST_CASE=test_manage.py
-#      make docker-run-selenium TEST_CASE=test_manage.py TEST_DEBUG=1
+#      make docker-run-selenium PYTESTARGS=test_manage.py
 .PHONY: docker-run-selenium
 docker-run-selenium: docker-build-selenium
 	cd $(SELENIUM_TESTS_DIR) \
-		&& docker-compose run --rm -e TEST_CASE=${TEST_CASE} -e TEST_DEBUG=$(TEST_DEBUG) selenium_tester
+		&& docker-compose run \
+			--rm \
+			-e PYTESTARGS="${PYTESTARGS}" \
+			selenium_tester
 	cd $(SELENIUM_TESTS_DIR) \
 		&& docker-compose down
 
