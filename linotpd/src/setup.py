@@ -295,5 +295,8 @@ setup(
         'console_scripts': [
             'linotp = linotp.cli:main',  # LinOTP command line interface
         ],
+        'flask.commands': [
+            'ldap-test = linotp.useridresolver.LDAPIdResolver:ldap_test',
+        ],
     },
 )

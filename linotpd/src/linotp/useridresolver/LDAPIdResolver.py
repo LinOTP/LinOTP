@@ -51,7 +51,10 @@ except ImportError:
 
 from ldap.controls import SimplePagedResultsControl
 
+import click
 from flask import current_app
+from flask.cli import with_appcontext
+
 from linotp.lib.type_utils import encrypted_data
 from linotp.lib.type_utils import text
 from linotp.lib.type_utils import boolean
@@ -1662,148 +1665,96 @@ def resolver_request(params, silent=False):
                 for key, value in list(result.items()):
                     pr("%s : %s" % (key, value))
 
+    return True
 
-def get_params():
-    import json
-    user_mapping = {"username": "uid",
-                    "phone": "telephoneNumber",
-                    "mobile": "mobile",
-                    "email": "mail",
-                    "surname": "sn",
-                    "givenname": "givenName"}
 
-    ldap_search = {}
-    ldap_search['LDAPFILTER'] = "(&(uid=%s)(objectClass=inetOrgPerson))"
-    ldap_search['LDAPSEARCHFILTER'] = "(uid=*)(objectClass=inetOrgPerson)"
-    ldap_search['LOGINNAMEATTRIBUTE'] = "uid"
+# ----------------------------------------------------------------------
 
-    ad_search = {}
-    ad_search['LDAPFILTER'] = "(&(sAMAccountName=%s)(objectClass=user))"
-    ad_search['LDAPSEARCHFILTER'] = "(&(sAMAccountName=*)(objectClass=user))"
-    ad_search['LOGINNAMEATTRIBUTE'] = "sAMAccountName"
+@click.command('ldap-test', help='Test LDAP user-ID resolver connection.')
+@click.option('--url', '-u', help='URL for LDAP server', required=True)
+@click.option('--base', '-b', help='LDAP search base DN', required=True)
+@click.option('--binddn', '-d', help='LDAP bind DN', required=True)
+@click.option('--bindpw', '-p', prompt='LDAP bind password', hide_input=True,
+              help='LDAP bind password')
+@click.option('--enforce_tls', '--enforce-tls', '-e', is_flag=True,
+              help='Enforce TLS')
+@click.option('--trace_level', '--trace-level', '-t', type=int, default=0,
+              help='LDAP trace level, 0..255')
+@click.option('--only_trusted_certs', '--only-trusted-certs', '-c',
+              is_flag=True,
+              help='Disallow untrusted or self-signed certificates')
+@click.option('--simple', '-s', is_flag=True,
+              help='Do alternative simple search')
+@click.option('--ldap_type', '--ldap-type',
+              type=click.Choice(['ad', 'ldap'], case_sensitive=False),
+              default='ldap', help='LDAP server type')
+@click.option('--cert_file', '--cert-file', help='Use certificate from file')
+@click.option('--filter', help='Define object filter')
+@click.option('--searchfilter', help='Define object search filter')
+@click.option('--loginattribute', default='uid',
+              help='define user login attribute, default is uid')
+@with_appcontext
+def ldap_test(url, base, binddn, bindpw, enforce_tls, trace_level,
+              only_trusted_certs, simple, ldap_type, cert_file, filter,
+              searchfilter, loginattribute):
+    user_mapping = {
+        "username": "uid",
+        "phone": "telephoneNumber",
+        "mobile": "mobile",
+        "email": "mail",
+        "surname": "sn",
+        "givenname": "givenName",
+    }
 
-    # final config
-    params = {}
-    params['NOREFERRALS'] = "True"
-    params['EnforceTLS'] = "False"
-    params['SIZELIMIT'] = "500"
-    params['TIMEOUT'] = "5"
-    params['USERINFO'] = json.dumps(user_mapping)
+    ldap_search = {
+        'LDAPFILTER': "(&(uid=%s)(objectClass=inetOrgPerson))",
+        'LDAPSEARCHFILTER': "(&(uid=*)(objectClass=inetOrgPerson))",
+        'LOGINNAMEATTRIBUTE': "uid",
+    }
 
-    import argparse
+    ad_search = {
+        'LDAPFILTER': "(&(sAMAccountName=%s)(objectClass=user))",
+        'LDAPSEARCHFILTER': "(&(sAMAccountName=*)(objectClass=user))",
+        'LOGINNAMEATTRIBUTE': "sAMAccountName",
+    }
 
-    usage = "Interactive test of LDAP Connection"
-    parser = argparse.ArgumentParser(usage)
-    parser.add_argument("-u", "--url", help="Ldap URL", required=True)
-    parser.add_argument("-b", "--base", help="Ldap base", required=True)
-    parser.add_argument("-d", '--binddn', help="Ldap bind", required=True)
-    parser.add_argument("-p", '--bindpw', help="Ldap bind pw", required=False)
-    parser.add_argument('-e', '--enforce_tls', help="enforce tls",
-                        action="store_true")
+    params = {
+        'LDAPURI': url,
+        'LDAPBASE': base,
+        'BINDDN': binddn,
+        'BINDPW': bindpw,
+        'trace_level': trace_level,
+        'NOREFERRALS': "True",
+        'EnforceTLS': enforce_tls,
+        'only_trusted_certs': only_trusted_certs,
+        'SIZELIMIT': "500",
+        'TIMEOUT': "5",
+        'USERINFO': json.dumps(user_mapping),
+    }
 
-    parser.add_argument("-t", '--trace_level', help="Ldap trace_level 0..255",
-                        type=int, default=0, required=False)
-
-    parser.add_argument('--only_trusted_certs',
-                        help="disallow untrusted + selfsigned certificates",
-                        action="store_true")
-
-    parser.add_argument('-s', help='do alternative simpe search',
-                        action='store_true')
-
-    parser.add_argument('--ldap_type',
-                        help="ldap server type: ad or ldap",
-                        required=False)
-
-    parser.add_argument('--cert_file', help='use certificate from file',
-                        required=False)
-
-    parser.add_argument('--filter',
-                        help='define object filter',
-                        required=False)
-
-    parser.add_argument('--searchfilter',
-                        help='define object search filter',
-                        required=False)
-    parser.add_argument('--loginattribute',
-                        help='define user login attribute: default is uid',
-                        required=False)
-
-    args = vars(parser.parse_args())
-
-    # start processing the arguments
-    simple = False
-    if args['s']:
-        simple = True
-
-    params['LDAPURI'] = args['url']
-    params['LDAPBASE'] = args['base']
-    params['BINDDN'] = args['binddn']
-    if 'bindpw' in args and args['bindpw']:
-        params['BINDPW'] = args['bindpw']
-    else:
-        import getpass
-        params['BINDPW'] = getpass.getpass()
-
-    params['trace_level'] = int(args.get('trace_level', 0))
-
-    params['EnforceTLS'] = args['enforce_tls']
-
-    params['only_trusted_certs'] = args['only_trusted_certs']
-
-    search = ldap_search
-    if args['ldap_type']:
-        if 'ad' == args['ldap_type']:
-            search = ad_search
-        elif 'ldap' == args['ldap_type']:
-            search = ldap_search
-        else:
-            raise Exception('unknown ldap search type!')
+    search = ad_search if ldap_type == 'ad' else ldap_search
     params.update(search)
 
-    if args['filter']:
-        params['LDAPFILTER'] = args['filter']
-    if args['searchfilter']:
-        params['LDAPSEARCHFILTER'] = args['searchfilter']
-    if args['loginattribute']:
-        params['LOGINNAMEATTRIBUTE'] = args['loginattribute']
-
-    return simple, params
-
-def main():
-
-    # assume that with console usage, we are interested to see every detail
-    # that is going on, so we prepare for debug output on the console.
+    if filter:
+        params['LDAPFILTER'] = filter
+    if searchfilter:
+        params['LDAPSEARCHFILTER'] = searchfilter
+    if loginattribute:
+        params['LOGINNAMEATTRIBUTE'] = loginattribute
 
     log.setLevel(logging.DEBUG)
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s -'
+    formatter = logging.Formatter('%(asctime)s %(levelname)s: [%(name)s]'
                                   ' %(message)s')
     ch.setFormatter(formatter)
     log.addHandler(ch)
 
-    # now we care for the provided command line parameters, which are
-    # returned as a dict, that can be used in the LDAPResolver testconnection
-
-    simple, params = get_params()
-
-    # depending on the test style, we use the fall back simple ldap example or
-    # the resolver code base for the test requests
-
-    if simple:
-        simple_request(params)
-    else:
-        resolver_request(params)
-
-# -- --------------------------------------------------------------------- --
-
-
-if __name__ == "__main__":
-    from linotp.app import create_app
-    app = create_app('testing')
-    with app.test_request_context():
-        app.preprocess_request()
-        main()
+    with current_app.test_request_context():
+        current_app.preprocess_request()
+        if simple:
+            simple_request(params)
+        else:
+            resolver_request(params)
 
 # eof #########################################################################
