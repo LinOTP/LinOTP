@@ -150,7 +150,11 @@ class SMPPSMSProvider(ISMSProvider):
             result = False
 
         finally:
-            client.unbind()
+            try:
+                client.unbind()
+            except Exception as exx:
+                log.exception(exx)
+                
             client.disconnect()
 
         return result
