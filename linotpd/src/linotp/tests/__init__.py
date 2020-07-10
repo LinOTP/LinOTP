@@ -55,6 +55,7 @@ import os
 import warnings
 
 from flask import Flask, request, Response
+from flask import _request_ctx_stack as flask_request_ctx_stack
 from unittest import TestCase
 from uuid import uuid4
 import pkg_resources
@@ -196,6 +197,17 @@ class TestController(TestCase):
 
             self.client = client
             yield
+
+        # Compatibility with Flask on Debian Buster:
+        # Older versions of Flask (-> debian buster) do not include the needed code
+        # to pop the context if a response was streamed
+        # https://github.com/pytest-dev/pytest-flask/issues/42#issuecomment-483864698
+        while True:
+            top = flask_request_ctx_stack.top
+            if top is not None and top.preserved:
+                top.pop()
+            else:
+                break
 
     @classmethod
     def setup_class(cls):

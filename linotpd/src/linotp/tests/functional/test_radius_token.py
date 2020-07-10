@@ -151,7 +151,7 @@ class TestRadiusToken(TestController):
         '''
         parameters = {"user": "localuser", "pass": "local654321"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     @patch.object(pyrad.client.Client,'SendPacket', mocked_SendPacket_accept)
     def test_03_check_token_remote_pin(self):
@@ -160,7 +160,7 @@ class TestRadiusToken(TestController):
         '''
         parameters = {"user": "remoteuser", "pass": "test123456"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": true' in response, response)
+        assert '"value": true' in response, response
 
     @patch.object(pyrad.client.Client,'SendPacket', mocked_SendPacket_reject)
     def test_04_check_token_local_pin_fail(self):
@@ -169,7 +169,7 @@ class TestRadiusToken(TestController):
         '''
         parameters = {"user": "localuser", "pass": "654321"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
 
     @patch.object(pyrad.client.Client,'SendPacket', mocked_SendPacket_reject)
@@ -179,7 +179,7 @@ class TestRadiusToken(TestController):
         '''
         parameters = {"user": "localuser", "pass": "blabla654321"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
 
     @patch.object(pyrad.client.Client,'SendPacket', mocked_SendPacket_reject)
@@ -189,7 +189,7 @@ class TestRadiusToken(TestController):
         '''
         parameters = {"user": "remoteuser", "pass": "123456"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
 
     @patch.object(pyrad.client.Client,'SendPacket', mocked_SendPacket_reject)
@@ -199,7 +199,7 @@ class TestRadiusToken(TestController):
         '''
         parameters = {"user": "remoteuser", "pass": "abcd123456"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
     @patch.object(pyrad.client.Client,'SendPacket', mocked_SendPacket_error)
     def test_07_check_token_remote_pin_fail2(self):
@@ -208,6 +208,6 @@ class TestRadiusToken(TestController):
         '''
         parameters = {"user": "remoteuser", "pass": "abcd123456"}
         response = self.make_validate_request('check', params=parameters)
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
 #eof##########################################################################

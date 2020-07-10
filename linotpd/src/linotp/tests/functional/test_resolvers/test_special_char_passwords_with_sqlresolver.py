@@ -83,7 +83,7 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
             }
 
         response = self.make_system_request('setPolicy', params=params)
-        self.assertTrue('false' not in response.body)
+        assert 'false' not in response.body
 
     def run_password_check(self, user, password, realm):
 
@@ -107,7 +107,7 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
         }
 
         response = self.make_admin_request('init', params=params)
-        self.assertTrue('false' not in response.body, response)
+        assert 'false' not in response.body, response
 
         # ------------------------------------------------------------------ --
 
@@ -119,7 +119,7 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
             }
 
         response = self.make_validate_request('check', params=params)
-        self.assertTrue('"value": false' in response)
+        assert '"value": false' in response
 
         # ------------------------------------------------------------------ --
 
@@ -135,7 +135,7 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
             'result', {}).get(
                 'value', {}).get(
                     'data',[{}])[0]
-        self.assertTrue(token_info.get( "LinOtp.FailCount", -1) == 1)
+        assert token_info.get( "LinOtp.FailCount", -1) == 1
 
         # ------------------------------------------------------------------ --
 
@@ -149,7 +149,7 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
             }
 
         response = self.make_validate_request('check', params=params, method='GET')
-        self.assertTrue('"value": true' in response)
+        assert '"value": true' in response
 
 
         # ------------------------------------------------------------------ --
@@ -168,7 +168,7 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
             }
 
         response = self.make_validate_request('check', params=params)
-        self.assertTrue('"value": true' in response)
+        assert '"value": true' in response
 
         # verify that wrong password works
 
@@ -178,7 +178,7 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
             }
 
         response = self.make_validate_request('check', params=params)
-        self.assertTrue('"value": false' in response)
+        assert '"value": false' in response
 
         return
 

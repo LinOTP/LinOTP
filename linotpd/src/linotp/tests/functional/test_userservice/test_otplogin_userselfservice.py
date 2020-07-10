@@ -406,7 +406,7 @@ class TestUserserviceAuthController(TestController):
                                     action='login'), data=params)
         response.body = response.data.decode("utf-8")
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         params = {
             'serial': 'LoginToken'
@@ -441,7 +441,7 @@ class TestUserserviceAuthController(TestController):
 
         response.body = response.data.decode("utf-8")
 
-        self.assertTrue('"value": false' in response, response)
+        assert '"value": false' in response, response
 
         params = {
             'serial': 'LoginToken'

@@ -60,7 +60,7 @@ def pytest_addoption(parser):
         dest="database_uri",
         action="store",
         default=os.environ.get(
-            'SQLALCHEMY_DATABASE_URI', "sqlite:///{}"),
+            'LINOTP_DATABASE_URL', "sqlite:///{}"),
         help=("sqlalchemy database URI to allow tests to run "
               "against a particular database")
         )
@@ -211,3 +211,26 @@ def hsm_obj(app):
     app.preprocess_request()
 
     return c['hsm']['obj']
+
+@pytest.fixture
+def set_policy(adminclient):
+    """
+    Factory fixture that provides a function that can be used
+    to set a policy
+    """
+    # We provide this as a fixture so that we can get access
+    # to the client fixture within the function
+    def _setPolicy(params: dict) -> None:
+        """
+        Set the given policy and assert that it can be retrieved
+        """
+        response = adminclient.post("system/setPolicy", json=params)
+        assert response.status_code == 200
+        assert response.json["result"]["status"] == True
+
+        getResponse = adminclient.get("system/getPolicy", json=params)
+        assert (
+            getResponse.json["result"]["value"]["autosms"]["action"] == params["action"]
+        )
+
+    return _setPolicy

@@ -316,9 +316,11 @@ $(BUILDDIR)/apt/Packages:
 		$(DOCKER_CONTAINER_NAME)-apt:/pkg/apt $(DESTDIR)
 	docker rm $(DOCKER_CONTAINER_NAME)-apt
 
+# Build just the linotp image. The builder-linotp is required but will not be
+# built by this target - use 'make docker-linotp' to build the dependencies first
 .PHONY: docker-build-linotp
 docker-build-linotp: DOCKER_IMAGE=linotp
-docker-build-linotp: docker-build-linotp-builder $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
+docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	cp linotpd/src/Dockerfile \
 		linotpd/src/config/*.tmpl \
 		linotpd/src/tools/linotp-create-htdigest \

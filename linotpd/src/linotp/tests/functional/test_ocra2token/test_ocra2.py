@@ -3022,8 +3022,8 @@ class OcraTest(TestController):
         response = self.check_otp(wrongtransid, otp)
         # due to information leakage prevention, this call does not return
         # anything valuable
-        # self.assertTrue(wrongtransid in response, response)
-        # self.assertTrue("No challenge for transaction" in response, response)
+        #assert wrongtransid in response, response
+        #assert "No challenge for transaction" in response, response
 
         # correct response
         response = self.check_otp(transid, otp)
@@ -3049,7 +3049,7 @@ class OcraTest(TestController):
         #otp = ocra.callcOtp(challenge)
 
         #response = self.check_otp(transid, otp)
-        #self.assertTrue('"result": true' in response, response)
+        #assert '"result": true' in response, response
 
         # get next challenge
         (_response, challenge, transid) = self.get_challenge(ocra.serial)
@@ -3082,7 +3082,7 @@ class OcraTest(TestController):
         #otp = ocra.callcOtp(challenge)
 
         #response = self.check_otp(transid, otp)
-        #self.assertTrue('"result": true' in response, response)
+        #assert '"result": true' in response, response
 
         # get next challenge
         (_response, challenge, transid) = self.get_challenge(ocra.serial,

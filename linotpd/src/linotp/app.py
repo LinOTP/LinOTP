@@ -448,13 +448,12 @@ class LinOTPApp(Flask):
         """
         get the radius dictionary path
 
-        The dictionary file should be placed in the linotp configuration directory.
-        If the file does not exist, an error is logged
+        The dictionary file is in the same directory as this file
 
         :return: path to dictionary file
         """
 
-        dict_file = os.path.join(self.getConfigRootDirectory(), 'dictionary')
+        dict_file = os.path.join(this_dir, 'dictionary')
 
         if not os.path.isfile(dict_file):
             log.error("Radius settings setup failed - missing dictionary file: %s", dict_file)

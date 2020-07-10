@@ -111,7 +111,10 @@ lint-useridresolver:
 .unit-test-base:
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
   script:
-      - make unittests PYTESTARGS="--test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX"
+      - make unittests PYTESTARGS="--test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
+  artifacts:
+    reports:
+      junit: linotpd/src/linotp/tests/unit/unit-*.xml
 
 unit-test:
   extends: .unit-test-base
@@ -124,17 +127,10 @@ unit-test:
 .functional-test-base:
   stage: test
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  artifacts:
+    reports:
+      junit: linotpd/src/linotp/tests/functional/functional-*.xml
   needs: ["build-testenv-image:debian-buster"]
-  services:
-    - name: mysql:5.5
-      alias: db
-  variables:
-    MYSQL_DATABASE: linotp_db
-    MYSQL_ROOT_PASSWORD: linotppass
-    MYSQL_USER: linotpuser
-    MYSQL_PASSWORD: linotppass
-    MYSQL_HOST: mysql
-    SHELL: /bin/bash
 
 #  artifacts:
 #    paths:
@@ -145,28 +141,89 @@ functional-test:
   parallel: 6
   variables:
     DEBIAN_RELEASE_NAME: buster
-  allow_failure: true
   script:
-    - make functionaltests PYTESTARGS="--test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX"
+    - make functionaltests PYTESTARGS="--test-group-count=$CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
 
+.functional-test-base-mysql:
+  extends: .functional-test-base
+  services:
+    - name: mysql:5.5
+      alias: database
+      command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci"]
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+    MYSQL_DATABASE: linotp_db
+    MYSQL_ROOT_PASSWORD: rootpass
+    MYSQL_USER: linotp
+    MYSQL_PASSWORD: linotppass
+    LINOTP_DATABASE_URL: mysql+pymysql://linotp:linotppass@database/linotp_db
 
-# .functional-special-test-base:
-#   extends: .functional-test-base
-#   stage: test
-#   variables:
-#     COVERAGE_PREFIX: func-special
-#   script:
-#     - bash -c "find linotp/tests/functional_special -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
+functional-test-mysql:
+  extends: .functional-test-base-mysql
+  script:
+    - make functionaltests PYTESTARGS="-m exclude_sqlite --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
 
-# functional-special-test:
-#   extends: .functional-special-test-base
-#   allow_failure: true
-#   variables:
-#     DEBIAN_RELEASE_NAME: buster
+functional-test-mysql-nightly:
+  extends: .functional-test-base-mysql
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
+      when: always
+  script:
+    - make functionaltests PYTESTARGS="--junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
 
+.functional-test-base-mariadb:
+  extends: .functional-test-base
+  services:
+    - name: mariadb:10.1
+      alias: database
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+    MYSQL_DATABASE: linotp_db
+    MYSQL_ROOT_PASSWORD: rootpass
+    MYSQL_USER: linotp
+    MYSQL_PASSWORD: linotppass
+    LINOTP_DATABASE_URL: mysql+pymysql://linotp:linotppass@database/linotp_db
+
+functional-test-mariadb:
+  extends: .functional-test-base-mariadb
+  script:
+    - make functionaltests PYTESTARGS="-m exclude_sqlite --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
+
+functional-test-mariadb-nightly:
+  extends: .functional-test-base-mariadb
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
+      when: always
+  script:
+    - make functionaltests PYTESTARGS="--junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
+
+.functional-test-base-postgres:
+  extends: .functional-test-base
+  services:
+    - name: postgres:12
+      alias: database
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+    POSTGRES_DB: linotp_db
+    POSTGRES_USER: linotp
+    POSTGRES_PASSWORD: "linotppass"
+    POSTGRES_HOST_AUTH_METHOD: trust
+    LINOTP_DATABASE_URL: postgres://linotp:linotppass@database/linotp_db
+
+functional-test-postgres:
+  extends: .functional-test-base-postgres
+  script:
+    - make functionaltests PYTESTARGS="-m exclude_sqlite --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
+
+functional-test-postgres-nightly:
+  extends: .functional-test-base-postgres
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
+      when: always
+  script:
+    - make functionaltests PYTESTARGS="--junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
 
 # Auto-generate API docs using Sphinx.
-
 apidocs:
   stage: apidocs
   image: $CI_IMAGE_PREFIX/buster/linotp:${CI_PIPELINE_ID}
@@ -269,7 +326,7 @@ build:buster (tag):
     - DOCKERFILE_CACHE_KEY=$(sha256sum ${DOCKERFILE_PATH} | cut -d ' ' -f1)
     - docker pull "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}" || true
     # Do the build itself
-    - make DOCKER_IMAGE="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp" DOCKER_TAGS="${CI_PIPELINE_ID} ${DOCKERFILE_CACHE_KEY}" docker-build-linotp
+    - make DOCKER_BUILD_ARGS=--cache-from="$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}" DOCKER_IMAGE="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp" DOCKER_TAGS="${CI_PIPELINE_ID} ${DOCKERFILE_CACHE_KEY}" docker-build-linotp
     # Push images to repository in the form:
     #  registry/ci/release/linotp:pipelineID
     #  registry/ci/release/linotp:sha256

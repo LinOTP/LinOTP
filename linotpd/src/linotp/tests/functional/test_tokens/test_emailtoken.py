@@ -30,13 +30,10 @@
 """
 
 import os
-from mock import patch
+from unittest.mock import patch
 import json
 import smtplib
 
-
-import smtplib
-from mock import patch
 
 class MockedSMTP(object):
     def __init__(self):
@@ -164,7 +161,7 @@ class TestEmailtoken(TestController):
             assert 'false' in response
 
             call_args = mock_smtp_instance.sendmail.call_args
-            _from, _to, raw_message = call_args.args
+            _from, _to, raw_message = call_args[0]
 
             message = raw_message.decode('utf-8')
 
@@ -293,7 +290,7 @@ class TestEmailtoken(TestController):
             assert '"message": "e-mail sent successfully"' in response
 
             call_args = mock_smtp_instance.sendmail.call_args
-            _from, _to, raw_message = call_args.args
+            _from, _to, raw_message = call_args[0]
 
             message = raw_message.decode('utf-8')
 
@@ -399,7 +396,7 @@ class TestEmailtoken(TestController):
             assert '"message": "e-mail sent successfully"' in response
 
             call_args = mock_smtp_instance.sendmail.call_args
-            _from, to, _message = call_args.args
+            _from, to, _message = call_args[0]
 
             assert to == 'pass.true@example.com'
 
@@ -485,7 +482,7 @@ class TestEmailtoken(TestController):
             transaction_id = jresp['detail']['transactionid']
 
             call_args = mock_smtp_instance.sendmail.call_args
-            _from, _to, message = call_args.args
+            _from, _to, message = call_args[0]
             otp = message.rpartition('\n')[2].strip()
 
             # -------------------------------------------------------------- --

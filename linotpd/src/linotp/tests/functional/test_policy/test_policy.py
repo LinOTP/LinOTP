@@ -2896,7 +2896,7 @@ class TestPolicies(TestPoliciesBase):
                                            auth_user=auth_user)
 
         assert '"status": false' in response, response
-        # self.assertTrue('You can not assign any more tokens' in response
+        #assert 'You can not assign any more tokens' in response
 
         return
 

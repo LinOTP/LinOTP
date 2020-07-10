@@ -120,39 +120,6 @@ class TestingController(BaseController):
 
         return response
 
-    def autosms(self):
-        '''
-        This function is used to test the autosms policy
-
-        method:
-            testing/autosms
-
-        arguments:
-            user    - username / loginname
-            realm   - additional realm to match the user to a useridresolver
-
-
-        returns:
-            JSON response
-        '''
-
-        try:
-            if "user" not in self.request_params:
-                raise ParameterError("Missing parameter: 'user'")
-
-            ok = get_auth_AutoSMSPolicy()
-
-            Session.commit()
-            return sendResult(response, ok, 0)
-
-        except Exception as exx:
-            log.exception("[autosms] validate/check failed: %r", exx)
-            Session.rollback()
-            return sendError(response, ("validate/check failed: %r", exx), 0)
-
-        finally:
-            Session.close()
-
     def http2sms(self):
         '''
         This function simulates an HTTP SMS Gateway.
