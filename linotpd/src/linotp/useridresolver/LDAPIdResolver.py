@@ -342,7 +342,7 @@ class IdResolver(UserIdResolver):
         return l_obj
 
     @classmethod
-    def testconnection(cls, params):
+    def testconnection(cls, params, silent=False):
         """
         This is used to test if the given parameter set will do a successful
         LDAP connection.
@@ -466,12 +466,14 @@ class IdResolver(UserIdResolver):
 
         except ldap.CONNECT_ERROR as err:
             status = "error"
-            log.exception("[testconnection] LDAP Error: %r", err)
+            if not silent:
+                log.exception("[testconnection] LDAP Error: %r", err)
             return (status, "Connection Error: %s" % str(err))
 
         except ldap.LDAPError as err:
             status = "error"
-            log.exception("[testconnection] LDAP Error: %r", err)
+            if not silent:
+                log.exception("[testconnection] LDAP Error: %r", err)
             return (status, str(err))
 
         except Exception as err:
@@ -1634,29 +1636,31 @@ def simple_request(params):
                 print("%s:%r" % (key, value))
 
 
-def resolver_request(params):
+def resolver_request(params, silent=False):
+
+    def pr(s):
+        if not silent:
+            print(s)
 
     IdResolver.setup()
-    ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_DEMAND)
 
-    print('Trying to connect to %r' % params['LDAPURI'])
-    status, results = IdResolver.testconnection(params)
-    print("Status: %r" % status)
+    pr('Trying to connect to %r' % params['LDAPURI'])
+    status, results = IdResolver.testconnection(params, silent)
+    pr("Status: %r" % status)
 
     if results:
-        print("Result:")
+        pr("Result:")
 
         if status != "success":
-            print("%r" % results)
-            exit(-1)
+            pr("%r" % results)
+            return False
 
         for result in results:
             if not result:
-                print("%r" % result)
+                pr("%r" % result)
             else:
                 for key, value in list(result.items()):
-                    print("%s : %s" % (key.decode('utf-8'),
-                                       value.decode('utf-8')))
+                    pr("%s : %s" % (key, value))
 
 
 def get_params():
