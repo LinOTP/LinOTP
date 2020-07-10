@@ -51,6 +51,7 @@ except ImportError:
 
 from ldap.controls import SimplePagedResultsControl
 
+from flask import current_app
 from linotp.lib.type_utils import encrypted_data
 from linotp.lib.type_utils import text
 from linotp.lib.type_utils import boolean
@@ -207,6 +208,27 @@ class IdResolver(UserIdResolver):
         :return: the ldap connection object
         """
 
+        def init_ldap(uri, trace_level):
+            # prepare the ldap for connection
+
+            try:
+                l_obj = ldap.initialize(uri, trace_level=trace_level)
+            except ldap.LDAPError as exx:
+                log.error(f"couldn't connect to {uri}: {exx!r}")
+                raise exx
+
+            # Set LDAP protocol version used
+            l_obj.protocol_version = ldap.VERSION3
+
+            # `network_timeout` is used by the OpenLDAP client lib to limit
+            # waiting for a network response. `timeout` is used in the
+            # `python-ldap` wrapper library to limit waiting for any response.
+
+            l_obj.network_timeout = caller.network_timeout
+            l_obj.timeout = caller.response_timeout
+
+            return l_obj
+
         log.debug("Try to connect to %r", uri)
 
         # uri's starting or ending with 'whitespace' are not supported
@@ -216,21 +238,11 @@ class IdResolver(UserIdResolver):
         if ',' in uri:
             log.warning("unsupported multiple urls in ldap uri %r", uri)
 
-        if not uri.startswith('ldaps://') and not uri.startswith('ldap://'):
+        if not uri.startswith(('ldaps://', 'ldap://')):
             log.error("unsuported protocol %r", uri)
             raise Exception("unsuported protocol %r" % uri)
 
-        # prepare the ldap for connection
-
-        l_obj = ldap.initialize(uri, trace_level=trace_level)
-
-        l_obj.set_option(ldap.OPT_NETWORK_TIMEOUT, caller.network_timeout)
-
-        if caller.response_timeout > 0:
-            l_obj.set_option(ldap.OPT_TIMEOUT, caller.response_timeout)
-
-        # Set LDAP protocol version used
-        l_obj.protocol_version = ldap.VERSION3
+        l_obj = init_ldap(uri, trace_level)
 
         if uri.startswith('ldaps://') or caller.enforce_tls:
 
@@ -239,65 +251,93 @@ class IdResolver(UserIdResolver):
             # With the option 'only_trusted_certs' the server certificate
             # will be verified and only verified servers will be connected
 
-            if caller.only_trusted_certs:
-                l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,
-                                 ldap.OPT_X_TLS_DEMAND)
+            # Note that on Debian GNU/Linux, the OpenLDAP client library
+            # is linked against GnuTLS and doesn't support
+            # `ldap.OPT_X_TLS_CACERTDIR`.
 
-        #
-        # Force lib ldap to create a new SSL context (must be last
-        # TLS option!) from:
-        # https://github.com/rbarrois/python-ldap/blob/master/Demo/initialize.py
-        #
-
-        l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
+            ca_cert_file = current_app.config["TLS_CA_CERTIFICATES_FILE"]
+            l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE, ca_cert_file)
+            cert_req = (ldap.OPT_X_TLS_DEMAND if caller.only_trusted_certs
+                        else ldap.OPT_X_TLS_NEVER)
+            log.debug(
+                f"Using root-level CA certificates from {ca_cert_file}"
+                ", server certificates "
+                f"{'must' if caller.only_trusted_certs else 'need not'} "
+                "be valid.")
+            l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, cert_req)
+            l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
 
         if uri.startswith('ldap://'):
+            if caller.enforce_tls:
+                # Try to upgrade the LDAP connection to TLS, and
+                # complain fiercely if this fails.
 
-            # in case of ldap:// we always try to start a tls connection
-            # Only in case the tls connection is a must, defined by
-            # enforce_tls, we terminate the connection attempt
+                # In this case we insist on a server certificate that
+                # checks out, because that is what the previous version
+                # of the code did. In reality we want this to be configurable
+                # (for better or worse), which is what the previous `if` is
+                # supposed to take care of. Once we decide that this is how
+                # the code should behave, these three lines can go away.
 
-            try:
-                if not caller.enforce_tls:
-                    l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,
-                                     ldap.OPT_X_TLS_NEVER)
-                else:
-                    l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,
-                                     ldap.OPT_X_TLS_DEMAND)
+                l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,
+                                 ldap.OPT_X_TLS_DEMAND)
+                l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
 
-                log.debug("for %r connection try to start_tls", uri)
-                l_obj.start_tls_s()
-
-            except ldap.LDAPError as exx:
-
-                if caller.enforce_tls:
-                    log.error("failed to start_tls for %r: %r", uri, exx)
+                log.debug(f"Attempting STARTTLS on {uri} (as configured)")
+                try:
+                    l_obj.start_tls_s()
+                except ldap.LDAPError as exx:
+                    log.error(f"Couldn't STARTTLS on {uri}: {exx!r}")
                     raise exx
 
-                log.warning("failed to start_tls for %r: %r - "
-                            "falling back to plain ldap connection", uri, exx)
+            else:
+                # Try to upgrade the LDAP connection to TLS even if
+                # that wasn't explicitly asked for. We don't care if
+                # the server certificate we receive is rubbish; people
+                # who have an LDAP server with a certificate that
+                # isn't rubbish should set `enforce_tls` and
+                # `only_trusted_certs` and use the previous case. If
+                # the STARTTLS request fails altogether (for other
+                # reasons such as “the server doesn't do STARTTLS”) we
+                # use the plain LDAP connection instead. Yuck.
 
-                # if the start_tls failed, we have to re-initialize
-                # the ldap connection again
+                l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,
+                                 ldap.OPT_X_TLS_NEVER)
+                l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
 
-                l_obj = ldap.initialize(uri, trace_level=trace_level)
+                log.debug(f"Unsolicited STARTTLS on {uri} (just because)")
+                try:
+                    l_obj.start_tls_s()
+                except ldap.LDAPError as exx:
+                    log.warning(f"Couldn't STARTTLS on {uri}: {exx!r}")
+                    log.warning(f"Falling back to plain LDAP "
+                                "(THIS IS INSECURE!!!)")
 
-                # and dont forget to set the timeouts
-                l_obj.set_option(ldap.OPT_NETWORK_TIMEOUT,
-                                 caller.network_timeout)
+                    # Reinitialise the LDAP object after a failed STARTTLS.
+                    # It is unclear whether this is required, but the
+                    # previous version of this code did this, so there may
+                    # be something to it.
 
-                if caller.response_timeout > 0:
-                    l_obj.set_option(ldap.OPT_TIMEOUT, caller.response_timeout)
+                    l_obj = init_ldap(uri, trace_level)
+                else:
+                    log.debug(f"Unsolicited STARTTLS on {uri} successful")
 
+        # At this point we should have either an LDAPS connection, or an
+        # LDAP connection that has been upgraded to TLS, or a plain LDAP
+        # connection.
+
+        # Output the name of the cipher being used, if any, if `python-ldap`
+        # volunteers that information. (According to the documentation, it
+        # should, but even the newest version doesn't seem to follow the
+        # documentation.)
+
+        cipher = (l_obj.get_option('OPT_X_TLS_CIPHER')
+                  if hasattr(l_obj, 'OPT_X_TLS_CIPHER') else "Unknown")
+        log.info(f"LDAP TLS: using cipher={cipher}")
 
         if caller.noreferrals:
             log.debug("using noreferrals: %r", caller.noreferrals)
             l_obj.set_option(ldap.OPT_REFERRALS, 0)
-
-        # setup both timeouts, for network and response
-
-        l_obj.network_timeout = caller.network_timeout
-        l_obj.timeout = caller.response_timeout
 
         return l_obj
 
