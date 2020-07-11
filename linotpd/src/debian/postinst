@@ -370,20 +370,6 @@ case "$1" in
             cp /etc/rc.local /etc/rc.local.linotp-dpkg
             echo "#!/bin/sh -e" > /etc/rc.local
 
-            # In Debian Jessie, a MySQL systemd service file does not exist.
-            # Therefore, we cannot ensure that the rc.local script is
-            # executed after MySQL is successfully started. That's why we
-            # poll for MySQL.
-            DEBIAN_VERSION=`cat /etc/debian_version`
-            if dpkg --compare-versions "${DEBIAN_VERSION}" ge 8.0 && dpkg --compare-versions "${DEBIAN_VERSION}" lt 9.0; then
-                echo "while ! mysqladmin ping --host=$DBHOST --user=root --password=${ROOTPW}; do" >> /etc/rc.local
-                echo "echo \"MySQL is not running, yet. Waiting...\"" >> /etc/rc.local
-                echo "sleep 1" >> /etc/rc.local
-                echo "done" >> /etc/rc.local
-            elif ! dpkg --compare-versions "${DEBIAN_VERSION}" lt 9.0; then
-                echo_error "TODO: Check MySQL and systemd on debian 9 appliance install!"
-            fi
-
             echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" --execute=\"create database $DBNAME default character set 'utf8' default collate 'utf8_general_ci';\" || true" >> /etc/rc.local
             echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" < $CONFIG_DIR/linotpcreatedb.sql || true" >> /etc/rc.local
             echo "rm $CONFIG_DIR/linotpcreatedb.sql" >> /etc/rc.local
