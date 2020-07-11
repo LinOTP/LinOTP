@@ -126,17 +126,6 @@ check_upgrade() {
   return 1
 }
 
-# check_sva3
-#
-# Returns 1 if we're on the SVA3, 0 if not.
-
-check_sva3() {
-  if grep -q SVA3 /etc/issue; then
-    return 0
-  fi
-  return 1
-}
-
 # check_apache_disabled
 #
 # If the file $CONFIG_DIR/apache_site_disabled exists, return 0 (and
@@ -300,27 +289,13 @@ case "$1" in
     create_dir "cache" "$CACHEDIR" clear
     create_dir "template" "$TEMPLATEDIR"
 
-    SVA3_INSTALL=0
-
-    if check_sva3; then
-      echo_log "Doing installation for SVA3"
-      SVA3_INSTALL=1
-      # The debconf answers can simply be preseeded elsewhere in the SVA3
-      # so we can pick them up here as if they had been entered interactively
-      evaluate_answers
-    else
-      echo_log "Doing standard installation"
-      evaluate_answers
-      echo_log "done asking questions...."
-    fi
+    evaluate_answers
 
     if [ "$INSTALL_MODE" = "install" -a ! -f "$ENCKEYFILE" ]; then
       create_enc_key "$ENCKEYFILE"
     fi
 
-    if [ "$SVA3_INSTALL" = "1" ]; then
-      echo_log "Skipping Apache configuration because we're on an SVA3."
-    elif [ "$APACHE" = "true" ]; then
+    if [ "$APACHE" = "true" ]; then
       if ! check_apache_disabled; then
         # Copy virtual host definition for LinOTP to /etc/apache2
         APACHE2_VERSION=$(dpkg -s apache2 | grep "^Version:" | cut -d' ' -f2)
@@ -375,7 +350,7 @@ case "$1" in
         echo_log "Setting up MySQL ..."
         SQLALCHEMY="mysql:\/\/$DBUSER:$DBPASSWORD1@$DBHOST\/$DBNAME"
         configure_sql
-        # The SVA3 configuration process will overwrite this.
+
         if [ "$CREATEDB" = "true" ]; then
           if [ "$ROOTPW" = "" -a -f /etc/lseappliance/mysql_root ]; then
             ROOTPW=`cat /etc/lseappliance/mysql_root`
@@ -385,12 +360,7 @@ case "$1" in
           INSTALLED=`dpkg -l linotp 2>&1 | grep ^ii | wc -l`
           echo_log "The result of dpkg -l linotp: $INSTALLED"
 
-          if [ "$SVA3_INSTALL" = "1" ]; then
-            # The database is generated in the appmgr-mod-linotp postinst.
-            true
-            # ATM, we will create the database on the first run, which might fail.
-            # On an old appliance, we only create the database on reboot.
-          elif [ "$APPLIANCE_INSTALL" = "true" -a ! -f /etc/lseappliance/mysql_root ]; then
+          if [ "$APPLIANCE_INSTALL" = "true" -a ! -f /etc/lseappliance/mysql_root ]; then
             # The package is not installed, so we will create the database
             # after next reboot
             echo_info "Will setup the database after next reboot"
@@ -411,7 +381,6 @@ case "$1" in
                 echo "sleep 1" >> /etc/rc.local
                 echo "done" >> /etc/rc.local
             elif ! dpkg --compare-versions "${DEBIAN_VERSION}" lt 9.0; then
-                # This should really be covered by the SVA3 case above.
                 echo_error "TODO: Check MySQL and systemd on debian 9 appliance install!"
             fi
 
@@ -443,10 +412,7 @@ case "$1" in
           fi #APPLIANCE_INSTALL
         fi #CREATE_DB
 
-        if [ "$SVA3_INSTALL" = "1" ]; then
-          # LinOTP will create its tables when it actually runs.
-          true
-        elif [ "$CREATE_TABLES" = "true" -a "$APPLIANCE_INSTALL" != "true" ]; then
+        if [ "$CREATE_TABLES" = "true" -a "$APPLIANCE_INSTALL" != "true" ]; then
           # we create the database tables if not an appliance
           init_database
         fi
