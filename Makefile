@@ -259,13 +259,13 @@ FUNCTIONAL_TESTS_DIR=$(TESTS_DIR)/functional
 
 ## Toplevel targets
 # Toplevel target to build all containers
-docker-build-all: docker-build-debs docker-build-linotp docker-build-linotp-test-image docker-build-selenium
+docker-build-all: docker-build-debs docker-build-linotp docker-build-linotp-test-image
 
 # Toplevel target to build linotp container
 docker-linotp: docker-build-debs  docker-build-linotp
 
 # Build and run Selenium /integration tests
-docker-selenium: docker-build-linotp docker-build-selenium docker-run-selenium
+docker-selenium: docker-build-all docker-run-selenium
 
 # Build and run Unit tests
 docker-unit: docker-build-linotp docker-build-linotp-test-image docker-run-linotp-unit
@@ -286,10 +286,12 @@ DOCKER_TAG_ARGS=$(foreach tag,$(DOCKER_TAGS),-t $(DOCKER_IMAGE):$(tag))
 # To use this container as a playground to test build linotp:
 #   docker run -it linotp-builder
 .PHONY: docker-build-linotp-builder
+docker-build-linotp-builder: DOCKER_IMAGE=linotp-builder
 docker-build-linotp-builder:
 	$(DOCKER_BUILD) \
 		-f Dockerfile.builder \
-		-t linotp-builder \
+		$(DOCKER_TAG_ARGS) \
+		-t $(DOCKER_IMAGE) \
 		.
 
 # A unique name to reference containers for this build
@@ -341,17 +343,13 @@ docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 # It needs an existing linotp image available
 # which can be built by make docker-build-linotp
 .PHONY: docker-build-testenv
+docker-build-linotp-test-image: DOCKER_IMAGE=linotp-testenv
 docker-build-linotp-test-image:
 	cd $(TESTS_DIR) \
-		&& $(DOCKER_BUILD) \
-			-t linotp_test_env .
+	&& $(DOCKER_BUILD) \
+		$(DOCKER_TAG_ARGS) \
+		-t $(DOCKER_IMAGE) .
 
-SELENIUM_DB_IMAGE=mysql:latest
-.PHONY: docker-build-selenium
-docker-build-selenium: docker-build-linotp
-	cd $(SELENIUM_TESTS_DIR) \
-		&& $(DOCKER_BUILD) \
-			-t selenium_tester .
 
 # Pass PYTESTARGS=test_manage.py for picking a specific test file
 #      PYTESTARGS="-k testname" for picking a specific test
@@ -359,7 +357,7 @@ docker-build-selenium: docker-build-linotp
 # e.g.
 #      make docker-run-selenium PYTESTARGS=test_manage.py
 .PHONY: docker-run-selenium
-docker-run-selenium: docker-build-selenium
+docker-run-selenium:
 	cd $(SELENIUM_TESTS_DIR) \
 		&& docker-compose run \
 			--rm \
