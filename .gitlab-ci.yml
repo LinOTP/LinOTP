@@ -22,9 +22,7 @@ workflow:
     - if: '$CI_COMMIT_BRANCH =~ /^(branch-v|master)/' # Execute jobs when a new commit is pushed to stable or master branch
 
 stages:
-  - build-debian-packages
-  - build-linotp-docker-image
-  - build-test-images
+  - build
   - lint
   - test
   - coverage-report
@@ -39,29 +37,84 @@ stages:
 include:
   - template: Code-Quality.gitlab-ci.yml
 
-# The test environment image is based on the linotp image
-# and is used to run the unit, functional and e2e tests
-build-testenv-image:debian-buster:
-  stage: build-test-images
+# Build docker images and debs
+# This builds the .debs and docker images (builder, linotp, testenv).
+# Everything else depends on these, so we build everything in one go
+# to make the build of all the images as fast as possible. We use
+# Docker caching to speed things up.
+.build-debs-and-images:
+  stage: build
   image: docker:latest
-  needs: ["build-linotp-docker-image:buster"]
+  retry:
+    max: 2
+  needs: []
   <<: *docker-registry
+  script:
+    - apk add --no-cache make
+    - REGISTRY_IMAGE=$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp
+    - BUILDER_CACHE_KEY=$(sha256sum Dockerfile.builder | cut -d ' ' -f1)
+    - BUILDER_CACHE_IMAGE=$REGISTRY_IMAGE-builder:${BUILDER_CACHE_KEY}
+    - LINOTP_CACHE_KEY=$(sha256sum linotpd/src/Dockerfile | cut -d ' ' -f1)
+    - LINOTP_CACHE_IMAGE=$REGISTRY_IMAGE:${LINOTP_CACHE_KEY}
+    # Pull the old images to speedup the build process, the hope is
+    # that the modified time will always be the same unless the file
+    # has actually been changed
+    - docker pull debian:${DEBIAN_RELEASE_NAME}
+    - docker pull $BUILDER_CACHE_IMAGE || true
+    - docker pull $LINOTP_CACHE_IMAGE || true
+    # Build the images
+    - echo Building in "${CI_PROJECT_DIR}"
+    - >
+        make
+        docker-build-linotp-builder
+        docker-build-linotp
+        docker-build-linotp-test-image
+        BUILDDIR="${CI_PROJECT_DIR}"
+        DOCKER_BUILD_ARGS="
+        --build-arg BUILDKIT_INLINE_CACHE=1
+        --cache-from=$BUILDER_CACHE_IMAGE
+        --cache-from=$LINOTP_CACHE_IMAGE
+        "
+    # Tag and push images to repository in the form:
+    #  registry/ci/release/linotp-IMAGENAME:pipelineID
+    #  registry/ci/release/linotp-IMAGENAME:sha256
+    # First for linotp-builder
+    - docker tag linotp-builder:latest "${BUILDER_CACHE_IMAGE}"
+    - docker tag linotp-builder:latest "$REGISTRY_IMAGE-builder:${CI_PIPELINE_ID}"
+    - docker push "${BUILDER_CACHE_IMAGE}"
+    - docker push "$REGISTRY_IMAGE-builder:${CI_PIPELINE_ID}"
+    # Now do the same for linotp
+    - docker tag linotp:latest "${LINOTP_CACHE_IMAGE}"
+    - docker tag linotp:latest "$REGISTRY_IMAGE:${CI_PIPELINE_ID}"
+    - docker push "${LINOTP_CACHE_IMAGE}"
+    - docker push "$REGISTRY_IMAGE:${CI_PIPELINE_ID}"
+    # Now we push the testenv image. We do not bother to cache this because it changes
+    # every time we do a new linotp build.
+    - docker tag linotp-testenv:latest "$REGISTRY_IMAGE-testenv:${CI_PIPELINE_ID}"
+    - docker push "$REGISTRY_IMAGE-testenv:${CI_PIPELINE_ID}"
+    # Log all the images to stdout
+    - docker images
+    # Prepare files for job artifact outputs
+    - mv apt apt-${DEBIAN_RELEASE_NAME}
+  artifacts:
+    name: "linotp-debs${CI_COMMIT_REF_SLUG}"
+    expose_as: "LinOTP packages"
+    paths:
+      - apt-${DEBIAN_RELEASE_NAME}/
+    expire_in: 2 weeks
+
+build:debian-buster:
+  extends: .build-debs-and-images
   variables:
     DEBIAN_RELEASE_NAME: buster
-    LINOTP_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
-    TESTENV_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
-  script:
-    - docker pull ${CI_IMAGE_PREFIX}/${LINOTP_IMAGE}
-    - docker tag ${CI_IMAGE_PREFIX}/${LINOTP_IMAGE} linotp:latest
-    - apk add --no-cache make
-    - make docker-build-linotp-test-image
-    - docker tag linotp_test_env ${CI_IMAGE_PREFIX}/${TESTENV_IMAGE}
-    - docker push "${CI_IMAGE_PREFIX}/${TESTENV_IMAGE}"
+  artifacts:
+    expose_as: apt-buster
+
 
 .lint:
   stage: lint
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
-  needs: ["build-testenv-image:debian-buster"]
+  needs: ["build:debian-buster"]
   variables:
     LINTED_MODULE: ""
     DEBIAN_RELEASE_NAME: buster
@@ -121,7 +174,7 @@ unit-test:
   parallel: 4
   variables:
     DEBIAN_RELEASE_NAME: buster
-  needs: ["build-testenv-image:debian-buster"]
+  needs: ["build:debian-buster"]
 
 .functional-test-base:
   stage: test
@@ -129,7 +182,7 @@ unit-test:
   artifacts:
     reports:
       junit: linotpd/src/linotp/tests/functional/functional-*.xml
-  needs: ["build-testenv-image:debian-buster"]
+  needs: ["build:debian-buster"]
 
 #  artifacts:
 #    paths:
@@ -226,7 +279,7 @@ functional-test-postgres-nightly:
 apidocs:
   stage: apidocs
   image: $CI_IMAGE_PREFIX/buster/linotp:${CI_PIPELINE_ID}
-  needs: ["build-linotp-docker-image:buster"]
+  needs: ["build:debian-buster"]
   script:
     - python3 --version
     - cd linotpd/src
@@ -262,87 +315,11 @@ apidocs:
 #   variables:
 #     DEBIAN_RELEASE_NAME: buster
 
-.build-debs:
-  stage: build-debian-packages
-  image: debian:${DEBIAN_RELEASE_NAME}
-  needs: []
-  script:
-    - apt-get update
-    - apt-get install --yes --no-install-recommends equivs git-buildpackage lsb-release rename
-    # Generate snapshot entries for debian changelogs
-    - ci/update-debian-changelog adminclient/LinOTPAdminClientCLI/src
-    - ci/update-debian-changelog linotpd/src
-    - (cd linotpd/src && mk-build-deps --install --remove --tool "apt-get --yes --no-install-recommends")
-    - make deb-install DESTDIR=pkg/apt/${DEBIAN_RELEASE_NAME}
-
-.normal_build: &normal_build
-  artifacts:
-    paths:
-      - pkg/apt/${DEBIAN_RELEASE_NAME}
-    expire_in: 2 weeks
-  except:
-    - tags
-
-.tag_build: &tag_build
-  artifacts:
-    paths:
-      - pkg/apt/${DEBIAN_RELEASE_NAME}
-    expire_in: 1000 years
-  only:
-    - tags
-
-build:buster:
-  extends: .build-debs
-  <<: *normal_build
-  variables:
-    DEBIAN_RELEASE_NAME: buster
-
-build:buster (tag):
-  extends: .build-debs
-  <<: *tag_build
-  variables:
-    DEBIAN_RELEASE_NAME: buster
-
-.build-linotp-docker-image:
-  stage: build-linotp-docker-image
-  image: docker:latest
-  retry:
-    max: 2
-  <<: *docker-registry
-  variables:
-    DEPENDENCY_SOURCE: ""
-    DEPENDENCY_GPG_KEYID: ""
-    LINOTP_IMAGE: ${DEBIAN_RELEASE_NAME}/linotp
-    DOCKERFILE_PATH: linotpd/src/Dockerfile
-  script:
-    - export BUILDDIR=build
-    - mkdir -p ${BUILDDIR}
-    - cp -r pkg/apt/${DEBIAN_RELEASE_NAME} ${BUILDDIR}/apt
-    - apk add --no-cache make
-    # pull the old image to speedup the build process, the hope is
-    # that the modified time will always be the same unless the file
-    # has actually been changed
-    - DOCKERFILE_CACHE_KEY=$(sha256sum ${DOCKERFILE_PATH} | cut -d ' ' -f1)
-    - docker pull "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}" || true
-    # Do the build itself
-    - make DOCKER_BUILD_ARGS=--cache-from="$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}" DOCKER_IMAGE="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp" DOCKER_TAGS="${CI_PIPELINE_ID} ${DOCKERFILE_CACHE_KEY}" docker-build-linotp
-    # Push images to repository in the form:
-    #  registry/ci/release/linotp:pipelineID
-    #  registry/ci/release/linotp:sha256
-    - docker push "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
-    - docker push "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
-    - docker images
-
-build-linotp-docker-image:buster:
-  extends: .build-linotp-docker-image
-  needs: ["build:buster"]
-  variables:
-    DEBIAN_RELEASE_NAME: buster
 
 .e2e-test:
   stage: test
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
-  needs: ["build-testenv-image:debian-buster"]
+  needs: ["build:debian-buster"]
   services:
     - name: ${DB}
       alias: db
@@ -380,7 +357,6 @@ e2e-test-mariadb:
     DB: mariadb:10.1
     LINOTP_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"
     LINOTP_DB_PORT: "3306"
-  allow_failure: true
   script:
     - cd linotpd/src/linotp/tests/integration
     - /usr/local/bin/dockerfy --template docker_cfg.ini.tmpl:/tmp/server_cfg.ini --wait tcp://$SELENIUM_HOST:$SELENIUM_PORT --timeout 60m --wait tcp://$LINOTP_HOST:$LINOTP_PORT --timeout 60m
