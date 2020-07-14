@@ -1780,8 +1780,8 @@ def ldap_test(url, base, binddn, bindpw, enforce_tls, trace_level,
             ("ldaps", False, ca_cert_file, True,     True),
         ]
 
-        print("Proto  STARTTLS  CA cert      Checking  Result        Happy?")
-        print("------------------------------------------------------------")
+        print("> Proto  STARTTLS  CA cert      Checking  Result        Happy?")
+        print("> ------------------------------------------------------------")
         ok_cases = 0
         for proto, start_tls, cert_file, checking, expected in cases:
             params0 = params.copy()
@@ -1799,10 +1799,10 @@ def ldap_test(url, base, binddn, bindpw, enforce_tls, trace_level,
                 cf_available = (
                     "Unavailable" if cert_file == '/dev/null'
                     else 'Available')
-                print(f"{proto:5s}   {start_tls!r:5s}    {cf_available:11s}  "
-                      f"{'Enabled' if checking else 'Disabled':8s}  "
-                      f"{'Connected' if result else 'Not connected':13s}  "
-                      f"{'Yes' if result == expected else 'No'}")
+                print(f". {proto:5s}   {start_tls!r:5s}    {cf_available:11s} "
+                      f" {'Enabled' if checking else 'Disabled':8s} "
+                      f" {'Connected' if result else 'Not connected':13s} "
+                      f" {'Yes' if result == expected else 'No'}")
                 if result == expected:
                     ok_cases += 1
         print(f"\n{ok_cases} out of {len(cases)} cases correct")
