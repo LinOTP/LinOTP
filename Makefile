@@ -308,15 +308,18 @@ docker-build-debs: docker-build-linotp-builder
 # Build the debian packages in a container, then extract them from the image
 $(BUILDDIR)/apt/Packages:
 	$(DOCKER_RUN) \
-		--workdir=/pkg/linotp \
-		--name=$(DOCKER_CONTAINER_NAME)-apt \
-		--volume=$(PWD):/pkg/linotpsrc:ro \
+		--detach \
+		--rm \
+		--name $(DOCKER_CONTAINER_NAME)-apt \
 		linotp-builder \
-		sh -c "cp -ra /pkg/linotpsrc/* /pkg/linotp && \
-			make deb-install DESTDIR=/pkg/apt DEBUILD_OPTS=\"$(DEBUILD_OPTS)\" "
+		sleep 3600
+	docker cp . $(DOCKER_CONTAINER_NAME)-apt:/build
+	docker exec \
+		$(DOCKER_CONTAINER_NAME)-apt \
+			make deb-install DESTDIR=/build/apt DEBUILD_OPTS=\"$(DEBUILD_OPTS)\"
 	docker cp \
-		$(DOCKER_CONTAINER_NAME)-apt:/pkg/apt $(DESTDIR)
-	docker rm $(DOCKER_CONTAINER_NAME)-apt
+		$(DOCKER_CONTAINER_NAME)-apt:/build/apt $(DESTDIR)
+	docker rm -f $(DOCKER_CONTAINER_NAME)-apt
 
 # Build just the linotp image. The builder-linotp is required but will not be
 # built by this target - use 'make docker-linotp' to build the dependencies first
