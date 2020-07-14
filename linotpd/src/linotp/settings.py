@@ -4,6 +4,10 @@ import json
 import os
 from typing import Any, Type, Callable
 
+import click
+from flask import current_app
+from flask.cli import AppGroup
+
 from .lib.type_utils import boolean as to_boolean
 
 basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
@@ -400,3 +404,30 @@ configs = {
 
     'default': DevelopmentConfig,
 }
+
+
+# ----------------------------------------------------------------------
+# CLI commands
+# ----------------------------------------------------------------------
+
+config_cmds = AppGroup('config')
+
+
+@config_cmds.command('show', help='Output current configuration settings.')
+@click.option('--modified', '-m', is_flag=True,
+              help='Show only items whose values differ from their defaults.')
+@click.option('--values', '-V', is_flag=True,
+              help='Show only values of items, not their names.')
+@click.argument('items', nargs=-1)
+def config_show_cmd(modified, values, items=None):
+    """Show the current configuration settings."""
+
+    schema = current_app.config.config_schema
+    for k, v in sorted(current_app.config.items()):
+        display = not items or k in items
+        if modified and display:
+            item = schema.find_item(k)
+            display = item is not None and v != item.default
+        if display:
+            click.echo(("" if values else f"{k}=")
+                       + str(current_app.config[k]))
