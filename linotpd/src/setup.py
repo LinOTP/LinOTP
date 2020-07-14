@@ -196,6 +196,7 @@ setup(
         (
             'share/man/man1',
             [
+                "man/man1/linotp-config.1",
                 "tools/linotp-convert-token.1",
                 "tools/linotp-create-pwidresolver-user.1",
                 "tools/linotp-create-sqlidresolver-user.1",
