@@ -30,12 +30,8 @@ Verify LinOTP for UserPrincipal (user@domain) authentication
 the test will create a static-password token, and
 will try to verify the user in different situations.
 """
-import logging
-import json
 
 from linotp.tests import TestController
-
-log = logging.getLogger(__name__)
 
 class TestUserPrincipalController(TestController):
 
