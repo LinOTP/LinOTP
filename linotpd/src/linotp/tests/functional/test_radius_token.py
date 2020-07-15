@@ -81,7 +81,7 @@ class TestRadiusToken(TestController):
         # cleanup from last run
         try:
             self.deleteRadiusToken()
-        except:
+        except AssertionError:
             pass
 
         self.create_radius_token()
