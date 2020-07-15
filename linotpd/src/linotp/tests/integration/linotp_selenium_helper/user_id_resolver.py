@@ -253,6 +253,16 @@ class UserIdResolverManager(ManageDialog):
         json = self.manage.admin_api_call("system/setResolver", params)
         assert json['result']['status'] == True
 
+    def get_resolver_params_via_api(self, resolver_name: str) -> dict:
+        """
+        Request resolver configuration via API
+
+        Checks that the status was ok and returns the resulting data
+        """
+        json = self.manage.admin_api_call("system/getResolver", dict(resolver=resolver_name))
+        assert json['result']['status'] == True, json
+        return json['result']['value']
+
     def close(self):
         super(UserIdResolverManager, self).close()
         if self.no_realms_defined_dialog.is_open():
