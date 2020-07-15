@@ -31,14 +31,10 @@ Tests for some miscellaneous fixes
 
 
 import json
-import logging
+
 import threading
 
-from linotp.tests import TestController, url
-
-log = logging.getLogger(__name__)
-
-
+from linotp.tests import TestController
 
 
 def test_ticket_425(adminclient):
@@ -234,9 +230,6 @@ class TestFixesController(TestController):
         3. verify, that the token is part of the realms
         '''
 
-        sqlconnect = self.app.config['SQLALCHEMY_DATABASE_URI']
-        log.debug('current test against %s' % (sqlconnect))
-
         self.add_token('root', serial='troot', typ='spass', key='1234')
 
         param = {'serial':'troot', 'realms':'myDefRealm,myMixRealm'}
@@ -266,10 +259,9 @@ class TestFixesController(TestController):
         '''
         #12018: OTPLen of /admin/init is not ignored
         '''
-        (serial, response) = self.add_token('root', serial='troot',
-                                           typ='hmac', key='1234', otplen=12)
-        log.info(response)
-        assert serial == 'troot'
+        (serial, response) = self.add_token(
+            'root', serial='troot', typ='hmac', key='1234', otplen=12)
+        assert serial == 'troot', response
 
         param = {}
         response = self.make_admin_request('show', params=param)
