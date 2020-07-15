@@ -26,6 +26,8 @@ services:
         LINOTP_PROTOCOL: "https"
         LINOTP_USERNAME: "admin"
         LINOTP_PASSWORD: "admin"
+        LC_ALL: "C"
+        PYTEST_ADDOPTS: "--tc-file=/tmp/test_cfg.ini -v"
     volumes:
       - ../..:/linotp
     depends_on:
