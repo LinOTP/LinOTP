@@ -59,11 +59,11 @@ include:
     # Pull the old images to speedup the build process, the hope is
     # that the modified time will always be the same unless the file
     # has actually been changed
+    - export DOCKER_BUILDKIT=1
     - docker pull debian:${DEBIAN_RELEASE_NAME}
     - docker pull $BUILDER_CACHE_IMAGE || true
     - docker pull $LINOTP_CACHE_IMAGE || true
     # Build the images
-    - echo Building in "${CI_PROJECT_DIR}"
     - >
         make
         docker-build-linotp-builder
