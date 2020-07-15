@@ -318,6 +318,10 @@ _config_schema = ConfigSchema([
                      "insist on valid TLS server certificates. The default "
                      "is `False` for backwards compatibility, even though "
                      "this is obviously Wrong.")),
+    ConfigItem("GETOTP_ENABLED", bool, convert=to_boolean, default=False,
+               help=("Whether users can retrieve OTPs for their own tokens. "
+                     "This is helpful for corner cases like printed "
+                     "OTP lists.")),
 ])
 
 
