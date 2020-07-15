@@ -140,7 +140,6 @@ class TestFixesController(TestController):
     def setUp(self):
         ''' setup the Test Controller'''
         TestController.setUp(self)
-        self.set_config_selftest()
         self.create_common_resolvers()
         self.create_common_realms()
         self.serials = []
