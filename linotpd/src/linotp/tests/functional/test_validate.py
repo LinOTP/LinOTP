@@ -138,7 +138,6 @@ class TestValidateController(TestController):
     def setUp(self):
         self.tokens = {}
         TestController.setUp(self)
-        self.set_config_selftest()
         self.create_common_resolvers()
         self.create_common_realms()
 
@@ -1508,13 +1507,6 @@ class TestValidateController(TestController):
 
         assert '"LinOtp.FailCount": 1' in response, response
 
-        #
-        #    only in selfTest mode, it's allowed to set
-        #    the start time for the mobile otp
-        #    ..
-        # |      59     |  1970-01-01  | 0000000000000001 | 94287082 |  SHA1  |
-        #     ..
-        #
         old_day = datetime(year=1970, month=1, day=1)
         with freezegun.freeze_time(old_day):
 
@@ -1561,7 +1553,6 @@ class TestValidateController(TestController):
         # |             |   00:00:59   |                  |          |        |
 
 
-        self.set_config_selftest()
         self.createTOtpToken("SHA256")
 
         old_day = datetime(year=1970, month=1, day=1)
