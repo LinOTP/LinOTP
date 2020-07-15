@@ -59,6 +59,7 @@ physics_ldap_resolver = {
 sql_resolver = {
     'name': "SE_mySql",
     'type': 'sqlresolver',
+    'driver': 'mysql+pymysql',
     'server': 'blackdog.corp.lsexperts.de',
     'database': 'userdb',
     'user': 'resolver_user',
