@@ -34,6 +34,7 @@ will try to verify the user in different situations.
 from linotp.tests import TestController
 
 class TestUserPrincipalController(TestController):
+    """ verify the handling of users in UserPrincipal style """
 
     def setUp(self):
 
@@ -69,6 +70,8 @@ class TestUserPrincipalController(TestController):
             'splitAtSign': False
             }
         response = self.make_system_request('setConfig', params=params)
+        assert 'false' not in response, response
+
 
         user = "pass@user"
         pin = "1234"
@@ -78,12 +81,12 @@ class TestUserPrincipalController(TestController):
         # token creation/deletion)...
 
         params = {
-               "realm": realm,
-               "serial": serial,
-               'pin': pin,
-               "otpkey": "AD8EABE235FC57C815B26CEF37090755",
-               "type": 'spass'
-                }
+            "realm": realm,
+            "serial": serial,
+            'pin': pin,
+            "otpkey": "AD8EABE235FC57C815B26CEF37090755",
+            "type": 'spass'
+            }
 
         # Create test token...
         response = self.make_admin_request('init', params=params)
@@ -120,4 +123,4 @@ class TestUserPrincipalController(TestController):
 
         response = self.make_admin_request('remove', params=params)
 
-
+# eof
