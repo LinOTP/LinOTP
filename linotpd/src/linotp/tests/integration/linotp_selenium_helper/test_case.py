@@ -28,6 +28,7 @@ import re
 from contextlib import contextmanager
 from typing import Optional
 from flaky import flaky
+import pytest
 import time
 import urllib3
 
@@ -197,6 +198,7 @@ class TestCase(object):
         if cls.driver:
             cls.driver.quit()
 
+    @pytest.fixture(autouse=True)
     def setUp(self):
         self.enableImplicitWait()
         self.disableFileUploadForSendKeys()
