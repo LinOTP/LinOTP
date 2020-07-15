@@ -133,6 +133,7 @@ RUN apt-get update \
         distro-info-data \
         libjs-jquery \
         lsb-release \
+        locales \
         dh-python \
         python3-flask \
         python3-psycopg2
