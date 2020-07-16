@@ -74,7 +74,6 @@ class TestProviderController(TestController):
         self.removeProviderConfig()
 
         super(TestProviderController, self).setUp()
-        self.set_config_selftest()
         self.create_common_resolvers()
         self.create_common_realms()
 
