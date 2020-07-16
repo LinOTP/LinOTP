@@ -283,8 +283,8 @@ class RealmManager(ManageDialog):
         if check_for_no_resolver_alert:
             self.check_alert("Create UserIdResolver first", click_accept=True)
 
-        # Allow realms list to populate
-        self.manage.wait_for_waiting_finished()
+        # Let dialog open and settle down
+        self.edit_realm_dialog.reparse()
 
         return self.edit_realm_dialog
 
