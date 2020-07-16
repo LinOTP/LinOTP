@@ -51,6 +51,10 @@ except ImportError:
 
 from ldap.controls import SimplePagedResultsControl
 
+import click
+from flask import current_app
+from flask.cli import with_appcontext
+
 from linotp.lib.type_utils import encrypted_data
 from linotp.lib.type_utils import text
 from linotp.lib.type_utils import boolean
@@ -207,6 +211,27 @@ class IdResolver(UserIdResolver):
         :return: the ldap connection object
         """
 
+        def init_ldap(uri, trace_level):
+            # prepare the ldap for connection
+
+            try:
+                l_obj = ldap.initialize(uri, trace_level=trace_level)
+            except ldap.LDAPError as exx:
+                log.error(f"couldn't connect to {uri}: {exx!r}")
+                raise exx
+
+            # Set LDAP protocol version used
+            l_obj.protocol_version = ldap.VERSION3
+
+            # `network_timeout` is used by the OpenLDAP client lib to limit
+            # waiting for a network response. `timeout` is used in the
+            # `python-ldap` wrapper library to limit waiting for any response.
+
+            l_obj.network_timeout = caller.network_timeout
+            l_obj.timeout = caller.response_timeout
+
+            return l_obj
+
         log.debug("Try to connect to %r", uri)
 
         # uri's starting or ending with 'whitespace' are not supported
@@ -216,21 +241,11 @@ class IdResolver(UserIdResolver):
         if ',' in uri:
             log.warning("unsupported multiple urls in ldap uri %r", uri)
 
-        if not uri.startswith('ldaps://') and not uri.startswith('ldap://'):
+        if not uri.startswith(('ldaps://', 'ldap://')):
             log.error("unsuported protocol %r", uri)
             raise Exception("unsuported protocol %r" % uri)
 
-        # prepare the ldap for connection
-
-        l_obj = ldap.initialize(uri, trace_level=trace_level)
-
-        l_obj.set_option(ldap.OPT_NETWORK_TIMEOUT, caller.network_timeout)
-
-        if caller.response_timeout > 0:
-            l_obj.set_option(ldap.OPT_TIMEOUT, caller.response_timeout)
-
-        # Set LDAP protocol version used
-        l_obj.protocol_version = ldap.VERSION3
+        l_obj = init_ldap(uri, trace_level)
 
         if uri.startswith('ldaps://') or caller.enforce_tls:
 
@@ -239,70 +254,98 @@ class IdResolver(UserIdResolver):
             # With the option 'only_trusted_certs' the server certificate
             # will be verified and only verified servers will be connected
 
-            if caller.only_trusted_certs:
-                l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,
-                                 ldap.OPT_X_TLS_DEMAND)
+            # Note that on Debian GNU/Linux, the OpenLDAP client library
+            # is linked against GnuTLS and doesn't support
+            # `ldap.OPT_X_TLS_CACERTDIR`.
 
-        #
-        # Force lib ldap to create a new SSL context (must be last
-        # TLS option!) from:
-        # https://github.com/rbarrois/python-ldap/blob/master/Demo/initialize.py
-        #
-
-        l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
+            ca_cert_file = current_app.config["TLS_CA_CERTIFICATES_FILE"]
+            l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE, ca_cert_file)
+            cert_req = (ldap.OPT_X_TLS_DEMAND if caller.only_trusted_certs
+                        else ldap.OPT_X_TLS_NEVER)
+            log.debug(
+                f"Using root-level CA certificates from {ca_cert_file}"
+                ", server certificates "
+                f"{'must' if caller.only_trusted_certs else 'need not'} "
+                "be valid.")
+            l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, cert_req)
+            l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
 
         if uri.startswith('ldap://'):
+            if caller.enforce_tls:
+                # Try to upgrade the LDAP connection to TLS, and
+                # complain fiercely if this fails.
 
-            # in case of ldap:// we always try to start a tls connection
-            # Only in case the tls connection is a must, defined by
-            # enforce_tls, we terminate the connection attempt
+                # In this case we insist on a server certificate that
+                # checks out, because that is what the previous version
+                # of the code did. In reality we want this to be configurable
+                # (for better or worse), which is what the previous `if` is
+                # supposed to take care of. Once we decide that this is how
+                # the code should behave, these three lines can go away.
 
-            try:
-                if not caller.enforce_tls:
-                    l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,
-                                     ldap.OPT_X_TLS_NEVER)
-                else:
-                    l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,
-                                     ldap.OPT_X_TLS_DEMAND)
+                l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,
+                                 ldap.OPT_X_TLS_DEMAND)
+                l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
 
-                log.debug("for %r connection try to start_tls", uri)
-                l_obj.start_tls_s()
-
-            except ldap.LDAPError as exx:
-
-                if caller.enforce_tls:
-                    log.error("failed to start_tls for %r: %r", uri, exx)
+                log.debug(f"Attempting STARTTLS on {uri} (as configured)")
+                try:
+                    l_obj.start_tls_s()
+                except ldap.LDAPError as exx:
+                    log.error(f"Couldn't STARTTLS on {uri}: {exx!r}")
                     raise exx
 
-                log.warning("failed to start_tls for %r: %r - "
-                            "falling back to plain ldap connection", uri, exx)
+            else:
+                # Try to upgrade the LDAP connection to TLS even if
+                # that wasn't explicitly asked for. We don't care if
+                # the server certificate we receive is rubbish; people
+                # who have an LDAP server with a certificate that
+                # isn't rubbish should set `enforce_tls` and
+                # `only_trusted_certs` and use the previous case. If
+                # the STARTTLS request fails altogether (for other
+                # reasons such as “the server doesn't do STARTTLS”) we
+                # use the plain LDAP connection instead. Yuck.
 
-                # if the start_tls failed, we have to re-initialize
-                # the ldap connection again
+                l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,
+                                 ldap.OPT_X_TLS_NEVER)
+                l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
 
-                l_obj = ldap.initialize(uri, trace_level=trace_level)
+                log.debug(f"Unsolicited STARTTLS on {uri} (just because)")
+                try:
+                    l_obj.start_tls_s()
+                except ldap.LDAPError as exx:
+                    log.warning(f"Couldn't STARTTLS on {uri}: {exx!r}")
+                    log.warning(f"Falling back to plain LDAP "
+                                "(THIS IS INSECURE!!!)")
 
-                # and dont forget to set the timeouts
-                l_obj.set_option(ldap.OPT_NETWORK_TIMEOUT,
-                                 caller.network_timeout)
+                    # Reinitialise the LDAP object after a failed STARTTLS.
+                    # It is unclear whether this is required, but the
+                    # previous version of this code did this, so there may
+                    # be something to it.
 
-                if caller.response_timeout > 0:
-                    l_obj.set_option(ldap.OPT_TIMEOUT, caller.response_timeout)
+                    l_obj = init_ldap(uri, trace_level)
+                else:
+                    log.debug(f"Unsolicited STARTTLS on {uri} successful")
 
+        # At this point we should have either an LDAPS connection, or an
+        # LDAP connection that has been upgraded to TLS, or a plain LDAP
+        # connection.
+
+        # Output the name of the cipher being used, if any, if `python-ldap`
+        # volunteers that information. (According to the documentation, it
+        # should, but even the newest version doesn't seem to follow the
+        # documentation.)
+
+        cipher = (l_obj.get_option('OPT_X_TLS_CIPHER')
+                  if hasattr(l_obj, 'OPT_X_TLS_CIPHER') else "Unknown")
+        log.info(f"LDAP TLS: using cipher={cipher}")
 
         if caller.noreferrals:
             log.debug("using noreferrals: %r", caller.noreferrals)
             l_obj.set_option(ldap.OPT_REFERRALS, 0)
 
-        # setup both timeouts, for network and response
-
-        l_obj.network_timeout = caller.network_timeout
-        l_obj.timeout = caller.response_timeout
-
         return l_obj
 
     @classmethod
-    def testconnection(cls, params):
+    def testconnection(cls, params, silent=False):
         """
         This is used to test if the given parameter set will do a successful
         LDAP connection.
@@ -328,7 +371,6 @@ class IdResolver(UserIdResolver):
         status = "success"
         resultList = []
 
-        old_cert_file = None
         l_obj = None
 
         # for the testconection we are using a simple class
@@ -426,12 +468,14 @@ class IdResolver(UserIdResolver):
 
         except ldap.CONNECT_ERROR as err:
             status = "error"
-            log.exception("[testconnection] LDAP Error: %r", err)
+            if not silent:
+                log.exception("[testconnection] LDAP Error: %r", err)
             return (status, "Connection Error: %s" % str(err))
 
         except ldap.LDAPError as err:
             status = "error"
-            log.exception("[testconnection] LDAP Error: %r", err)
+            if not silent:
+                log.exception("[testconnection] LDAP Error: %r", err)
             return (status, str(err))
 
         except Exception as err:
@@ -469,7 +513,12 @@ class IdResolver(UserIdResolver):
         self.proxy = False
         self.uidType = DEFAULT_UID_TYPE
         self.l_obj = None
-        self.only_trusted_certs = False
+
+        # As of now this can only be controlled via a global configuration
+        # setting (it used to be hard-coded to `False`, with a special
+        # exception in `testconnection()`).
+
+        self.only_trusted_certs = current_app.config["TLS_ONLY_TRUSTED_CERTS"]
 
     def close(self):
         """
@@ -825,57 +874,6 @@ class IdResolver(UserIdResolver):
         if self.conf != "":
             resolver = resolver + "." + self.conf
         return resolver
-
-    def getConfigEntry(self, config, key, conf, required=True, default=""):
-        '''
-        getConfigEntry - retrieve an entry from the config
-
-        :param config: dict of all configs
-        :type  config: dict
-        :param key: key which is searched
-        :type key: string
-        :param conf: scope of the config eg. connect.sql
-        :type conf: string
-        :param required: if this value ist true and the key is not defined, an
-                         exception sill be raised
-        :type required:  boolean
-        :param default: fallback value if confg has no such entry
-        :type default: any
-
-        :return: the value of the specified key
-        :rtype:  value type - in most cases string ;-)
-
-        '''
-        log.debug("[getConfigEntry]")
-
-        ckey = key
-        cval = default
-        config_found = False
-        log.debug("[getConfigEntry] searching key %r in config %r",
-                  key, conf)
-        if conf:
-            ckey = ckey + "." + conf
-            if ckey in config:
-                config_found = True
-                cval = config[ckey]
-
-        if cval == "":
-            if key in config:
-                config_found = True
-                cval = config[key]
-
-        if required and not config_found:
-            log.error("[getConfigEntry] missing config entry %s "
-                      "in config %s", key, conf)
-
-            self.brokenconfig = True
-            self.brokenconfig_text = ("Broken Config: missing config entry "
-                                      "%s in config %s" % (key, conf))
-
-            raise Exception("missing config entry: %s "
-                            "in config %s", key, config)
-
-        return cval
 
     @classmethod
     def getResolverClassType(cls):
@@ -1552,20 +1550,22 @@ class IdResolver(UserIdResolver):
 
 def getLdapUsers(params):
 
-    # ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
-    ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_DEMAND)
+    cert_req = (ldap.OPT_X_TLS_DEMAND if params['only_trusted_certs']
+                else ldap.OPT_X_TLS_NEVER)
+    ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, cert_req)
+    ldap.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
     ldap.set_option(ldap.OPT_PROTOCOL_VERSION, ldap.VERSION3)
 
     uri = params['LDAPURI']
-
     l = ldap.initialize(uri)
-    l.set_option(ldap.OPT_X_TLS_DEMAND, True)
 
     # ldap v3 required for start_tls
     l.set_option(ldap.OPT_PROTOCOL_VERSION, ldap.VERSION3)
 
     if not uri.startswith('ldaps://'):
         try:
+            l.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, cert_req)
+            l.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
             l.start_tls_s()
         except ldap.LDAPError as exx:
             log.info("failed to start_tls for %r: %r", uri, exx)
@@ -1638,172 +1638,181 @@ def simple_request(params):
                 print("%s:%r" % (key, value))
 
 
-def resolver_request(params):
+def resolver_request(params, silent=False):
+
+    def pr(s):
+        if not silent:
+            print(s)
 
     IdResolver.setup()
-    ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_DEMAND)
 
-    print('Trying to connect to %r' % params['LDAPURI'])
-    status, results = IdResolver.testconnection(params)
-    print("Status: %r" % status)
+    pr('Trying to connect to %r' % params['LDAPURI'])
+    status, results = IdResolver.testconnection(params, silent)
+    pr("Status: %r" % status)
 
     if results:
-        print("Result:")
+        pr("Result:")
 
         if status != "success":
-            print("%r" % results)
-            exit(-1)
+            pr("%r" % results)
+            return False
 
         for result in results:
             if not result:
-                print("%r" % result)
+                pr("%r" % result)
             else:
                 for key, value in list(result.items()):
-                    print("%s : %s" % (key.decode('utf-8'),
-                                       value.decode('utf-8')))
+                    pr("%s : %s" % (key, value))
+
+    return True
 
 
-def get_params():
-    import json
-    user_mapping = {"username": "uid",
-                    "phone": "telephoneNumber",
-                    "mobile": "mobile",
-                    "email": "mail",
-                    "surname": "sn",
-                    "givenname": "givenName"}
+# ----------------------------------------------------------------------
 
-    ldap_search = {}
-    ldap_search['LDAPFILTER'] = "(&(uid=%s)(objectClass=inetOrgPerson))"
-    ldap_search['LDAPSEARCHFILTER'] = "(uid=*)(objectClass=inetOrgPerson)"
-    ldap_search['LOGINNAMEATTRIBUTE'] = "uid"
+@click.command('ldap-test', help='Test LDAP user-ID resolver connection.')
+@click.option('--url', '-u', help='URL for LDAP server', required=True)
+@click.option('--base', '-b', help='LDAP search base DN', required=True)
+@click.option('--binddn', '-d', help='LDAP bind DN', required=True)
+@click.option('--bindpw', '-p', prompt='LDAP bind password', hide_input=True,
+              help='LDAP bind password')
+@click.option('--enforce_tls', '--enforce-tls', '-e', is_flag=True,
+              help='Enforce TLS')
+@click.option('--trace_level', '--trace-level', '-t', type=int, default=0,
+              help='LDAP trace level, 0..255')
+@click.option('--only_trusted_certs', '--only-trusted-certs', '-c',
+              is_flag=True,
+              help='Disallow untrusted or self-signed certificates')
+@click.option('--simple', '-s', is_flag=True,
+              help='Do alternative simple search')
+@click.option('--ldap_type', '--ldap-type',
+              type=click.Choice(['ad', 'ldap'], case_sensitive=False),
+              default='ldap', help='LDAP server type')
+@click.option('--cert_file', '--cert-file', help='Use certificate from file')
+@click.option('--filter', help='Define object filter')
+@click.option('--searchfilter', help='Define object search filter')
+@click.option('--loginattribute', default='uid',
+              help='define user login attribute, default is uid')
+@click.option('--all-cases', is_flag=True,
+              help=("Exhaustively test all non-TLS/TLS connection options. "
+                    "This means that the `-e`, `-c`, and `-s` flags and the "
+                    "protocol part of the LDAP server URL are ignored."))
+@with_appcontext
+def ldap_test(url, base, binddn, bindpw, enforce_tls, trace_level,
+              only_trusted_certs, simple, ldap_type, cert_file, filter,
+              searchfilter, loginattribute, all_cases):
+    user_mapping = {
+        "username": "uid",
+        "phone": "telephoneNumber",
+        "mobile": "mobile",
+        "email": "mail",
+        "surname": "sn",
+        "givenname": "givenName",
+    }
 
-    ad_search = {}
-    ad_search['LDAPFILTER'] = "(&(sAMAccountName=%s)(objectClass=user))"
-    ad_search['LDAPSEARCHFILTER'] = "(&(sAMAccountName=*)(objectClass=user))"
-    ad_search['LOGINNAMEATTRIBUTE'] = "sAMAccountName"
+    ldap_search = {
+        'LDAPFILTER': "(&(uid=%s)(objectClass=inetOrgPerson))",
+        'LDAPSEARCHFILTER': "(&(uid=*)(objectClass=inetOrgPerson))",
+        'LOGINNAMEATTRIBUTE': "uid",
+    }
 
-    # final config
-    params = {}
-    params['NOREFERRALS'] = "True"
-    params['EnforceTLS'] = "False"
-    params['SIZELIMIT'] = "500"
-    params['TIMEOUT'] = "5"
-    params['USERINFO'] = json.dumps(user_mapping)
+    ad_search = {
+        'LDAPFILTER': "(&(sAMAccountName=%s)(objectClass=user))",
+        'LDAPSEARCHFILTER': "(&(sAMAccountName=*)(objectClass=user))",
+        'LOGINNAMEATTRIBUTE': "sAMAccountName",
+    }
 
-    import argparse
+    params = {
+        'LDAPURI': url,
+        'LDAPBASE': base,
+        'BINDDN': binddn,
+        'BINDPW': bindpw,
+        'trace_level': trace_level,
+        'NOREFERRALS': "True",
+        'EnforceTLS': enforce_tls,
+        'only_trusted_certs': only_trusted_certs,
+        'SIZELIMIT': "500",
+        'TIMEOUT': "5",
+        'USERINFO': json.dumps(user_mapping),
+    }
 
-    usage = "Interactive test of LDAP Connection"
-    parser = argparse.ArgumentParser(usage)
-    parser.add_argument("-u", "--url", help="Ldap URL", required=True)
-    parser.add_argument("-b", "--base", help="Ldap base", required=True)
-    parser.add_argument("-d", '--binddn', help="Ldap bind", required=True)
-    parser.add_argument("-p", '--bindpw', help="Ldap bind pw", required=False)
-    parser.add_argument('-e', '--enforce_tls', help="enforce tls",
-                        action="store_true")
-
-    parser.add_argument("-t", '--trace_level', help="Ldap trace_level 0..255",
-                        type=int, default=0, required=False)
-
-    parser.add_argument('--only_trusted_certs',
-                        help="disallow untrusted + selfsigned certificates",
-                        action="store_true")
-
-    parser.add_argument('-s', help='do alternative simpe search',
-                        action='store_true')
-
-    parser.add_argument('--ldap_type',
-                        help="ldap server type: ad or ldap",
-                        required=False)
-
-    parser.add_argument('--cert_file', help='use certificate from file',
-                        required=False)
-
-    parser.add_argument('--filter',
-                        help='define object filter',
-                        required=False)
-
-    parser.add_argument('--searchfilter',
-                        help='define object search filter',
-                        required=False)
-    parser.add_argument('--loginattribute',
-                        help='define user login attribute: default is uid',
-                        required=False)
-
-    args = vars(parser.parse_args())
-
-    # start processing the arguments
-    simple = False
-    if args['s']:
-        simple = True
-
-    params['LDAPURI'] = args['url']
-    params['LDAPBASE'] = args['base']
-    params['BINDDN'] = args['binddn']
-    if 'bindpw' in args and args['bindpw']:
-        params['BINDPW'] = args['bindpw']
-    else:
-        import getpass
-        params['BINDPW'] = getpass.getpass()
-
-    params['trace_level'] = int(args.get('trace_level', 0))
-
-    params['EnforceTLS'] = args['enforce_tls']
-
-    params['only_trusted_certs'] = args['only_trusted_certs']
-
-    search = ldap_search
-    if args['ldap_type']:
-        if 'ad' == args['ldap_type']:
-            search = ad_search
-        elif 'ldap' == args['ldap_type']:
-            search = ldap_search
-        else:
-            raise Exception('unknown ldap search type!')
+    search = ad_search if ldap_type == 'ad' else ldap_search
     params.update(search)
 
-    if args['filter']:
-        params['LDAPFILTER'] = args['filter']
-    if args['searchfilter']:
-        params['LDAPSEARCHFILTER'] = args['searchfilter']
-    if args['loginattribute']:
-        params['LOGINNAMEATTRIBUTE'] = args['loginattribute']
+    if filter:
+        params['LDAPFILTER'] = filter
+    if searchfilter:
+        params['LDAPSEARCHFILTER'] = searchfilter
+    if loginattribute:
+        params['LOGINNAMEATTRIBUTE'] = loginattribute
 
-    return simple, params
+    if not all_cases or current_app.config['LOGGING_LEVEL'] == 'DEBUG':
+        log.setLevel(logging.DEBUG)
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s %(levelname)s: [%(name)s]'
+                                      ' %(message)s')
+        ch.setFormatter(formatter)
+        log.addHandler(ch)
 
-def main():
+    if all_cases:
+        # This does an exhaustive test of all possible combinations of
+        # LDAP, LDAP+STARTTLS, LDAPS, with or without certificate checking
+        # and with or without available CA certificates. The root-level CA
+        # certificate for the LDAP server used for testing should be
+        # specified using the `TLS_CA_CERTIFICATES_FILE` configuration
+        # setting.
 
-    # assume that with console usage, we are interested to see every detail
-    # that is going on, so we prepare for debug output on the console.
+        ca_cert_file = current_app.config['TLS_CA_CERTIFICATES_FILE']
+        cases = [
+            # proto   S-TLS  certs         checking  should connect?
+            # ---------------------------------------------------------
+            ("ldap",  False, "/dev/null",  False,    True),
+            # In the following line, “should connect?” should be `True`
+            # except that with LDAP+STARTTLS, certificate checking is forced
+            # irrespective of the `only_trusted_certs` setting.
+            ("ldap",  True,  "/dev/null",  False,    False),
+            ("ldap",  True,  "/dev/null",  True,     False),
+            ("ldap",  True,  ca_cert_file, False,    True),
+            ("ldap",  True,  ca_cert_file, True,     True),
+            ("ldaps", False, "/dev/null",  False,    True),
+            ("ldaps", False, "/dev/null",  True,     False),
+            ("ldaps", False, ca_cert_file, False,    True),
+            ("ldaps", False, ca_cert_file, True,     True),
+        ]
 
-    log.setLevel(logging.DEBUG)
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s -'
-                                  ' %(message)s')
-    ch.setFormatter(formatter)
-    log.addHandler(ch)
+        print("> Proto  STARTTLS  CA cert      Checking  Result        Happy?")
+        print("> ------------------------------------------------------------")
+        ok_cases = 0
+        for proto, start_tls, cert_file, checking, expected in cases:
+            params0 = params.copy()
+            uri = params['LDAPURI']
+            params0['LDAPURI'] = proto + uri[uri.find(':'):]
+            params0['EnforceTLS'] = start_tls
+            current_app.config["TLS_CA_CERTIFICATES_FILE"] = cert_file
+            params0['only_trusted_certs'] = checking
+            with current_app.test_request_context():
+                current_app.preprocess_request()
+                try:
+                    result = resolver_request(params0, silent=True)
+                except ldap.SERVER_DOWN:
+                    pass
+                cf_available = (
+                    "Unavailable" if cert_file == '/dev/null'
+                    else 'Available')
+                print(f". {proto:5s}   {start_tls!r:5s}    {cf_available:11s} "
+                      f" {'Enabled' if checking else 'Disabled':8s} "
+                      f" {'Connected' if result else 'Not connected':13s} "
+                      f" {'Yes' if result == expected else 'No'}")
+                if result == expected:
+                    ok_cases += 1
+        print(f"\n{ok_cases} out of {len(cases)} cases correct")
+        sys.exit(1 - (ok_cases == len(cases)))  # 0=OK, 1=failure
 
-    # now we care for the provided command line parameters, which are
-    # returned as a dict, that can be used in the LDAPResolver testconnection
-
-    simple, params = get_params()
-
-    # depending on the test style, we use the fall back simple ldap example or
-    # the resolver code base for the test requests
-
-    if simple:
-        simple_request(params)
-    else:
-        resolver_request(params)
-
-# -- --------------------------------------------------------------------- --
-
-
-if __name__ == "__main__":
-    from linotp.app import create_app
-    app = create_app('testing')
-    with app.test_request_context():
-        app.preprocess_request()
-        main()
+    with current_app.test_request_context():
+        current_app.preprocess_request()
+        if simple:
+            simple_request(params)
+        else:
+            resolver_request(params)
 
 # eof #########################################################################

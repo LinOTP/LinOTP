@@ -298,6 +298,21 @@ _config_schema = ConfigSchema([
                      "like in RADIUS token or with policy forwarding server "
                      "to RADIUS server. If you don't understand the previous "
                      "sentence you are in good company.")),
+    ConfigItem("TLS_CA_CERTIFICATES_FILE", str,
+               default="/etc/ssl/certs/ca-certificates.crt",
+               help=("The file that holds root-level CA certificates for "
+                     "validating the TLS certificates of remote nodes. See "
+                     "the OpenSSL verify(1) manual page for more information. "
+                     "Do not change this unless you know what you are "
+                     "doing.")),
+    ConfigItem("TLS_ONLY_TRUSTED_CERTS", bool, default=False,  # Yuck.
+               convert=to_boolean,
+               help=("If true, check TLS server certificates for validity "
+                     "(i.e., do they match the desired host name, are they "
+                     "correctly signed by a CA, etc.). Otherwise, don't "
+                     "insist on valid TLS server certificates. The default "
+                     "is `False` for backwards compatibility, even though "
+                     "this is obviously Wrong.")),
 ])
 
 

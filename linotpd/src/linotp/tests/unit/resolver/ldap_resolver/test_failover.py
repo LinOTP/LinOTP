@@ -113,6 +113,8 @@ class MockedResourceScheduler(ResourceScheduler):
                 resource_registry_class=MockedResourceRegistry)
 
 
+@pytest.mark.xfail(reason="broken by linotp.lib.selftest Volkswagen code")
+@pytest.mark.usefixtures("app")
 class TestLDAPResolverFailover(unittest.TestCase):
     """
     tests the ldap bind with failover using the Resource Scheduler
