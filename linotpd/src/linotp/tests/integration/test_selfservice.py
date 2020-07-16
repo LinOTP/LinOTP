@@ -42,7 +42,7 @@ class TestSelfservice(TestCase):
         self.realm_name = "SE_realm_selfservice"
         self.reset_resolvers_and_realms(
             data.musicians_ldap_resolver, self.realm_name)
-        self.selfservice = SelfService(self.driver, self.base_url)
+        self.selfservice = SelfService(self.driver, self.base_url, self.ui_wait_time)
 
     def test_selfservice(self):
         """Creates User-Id-Resolvers"""

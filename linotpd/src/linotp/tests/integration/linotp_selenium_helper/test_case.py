@@ -72,10 +72,12 @@ def is_flaky_exception(err, *args):
 class TestCase(object):
     """Basic LinOTP TestCase class"""
 
-    implicit_wait_time = 5
-
     driver = None
     "Selenium driver"
+
+    implicit_wait_time = 5
+    ui_wait_time = 5
+    backend_wait_time = 10
 
     _linotp_version = None  # LinOTP server version
     _manage: Optional[ManageUi] = None  # Manage UI
@@ -114,6 +116,9 @@ class TestCase(object):
                                                     default="firefox").lower()
         cls.selenium_driver_language = get_from_tconfig(['selenium', 'language'],
                                                         default="en_us").lower()
+        cls.implicit_wait_time = int(get_from_tconfig(['timeouts', 'default'], default=5))
+        cls.ui_wait_time = int(get_from_tconfig(['timeouts', 'ui_updates'], default=5))
+        cls.backend_wait_time = int(get_from_tconfig(['timeouts', 'backend_updates'], default=10))
 
     @classmethod
     def startDriver(cls):
@@ -232,7 +237,7 @@ class TestCase(object):
         """
         # Retrieve all elements including parent. This bypasses the timeout
         # that would other wise occur
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(self.driver, self.ui_wait_time).until(
             EC.presence_of_element_located((By.ID, parent_id))
         )
 

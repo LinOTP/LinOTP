@@ -62,7 +62,7 @@ class UserView(ManageTab):
 
         realm_select = self.driver.find_element_by_id('realm')
 
-        WebDriverWait(self.driver, 6).until(
+        WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
             EC.visibility_of_element_located(
                 (By.ID, "realm"))
         )

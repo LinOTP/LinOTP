@@ -45,7 +45,7 @@ class SelfService(object):
 
     selected_token_css = 'div[role="tabpanel"][style=""] input.selectedToken'
 
-    def __init__(self, driver, base_url):
+    def __init__(self, driver, base_url, ui_wait_time):
         """
         Initialise the self service helper
 
@@ -53,6 +53,7 @@ class SelfService(object):
         """
         self.base_url = base_url
         self.driver = driver
+        self.ui_wait_time = ui_wait_time
 
     def _find_by_id(self, id_value):
         """Return the element by ID"""
@@ -60,12 +61,12 @@ class SelfService(object):
 
     def find_by_class(self, class_name):
         """Return the element by its class name"""
-        return WebDriverWait(self.driver, 10).until(
+        return WebDriverWait(self.driver, self.ui_wait_time).until(
             EC.visibility_of_element_located((By.CLASS_NAME, class_name)))
 
     def find_by_xpath(self, xpath):
         """Return the element by its xpath"""
-        return WebDriverWait(self.driver, 10).until(
+        return WebDriverWait(self.driver, self.ui_wait_time).until(
             EC.visibility_of_element_located((By.XPATH, xpath)))
 
     def login(self, user, password, realm=None):
@@ -116,13 +117,13 @@ class SelfService(object):
         """
         self.select_tab(tabname)
         # Now wait for token field to be visible
-        WebDriverWait(self.driver, 5).until(
+        WebDriverWait(self.driver, self.ui_wait_time).until(
             EC.visibility_of_element_located((By.CSS_SELECTOR,
                                               self.selected_token_css)))
 
         # Assume, that there is any token/button in the token list
         # on the left side.
-        WebDriverWait(self.driver, 5).until(
+        WebDriverWait(self.driver, self.ui_wait_time).until(
             EC.presence_of_element_located((By.XPATH,
                                             '//*[@id="tokenDiv"]/ul/li/button')))
 
@@ -139,7 +140,7 @@ class SelfService(object):
 
         # Wait for token field value to update
         try:
-            WebDriverWait(self.driver, 5).until(
+            WebDriverWait(self.driver, self.ui_wait_time).until(
                 EC.text_to_be_present_in_element_value((By.CSS_SELECTOR,
                                                         self.selected_token_css), token))
         except TimeoutException:

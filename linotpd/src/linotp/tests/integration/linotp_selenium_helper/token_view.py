@@ -208,7 +208,7 @@ class TokenView(ManageTab):
 
         assign_id = "button_assign"
 
-        WebDriverWait(self.driver, 4).until(
+        WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
             EC.element_to_be_clickable((By.ID, assign_id))
         )
 

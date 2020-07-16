@@ -119,7 +119,7 @@ class EditRealmDialog(ManageDialog):
         Wait for save button to be clickable, then click save
         """
         button_id = self.edit_save_button_id
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(self.driver, self.testcase.backend_wait_time).until(
             EC.element_to_be_clickable(
                 (By.ID, button_id))
         )

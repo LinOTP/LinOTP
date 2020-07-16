@@ -76,11 +76,11 @@ class PolicyManager(ManageTab):
 
         def policy_name_empty(_):
             return policy_name_element.get_attribute('value') == ""
-        WebDriverWait(self.driver, 10).until(policy_name_empty)
+        WebDriverWait(self.driver, self.testcase.backend_wait_time).until(policy_name_empty)
 
         # Select policy to delete
         p.click()
-        WebDriverWait(self.driver, 10).until_not(policy_name_empty)
+        WebDriverWait(self.driver, self.testcase.backend_wait_time).until_not(policy_name_empty)
 
         # Delete the policy
         self.find_by_id(self.policy_delete_button_id).click()
@@ -94,7 +94,7 @@ class PolicyManager(ManageTab):
             except StaleElementReferenceException:
                 return False
 
-        WebDriverWait(self.driver, 10).until_not(policy_still_visible)
+        WebDriverWait(self.driver, self.testcase.backend_wait_time).until_not(policy_still_visible)
         assert info.check_last_message('Policy deleted.')
 
     def set_new_policy(self, policy):

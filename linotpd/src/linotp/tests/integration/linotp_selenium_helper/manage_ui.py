@@ -275,7 +275,7 @@ class ManageUi(object):
         Some elements, e.g. the realms dialog, take some time for network communication.
         During this period, the do_waiting is displayed. Wait for this to disappear
         """
-        WebDriverWait(self.driver, 30).until_not(
+        WebDriverWait(self.driver, self.testcase.backend_wait_time).until_not(
             EC.visibility_of_element_located((By.ID, "do_waiting")))
 
     def is_element_visible(self, css):

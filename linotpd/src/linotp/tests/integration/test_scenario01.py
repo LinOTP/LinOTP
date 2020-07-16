@@ -77,7 +77,7 @@ class TestScenario01(TestCase):
         user_view = self.manage_ui.user_view
         token_enroll = self.manage_ui.token_enroll
 
-        selfservice = SelfService(self.driver, self.base_url)
+        selfservice = SelfService(self.driver, self.base_url, self.ui_wait_time)
 
         # reset all views
         self.reset_resolvers_and_realms()
