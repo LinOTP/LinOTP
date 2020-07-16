@@ -24,7 +24,7 @@
 #    Support: www.keyidentity.com
 #
 
-
+import requests
 from requests.auth import HTTPDigestAuth
 
 import pytest
@@ -75,7 +75,7 @@ class TestYubikey(TestCase):
         description = "Enrolled by TestYubikey"
         public_uid = "ecebeeejedecebeg"
 
-        inittoken_response = self.manage.admin_api_call(
+        inittoken_response = self.manage_ui.admin_api_call(
             "admin/init",
             {
                 "type": "yubikey",
