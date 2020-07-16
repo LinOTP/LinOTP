@@ -110,9 +110,12 @@ RUN echo 'APT::Install-Recommends "0"; \n\
     && sed -i "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" \
         /etc/apt/sources.list
 
+# Use eatmydata to speed up apt-get and pip operations
+RUN apt-get update && apt-get install eatmydata \
+    && for F in apt-get pip3; do ln -s /usr/bin/eatmydata /usr/local/bin/$F; done \
+    && apt-get install curl gnupg
 # Add LinOTP packaging key to keyring in order to install
 # dependencies
-RUN apt-get update && apt-get install curl gnupg
 RUN test -z "$DEPENDENCY_SOURCE" \
         || echo "deb $DEPENDENCY_SOURCE $DEBIAN_RELEASE_NAME $DEPENDENCY_COMPONENT" > /etc/apt/sources.list.d/kideps.list
 RUN test -z "$DEPENDENCY_GPG_KEYID" \
