@@ -52,7 +52,7 @@ physics_ldap_resolver = {
     'basedn': 'dc=hotad,dc=example,dc=net',
     'binddn': 'cn="Clark Maxwell",ou=corp,dc=hotad,dc=example,dc=net',
     'password': "Test123!",
-    'preset_ldap': False,
+    'preset_ad': True,
     'expected_users': 26,
 }
 
