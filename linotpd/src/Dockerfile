@@ -136,7 +136,7 @@ RUN apt-get update \
         locales \
         dh-python \
         python3-flask \
-        python3-psycopg2
+        python3-psycopg2 python3-pymysql
 
 # flask-mako is not yet packaged, so install using pip
 RUN apt-get install python3-pip python3-dev python3-wheel swig gcc libssl-dev \
