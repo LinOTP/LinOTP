@@ -31,20 +31,14 @@ import binascii
 import datetime
 from hashlib import sha1, sha256, sha512
 import hmac
-import logging
 import random
 import struct
 import time
-
 
 from freezegun import freeze_time
 
 from linotp.lib.crypto.utils import geturandom
 from linotp.tests import TestController
-
-
-
-log = logging.getLogger(__name__)
 
 
 '''
@@ -283,11 +277,10 @@ class TestTotpController(TestController):
             try:
                 dt = datetime.datetime.strptime(curTime, tFormat)
             except Exception as e:
-                log.exception('[time2float] Error during conversion of datetime: %r' % e)
                 raise Exception(e)
         else:
-            log.error("[time2float] invalid curTime: %s. You need to specify a datetime.datetime" % type(curTime))
-            raise Exception("[time2float] invalid curTime: %s. You need to specify a datetime.datetime" % type(curTime))
+            raise Exception("[time2float] invalid curTime: %s. You need"
+                            " to specify a datetime.datetime" % type(curTime))
 
         td = (dt - datetime.datetime(1970, 1, 1))
         tCounter = (td.microseconds * 1.0 + (td.seconds + td.days * 24 * 3600) * 10 ** 6) / 10.0 ** 6
@@ -369,16 +362,11 @@ class TestTotpController(TestController):
             for o in otps:
                 counter = o[0]
                 otp = o[1]
-                if 20000000000 != counter:
-                    tt = t1.getTimeFromCounter(counter)
-                    log.debug("tokentime: %r" % tt)
 
                 (rotp, _count) = t1.getOtp(counter=counter)
                 if otp != rotp:
                     (rotp, _count) = t1.getOtp(counter=counter)
                     assert otp == rotp
-
-        return
 
     def test_increment_timeshift(self):
         '''
@@ -405,9 +393,7 @@ class TestTotpController(TestController):
         with freeze_time(datetime.datetime.now()) as frozen_datetime:
             for i in range(1, 5):
                 offset = i * step
-                (otp, counter) = t1.getOtp(offset=offset)
-                tt = t1.getTimeFromCounter(counter)
-                log.debug("tokentime: %r" % tt)
+                (otp, _counter) = t1.getOtp(offset=offset)
 
                 res = self.checkOtp(user, otp)
 
@@ -425,10 +411,6 @@ class TestTotpController(TestController):
 
                 # Jump to the future
                 frozen_datetime.tick(delta=datetime.timedelta(seconds=step/2))
-
-                log.debug('res')
-
-        return
 
     def test_decrement_timeshift(self):
         '''
@@ -455,9 +437,7 @@ class TestTotpController(TestController):
         with freeze_time(datetime.datetime.now()) as frozen_time:
             for i in range(1):
                 offset = i * step * -1
-                (otp, counter) = t1.getOtp(offset=offset)
-                tt = t1.getTimeFromCounter(counter)
-                log.debug("tokentime: %r" % tt)
+                (otp, _counter) = t1.getOtp(offset=offset)
 
                 res = self.checkOtp(user, otp)
 
@@ -475,10 +455,6 @@ class TestTotpController(TestController):
 
                 # Jump to the future
                 frozen_time.tick(delta=datetime.timedelta(seconds=step))
-
-                log.debug('res')
-
-        return
 
     def test_autoync_restart(self):
         '''
@@ -640,9 +616,7 @@ class TestTotpController(TestController):
 
             self.serials.append(tserial)
 
-            (otp, counter) = t1.getOtp()
-            tt = t1.getTimeFromCounter(counter)
-            log.debug("tokentime: %r" % tt)
+            (otp, _counter) = t1.getOtp()
 
             res = self.checkOtp(user, otp)
             assert '"value": true' in res.body
@@ -654,10 +628,11 @@ class TestTotpController(TestController):
             # Jump to the future
             frozen_time.tick(delta=datetime.timedelta(seconds=step))
 
-            ''' after a while, we could do a check again'''
-            (otp, counter) = t1.getOtp()
-            tt = t1.getTimeFromCounter(counter)
-            log.debug("tokentime: %r" % tt)
+            # -------------------------------------------------------------- --
+
+            # after a while, we could do a check again
+
+            (otp, _counter) = t1.getOtp()
 
             res = self.checkOtp(user, otp)
             assert '"value": true' in res.body
@@ -800,15 +775,13 @@ class TestTotpController(TestController):
                 res = self.checkOtp(user, otp)
                 assert '"value": true' in res.body
 
-                log.info("Successful counter: %s", counter)
-
                 # advance to a future time where the old otp is no longer valid
                 frozen_time.tick(delta=datetime.timedelta(seconds=timeWindow))
                 res = self.checkOtp(user, otp)
                 assert '"value": false' in res.body
 
                 counter_advance = (40 * timeWindow)
-                log.info("Advancing counter by %s", counter_advance)
+
                 # skip enough OTPs to leave the current window
                 counter = (counter * step) + counter_advance
 
@@ -818,13 +791,13 @@ class TestTotpController(TestController):
                 # get the second token that is offset by a few but within range
                 (second_otp, second_counter) = t1.getOtp(counter=counter+step*offset)
 
-                log.info("First OTP: %s (%s), Second OTP: %s (%s)",
+                info = ("First OTP: %s (%s), Second OTP: %s (%s)",
                         first_otp, first_counter,
                         second_otp, second_counter)
 
                 # start resync with a valid OTP
                 res = self.checkOtp(user, first_otp)
-                assert '"value": false' in res.body
+                assert '"value": false' in res.body, info
 
                 # provide the second otp that follows the previous one
                 res = self.checkOtp(user, second_otp)
@@ -871,10 +844,6 @@ class TestTotpController(TestController):
                 otp = o[1]
                 curTime = o[2]
 
-                (cotp, ccounter) = t1.getOtp(counter=tCounter)
-                tt = t1.getTimeFromCounter(ccounter)
-                log.debug("tokentime: %r" % tt)
-
                 parameters = {'serial' : tserial,
                               'curTime' : curTime,
                               'count' : "20",
@@ -882,7 +851,6 @@ class TestTotpController(TestController):
                 response = self.make_gettoken_request(
                                 'getmultiotp', params=parameters)
 
-                print(response)
                 resp = json.loads(response.body)
 
                 otpres = resp.get('result').get('value').get('otp')
