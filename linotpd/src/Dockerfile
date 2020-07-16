@@ -69,6 +69,10 @@ ARG DEPENDENCY_GPG_KEY_URL
 # To change the location of the database
 # encryption key file, set
 #   SECRET_FILE_LOCATION=/path/to/encKey
+#
+# To add ssl certificates that LDAP should
+# trust, set SSL_TRUSTED_CERT to the
+# contents of the certificate
 
 ENV TZ="Europe/Berlin" \
     LINOTP_USER=linotp \
@@ -88,7 +92,8 @@ ENV TZ="Europe/Berlin" \
     LOGSTASH_HOST= \
     LOGSTASH_PORT= \
     LOGSTASH_TAGS=() \
-    SECRET_FILE_LOCATION=
+    SECRET_FILE_LOCATION= \
+    SSL_TRUSTED_CERT=
 
 # Internal environment variables used by the docker images
 ENV LINOTP_CFG_TEMPLATE=/etc/linotp/linotp-docker.cfg.tmpl \
@@ -175,6 +180,9 @@ ENTRYPOINT [ "/usr/local/bin/dockerfy", \
     "--run", "/bin/sh", "-c", \
         "if [ -n \"{{ .Env.LINOTP_DB_HOST }}\" ]; then /usr/local/bin/dockerfy --wait tcp://{{ .Env.LINOTP_DB_HOST }}:{{ .Env.LINOTP_DB_PORT }} --timeout {{ .Env.LINOTP_DB_WAITTIME }}; fi", \
     "--", \
+    "--run", "python3", "-c", "import os; import re; from pathlib import Path; crt = os.getenv('SSL_TRUSTED_CERT'); crt and Path('/usr/local/share/ca-certificates/docker.crt').write_text(re.sub(' *(-----(BEGIN|END) CERTIFICATE-----) *', r'\\n\\1\\n', crt))", \
+    "--", \
+    "--run", "update-ca-certificates", "--", \
     "--run", "/var/lib/dpkg/info/linotp.postinst", "configure", "--", \
     "--run", "python3", "-c", "import os; from urllib.parse import urlsplit; db=urlsplit(os.getenv('LINOTP_DATABASE_URI')); db.scheme.startswith('mysql') and os.system(f\"mariadb --user='{db.username}' --password='{db.password}' --host='{db.hostname}' --port='{db.port or 3306}' --database='{db.path.strip('/')}' --execute='ALTER DATABASE CHARACTER SET=utf8 COLLATE=utf8_bin;'\")", \
     "--", \
