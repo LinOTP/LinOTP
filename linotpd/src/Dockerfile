@@ -128,8 +128,7 @@ RUN test -z "$DEPENDENCY_GPG_KEY_URL" \
 # - linotp dependencies, for caching purposes. This does not
 #   need to be an exhaustive list because apt will install any
 #   missing packages when the linotp deb is installed further on.
-RUN apt-get update \
-    && apt-get install \
+RUN apt-get install \
         make mariadb-client locales \
         adduser debconf openssl pwgen python3-configobj \
         python3-beaker python3-passlib python3-cryptography python3-bcrypt python3-pygments \
