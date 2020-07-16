@@ -3,12 +3,9 @@ services:
   linotp:
     image: linotp:latest
     environment:
-      LINOTP_DB_TYPE: "postgres"
+      LINOTP_DATABASE_URI: "postgres://linotpuser:linotppass@linotp-db/linotp_db"
       LINOTP_DB_HOST: "linotp-db"
       LINOTP_DB_PORT: "5432"
-      LINOTP_DB_USER: "linotpuser"
-      LINOTP_DB_PASSWORD: "linotppass"
-      LINOTP_DB_NAME: "linotp_db"
       HEALTHCHECK_PORT: "80"
       SSL_TRUSTED_CERT: "
       Issuer: C = DE, O = LSE Leading Security Experts GmbH, CN = LSE CA 2015
