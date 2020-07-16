@@ -115,8 +115,7 @@ def log_request_timedelta(logger):
     start = request.environ.get('REQUEST_START_TIMESTAMP')
 
     if start is None:
-        raise Exception('Request start was not registered. Profiling '
-                        'not possible')
+        return
 
     stop = datetime.now()
     delta_sec = (stop - start).total_seconds()
