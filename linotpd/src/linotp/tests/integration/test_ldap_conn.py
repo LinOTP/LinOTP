@@ -25,6 +25,8 @@
 #
 """LinOTP integration test for LDAP connections."""
 
+import pytest
+
 from click.testing import CliRunner
 
 from linotp.useridresolver.LDAPIdResolver import ldap_test
@@ -36,6 +38,7 @@ from linotp.useridresolver.LDAPIdResolver import ldap_test
 # the web frontend via Selenium. In particular, we test what happens
 # if certificates must be validated but can't.
 
+@pytest.mark.xfail(reason="wants a local linotp instance")
 def test_ldap_conn():
     runner = CliRunner(env={'FLASK_APP': 'linotp.app'}, mix_stderr=False)
     people = 'ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de'
