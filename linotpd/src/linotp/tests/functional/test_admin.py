@@ -40,7 +40,6 @@ class TestAdminController(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        self.set_config_selftest()
         self.create_common_resolvers()
         self.create_common_realms()
 
