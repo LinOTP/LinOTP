@@ -322,7 +322,7 @@ class TestReportingController(TestController):
                     'realm': 'mydefrealm',
                     'scope': 'selfservice',
                     'action': 'enrollHMAC',
-                    'selftest_admin': 'superadmin'})
+                    })
 
         resp = json.loads(response.body)
         values = resp.get('result')

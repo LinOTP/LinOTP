@@ -362,7 +362,7 @@ class TestTotpController(TestController):
 
     def test_algo(self):
         '''
-            totp test: verify that the local totp algorith is correct - selftest against testvector spec
+            totp test: verify that the local totp algorith is correct - test against testvector spec
         '''
         for tokData in testvector:
             key = tokData.get('key')
@@ -867,7 +867,7 @@ class TestTotpController(TestController):
                 parameters = {'serial' : tserial,
                               'curTime' : curTime,
                               'count' : "20",
-                              'selftest_admin' : 'admin' }
+                              }
                 response = self.make_gettoken_request(
                                 'getmultiotp', params=parameters)
 

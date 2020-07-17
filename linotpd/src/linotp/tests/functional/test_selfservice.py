@@ -55,7 +55,6 @@ class TestSelfserviceController(TestController):
                                         'scope' : 'selfservice',
                                         'realm' : 'myDefRealm',
                                         'action' : policy,
-                                        'selftest_admin' : 'superadmin'
                                         })
         assert '"status": true' in response
         assert '"setPolicy self01": {' in response
@@ -64,8 +63,9 @@ class TestSelfserviceController(TestController):
 
     def deleteToken(self, serial):
         response = self.make_admin_request('remove',
-                                params={'serial': serial,
-                                        'selftest_admin' : 'superadmin'})
+                                params={
+                                    'serial': serial,
+                                    })
 
         log.debug(response)
 

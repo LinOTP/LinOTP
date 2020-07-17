@@ -97,7 +97,6 @@ class TestProviderController(TestController):
                   'user': 'user1',
                   'pin': '1234',
                   'phone': '016012345678',
-                  'selftest_admin': 'superadmin'
                   }
 
         if token_params:
