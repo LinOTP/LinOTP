@@ -32,7 +32,6 @@ from unittest import TestCase
 from mock import MagicMock, Mock, patch
 
 from linotp.provider.smsprovider.DeviceSMSProvider import DeviceSMSProvider
-from linotp.lib import selftest
 
 # BaseTestDeviceSMS contains tests to run which
 # are independent of whether gnokii is installed.
