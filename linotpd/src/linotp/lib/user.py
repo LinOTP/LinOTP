@@ -1663,9 +1663,8 @@ def getUserPhone(user, phone_type='phone'):
         return ""
 
 
-def get_authenticated_user(username, realm, password=None,
-                           realm_box=False, authenticate=True,
-                           options=None):
+def get_authenticated_user(
+        username, realm, password=None, realm_box=False, options=None):
     '''
     check the username and password against a userstore.
 
@@ -1676,7 +1675,6 @@ def get_authenticated_user(username, realm, password=None,
     :param realm: the realm, where the user belongs to
     :param password: the to be checked userstore password
     :param realm_box: take the information, if realmbox is displayed
-    :parm authenticate: for the selftest, we skip the authentication
 
     :return: None or authenticated user object
     '''
@@ -1743,24 +1741,22 @@ def get_authenticated_user(username, realm, password=None,
                     raise Exception('user login %r : missmatch for userid: '
                                     '%r:%r', user.login, found_uid, uid)
 
-            if authenticate:
+            auth = False
+            y = getResolverObject(resolver_spec)
+            try:
+                auth = y.checkPass(uid, password)
+            except NotImplementedError as exx:
+                log.info("user %r failed to authenticate.%r", login, exx)
+                continue
 
-                auth = False
-                y = getResolverObject(resolver_spec)
-                try:
-                    auth = y.checkPass(uid, password)
-                except NotImplementedError as exx:
-                    log.info("user %r failed to authenticate.%r", login, exx)
-                    continue
-
-                if auth:
-                    log.debug("Successfully authenticated user %r.", username)
-                else:
-                    log.info("user %r failed to authenticate.", username)
-                    if found_uid:
-                        raise Exception('previous authenticated user mismatch'
-                                        ' - password missmatch!')
-                    continue
+            if auth:
+                log.debug("Successfully authenticated user %r.", username)
+            else:
+                log.info("user %r failed to authenticate.", username)
+                if found_uid:
+                    raise Exception('previous authenticated user mismatch'
+                                    ' - password missmatch!')
+                continue
 
             # add the fully qualified resolver to the resolver list
             user.resolvers_list.append(resolver_spec)
