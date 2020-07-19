@@ -131,19 +131,9 @@ class LinOtpConfig(dict):
                 writeback = True
 
             conf.update(dbconf)
-            # check, if there is a selfTest in the DB and delete it
-            if 'linotp.selfTest' in dbconf:
-                _removeConfigDB('linotp.selfTest')
-                _storeConfigDB('linotp.Config', datetime.now())
-
-            # the only thing we take from the fileconf is the selftest
-            if 'linotp.selfTest' in fileconf:
-                conf['linotp.selfTest'] = 'True'
-
             if writeback is True:
                 for con in conf:
-                    if con != 'linotp.selfTest':
-                        _storeConfigDB(con, conf.get(con))
+                    _storeConfigDB(con, conf.get(con))
                 _storeConfigDB('linotp.Config', datetime.now())
 
             self.glo.setConfig(conf, replace=True)
