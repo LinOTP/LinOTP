@@ -957,7 +957,6 @@ class SmsTokenClass(HmacTokenClass):
         # # after submit set validity time
         self.setValidUntil()
 
-        # return OTP for selftest purposes
         return success, message
 
     def loadLinOtpSMSValidTime(self):
