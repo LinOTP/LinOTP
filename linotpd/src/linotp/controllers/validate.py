@@ -53,7 +53,6 @@ from linotp.lib.policy import set_realm
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.reply import sendQRImageResult
 from linotp.lib.reply import sendResult, sendError
-from linotp.lib.selftest import isSelfTest
 from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.token import get_tokenserial_of_transaction
 from linotp.tokens.base import TokenClass
@@ -170,12 +169,6 @@ class ValidateController(BaseController):
         user.realm = set_realm(user.login, realm, exception=True)
         check_user_authorization(user.login, user.realm, exception=True)
 
-        if isSelfTest() is True:
-            initTime = param.get("init")
-            if initTime is not None:
-                if options is None:
-                    options = {}
-                options['initTime'] = initTime
         vh = ValidationHandler()
         (ok, opt) = vh.checkUserPass(user, passw, options=options)
 
@@ -715,10 +708,6 @@ class ValidateController(BaseController):
             if k in options:
                 del options[k]
 
-        if 'init' in param:
-            if isSelfTest() is True:
-                options['initTime'] = param.get('init')
-
         try:
             passw = param.get("pass")
             serial = param.get('serial')
@@ -749,13 +738,6 @@ class ValidateController(BaseController):
                         serial = tok.getSerial()
 
             c.audit['serial'] = serial
-
-            if isSelfTest() is True:
-                initTime = param.get("init")
-                if initTime is not None:
-                    if options is None:
-                        options = {}
-                    options['initTime'] = initTime
 
             options['scope'] = {"check_s": True}
             vh = ValidationHandler()

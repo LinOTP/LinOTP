@@ -1933,7 +1933,7 @@ def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
         count             - number of the <count> next otp values (to be used with event or timebased tokens)
         epoch_start       - unix time start date (used with timebased tokens)
         epoch_end         - unix time end date (used with timebased tokens)
-        curTime          - used for selftest
+        curTime           - used for token test
 
     return
         dictionary of otp values
@@ -1961,7 +1961,8 @@ def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
             count=count,
             epoch_start=epoch_start,
             epoch_end=epoch_end,
-            curTime=curTime)
+            curTime=curTime
+            )
 
         if res is True:
             ret = otp_dict

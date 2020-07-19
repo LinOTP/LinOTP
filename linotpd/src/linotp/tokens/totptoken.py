@@ -406,10 +406,6 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         T0 = time.time() + self.shift
 
-        # for legacy selftest
-        if options and 'initTime' in options:
-            T0 = int(options['initTime'])
-
         counter = time2counter(T0, timeStepping=self.timeStepping)
 
         # ------------------------------------------------------------------ --
@@ -776,6 +772,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         tCounter = self.time2float(datetime.datetime.utcnow())
         if curTime:
             tCounter = self.time2float(curTime)
+
 
         counter = int((tCounter - shift) // timeStepping)
 
