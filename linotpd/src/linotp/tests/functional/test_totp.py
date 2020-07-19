@@ -847,6 +847,8 @@ class TestTotpController(TestController):
         }
         response = self.make_system_request('setPolicy', params=parameters)
 
+        time_format = '%Y-%m-%d %H:%M:%S'
+
         for tokData in testvector:
             tkey = tokData.get('key')
             salgo = tokData.get('shash')
@@ -864,24 +866,27 @@ class TestTotpController(TestController):
                 otp = o[1]
                 curTime = o[2]
 
-                parameters = {'serial' : tserial,
-                              'curTime' : curTime,
-                              'count' : "20",
-                              }
-                response = self.make_gettoken_request(
-                                'getmultiotp', params=parameters)
+                current_time = datetime.datetime.strptime(curTime, time_format)
+                with freeze_time(current_time):
 
-                resp = json.loads(response.body)
+                    parameters = {
+                        'serial' : tserial,
+                        'count' : "20",
+                    }
+                    response = self.make_gettoken_request(
+                                    'getmultiotp', params=parameters)
 
-                otpres = resp.get('result').get('value').get('otp')
-                otp1 = otpres.get(str(counter))
-                assert otp1.get('otpval') == otp, response
+                    resp = json.loads(response.body)
 
-                # verify: the first otp matches the unix start time + timeslice
+                    otpres = resp.get('result').get('value').get('otp')
+                    otp1 = otpres.get(str(counter))
+                    assert otp1.get('otpval') == otp, response
 
-                if '1' in otpres:
-                    otp_one = otpres.get('1')
-                    uTime = otp_one.get('time')
-                    assert uTime == '1970-01-01 00:00:30'
+                    # verify: the first otp matches the unix start time + timeslice
+
+                    if '1' in otpres:
+                        otp_one = otpres.get('1')
+                        uTime = otp_one.get('time')
+                        assert uTime == '1970-01-01 00:00:30'
 
             self.removeTokens()
