@@ -48,8 +48,6 @@ from linotp.lib.realm import createDBRealm
 from linotp.lib.resolver import parse_resolver_spec
 from linotp.lib.resolver import getResolverObject
 
-from linotp.lib.selftest import isSelfTest
-
 from linotp.lib.resolver import getResolverClassName
 from linotp.lib.resolver import getResolverList
 
@@ -656,21 +654,6 @@ def getUserFromRequest(request, config=None):
 
             log.debug("[getUserFromRequest] SSLClientCert Auth: found "
                       "this SSL_CLIENT_S_DN_CN: %r", d_auth)
-
-        # ------------------------------------------------------------------ --
-
-        # In case of selftest
-
-        if isSelfTest(config=config):
-
-            log.debug("[getUserFromRequest] Doing selftest!")
-
-            login = get_request_param(request, "selftest_admin")
-
-            if login:
-                d_auth['login'] = login
-                log.debug("[getUserFromRequest] Found selfservice user: %r in "
-                          "the request.", d_auth)
 
         # ------------------------------------------------------------------ --
 
