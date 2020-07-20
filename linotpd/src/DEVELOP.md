@@ -196,7 +196,8 @@ the
 $ python3 setup.py develop
 ```
 command. (This installs the `linotp` command in the virtualenv's `bin`
-directory.) After this, a simple
+directory.) Giving the `make develop` command in the top-level
+directory should also do the trick. After this, a simple
 ```terminal
 $ linotp run
 ```
@@ -212,8 +213,10 @@ will launch the Flask development server. (You can still use
 You can run unit and functional tests by entering the respective
 commands below from the top-level directory of the LinOTP distribution:
 ```terminal
-$ make unittests
-$ make functionaltests
+$ make test               # will run all tests
+$ make unittests          # will run only unit tests
+$ make functionaltests    # will run only functional tests
+$ make integrationtests   # will run only integration tests
 ```
 You can also run the tests directly in their directories:
 ```terminal
@@ -266,3 +269,71 @@ the `--follow-imports=silent` flag.
 
 The `--show-column-numbers` flag can also be helpful when looking for
 the exact location of a problem.
+
+
+## Debian packages
+
+You can generate a LinOTP `.deb` package that is suitable for
+installation on a Debian GNU/Linux system using the
+```terminal
+$ make builddeb
+```
+command from the top-level directory. This uses Debian packaging tools
+and therefore works best if you do it on a machine that is running
+Debian GNU/Linux. See below for building Debian packages inside a Docker
+container.
+
+The
+```terminal
+$ make deb-install
+```
+command will build a Debian package and place it in the `build`
+subdirectory of the top-level directory. You can specify a different
+directory by passing it to `make` as the value of the `DESTDIR`
+variable.
+
+
+## Using Docker
+
+You can use the `Makefile` provided by the LinOTP distribution to
+build various Docker container images that help with LinOTP
+development:
+
+- A `linotp-builder` image includes everything that is necessary to
+  build LinOTP packages. This will use the `buster` version of Debian
+  GNU/Linux (the current stable version at the time of this writing),
+  no matter what flavour of Linux your machine is running.
+
+- A `linotp` image contains a ready-to-run LinOTP inside an Apache web
+  server.
+
+- A `linotp-unit` image contains a LinOTP setup that will run LinOTP
+  unit tests. It is based on the `linotp` image but contains
+  additional dependencies for the testing environment.
+
+- A `selenium-test` image contains a LinOTP setup that will run LinOTP
+  integration tests using Selenium in a different image.
+
+All of these can be conveniently built and run using targets in the
+`Makefile` in the top-level directory:
+
+- `make docker-linotp` will build LinOTP in a `linotp-builder`
+  container, extract the `.deb` file and place it in the `build`
+  subdirectory of the top-level directory.
+
+- `make docker-unit` and `make docker-functional` build LinOTP and run
+  unit tests and functional tests in their respective containers. Some
+  functional tests take a very long time and are therefore only run
+  once per night in our CI/CD environment; these can be enabled by
+  passing the `NIGHTLY=yes` variable to `make`.
+
+- `make docker-selenium` will build LinOTP and run Selenium-based
+  integration tests in a containerised environment.
+
+- `make docker-build-all` will build all container images.
+
+- `make docker-pylint` will run static source code checks on a LinOTP
+  test image.
+
+Refer to the `Makefile` for details of how these targets interact, and
+for additional configuration parameters.

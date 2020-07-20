@@ -1,12 +1,29 @@
 # LinOTP
 
+LinOTP - the Open Source solution for multi-factor authentication
+
+Copyright © 2010-2019 KeyIdentity GmbH  
+Coypright © 2019- arxes-tolina GmbH
+
 ## About LinOTP
 
-LinOTP is an open solution for strong two-factor authentication with One-Time Passwords.
-LinOTP is also open as far as its modular architecture is concerned.
-LinOTP aims to not bind you to any  decision of the authentication protocol or
-it does not dictate you where your user information should be stored.
-This is achieved by its new, totally modular architecture.
+LinOTP is truly open in two ways. Its modules and components are
+licensed under the AGPLv3 and give you a complete working open-source
+solution for strong multi-factor authentication.
+
+But LinOTP also uses an open and modular architecture. LinOTP aims not
+to lock you into any particular authentication method or protocol or
+user information storage.
+
+LinOTP accommodates many different OTP algorithms using a modular
+approach. This includes the OATH standards such as HMAC (RFC 4226) and
+time-based HMAC. But LinOTP's design makes it easy to create your own
+tokens with different algorithms, including challenge-response tokens,
+tokens based on QR codes, and tokens based on push-type messages.
+
+Other components like the LinOTP authentication modules or the LinOTP
+administration clients make it easy to integrate strong multi-factor
+authentication into your environment.
 
 This package contains the LinOTP Server Core.
 
