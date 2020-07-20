@@ -25,6 +25,7 @@
 #
 """LinOTP Selenium Test that creates UserIdResolvers in the WebUI"""
 
+import pytest
 from linotp_selenium_helper import TestCase
 
 import integration_data as data
@@ -111,6 +112,7 @@ class TestCreateUserIdResolvers(TestCase):
         testdata = (data.sepasswd_resolver,)
         return self.create_resolvers_and_realm(testdata)
 
+    @pytest.mark.xfail(reason="Unresolved problem in CI environment")
     def test_11_multiple_resolvers(self):
         testdata = (data.musicians_ldap_resolver, data.physics_ldap_resolver,
                     data.sql_resolver, data.sepasswd_resolver)
