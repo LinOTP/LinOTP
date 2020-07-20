@@ -259,13 +259,13 @@ FUNCTIONAL_TESTS_DIR=$(TESTS_DIR)/functional
 
 ## Toplevel targets
 # Toplevel target to build all containers
-docker-build-all: docker-build-debs docker-build-linotp docker-build-linotp-test-image docker-build-selenium
+docker-build-all: docker-build-debs docker-build-linotp docker-build-linotp-test-image
 
 # Toplevel target to build linotp container
 docker-linotp: docker-build-debs  docker-build-linotp
 
 # Build and run Selenium /integration tests
-docker-selenium: docker-build-linotp docker-build-selenium docker-run-selenium
+docker-selenium: docker-build-all docker-run-selenium
 
 # Build and run Unit tests
 docker-unit: docker-build-linotp docker-build-linotp-test-image docker-run-linotp-unit
@@ -286,10 +286,12 @@ DOCKER_TAG_ARGS=$(foreach tag,$(DOCKER_TAGS),-t $(DOCKER_IMAGE):$(tag))
 # To use this container as a playground to test build linotp:
 #   docker run -it linotp-builder
 .PHONY: docker-build-linotp-builder
+docker-build-linotp-builder: DOCKER_IMAGE=linotp-builder
 docker-build-linotp-builder:
 	$(DOCKER_BUILD) \
 		-f Dockerfile.builder \
-		-t linotp-builder \
+		$(DOCKER_TAG_ARGS) \
+		-t $(DOCKER_IMAGE) \
 		.
 
 # A unique name to reference containers for this build
@@ -306,15 +308,18 @@ docker-build-debs: docker-build-linotp-builder
 # Build the debian packages in a container, then extract them from the image
 $(BUILDDIR)/apt/Packages:
 	$(DOCKER_RUN) \
-		--workdir=/pkg/linotp \
-		--name=$(DOCKER_CONTAINER_NAME)-apt \
-		--volume=$(PWD):/pkg/linotpsrc:ro \
+		--detach \
+		--rm \
+		--name $(DOCKER_CONTAINER_NAME)-apt \
 		linotp-builder \
-		sh -c "cp -ra /pkg/linotpsrc/* /pkg/linotp && \
-			make deb-install DESTDIR=/pkg/apt DEBUILD_OPTS=\"$(DEBUILD_OPTS)\" "
+		sleep 3600
+	docker cp . $(DOCKER_CONTAINER_NAME)-apt:/build
+	docker exec \
+		$(DOCKER_CONTAINER_NAME)-apt \
+			make deb-install DESTDIR=/build/apt DEBUILD_OPTS=\"$(DEBUILD_OPTS)\"
 	docker cp \
-		$(DOCKER_CONTAINER_NAME)-apt:/pkg/apt $(DESTDIR)
-	docker rm $(DOCKER_CONTAINER_NAME)-apt
+		$(DOCKER_CONTAINER_NAME)-apt:/build/apt $(DESTDIR)
+	docker rm -f $(DOCKER_CONTAINER_NAME)-apt
 
 # Build just the linotp image. The builder-linotp is required but will not be
 # built by this target - use 'make docker-linotp' to build the dependencies first
@@ -341,32 +346,26 @@ docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 # It needs an existing linotp image available
 # which can be built by make docker-build-linotp
 .PHONY: docker-build-testenv
+docker-build-linotp-test-image: DOCKER_IMAGE=linotp-testenv
 docker-build-linotp-test-image:
 	cd $(TESTS_DIR) \
-		&& $(DOCKER_BUILD) \
-			-t linotp_test_env .
+	&& $(DOCKER_BUILD) \
+		$(DOCKER_TAG_ARGS) \
+		-t $(DOCKER_IMAGE) .
 
-SELENIUM_DB_IMAGE=mysql:latest
-.PHONY: docker-build-selenium
-docker-build-selenium: docker-build-linotp
-	cd $(SELENIUM_TESTS_DIR) \
-		&& $(DOCKER_BUILD) \
-			-t selenium_tester .
 
-# Pass TEST_CASE=test_manage.py for picking a specific test case (!No list! Only one test case)
-# Pass TEST_DEBUG=<some val> e.g. TEST_DEBUG=1 - So your pdb.set_trace() hooks will be recognize
-#                                                and execution stops in case of errors/exceptions.
-#
-#                 Remark: Omit TEST_DEBUG completely to disable stop on fails because of error or
-#                         pdb.set_trace() statements.
+# Pass PYTESTARGS=test_manage.py for picking a specific test file
+#      PYTESTARGS="-k testname" for picking a specific test
 #
 # e.g.
-#      make docker-run-selenium TEST_CASE=test_manage.py
-#      make docker-run-selenium TEST_CASE=test_manage.py TEST_DEBUG=1
+#      make docker-run-selenium PYTESTARGS=test_manage.py
 .PHONY: docker-run-selenium
-docker-run-selenium: docker-build-selenium
+docker-run-selenium:
 	cd $(SELENIUM_TESTS_DIR) \
-		&& docker-compose run --rm -e TEST_CASE=${TEST_CASE} -e TEST_DEBUG=$(TEST_DEBUG) selenium_tester
+		&& docker-compose run \
+			--rm \
+			-e PYTESTARGS="${PYTESTARGS}" \
+			selenium_tester
 	cd $(SELENIUM_TESTS_DIR) \
 		&& docker-compose down
 

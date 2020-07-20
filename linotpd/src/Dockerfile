@@ -69,6 +69,10 @@ ARG DEPENDENCY_GPG_KEY_URL
 # To change the location of the database
 # encryption key file, set
 #   SECRET_FILE_LOCATION=/path/to/encKey
+#
+# To add ssl certificates that LDAP should
+# trust, set SSL_TRUSTED_CERT to the
+# contents of the certificate
 
 ENV TZ="Europe/Berlin" \
     LINOTP_USER=linotp \
@@ -88,7 +92,8 @@ ENV TZ="Europe/Berlin" \
     LOGSTASH_HOST= \
     LOGSTASH_PORT= \
     LOGSTASH_TAGS=() \
-    SECRET_FILE_LOCATION=
+    SECRET_FILE_LOCATION= \
+    SSL_TRUSTED_CERT=
 
 # Internal environment variables used by the docker images
 ENV LINOTP_CFG_TEMPLATE=/etc/linotp/linotp-docker.cfg.tmpl \
@@ -105,9 +110,12 @@ RUN echo 'APT::Install-Recommends "0"; \n\
     && sed -i "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" \
         /etc/apt/sources.list
 
+# Use eatmydata to speed up apt-get and pip operations
+RUN apt-get update && apt-get install eatmydata \
+    && for F in apt-get pip3; do ln -s /usr/bin/eatmydata /usr/local/bin/$F; done \
+    && apt-get install curl gnupg
 # Add LinOTP packaging key to keyring in order to install
 # dependencies
-RUN apt-get update && apt-get install curl gnupg
 RUN test -z "$DEPENDENCY_SOURCE" \
         || echo "deb $DEPENDENCY_SOURCE $DEBIAN_RELEASE_NAME $DEPENDENCY_COMPONENT" > /etc/apt/sources.list.d/kideps.list
 RUN test -z "$DEPENDENCY_GPG_KEYID" \
@@ -115,12 +123,13 @@ RUN test -z "$DEPENDENCY_GPG_KEYID" \
 RUN test -z "$DEPENDENCY_GPG_KEY_URL" \
         || curl $DEPENDENCY_GPG_KEY_URL | apt-key adv --import
 
-# Install some dependencies which will be cached. This does not
-# need to be an exhaustive list because apt will install any
-# missing packages.
-RUN apt-get update \
-    && apt-get install \
-        make \
+# Install package dependencies
+# - Those needed for building / administration of a Docker based linotp (first line)
+# - linotp dependencies, for caching purposes. This does not
+#   need to be an exhaustive list because apt will install any
+#   missing packages when the linotp deb is installed further on.
+RUN apt-get install \
+        make mariadb-client locales \
         adduser debconf openssl pwgen python3-configobj \
         python3-beaker python3-passlib python3-cryptography python3-bcrypt python3-pygments \
         python3-decorator python3-docutils python3-formencode python3-httplib2 \
@@ -135,7 +144,7 @@ RUN apt-get update \
         lsb-release \
         dh-python \
         python3-flask \
-        python3-psycopg2
+        python3-psycopg2 python3-pymysql
 
 # flask-mako is not yet packaged, so install using pip
 RUN apt-get install python3-pip python3-dev python3-wheel swig gcc libssl-dev \
@@ -173,7 +182,12 @@ ENTRYPOINT [ "/usr/local/bin/dockerfy", \
     "--run", "/bin/sh", "-c", \
         "if [ -n \"{{ .Env.LINOTP_DB_HOST }}\" ]; then /usr/local/bin/dockerfy --wait tcp://{{ .Env.LINOTP_DB_HOST }}:{{ .Env.LINOTP_DB_PORT }} --timeout {{ .Env.LINOTP_DB_WAITTIME }}; fi", \
     "--", \
+    "--run", "python3", "-c", "import os; import re; from pathlib import Path; crt = os.getenv('SSL_TRUSTED_CERT'); crt and Path('/usr/local/share/ca-certificates/docker.crt').write_text(re.sub(' *(-----(BEGIN|END) CERTIFICATE-----) *', r'\\n\\1\\n', crt))", \
+    "--", \
+    "--run", "update-ca-certificates", "--", \
     "--run", "/var/lib/dpkg/info/linotp.postinst", "configure", "--", \
+    "--run", "python3", "-c", "import os; from urllib.parse import urlsplit; db=urlsplit(os.getenv('LINOTP_DATABASE_URI')); db.scheme.startswith('mysql') and os.system(f\"mariadb --user='{db.username}' --password='{db.password}' --host='{db.hostname}' --port='{db.port or 3306}' --database='{db.path.strip('/')}' --execute='ALTER DATABASE CHARACTER SET=utf8 COLLATE=utf8_bin;'\")", \
+    "--", \
     "--run", "/bin/sh", "-c", \
     "openssl req -new -x509 -newkey rsa:2048 -subj /CN=`hostname`.`dnsdomainname` -days 768 -out /etc/ssl/certs/linotpserver.pem  -keyout /etc/ssl/private/linotpserver.key -nodes", \
     "--", \

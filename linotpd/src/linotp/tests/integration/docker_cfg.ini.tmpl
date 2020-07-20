@@ -41,6 +41,20 @@ remote_url = {{ printf "%s://%s:%s/wd/hub" .Env.SELENIUM_PROTOCOL .Env.SELENIUM_
 # language = en_us
 # language = de_de
 
+[timeouts]
+## Settings to control how long to wait. The types of operation
+## are grouped depending on the complexity of the operation
+
+# Operating controls in the UI
+default = 10
+
+# Waiting for elements to refresh, dialogs to open etc.
+ui_updates = 20
+
+# Updates that require linotp to process a request, including
+# backend network requests such as requesting an LDAP search
+backend_updates = 40
+
 [sms_token]
 disable = True
 

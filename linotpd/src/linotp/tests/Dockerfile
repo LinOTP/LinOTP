@@ -51,6 +51,7 @@ RUN pip3 install --upgrade \
     mockldap \
     "pytest>=5.0" \
     pytest-freezegun \
+    pytest-pudb \
     pytest-testconfig \
     pytest-test-groups \
     pytest-selenium \

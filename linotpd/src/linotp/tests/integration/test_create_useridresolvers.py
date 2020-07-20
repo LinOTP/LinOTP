@@ -25,6 +25,7 @@
 #
 """LinOTP Selenium Test that creates UserIdResolvers in the WebUI"""
 
+import pytest
 from linotp_selenium_helper import TestCase
 
 import integration_data as data
@@ -111,8 +112,29 @@ class TestCreateUserIdResolvers(TestCase):
         testdata = (data.sepasswd_resolver,)
         return self.create_resolvers_and_realm(testdata)
 
+    @pytest.mark.xfail(reason="Unresolved problem in CI environment")
     def test_11_multiple_resolvers(self):
         testdata = (data.musicians_ldap_resolver, data.physics_ldap_resolver,
                     data.sql_resolver, data.sepasswd_resolver)
 
         return self.create_resolvers_and_realm(testdata)
+
+    def test_12_api_roundtrip_with_utf8(self):
+        """
+        Check that we can define a resolver with UTF8 using the API and read the results back
+        """
+        m = self.manage_ui.useridresolver_manager
+        self.clear_realms()
+        m.clear_resolvers_via_api()
+
+        ldap_data = data.musicians_ldap_resolver
+
+        # Make sure that we really have a UTF-8 string
+        assert 'cn="عبد الحليم حافظ"' in ldap_data['binddn'], "Test BindDN does not contain UTF-8"
+
+        m.create_resolver_via_api(ldap_data)
+        resolver_config = m.get_resolver_params_via_api(ldap_data['name'])
+
+        assert resolver_config['type'] == ldap_data['type']
+        assert resolver_config['resolver'] == ldap_data['name']
+        assert resolver_config['data']['BINDDN'] == ldap_data['binddn']

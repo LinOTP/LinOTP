@@ -119,7 +119,7 @@ class EditRealmDialog(ManageDialog):
         Wait for save button to be clickable, then click save
         """
         button_id = self.edit_save_button_id
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(self.driver, self.testcase.backend_wait_time).until(
             EC.element_to_be_clickable(
                 (By.ID, button_id))
         )
@@ -283,8 +283,8 @@ class RealmManager(ManageDialog):
         if check_for_no_resolver_alert:
             self.check_alert("Create UserIdResolver first", click_accept=True)
 
-        # Allow realms list to populate
-        self.manage.wait_for_waiting_finished()
+        # Let dialog open and settle down
+        self.edit_realm_dialog.reparse()
 
         return self.edit_realm_dialog
 

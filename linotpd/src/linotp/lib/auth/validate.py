@@ -28,6 +28,7 @@
 import json
 from hashlib import sha256
 from datetime import datetime
+import binascii
 
 from linotp.flap import config as env
 
@@ -908,7 +909,8 @@ class ValidationHandler(object):
         # strip the yubico OTP and the PIN
         modhex_serial = passw[:-32][-16:]
         try:
-            serialnum = "UBAM" + modhex_decode(modhex_serial)
+            hex_serial = modhex_decode(modhex_serial)
+            serialnum = "UBAM" + binascii.unhexlify(hex_serial).decode('utf-8')
         except TypeError as exx:
             log.error("Failed to convert serialnumber: %r" % exx)
             return res, opt

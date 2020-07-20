@@ -31,26 +31,18 @@ FROM $BASE_IMAGE
 
 ARG DEBIAN_MIRROR=deb.debian.org
 
-RUN sed "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" \
-	< /etc/apt/sources.list > /etc/apt/sources.list.new && mv -f /etc/apt/sources.list.new /etc/apt/sources.list
-
-RUN apt-get update && apt-get \
-		--no-install-recommends --yes install \
-		build-essential devscripts equivs libfile-fcntllock-perl rename
+RUN sed -i "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" /etc/apt/sources.list \
+    && apt-get update \
+    && apt-get --no-install-recommends --yes install \
+        build-essential devscripts equivs libfile-fcntllock-perl rename
 
 # Use the control files from the packages to install a list of packages needed for builds.
 # We copy in just the control files at this point in order to make maximum use of
 # docker's caching
-COPY linotpd/src/debian/control packaging/deps/linotp/debian/
+COPY linotpd/src/debian/control /deps/linotp/debian/
 
-RUN for D in linotp ;\
-	  do \
-		echo $D ;\
-		cd /packaging/deps/$D ;\
-		mk-build-deps --install --remove --tool "apt-get --yes --no-install-recommends" ;\
-	done
+RUN cd /deps/linotp \
+    && mk-build-deps --install --remove --tool "apt-get --yes --no-install-recommends" \
+    && mkdir /build
 
-# The sources will be mounted at runtime into the volume /pkg/linotp
-VOLUME /pkg/linotpsrc
-
-WORKDIR /pkg/linotp
+WORKDIR /build

@@ -133,7 +133,7 @@ class ManageTab(ManageElement):
         flexigrid_reloading_css = self.CSS_FLEXIGRID_RELOAD + ".loading"
         self.testcase.disableImplicitWait()
 
-        WebDriverWait(self.driver, 10, ignored_exceptions=NoSuchElementException).until_not(
+        WebDriverWait(self.driver, self.testcase.backend_wait_time, ignored_exceptions=NoSuchElementException).until_not(
             EC.presence_of_element_located(
                 (By.CSS_SELECTOR, flexigrid_reloading_css))
         )
