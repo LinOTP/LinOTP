@@ -196,6 +196,7 @@ setup(
         (
             'share/man/man1',
             [
+                "man/man1/linotp-config.1",
                 "tools/linotp-convert-token.1",
                 "tools/linotp-create-pwidresolver-user.1",
                 "tools/linotp-create-sqlidresolver-user.1",
@@ -296,6 +297,7 @@ setup(
             'linotp = linotp.cli:main',  # LinOTP command line interface
         ],
         'flask.commands': [
+            'config = linotp.settings:config_cmds',
             'ldap-test = linotp.useridresolver.LDAPIdResolver:ldap_test',
         ],
     },

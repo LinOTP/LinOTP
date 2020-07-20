@@ -2,7 +2,12 @@
 from dataclasses import dataclass
 import json
 import os
+import textwrap
 from typing import Any, Type, Callable
+
+import click
+from flask import current_app
+from flask.cli import AppGroup
 
 from .lib.type_utils import boolean as to_boolean
 
@@ -313,6 +318,10 @@ _config_schema = ConfigSchema([
                      "insist on valid TLS server certificates. The default "
                      "is `False` for backwards compatibility, even though "
                      "this is obviously Wrong.")),
+    ConfigItem("GETOTP_ENABLED", bool, convert=to_boolean, default=False,
+               help=("Whether users can retrieve OTPs for their own tokens. "
+                     "This is helpful for corner cases like printed "
+                     "OTP lists.")),
 ])
 
 
@@ -400,3 +409,80 @@ configs = {
 
     'default': DevelopmentConfig,
 }
+
+
+# ----------------------------------------------------------------------
+# CLI commands
+# ----------------------------------------------------------------------
+
+config_cmds = AppGroup('config')
+
+
+@config_cmds.command('show', help='Output current configuration settings.')
+@click.option('--modified', '-m', is_flag=True,
+              help='Show only items whose values differ from their defaults.')
+@click.option('--values', '-V', is_flag=True,
+              help='Show only values of items, not their names.')
+@click.argument('items', nargs=-1)
+def config_show_cmd(modified, values, items=None):
+    """Show the current configuration settings."""
+
+    schema = current_app.config.config_schema
+    for k, v in sorted(current_app.config.items()):
+        display = not items or k in items
+        if modified and display:
+            item = schema.find_item(k)
+            display = item is not None and v != item.default
+        if display:
+            click.echo(("" if values else f"{k}=")
+                       + str(current_app.config[k]))
+
+
+SAMPLE_CFG_BANNER = """# This is a sample LinOTP configuration file.
+# It contains {0} configuration settings with their hard-coded
+# defaults. Feel free to copy this file and uncomment and edit any of
+# these (with appropriate caution). The LINOTP_CFG environment variable
+# can be used to specify a list of LinOTP configuration files which
+# will be read in order (the last encountered value for any configuration
+# setting wins.) On many installations, a good place for your own
+# configuration settings is /etc/linotp/linotp.cfg.
+"""
+
+
+@config_cmds.command('explain',
+                     help='Describe configuration settings in detail.')
+@click.option('--sample-file', is_flag=True,
+              help='Show items in "configuration file" format.')
+@click.option('--banner/--no-banner', default=True,
+              help='Show explanatory note at start of "configuration file"')
+@click.argument('items', nargs=-1)
+def config_explain_cmd(sample_file, banner, items=None):
+    """Explain configuration settings in the schema."""
+
+    schema = current_app.config.config_schema
+    if sample_file and banner:
+        print(SAMPLE_CFG_BANNER.format(
+            'all available' if not items else 'some'))
+    if not items:
+        items = schema.as_dict().keys()
+    for name in items:
+        item = schema.find_item(name)
+        if item is None:
+            click.echo(f"No information on {name}")
+        elif sample_file:
+            description = f"{item.name}: {item.help}"
+            print(textwrap.fill(description, initial_indent='# ',
+                                subsequent_indent='# '))
+            if item.validate is not None and hasattr(item.validate, '__doc__'):
+                print(f"#\n# Constraints: {item.validate.__doc__}")
+            print(f"\n## {item.name} = {item.default!r}\n")
+        else:
+            click.echo(f"{item.name}:")
+            click.echo(f"  Type: {item.type.__qualname__}")
+            if item.validate is not None and hasattr(item.validate, '__doc__'):
+                click.echo(f"  Constraints: {item.validate.__doc__}")
+            click.echo(f"  Default value: {item.default}")
+            click.echo(f"  Current value: {current_app.config[item.name]}")
+            description = f"  Description: {item.help}"
+            click.echo(textwrap.fill(description, initial_indent='',
+                                     subsequent_indent='    '))
