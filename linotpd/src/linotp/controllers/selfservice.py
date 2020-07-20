@@ -79,7 +79,6 @@ from linotp.lib.userservice import check_session
 
 from linotp.lib.selfservice import get_imprint
 
-from linotp.lib.selftest import isSelfTest
 from linotp.controllers.userservice import get_auth_user
 from linotp.controllers.userservice import getTokenForUser
 
@@ -303,20 +302,6 @@ class SelfserviceController(BaseController):
 
         try:
             if c.audit['action'] in ['selfservice/index']:
-                if isSelfTest():
-                    log.debug("[__after__] Doing selftest!")
-
-                    if "selftest_user" in param:
-                        (c.user, _foo, c.realm) = param[
-                            "selftest_user"].rpartition('@')
-                    else:
-                        c.realm = ""
-                        c.user = "--ua--"
-                        env = request.environ
-                        uuser = env.get('REMOTE_USER')
-                        if uuser is not None:
-                            (c.user, _foo, c.realm) = uuser.rpartition('@')
-
                 log.debug("[__after__] authenticating as %s in realm %s!"
                           % (c.user, c.realm))
 

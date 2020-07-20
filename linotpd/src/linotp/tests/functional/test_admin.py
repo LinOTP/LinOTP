@@ -30,7 +30,7 @@
 
 import json
 import logging
-import pytest
+
 from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
@@ -40,7 +40,6 @@ class TestAdminController(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        self.set_config_selftest()
         self.create_common_resolvers()
         self.create_common_realms()
 
@@ -304,7 +303,6 @@ class TestAdminController(TestController):
         assert '"status": true,' in response, response
         resp = json.loads(response.body)
 
-        entries = parameters['rp']
         values = resp.get('result', {}).get('value', [])
         assert len(values) == parameters['rp'], resp
 
@@ -408,9 +406,6 @@ class TestAdminController(TestController):
     def test_assign(self):
 
         serial = self.createToken2(serial="F722362")
-
-        response = self.make_admin_request('show')
-
 
         respRealms = self.make_system_request('getRealms', params=None)
         log.debug(respRealms)

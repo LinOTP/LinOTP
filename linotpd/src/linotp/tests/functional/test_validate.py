@@ -29,20 +29,12 @@
 
 
 import httplib2
-import urllib.request, urllib.parse, urllib.error
 import time
-import hmac
-import logging
 import binascii
-import struct
 import hashlib
-import sys
 import json
-from mock import patch
-
-import pytest
-
 import freezegun
+
 from datetime import datetime
 
 # we need this for the radius token
@@ -50,6 +42,10 @@ from pyrad.client import Client
 from pyrad.packet import AccessAccept
 
 from linotp.lib.HMAC import HmacOtp as LinHmac
+
+from mock import patch
+import pytest
+
 from linotp.tests import TestController
 
 
@@ -93,11 +89,13 @@ class HmacOtp(LinHmac):
         self.digits = digits
 
         # set up hashlib
-        ty = type(hashfunc).__name__
-        if ty == 'str' or ty == 'unicode':
+        if isinstance(hashfunc, str):
             self.hashfunc = self._getHashlib(hashfunc)
         else:
             self.hashfunc = hashfunc
+
+        super().__init__(
+            None, counter=counter, digits=digits, hashfunc=self.hashfunc)
 
     def _getHashlib(self, hLibStr):
 
@@ -138,7 +136,6 @@ class TestValidateController(TestController):
     def setUp(self):
         self.tokens = {}
         TestController.setUp(self)
-        self.set_config_selftest()
         self.create_common_resolvers()
         self.create_common_realms()
 
@@ -645,7 +642,6 @@ class TestValidateController(TestController):
         response = self.make_validate_request('check', params=parameters)
         assert '"value": false' in response, response
 
-        return
 
     def checkFalse3(self, realm):
 
@@ -898,7 +894,6 @@ class TestValidateController(TestController):
         self.delete_all_policies()
         self.delete_all_token()
 
-        return
 
     def test_check_serial_with_tokentype(self):
         """
@@ -1060,7 +1055,6 @@ class TestValidateController(TestController):
         self.delete_all_policies()
         self.delete_all_token()
 
-        return
 
     def test_check(self):
         '''
@@ -1485,7 +1479,6 @@ class TestValidateController(TestController):
                 val = self.createTOtpValue(totp, T0)
                 assert otp == val, "otp verification failed %r " % tupp
 
-        return
 
     def test_checkTOtp(self):
 
@@ -1508,13 +1501,6 @@ class TestValidateController(TestController):
 
         assert '"LinOtp.FailCount": 1' in response, response
 
-        #
-        #    only in selfTest mode, it's allowed to set
-        #    the start time for the mobile otp
-        #    ..
-        # |      59     |  1970-01-01  | 0000000000000001 | 94287082 |  SHA1  |
-        #     ..
-        #
         old_day = datetime(year=1970, month=1, day=1)
         with freezegun.freeze_time(old_day):
 
@@ -1561,7 +1547,6 @@ class TestValidateController(TestController):
         # |             |   00:00:59   |                  |          |        |
 
 
-        self.set_config_selftest()
         self.createTOtpToken("SHA256")
 
         old_day = datetime(year=1970, month=1, day=1)
@@ -1591,15 +1576,13 @@ class TestValidateController(TestController):
 
         self.delete_token("TOTP")
 
-        return
-
     def test_totp_resync(self):
 
         # delete the 'TOTP' token if it exists
 
         try:
             self.delete_token("TOTP")
-        except Exception as _exx:
+        except AssertionError as _exx:
             pass
 
         totp = self.createTOtpToken("SHA1")
@@ -1816,12 +1799,10 @@ class TestValidateController(TestController):
 
         response = self.client.get('/validate/check', query_string=parameters)
 
-        assert response.json['result']['value'] == False
+        assert not response.json['result']['value']
 
         for serial in serials:
             self.delete_token(serial)
-
-        return
 
     def test_simple_check(self):
         '''
@@ -1847,7 +1828,6 @@ class TestValidateController(TestController):
         assert ':-(' in response, response
 
         self.delete_token(serial)
-        return
 
     def test_auth_info_detail_standard(self):
         """
@@ -1942,8 +1922,6 @@ class TestValidateController(TestController):
 
         self.delete_token(serial)
 
-        return
-
     def test_auth_info_detail_yubi(self):
         """
         check for additional auth_info from validate check for yubikey
@@ -1994,8 +1972,6 @@ class TestValidateController(TestController):
         assert otp_list[1] == len(otps[0]), response
 
         self.delete_token(serial)
-
-        return
 
     @patch.object(httplib2.Http, 'request', mocked_http_request)
     def test_auth_info_detail_remotetoken(self):
@@ -2072,8 +2048,6 @@ class TestValidateController(TestController):
 
         TestValidateController.R_AUTH_DETAIL = {}
 
-        return
-
     @patch.object(Client, 'SendPacket', mocked_radius_SendPacket)
     def test_auth_info_detail_radiotoken(self):
         """
@@ -2111,7 +2085,5 @@ class TestValidateController(TestController):
 
         self.delete_token(target_serial)
         self.delete_token(remote_serial)
-
-        return
 
 # eof #########################################################################

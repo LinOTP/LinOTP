@@ -751,52 +751,6 @@ class TestController(TestCase):
             "validate", action, method=method, params=params, client=client
         )
 
-    def set_config_selftest(self, auth_user="admin", unset=False):
-        """
-        Set selfTest in LinOTP Config to 'True'
-
-        --------------------------------------------------------------------
-        | Should not be used and is kept to ease refactoring of old tests. |
-        --------------------------------------------------------------------
-
-        'selfTest' mode enables to use the LinOTP API without 'session'
-        parameter and cookie, but since using these extra values is not a
-        problem and then tests are closer to the real code running on
-        productive servers it is preferred NOT to set 'selfTest'.
-
-        Use the methods make_admin_request(), make_system_request or
-        make_authenticated_request() and 'session' Parameter and Cookie will be
-        set for you!
-
-        All tests that still use set_config_selftest() should be slowly
-        refactored to instead use the above mentioned methods.
-        """
-        if unset:
-            params = {"key": "selfTest"}
-            response = self.make_system_request(
-                "delConfig", params, auth_user=auth_user
-            )
-            content = response.json
-            assert content["result"]["status"]
-            assert "delConfig selfTest" in response, response
-            self.isSelfTest = False
-
-        else:
-            params = {"selfTest": "True"}
-            response = self.make_system_request(
-                "setConfig", params, auth_user=auth_user
-            )
-            content = response.json
-            assert content["result"]["status"]
-            assert "setConfig selfTest:True" in content["result"]["value"]
-            assert content["result"]["value"]["setConfig selfTest:True"]
-            self.isSelfTest = True
-
-        # *********************************************************************** #
-        warnings.warn("The self-test modus is not recommended (anymore)!")
-
-    # *********************************************************************** #
-
     def delete_all_realms(self, auth_user='admin'):
         """ get al realms and delete them """
 

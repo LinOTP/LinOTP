@@ -2282,7 +2282,7 @@ class TestPolicies(TestPoliciesBase):
                       'realm': 'MyOtherRealm',
                       'user': '501_admin_other',
                       'action': 'userlist',
-                      'selftest_admin': 'superadmin'}
+                      }
         auth_user = 'superadmin'
         response = self.make_system_request(action='setPolicy',
                                             params=parameters,
@@ -2343,7 +2343,6 @@ class TestPolicies(TestPoliciesBase):
         '''
         policies = [
                     {'name': 'cp1',
-                     'selftest_admin': 'superadmin',
                      'scope': 'admin',
                      'user': 'cp1_admin',
                      'realm': 'realm1',
@@ -2351,7 +2350,6 @@ class TestPolicies(TestPoliciesBase):
                      },
                     {
                      'name': 'cp2',
-                     'selftest_admin': 'superadmin',
                      'scope': 'admin',
                      'user': 'cp2_admin',
                      'realm': 'realm1',
@@ -3814,7 +3812,7 @@ class TestPolicies(TestPoliciesBase):
         Policy 999: Check if all policies are deleted from the system
         '''
         # check if we deleted all policies
-        parameters = {'selftest_admin': 'superadmin'}
+        parameters = {}
         response = self.make_system_request(action='getPolicy',
                                             params=parameters,
                                             auth_user='superadmin')

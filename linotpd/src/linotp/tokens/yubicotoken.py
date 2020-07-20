@@ -291,7 +291,7 @@ class YubicoTokenClass(TokenClass):
         :return: -1 or 1
         """
 
-        m = re.search('\nstatus=(\w+)\r', rv)
+        m = re.search(r'\nstatus=(\w+)\r', rv)
         if not m:
             return -1
 
@@ -302,13 +302,13 @@ class YubicoTokenClass(TokenClass):
             log.warning("[checkOtp] failed with %r" % result)
             return -1
 
-        m = re.search('nonce=(\w+)\r', rv)
+        m = re.search(r'nonce=(\w+)\r', rv)
         if not m:
             return -1
 
         return_nonce = m.group(1)
 
-        m = re.search('h=(.+)\r', rv)
+        m = re.search(r'h=(.+)\r', rv)
         if not m:
             return -1
 

@@ -227,7 +227,7 @@ class TestGetOtpController(TestController):
         '''
         parameters = {'serial': 'dpw1',
                       'curTime': self.curTime,
-                      'selftest_admin': 'admin'}
+                      }
         response = self.make_gettoken_request(action='getotp',
                                               params=parameters)
 
@@ -243,7 +243,7 @@ class TestGetOtpController(TestController):
         parameters = {'serial': 'dpw1',
                       'curTime': self.curTime,
                       'count': "10",
-                      'selftest_admin': 'admin'}
+                      }
         response = self.make_gettoken_request(action='getmultiotp',
                                               params=parameters)
 
@@ -271,7 +271,7 @@ class TestGetOtpController(TestController):
         parameters = {'serial': 'hotp1',
                       'curTime': self.curTime,
                       'count': "20",
-                      'selftest_admin': 'admin'}
+                      }
         response = self.make_gettoken_request(action='getmultiotp',
                                               params=parameters)
 
@@ -333,7 +333,7 @@ class TestGetOtpController(TestController):
 
             parameters = {'serial': 'totp1',
                           'count': "20",
-                          'selftest_admin': 'admin'}
+                          }
             response = self.make_gettoken_request(action='getmultiotp',
                                                   params=parameters)
 

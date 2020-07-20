@@ -55,8 +55,8 @@ class mTimeOtp(object):
         :param secPin:    secretObject, which covers the encrypted pin
         :param oldtime:   the previously detected otp counter/time
         :param digits:    length of otp chars to be tested
-        :param key:       direct key provider (for selfTest)
-        :param pin:       direct pin provider (for selfTest)
+        :param key:       direct key provider
+        :param pin:       direct pin provider
 
         :return:          nothing
         '''
@@ -75,24 +75,13 @@ class mTimeOtp(object):
 
         :param anOtpVal: the to be tested otp value
         :param window: the +/- window around the test time
-        :param options: generic container for additional values \
-                        here only used for seltest: setting the initTime
-
+        :param options: generic container for additional values
         :return: -1 for fail else the identified counter/time
         '''
 
         res = -1
         window = window * 2
-
-        initTime = 0
-        if options is not None and type(options) == dict:
-            initTime = int(options.get('initTime', 0))
-
-        if (initTime == 0):
-            otime = int(time.time() // 10)
-        else:
-            otime = int(initTime)
-
+        otime = int(time.time() // 10)
 
         if self.secretObject is None:
             key = self.key

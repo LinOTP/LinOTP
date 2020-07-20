@@ -46,7 +46,6 @@ from linotp.lib.crypto.utils import encrypt, decrypt
 from linotp.lib.crypto.utils import createActivationCode, check
 
 from linotp.tests import *
-from linotp.lib.selftest import isSelfTest
 
 from datetime import datetime
 from datetime import timedelta
@@ -776,7 +775,6 @@ class OcraTest(TestController):
                        'realm' : '*',
                        'action' : '*',
                        'user' : 'superadmin, Administrator',
-                       'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
         log.error(response)

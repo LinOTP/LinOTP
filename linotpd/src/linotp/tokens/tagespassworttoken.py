@@ -286,6 +286,7 @@ class TagespasswortTokenClass(TokenClass):
                     raise TokenAdminError("[get_multi_otp] wrong curTime type:"
                                           " %s (%s)" % (type(curTime),
                                                         curTime), id=2001)
+
             secObj = self._get_secret_object()
             with dpwOtp(secObj, otplen) as dpw:
 

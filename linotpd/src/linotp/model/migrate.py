@@ -348,13 +348,13 @@ class Migration():
         challenge_table = "challenges"
 
         # add new blob challenge column
-        bchallenges = sa.Column('bchallenge', sa.types.Binary())
+        bchallenges = sa.Column('bchallenge', sa.types.LargeBinary())
 
         if not has_column(self.meta, challenge_table, bchallenges):
             add_column(self.meta.engine, challenge_table, bchallenges)
 
         # add new blob data column
-        bdata = sa.Column('bdata', sa.types.Binary())
+        bdata = sa.Column('bdata', sa.types.LargeBinary())
 
         if not has_column(self.meta, challenge_table, bdata):
             add_column(self.meta.engine, challenge_table, bdata)

@@ -38,7 +38,6 @@ from linotp.flap import config, abort
 
 from linotp.lib.crypto.utils import geturandom
 
-from linotp.lib.selftest import isSelfTest
 from linotp.lib.error import ParameterError
 from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.config import getFromConfig
@@ -178,9 +177,6 @@ def check_session(request, scope='admin'):
 
     :return: boolean
     '''
-
-    if isSelfTest():
-        return
 
     # check if the client is in the allowed IP range
     no_session_clients = []

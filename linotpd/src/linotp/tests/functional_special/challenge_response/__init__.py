@@ -290,7 +290,6 @@ class TestChallengeResponseController(TestSpecialController):
         """
         params = {
             'name': name,
-            'selftest_admin': 'superadmin',
             'session': self.session,
             }
         cookies = {"admin_session": self.session}

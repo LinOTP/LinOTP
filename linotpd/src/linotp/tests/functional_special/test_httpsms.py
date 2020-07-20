@@ -186,7 +186,6 @@ class TestHttpSmsController(TestSpecialController):
             self.serials.append(serial)
 
         TestSpecialController.setUp(self)
-        # self.set_config_selftest()
         self.create_common_resolvers()
         self.create_common_realms()
 

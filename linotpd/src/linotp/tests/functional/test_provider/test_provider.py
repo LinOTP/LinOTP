@@ -74,7 +74,6 @@ class TestProviderController(TestController):
         self.removeProviderConfig()
 
         super(TestProviderController, self).setUp()
-        self.set_config_selftest()
         self.create_common_resolvers()
         self.create_common_realms()
 
@@ -98,7 +97,6 @@ class TestProviderController(TestController):
                   'user': 'user1',
                   'pin': '1234',
                   'phone': '016012345678',
-                  'selftest_admin': 'superadmin'
                   }
 
         if token_params:
@@ -154,7 +152,6 @@ class TestProviderController(TestController):
 
         for entry in entries:
             self.delete_config(prefix=entry)
-        return
 
     def define_new_provider(self, provider_params=None):
         """
@@ -192,8 +189,6 @@ class TestProviderController(TestController):
         response = self.make_system_request('getProvider', params=params)
         assert '"value": {}' in response, response
 
-        return
-
     def test_create_new_provider(self):
         """
         check if new provider is default after create
@@ -217,8 +212,6 @@ class TestProviderController(TestController):
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get('imported_default', {})
         assert not provider.get('Default', False), response
-
-        return
 
     def test_create_unicode_provider(self):
         """
@@ -262,8 +255,6 @@ class TestProviderController(TestController):
         p_config = provider.get('Config', '')
         assert config == p_config, jresp
 
-        return
-
     @patch.object(linotp.provider.smsprovider.FileSMSProvider.FileSMSProvider,
                   'submitMessage', mocked_submitMessage)
     def test_legacy_default_provider(self):
@@ -291,8 +282,6 @@ class TestProviderController(TestController):
         global SMS_MESSAGE_CONFIG
         assert '/tmp/legacy' in SMS_MESSAGE_CONFIG.get('file')
 
-        return
-
     @patch.object(linotp.provider.smsprovider.FileSMSProvider.FileSMSProvider,
                   'submitMessage', mocked_submitMessage)
     def test_new_provider(self):
@@ -319,8 +308,6 @@ class TestProviderController(TestController):
 
         global SMS_MESSAGE_CONFIG
         assert '/tmp/newone' in SMS_MESSAGE_CONFIG.get('file')
-
-        return
 
     @patch.object(linotp.provider.smsprovider.FileSMSProvider.FileSMSProvider,
                   'submitMessage', mocked_submitMessage)
@@ -366,8 +353,6 @@ class TestProviderController(TestController):
 
         global SMS_MESSAGE_CONFIG
         assert '/tmp/newone' in SMS_MESSAGE_CONFIG.get('file')
-
-        return
 
     @patch.object(linotp.provider.smsprovider.FileSMSProvider.FileSMSProvider,
                   'submitMessage', mocked_submitMessage)
@@ -427,8 +412,6 @@ class TestProviderController(TestController):
         global SMS_MESSAGE_CONFIG
         assert '/tmp/legacy' in SMS_MESSAGE_CONFIG.get('file')
 
-        return
-
     def test_managed_provider(self):
         """
         check that a managed provider does not return the configuration
@@ -462,8 +445,6 @@ class TestProviderController(TestController):
                   'type': 'sms'}
         self.make_system_request('delProvider', params)
         assert '"value": true' in response, response
-
-        return
 
     @patch.object(linotp.provider.voiceprovider.custom_voice_provider.CustomVoiceProvider,
                   'test_connection', mocked_connectiontest)
@@ -556,9 +537,5 @@ class TestProviderController(TestController):
         params = {'type': 'voice', 'name': provider_name_2}
         response = self.make_system_request('delProvider', params=params)
         assert '"value": true' in response, response
-
-        return
-
-
 
 # eof #####################################################################

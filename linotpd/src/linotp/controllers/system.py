@@ -42,7 +42,6 @@ from linotp.flap import config, request, response, tmpl_context as c
 
 from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 
-from linotp.lib.selftest import isSelfTest
 from .base import BaseController
 
 from linotp.lib.config import storeConfig
