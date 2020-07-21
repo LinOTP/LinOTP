@@ -15,7 +15,6 @@ ENV LINOTP_HOST=linotp \
 
 RUN apt-get update && \
 	apt-get install \
-			linotp-adminclient-cli \
 		make \
 		python3-pytest-flask \
 		python3-pytest-cov \

@@ -1,5 +1,0 @@
-# create a group yubienroller and add your user to the group to be able to enroll
-# yubikeys. Otherwise you need to be root, as the dev file will be mode 664
-#
-BUS=="usb", ACTION=="add", SYSFS{idVendor}=="1050", SYSFS{idProduct}=="0010", GROUP="yubienroller"
-#SYMLINK+="yubikey", MODE="0666", GROUP="yubienroller"
