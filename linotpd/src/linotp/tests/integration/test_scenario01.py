@@ -31,6 +31,7 @@ import re
 import binascii
 import logging
 import os
+import pytest
 
 from linotp_selenium_helper import TestCase, Policy
 from linotp_selenium_helper.token_import import TokenImportAladdin
@@ -58,6 +59,7 @@ def calculate_motp(epoch, key, pin, digits=6):
     return motp
 
 
+@pytest.mark.smoketest
 class TestScenario01(TestCase):
     """TestCase class that tests Scenario 01 as defined here:
        https://wally/projects/linotp/wiki/TestingTest_Szenario_01
