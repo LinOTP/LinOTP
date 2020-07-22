@@ -326,6 +326,11 @@ _config_schema = ConfigSchema([
                help=("Whether users can retrieve OTPs for their own tokens. "
                      "This is helpful for corner cases like printed "
                      "OTP lists.")),
+    ConfigItem("HSM_ENABLED", bool, convert=to_boolean, default=False,
+               help=("By default the secrets (of a LinOTP token i.e. TOTP) "
+                     "are stored in the database. If HSM_ENABLED is `True`,  "
+                     "LinOTP will try to use the hsm configured in "
+                     "linotp.cfg"))
     ConfigItem("PROFILE", bool, convert=to_boolean, default=False,
                help=("Whether profiling is enabled for WSGI requests. This "
                      "is only interesting for LinOTP developers. Do not use "
