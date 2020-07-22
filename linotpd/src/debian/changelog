@@ -1,8 +1,36 @@
-linotp (3.0.dev0-1) buster-dev; urgency=low
+linotp (3.0~a0-1) buster-dev; urgency=low
 
-  * Set new version 3.0.dev0
+  * Set new version 3.0 Alpha
 
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 7 Feb 2020 15:03:00 +0200
+  Features:
+  * Each token now stores the creation / last access / last
+    verification time
+  * Setting via the manage interface of challenge expiration
+    timeouts for Email and SMS tokens
+  * A new 'linotp' command installed on the path provides:
+    * config show/explain - configuration file diagnostics
+    * init-db - initialisation of the database tables
+    * ldap-test - extensive testing of LDAP backends
+  * Settings can now be configured using environment variables
+    LINOTP_<SETTING_NAME>
+
+  Policies:
+  * Add selfservice policy to allow token verification
+
+  API features:
+    * [selfservice] support for token verification
+    * [selfservice] improved handling of expired cookies
+
+  Removed and no longer supported:
+  * Support for Debian versions before buster due to Flask version
+  * Apache 2.2 configuration
+  * linotp.ini configuration file format
+  * non-systemd init script
+  * OCRA token
+  * Vasco token
+  * Defining LDAP trusted certificates in the UserResolver interface
+
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Wed, 22 Jul 2020 18:00:33 +0200
 
 linotp (2.90rc0-1) buster-dev; urgency=low
 
