@@ -94,14 +94,6 @@ include:
     - docker push "$REGISTRY_IMAGE-testenv:${CI_PIPELINE_ID}"
     # Log all the images to stdout
     - docker images
-    # Prepare files for job artifact outputs
-    - mv apt apt-${DEBIAN_RELEASE_NAME}
-  artifacts:
-    name: "linotp-debs${CI_COMMIT_REF_SLUG}"
-    expose_as: "LinOTP packages"
-    paths:
-      - apt-${DEBIAN_RELEASE_NAME}/
-    expire_in: 2 weeks
 
 build:debian-buster:
   extends: .build-debs-and-images
@@ -109,6 +101,10 @@ build:debian-buster:
     DEBIAN_RELEASE_NAME: buster
   artifacts:
     expose_as: apt-buster
+    paths:
+      - apt/
+    name: "linotp-debs${CI_COMMIT_REF_SLUG}"
+    expire_in: 2 weeks
 
 
 .lint:
@@ -396,9 +392,9 @@ upload-debs:
       allow_failure: true
   <<: *before_upload
   script:
-    - find pkg/apt/* -ls
+    - find apt/* -ls
     # scp all files referenced by the changes files to the repository
-    - dcmd scp pkg/apt/*/*.changes dists@$DEV_REPO_HOST:deb-repo/incoming
+    - dcmd scp apt/*.changes dists@$DEV_REPO_HOST:deb-repo/incoming
 
 # Copy packages to `buster-golden` if they have a `release` tag.
 # Note that this must come after `upload-debs`.
@@ -413,6 +409,6 @@ copy-to-buster-golden:
       allow_failure: true
   <<: *before_upload
   script:
-    - ci/copy-to-golden "$DEBIAN_RELEASE_NAME" pkg/apt/*/*.changes
+    - ci/copy-to-golden "$DEBIAN_RELEASE_NAME" apt/*.changes
   variables:
     DEBIAN_RELEASE_NAME: buster
