@@ -132,13 +132,15 @@ RUN apt-get install \
         make mariadb-client locales \
         adduser debconf openssl pwgen python3-configobj \
         python3-beaker python3-passlib python3-cryptography python3-bcrypt python3-pygments \
-        python3-decorator python3-docutils python3-formencode python3-httplib2 \
+        python3-decorator python3-docutils \
+        python3-flask-babel python3-formencode python3-httplib2 \
         python3-ldap python3-mako python3-mysqldb python3-netaddr \
+        python3-pycryptodome \
         python3-pyrad python3-qrcode python3-routes \
         python3-sqlalchemy \
         apache2 libapache2-mod-wsgi-py3 \
         python3-pysodium python3-requests \
-        python3-setuptools \
+        python3-setuptools python3-usb \
         distro-info-data \
         libjs-jquery \
         lsb-release \
