@@ -73,6 +73,9 @@ ARG DEPENDENCY_GPG_KEY_URL
 # To add ssl certificates that LDAP should
 # trust, set SSL_TRUSTED_CERT to the
 # contents of the certificate
+#
+# Softhsm2 config pin und so-pin
+# for more details see: https://github.com/opendnssec/SoftHSMv2
 
 ENV TZ="Europe/Berlin" \
     LINOTP_USER=linotp \
@@ -93,7 +96,7 @@ ENV TZ="Europe/Berlin" \
     LOGSTASH_PORT= \
     LOGSTASH_TAGS=() \
     SECRET_FILE_LOCATION= \
-    SSL_TRUSTED_CERT=
+    SSL_TRUSTED_CERT= 
 
 # Internal environment variables used by the docker images
 ENV LINOTP_CFG_TEMPLATE=/etc/linotp/linotp-docker.cfg.tmpl \
@@ -146,7 +149,8 @@ RUN apt-get install \
         lsb-release \
         dh-python \
         python3-flask \
-        python3-psycopg2 python3-pymysql
+        python3-psycopg2 python3-pymysql \
+        softhsm2
 
 # flask-mako is not yet packaged, so install using pip
 RUN apt-get install python3-pip python3-dev python3-wheel swig gcc libssl-dev \
@@ -169,6 +173,13 @@ RUN echo "linotp linotp/apache/activate boolean true" > /opt/linotp/apt/debconf-
     && rm /etc/linotp/encKey /etc/linotp/*.pem \
     && mkdir -p /etc/ssl/private /etc/ssl/certs \
     && chown linotp /var/log/linotp
+
+# Setup softhsm2 and add config entries to linotp.cfg
+RUN mkdir -p /var/lib/softhsm/tokens \
+    && mkdir -p /etc/softhsm \
+    && echo "directories.tokendir = /var/lib/softhsm/tokens" > /etc/softhsm2.conf \
+    && echo "objectstore.backend = file" >> /etc/softhsm/softhsm2.conf \
+    && softhsm2-util --init-token --slot 0 --label "${SOFTHSM2_LABEL}" --so-pin ${SOFTHSM2_SO_PIN}  --pin ${SOFTHSM2_PIN}
 
 WORKDIR $LINOTP_HOME
 
