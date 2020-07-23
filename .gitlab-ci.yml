@@ -358,6 +358,18 @@ e2e-test-mariadb:
     - /usr/local/bin/dockerfy --template docker_cfg.ini.tmpl:/tmp/server_cfg.ini --wait tcp://$SELENIUM_HOST:$SELENIUM_PORT --timeout 60m --wait tcp://$LINOTP_HOST:$LINOTP_PORT --timeout 60m
     - make integrationtests TCFILE=/tmp/server_cfg.ini PYTESTARGS="-v --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX  --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
 
+e2e-test-softhsm:
+  extends: .e2e-test
+  variables:
+    DB: mariadb:10.1
+    LINOTP_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"
+    LINOTP_DB_PORT: "3306"
+  script:
+    - cd linotpd/src/linotp/tests/integration
+    - /usr/local/bin/dockerfy --template docker_cfg.ini.tmpl:/tmp/server_cfg.ini --wait tcp://$SELENIUM_HOST:$SELENIUM_PORT --timeout 60m --wait tcp://$LINOTP_HOST:$LINOTP_PORT --timeout 60m
+    - make integrationtests TCFILE=/tmp/server_cfg.ini PYTESTARGS="-m smoketest -v --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX  --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
+
+
 # Upload deb packages to development repository.
 # We use scp to upload all the files to an incoming directory.
 
