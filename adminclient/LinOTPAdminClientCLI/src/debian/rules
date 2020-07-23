@@ -1,8 +1,0 @@
-#!/usr/bin/make -f
-# -*- makefile -*-
-
-export PYBUILD_NAME=linotp-adminclient-cli
-export PYBUILD_DISABLE=test
-
-%:
-	dh $@ --with python3 --buildsystem=pybuild

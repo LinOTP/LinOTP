@@ -43,7 +43,7 @@ BUILDDIR:=$(PWD)/build
 
 # Targets to operate on LinOTPd and its dependent projects shipped
 # in this repository
-LINOTPD_PROJS := linotpd adminclient/LinOTPAdminClientCLI
+LINOTPD_PROJS := linotpd
 
 # These variables let you set the amount of stuff LinOTP is logging.
 #
@@ -175,7 +175,7 @@ integrationtests:
 # deb-install: Build .debs and install to DESTDIR
 ###############################################################################
 
-DEBPKG_PROJS := linotpd adminclient/LinOTPAdminClientCLI
+DEBPKG_PROJS := linotpd
 BUILDARCH = $(shell dpkg-architecture -q DEB_BUILD_ARCH)
 CHANGELOG = "$(shell cd linotpd/src ; dpkg-parsechangelog)"
 

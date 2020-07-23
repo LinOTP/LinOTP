@@ -23,19 +23,6 @@ nose
 linotpd/src/api-doc/build/
 linotpd/src/api-doc/source/*.rst
 
-# adminclient
-adminclient/LinOTPAdminClientCLI/LinOTPAdminClientCLI_*.orig.tar.gz
-adminclient/LinOTPAdminClientCLI/linotp-adminclient-cli_*.dsc
-adminclient/LinOTPAdminClientCLI/linotp-adminclient-cli_*.tar.gz
-adminclient/LinOTPAdminClientCLI/linotp-adminclient-cli_*_amd64.changes
-adminclient/LinOTPAdminClientCLI/src/debian/.debhelper
-adminclient/LinOTPAdminClientCLI/src/debian/files
-adminclient/LinOTPAdminClientCLI/src/debian/linotp-adminclient-cli.postinst.debhelper
-adminclient/LinOTPAdminClientCLI/src/debian/linotp-adminclient-cli.prerm.debhelper
-adminclient/LinOTPAdminClientCLI/src/debian/linotp-adminclient-cli.substvars
-adminclient/LinOTPAdminClientCLI/src/debian/linotp-adminclient-cli/
-adminclient/LinOTPAdminClientCLI/src/debian/python-module-stampdir/
-
 doc/API/LinOTP-API.zip
 doc/API/linotp-api/
 doc/API/linotputils/
