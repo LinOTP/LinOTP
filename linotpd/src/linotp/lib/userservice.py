@@ -362,40 +362,29 @@ def get_context(config, user, client):
     :return: context dict, with all rendering attributes
 
     """
+    context = get_pre_context(client)
 
-    req_context = get_pre_context(client)
+    context["user"] = get_userinfo(user)
+    context["imprint"] = get_imprint(user.realm)
+    context["tokenArray"] = getTokenForUser(user)
 
-    req_context["user"] = get_userinfo(user)
-    req_context["imprint"] = get_imprint(user.realm)
-    req_context["tokenArray"] = getTokenForUser(user)
-
-    # show the defined actions, which have a rendering
-    actions = getSelfserviceActions(user)
-    req_context["actions"] = actions
-    for policy in actions:
-        if "=" in policy:
+    context["actions"] = list()
+    for policy in getSelfserviceActions(user):
+        if "=" not in policy:
+            context["actions"].append(policy.strip())
+        else:
             (name, val) = policy.split('=')
+            name = name.strip()
             val = val.strip()
-            # try if val is a simple numeric -
-            # w.r.t. javascript evaluation
+            # try if settings value is a simple numeric
             try:
-                nval = int(val)
-            except:
-                nval = val
-            req_context[name.strip()] = nval
+                val = int(val)
+            except ValueError:
+                pass
 
-    req_context["dynamic_actions"] = add_dynamic_selfservice_enrollment(config, actions)
+            context["settings"][name] = val
 
-    # TODO: to establish all token local defined policies
-    additional_policies = add_dynamic_selfservice_policies(config, actions)
-    for policy in additional_policies:
-        req_context[policy] = -1
-
-    # TODO: add_local_policies() currently not implemented!!
-    req_context["otplen"] = -1
-    req_context["totp_len"] = -1
-
-    return req_context
+    return context
 
 
 ##############################################################################
