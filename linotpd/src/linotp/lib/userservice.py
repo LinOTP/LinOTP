@@ -325,47 +325,33 @@ def get_pre_context(client):
     :return: context dict, with all rendering attributes
     """
 
-    pre_context = {}
-    pre_context["version"] = get_version()
-    pre_context["licenseinfo"] = get_copyright_info()
-
-    pre_context["default_realm"] = getDefaultRealm()
-    pre_context["realm_box"] = getRealmBox()
-
-    pre_context["realms"] = _get_realms_()
-
     # check for mfa_login, autoassign and autoenroll in policy definition
-
-    pre_context['mfa_login'] = False
-    policy = get_client_policy(client=client,
+    mfa_login_policy = get_client_policy(client=client,
                                scope='selfservice',
                                action='mfa_login')
-    if policy:
-        pre_context['mfa_login'] = True
-
-    pre_context['mfa_3_fields'] = False
-    policy = get_client_policy(client=client,
+    mfa_3_fields_policy = get_client_policy(client=client,
                                scope='selfservice',
                                action='mfa_3_fields')
-    if policy:
-        pre_context['mfa_3_fields'] = True
-
-    pre_context['autoassign'] = False
-    policy = get_client_policy(client=client,
+    autoassignment_policy = get_client_policy(client=client,
                                scope='enrollment',
                                action='autoassignment')
-    if policy:
-        pre_context['autoassign'] = True
-
-    pre_context['autoenroll'] = False
-    policy = get_client_policy(client=client,
+    autoenrollment_policy = get_client_policy(client=client,
                                scope='enrollment',
                                action='autoenrollment')
-    if policy:
-        pre_context['autoenroll'] = True
 
-    return pre_context
-
+    return {
+        "version": get_version(),
+        "copyright": get_copyright_info(),
+        "realms": _get_realms_(),
+        "settings": {
+            "default_realm": getDefaultRealm(),
+            "realm_box": getRealmBox(),
+            "mfa_login": bool(mfa_login_policy),
+            "mfa_3_fields": bool(mfa_3_fields_policy),
+            "autoassign": bool(autoassignment_policy),
+            "autoenroll": bool(autoenrollment_policy),
+        },
+    }
 
 def get_context(config, user, realm, client):
     """

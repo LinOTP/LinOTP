@@ -267,15 +267,14 @@ class UserserviceController(BaseController):
 
         self.client = get_client(request) or ''
 
-        context = get_pre_context(self.client)
-
         # ------------------------------------------------------------------ --
 
         # build up general available variables
 
-        self.mfa_login = context['mfa_login']
-        self.autoassign = context['autoassign']
-        self.autoenroll = context['autoenroll']
+        context = get_pre_context(self.client)
+        self.mfa_login = context['settings']['mfa_login']
+        self.autoassign = context['settings']['autoassign']
+        self.autoenroll = context['settings']['autoenroll']
 
         # ------------------------------------------------------------------ --
 
