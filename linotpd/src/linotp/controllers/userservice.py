@@ -1150,11 +1150,7 @@ class UserserviceController(BaseController):
         '''
 
         try:
-
-            user = self.authUser.login
-            realm = self.authUser.realm
-
-            context = get_context(config, user, realm, self.client)
+            context = get_context(config, self.authUser, self.client)
             return sendResult(self.response,
                               True,
                               opt=context)
@@ -1194,10 +1190,7 @@ class UserserviceController(BaseController):
             if section != 'selfservice':
                 return res
 
-            user = self.authUser.login
-            realm = self.authUser.realm
-
-            context = get_context(config, user, realm, self.client)
+            context = get_context(config, self.authUser, self.client)
             for k, v in list(context.items()):
                 setattr(c, k, v)
 

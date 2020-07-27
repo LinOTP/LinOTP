@@ -78,8 +78,6 @@ log = logging.getLogger(__name__)
 # const for encryption and iv
 SECRET_LEN = 32
 
-
-
 Cookie_Secret = binascii.hexlify(os.urandom(SECRET_LEN))
 Cookie_Cache = {}
 
@@ -90,6 +88,7 @@ def get_userinfo(user):
     uinfo = getUserInfo(uid, resolver, resolver_class)
     if 'cryptpass' in uinfo:
         del uinfo['cryptpass']
+    uinfo['realm'] = user.realm
 
     return uinfo
 
@@ -353,11 +352,11 @@ def get_pre_context(client):
         },
     }
 
-def get_context(config, user, realm, client):
+def get_context(config, user, client):
     """
     get the user dependend rendering context
 
-    :param user: the selfservice user
+    :param user: the selfservice auth user
     :param realm: the selfservice realm
     :param client: the selfservice client info - required for pre_context
     :return: context dict, with all rendering attributes
@@ -366,14 +365,12 @@ def get_context(config, user, realm, client):
 
     req_context = get_pre_context(client)
 
-    req_context["user"] = user
-    req_context["realm"] = realm
-    authUser = User(user, realm)
-    req_context["imprint"] = get_imprint(req_context["realm"])
-    req_context["tokenArray"] = getTokenForUser(authUser)
+    req_context["user"] = get_userinfo(user)
+    req_context["imprint"] = get_imprint(user.realm)
+    req_context["tokenArray"] = getTokenForUser(user)
 
     # show the defined actions, which have a rendering
-    actions = getSelfserviceActions(authUser)
+    actions = getSelfserviceActions(user)
     req_context["actions"] = actions
     for policy in actions:
         if "=" in policy:
