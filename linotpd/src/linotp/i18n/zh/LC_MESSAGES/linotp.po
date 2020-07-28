@@ -398,9 +398,8 @@ msgstr "复制 PIN 码"
 msgid "Copy Token PIN"
 msgstr "复制令牌 PIN 码"
 
-#, fuzzy
-msgid "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
-msgstr "版权所有 (C) 2010 - 2019 LSE Leading Security Experts GmbH"
+msgid "Copyright (C) arxes-tolina GmbH"
+msgstr "版权所有 (C) arxes-tolina GmbH"
 
 msgid "Could not find a token for this OTP value."
 msgstr "该 OTP 值无法确定令牌。"
@@ -452,6 +451,9 @@ msgstr "创建一个新的用户 ID 解析器"
 
 msgid "Currently this token will not be assigned to any users."
 msgstr "此令牌无法分配给用户。"
+
+msgid "Custom timestamp format (optional)"
+msgstr ""
 
 msgid "DPW key"
 msgstr "DPW 密钥"
@@ -1273,6 +1275,9 @@ msgid ""
 "logon page."
 msgstr "会出现一个下拉列表，从中用户可以选择他需要在自助服务门户登录的域。"
 
+msgid "If checked, timestamps are saved during authentication"
+msgstr ""
+
 msgid ""
 "If checked, users who are not found in the useridresolvers are authenticated "
 "successfully. USE WITH CAUTION!"
@@ -1462,6 +1467,9 @@ msgstr "令牌文件下载"
 
 msgid "Log Level"
 msgstr "日志级别"
+
+msgid "Log usage timestamps in token info"
+msgstr ""
 
 msgid "Logged in as"
 msgstr "登录作为"
@@ -2296,6 +2304,9 @@ msgid "Sizelimit"
 msgstr "长度限制"
 
 msgid "Skip first line (header information)"
+msgstr ""
+
+msgid "Specify a custom timestamp format to reduce information detail"
 msgstr ""
 
 msgid ""

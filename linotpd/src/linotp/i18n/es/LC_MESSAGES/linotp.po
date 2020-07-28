@@ -406,8 +406,8 @@ msgstr "Copiar PIN"
 msgid "Copy Token PIN"
 msgstr "Copie el PIN del token"
 
-msgid "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
-msgstr "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
+msgid "Copyright (C) arxes-tolina GmbH"
+msgstr "Copyright (C) arxes-tolina GmbH"
 
 msgid "Could not find a token for this OTP value."
 msgstr "No se ha podido determinar ningún token para este valor OTP."
@@ -459,6 +459,9 @@ msgstr "Crear un UserIdResolver nuevo"
 
 msgid "Currently this token will not be assigned to any users."
 msgstr "Actualmente este token no será asignado a ningún usuario."
+
+msgid "Custom timestamp format (optional)"
+msgstr ""
 
 msgid "DPW key"
 msgstr "Semilla DPW"
@@ -1317,6 +1320,9 @@ msgstr ""
 "Se mostrará una lista desplegable en la que el usuario podrá seleccionar el "
 "dominio en el que desea iniciar sesión en el portal de autogestión."
 
+msgid "If checked, timestamps are saved during authentication"
+msgstr ""
+
 msgid ""
 "If checked, users who are not found in the useridresolvers are authenticated "
 "successfully. USE WITH CAUTION!"
@@ -1519,6 +1525,9 @@ msgstr "Cargar archivo de token"
 
 msgid "Log Level"
 msgstr "Nivel de registro"
+
+msgid "Log usage timestamps in token info"
+msgstr ""
 
 msgid "Logged in as"
 msgstr "Sesión iniciada como"
@@ -2372,6 +2381,9 @@ msgid "Sizelimit"
 msgstr "Límite de tamaño"
 
 msgid "Skip first line (header information)"
+msgstr ""
+
+msgid "Specify a custom timestamp format to reduce information detail"
 msgstr ""
 
 msgid ""

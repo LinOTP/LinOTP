@@ -397,8 +397,8 @@ msgstr "Kopiere PIN"
 msgid "Copy Token PIN"
 msgstr "Kopiere Token-PIN"
 
-msgid "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
-msgstr "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
+msgid "Copyright (C) arxes-tolina GmbH"
+msgstr "Copyright (C) arxes-tolina GmbH"
 
 msgid "Could not find a token for this OTP value."
 msgstr "Zu diesem OTP-Wert konnte kein Token ermittelt werden."
@@ -451,6 +451,9 @@ msgstr "Einen neuen UserIdResolver anlegen"
 
 msgid "Currently this token will not be assigned to any users."
 msgstr "Dieser Token wird gerade keinem Benutzer zugewiesen."
+
+msgid "Custom timestamp format (optional)"
+msgstr ""
 
 msgid "DPW key"
 msgstr "DPW-Seed"
@@ -1301,6 +1304,9 @@ msgstr ""
 "Eine Dropdown-Liste wird angezeigt, aus der der Benutzer den Realm auswählen "
 "kann, in dem er sich im Selbstverwaltungsportal anmelden will."
 
+msgid "If checked, timestamps are saved during authentication"
+msgstr ""
+
 msgid ""
 "If checked, users who are not found in the useridresolvers are authenticated "
 "successfully. USE WITH CAUTION!"
@@ -1499,6 +1505,9 @@ msgstr "Tokendatei laden"
 
 msgid "Log Level"
 msgstr "Loglevel"
+
+msgid "Log usage timestamps in token info"
+msgstr ""
 
 msgid "Logged in as"
 msgstr "Eingeloggt als"
@@ -2338,6 +2347,9 @@ msgstr "Größenlimit"
 
 msgid "Skip first line (header information)"
 msgstr "Erste Zeile mit Spalten Überschriften überspringen"
+
+msgid "Specify a custom timestamp format to reduce information detail"
+msgstr ""
 
 msgid ""
 "Specify if the target token fail counter should be incremented / resets or "
@@ -3400,7 +3412,7 @@ msgstr ""
 msgid ""
 "You do not have the administrative right to get token info in this realm!"
 msgstr ""
-"Sie haben nicht die administrativen Rechte, um eine Token-Infoin diesem "
+"Sie haben nicht die administrativen Rechte, um eine Token-Info in diesem "
 "Realm abzufragen!"
 
 #, python-format

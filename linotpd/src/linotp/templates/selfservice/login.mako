@@ -32,7 +32,7 @@
 
 <head>
   <title>Token User Service - LinOTP</title>
-  <meta name="copyright" content="KeyIdentity GmbH">
+  <meta name="copyright" content="arxes-tolina GmbH">
   <meta name="keywords" content="LinOTP 2, self service">
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
@@ -107,7 +107,7 @@
       </div>  <!-- main-->
     </div>
     <div id="footer">
-      ${c.version} --- &copy; ${c.licenseinfo}
+      ${c.version} – ${c.licenseinfo}
     </div> <!-- footer -->
 
   </div> <!-- wrap -->
