@@ -267,15 +267,14 @@ class UserserviceController(BaseController):
 
         self.client = get_client(request) or ''
 
-        context = get_pre_context(self.client)
-
         # ------------------------------------------------------------------ --
 
         # build up general available variables
 
-        self.mfa_login = context['mfa_login']
-        self.autoassign = context['autoassign']
-        self.autoenroll = context['autoenroll']
+        context = get_pre_context(self.client)
+        self.mfa_login = context['settings']['mfa_login']
+        self.autoassign = context['settings']['autoassign']
+        self.autoenroll = context['settings']['autoenroll']
 
         # ------------------------------------------------------------------ --
 
@@ -1119,10 +1118,8 @@ class UserserviceController(BaseController):
             log.debug('done')
 
 
-
-
 ###############################################################################
-# context setup functionsa
+# context setup functions
     def pre_context(self):
         '''
         This is the authentication to self service
@@ -1132,9 +1129,9 @@ class UserserviceController(BaseController):
         '''
         try:
             pre_context = get_pre_context(self.client)
-            data = json.dumps(pre_context, indent=3)
-            return Response(
-                response=data, status=200, mimetype='application/json')
+            return sendResult(self.response,
+                              True,
+                              opt=pre_context)
 
         except Exception as e:
             log.exception("failed with error: %r" % e)
@@ -1153,14 +1150,10 @@ class UserserviceController(BaseController):
         '''
 
         try:
-
-            user = self.authUser.login
-            realm = self.authUser.realm
-
-            context = get_context(config, user, realm, self.client)
-            data = json.dumps(context, indent=3)
-            return Response(
-                response=data, status=200, mimetype='application/json')
+            context = get_context(config, self.authUser, self.client)
+            return sendResult(self.response,
+                              True,
+                              opt=context)
 
         except Exception as e:
             log.exception("[context] failed with error: %r" % e)
@@ -1197,10 +1190,7 @@ class UserserviceController(BaseController):
             if section != 'selfservice':
                 return res
 
-            user = self.authUser.login
-            realm = self.authUser.realm
-
-            context = get_context(config, user, realm, self.client)
+            context = get_context(config, self.authUser, self.client)
             for k, v in list(context.items()):
                 setattr(c, k, v)
 

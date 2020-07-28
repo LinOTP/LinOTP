@@ -387,13 +387,10 @@ class SelfserviceController(BaseController):
 
         context = get_pre_context(c.audit['client'])
 
-        mfa_login = context['mfa_login']
-        mfa_3_fields = context['mfa_3_fields']
-
-        c.otp = False
-        c.mfa_3_fields = False
-        if mfa_login and mfa_3_fields:
-            c.mfa_3_fields = True
+        mfa_login = bool(context['settings']['mfa_login'])
+        mfa_3_fields = bool(context['settings']['mfa_3_fields'])
+        c.mfa_login = mfa_login
+        c.mfa_3_fields = mfa_login and mfa_3_fields
 
         response = Response(render('/selfservice/login.mako'))
 

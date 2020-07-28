@@ -701,7 +701,7 @@ class TestSelfserviceController(TestController):
 
         response_dict = json.loads(response.body)
 
-        user = response_dict['user']
+        user = response_dict['detail']['user']['username']
         assert user == 'passthru_user1'
 
     def test_setdescription(self):

@@ -78,8 +78,6 @@ log = logging.getLogger(__name__)
 # const for encryption and iv
 SECRET_LEN = 32
 
-
-
 Cookie_Secret = binascii.hexlify(os.urandom(SECRET_LEN))
 Cookie_Cache = {}
 
@@ -90,6 +88,7 @@ def get_userinfo(user):
     uinfo = getUserInfo(uid, resolver, resolver_class)
     if 'cryptpass' in uinfo:
         del uinfo['cryptpass']
+    uinfo['realm'] = user.realm
 
     return uinfo
 
@@ -325,94 +324,67 @@ def get_pre_context(client):
     :return: context dict, with all rendering attributes
     """
 
-    pre_context = {}
-    pre_context["version"] = get_version()
-    pre_context["licenseinfo"] = get_copyright_info()
-
-    pre_context["default_realm"] = getDefaultRealm()
-    pre_context["realm_box"] = getRealmBox()
-
-    pre_context["realms"] = json.dumps(_get_realms_())
-
     # check for mfa_login, autoassign and autoenroll in policy definition
-
-    pre_context['mfa_login'] = False
-    policy = get_client_policy(client=client,
+    mfa_login_policy = get_client_policy(client=client,
                                scope='selfservice',
                                action='mfa_login')
-    if policy:
-        pre_context['mfa_login'] = True
-
-    pre_context['mfa_3_fields'] = False
-    policy = get_client_policy(client=client,
+    mfa_3_fields_policy = get_client_policy(client=client,
                                scope='selfservice',
                                action='mfa_3_fields')
-    if policy:
-        pre_context['mfa_3_fields'] = True
-
-    pre_context['autoassign'] = False
-    policy = get_client_policy(client=client,
+    autoassignment_policy = get_client_policy(client=client,
                                scope='enrollment',
                                action='autoassignment')
-    if policy:
-        pre_context['autoassign'] = True
-
-    pre_context['autoenroll'] = False
-    policy = get_client_policy(client=client,
+    autoenrollment_policy = get_client_policy(client=client,
                                scope='enrollment',
                                action='autoenrollment')
-    if policy:
-        pre_context['autoenroll'] = True
 
-    return pre_context
+    return {
+        "version": get_version(),
+        "copyright": get_copyright_info(),
+        "realms": _get_realms_(),
+        "settings": {
+            "default_realm": getDefaultRealm(),
+            "realm_box": getRealmBox(),
+            "mfa_login": bool(mfa_login_policy),
+            "mfa_3_fields": bool(mfa_3_fields_policy),
+            "autoassign": bool(autoassignment_policy),
+            "autoenroll": bool(autoenrollment_policy),
+        },
+    }
 
-
-def get_context(config, user, realm, client):
+def get_context(config, user, client):
     """
     get the user dependend rendering context
 
-    :param user: the selfservice user
+    :param user: the selfservice auth user
     :param realm: the selfservice realm
     :param client: the selfservice client info - required for pre_context
     :return: context dict, with all rendering attributes
 
     """
+    context = get_pre_context(client)
 
-    req_context = get_pre_context(client)
+    context["user"] = get_userinfo(user)
+    context["imprint"] = get_imprint(user.realm)
+    context["tokenArray"] = getTokenForUser(user)
 
-    req_context["user"] = user
-    req_context["realm"] = realm
-    authUser = User(user, realm)
-    req_context["imprint"] = get_imprint(req_context["realm"])
-    req_context["tokenArray"] = getTokenForUser(authUser)
-
-    # show the defined actions, which have a rendering
-    actions = getSelfserviceActions(authUser)
-    req_context["actions"] = actions
-    for policy in actions:
-        if "=" in policy:
+    context["actions"] = list()
+    for policy in getSelfserviceActions(user):
+        if "=" not in policy:
+            context["actions"].append(policy.strip())
+        else:
             (name, val) = policy.split('=')
+            name = name.strip()
             val = val.strip()
-            # try if val is a simple numeric -
-            # w.r.t. javascript evaluation
+            # try if settings value is a simple numeric
             try:
-                nval = int(val)
-            except:
-                nval = val
-            req_context[name.strip()] = nval
+                val = int(val)
+            except ValueError:
+                pass
 
-    req_context["dynamic_actions"] = add_dynamic_selfservice_enrollment(config, actions)
+            context["settings"][name] = val
 
-    # TODO: to establish all token local defined policies
-    additional_policies = add_dynamic_selfservice_policies(config, actions)
-    for policy in additional_policies:
-        req_context[policy] = -1
-
-    # TODO: add_local_policies() currently not implemented!!
-    req_context["otplen"] = -1
-    req_context["totp_len"] = -1
-
-    return req_context
+    return context
 
 
 ##############################################################################
