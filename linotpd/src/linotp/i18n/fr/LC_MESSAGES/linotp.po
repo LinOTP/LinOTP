@@ -407,8 +407,8 @@ msgstr "Copie le code PIN"
 msgid "Copy Token PIN"
 msgstr "Copiez le code PIN du token"
 
-msgid "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
-msgstr "Copyright (C) 2010 - 2019 KeyIdentity GmbH"
+msgid "Copyright (C) arxes-tolina GmbH"
+msgstr "Copyright (C) arxes-tolina GmbH"
 
 msgid "Could not find a token for this OTP value."
 msgstr "Aucun token n'a pu être déterminé pour cette valeur OTP."
@@ -462,6 +462,9 @@ msgstr "Créer un nouveau UserIdResolver"
 
 msgid "Currently this token will not be assigned to any users."
 msgstr "Ce token n'est actuellement attribué à aucun utilisateur."
+
+msgid "Custom timestamp format (optional)"
+msgstr ""
 
 msgid "DPW key"
 msgstr "DPW Seed"
@@ -1331,6 +1334,9 @@ msgstr ""
 "choisir le domaine dans lequel il veut se connecter via le portail d'auto-"
 "gestion."
 
+msgid "If checked, timestamps are saved during authentication"
+msgstr ""
+
 msgid ""
 "If checked, users who are not found in the useridresolvers are authenticated "
 "successfully. USE WITH CAUTION!"
@@ -1535,6 +1541,9 @@ msgstr "Charger le fichier token"
 
 msgid "Log Level"
 msgstr "Niveau de journalisation"
+
+msgid "Log usage timestamps in token info"
+msgstr ""
 
 msgid "Logged in as"
 msgstr "Connecté en tant que"
@@ -2386,6 +2395,9 @@ msgid "Sizelimit"
 msgstr "Limite de taille"
 
 msgid "Skip first line (header information)"
+msgstr ""
+
+msgid "Specify a custom timestamp format to reduce information detail"
 msgstr ""
 
 msgid ""

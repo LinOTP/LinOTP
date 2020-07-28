@@ -2657,6 +2657,30 @@ function load_system_config(){
             checkBoxes.push("sys_realmbox");
         }
         $("input:checkbox").val(checkBoxes);
+
+        /* *****************************************************************
+         * handle the tri state token.last_access, which are
+         *     False, True, or date time format
+         */
+
+        $('#token_last_access_check').prop('checked', false);
+        $('#token_last_access_entry').attr({'disabled': true});
+        $('#token_last_access_entry').val('');
+
+        var token_last_access = data.result.value['token.last_access'];
+
+         if (token_last_access !== undefined && token_last_access.toLowerCase() !== 'false') {
+
+            $('#token_last_access_check').prop('checked', true);
+            $('#token_last_access_entry').attr({'disabled': false});
+
+             if (token_last_access.toLowerCase() !== 'true') {
+                $('#token_last_access_entry').val(token_last_access);
+            }
+        }
+
+        /* ***************************************************************** */
+
         $('#sys_autoResyncTimeout').val(data.result.value.AutoResyncTimeout);
         $('#sys_mayOverwriteClient').val(data.result.value.mayOverwriteClient);
 
@@ -2702,6 +2726,19 @@ function load_system_config(){
         $('#sys_user_cache_expiration').val(exp || 123600);
         hide_waiting();
     });
+}
+
+/*
+ * click event handler for token.last_access
+ *  - will be called when the last_access_check checkbox is pressed
+ */
+function token_last_access_constrain(){
+
+    if ($('#token_last_access_check').is(':checked')) {
+        $('#token_last_access_entry').prop('disabled', false);
+    } else {
+        $('#token_last_access_entry').prop('disabled', true);
+    }
 }
 
 function save_system_config(){
@@ -2750,6 +2787,17 @@ function save_system_config(){
     if ($('#sys_passOnUserNoToken').is(':checked')) {
         passOUNToken = "True";
     }
+
+    /* parse the ui elements to prepare setting the token.last_access config value */
+    var token_last_access = "False";
+    if ($('#token_last_access_check').is(':checked')) {
+        token_last_access = "True";
+        var token_last_access_entry = $('#token_last_access_entry').val()
+        if (token_last_access_entry.length > 0) {
+            token_last_access = token_last_access_entry;
+        }
+    }
+
     var realmbox = "False";
     if ($("#sys_realmbox").is(':checked')) {
         realmbox = "True";
@@ -2787,6 +2835,7 @@ function save_system_config(){
         'user_lookup_cache.enabled': user_cache_enabled,
         'resolver_lookup_cache.enabled': resolver_cache_enabled,
         'user_lookup_cache.enabled': user_cache_enabled,
+        'token.last_access': token_last_access,
     };
 
     setSystemConfig(params);
@@ -3799,6 +3848,13 @@ $(document).ready(function(){
     $('#button_setexpiration').click(function(e) {
         openExpirationDialog();
     });
+
+    /* register the token.last_access click event handler for the checkbox*/
+    $("#token_last_access_check").click(
+        function(event) {
+            token_last_access_constrain();
+        }
+    );
 
     // Set icons for buttons
     $('body').enableUIComponents();
