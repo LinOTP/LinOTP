@@ -196,7 +196,7 @@ class AuditBase(object):
 
 def search(param, user=None, columns=None):
 
-    audit = context['Audit']
+    audit_obj = current_app.audit_obj
     search_dict = {}
 
     if "query" in param:
@@ -232,7 +232,7 @@ def search(param, user=None, columns=None):
         search_dict['user'] = user.login
         search_dict['realm'] = user.realm
 
-    result = audit.searchQuery(search_dict, rp_dict=rp_dict)
+    result = audit_obj.searchQuery(search_dict, rp_dict=rp_dict)
 
     lines = []
 
@@ -262,7 +262,7 @@ def search(param, user=None, columns=None):
         lines.append({'id': a['id'], 'cell': cell})
 
     # get the complete number of audit logs
-    total = audit.getTotal(search_dict)
+    total = audit_obj.getTotal(search_dict)
 
     return lines, total, page
 
