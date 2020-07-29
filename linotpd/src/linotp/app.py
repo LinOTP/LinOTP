@@ -830,6 +830,7 @@ def create_app(config_name='default', config_extra=None):
         setup_cache(app)
         setup_db(app)
         set_config()       # ensure `request_context` exists
+        setup_audit(app)
         initGlobalObject()
         generate_secret_key_file(app)
         reload_token_classes()
@@ -852,7 +853,6 @@ def create_app(config_name='default', config_extra=None):
 
         set_config()
         initGlobalObject()
-        setup_audit(app)
         setup_security_provider(app)
 
     app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
