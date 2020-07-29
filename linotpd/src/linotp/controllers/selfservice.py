@@ -35,7 +35,7 @@ selfservice controller - This is the controller for the self service interface,
 import os
 import json
 
-from flask import redirect, Response
+from flask import redirect, Response, current_app, g
 from flask_babel import gettext as _
 from werkzeug.exceptions import Unauthorized
 
@@ -138,13 +138,9 @@ class SelfserviceController(BaseController):
             c.version = get_version()
             c.licenseinfo = get_copyright_info()
 
-            c.audit = request_context['audit']
-            c.audit['success'] = False
+            g.audit['success'] = False
             self.client = get_client(request)
-            c.audit['client'] = self.client
-
-            audit = config.get('audit')
-            request_context['Audit'] = audit
+            g.audit['client'] = self.client
 
             # -------------------------------------------------------------- --
 
@@ -221,9 +217,9 @@ class SelfserviceController(BaseController):
                                                   self.client)
 
                     if not valid_session:
-                        c.audit['action'] = request.path[1:]
-                        c.audit['info'] = "session expired"
-                        audit.log(c.audit)
+                        g.audit['action'] = request.path[1:]
+                        g.audit['info'] = "session expired"
+                        current_app.audit_obj.log(g.audit)
 
                         Unauthorized('No valid session')
 
@@ -301,20 +297,19 @@ class SelfserviceController(BaseController):
         action = request_context['action']
 
         try:
-            if c.audit['action'] in ['selfservice/index']:
+            if g.audit['action'] in ['selfservice/index']:
                 log.debug("[__after__] authenticating as %s in realm %s!"
                           % (c.user, c.realm))
 
-                c.audit['user'] = c.user
-                c.audit['realm'] = c.realm
-                c.audit['success'] = True
+                g.audit['user'] = c.user
+                g.audit['realm'] = c.realm
+                g.audit['success'] = True
 
                 if 'serial' in param:
-                    c.audit['serial'] = param['serial']
-                    c.audit['token_type'] = getTokenType(param['serial'])
+                    g.audit['serial'] = param['serial']
+                    g.audit['token_type'] = getTokenType(param['serial'])
 
-                audit = config.get('audit')
-                audit.log(c.audit)
+                current_app.audit_obj.log(g.audit)
 
             return response
 
@@ -385,7 +380,7 @@ class SelfserviceController(BaseController):
 
         c.realmbox = getRealmBox()
 
-        context = get_pre_context(c.audit['client'])
+        context = get_pre_context(g.audit['client'])
 
         mfa_login = bool(context['settings']['mfa_login'])
         mfa_3_fields = bool(context['settings']['mfa_3_fields'])

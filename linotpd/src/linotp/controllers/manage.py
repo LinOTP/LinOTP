@@ -32,8 +32,7 @@ import os
 import logging
 import json
 
-import flask
-from flask import current_app, redirect
+from flask import current_app, g, redirect
 from flask_babel import gettext as _
 
 from linotp.flap import (
@@ -103,9 +102,8 @@ class ManageController(BaseController):
         action = request_context['action']
 
         try:
-            c.audit = request_context['audit']
-            c.audit['success'] = False
-            c.audit['client'] = get_client(request)
+            g.audit['success'] = False
+            g.audit['client'] = get_client(request)
 
             c.version = get_version()
             c.version_ref = base64.encodebytes(c.version.encode())[:6]
@@ -161,17 +159,16 @@ class ManageController(BaseController):
         :return: return the response
         '''
 
-        if c.audit['action'] in ['manage/tokenview_flexi',
+        if g.audit['action'] in ['manage/tokenview_flexi',
                                  'manage/userview_flexi' ]:
-            c.audit['administrator'] = getUserFromRequest(request).get("login")
+            g.audit['administrator'] = getUserFromRequest(request).get("login")
             if 'serial' in request.params:
                 serial = request.params['serial']
-                c.audit['serial'] = serial
-                c.audit['token_type'] = getTokenType(serial)
+                g.audit['serial'] = serial
+                g.audit['token_type'] = getTokenType(serial)
 
-            c.audit['action_detail'] += linotp.lib.audit.base.get_token_num_info()
-            audit = config.get('audit')
-            audit.log(c.audit)
+            g.audit['action_detail'] += linotp.lib.audit.base.get_token_num_info()
+            current_app.audit_obj.log(g.audit)
 
         return response
 
@@ -451,7 +448,7 @@ class ManageController(BaseController):
                 "total": c.resultset['tokens'],
                 "rows": lines }
 
-            c.audit['success'] = True
+            g.audit['success'] = True
 
             Session.commit()
             # The flexi handler should support std LinOTP output
@@ -560,7 +557,7 @@ class ManageController(BaseController):
                 "total": c.userNum,
                 "rows": lines }
 
-            c.audit['success'] = True
+            g.audit['success'] = True
 
             Session.commit()
             return sendResult(response, res)

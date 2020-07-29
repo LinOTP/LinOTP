@@ -30,6 +30,7 @@ validate controller - to check the authentication request
 
 import logging
 
+from flask import current_app, g
 from flask_babel import gettext as _
 
 from linotp import flap
@@ -102,11 +103,7 @@ class ValidateController(BaseController):
         action = request_context['action']
 
         try:
-            c.audit = request_context['audit']
-            c.audit['client'] = get_client(request)
-            audit = config.get('audit')
-            request_context['Audit'] = audit
-            return
+            g.audit['client'] = get_client(request)
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
@@ -124,8 +121,7 @@ class ValidateController(BaseController):
         :return: return the response
         '''
 
-        audit = config.get('audit')
-        audit.log(c.audit)
+        current_app.audit_obj.log(g.audit)
         return response
 
 
@@ -159,9 +155,9 @@ class ValidateController(BaseController):
             options = {}
             options['challenge'] = challenge
 
-        c.audit['user'] = user.login
+        g.audit['user'] = user.login
         realm = user.realm or getDefaultRealm()
-        c.audit['realm'] = realm
+        g.audit['realm'] = realm
 
         # AUTHORIZATION Pre Check
         # we need to overwrite the user.realm in case the
@@ -172,25 +168,25 @@ class ValidateController(BaseController):
         vh = ValidationHandler()
         (ok, opt) = vh.checkUserPass(user, passw, options=options)
 
-        c.audit.update(request_context.get('audit'))
-        c.audit['success'] = ok
+        g.audit.update(request_context.get('audit', {}))
+        g.audit['success'] = ok
 
         if ok:
             # AUTHORIZATION post check
-            check_auth_tokentype(c.audit['serial'], exception=True, user=user)
-            check_auth_serial(c.audit['serial'], exception=True, user=user)
+            check_auth_tokentype(g.audit['serial'], exception=True, user=user)
+            check_auth_serial(g.audit['serial'], exception=True, user=user)
 
         # add additional details
         if is_auth_return(ok, user=user):
             if opt is None:
                 opt = {}
             if ok:
-                opt['realm'] = c.audit.get('realm')
-                opt['user'] = c.audit.get('user')
-                opt['tokentype'] = c.audit.get('token_type')
-                opt['serial'] = c.audit.get('serial')
+                opt['realm'] = g.audit.get('realm')
+                opt['user'] = g.audit.get('user')
+                opt['tokentype'] = g.audit.get('token_type')
+                opt['serial'] = g.audit.get('serial')
             else:
-                opt['error'] = c.audit.get('action_detail')
+                opt['error'] = g.audit.get('action_detail')
 
         return (ok, opt)
 
@@ -245,13 +241,13 @@ class ValidateController(BaseController):
             except (AuthorizeException, ParameterError) as exx:
                 log.warning("[check] authorization failed for validate/check: %r"
                             % exx)
-                c.audit['success'] = False
-                c.audit['info'] = str(exx)
+                g.audit['success'] = False
+                g.audit['info'] = str(exx)
                 ok = False
                 if is_auth_return(ok):
                     if opt is None:
                         opt = {}
-                    opt['error'] = c.audit.get('info')
+                    opt['error'] = g.audit.get('info')
 
             Session.commit()
 
@@ -272,7 +268,7 @@ class ValidateController(BaseController):
         except Exception as exx:
             log.exception("[check] validate/check failed: %r" % exx)
             # If an internal error occurs or the SMS gateway did not send the SMS, we write this to the detail info.
-            c.audit['info'] = "%r" % exx
+            g.audit['info'] = "%r" % exx
             Session.rollback()
             return sendResult(response, False, 0)
 
@@ -316,15 +312,15 @@ class ValidateController(BaseController):
                                       serial=serial, password=passw,
                                       use_offline=use_offline)
 
-            c.audit['success'] = ok
-            c.audit['info'] = str(opt)
+            g.audit['success'] = ok
+            g.audit['info'] = str(opt)
 
             Session.commit()
             return sendResult(response, ok, 0, opt=opt)
 
         except Exception as exx:
             log.exception("check_status failed: %r" % exx)
-            c.audit['info'] = str(exx)
+            g.audit['info'] = str(exx)
             Session.rollback()
             return sendResult(response, False, 0)
 
@@ -373,13 +369,13 @@ class ValidateController(BaseController):
             try:
                 vh = ValidationHandler()
                 ok, opt = vh.checkYubikeyPass(passw)
-                c.audit['success'] = ok
+                g.audit['success'] = ok
 
             except AuthorizeException as exx:
                 log.warning("[check_yubikey] authorization failed for validate/check_yubikey: %r"
                             % exx)
-                c.audit['success'] = False
-                c.audit['info'] = str(exx)
+                g.audit['success'] = False
+                g.audit['info'] = str(exx)
                 ok = False
 
             Session.commit()
@@ -387,7 +383,7 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.exception("[check_yubikey] validate/check_yubikey failed: %r" % exx)
-            c.audit['info'] = str(exx)
+            g.audit['info'] = str(exx)
             Session.rollback()
             return sendResult(response, False, 0)
 
@@ -405,8 +401,8 @@ class ValidateController(BaseController):
                 (ok, opt) = self._check(param)
             except AuthorizeException as acc:
                 log.warning("[check_url] authorization failed for validate/check_url: %r" % acc)
-                c.audit['success'] = False
-                c.audit['action_detail'] = str(acc)
+                g.audit['success'] = False
+                g.audit['action_detail'] = str(acc)
                 ok = False
 
             Session.commit()
@@ -525,7 +521,7 @@ class ValidateController(BaseController):
             value['value'] = ok
             value['failcount'] = int(opt.get('failcount', 0))
 
-            c.audit['success'] = ok
+            g.audit['success'] = ok
             Session.commit()
 
             qr = param.get('qr', None)
@@ -544,7 +540,7 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.exception("[check_t] validate/check_t failed: %r" % exx)
-            c.audit['info'] = str(exx)
+            g.audit['info'] = str(exx)
             Session.rollback()
             return sendResult(response, False, 0)
 
@@ -595,14 +591,14 @@ class ValidateController(BaseController):
             # finish the result
 
             if 'serial' in _opt:
-                c.audit['serial'] = _opt['serial']
+                g.audit['serial'] = _opt['serial']
 
             if 'token_type' in _opt:
-                c.audit['token_type'] = _opt['token_type']
+                g.audit['token_type'] = _opt['token_type']
 
-            c.audit['info'] = 'accept transaction: %r' % ok
+            g.audit['info'] = 'accept transaction: %r' % ok
 
-            c.audit['success'] = ok
+            g.audit['success'] = ok
             Session.commit()
 
             return sendResult(response, ok)
@@ -610,7 +606,7 @@ class ValidateController(BaseController):
         except Exception as exx:
 
             log.exception("validate/accept_transaction failed: %r" % exx)
-            c.audit['info'] = "%r" % exx
+            g.audit['info'] = "%r" % exx
             Session.rollback()
 
             return sendResult(response, False, 0)
@@ -662,14 +658,14 @@ class ValidateController(BaseController):
             # finish the result
 
             if 'serial' in _opt:
-                c.audit['serial'] = _opt['serial']
+                g.audit['serial'] = _opt['serial']
 
             if 'token_type' in _opt:
-                c.audit['token_type'] = _opt['token_type']
+                g.audit['token_type'] = _opt['token_type']
 
-            c.audit['info'] = 'reject transaction: %r' % ok
+            g.audit['info'] = 'reject transaction: %r' % ok
 
-            c.audit['success'] = ok
+            g.audit['success'] = ok
             Session.commit()
 
             return sendResult(response, ok)
@@ -677,7 +673,7 @@ class ValidateController(BaseController):
         except Exception as exx:
 
             log.exception("validate/reject_transaction failed: %r" % exx)
-            c.audit['info'] = "%r" % exx
+            g.audit['info'] = "%r" % exx
             Session.rollback()
 
             return sendResult(response, False, 0)
@@ -737,12 +733,12 @@ class ValidateController(BaseController):
 
                         serial = tok.getSerial()
 
-            c.audit['serial'] = serial
+            g.audit['serial'] = serial
 
             options['scope'] = {"check_s": True}
             vh = ValidationHandler()
             (ok, opt) = vh.checkSerialPass(serial, passw, options=options)
-            c.audit['success'] = ok
+            g.audit['success'] = ok
             Session.commit()
 
             qr = param.get('qr', None)
@@ -761,7 +757,7 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.exception("[check_s] validate/check_s failed: %r" % exx)
-            c.audit['info'] = str(exx)
+            g.audit['info'] = str(exx)
             Session.rollback()
             return sendResult(response, False, id=0, status=False)
 
@@ -802,8 +798,8 @@ class ValidateController(BaseController):
                 (ok, opt) = self._check(param)
             except AuthorizeException as e:
                 log.warning("[simplecheck] validate/simplecheck: %r" % e)
-                c.audit['success'] = False
-                c.audit['action_detail'] = str(e)
+                g.audit['success'] = False
+                g.audit['action_detail'] = str(e)
                 ok = False
 
             Session.commit()
@@ -866,9 +862,9 @@ class ValidateController(BaseController):
 
         try:
             user = getUserFromParam(param)
-            c.audit['user'] = user.login
-            c.audit['realm'] = user.realm or getDefaultRealm()
-            c.audit['success'] = 0
+            g.audit['user'] = user.login
+            g.audit['realm'] = user.realm or getDefaultRealm()
+            g.audit['success'] = 0
 
             (ret, opt) = self._check(param)
 
@@ -882,12 +878,12 @@ class ValidateController(BaseController):
                             'sms submitted']
                 and len(state) > 0):
                 ret = True
-                c.audit['success'] = 1
+                g.audit['success'] = 1
 
             # sending sms failed should be an error
             elif message in ['sending sms failed']:
                 ret = True
-                c.audit['success'] = 0
+                g.audit['success'] = 0
 
             # anything else is an exception
             else:
@@ -900,7 +896,7 @@ class ValidateController(BaseController):
             log.exception("[smspin] validate/smspin failed: %r" % exx)
             # If an internal error occurs or the SMS gateway did not send
             # the SMS, we write this to the detail info.
-            c.audit['info'] = str(exx)
+            g.audit['info'] = str(exx)
             Session.rollback()
             return sendResult(response, False, 0)
 
@@ -954,8 +950,8 @@ class ValidateController(BaseController):
             if realms:
                 realm = realms[0]
 
-            c.audit['user'] = t_owner or ''
-            c.audit['realm'] = realm
+            g.audit['user'] = t_owner or ''
+            g.audit['realm'] = realm
 
             # --------------------------------------------------------------- --
 
@@ -966,8 +962,8 @@ class ValidateController(BaseController):
             # --------------------------------------------------------------- --
 
             token.pair(pairing_data)
-            c.audit['success'] = 1
-            c.audit['serial'] = token.getSerial()
+            g.audit['success'] = 1
+            g.audit['serial'] = token.getSerial()
 
             Session.commit()
             return sendResult(response, False)
@@ -976,7 +972,7 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.exception("validate/pair failed: %r" % exx)
-            c.audit['info'] = str(exx)
+            g.audit['info'] = str(exx)
             Session.rollback()
             return sendResult(response, False, 0, status=False)
 

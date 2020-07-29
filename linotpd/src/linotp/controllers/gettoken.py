@@ -29,6 +29,8 @@ gettoken controller - to retrieve OTP values
 
 import logging
 
+from flask import g, current_app
+
 from linotp.flap import (
     config, render_mako as render, request, response,
     tmpl_context as c,
@@ -91,8 +93,7 @@ class GettokenController(BaseController):
         action = request_context['action']
 
         try:
-            c.audit = request_context['audit']
-            c.audit['client'] = get_client(request)
+            g.audit['client'] = get_client(request)
             check_session(request)
 
         except Exception as exx:
@@ -110,14 +111,13 @@ class GettokenController(BaseController):
         :return: return the response
         '''
 
-        c.audit['administrator'] = getUserFromRequest(request).get("login")
+        g.audit['administrator'] = getUserFromRequest(request).get("login")
         if 'serial' in request.params:
             serial = request.params['serial']
-            c.audit['serial'] = serial
-            c.audit['token_type'] = getTokenType(serial)
+            g.audit['serial'] = serial
+            g.audit['token_type'] = getTokenType(serial)
 
-        audit = config.get('audit')
-        audit.log(c.audit)
+        current_app.audit_obj.log(g.audit)
 
         return response
 
@@ -165,7 +165,7 @@ class GettokenController(BaseController):
             ret = get_multi_otp(serial, count=int(count), curTime=curTime)
             ret["serial"] = serial
 
-            c.audit['success'] = True
+            g.audit['success'] = True
             Session.commit()
 
             if view:
@@ -224,9 +224,9 @@ class GettokenController(BaseController):
             user = getUserFromParam(param)
             curTime = getParam(param, "curTime", optional)
 
-            c.audit['user'] = user.login
+            g.audit['user'] = user.login
             if "" != user.login:
-                c.audit['realm'] = user.realm or getDefaultRealm()
+                g.audit['realm'] = user.realm or getDefaultRealm()
 
             if serial:
                 log.debug("[getotp] retrieving OTP value for token %s", serial)
@@ -264,11 +264,11 @@ class GettokenController(BaseController):
                 if max_count <= 0:
                     return sendError(response, "The policy forbids receiving"
                                      " OTP values for the token %s in "
-                                     "this realm" % serial , 1)
+                                     "this realm" % serial, 1)
 
                 (res, pin, otpval, passw) = getOtp(serial, curTime=curTime)
 
-            c.audit['success'] = True
+            g.audit['success'] = True
 
             if int(res) < 0:
                 ret['result'] = False
