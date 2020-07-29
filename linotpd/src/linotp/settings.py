@@ -322,6 +322,10 @@ _config_schema = ConfigSchema([
                help=("Whether users can retrieve OTPs for their own tokens. "
                      "This is helpful for corner cases like printed "
                      "OTP lists.")),
+    ConfigItem("PROFILE", bool, convert=to_boolean, default=False,
+               help=("Whether profiling is enabled for WSGI requests. This "
+                     "is only interesting for LinOTP developers. Do not use "
+                     "it in production or you will regret it.")),
 ])
 
 

@@ -910,6 +910,26 @@ def create_app(config_name='default', config_extra=None):
     # Command line handler
     app.cli.add_command(init_db_command)
 
+    # Enable profiling if desired. The options are debatable and could be
+    # made more configurable. OTOH, we could all have a pony.
+    profiling = False
+    if app.config['PROFILE']:
+        try:                    # Werkzeug >= 1.0.0
+            from werkzeug.middleware.profiler import ProfilerMiddleware
+            profiling = True
+        except ImportError:
+            try:                # Werkzeug < 1.0.0
+                from werkzeug.contrib.profiler import ProfilerMiddleware
+                profiling = True
+            except ImportError:
+                log.error("PROFILE is enabled but ProfilerMiddleware could "
+                          "not be imported. No profiling for you!")
+        if profiling:
+            app.wsgi_app = ProfilerMiddleware(
+                app.wsgi_app, profile_dir='profile',
+                restrictions=[30], sort_by=['cumulative'])
+            log.info("PROFILE is enabled (do not use this in production!)")
+
     return app
 
 def erase_confirm(ctx, param, value):
