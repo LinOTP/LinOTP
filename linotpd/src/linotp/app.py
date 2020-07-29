@@ -377,9 +377,7 @@ class LinOTPApp(Flask):
 
         request_context['Client'] = client
 
-        Audit = config['audit']
-        request_context['Audit'] = Audit
-        request_context['audit'] = Audit.initialize(request, client=client)
+        flask_g.audit = self.audit_obj.initialize(request, client=client)
 
         authUser = None
         try:
@@ -756,8 +754,7 @@ def setup_audit(app):
     `load_environment()` and as such should be looked at with a microscope,
     probably when we're fixing auditing.
     """
-    c = flask_g.request_context['config']
-    c['audit'] = getAudit(c)
+    app.audit_obj = getAudit(app.config)
 
 
 def _configure_app(app, config_name='default', config_extra=None):
