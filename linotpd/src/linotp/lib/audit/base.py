@@ -83,16 +83,8 @@ class AuditBase(object):
 
     def __init__(self, config):
         self.config = config
-
-        rootdir = current_app.getConfigRootDirectory()
-
         self.publicKeyFilename = self.config.get("AUDIT_PUBLIC_KEY_FILE")
-        if not self.publicKeyFilename:
-            self.publicKeyFilename = os.path.join(rootdir, "public.pem")
-
         self.privateKeyFilename = self.config.get("AUDIT_PRIVATE_KEY_FILE")
-        if not self.privateKeyFilename:
-            self.privateKeyFilename = os.path.join(rootdir, "private.pem")
 
     def initialize(self, request, client=None):
         # defaults
