@@ -109,8 +109,6 @@ class SecurityProvider(object):
         '''
         load the security modules configuration
         '''
-        p_config = {}
-        p_config.update(config)
 
         try:
             # load backward compatible defaults
