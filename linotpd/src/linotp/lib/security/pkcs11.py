@@ -188,6 +188,28 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
     Class that handles all AES stuff
     '''
 
+    # Add schema for validating configuration in settings.py
+    schema = {
+        "type" : "object",
+        "properties" : {
+            "module": {"type" : "string"},
+            "library": {"type" : "string"},
+            "password": {"type" : "string"},
+            "slotid": {"type" : "number"},
+            "configLabel": {"type" : "string"},
+            "tokenLabel": {"type" : "string"},
+            "valueLabel": {"type" : "string"},
+            "defaultLabel": {"type" : "string"},
+            "configHandle": {"type" : "number"},
+            "tokenHandle": {"type" : "number"},
+            "valueHandle": {"type" : "number"},
+            "defaultHandle": {"type" : "number"}
+        },
+        "required": [
+            "module", "library", "password", "slotid", "defaultLabel"
+        ],
+    }
+
     def __init__(self, config=None, add_conf=None):
         output("debug", "[__init__] Initializing the Pkcs11 Security Module")
         self.hSession = None

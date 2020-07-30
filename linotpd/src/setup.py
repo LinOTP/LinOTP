@@ -61,6 +61,7 @@ install_requirements = [
     'click',
     # Pygments 2.6.0,1 breaks tests so exclude it
     "Pygments < 2.6.0",
+    'jsonschema',
 ]
 
 # Requirements needed to run all the tests

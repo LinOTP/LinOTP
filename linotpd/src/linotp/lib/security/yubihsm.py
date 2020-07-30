@@ -70,6 +70,28 @@ class YubiSecurityModule(SecurityModule):
     Class that handles all AES stuff
     '''
 
+    # Add schema for validating configuration in settings.py
+    schema = {
+        "type" : "object",
+        "properties" : {
+            "module": {"type" : "string"},
+            "password": {"type" : "string"},
+            "slotid": {"type" : "number"},
+            "configLabel": {"type" : "string"},
+            "tokenLabel": {"type" : "string"},
+            "valueLabel": {"type" : "string"},
+            "defaultLabel": {"type" : "string"},
+            "configHandle": {"type" : "number"},
+            "tokenHandle": {"type" : "number"},
+            "valueHandle": {"type" : "number"},
+            "defaultHandle": {"type" : "number"},
+            "device": {"typer": "string"},
+        },
+        "required": [
+            "module", "device", "password"
+        ],
+    }
+
     def __init__(self, config=None, add_conf=None):
 
         log.debug("[__init__] Initializing the Yubi Security Module with "
