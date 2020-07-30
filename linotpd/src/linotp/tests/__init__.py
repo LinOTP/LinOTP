@@ -54,7 +54,7 @@ import logging
 import os
 import warnings
 
-from flask import Flask, request, Response
+from flask import Flask, g, request, Response
 from flask import _request_ctx_stack as flask_request_ctx_stack
 from unittest import TestCase
 from uuid import uuid4
@@ -183,6 +183,7 @@ class TestController(TestCase):
         as class atributes
         """
         self.app = app
+        g.audit = {}            # ensure `g.audit` exists
 
         # Provide a test client instance via class variable
         #

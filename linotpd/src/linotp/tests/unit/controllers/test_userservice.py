@@ -32,6 +32,8 @@ import unittest
 
 from mock import patch
 
+import flask
+
 from linotp.model.meta import Session
 from linotp.lib.user import User
 from linotp.controllers.userservice import UserserviceController
@@ -47,40 +49,27 @@ class MockUserserviceController(UserserviceController):
         self.response = None
         return
 
-# -------------------------------------------------------------------------- --
 
-# we use a mock class for the global c
+@patch('linotp.controllers.userservice.sendResult')
+def test_otp_auth(mock_sendResult, app):
+    """
+    verify that the unbound local error is not raised anymore
+    """
 
+    class MockUser(User):
+        def checkPass(self, password):
+            return False
 
-class Mock_C(object):
-    audit = {}
+    mock_sendResult.return_value = 'ok'
 
-# -------------------------------------------------------------------------- --
+    user = MockUser('hans', 'realm')
+    passw = 'test123'
+    param = {'otp': '123456'}
 
+    unboundLocalError_raised = False
 
-class TestUserservice(unittest.TestCase):
-
-    def tearDown(self):
-        Session.remove()
-
-    @patch('linotp.controllers.userservice.c', Mock_C())
-    @patch('linotp.controllers.userservice.sendResult')
-    def test_otp_auth(self, mock_sendResult):
-        """
-        verify that the unbound local error is not raised anymore
-        """
-
-        class MockUser(User):
-            def checkPass(self, password):
-                return False
-
-        mock_sendResult.return_value = 'ok'
-
-        user = MockUser('hans', 'realm')
-        passw = 'test123'
-        param = {'otp': '123456'}
-
-        unboundLocalError_raised = False
+    with app.app_context():
+        flask.g.audit = {}
 
         try:
             userservice = MockUserserviceController()
@@ -89,9 +78,7 @@ class TestUserservice(unittest.TestCase):
         except UnboundLocalError as exx:
             unboundLocalError_raised = exx
 
-        assert not unboundLocalError_raised, unboundLocalError_raised
-        assert result == 'ok'
-
-        return
+    assert not unboundLocalError_raised, unboundLocalError_raised
+    assert result == 'ok'
 
 # eof

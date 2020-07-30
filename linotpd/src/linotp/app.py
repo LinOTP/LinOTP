@@ -313,7 +313,9 @@ class LinOTPApp(Flask):
     def finalise_request(self, exc):
         meta.Session.remove()
         # free the lock on the scurityPovider if any
-        if c.get('sep'):
+        # Make sure this doesn't crash in the absence of a `request_context`,
+        # which can happen in certain tests.
+        if hasattr(flask_g, 'request_context') and c.get('sep', False):
             c.sep.dropSecurityModule()
         closeResolvers()
 

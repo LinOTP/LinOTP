@@ -27,6 +27,8 @@
 import unittest
 import pytest
 
+from flask import g
+
 from mock import patch
 
 from linotp.lib.token import TokenHandler
@@ -89,7 +91,7 @@ class TestAutoEnroll(unittest.TestCase):
         mocked_getTokensOfType.return_value = [pwtoken]
         mocked_assignToken.return_value = True
 
-        mocked_context = {'audit': {}}
+        g.audit = {}
 
         res = thdle.auto_assign_otp_only(otp, user, options)
 
