@@ -111,40 +111,25 @@ class SecurityProvider(object):
         '''
 
         try:
-            # load backward compatible defaults
-            default_config = self.__createDefault__(config)
-            self.config.update(default_config)
-
-            if 'linotpActiveSecurityModule' in config:
-                # look the active security module up
-                self.activeOne = config['linotpActiveSecurityModule']
-                log.debug("[SecurityProvider:load_config] setting active"
-                          " security module: %s", self.activeOne)
-
-            for key in config:
-
-                # look the active security module up
-                if key == 'linotpActiveSecurityModule':
-                    self.activeOne = config.get(key)
-                    log.debug(
-                        "[SecurityProvider:load_config] setting active security module: %s" % self.activeOne)
-
-                if key.startswith('linotpSecurity'):
-                    entry = key.replace('linotpSecurity.', '')
-                    try:
-                        (id, val) = entry.split('.')
-                    except Exception as e:
-                        error = ('[SecurityProvider:load_config] failed to '
-                                 'identify config entry: %r ' % key)
-                        log.exception(error)
-                        raise HSMException(error, id=707)
-
-                    if id in self.config:
-                        id_config = self.config.get(id)
-                        id_config[val] = config.get(key)
-                    else:
-                        self.config[id] = {val: config.get(key)}
-
+            security_provider = config.get('ACTIVE_SECURITY_MODULE', 'default')
+            self.activeOne = security_provider # self.active one is legacy.. therefore we set it here
+            log.debug("[SecurityProvider:load_config] setting active"
+                      " security module: %s", self.activeOne)
+            
+            # add active provider config to self.config with the active
+            # provider as key and the config dict as value
+            if security_provider == 'default':
+                security_provider_config = self.__createDefault__(config)
+                self.config.update(security_provider_config)        
+            
+            if self.activeOne ==  'pkcs11':
+                security_provider_config = {'pkcs11': config.get('HSM_PKCS11_CONFIG')}       
+                self.config.update(security_provider_config)
+            
+            if self.activeOne == 'yubihsm':
+                security_provider_config = {'yubihsm': config.get('HSM_YUBIHSM_CONFIG')}  
+                self.config.update(security_provider_config)
+            
         except Exception as e:
             log.exception("[load_config] failed to identify module")
             error = "failed to identify module: %r " % e
