@@ -137,6 +137,7 @@ RUN apt-get install \
         python3-beaker python3-passlib python3-cryptography python3-bcrypt python3-pygments \
         python3-decorator python3-docutils \
         python3-flask-babel python3-formencode python3-httplib2 \
+        python3-jsonschema \
         python3-ldap python3-mako python3-mysqldb python3-netaddr \
         python3-pycryptodome \
         python3-pyrad python3-qrcode python3-routes \
@@ -150,7 +151,7 @@ RUN apt-get install \
         dh-python \
         python3-flask \
         python3-psycopg2 python3-pymysql \
-        softhsm2
+        softhsm2 
 
 # flask-mako is not yet packaged, so install using pip
 RUN apt-get install python3-pip python3-dev python3-wheel swig gcc libssl-dev \
