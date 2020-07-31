@@ -34,6 +34,8 @@ import os
 
 import json
 
+from flask import g
+
 from sqlalchemy import or_, and_
 from sqlalchemy import func
 from sqlalchemy.exc import ResourceClosedError
@@ -683,9 +685,9 @@ class TokenHandler(object):
         # if found, assign the found token to the user.login
         try:
             self.assignToken(serial, user, pin="")
-            context['audit']['serial'] = serial
-            context['audit']['info'] = "Token with otp auto assigned"
-            context['audit']['token_type'] = token.getType()
+            g.audit['serial'] = serial
+            g.audit['info'] = "Token with otp auto assigned"
+            g.audit['token_type'] = token.getType()
             return True
         except Exception as exx:
             log.exception("Failed to assign token: %r", exx)
@@ -768,9 +770,9 @@ class TokenHandler(object):
         # if found, assign the found token to the user.login
         try:
             self.assignToken(serial, user, pin)
-            context['audit']['serial'] = serial
-            context['audit']['info'] = "Token auto assigned"
-            context['audit']['token_type'] = token.getType()
+            g.audit['serial'] = serial
+            g.audit['info'] = "Token auto assigned"
+            g.audit['token_type'] = token.getType()
             ret = True
         except Exception as exx:
             log.exception("[auto_assignToken] Failed to assign token: %r", exx)

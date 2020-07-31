@@ -31,6 +31,8 @@ migration handler -
 
 from datetime import datetime
 
+from flask import g
+
 from linotp.lib.tools import ToolsHandler
 from linotp.lib.user import getUserInfo
 from linotp.lib.resolver import getResolverObject
@@ -72,13 +74,12 @@ class MigrateResolverHandler(ToolsHandler):
             raise Exception("Missing src or target resolver defintion!")
 
 
-        audit = context.get('audit')
         now = datetime.now()
         stime = now.strftime("%s")
 
-        audit['action_detail'] = ("migration from %s to %s"
-                                  % (src['resolvername'],
-                                     target['resolvername']))
+        g.audit['action_detail'] = ("migration from %s to %s"
+                                    % (src['resolvername'],
+                                       target['resolvername']))
 
         ret['src'] = src
         ret['target'] = target
@@ -127,10 +128,9 @@ class MigrateResolverHandler(ToolsHandler):
         ret['value'] = True
         ret['message'] = (_("%d tokens of %d migrated")
                             % (num_migration, len(tokens)))
-        audit['info'] = "[%s] %s" % (stime, ret['message'])
-        audit['serial'] = ",".join(list(serials))
-        audit['success'] = True
-        context['audit'] = audit
+        g.audit['info'] = "[%s] %s" % (stime, ret['message'])
+        g.audit['serial'] = ",".join(list(serials))
+        g.audit['success'] = True
 
         return ret
 

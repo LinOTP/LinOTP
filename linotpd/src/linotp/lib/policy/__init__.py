@@ -31,6 +31,8 @@ import re
 
 from copy import deepcopy
 
+from flask import g
+
 import linotp
 
 from linotp.lib.user import User
@@ -2707,8 +2709,8 @@ def check_auth_tokentype(serial, exception=False, user=None):
 
     if res is False and exception:
 
-        context['audit']["action_detail"] = ("failed due to "
-                                             "authorization/tokentype policy")
+        g.audit["action_detail"] = ("failed due to "
+                                    "authorization/tokentype policy")
 
         raise AuthorizeException("Authorization for token %s with type %s "
                                  "failed on client %s" % (serial, tokentype,
@@ -2770,8 +2772,8 @@ def check_auth_serial(serial, exception=False, user=None):
         res = True
 
     if res is False and exception:
-        context['audit']["action_detail"] = ("failed due to authorization/"
-                                            "serial policy")
+        g.audit["action_detail"] = ("failed due to authorization/"
+                                    "serial policy")
         raise AuthorizeException("Authorization for token %s failed on "
                                  "client %s" % (serial, client))
 

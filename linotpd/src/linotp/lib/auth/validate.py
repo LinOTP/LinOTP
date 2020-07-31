@@ -30,6 +30,8 @@ from hashlib import sha256
 from datetime import datetime
 import binascii
 
+from flask import g
+
 from linotp.flap import config as env
 
 from linotp.lib.auth.finishtokens import FinishTokens
@@ -492,7 +494,6 @@ class ValidationHandler(object):
         serial = None
         resolverClass = None
         uid = None
-        audit = context['audit']
         user_exists = False
 
         if user is not None and not user.is_empty:
@@ -505,11 +506,11 @@ class ValidationHandler(object):
                 pass_on = context.get('Config').get(
                     'linotp.PassOnUserNotFound', False)
                 if pass_on and 'true' == pass_on.lower():
-                    audit['action_detail'] = (
+                    g.audit['action_detail'] = (
                         'authenticated by PassOnUserNotFound')
                     return (True, opt)
                 else:
-                    audit['action_detail'] = 'User not found'
+                    g.audit['action_detail'] = 'User not found'
                     return (False, opt)
 
         # if we have an user, check if we forward the request to another server
@@ -562,7 +563,7 @@ class ValidationHandler(object):
                                )
 
         if len(tokenList) == 0:
-            audit['action_detail'] = 'User has no tokens assigned'
+            g.audit['action_detail'] = 'User has no tokens assigned'
 
             # here we check if we should to autoassign and try to do it
             auto_assign_return = th.auto_assignToken(passw, user)
@@ -581,7 +582,7 @@ class ValidationHandler(object):
             pass_on = context.get('Config').get('linotp.PassOnUserNoToken',
                                                 False)
             if pass_on and 'true' == pass_on.lower():
-                audit['action_detail'] = 'authenticated by PassOnUserNoToken'
+                g.audit['action_detail'] = 'authenticated by PassOnUserNoToken'
                 return (True, opt)
 
             # Check if there is an authentication policy passthru
@@ -590,7 +591,7 @@ class ValidationHandler(object):
                 log.debug('user %r has no token. Checking for '
                           'passthru in realm %r' % (user.login, user.realm))
                 y = getResolverObject(resolverClass)
-                audit['action_detail'] = 'Authenticated against Resolver'
+                g.audit['action_detail'] = 'Authenticated against Resolver'
                 if y.checkPass(uid, passw):
                     return (True, opt)
 
@@ -599,7 +600,7 @@ class ValidationHandler(object):
             elif get_auth_passOnNoToken(user):
                 log.info('user %r has not token. PassOnNoToken'
                          ' set - authenticated!')
-                audit['action_detail'] = (
+                g.audit['action_detail'] = (
                     'Authenticated by passOnNoToken policy')
                 return (True, opt)
 
@@ -900,7 +901,6 @@ class ValidationHandler(object):
         :rtype: dict
         """
 
-        audit = context['audit']
         opt = None
         res = False
 
@@ -926,7 +926,7 @@ class ValidationHandler(object):
             tokenList.extend(tokens)
 
         if len(tokenList) == 0:
-            audit['action_detail'] = (
+            g.audit['action_detail'] = (
                 'The serial %s could not be found!' % serialnum)
             return res, opt
 
@@ -937,12 +937,12 @@ class ValidationHandler(object):
         (res, opt) = self.checkTokenList(tokenList, passw)
 
         # Now we need to get the user
-        if res is not False and 'serial' in audit:
-            serial = audit.get('serial', None)
+        if res is not False and 'serial' in g.audit:
+            serial = g.audit['serial']
             if serial is not None:
                 user = get_token_owner(tokenList[0])
-                audit['user'] = user.login
-                audit['realm'] = user.realm
+                g.audit['user'] = user.login
+                g.audit['realm'] = user.realm
                 opt = {'user': user.login, 'realm': user.realm}
 
         return res, opt

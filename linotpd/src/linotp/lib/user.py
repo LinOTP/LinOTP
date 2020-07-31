@@ -30,7 +30,7 @@ import logging
 import re
 import json
 
-from flask import current_app
+from flask import g
 
 from linotp.lib.error import UserError
 
@@ -1222,11 +1222,10 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
         log.error("unable to access the resolver")
 
-        audit = request_context['audit']
-        if not audit['action_detail']:
-            audit['action_detail'] = "Failed to connect to:"
+        if not g.audit['action_detail']:
+            g.audit['action_detail'] = "Failed to connect to:"
 
-        audit['action_detail'] += "%s, " % resolver_spec
+        g.audit['action_detail'] += "%s, " % resolver_spec
         log.error('unable to connect to %r', resolver_spec)
 
         return None, None, None
