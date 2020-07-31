@@ -780,7 +780,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
             # no handle?
             self.find_aes_keys("config")
 
-        return encrypted_data
+        return encrypted_data.value
 
     def decrypt_soft(self, data, iv, key):
         '''
