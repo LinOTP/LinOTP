@@ -245,8 +245,8 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         self.initpkcs11()
         if self.password:
-            output("debug", "[setup_module] logging in to slot %s"
-                   % str(self.slotid))
+            output("debug", "[setup_module] logging in to slot %r"
+                   % self.slotid)
             self.login(slotid=self.slotid)
 
     def populate_handles(self):
@@ -451,10 +451,9 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         rv = self.pkcs11.C_Login(self.hSession, CKU_USER, pw, len(pw))
         if rv:
-            output("error", "[login] Failed to login to token (%s): %s"
-                   % (str(rv), pkcs11error(rv)))
-            raise Exception("etng::logintoken - Failed to C_Login (%s)"
-                            % rv)
+            output("error", "[login] Failed to login to token (%r): %s"
+                   % (rv, pkcs11error(rv)))
+            raise Exception("etng::logintoken - Failed to C_Login (%r)" % rv)
         else:
             output("debug", "[login] login successful")
             self.is_ready = True
