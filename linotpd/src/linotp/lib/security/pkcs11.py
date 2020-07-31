@@ -678,25 +678,29 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
                             % (rv, pkcs11error(rv)))
         return key
 
-    def decrypt(self, data, iv, id=0):
+    def decrypt(self, value: bytes, iv: bytes, id: int = 0) -> bytes:
         '''
-        decrypts the given data, using the IV and the key specified
-        by the handle
+        decrypts the given data, using the IV and the key specified by
+        the handle lookup id
 
-        possible id's are:
-            0
-            1
-            2
+        :param data: the encrypted input data
+        :param iv: the initialisation vector
+        :param id: id in handle dict - possible id's are: 0,1,2
+        :return: the decrypted (unpadded) data
         '''
+
         handle = int(self.handles.get(id))
-        output("debug", "[decrypt] decrypting with handle %s" % str(handle))
-        clear = create_string_buffer(len(data))
-        len_clear = c_ulong(len(clear))
+        output("debug", "[decrypt] decrypting with handle %r" % handle)
+
+        plaintext = create_string_buffer(len(value))
+        plaintext_len = c_ulong(len(plaintext))
+
         if len(iv) != 16:
             output("error", "[decrypt] Doeing aes requires an IV (block size)"
                    " of 16 bytes. %i given" % len(iv))
             raise Exception("aes.decrypt: Doeing aes requires an IV (block "
                             "size) of 16 bytes. %i given" % len(iv))
+
         mechanism = CK_MECHANISM(CKM_AES_CBC, cast(c_char_p(iv), c_void_p),
                                  len(iv))
 
@@ -710,44 +714,45 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
                             % (rv, pkcs11error(rv)))
 
         rv = self.pkcs11.C_Decrypt(self.hSession,
-                                   data,
-                                   c_ulong(len(data)),
-                                   byref(clear),
-                                   byref(len_clear))
+                                   value,
+                                   c_ulong(len(value)),
+                                   byref(plaintext),
+                                   byref(plaintext_len))
         if rv:
             output("error", "[decrypt] C_Decrypt failed (%s): %s"
                    % (rv, pkcs11error(rv)))
             raise Exception("C_Decrypt failed (%s): %s"
                             % (rv, pkcs11error(rv)))
 
-        s = string.join(clear, "")[:len_clear.value]
-        s = self.unpad(s)
-        return s
+        return self.unpad(plaintext.value)
 
     def encrypt(self, data: bytes, iv: bytes, id: int = 0) -> bytes:
         '''
         encrypts the given input data
 
-        AES hat eine blocksize von 16 byte.
-        Daher muss die data ein vielfaches von 16 sein und der IV im Falle von
-        CBC auch 16 byte lang.
+        AES CBC works with a blocksize of 16 byte. Thus data must be a multiple
+        of 16 bytes. This is as well required for the IV.
+
+        Note: AES_ECB does not require an IV
+
+        :param data: the to-be-encrypted data
+        :param iv: the initialisation vector
+        :param id: id in handle dict - possible id's are: 0,1,2
+        :return: the encrypted byte string
         '''
         handle = CK_OBJECT_HANDLE(self.handles.get(id))
-        output("debug", "[encrypt] encrypting with handle %s" % str(handle))
+        output("debug", "[encrypt] encrypting with handle %r" % handle)
         data = self.pad(data)
 
         encrypted_data = create_string_buffer(len(data))
         len_encrypted_data = c_ulong(len(encrypted_data))
+
         if len(iv) != 16:
             output("error", "[encrypt] Doing aes requires an IV (block size)"
                    " of 16 bytes. %i given" % len(iv))
             raise Exception("PKCS11.decrypt: Doeing aes requires an IV (block "
                             "size) of 16 bytes. %i given" % len(iv))
 
-        '''
-        Note:   AES_CBC hat ein 16 byte IV.
-                AES_ECB hat keinen IV.
-        '''
         mechanism = CK_MECHANISM(CKM_AES_CBC, cast(c_char_p(iv),
                                                    c_void_p), len(iv))
 
