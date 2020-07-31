@@ -781,18 +781,8 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         if rv:
             output("error", "[encrypt] C_Encrypt (slot=%s, handle=%s) failed "
                    "(%s): %s" % (self.slotid, handle, rv, pkcs11error(rv)))
-            # no handle?
-            self.find_aes_keys("config")
 
         return encrypted_data.value
-
-    def decrypt_soft(self, data, iv, key):
-        '''
-        Decrypt in CPU
-        '''
-        aes = AESCipher.new(key, AESCipher.MODE_CBC, iv)
-        decrypted_data = aes.decrypt(data)
-        return self.unpad(decrypted_data)
 
     def _encryptValue(self, value, keyNum=2, iv=None):
         '''
