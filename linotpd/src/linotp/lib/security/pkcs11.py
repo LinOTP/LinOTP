@@ -502,8 +502,8 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
     def find_aes_keys(self, label="testAES", wanted=1):
         '''
         Find and AES key with the given label
-        The number of keys to be found is restricted by "wanted"
 
+        The number of keys to be found is restricted by "wanted"
         finding aes keys is done by setting some search attributes when
         searching for objects. the search attributes which describe an aes
         key are:
