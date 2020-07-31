@@ -206,15 +206,38 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         if config_entry and config_entry.lower() == 'true':
             self.accept_invalid_padding = True
 
-        self.handles = {CONFIG_KEY: config.get("configHandle", None),
-                        TOKEN_KEY: config.get("tokenHandle", None),
-                        VALUE_KEY: config.get("valueHandle", None),
-                        DEFAULT_KEY: config.get("defaultHandle", None)
-                        }
-        self.labels = {CONFIG_KEY: config.get("configLabel", None),
-                       TOKEN_KEY: config.get("tokenLabel", None),
-                       VALUE_KEY: config.get("valueLabel", None),
-                       DEFAULT_KEY: config.get("defaultLabel", None)}
+        # ------------------------------------------------------------------ --
+
+        # load handles and labels
+
+        self.handles = {
+            CONFIG_KEY: config.get("configHandle", None),
+            TOKEN_KEY: config.get("tokenHandle", None),
+            VALUE_KEY: config.get("valueHandle", None),
+            DEFAULT_KEY: config.get("defaultHandle", None),
+        }
+
+        # adjust handle type to int
+
+        for key, value in self.handles.items():
+            if value is not None:
+                self.handles[key] = int(value)
+
+        self.labels = {
+            CONFIG_KEY: config.get("configLabel", None),
+            TOKEN_KEY: config.get("tokenLabel", None),
+            VALUE_KEY: config.get("valueLabel", None),
+            DEFAULT_KEY: config.get("defaultLabel", None),
+        }
+
+        # adjust label type to bytes
+
+        for key, value in self.labels.items():
+            if value is not None and isinstance(value, str):
+                self.labels[key] = value.encode('utf-8')
+
+        # ------------------------------------------------------------------ --
+
 
         if not library:
             raise Exception("No .library specified")
