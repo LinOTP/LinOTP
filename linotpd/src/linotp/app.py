@@ -717,7 +717,7 @@ def setup_db(app, drop_data=False):
 def generate_secret_key_file(app):
     """Generate a secret-key file if it doesn't exist."""
 
-    filename = app.config.get("SECRET_FILE", None)
+    filename = app.config["SECRET_FILE"]
     if filename is not None:
         try:
             open(filename)
@@ -743,8 +743,7 @@ def setup_security_provider(app):
     settings, but this is a huge bowl of spaghetti.
     """
     try:
-        flask_g.app_globals.security_provider.load_config(
-            flask_g.request_context['config'])
+        flask_g.app_globals.security_provider.load_config(app.config)
     except Exception as e:
         app.logger.error("Failed to load security provider definition: {}"
                          .format(e))
@@ -767,7 +766,6 @@ def _configure_app(app, config_name='default', config_extra=None):
     stuff, too. Therefore we have pulled out all the configuration-related
     code from `create_app()` into this function.
     """
-
     app.config.from_object(configs[config_name])
     configs[config_name].init_app(app)
 
