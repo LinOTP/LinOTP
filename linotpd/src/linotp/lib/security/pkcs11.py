@@ -810,10 +810,10 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         '''
         if not iv:
             iv = self.random(16)
+
         v = self.encrypt(value, iv, keyNum)
 
-        value = binascii.hexlify(iv) + ':' + binascii.hexlify(v)
-        return value
+        return binascii.hexlify(iv) + b':' + binascii.hexlify(v)
 
     def _decryptValue(self, cryptValue, keyNum=2):
         '''
@@ -831,7 +831,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         :rtype:  byte string
         '''
         ''' split at : '''
-        pos = cryptValue.find(':')
+        pos = cryptValue.find(b':')
         bIV = cryptValue[:pos]
         bData = cryptValue[pos + 1:len(cryptValue)]
 
