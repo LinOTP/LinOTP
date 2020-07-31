@@ -892,6 +892,9 @@ def main():
             pkcs11 -s 1335299873 -p 1234 -l dummy -e 'this is a test'
 
     '''
+
+    import os
+
     try:
         opts, args = getopt(sys.argv[1:], "hp:s:n:f:e:l:",
                             ["help", "password=", "slot=", "name=",
@@ -928,6 +931,7 @@ def main():
         if opt in ("-e", "--encrypt"):
             encrypt = arg
 
+
     if not name and not listing and not encrypt:
         print("Parameter <name> required or list the AES keys.")
         print(main.__doc__)
@@ -937,31 +941,45 @@ def main():
         password = getpass.getpass(prompt="Please enter password for slot %i:"
                                    % int(slot))
 
-    config = {'password': password,
-              'slotid': int(slot),
-              'library': 'libCryptoki2_64.so'}
+    config = {
+        'password': password,
+        'slotid': int(slot),
+        'library': os.environ.get('PKCS11_DLL', 'libCryptoki2_64.so')
+        }
+
     if l_handle:
-        config['defaultLabel'] = l_handle
+        config['defaultLabel'] = l_handle.encode('utf-8')
 
     P11 = Pkcs11SecurityModule(config)
 
     if listing:
-        keys = P11.find_aes_keys(label=label, wanted=100)
+
+        keys = P11.find_aes_keys(
+                        label=label.encode('utf-8'), wanted=100, multiple=True)
         print("Found these AES keys: %r" % keys)
+
     elif encrypt:
-        print("Encrypting data %s with label %s from slot %s."
-              % (encrypt, str(l_handle), str(slot)))
-        #i_handle = P11.find_aes_keys(label=str(l_handle))
-        #print "Found handle %s" % str(i_handle)
-        #P11.handles = { DEFAULT_KEY : i_handle }
+
+        print("Encrypting data %r with label %r from slot %r."
+              % (encrypt, l_handle, slot))
+
         iv = P11.random(16)
-        crypttext = P11.encrypt(encrypt, iv, DEFAULT_KEY)
+
+        handle = P11.find_aes_keys(label=l_handle.encode('utf-8'))
+        crypttext = P11.encrypt(encrypt.encode('utf-8'), iv, DEFAULT_KEY)
         print("Encrypted Text : ", binascii.hexlify(crypttext))
+
         plaintext = P11.decrypt(crypttext, iv, DEFAULT_KEY)
-        print("Decrypted Text >>%s<< " % plaintext)
+        print("Decrypted Text >>%s<< " % plaintext.decode('utf-8'))
+
     else:
-        handle = P11.createAES(ks=32, label=name)
-        print("Created AES key with handle %r" % handle)
+
+        handle = P11.find_aes_keys(label=name.encode('utf-8'), wanted=1)
+
+        if not handle:
+            handle_object = P11.createAES(label=name.encode('utf-8'))
+            print("Created AES key %s with handle %r" % (
+                name, handle_object.value))
 
     P11.logout()
 
