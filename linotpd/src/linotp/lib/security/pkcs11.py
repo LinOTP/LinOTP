@@ -195,6 +195,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         self.name = "Pkcs11"
         if not config:
             config = {}
+
         self.password = config.get("password", "")
         self.connectedTokens = []
         library = config.get("library")
@@ -276,6 +277,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         used to set the password, if the password is not contained
         in the config file
         '''
+
         if 'password' not in params:
             output("error", "[setup_module] missing password!")
             raise Exception("missing password")
@@ -285,7 +287,9 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
             slotid = self.slotid
 
         slotid = int(slotid)
-        ''' finally initialise the login '''
+
+        # finally initialise the login
+
         self.login(params.get("password"), slotid=slotid)
 
         return
@@ -768,6 +772,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
                             % (rv, pkcs11error(rv)))
 
         data_buffer = create_string_buffer(data)
+
         rv = self.pkcs11.C_Encrypt(self.hSession,
                                    data_buffer,
                                    c_ulong(len(data)),
