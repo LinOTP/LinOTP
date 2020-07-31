@@ -308,18 +308,21 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         padding = missing_byte * missing_num
         return unpadded_str + padding
 
-    def unpad(self, padded_str, block=16):
+    def unpad(self, padded_byte_str: bytes, block_size: int=16) -> bytes:
         """
-        This removes and checks the PKCS #7 padding.
+        PKCS7 padding pads the missing bytes with the value of the number
+        of the bytes. If 4 bytes are missing, this missing bytes are filled
+        with \x04
 
-        :param padded_str: The string to unpad
-        :type padded_str: str
+        unpad removes and checks the PKCS #7 padding by verifying that the
+        padding byte string only contains the pad chars
 
-        :param block: Block size
-        :type block: int
+        :param padded_byte_str: The binary string to unpad
 
-        :raises ValueError: If padded_str is not correctly padded a ValueError
-            can be raised.
+        :param block_size: Block size
+
+        :raises ValueError: If padded_byte_str is not correctly padded a
+            ValueError can be raised.
             This depends on the 'pkcs11.accept_invalid_padding' LinOTP config
             option. If set to False (default) ValueError is raised.  The reason
             why the data is sometimes incorrectly padded is because the pad()
@@ -343,14 +346,37 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
             'pkcs11.accept_invalid_padding' is set to True. See above.
         :rtype: str
         """
-        last_byte = padded_str[-1]
-        count = ord(last_byte)
-        if 0 < count <= block and padded_str[-count:] == last_byte * count:
-            unpadded_str = padded_str[:-count]
-            return unpadded_str
+
+        last_byte = padded_byte_str[-1]
+        padding_length = last_byte
+
+        # ------------------------------------------------------------------ --
+
+        # extract both parts: the unpadded bytes and the padding bytes
+
+        padding_byte_str = padded_byte_str[-padding_length : ]
+        unpadded_byte_str = padded_byte_str[ : -padding_length]
+
+        # ------------------------------------------------------------------ --
+
+        # padding match: verify that the appended padded string contains
+        #   only padded value. Therefore compose a string with only
+        #   padding bytes and compare it with the truncated padding string
+
+        byte_str_with_padding_byte = (
+            "%s" % chr(last_byte) * padding_length).encode('utf-8')
+
+        padding_match = (padding_byte_str == byte_str_with_padding_byte)
+
+        # ------------------------------------------------------------------ --
+
+        if 0 < padding_length <= block_size and padding_match:
+            return unpadded_byte_str
+
         elif self.accept_invalid_padding:
             log.warning("[unpad] Input 'padded_str' is not properly padded")
-            return padded_str
+            return padded_byte_str
+
         else:
             raise ValueError("Input 'padded_str' is not properly padded")
 
