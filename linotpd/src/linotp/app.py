@@ -73,7 +73,7 @@ from .lib.util import get_client
 from . import __version__
 from .flap import config, set_config, tmpl_context as c, request
 from .defaults import set_defaults
-from .settings import configs
+from .settings import configs, LinOTPConfigKeyError
 from .tokens import reload_classes as reload_token_classes
 from .lib.audit.base import getAudit
 from .lib.config.global_api import initGlobalObject
@@ -189,7 +189,8 @@ class ExtFlaskConfig(FlaskConfig):
         seem to show up.
         """
         value = super().__getitem__(key)
-        root_dir = self.get('ROOT_DIR', '/ROOT_DIR_UNSET')
+        root_dir = (super().__getitem__('ROOT_DIR')  # can't say 'self[…]' here
+                    if 'ROOT_DIR' in self else '/ROOT_DIR_UNSET')
         if isinstance(value, ExtFlaskConfig.RelativePathName):
             return os.path.join(root_dir, '.', value)
         if key == 'BABEL_TRANSLATION_DIRECTORIES':
@@ -201,6 +202,23 @@ class ExtFlaskConfig(FlaskConfig):
                 [os.path.join(root_dir, '.', fn) if fn[0] != '/' else fn
                  for fn in value.split(';')])
         return value
+
+    def get(self, key, default=None):
+        """We need to overload this so the relative-pathname hack will work
+        even if people use `foo.get('bar')` instead of
+        `foo['bar']`. (It turns out that the built-in `get()` method
+        doesn't go through `__getitem__()` – `__getitem__()`'s mission
+        in life is strictly to make the brackets do something.)
+        """
+        try:
+            return self[key]
+        except KeyError:
+            log.warning("Relying on `.get()` to set a default for "
+                        f"'{key}' violates the DRY principle. "
+                        "Instead, ensure that the schema contains a suitable "
+                        f"default (like {default!r}).")
+            # raise LinOTPConfigKeyError(key)  # too drastic for now
+            return default
 
 
 class LinOTPApp(Flask):

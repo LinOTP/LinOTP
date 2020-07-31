@@ -201,6 +201,49 @@ def test_efc_relative_file_hack_btd():
     assert efc[BTD] == "/ROOT_DIR_UNSET/./foo;/bar/baz"
 
 
+def test_efc_normal_get():
+    efc = ExtFlaskConfig("/")
+    efc["FOO"] = "bar"
+    assert efc["FOO"] == efc.get("FOO")
+
+
+@pytest.mark.parametrize('default', [
+    None,
+    "baz",
+])
+def test_efc_normal_get_second_arg_deprecated(caplog, default):
+    # This test ensures that calling `ExtFlaskConfig.get()` with an
+    # undefined value emits a warning. This is because we don't want
+    # people to scatter random default values all over the code. For
+    # the time being we don't raise an actual exception but we might
+    # get to that in the future.
+
+    efc = ExtFlaskConfig("/")
+    caplog.clear()
+    # with pytest.raises(s.LinOTPConfigKeyError) as ex:
+    #     efc.get("FOO", default)
+    assert efc.get("FOO", default) == default
+    assert len(caplog.messages) == 1
+    assert "violates the DRY principle" in caplog.messages[0]
+    # assert "FOO" in str(ex.value)
+
+
+def test_efc_relative_file_hack_get():
+    efc = ExtFlaskConfig("/")
+    efc["FOO_DIR"] = "bar"
+    assert efc.get("FOO_DIR") == "/ROOT_DIR_UNSET/./bar"
+    efc["FOO_DIR"] = "/bar"
+    assert efc.get("FOO_DIR") == "/bar"
+
+
+def test_efc_root_dir():
+    # Security blanket to make sure asking for `config['ROOT_DIR']`
+    # doesn't cause an infinite regression.
+    efc = ExtFlaskConfig("/")
+    efc["ROOT_DIR"] = "/etc/linotp"
+    assert efc["ROOT_DIR"] == "/etc/linotp"
+
+
 @pytest.mark.parametrize("key,value,result,result_value", [
     ("FOO", "bar", "OK", "bar"),
     ("BAZ", "456", "OK", 456),
