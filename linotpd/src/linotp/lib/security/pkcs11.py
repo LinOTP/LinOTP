@@ -641,7 +641,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         l specifies the length of the random data to be created.
         '''
         output("debug", "[random] creating %i random bytes" % l)
-        key = "0" * l
+        key = b"0" * l
         rv = self.pkcs11.C_GenerateRandom(self.hSession, key, len(key))
         if rv:
             output("error", "C_GenerateRandom failed (%s): %s"
