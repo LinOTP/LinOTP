@@ -249,9 +249,9 @@ _config_schema = ConfigSchema([
                      "database URI which specifies the database to be used. "
                      "You need to ensure that the database exists and is "
                      "accessed with the proper credentials and permissions.")),
-    ConfigItem("AUDIT_PUBLIC_KEY_FILE", str, default="public.pem",
+    ConfigItem("AUDIT_PUBLIC_KEY_FILE", str, default="audit-public.pem",
                help=("The public key used for the audit log.")),
-    ConfigItem("AUDIT_PRIVATE_KEY_FILE", str, default="private.pem",
+    ConfigItem("AUDIT_PRIVATE_KEY_FILE", str, default="audit-private.pem",
                help=("The private key used for the audit log.")),
     ConfigItem("AUDIT_POOL_RECYCLE", int, validate=check_int_in_range(min=0),
                default=3600,
