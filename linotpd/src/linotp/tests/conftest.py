@@ -65,6 +65,16 @@ def pytest_addoption(parser):
               "against a particular database")
         )
 
+@pytest.fixture(scope="session")
+def key_directory(tmp_path_factory):
+    """
+    Returns a directory scoped for the complete session
+
+    We generate keys in this directory so that the users' own configuration
+    is not affected. But in order to avoid long delays in generating keys,
+    we only generate them once per test sesison.
+    """
+    return tmp_path_factory.mktemp("keys")
 
 @pytest.fixture
 def sqlalchemy_uri(request):
@@ -74,7 +84,7 @@ def sqlalchemy_uri(request):
 
 
 @pytest.fixture
-def base_app(tmpdir, request, sqlalchemy_uri):
+def base_app(tmpdir, request, sqlalchemy_uri, key_directory):
     """
     App instance without context
 
@@ -111,7 +121,10 @@ def base_app(tmpdir, request, sqlalchemy_uri):
         base_app_config = dict(
             TESTING=True,
             SQLALCHEMY_DATABASE_URI=sqlalchemy_uri,
-            LOGFILE_DIR=tmpdir
+            ROOT_DIR=tmpdir,
+            AUDIT_PUBLIC_KEY_FILE=key_directory / "audit-public.pem",
+            AUDIT_PRIVATE_KEY_FILE=key_directory / "audit-private.pem",
+            SECRET_FILE=key_directory / "encKey",
         )
         os.environ["LINOTP_CFG"] = ""
 
