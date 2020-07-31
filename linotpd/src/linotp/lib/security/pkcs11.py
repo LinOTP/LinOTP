@@ -599,7 +599,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
             output("debug", "[gettokeninfo] %s" % str(ti))
         return ti
 
-    def createAES(self, ks=32, label="new AES Key"):
+    def createAES(self, label: bytes, ks:int=32) -> CK_OBJECT_HANDLE:
         '''
         Creates a new AES key with the given label and the given length
 
