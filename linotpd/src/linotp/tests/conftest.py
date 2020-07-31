@@ -113,6 +113,7 @@ def base_app(tmpdir, request, sqlalchemy_uri):
             SQLALCHEMY_DATABASE_URI=sqlalchemy_uri,
             LOGFILE_DIR=tmpdir
         )
+        os.environ["LINOTP_CFG"] = ""
 
         app = create_app('testing', base_app_config)
 

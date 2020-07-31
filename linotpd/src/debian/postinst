@@ -8,7 +8,6 @@ NEW_VERSION='@@@DEB_VERSION@@@'
 
 CONFIG_DIR=/etc/linotp
 export LINOTP_CFG=$CONFIG_DIR/linotp.cfg
-export LINOTP_CONFIG_FILE=$LINOTP_CFG     # compatibility
 ENCKEYFILE=$CONFIG_DIR/encKey
 REALM="LinOTP admin area"
 DIGESTFILE=$CONFIG_DIR/admins

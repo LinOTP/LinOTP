@@ -194,7 +194,7 @@ ENTRYPOINT [ "/usr/local/bin/dockerfy", \
     "openssl req -new -x509 -newkey rsa:2048 -subj /CN=`hostname`.`dnsdomainname` -days 768 -out /etc/ssl/certs/linotpserver.pem  -keyout /etc/ssl/private/linotpserver.key -nodes", \
     "--", \
     "--run", "/usr/local/bin/linotp-create-htdigest", "{{ .Env.LINOTP_ADMIN_USER }}", "{{ .Env.LINOTP_ADMIN_PASSWORD }}", "--", \
-    "--run", "/bin/su", "linotp", "-s", "/bin/sh", "-w", "LINOTP_CONFIG_FILE,FLASK_APP,FLASK_ENV", "-c", "flask init-db", "--" \
+    "--run", "/bin/su", "linotp", "-s", "/bin/sh", "-w", "LINOTP_CFG,FLASK_APP,FLASK_ENV", "-c", "flask init-db", "--" \
 ]
 
 CMD [ \
