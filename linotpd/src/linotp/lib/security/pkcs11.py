@@ -832,7 +832,16 @@ def main():
         -f / --find=      Find the AES key
         -h / --help
         -e / --encrypt=   Encrypt this data (also need slot and handle)
-        -l / --label=   Specify the label of the object for encryption
+        -l / --label=     Specify the label of the object for encryption
+
+    example:
+        create a key:
+            pkcs11 -s 1335299873 -p 1234 -n dummy
+        find aes key:
+            pkcs11 -s 1335299873 -p 1234 -f dummy
+        encryption:
+            pkcs11 -s 1335299873 -p 1234 -l dummy -e 'this is a test'
+
     '''
     try:
         opts, args = getopt(sys.argv[1:], "hp:s:n:f:e:l:",
