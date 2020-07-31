@@ -441,10 +441,12 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         self.hSession = opensession(SlotID=CK_SLOT_ID(slotid))
 
         output("debug", "[login] got this session: %s" % self.hSession)
-        password = str(password)
 
-        rv = self.pkcs11.C_Login(self.hSession, CKU_USER, password,
-                                 len(password))
+        pw = password
+        if isinstance(password, str):
+            pw = password.encode('utf-8')
+
+        rv = self.pkcs11.C_Login(self.hSession, CKU_USER, pw, len(pw))
         if rv:
             output("error", "[login] Failed to login to token (%s): %s"
                    % (str(rv), pkcs11error(rv)))
