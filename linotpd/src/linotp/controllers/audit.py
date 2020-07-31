@@ -148,8 +148,8 @@ class AuditController(BaseController):
 
             streamed_response = None
 
-            audit = config.get('audit')
-            audit_query = AuditQuery(search_params, audit)
+            audit_obj = current_app.audit_obj
+            audit_query = AuditQuery(search_params, audit_obj)
 
             if output_format == "csv":
                 delimiter = self.request_params.get('delimiter', ',') or ','

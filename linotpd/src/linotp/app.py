@@ -216,6 +216,7 @@ class LinOTPApp(Flask):
 
     def __init__(self):
         self.config_class = ExtFlaskConfig  # our special `Config` class
+        self.audit_obj = None               # No audit logging so far
         super().__init__(__name__,
                          static_folder='public', static_url_path='/static')
 

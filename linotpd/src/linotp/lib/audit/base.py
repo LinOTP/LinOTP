@@ -25,8 +25,6 @@
 #
 """This is the BaseClass for logging Audit Trails"""
 
-import logging
-log = logging.getLogger(__name__)
 import os
 import socket
 
@@ -36,8 +34,8 @@ from flask import current_app
 from linotp.lib.token import get_used_tokens_count
 from linotp.lib.support import get_license_type
 
-from linotp.lib.context import request_context as context
-from linotp.model import meta
+import logging
+log = logging.getLogger(__name__)
 
 
 def getAudit(config):

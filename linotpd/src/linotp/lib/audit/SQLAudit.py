@@ -614,7 +614,7 @@ class Audit(AuditBase):
             if "desc" == sorto:
                 order_dir = desc(order)
 
-        if type(condition).__name__ == 'NoneType':
+        if condition is None:
             audit_q = self.session.query(AuditTable)\
                 .order_by(order_dir)
         else:
@@ -704,7 +704,7 @@ class AuditLinOTPDB(Audit):
         Iniailise the audit backend using the LinOTP
         database backend
         """
-        super(AuditLinOTPDB, self).__init__(config, None)
+        super().__init__(config, None)
 
     def _init_db(self):
         """
@@ -719,6 +719,6 @@ class AuditLinOTPDB(Audit):
         self.session = meta.Session
 
     def log_entry(self, param):
-        super(AuditLinOTPDB, self).log_entry(param)
+        super().log_entry(param)
         self.session.commit()
 ###eof#########################################################################
