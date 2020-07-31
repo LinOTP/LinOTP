@@ -293,20 +293,20 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         of the bytes. If 4 bytes are missing, this missing bytes are filled
         with \x04
 
-        :param unpadded_str: The string to pad
-        :type unpadded_str: str
+        :param unpadded_str: The byte string to pad
+        :type unpadded_str: bytes
 
         :param block: Block size
         :type block: int
 
-        :returns: padded string
-        :rtype: str
+        :returns: padded byte string
+        :rtype: bytes
         """
         l_s = len(unpadded_str)
         missing_num = block - l_s % block
         missing_byte = chr(missing_num)
         padding = missing_byte * missing_num
-        return unpadded_str + padding
+        return unpadded_str + padding.encode('utf-8')
 
     def unpad(self, padded_byte_str: bytes, block_size: int=16) -> bytes:
         """
