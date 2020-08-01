@@ -619,7 +619,7 @@ def init_logging(app):
                 'linotp.app': {
                     'handlers': ['console'],
                     'level': app.config["LOGGING_LEVEL"],
-                    'propagate': False,
+                    'propagate': True,
                 },
                 'linotp.lib': {
                     'handlers': ['console'],
@@ -709,8 +709,8 @@ def setup_db(app, drop_data=False):
         # For the cloud mode, we require the `admin_user` table to
         # manage the admin users to allow password setting
 
-        admin_username = app.config.get('ADMIN_USERNAME', None)
-        admin_password = app.config.get('ADMIN_PASSWORD', None)
+        admin_username = app.config.get('ADMIN_USERNAME')
+        admin_password = app.config.get('ADMIN_PASSWORD')
 
         if admin_username is not None and admin_password is not None:
             app.logger.info("Setting up cloud admin user...")
