@@ -77,34 +77,6 @@ class SecurityProvider(object):
         self.rwLock = secLock
         self.max_retry = 5
 
-    def __createDefault__(self, config):
-        '''
-        create a backward compatible default security provider
-
-        :param config:
-
-        '''
-        provider_config = {}
-
-        keyFile = config['SECRET_FILE']
-        provider_config['default'] = {
-            'pinHandle': TOKEN_KEY,
-            'passHandle': CONFIG_KEY,
-            'valueHandle': VALUE_KEY,
-            'defaultHandle': DEFAULT_KEY,
-            'crypted': 'FALSE',
-            'file': keyFile,
-            'module': 'linotp.lib.security.default.DefaultSecurityModule',
-            'poolsize': 20, }
-
-        for key, value in list(config.items()):
-            for provider in list(provider_config.keys()):
-                if key.startswith('linotpSecurity.%s' % provider):
-                    entry = key.split('.')[-1]
-                    provider_config[provider][entry] = value
-
-        return provider_config
-
     def load_config(self, config):
         '''
         load the security modules configuration
@@ -118,12 +90,15 @@ class SecurityProvider(object):
             
             # add active provider config to self.config with the active
             # provider as key and the config dict as value
-            if security_provider == 'default':
-                security_provider_config = self.__createDefault__(config)
+            if self.activeOne == 'default':
+                default_security_provider_config = config.get('HSM_DEFAULT_CONFIG')
+                keyFile = config['SECRET_FILE']
+                default_security_provider_config['file'] = keyFile
+                security_provider_config = {'default': default_security_provider_config}       
                 self.config.update(security_provider_config)        
             
             if self.activeOne ==  'pkcs11':
-                security_provider_config = {'pkcs11': config.get('HSM_PKCS11_CONFIG')}       
+                security_provider_config = {'pkcs11': config.get('HSM_PKCS11_CONFIG')}
                 self.config.update(security_provider_config)
             
             if self.activeOne == 'yubihsm':
