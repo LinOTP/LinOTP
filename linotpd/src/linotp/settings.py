@@ -8,7 +8,7 @@ from typing import Any, Type, Callable
 import click
 from flask import current_app
 from flask.cli import AppGroup
-from jsonschema import Draft6Validator
+from jsonschema import Draft4Validator
 
 from .lib.type_utils import boolean as to_boolean
 from .lib.security.pkcs11 import Pkcs11SecurityModule
@@ -76,7 +76,7 @@ def check_json_schema(schema={}):
     """
     def f(key, value):
         # check if given schema is correct
-        if Draft6Validator.check_schema(schema):
+        if Draft4Validator.check_schema(schema):
             print("schema is correct")
         else:
             raise LinOTPConfigValueError(
