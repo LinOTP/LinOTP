@@ -364,7 +364,42 @@ e2e-test-softhsm:
     DB: mariadb:10.1
     LINOTP_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"
     LINOTP_DB_PORT: "3306"
+    LINOTP_ACTIVE_SECURITY_MODULE: "pkcs11"
+    LINOTP_HSM_PKCS11_CONFIG: "{ \
+      'module': 'linotp.lib.security.pkcs11.Pkcs11SecurityModule', \
+      'library': '/usr/local/Cellar/softhsm/2.6.1/lib/softhsm/libsofthsm2.so', \
+      'password': '1234', \
+      'slotid': 1464950014, \
+      'configLabel': 'config', \
+      'tokenLabel': 'token', \
+      'valueLabel': 'value', \
+      'defaultLabel': 'default', \
+      'configHandle': None, \
+      'tokenHandle': None, \
+      'valueHandle': None, \
+      'defaultHandle': None \
+    }"
+###
+
   script:
+    # prepare softhsm2 and add configuration to linotp.cfg
+    - SLOTID="$(softhsm2-util --show-slots | grep \"Slot\" | head -n1 | cut -d\" \" -f2)"
+    - > 
+        export LINOTP_HSM_PKCS11_CONFIG="{
+        'module': 'linotp.lib.security.pkcs11.Pkcs11SecurityModule',
+        'library': '/usr/local/Cellar/softhsm/2.6.1/lib/softhsm/libsofthsm2.so',
+        'password': '1234',
+        'slotid': ${SLOTID},
+        'configLabel': 'config',
+        'tokenLabel': 'token',
+        'valueLabel': 'value',
+        'defaultLabel': 'default',
+        'configHandle': None,
+        'tokenHandle': None,
+        'valueHandle': None,
+        'defaultHandle': None
+        }"
+    - env | grep LINOTP_
     - cd linotpd/src/linotp/tests/integration
     - > 
         /usr/local/bin/dockerfy 

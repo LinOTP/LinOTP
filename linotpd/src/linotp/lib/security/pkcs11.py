@@ -203,7 +203,8 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
             "configHandle": {"type" : "number"},
             "tokenHandle": {"type" : "number"},
             "valueHandle": {"type" : "number"},
-            "defaultHandle": {"type" : "number"}
+            "defaultHandle": {"type" : "number"},
+            "poolsize": {"type": "number"},
         },
         "required": [
             "module", "library", "password", "slotid", "defaultLabel"

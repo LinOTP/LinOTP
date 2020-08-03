@@ -85,7 +85,8 @@ class YubiSecurityModule(SecurityModule):
             "tokenHandle": {"type" : "number"},
             "valueHandle": {"type" : "number"},
             "defaultHandle": {"type" : "number"},
-            "device": {"typer": "string"},
+            "device": {"type": "string"},
+            "poolsize": {"type": "number"},
         },
         "required": [
             "module", "device", "password"

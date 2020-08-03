@@ -55,6 +55,24 @@ class DefaultSecurityModule(SecurityModule):
       interface to all LinOTP operations
     """
 
+    # Add schema for validating configuration in settings.py
+    schema = {
+        "type" : "object",
+        "properties" : {
+            "module": {"type" : "string"},
+            "tokenHandle": {"type" : "number"},
+            "configHandle": {"type" : "number"},
+            "valueHandle": {"type" : "number"},
+            "defaultHandle": {"type" : "number"},
+            "poolsize": {"type": "number"},
+            'crypted': 'FALSE',
+        },
+        "required": [
+            "module", "tokenHandle", "configHandle", "configHandle",
+            "valueHandle", "defaultHandle"
+        ],
+    }
+
     def __init__(self, config=None, add_conf=None):
         '''
         initialsation of the security module
