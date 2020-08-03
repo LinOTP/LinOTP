@@ -259,9 +259,12 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         for key in [CONFIG_KEY, TOKEN_KEY, VALUE_KEY, DEFAULT_KEY]:
             label = self.labels.get(key)
             if label:
+
                 output("debug", "[populate_handles] get handle for label %s"
                        % label)
+
                 self.handles[key] = self.find_aes_keys(label)
+
                 output("debug", "[populate_handles] handle set to %s"
                        % self.handles.get(key))
 
@@ -476,44 +479,62 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         Find and AES key with the given label
         The number of keys to be found is restricted by "wanted"
 
-        Returns
-          - the number of keys and
-          - the handle to the key
+        finding aes keys is done by setting some search attributes when
+        searching for objects. the search attributes which describe an aes
+        key are:
+           type, class, public accessible, belonging to the current token,
+           usable for encryption / decryption
+
+        :param label: the label of the aes key
+        :param wanted: number of maximum returned key
+        :return: if wanted == 1 return 0 or the last in list
+                 else return list of aes keys
         '''
-        ret_handle = 0
 
         klass = c_ulong(CKO_SECRET_KEY)
         keytype = c_ulong(CKK_AES)
         ck_true = c_ubyte(1)
         ck_false = c_ubyte(0)
 
-        size = 8
+        search_attributes = [
+            CK_ATTRIBUTE(CKA_CLASS,
+                         addressof(klass), sizeof(klass)),
+            CK_ATTRIBUTE(CKA_KEY_TYPE,
+                         addressof(keytype), sizeof(keytype)),
+            CK_ATTRIBUTE(CKA_PRIVATE,
+                         cast(addressof(ck_false), c_void_p),
+                              sizeof(ck_false)),
+            CK_ATTRIBUTE(CKA_TOKEN,
+                         cast(addressof(ck_true), c_void_p),
+                              sizeof(ck_true)),
+            CK_ATTRIBUTE(CKA_SENSITIVE,
+                         cast(addressof(ck_true), c_void_p),
+                              sizeof(ck_true)),
+            CK_ATTRIBUTE(CKA_ENCRYPT,
+                         cast(addressof(ck_true), c_void_p),
+                              sizeof(ck_true)),
+            CK_ATTRIBUTE(CKA_DECRYPT,
+                         cast(addressof(ck_true), c_void_p),
+                         sizeof(ck_true))
+            ]
+
+        # ---------------------------------------------------------------------
+
+        # if we have a label, we add it to the search attribute filter
+
+        if label:
+            search_attributes.append(
+                CK_ATTRIBUTE(CKA_LABEL, cast(label, c_void_p), len(label))
+                )
+
+        # ---------------------------------------------------------------------
+
+        # create the list of search attributes
+
+        size = len(search_attributes)
         CK_TEMPLATE = CK_ATTRIBUTE * size
 
-        template = CK_TEMPLATE(
-                        CK_ATTRIBUTE(CKA_CLASS,
-                                     addressof(klass), sizeof(klass)),
-                        CK_ATTRIBUTE(CKA_KEY_TYPE,
-                                     addressof(keytype), sizeof(keytype)),
-                        CK_ATTRIBUTE(CKA_LABEL,
-                                     cast(label, c_void_p), len(label)),
-                        CK_ATTRIBUTE(CKA_PRIVATE,
-                                     cast(addressof(ck_false), c_void_p),
-                                          sizeof(ck_false)),
-                        CK_ATTRIBUTE(CKA_TOKEN,
-                                     cast(addressof(ck_true), c_void_p),
-                                          sizeof(ck_true)),
-                        CK_ATTRIBUTE(CKA_SENSITIVE,
-                                     cast(addressof(ck_true), c_void_p),
-                                          sizeof(ck_true)),
-                        CK_ATTRIBUTE(CKA_ENCRYPT,
-                                     cast(addressof(ck_true), c_void_p),
-                                          sizeof(ck_true)),
-                        CK_ATTRIBUTE(CKA_DECRYPT,
-                                     cast(addressof(ck_true), c_void_p),
-                                     sizeof(ck_true))
-                        )
-
+        template = CK_TEMPLATE(*search_attributes)
         template_len = c_ulong(size)
 
         rv = self.pkcs11.C_FindObjectsInit(self.hSession,
@@ -540,8 +561,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
                                 % (rv, pkcs11error(rv)))
 
             if ulKeyCount.value > 0:
-                keys.append(hKey.value)
-                ret_handle = int(hKey.value)
+                keys.append(int(hKey.value))
 
             output("debug", "[find_aes_keys] searching keys: %i: %s"
                    % (ulKeyCount.value, hKey.value))
@@ -554,7 +574,13 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
             raise Exception("Failed to C_FindObjectsFinal (%s): %s"
                             % (rv, pkcs11error(rv)))
 
-        return ret_handle
+        if wanted == 1:
+            if keys:
+                return keys[-1]
+            else:
+                return 0
+
+        return keys
 
     def gettokeninfo(self, slotid=0):
         '''
@@ -957,7 +983,7 @@ def main():
     if listing:
 
         keys = P11.find_aes_keys(
-                        label=label.encode('utf-8'), wanted=100, multiple=True)
+                        label=label.encode('utf-8'), wanted=100)
         print("Found these AES keys: %r" % keys)
 
     elif encrypt:
@@ -968,6 +994,11 @@ def main():
         iv = P11.random(16)
 
         handle = P11.find_aes_keys(label=l_handle.encode('utf-8'))
+        if handle == 0:
+            print('Enryption failed: no handle for aes key found for label %r!'
+                  % l_handle)
+            return
+
         crypttext = P11.encrypt(encrypt.encode('utf-8'), iv, DEFAULT_KEY)
         print("Encrypted Text : ", binascii.hexlify(crypttext))
 
@@ -976,7 +1007,7 @@ def main():
 
     else:
 
-        handle = P11.find_aes_keys(label=name.encode('utf-8'), wanted=1)
+        handle = P11.find_aes_keys(label=name.encode('utf-8'))
 
         if not handle:
             handle_object = P11.createAES(label=name.encode('utf-8'))
