@@ -154,7 +154,7 @@ class DefaultSecurityModule(SecurityModule):
         # #
         # After this we do not require the password anymore
 
-        handles = ['pinHandle', 'passHandle', 'valueHandle', 'defaultHandle']
+        handles = ['tokenHandle', 'passHandle', 'valueHandle', 'defaultHandle']
         for handle in handles:
             self.getSecret(self.config.get(handle, '0'))
 

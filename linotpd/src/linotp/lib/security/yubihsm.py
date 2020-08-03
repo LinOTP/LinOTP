@@ -30,9 +30,9 @@
     linotpActiveSecurityModule = yubihsm
     linotpSecurity.yubihsm.module =
                         linotp.lib.security.yubihsm.YubiSecurityModule
-    linotpSecurity.yubihsm.pinHandle =21
+    linotpSecurity.yubihsm.tokenHandle =21
     linotpSecurity.yubihsm.valueHandle =22
-    linotpSecurity.yubihsm.passwordHandle =23
+    linotpSecurity.yubihsm.configHandle =23
     linotpSecurity.yubihsm.defaultHandle = 0x1111
     linotpSecurity.yubihsm.password = 14fda9321ae820aa34e57852a31b10d0
     linotpSecurity.yubihsm.device = /dev/ttyACM3

@@ -30,9 +30,9 @@
     linotpActiveSecurityModule = lunasa
     linotpSecurity.lunasa.module = linotp.lib.security.pkcs11.Pkcs11SecurityModule
     linotpSecurity.lunasa.library = libCryptoki2_64.so
-    linotpSecurity.lunasa.pinHandle =21
+    linotpSecurity.lunasa.tokenHandle =21
     linotpSecurity.lunasa.valueHandle =22
-    linotpSecurity.lunasa.passwordHandle =23
+    linotpSecurity.lunasa.configHandle =23
     linotpSecurity.lunasa.defaultHandle =22
     linotpSecurity.lunasa.configLabel = config
     linotpSecurity.lunasa.tokenLabel = token

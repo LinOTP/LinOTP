@@ -86,6 +86,8 @@ def check_json_schema(schema={}):
         else:
             raise LinOTPConfigValueError(
                 f"{value} does not agree with schema {schema}.")
+        f.__doc__ = f"value should apply {schema}"
+        return f
 
 def check_membership(allowed={}):
     """Factory function that will return a function that ensures that
