@@ -13,11 +13,11 @@ from jsonschema import Draft4Validator
 from .lib.type_utils import boolean as to_boolean
 from .lib.security.pkcs11 import Pkcs11SecurityModule
 from .lib.security.yubihsm import YubiSecurityModule
+from  .lib.security import provider
 
 basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 VALID_LOG_LEVELS = {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}
-
 
 # Validation functions for configuration items. The `ConfigSchema.validate`
 # attribute is supposed to contain a function that takes `key` and `value`
