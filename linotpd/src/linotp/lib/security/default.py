@@ -175,7 +175,7 @@ class DefaultSecurityModule(SecurityModule):
 
         return os.urandom(len)
 
-    def encrypt(self, data: bytes, iv: bytes, id: int = 0) -> bytes:
+    def encrypt(self, data: bytes, iv: bytes, id: int = DEFAULT_KEY) -> bytes:
         '''
         security module methods: encrypt
 
@@ -216,7 +216,7 @@ class DefaultSecurityModule(SecurityModule):
             del key
         return res
 
-    def decrypt(self, value: bytes, iv: bytes, id: int = 0) -> bytes:
+    def decrypt(self, value: bytes, iv: bytes, id: int = DEFAULT_KEY) -> bytes:
         '''
         security module methods: decrypt
 

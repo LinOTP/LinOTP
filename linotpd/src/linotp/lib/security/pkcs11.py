@@ -703,7 +703,8 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
                             % (rv, pkcs11error(rv)))
         return key
 
-    def decrypt(self, value: bytes, iv: bytes, id: int = 0) -> bytes:
+
+    def decrypt(self, value: bytes, iv: bytes, id: int = DEFAULT_KEY) -> bytes:
         '''
         decrypts the given data, using the IV and the key specified by
         the handle lookup id
@@ -751,7 +752,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         return self.unpad(plaintext.value)
 
-    def encrypt(self, data: bytes, iv: bytes, id: int = 0) -> bytes:
+    def encrypt(self, data: bytes, iv: bytes, id: int = DEFAULT_KEY) -> bytes:
         '''
         encrypts the given input data
 

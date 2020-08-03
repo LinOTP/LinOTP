@@ -279,7 +279,7 @@ class YubiSecurityModule(SecurityModule):
         log.debug("[random] creating %i random bytes" % l)
         return self.hsm.random(l)
 
-    def decrypt(self, data, iv, id=0):
+    def decrypt(self, data, iv, id=DEFAULT_KEY):
         '''
         decrypts the given data, using the IV and the key
         specified by the handle
@@ -300,7 +300,7 @@ class YubiSecurityModule(SecurityModule):
         s = self.unpad(s)
         return s
 
-    def encrypt(self, data, iv, id=0):
+    def encrypt(self, data, iv, id=DEFAULT_KEY):
         '''
         encrypts the given input data
 
