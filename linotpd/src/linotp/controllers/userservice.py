@@ -52,7 +52,7 @@ import logging
 import json
 
 
-from flask import Response
+from flask import g, current_app
 from flask_babel import gettext as _
 from werkzeug.exceptions import Unauthorized, Forbidden
 
@@ -280,9 +280,8 @@ class UserserviceController(BaseController):
 
         # setup the audit for general availibility
 
-        c.audit = request_context['audit']
-        c.audit['success'] = False
-        c.audit['client'] = self.client
+        g.audit['success'] = False
+        g.audit['client'] = self.client
 
         # ------------------------------------------------------------------ --
 
@@ -365,22 +364,22 @@ class UserserviceController(BaseController):
         authUser = request_context['AuthUser']
 
         try:
-            if c.audit['action'] not in ['userservice/context',
+            if g.audit['action'] not in ['userservice/context',
                                          'userservice/pre_context',
                                          'userservice/userinfo',
                                          'userservice/load_form'
-                                         ]:
+                                        ]:
 
-                c.audit['user'] = authUser.get('login', '')
-                c.audit['realm'] = authUser.get('realm','')
+                g.audit['user'] = authUser.get('login', '')
+                g.audit['realm'] = authUser.get('realm', '')
 
                 log.debug("[__after__] authenticating as %s in realm %s!"
-                          % (c.audit['user'], c.audit['realm']))
+                          % (g.audit['user'], g.audit['realm']))
 
                 if 'serial' in request.params:
                     serial = request.params['serial']
-                    c.audit['serial'] = serial
-                    c.audit['token_type'] = getTokenType(serial)
+                    g.audit['serial'] = serial
+                    g.audit['token_type'] = getTokenType(serial)
 
                 # --------------------------------------------------------- --
 
@@ -390,18 +389,16 @@ class UserserviceController(BaseController):
                               'enroll', 'delete', 'finishocra2token']:
                     event = 'token_' + action
 
-                    if c.audit.get('source_realm'):
-                        source_realms = c.audit.get('source_realm')
+                    if g.audit.get('source_realm'):
+                        source_realms = g.audit.get('source_realm')
                         token_reporting(event, source_realms)
 
-                    target_realms = c.audit.get('realm')
+                    target_realms = g.audit.get('realm')
                     token_reporting(event, target_realms)
 
-                    c.audit['action_detail'] += get_token_num_info()
+                    g.audit['action_detail'] += get_token_num_info()
 
-                audit = config.get('audit')
-
-                audit.log(c.audit)
+                current_app.audit_obj.log(g.audit)
                 Session.commit()
 
             return response
@@ -496,9 +493,9 @@ class UserserviceController(BaseController):
             user = self._identify_user(params=param)
             if not user:
                 log.info("User %r not found", param.get('login'))
-                c.audit['action_detail'] = ("User %r not found" %
+                g.audit['action_detail'] = ("User %r not found" %
                                             param.get('login'))
-                c.audit['success'] = False
+                g.audit['success'] = False
                 return sendResult(self.response, False, 0)
 
             uid = "%s@%s" % (user.login, user.realm)
@@ -515,9 +512,9 @@ class UserserviceController(BaseController):
             except KeyError as exx:
 
                 log.info("Missing password for user %r", uid)
-                c.audit['action_detail'] = ("Missing password for user %r"
-                                            % uid)
-                c.audit['success'] = False
+                g.audit['action_detail'] = (
+                    "Missing password for user %r" % uid)
+                g.audit['success'] = False
                 return sendResult(self.response, False, 0)
 
             (otp, passw) = password.split(':')
@@ -539,9 +536,9 @@ class UserserviceController(BaseController):
             if not res:
 
                 log.info("User %r failed to authenticate!", uid)
-                c.audit['action_detail'] = ("User %r failed to authenticate!"
-                                            % uid)
-                c.audit['success'] = False
+                g.audit['action_detail'] = (
+                    "User %r failed to authenticate!" % uid)
+                g.audit['success'] = False
                 return sendResult(self.response, False, 0)
 
             # -------------------------------------------------------------- --
@@ -557,16 +554,16 @@ class UserserviceController(BaseController):
                 secure=secure_cookie(),
                 expires=expires)
 
-            c.audit['action_detail'] = "expires: %s " % expiration
-            c.audit['success'] = True
+            g.audit['action_detail'] = "expires: %s " % expiration
+            g.audit['success'] = True
 
             Session.commit()
             return sendResult(self.response, True, 0)
 
         except Exception as exx:
 
-            c.audit['info'] = ("%r" % exx)[:80]
-            c.audit['success'] = False
+            g.audit['info'] = ("%r" % exx)[:80]
+            g.audit['success'] = False
 
             Session.rollback()
             return sendError(response, exx)
@@ -642,7 +639,7 @@ class UserserviceController(BaseController):
                                 secure=secure_cookie,
                                 expires=expires)
 
-            c.audit['info'] = ("User %r authenticated from otp" % user)
+            g.audit['info'] = ("User %r authenticated from otp" % user)
 
             Session.commit()
             return sendResult(self.response, res, 0)
@@ -666,7 +663,7 @@ class UserserviceController(BaseController):
                                 secure=secure_cookie,
                                 expires=expires)
 
-            c.audit['success'] = False
+            g.audit['success'] = False
 
             Session.commit()
             return sendResult(self.response, False, 0, opt=reply)
@@ -716,7 +713,7 @@ class UserserviceController(BaseController):
                 transid, passw=otp_value, options=params)
 
 
-            c.audit['success'] = res
+            g.audit['success'] = res
 
             if res:
                 (cookie, expires,
@@ -726,8 +723,8 @@ class UserserviceController(BaseController):
                                     secure=secure_cookie,
                                     expires=expires)
 
-                c.audit['action_detail'] = "expires: %s " % expiration
-                c.audit['info'] = "%r logged in " % user
+                g.audit['action_detail'] = "expires: %s " % expiration
+                g.audit['info'] = "%r logged in " % user
 
             Session.commit()
             return sendResult(self.response, res, 0)
@@ -760,8 +757,8 @@ class UserserviceController(BaseController):
             self.response.set_cookie('user_selfservice', cookie,
                                 secure=secure_cookie,
                                 expires=expires)
-            c.audit['action_detail'] = "expires: %s " % expiration
-            c.audit['info'] = "%r logged in " % user
+            g.audit['action_detail'] = "expires: %s " % expiration
+            g.audit['info'] = "%r logged in " % user
 
         Session.commit()
         return sendResult(self.response, verified, 0)
@@ -778,9 +775,9 @@ class UserserviceController(BaseController):
         if not user.checkPass(passw):
 
             log.info("User %r failed to authenticate!", user)
-            c.audit['action_detail'] = ("User %r failed to authenticate!"
+            g.audit['action_detail'] = ("User %r failed to authenticate!"
                                         % user)
-            c.audit['success'] = False
+            g.audit['success'] = False
 
             Session.commit()
             return sendResult(self.response, False, 0)
@@ -807,13 +804,13 @@ class UserserviceController(BaseController):
                     secure=secure_cookie(),
                     expires=expires)
 
-                c.audit['action_detail'] = "expires: %s " % expiration
-                c.audit['info'] = "%r logged in " % user
+                g.audit['action_detail'] = "expires: %s " % expiration
+                g.audit['info'] = "%r logged in " % user
 
             elif not res and reply:
                 log.error("challenge trigger though otp is provided")
 
-            c.audit['success'] = res
+            g.audit['success'] = res
 
             Session.commit()
             return sendResult(self.response, res, 0, reply)
@@ -837,10 +834,10 @@ class UserserviceController(BaseController):
         reply = {'message': 'credential verified - '
                  'additional authentication parameter required'}
 
-        c.audit['action_detail'] = "expires: %s " % expiration
-        c.audit['info'] = "%r credentials verified" % user
+        g.audit['action_detail'] = "expires: %s " % expiration
+        g.audit['info'] = "%r credentials verified" % user
 
-        c.audit['success'] = True
+        g.audit['success'] = True
         Session.commit()
 
         return sendResult(self.response, False, 0, opt=reply)
@@ -865,8 +862,8 @@ class UserserviceController(BaseController):
                 secure=secure_cookie(),
                 expires=expires)
 
-        c.audit['success'] = res
-        c.audit['info'] = "%r logged in " % user
+        g.audit['success'] = res
+        g.audit['info'] = "%r logged in " % user
 
         Session.commit()
 
@@ -957,8 +954,8 @@ class UserserviceController(BaseController):
 
             log.error('userservice login failed: %r', exx)
 
-            c.audit['info'] = ("%r" % exx)[:80]
-            c.audit['success'] = False
+            g.audit['info'] = ("%r" % exx)[:80]
+            g.audit['success'] = False
 
             raise exx
 
@@ -966,8 +963,8 @@ class UserserviceController(BaseController):
 
             log.error('userservice login failed: %r', exx)
 
-            c.audit['info'] = ("%r" % exx)[:80]
-            c.audit['success'] = False
+            g.audit['info'] = ("%r" % exx)[:80]
+            g.audit['success'] = False
 
             Session.rollback()
             return sendResult(self.response, False, 0)
@@ -1077,7 +1074,7 @@ class UserserviceController(BaseController):
 
             uinfo = get_userinfo(self.authUser)
 
-            c.audit['success'] = True
+            g.audit['success'] = True
 
             Session.commit()
             return sendResult(self.response, uinfo, 0)
@@ -1102,7 +1099,7 @@ class UserserviceController(BaseController):
             remove_auth_cookie(cookie)
             self.response.delete_cookie(key='user_selfservice')
 
-            c.audit['success'] = True
+            g.audit['success'] = True
 
             Session.commit()
             return sendResult(self.response, True, 0)
@@ -1208,7 +1205,7 @@ class UserserviceController(BaseController):
                         res = remove_empty_lines(res)
 
             Session.commit()
-            c.audit['success'] = True
+            g.audit['success'] = True
             return res
 
         except CompileException as exx:
@@ -1262,8 +1259,8 @@ class UserserviceController(BaseController):
                 ret = th.enableToken(True, None, serial)
                 res["enable token"] = ret
 
-                c.audit['realm'] = self.authUser.realm
-                c.audit['success'] = ret
+                g.audit['realm'] = self.authUser.realm
+                g.audit['success'] = ret
 
             Session.commit()
             return sendResult(self.response, res, 1)
@@ -1316,8 +1313,8 @@ class UserserviceController(BaseController):
                 ret = th.enableToken(False, None, serial)
                 res["disable token"] = ret
 
-                c.audit['realm'] = self.authUser.realm
-                c.audit['success'] = ret
+                g.audit['realm'] = self.authUser.realm
+                g.audit['success'] = ret
 
             Session.commit()
             return sendResult(self.response, res, 1)
@@ -1361,8 +1358,8 @@ class UserserviceController(BaseController):
                 ret = th.removeToken(serial=serial)
                 res["delete token"] = ret
 
-                c.audit['realm'] = self.authUser.realm
-                c.audit['success'] = ret
+                g.audit['realm'] = self.authUser.realm
+                g.audit['success'] = ret
 
             Session.commit()
             return sendResult(self.response, res, 1)
@@ -1404,7 +1401,7 @@ class UserserviceController(BaseController):
                 ret = resetToken(serial=serial)
                 res["reset Failcounter"] = ret
 
-                c.audit['success'] = ret
+                g.audit['success'] = ret
 
             Session.commit()
             return sendResult(self.response, res, 1)
@@ -1451,8 +1448,8 @@ class UserserviceController(BaseController):
                 ret = th.unassignToken(serial, None, upin)
                 res["unassign token"] = ret
 
-                c.audit['success'] = ret
-                c.audit['realm'] = self.authUser.realm
+                g.audit['success'] = ret
+                g.audit['realm'] = self.authUser.realm
 
             Session.commit()
             return sendResult(self.response, res, 1)
@@ -1512,7 +1509,7 @@ class UserserviceController(BaseController):
                 ret = setPin(userPin, None, serial, param)
                 res["set userpin"] = ret
 
-                c.audit['success'] = ret
+                g.audit['success'] = ret
 
             Session.commit()
             return sendResult(self.response, res, 1)
@@ -1554,7 +1551,7 @@ class UserserviceController(BaseController):
                 ret = setPinUser(pin, serial)
                 res["set userpin"] = ret
 
-                c.audit['success'] = ret
+                g.audit['success'] = ret
 
             Session.commit()
             return sendResult(self.response, res, 1)
@@ -1601,7 +1598,7 @@ class UserserviceController(BaseController):
                 ret = th.resyncToken(otp1, otp2, None, serial)
                 res["resync Token"] = ret
 
-                c.audit['success'] = ret
+                g.audit['success'] = ret
 
             Session.commit()
             return sendResult(self.response, res, 1)
@@ -1881,7 +1878,7 @@ class UserserviceController(BaseController):
             return sendError(response, pe)
 
         except Exception as exx:
-            c.audit['success'] = False
+            g.audit['success'] = False
             log.error("error verifying token with serial %s: %r"
                       % (serial, exx))
             Session.rollback()
@@ -1949,8 +1946,8 @@ class UserserviceController(BaseController):
 
             res["assign token"] = ret_assign
 
-            c.audit['realm'] = self.authUser.realm
-            c.audit['success'] = ret_assign
+            g.audit['realm'] = self.authUser.realm
+            g.audit['success'] = ret_assign
 
             checkPolicyPost('selfservice', 'userassign', param, self.authUser)
 
@@ -2007,14 +2004,14 @@ class UserserviceController(BaseController):
 
             ttype = param.get("type", None)
 
-            c.audit['token_type'] = ttype
+            g.audit['token_type'] = ttype
             th = TokenHandler()
             serial, _username, _resolverClass = th.get_serial_by_otp(None,
                     otp, 10, typ=ttype, realm=self.authUser.realm, assigned=0)
             res = {'serial': serial}
 
-            c.audit['success'] = 1
-            c.audit['serial'] = serial
+            g.audit['success'] = 1
+            g.audit['serial'] = serial
 
             Session.commit()
             return sendResult(self.response, res, 1)
@@ -2088,12 +2085,12 @@ class UserserviceController(BaseController):
 
             # -------------------------------------------------------------- --
 
-            c.audit['serial'] = response_detail.get('serial', '')
-            c.audit['success'] = ret
-            c.audit['user'] = self.authUser.login
-            c.audit['realm'] = self.authUser.realm
+            g.audit['serial'] = response_detail.get('serial', '')
+            g.audit['success'] = ret
+            g.audit['user'] = self.authUser.login
+            g.audit['realm'] = self.authUser.realm
 
-            c.audit['success'] = ret
+            g.audit['success'] = ret
 
             # -------------------------------------------------------------- --
 
@@ -2293,10 +2290,10 @@ class UserserviceController(BaseController):
                 "valid types are 'oathtoken' and 'googleauthenticator' and "
                 "'googleauthenticator_time'. You provided %s") % typ)
 
-            c.audit['serial'] = serial
+            g.audit['serial'] = serial
             # the Google and OATH are always HMAC; sometimes (FUTURE) totp"
-            c.audit['token_type'] = t_type
-            c.audit['success'] = ret1
+            g.audit['token_type'] = t_type
+            g.audit['success'] = ret1
             param['serial'] = serial
 
             checkPolicyPost('selfservice', 'enroll', param, user=self.authUser)
@@ -2374,7 +2371,7 @@ class UserserviceController(BaseController):
                                                             " definition."))
 
             ret["serial"] = serial
-            c.audit['success'] = True
+            g.audit['success'] = True
 
             Session.commit()
             return sendResult(self.response, ret, 0)
@@ -2438,7 +2435,7 @@ class UserserviceController(BaseController):
                    "total": total,
                    "rows": lines}
 
-            c.audit['success'] = True
+            g.audit['success'] = True
 
             Session.commit()
             return json.dumps(res, indent=3)
@@ -2535,10 +2532,10 @@ class UserserviceController(BaseController):
                 'transaction' : trans,
             }
 
-            c.audit['serial'] = serial
-            c.audit['token_type'] = typ
-            c.audit['success'] = True
-            c.audit['realm'] = self.authUser.realm
+            g.audit['serial'] = serial
+            g.audit['token_type'] = typ
+            g.audit['success'] = True
+            g.audit['realm'] = self.authUser.realm
 
             Session.commit()
             return sendResult(self.response, {'activate': True, 'ocratoken': ret})
@@ -2613,10 +2610,10 @@ class UserserviceController(BaseController):
             value['value'] = ok
             value['failcount'] = int(reply.get('failcount', 0))
 
-            c.audit['transactionid'] = transid
-            c.audit['token_type'] = reply['token_type']
-            c.audit['success'] = ok
-            c.audit['realm'] = self.authUser.realm
+            g.audit['transactionid'] = transid
+            g.audit['token_type'] = reply['token_type']
+            g.audit['success'] = ok
+            g.audit['realm'] = self.authUser.realm
 
             Session.commit()
             return sendResult(self.response, value, opt)
@@ -2696,11 +2693,11 @@ class UserserviceController(BaseController):
                         res = ret[0]
                     if len(ret) > 1:
                         res = ret[1]
-                    c.audit['success'] = res
+                    g.audit['success'] = res
                 else:
                     res['status'] = ('method %s.%s not supported!'
                                     % (typ, method))
-                    c.audit['success'] = False
+                    g.audit['success'] = False
 
             Session.commit()
             return sendResult(self.response, res, 1)
@@ -2764,8 +2761,8 @@ class UserserviceController(BaseController):
 
             res = {"set description": ret}
 
-            c.audit['realm'] = self.authUser.realm
-            c.audit['success'] = ret
+            g.audit['realm'] = self.authUser.realm
+            g.audit['success'] = ret
 
             Session.commit()
             return sendResult(self.response, res, 1)

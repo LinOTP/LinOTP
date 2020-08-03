@@ -33,7 +33,7 @@ import logging
 
 from datetime import datetime
 
-from flask import Response, stream_with_context
+from flask import Response, stream_with_context, g, current_app
 from werkzeug.datastructures import Headers
 
 from linotp.flap import request, response, config, tmpl_context as c
@@ -81,16 +81,13 @@ class ReportingController(BaseController):
 
         try:
 
-            c.audit = request_context['audit']
-            c.audit['success'] = False
+            g.audit['success'] = False
 
-            c.audit['client'] = get_client(request)
+            g.audit['client'] = get_client(request)
 
             # Session handling
             check_session(request)
 
-            audit = config.get('audit')
-            request_context['Audit'] = audit
             checkAuthorisation(scope='reporting.access', method=action)
 
             return
@@ -111,12 +108,10 @@ class ReportingController(BaseController):
         :return: return the response
         '''
 
-        audit = config.get('audit')
-
         try:
-            c.audit['administrator'] = getUserFromRequest(request).get('login')
+            g.audit['administrator'] = getUserFromRequest(request).get('login')
 
-            audit.log(c.audit)
+            current_app.audit_obj.log(g.audit)
             Session.commit()
             return response
 
@@ -394,7 +389,7 @@ class ReportingController(BaseController):
                                         sortdir=sortdir)
             info = reports.getResultSetInfo()
 
-            c.audit['success'] = True
+            g.audit['success'] = True
             Session.commit()
 
             if output_format == 'csv':

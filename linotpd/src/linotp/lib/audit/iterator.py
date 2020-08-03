@@ -36,15 +36,14 @@ log = logging.getLogger(__name__)
 class AuditQuery(object):
     """ build the the audit query and return result iterator
     """
-    def __init__(self, param, audit, user=None, columns=None):
+    def __init__(self, param, audit_obj, user=None, columns=None):
         self.page = 1
         self.headers = False
         self._columns = None
-        self._audit = audit
         self._search_dict = {}
         self._rp_dict = {}
 
-        self.audit = audit
+        self.audit_obj = audit_obj
 
         if 'headers' in param:
             self.headers = True
@@ -146,15 +145,15 @@ class AuditQuery(object):
 
     def get_query_result(self):
 
-        self.audit_search = self._audit.searchQuery(self._search_dict,
-                                                    rp_dict=self._rp_dict)
+        self.audit_search = self.audit_obj.searchQuery(self._search_dict,
+                                                       rp_dict=self._rp_dict)
         return self.audit_search
 
     def get_entry(self, row):
         entry = {}
         if type(row) != dict:
             ## convert table data to dict!
-            row = self._audit.row2dict(row)
+            row = self.audit_obj.row2dict(row)
         if 'number' in row:
             cell = []
             for col in self._columns:
@@ -176,7 +175,7 @@ class AuditQuery(object):
         return entry
 
     def get_total(self):
-        return self._audit.getTotal(self._search_dict)
+        return self.audit_obj.getTotal(self._search_dict)
 
 class JSONAuditIterator(object):
     """

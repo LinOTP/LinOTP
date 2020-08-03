@@ -31,7 +31,7 @@ import os
 import logging
 from binascii import hexlify
 
-from flask import Response, after_this_request
+from flask import after_this_request, current_app, g
 
 from linotp.flap import (
     config, request, response, tmpl_context as c)
@@ -110,12 +110,8 @@ class HelpdeskController(BaseController):
 
         try:
 
-            c.audit = request_context['audit']
-            c.audit['success'] = False
-            c.audit['client'] = get_client(request)
-
-            audit = config.get('audit')
-            request_context['Audit'] = audit
+            g.audit['success'] = False
+            g.audit['client'] = get_client(request)
 
             # Session handling
             if action not in ['getsession', 'dropsession']:
@@ -138,14 +134,11 @@ class HelpdeskController(BaseController):
         :return: return the response
         '''
 
-        action = request_context['action']
-        audit = config.get('audit')
-
         try:
-            c.audit['administrator'] = getUserFromRequest(request).get("login")
-            c.audit['serial'] = request.params.get('serial')
+            g.audit['administrator'] = getUserFromRequest(request).get("login")
+            g.audit['serial'] = request.params.get('serial')
 
-            audit.log(c.audit)
+            current_app.audit_obj.log(g.audit)
             Session.commit()
             return response
 
@@ -294,7 +287,7 @@ class HelpdeskController(BaseController):
                 "rows": lines
             }
 
-            c.audit['success'] = True
+            g.audit['success'] = True
             Session.commit()
             return sendResult(None, res)
 
@@ -436,7 +429,7 @@ class HelpdeskController(BaseController):
                 "rows": lines
             }
 
-            c.audit['success'] = True
+            g.audit['success'] = True
 
             Session.commit()
             return sendResult(None, res)
@@ -574,14 +567,14 @@ class HelpdeskController(BaseController):
             # prepare data for audit
 
             if token is not None and ret is True:
-                c.audit['serial'] = token.getSerial()
-                c.audit['token_type'] = token.type
+                g.audit['serial'] = token.getSerial()
+                g.audit['token_type'] = token.type
 
-            c.audit['success'] = ret
-            c.audit['user'] = user.login
-            c.audit['realm'] = user.realm
+            g.audit['success'] = ret
+            g.audit['user'] = user.login
+            g.audit['realm'] = user.realm
 
-            c.audit['action_detail'] += get_token_num_info()
+            g.audit['action_detail'] += get_token_num_info()
 
             res = checkPolicyPost('admin', 'init', params, user=user)
             pin = res.get('new_pin', params['pin'])
@@ -599,9 +592,9 @@ class HelpdeskController(BaseController):
 
             notify_user(user, 'enrollment', info, required=True)
 
-            c.audit['action_detail'] += get_token_num_info()
+            g.audit['action_detail'] += get_token_num_info()
 
-            c.audit['success'] = ret
+            g.audit['success'] = ret
 
             return sendResult(None, ret)
 
@@ -687,8 +680,8 @@ class HelpdeskController(BaseController):
 
                 result.append(serial)
 
-            c.audit['success'] = True
-            c.audit['info'] = result
+            g.audit['success'] = True
+            g.audit['info'] = result
 
             Session.commit()
             return sendResult(None, result)

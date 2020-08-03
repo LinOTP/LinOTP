@@ -1,6 +1,6 @@
 FROM linotp
 
-ENV LINOTP_CONFIG_FILE=
+ENV LINOTP_CFG=
 
 #
 # Docker-Image >> linotp_test_env <<

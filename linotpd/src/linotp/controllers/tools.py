@@ -29,6 +29,7 @@ tools controller
 """
 import json
 
+from flask import current_app, g
 from werkzeug.datastructures import FileStorage
 
 from linotp.flap import request, response, tmpl_context as c
@@ -87,8 +88,6 @@ class ToolsController(BaseController):
             check_session(request)
 
             checkToolsAuthorisation(action, params)
-            c.audit = request_context['audit']
-            return
 
         except PolicyException as exx:
             log.exception("policy failed %r" % exx)
@@ -113,11 +112,7 @@ class ToolsController(BaseController):
 
         try:
             # finally create the audit entry
-            Audit = request_context['Audit']
-            audit = request_context.get('audit')
-
-            c.audit.update(audit)
-            Audit.log(c.audit)
+            current_app.audit_obj.log(g.audit)
             Session.commit()
             return response
 
@@ -150,8 +145,8 @@ class ToolsController(BaseController):
             # any error will raise an excecption which will be displayed
             # to the user
 
-            c.audit['administrator'] = username
-            c.audit['info'] = 'setPassword'
+            g.audit['administrator'] = username
+            g.audit['info'] = 'setPassword'
 
             set_pw_handler = SetPasswordHandler(DataBaseContext(sql_url))
 
@@ -159,7 +154,7 @@ class ToolsController(BaseController):
                                         old_password=old_pw,
                                         new_password=new_pw)
 
-            c.audit['success'] = True
+            g.audit['success'] = True
 
             return sendResult(response, obj=True,
                               opt={'detail':
@@ -168,7 +163,7 @@ class ToolsController(BaseController):
 
         except Exception as exx:
 
-            c.audit['success'] = False
+            g.audit['success'] = False
 
             log.exception(exx)
             Session.rollback()

@@ -94,7 +94,7 @@ from linotp.tokens import tokenclass_registry
 import logging
 import os
 
-from flask import Response, after_this_request
+from flask import Response, after_this_request, current_app, g
 from flask import stream_with_context
 from werkzeug.datastructures import FileStorage
 from flask_babel import gettext as _
@@ -141,16 +141,13 @@ class AdminController(BaseController):
 
         try:
 
-            c.audit = request_context['audit']
-            c.audit['success'] = False
-            c.audit['client'] = get_client(request)
+            g.audit['success'] = False
+            g.audit['client'] = get_client(request)
 
             if request.path.lower() != '/admin/getsession':
                 # Check we have a valid session
                 check_session(request)
 
-            audit = config.get('audit')
-            request_context['Audit'] = audit
             return None
 
         except Exception as exx:
@@ -176,12 +173,12 @@ class AdminController(BaseController):
             if action in ['getsession', 'dropsession']:
                 return response
 
-            c.audit['administrator'] = getUserFromRequest(request).get("login")
+            g.audit['administrator'] = getUserFromRequest(request).get("login")
 
             serial = request.params.get('serial')
             if serial:
-                c.audit['serial'] = serial
-                c.audit['token_type'] = getTokenType(serial)
+                g.audit['serial'] = serial
+                g.audit['token_type'] = getTokenType(serial)
 
             # ------------------------------------------------------------- --
 
@@ -193,18 +190,18 @@ class AdminController(BaseController):
                           'remove', 'tokenrealm', 'loadtokens']:
                 event = 'token_' + action
 
-                if c.audit.get('source_realm'):
-                    source_realms = c.audit.get('source_realm')
+                if g.audit.get('source_realm'):
+                    source_realms = g.audit.get('source_realm')
                     token_reporting(event, source_realms)
 
-                target_realms = c.audit.get('realm')
+                target_realms = g.audit.get('realm')
                 token_reporting(event, target_realms)
 
-                c.audit['action_detail'] += get_token_num_info()
+                g.audit['action_detail'] += get_token_num_info()
 
             # ------------------------------------------------------------- --
 
-            audit.log(c.audit)
+            current_app.audit_obj.log(g.audit)
             Session.commit()
             return response
 
@@ -220,7 +217,7 @@ class AdminController(BaseController):
     def logout(self):
         # see
         # http://docs.pylonsproject.org/projects/pyramid/1.0/narr/webob.html
-        c.audit['action_detail'] = "logout"
+        g.audit['action_detail'] = "logout"
 
         nonce = request.environ.get("nonce")
         realm = request.environ.get("realm")
@@ -308,7 +305,7 @@ class AdminController(BaseController):
             if owner.info:
                 ret = owner.info
 
-            c.audit['success'] = len(ret) > 0
+            g.audit['success'] = len(ret) > 0
 
             Session.commit()
             return sendResult(response, ret)
@@ -431,8 +428,8 @@ class AdminController(BaseController):
             toks = TokenIterator(user, serial, page, psize, filter, sort, dir,
                                  filterRealm, user_fields)
 
-            c.audit['success'] = True
-            c.audit['info'] = "realm: %s, filter: %r" % (filterRealm, filter)
+            g.audit['success'] = True
+            g.audit['info'] = "realm: %s, filter: %r" % (filterRealm, filter)
 
             # put in the result
             result = {}
@@ -501,8 +498,8 @@ class AdminController(BaseController):
 
             user = getUserFromParam(param)
 
-            c.audit['user'] = user.login
-            c.audit['realm'] = user.realm or ""
+            g.audit['user'] = user.login
+            g.audit['realm'] = user.realm or ""
 
             if not serials and not user:
                 raise ParameterError('missing parameter user or serial!')
@@ -516,7 +513,7 @@ class AdminController(BaseController):
             for serial in set(serials):
                 realms.union(getTokenRealms(serial))
 
-            c.audit['realm'] = "%r" % realms
+            g.audit['realm'] = "%r" % realms
 
             # check admin authorization
             checkPolicyPre('admin', 'remove', param)
@@ -530,7 +527,7 @@ class AdminController(BaseController):
             for serial in set(serials):
                 ret = th.removeToken(user, serial)
 
-            c.audit['success'] = ret
+            g.audit['success'] = ret
 
             opt_result_dict = {}
 
@@ -595,18 +592,18 @@ class AdminController(BaseController):
                      serial, user.login, user.realm)
             ret = th.enableToken(True, user, serial)
 
-            c.audit['success'] = ret
-            c.audit['user'] = user.login
+            g.audit['success'] = ret
+            g.audit['user'] = user.login
 
             if user.is_empty:
-                c.audit['realm'] = getTokenRealms(serial)
+                g.audit['realm'] = getTokenRealms(serial)
             else:
-                c.audit['realm'] = user.realm
-                if c.audit['realm'] == "":
+                g.audit['realm'] = user.realm
+                if g.audit['realm'] == "":
                     realms = set()
                     for tokenserial in getTokens4UserOrSerial(user, serial):
                         realms.union(tokenserial.getRealms())
-                    c.audit['realm'] = realms
+                    g.audit['realm'] = realms
 
             opt_result_dict = {}
             if ret == 0 and serial:
@@ -686,8 +683,8 @@ class AdminController(BaseController):
                 checkPolicyPost('admin', 'getserial',
                                 {'serial': serial})
 
-            c.audit['success'] = 1
-            c.audit['serial'] = serial
+            g.audit['success'] = 1
+            g.audit['serial'] = serial
 
             ret['success'] = True
             ret['serial'] = serial
@@ -703,7 +700,7 @@ class AdminController(BaseController):
             return sendError(response, str(pe), 1)
 
         except Exception as e:
-            c.audit['success'] = 0
+            g.audit['success'] = 0
             Session.rollback()
             log.exception('[getSerialByOtp] error: %r' % e)
             return sendError(response, e, 1)
@@ -748,18 +745,18 @@ class AdminController(BaseController):
                      serial, user.login, user.realm)
             ret = th.enableToken(False, user, serial)
 
-            c.audit['success'] = ret
-            c.audit['user'] = user.login
+            g.audit['success'] = ret
+            g.audit['user'] = user.login
 
             if user.is_empty:
-                c.audit['realm'] = getTokenRealms(serial)
+                g.audit['realm'] = getTokenRealms(serial)
             else:
-                c.audit['realm'] = user.realm
-                if c.audit['realm'] == "":
+                g.audit['realm'] = user.realm
+                if g.audit['realm'] == "":
                     realms = set()
                     for tokenserial in getTokens4UserOrSerial(user, serial):
                         realms.union(tokenserial.getRealms())
-                    c.audit['realm'] = realms
+                    g.audit['realm'] = realms
 
             opt_result_dict = {}
             if ret == 0 and serial:
@@ -822,9 +819,9 @@ class AdminController(BaseController):
             th = TokenHandler()
             (unique, new_serial) = th.check_serial(serial)
 
-            c.audit['success'] = True
-            c.audit['serial'] = serial
-            c.audit['action_detail'] = "%r - %r" % (unique, new_serial)
+            g.audit['success'] = True
+            g.audit['serial'] = serial
+            g.audit['action_detail'] = "%r - %r" % (unique, new_serial)
 
             Session.commit()
             return sendResult(response, {"unique": unique, "new_serial": new_serial}, 1)
@@ -984,17 +981,17 @@ class AdminController(BaseController):
             # prepare data for audit
 
             if token is not None and ret is True:
-                c.audit['serial'] = token.getSerial()
-                c.audit['token_type'] = token.type
+                g.audit['serial'] = token.getSerial()
+                g.audit['token_type'] = token.type
 
-            c.audit['success'] = ret
-            c.audit['user'] = user.login
-            c.audit['realm'] = user.realm
+            g.audit['success'] = ret
+            g.audit['user'] = user.login
+            g.audit['realm'] = user.realm
 
-            if c.audit['realm'] == "":
-                c.audit['realm'] = tokenrealm
+            if g.audit['realm'] == "":
+                g.audit['realm'] = tokenrealm
 
-            c.audit['success'] = ret
+            g.audit['success'] = ret
             # --------------------------------------------------------------- --
 
             checkPolicyPost('admin', 'init', params, user=user)
@@ -1063,7 +1060,7 @@ class AdminController(BaseController):
 
             user = getUserFromParam(param)
 
-            c.audit['source_realm'] = getTokenRealms(serial)
+            g.audit['source_realm'] = getTokenRealms(serial)
 
             # check admin authorization
             checkPolicyPre('admin', 'unassign', param)
@@ -1073,12 +1070,12 @@ class AdminController(BaseController):
                      "user %r@%r" % (serial, user.login, user.realm))
             ret = th.unassignToken(serial, user, None)
 
-            c.audit['success'] = ret
-            c.audit['user'] = user.login
-            c.audit['realm'] = user.realm
+            g.audit['success'] = ret
+            g.audit['user'] = user.login
+            g.audit['realm'] = user.realm
 
-            if "" == c.audit['realm']:
-                c.audit['realm'] = getTokenRealms(serial)
+            if "" == g.audit['realm']:
+                g.audit['realm'] = getTokenRealms(serial)
 
             opt_result_dict = {}
             if ret == 0 and serial:
@@ -1140,7 +1137,7 @@ class AdminController(BaseController):
             checkPolicyPre('admin', 'assign', param)
 
             th = TokenHandler()
-            c.audit['source_realm'] = getTokenRealms(serial)
+            g.audit['source_realm'] = getTokenRealms(serial)
             log.info("[assign] assigning token with serial %s to user %s@%s",
                      serial, user.login, user.realm)
 
@@ -1148,11 +1145,11 @@ class AdminController(BaseController):
 
             checkPolicyPost('admin', 'assign', param, user)
 
-            c.audit['success'] = res
-            c.audit['user'] = user.login
-            c.audit['realm'] = user.realm
-            if "" == c.audit['realm']:
-                c.audit['realm'] = getTokenRealms(serial)
+            g.audit['success'] = res
+            g.audit['user'] = user.login
+            g.audit['realm'] = user.realm
+            if "" == g.audit['realm']:
+                g.audit['realm'] = getTokenRealms(serial)
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -1228,7 +1225,7 @@ class AdminController(BaseController):
                 ret = setPinUser(userPin, serial)
                 res["set userpin"] = ret
                 count = count + 1
-                c.audit['action_detail'] += "userpin, "
+                g.audit['action_detail'] += "userpin, "
 
             if "sopin" in param:
                 msg = "setting soPin failed"
@@ -1250,13 +1247,13 @@ class AdminController(BaseController):
                 ret = setPinSo(soPin, serial)
                 res["set sopin"] = ret
                 count = count + 1
-                c.audit['action_detail'] += "sopin, "
+                g.audit['action_detail'] += "sopin, "
 
             if count == 0:
                 Session.rollback()
                 return sendError(response, ParameterError("Usage: %s" % description, id=77))
 
-            c.audit['success'] = count
+            g.audit['success'] = count
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -1310,7 +1307,7 @@ class AdminController(BaseController):
         """
         try:
 
-            c.audit['info'] = "set token validity"
+            g.audit['info'] = "set token validity"
 
             param = getLowerParams(self.request_params)
 
@@ -1402,9 +1399,9 @@ class AdminController(BaseController):
 
                     token.validity_period_end = validity_period_end
 
-            c.audit['success'] = 1
+            g.audit['success'] = 1
 
-            c.audit['action_detail'] = ("%r " % serials)[:80]
+            g.audit['action_detail'] = ("%r " % serials)[:80]
 
             Session.commit()
             return sendResult(response, serials, 1)
@@ -1416,7 +1413,7 @@ class AdminController(BaseController):
 
         except Exception as exx:
 
-            c.audit['success'] = False
+            g.audit['success'] = False
 
             log.exception('%r', exx)
             Session.rollback()
@@ -1508,7 +1505,7 @@ class AdminController(BaseController):
                 ret = setPin(upin, user, serial, param)
                 res["set pin"] = ret
                 count = count + 1
-                c.audit['action_detail'] += "pin, "
+                g.audit['action_detail'] += "pin, "
 
             if "MaxFailCount".lower() in param:
                 msg = "[set] setting MaxFailCount failed"
@@ -1518,7 +1515,7 @@ class AdminController(BaseController):
                 ret = th.setMaxFailCount(maxFail, user, serial)
                 res["set MaxFailCount"] = ret
                 count = count + 1
-                c.audit['action_detail'] += "maxFailCount=%d, " % maxFail
+                g.audit['action_detail'] += "maxFailCount=%d, " % maxFail
 
             if "SyncWindow".lower() in param:
                 msg = "[set] setting SyncWindow failed"
@@ -1528,7 +1525,7 @@ class AdminController(BaseController):
                 ret = th.setSyncWindow(syncWindow, user, serial)
                 res["set SyncWindow"] = ret
                 count = count + 1
-                c.audit['action_detail'] += "syncWindow=%d, " % syncWindow
+                g.audit['action_detail'] += "syncWindow=%d, " % syncWindow
 
             if "description".lower() in param:
                 msg = "[set] setting description failed"
@@ -1538,7 +1535,7 @@ class AdminController(BaseController):
                 ret = th.setDescription(description, user, serial)
                 res["set description"] = ret
                 count = count + 1
-                c.audit['action_detail'] += "description=%r, " % description
+                g.audit['action_detail'] += "description=%r, " % description
 
             if "CounterWindow".lower() in param:
                 msg = "[set] setting CounterWindow failed"
@@ -1549,7 +1546,7 @@ class AdminController(BaseController):
                 ret = th.setCounterWindow(counterWindow, user, serial)
                 res["set CounterWindow"] = ret
                 count = count + 1
-                c.audit['action_detail'] += "counterWindow=%d, " % counterWindow
+                g.audit['action_detail'] += "counterWindow=%d, " % counterWindow
 
             if "OtpLen".lower() in param:
                 msg = "[set] setting OtpLen failed"
@@ -1560,7 +1557,7 @@ class AdminController(BaseController):
                 ret = th.setOtpLen(otpLen, user, serial)
                 res["set OtpLen"] = ret
                 count = count + 1
-                c.audit['action_detail'] += "otpLen=%d, " % otpLen
+                g.audit['action_detail'] += "otpLen=%d, " % otpLen
 
             if "hashlib".lower() in param:
                 msg = "[set] setting hashlib failed"
@@ -1571,7 +1568,7 @@ class AdminController(BaseController):
                 ret = th.setHashLib(hashlib, user, serial)
                 res["set hashlib"] = ret
                 count = count + 1
-                c.audit['action_detail'] += "hashlib=%s, " % str(hashlib)
+                g.audit['action_detail'] += "hashlib=%s, " % str(hashlib)
 
             if "timeWindow".lower() in param:
                 msg = "[set] setting timeWindow failed"
@@ -1581,7 +1578,7 @@ class AdminController(BaseController):
                 ret = th.addTokenInfo("timeWindow", timeWindow, user, serial)
                 res["set timeWindow"] = ret
                 count = count + 1
-                c.audit['action_detail'] += "timeWindow=%d, " % timeWindow
+                g.audit['action_detail'] += "timeWindow=%d, " % timeWindow
 
             if "timeStep".lower() in param:
                 msg = "[set] setting timeStep failed"
@@ -1592,7 +1589,7 @@ class AdminController(BaseController):
                 ret = th.addTokenInfo("timeStep", timeStep, user, serial)
                 res["set timeStep"] = ret
                 count = count + 1
-                c.audit['action_detail'] += "timeStep=%d, " % timeStep
+                g.audit['action_detail'] += "timeStep=%d, " % timeStep
 
             if "timeShift".lower() in param:
                 msg = "[set] setting timeShift failed"
@@ -1602,7 +1599,7 @@ class AdminController(BaseController):
                 ret = th.addTokenInfo("timeShift", timeShift, user, serial)
                 res["set timeShift"] = ret
                 count = count + 1
-                c.audit['action_detail'] += "timeShift=%d, " % timeShift
+                g.audit['action_detail'] += "timeShift=%d, " % timeShift
 
             if "countAuth".lower() in param:
                 msg = "[set] setting countAuth failed"
@@ -1617,7 +1614,7 @@ class AdminController(BaseController):
                     count = count + 1
                     ret += 1
                 res["set countAuth"] = ret
-                c.audit['action_detail'] += "countAuth=%d, " % ca
+                g.audit['action_detail'] += "countAuth=%d, " % ca
 
             if "countAuthMax".lower() in param:
                 msg = "[set] setting countAuthMax failed"
@@ -1632,7 +1629,7 @@ class AdminController(BaseController):
                     count = count + 1
                     ret += 1
                 res["set countAuthMax"] = ret
-                c.audit['action_detail'] += "countAuthMax=%d, " % ca
+                g.audit['action_detail'] += "countAuthMax=%d, " % ca
 
             if "countAuthSuccess".lower() in param:
                 msg = "[set] setting countAuthSuccess failed"
@@ -1647,7 +1644,7 @@ class AdminController(BaseController):
                     count = count + 1
                     ret += 1
                 res["set countAuthSuccess"] = ret
-                c.audit['action_detail'] += "countAuthSuccess=%d, " % ca
+                g.audit['action_detail'] += "countAuthSuccess=%d, " % ca
 
             if "countAuthSuccessMax".lower() in param:
                 msg = "[set] setting countAuthSuccessMax failed"
@@ -1662,7 +1659,7 @@ class AdminController(BaseController):
                     count = count + 1
                     ret += 1
                 res["set countAuthSuccessMax"] = ret
-                c.audit['action_detail'] += "countAuthSuccessMax=%d, " % ca
+                g.audit['action_detail'] += "countAuthSuccessMax=%d, " % ca
 
             if "validityPeriodStart".lower() in param:
                 msg = "[set] setting validityPeriodStart failed"
@@ -1677,7 +1674,7 @@ class AdminController(BaseController):
                     count = count + 1
                     ret += 1
                 res["set validityPeriodStart"] = ret
-                c.audit[
+                g.audit[
                     'action_detail'] += "validityPeriodStart=%s, " % str(
                     ca)
 
@@ -1694,7 +1691,7 @@ class AdminController(BaseController):
                     count = count + 1
                     ret += 1
                 res["set validityPeriodEnd"] = ret
-                c.audit['action_detail'] += "validityPeriodEnd=%s, " % str(
+                g.audit['action_detail'] += "validityPeriodEnd=%s, " % str(
                     ca)
 
             if "phone" in param:
@@ -1709,19 +1706,19 @@ class AdminController(BaseController):
                     count = count + 1
                     ret += 1
                 res["set phone"] = ret
-                c.audit['action_detail'] += "phone=%s, " % str(ca)
+                g.audit['action_detail'] += "phone=%s, " % str(ca)
 
             if count == 0:
                 Session.rollback()
                 return sendError(
                     response, ParameterError("Usage: %s" % description,  id=77))
 
-            c.audit['success'] = count
-            c.audit['user'] = user.login
-            c.audit['realm'] = user.realm
+            g.audit['success'] = count
+            g.audit['user'] = user.login
+            g.audit['realm'] = user.realm
 
-            if c.audit['realm'] == "":
-                c.audit['realm'] = getTokenRealms(serial)
+            if g.audit['realm'] == "":
+                g.audit['realm'] = getTokenRealms(serial)
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -1806,11 +1803,11 @@ class AdminController(BaseController):
                      % (serial, user.login, user.realm))
             res = th.resyncToken(otp1, otp2, user, serial, options)
 
-            c.audit['success'] = res
-            c.audit['user'] = user.login
-            c.audit['realm'] = user.realm
-            if "" == c.audit['realm'] and "" != c.audit['user']:
-                c.audit['realm'] = getDefaultRealm()
+            g.audit['success'] = res
+            g.audit['user'] = user.login
+            g.audit['realm'] = user.realm
+            if "" == g.audit['realm'] and "" != g.audit['user']:
+                g.audit['realm'] = getDefaultRealm()
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -1914,8 +1911,8 @@ class AdminController(BaseController):
 
             users_iters = getUserListIterators(list_params, user)
 
-            c.audit['success'] = True
-            c.audit['info'] = "realm: %s" % realm
+            g.audit['success'] = True
+            g.audit['info'] = "realm: %s" % realm
 
             Session.commit()
 
@@ -1971,15 +1968,15 @@ class AdminController(BaseController):
             # check admin authorization
             checkPolicyPre('admin', 'tokenrealm', param)
 
-            c.audit['source_realm'] = getTokenRealms(serial)
+            g.audit['source_realm'] = getTokenRealms(serial)
             log.info("[tokenrealm] setting realms for token %s to %s",
                      serial, realms)
             realmList = [r.strip() for r in realms.split(',')]
             ret = setRealms(serial, realmList)
 
-            c.audit['success'] = ret
-            c.audit['info'] = realms
-            c.audit['realm'] = realmList
+            g.audit['success'] = ret
+            g.audit['info'] = realms
+            g.audit['realm'] = realmList
 
             Session.commit()
             return sendResult(response, ret, 1)
@@ -2034,14 +2031,14 @@ class AdminController(BaseController):
                 "[reset] resetting the FailCounter for token with serial %s" % serial)
             ret = resetToken(user, serial)
 
-            c.audit['success'] = ret
-            c.audit['user'] = user.login
-            c.audit['realm'] = user.realm
+            g.audit['success'] = ret
+            g.audit['user'] = user.login
+            g.audit['realm'] = user.realm
 
             # DeleteMe: This code will never run, since getUserFromParam
             # always returns a realm!
-            # if "" == c.audit['realm'] and "" != c.audit['user']:
-            #    c.audit['realm'] = getDefaultRealm()
+            # if "" == g.audit['realm'] and "" != g.audit['user']:
+            #    g.audit['realm'] = getDefaultRealm()
 
             opt_result_dict = {}
             if ret == 0 and serial:
@@ -2112,9 +2109,9 @@ class AdminController(BaseController):
                      serial_from, serial_to)
             ret = th.copyTokenPin(serial_from, serial_to)
 
-            c.audit['success'] = ret
-            c.audit['serial'] = serial_to
-            c.audit['action_detail'] = "from %s" % serial_from
+            g.audit['success'] = ret
+            g.audit['serial'] = serial_to
+            g.audit['action_detail'] = "from %s" % serial_from
 
             err_string = str(ret)
             if -1 == ret:
@@ -2122,8 +2119,8 @@ class AdminController(BaseController):
             if -2 == ret:
                 err_string = "can not set PIN to destination token"
             if 1 != ret:
-                c.audit['action_detail'] += ", " + err_string
-                c.audit['success'] = 0
+                g.audit['action_detail'] += ", " + err_string
+                g.audit['success'] = 0
 
             Session.commit()
             # Success
@@ -2192,11 +2189,11 @@ class AdminController(BaseController):
                      serial_from, serial_to)
             ret = th.copyTokenUser(serial_from, serial_to)
 
-            c.audit['success'] = ret
-            c.audit['serial'] = serial_to
-            c.audit['action_detail'] = "from %s" % serial_from
-            c.audit['source_realm'] = getTokenRealms(serial_from)
-            c.audit['realm'] = getTokenRealms(serial_to)
+            g.audit['success'] = ret
+            g.audit['serial'] = serial_to
+            g.audit['action_detail'] = "from %s" % serial_from
+            g.audit['source_realm'] = getTokenRealms(serial_from)
+            g.audit['realm'] = getTokenRealms(serial_to)
 
             err_string = str(ret)
             if -1 == ret:
@@ -2204,8 +2201,8 @@ class AdminController(BaseController):
             if -2 == ret:
                 err_string = "can not set user to destination token"
             if 1 != ret:
-                c.audit['action_detail'] += ", " + err_string
-                c.audit['success'] = 0
+                g.audit['action_detail'] += ", " + err_string
+                g.audit['success'] = 0
 
             Session.commit()
             # Success
@@ -2265,11 +2262,11 @@ class AdminController(BaseController):
             th = TokenHandler()
             res = th.losttoken(serial, param=param)
 
-            c.audit['success'] = ret
-            c.audit['serial'] = res.get('serial')
-            c.audit['action_detail'] = "from %s" % serial
-            c.audit['source_realm'] = getTokenRealms(serial)
-            c.audit['realm'] = getTokenRealms(c.audit['serial'])
+            g.audit['success'] = ret
+            g.audit['serial'] = res.get('serial')
+            g.audit['action_detail'] = "from %s" % serial
+            g.audit['source_realm'] = getTokenRealms(serial)
+            g.audit['realm'] = getTokenRealms(g.audit['serial'])
 
             Session.commit()
             return sendResult(response, res)
@@ -2561,11 +2558,11 @@ class AdminController(BaseController):
             log.info("[loadtokens] %i tokens imported." % len(TOKENS))
             res = {'value': True, 'imported': len(TOKENS)}
 
-            c.audit['info'] = "%s, %s (imported: %i)" % (
+            g.audit['info'] = "%s, %s (imported: %i)" % (
                 fileType, tokenFile, len(TOKENS))
-            c.audit['serial'] = ', '.join(list(TOKENS.keys()))
-            c.audit['success'] = ret
-            c.audit['realm'] = tokenrealm
+            g.audit['serial'] = ', '.join(list(TOKENS.keys()))
+            g.audit['success'] = ret
+            g.audit['realm'] = tokenrealm
 
             Session.commit()
             return sendResultMethod(response, res)
@@ -2755,7 +2752,7 @@ class AdminController(BaseController):
             if not serial:
                 raise ParameterError("Missing parameter: 'serial'")
 
-            c.audit['serial'] = serial
+            g.audit['serial'] = serial
 
             otp = param.get("otp")
             if not otp:
@@ -2776,8 +2773,8 @@ class AdminController(BaseController):
             tokens = getTokens4UserOrSerial(serial=serial, token_type='totp')
 
             if not tokens:
-                c.audit['success'] = False
-                c.audit['info'] = "no token found"
+                g.audit['success'] = False
+                g.audit['info'] = "no token found"
                 return sendResult(response, False)
 
             token = tokens[0]
@@ -2787,10 +2784,10 @@ class AdminController(BaseController):
             # now gather the otp info from the token
 
             res, opt = token.get_otp_detail(otp=otp, window=window)
-            c.audit['success'] = res
+            g.audit['success'] = res
 
             if not res:
-                c.audit['info'] = ("no otp %r found in window %r"
+                g.audit['info'] = ("no otp %r found in window %r"
                                    % (otp, window))
 
             Session.commit()
@@ -2903,7 +2900,7 @@ class AdminController(BaseController):
                 status[serial] = stat
 
             res['values'] = status
-            c.audit['success'] = res
+            g.audit['success'] = res
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -2962,8 +2959,8 @@ class AdminController(BaseController):
             if realms:
                 realm = realms[0]
 
-            c.audit['user'] = t_owner or ''
-            c.audit['realm'] = realm
+            g.audit['user'] = t_owner or ''
+            g.audit['realm'] = realm
 
             # ---------------------------------------------------------------- -
 
@@ -2978,7 +2975,7 @@ class AdminController(BaseController):
 
         except Exception as exx:
             log.exception("admin/unpair failed: %r" % exx)
-            c.audit['info'] = str(exx)
+            g.audit['info'] = str(exx)
             Session.rollback()
             return sendResult(response, False, 0, status=False)
 

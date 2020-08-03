@@ -33,7 +33,7 @@ import json
 import binascii
 from configobj import ConfigObj
 
-import flask
+from flask import current_app, g, send_file as flask_send_file
 from flask_babel import gettext as _
 from werkzeug.datastructures import FileStorage
 
@@ -156,9 +156,8 @@ class SystemController(BaseController):
 
         try:
 
-            c.audit = request_context['audit']
-            c.audit['success'] = False
-            c.audit['client'] = get_client(request)
+            g.audit['success'] = False
+            g.audit['client'] = get_client(request)
 
             # check session might raise an abort()
             check_session(request)
@@ -208,10 +207,8 @@ class SystemController(BaseController):
 
         try:
 
-            audit = config.get('audit')
-
-            c.audit['administrator'] = getUserFromRequest(request).get("login")
-            audit.log(c.audit)
+            g.audit['administrator'] = getUserFromRequest(request).get("login")
+            current_app.audit_obj.log(g.audit)
             # default return for the __before__ and __after__
             return response
 
@@ -282,8 +279,8 @@ class SystemController(BaseController):
                     res[des] = ret
                     count = count + 1
 
-                    c.audit['success'] = count
-                    c.audit['info'] += "%s=%s, " % (k, value)
+                    g.audit['success'] = count
+                    g.audit['info'] += "%s=%s, " % (k, value)
 
             if count == 0:
                 log.warning("[setDefault] Failed saving config. Could not "
@@ -354,8 +351,8 @@ class SystemController(BaseController):
 
                 # --------------------------------------------------------- --
 
-                c.audit['success'] = True
-                c.audit['info'] = "%s=%s" % (key, val)
+                g.audit['success'] = True
+                g.audit['info'] = "%s=%s" % (key, val)
 
             else:
                 # we gather all key value pairs in the conf dict
@@ -375,8 +372,8 @@ class SystemController(BaseController):
                     string = "setConfig " + key + ":" + val
                     res[string] = True
 
-                    c.audit['success'] = True
-                    c.audit['info'] += "%s=%s, " % (key, val)
+                    g.audit['success'] = True
+                    g.audit['info'] += "%s=%s, " % (key, val)
 
 
                 updateConfig(conf)
@@ -464,8 +461,8 @@ class SystemController(BaseController):
             string = "delConfig " + key
             res[string] = ret
 
-            c.audit['success'] = ret
-            c.audit['info'] = key
+            g.audit['success'] = ret
+            g.audit['info'] = key
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -534,8 +531,8 @@ class SystemController(BaseController):
                         else:
                             res[Key] = conf.get(key)
 
-                c.audit['success'] = True
-                c.audit['info'] = "complete config"
+                g.audit['success'] = True
+                g.audit['info'] = "complete config"
 
             else:
                 if 'key' not in param:
@@ -553,8 +550,8 @@ class SystemController(BaseController):
                 string = "getConfig " + key
                 res[string] = ret
 
-                c.audit['success'] = ret
-                c.audit['info'] = "config key %s" % key
+                g.audit['success'] = ret
+                g.audit['info'] = "config key %s" % key
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -594,7 +591,7 @@ class SystemController(BaseController):
         try:
             log.debug("[getRealms] with params: %r", self.request_params)
 
-            c.audit['success'] = True
+            g.audit['success'] = True
             all_realms = getRealms()
 
             #
@@ -839,7 +836,7 @@ class SystemController(BaseController):
         try:
             res = getResolverList()
 
-            c.audit['success'] = True
+            g.audit['success'] = True
             Session.commit()
             return sendResult(response, res, 1)
 
@@ -897,15 +894,15 @@ class SystemController(BaseController):
                         found = True
 
             if found is True:
-                c.audit['failed'] = res
+                g.audit['failed'] = res
                 err = ('Resolver %r  still in use by the realms: %r' %
                        (resolver, fRealms))
-                c.audit['info'] = err
+                g.audit['info'] = err
                 raise Exception('%r !' % err)
 
             res = deleteResolver(resolver)
-            c.audit['success'] = res
-            c.audit['info'] = resolver
+            g.audit['success'] = res
+            g.audit['info'] = resolver
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -954,8 +951,8 @@ class SystemController(BaseController):
 
             res = getResolverInfo(resolver)
 
-            c.audit['success'] = True
-            c.audit['info'] = resolver
+            g.audit['success'] = True
+            g.audit['info'] = resolver
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -999,10 +996,10 @@ class SystemController(BaseController):
             defRealm = defRealm.lower().strip()
             res = setDefaultRealm(defRealm)
             if res is False and defRealm != "":
-                c.audit['info'] = "The realm %s does not exist" % defRealm
+                g.audit['info'] = "The realm %s does not exist" % defRealm
 
-            c.audit['success'] = True
-            c.audit['info'] = defRealm
+            g.audit['success'] = True
+            g.audit['info'] = defRealm
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -1040,8 +1037,8 @@ class SystemController(BaseController):
             defRealm = getDefaultRealm()
             res = getRealms(defRealm)
 
-            c.audit['success'] = True
-            c.audit['info'] = defRealm
+            g.audit['success'] = True
+            g.audit['info'] = defRealm
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -1108,8 +1105,8 @@ class SystemController(BaseController):
 
             valid_resolver_specs_str = ",".join(valid_resolver_specs)
             res = setRealm(realm, valid_resolver_specs_str)
-            c.audit['success'] = res
-            c.audit['info'] = 'realm: %r, resolvers: %r' % \
+            g.audit['success'] = res
+            g.audit['info'] = 'realm: %r, resolvers: %r' % \
                               (realm, valid_resolver_specs_str)
 
             Session.commit()
@@ -1185,8 +1182,8 @@ class SystemController(BaseController):
                         for k in realms:
                             if k != realm:
                                 setDefaultRealm(k)
-            c.audit['success'] = ret
-            c.audit['info'] = realm
+            g.audit['success'] = ret
+            g.audit['info'] = realm
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -1278,7 +1275,7 @@ class SystemController(BaseController):
                 enforce = True
                 p_param['enforce'] = enforce
 
-            c.audit['action_detail'] = str(param)
+            g.audit['action_detail'] = str(param)
 
             if len(name) > 0 and len(action) > 0:
                 log.debug("[setPolicy] saving policy %r", p_param)
@@ -1288,7 +1285,7 @@ class SystemController(BaseController):
                 string = "setPolicy " + name
                 res[string] = ret
 
-                c.audit['success'] = True
+                g.audit['success'] = True
 
                 Session.commit()
             else:
@@ -1297,7 +1294,7 @@ class SystemController(BaseController):
                 string = "setPolicy <%r>" % name
                 res[string] = False
 
-                c.audit['success'] = False
+                g.audit['success'] = False
                 raise Exception('setPolicy failed: name and action required!')
 
             return sendResult(response, res, 1)
@@ -1383,8 +1380,8 @@ class SystemController(BaseController):
                    "total": lines_total,
                    "rows": lines}
 
-            c.audit['success'] = True
-            c.audit['info'] = ("name = %s, realm = %s, scope = %s" %
+            g.audit['success'] = True
+            g.audit['info'] = ("name = %s, realm = %s, scope = %s" %
                                (name, realm, scope))
             Session.commit()
             return json.dumps(res, indent=3)
@@ -1431,8 +1428,8 @@ class SystemController(BaseController):
             dynpol = self._add_dynamic_tokens(scope)
             pol.update(dynpol)
 
-            c.audit['success'] = True
-            c.audit['info'] = scope
+            g.audit['success'] = True
+            g.audit['info'] = scope
 
             Session.commit()
             return sendResult(response, pol, 1)
@@ -1538,8 +1535,8 @@ class SystemController(BaseController):
             # -- ------------------------------------------------------ --
             res = import_policies(policies)
 
-            c.audit['info'] = "Policies imported from file %s" % policy_file
-            c.audit['success'] = 1
+            g.audit['info'] = "Policies imported from file %s" % policy_file
+            g.audit['success'] = 1
 
             Session.commit()
 
@@ -1616,10 +1613,10 @@ class SystemController(BaseController):
                     res["allowed"] = len(pol) > 0
                     res["policy"] = pol
                     if len(pol) > 0:
-                        c.audit['info'] = "allowed by policy %s" % list(pol.keys())
+                        g.audit['info'] = "allowed by policy %s" % list(pol.keys())
                 else:
                     # No policy active for this scope
-                    c.audit['info'] = ("allowed since no policies in scope %s"
+                    g.audit['info'] = ("allowed since no policies in scope %s"
                                        % scope)
                     res["allowed"] = True
                     res["policy"] = "No policies in scope %s" % scope
@@ -1632,11 +1629,11 @@ class SystemController(BaseController):
                 res["allowed"] = len(pol) > 0
                 res["policy"] = pol
                 if len(pol) > 0:
-                    c.audit['info'] = "allowed by policy %s" % list(pol.keys())
+                    g.audit['info'] = "allowed by policy %s" % list(pol.keys())
 
-            c.audit['action_detail'] = ("action = %s, realm = %s, scope = %s"
+            g.audit['action_detail'] = ("action = %s, realm = %s, scope = %s"
                                         % (action, realm, scope))
-            c.audit['success'] = True
+            g.audit['success'] = True
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -1748,8 +1745,8 @@ class SystemController(BaseController):
                                 rpol[p_name] = policy
                 pol = rpol
 
-            c.audit['success'] = True
-            c.audit['info'] = ("name = %s, realm = %s, scope = %s"
+            g.audit['success'] = True
+            g.audit['info'] = ("name = %s, realm = %s, scope = %s"
                                % (name, realm, scope))
 
             Session.commit()
@@ -1763,7 +1760,7 @@ class SystemController(BaseController):
 
             if do_export:
                 filename = create_policy_export_file(pol, "policy.cfg")
-                return flask.send_file(filename, mimetype="text/plain",
+                return flask_send_file(filename, mimetype="text/plain",
                                        as_attachment=True)
             else:
                 return sendResult(response, pol, 1)
@@ -1815,8 +1812,8 @@ class SystemController(BaseController):
 
             res["delPolicy"] = {"result": ret}
 
-            c.audit['success'] = ret
-            c.audit['info'] = name
+            g.audit['success'] = ret
+            g.audit['info'] = name
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -1841,7 +1838,7 @@ class SystemController(BaseController):
 
             hsm_id = params.get('hsm_id', None)
 
-            sep = flask.current_app.security_provider
+            sep = current_app.security_provider
 
             if hsm_id is None:
                 hsm_id = sep.activeOne
@@ -1871,7 +1868,7 @@ class SystemController(BaseController):
                                               'connected': ready,
                                               'result': ret}
 
-            c.audit['success'] = ret
+            g.audit['success'] = ret
             Session.commit()
             return sendResult(response, res, 1)
 
@@ -1897,7 +1894,7 @@ class SystemController(BaseController):
             res = {}
             res.update(lic_info)
 
-            c.audit['success'] = True
+            g.audit['success'] = True
             return sendResult(response, res, 1)
 
         except Exception as exx:
@@ -1968,8 +1965,8 @@ class SystemController(BaseController):
             if do_nagging(lic_info, nag_days=7):
                 info['download_licence_info'] = contact_hint
 
-            c.audit['action_detail'] = msg
-            c.audit['success'] = res
+            g.audit['action_detail'] = msg
+            g.audit['success'] = res
 
             Session.commit()
 
@@ -2024,7 +2021,7 @@ class SystemController(BaseController):
             log.debug("[setSupport] license %s", support_description)
 
             res, msg = setSupportLicense(support_description)
-            c.audit['success'] = res
+            g.audit['success'] = res
 
             if res is False:
                 raise Exception('Failed to set License: %r' % msg)
@@ -2105,8 +2102,8 @@ class SystemController(BaseController):
 
             res, reply = setProvider(params)
 
-            c.audit['success'] = res
-            c.audit['info'] = name
+            g.audit['success'] = res
+            g.audit['info'] = name
 
             Session.commit()
             return sendResult(response, res, 1, opt=reply)
@@ -2153,9 +2150,9 @@ class SystemController(BaseController):
                     if 'Managed' in desc:
                         res[provider_name]['Managed'] = True
 
-            c.audit['success'] = len(res) > 0
+            g.audit['success'] = len(res) > 0
             if provider_name:
-                c.audit['info'] = provider_name
+                g.audit['info'] = provider_name
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -2198,8 +2195,8 @@ class SystemController(BaseController):
             if provider and hasattr(provider, 'test_connection'):
                 status, p_response = provider.test_connection()
 
-            c.audit['success'] = status
-            c.audit['info'] = provider_name
+            g.audit['success'] = status
+            g.audit['info'] = provider_name
 
             Session.commit()
             return sendResult(response, status, 1)
@@ -2256,8 +2253,8 @@ class SystemController(BaseController):
 
             res, reply = delProvider(provider_type, provider_name)
 
-            c.audit['success'] = res > 0
-            c.audit['info'] = provider_name
+            g.audit['success'] = res > 0
+            g.audit['info'] = provider_name
 
             Session.commit()
             return sendResult(response, res > 0, 1, opt=reply)
@@ -2297,8 +2294,8 @@ class SystemController(BaseController):
 
             res, reply = setDefaultProvider(provider_type, provider_name)
 
-            c.audit['success'] = res
-            c.audit['info'] = provider_name
+            g.audit['success'] = res
+            g.audit['info'] = provider_name
 
             Session.commit()
             return sendResult(response, res, 1, opt=reply)

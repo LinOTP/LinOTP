@@ -29,9 +29,9 @@ audit controller - to search the audit trail
 
 import logging
 
-from flask import Response, stream_with_context
+from flask import Response, stream_with_context, current_app, g
 
-from linotp.flap import tmpl_context as c, request, response, config
+from linotp.flap import request, response, config
 
 from linotp.controllers.base import BaseController
 
@@ -81,12 +81,8 @@ class AuditController(BaseController):
         action = request_context['action']
 
         try:
-            c.audit = request_context['audit']
-            c.audit['client'] = get_client(request)
+            g.audit['client'] = get_client(request)
             check_session(request)
-            audit = config.get('audit')
-            request_context['Audit'] = audit
-
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
             Session.rollback()
@@ -102,10 +98,8 @@ class AuditController(BaseController):
         :return: return the response
         '''
 
-        audit = config.get('audit')
-
-        c.audit['administrator'] = getUserFromRequest(request).get("login")
-        audit.log(c.audit)
+        g.audit['administrator'] = getUserFromRequest(request).get("login")
+        current_app.audit_obj.log(g.audit)
 
         return response
 
@@ -154,8 +148,8 @@ class AuditController(BaseController):
 
             streamed_response = None
 
-            audit = config.get('audit')
-            audit_query = AuditQuery(search_params, audit)
+            audit_obj = current_app.audit_obj
+            audit_query = AuditQuery(search_params, audit_obj)
 
             if output_format == "csv":
                 delimiter = self.request_params.get('delimiter', ',') or ','
@@ -176,7 +170,7 @@ class AuditController(BaseController):
                     ), mimetype='application/json'
                 )
 
-            c.audit['success'] = True
+            g.audit['success'] = True
             Session.commit()
 
             return streamed_response

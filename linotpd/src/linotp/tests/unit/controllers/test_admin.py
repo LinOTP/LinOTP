@@ -29,6 +29,8 @@ import pytest
 
 from mock import mock
 
+import flask
+
 from linotp.controllers.admin import AdminController
 
 
@@ -76,14 +78,13 @@ class TestAdminController(unittest.TestCase):
             tok.get('LinOtp.TokenInfo')
 
     @mock.patch('linotp.controllers.admin.TokenIterator')
-    @mock.patch('linotp.controllers.admin.c')
     @mock.patch('linotp.controllers.admin.checkPolicyPre')
     @mock.patch('linotp.controllers.admin.Session')
     @mock.patch('linotp.controllers.admin.response')
     @mock.patch('linotp.controllers.admin.request')
     @mock.patch('linotp.controllers.admin.BaseController.__init__', return_value=None)
     def check_token(self, mock_base, mock_request, mock_response, mock_session,
-                    mock_check_policy_pre, mock_c, mock_TokenIterator,
+                    mock_check_policy_pre, mock_TokenIterator,
                     with_json):
         """
         call admin/show with/without argument tokeninfo_format
@@ -94,10 +95,10 @@ class TestAdminController(unittest.TestCase):
         }
         mock_check_policy_pre.return_value = {'active': False,
                                               'admin': 'unittest'}
-        mock_c.audit = {}
         tok = copy.deepcopy(self.token)
         mock_TokenIterator.return_value = [tok]
 
+        flask.g.audit = {}
         admin = AdminController()
         admin.request_params = request_params
         admin.show()

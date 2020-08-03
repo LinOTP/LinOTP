@@ -73,7 +73,7 @@ from .lib.util import get_client
 from . import __version__
 from .flap import config, set_config, tmpl_context as c, request
 from .defaults import set_defaults
-from .settings import configs
+from .settings import configs, LinOTPConfigKeyError
 from .tokens import reload_classes as reload_token_classes
 from .lib.audit.base import getAudit
 from .lib.config.global_api import initGlobalObject
@@ -189,7 +189,8 @@ class ExtFlaskConfig(FlaskConfig):
         seem to show up.
         """
         value = super().__getitem__(key)
-        root_dir = self.get('ROOT_DIR', '/ROOT_DIR_UNSET')
+        root_dir = (super().__getitem__('ROOT_DIR')  # can't say 'self[…]' here
+                    if 'ROOT_DIR' in self else '/ROOT_DIR_UNSET')
         if isinstance(value, ExtFlaskConfig.RelativePathName):
             return os.path.join(root_dir, '.', value)
         if key == 'BABEL_TRANSLATION_DIRECTORIES':
@@ -201,6 +202,23 @@ class ExtFlaskConfig(FlaskConfig):
                 [os.path.join(root_dir, '.', fn) if fn[0] != '/' else fn
                  for fn in value.split(';')])
         return value
+
+    def get(self, key, default=None):
+        """We need to overload this so the relative-pathname hack will work
+        even if people use `foo.get('bar')` instead of
+        `foo['bar']`. (It turns out that the built-in `get()` method
+        doesn't go through `__getitem__()` – `__getitem__()`'s mission
+        in life is strictly to make the brackets do something.)
+        """
+        try:
+            return self[key]
+        except KeyError:
+            log.warning("Relying on `.get()` to set a default for "
+                        f"'{key}' violates the DRY principle. "
+                        "Instead, ensure that the schema contains a suitable "
+                        f"default (like {default!r}).")
+            # raise LinOTPConfigKeyError(key)  # too drastic for now
+            return default
 
 
 class LinOTPApp(Flask):
@@ -216,6 +234,7 @@ class LinOTPApp(Flask):
 
     def __init__(self):
         self.config_class = ExtFlaskConfig  # our special `Config` class
+        self.audit_obj = None               # No audit logging so far
         super().__init__(__name__,
                          static_folder='public', static_url_path='/static')
 
@@ -313,7 +332,9 @@ class LinOTPApp(Flask):
     def finalise_request(self, exc):
         meta.Session.remove()
         # free the lock on the scurityPovider if any
-        if c.get('sep'):
+        # Make sure this doesn't crash in the absence of a `request_context`,
+        # which can happen in certain tests.
+        if hasattr(flask_g, 'request_context') and c.get('sep', False):
             c.sep.dropSecurityModule()
         closeResolvers()
 
@@ -377,9 +398,7 @@ class LinOTPApp(Flask):
 
         request_context['Client'] = client
 
-        Audit = config['audit']
-        request_context['Audit'] = Audit
-        request_context['audit'] = Audit.initialize(request, client=client)
+        flask_g.audit = self.audit_obj.initialize(request, client=client)
 
         authUser = None
         try:
@@ -600,7 +619,7 @@ def init_logging(app):
                 'linotp.app': {
                     'handlers': ['console'],
                     'level': app.config["LOGGING_LEVEL"],
-                    'propagate': False,
+                    'propagate': True,
                 },
                 'linotp.lib': {
                     'handlers': ['console'],
@@ -690,8 +709,8 @@ def setup_db(app, drop_data=False):
         # For the cloud mode, we require the `admin_user` table to
         # manage the admin users to allow password setting
 
-        admin_username = app.config.get('ADMIN_USERNAME', None)
-        admin_password = app.config.get('ADMIN_PASSWORD', None)
+        admin_username = app.config.get('ADMIN_USERNAME')
+        admin_password = app.config.get('ADMIN_PASSWORD')
 
         if admin_username is not None and admin_password is not None:
             app.logger.info("Setting up cloud admin user...")
@@ -716,7 +735,7 @@ def setup_db(app, drop_data=False):
 def generate_secret_key_file(app):
     """Generate a secret-key file if it doesn't exist."""
 
-    filename = app.config.get("SECRET_FILE", None)
+    filename = app.config["SECRET_FILE"]
     if filename is not None:
         try:
             open(filename)
@@ -742,8 +761,7 @@ def setup_security_provider(app):
     settings, but this is a huge bowl of spaghetti.
     """
     try:
-        flask_g.app_globals.security_provider.load_config(
-            flask_g.request_context['config'])
+        flask_g.app_globals.security_provider.load_config(app.config)
     except Exception as e:
         app.logger.error("Failed to load security provider definition: {}"
                          .format(e))
@@ -756,8 +774,7 @@ def setup_audit(app):
     `load_environment()` and as such should be looked at with a microscope,
     probably when we're fixing auditing.
     """
-    c = flask_g.request_context['config']
-    c['audit'] = getAudit(c)
+    app.audit_obj = getAudit(app.config)
 
 
 def _configure_app(app, config_name='default', config_extra=None):
@@ -767,7 +784,6 @@ def _configure_app(app, config_name='default', config_extra=None):
     stuff, too. Therefore we have pulled out all the configuration-related
     code from `create_app()` into this function.
     """
-
     app.config.from_object(configs[config_name])
     configs[config_name].init_app(app)
 
@@ -833,6 +849,7 @@ def create_app(config_name='default', config_extra=None):
         setup_cache(app)
         setup_db(app)
         set_config()       # ensure `request_context` exists
+        setup_audit(app)
         initGlobalObject()
         generate_secret_key_file(app)
         reload_token_classes()
@@ -855,7 +872,6 @@ def create_app(config_name='default', config_extra=None):
 
         set_config()
         initGlobalObject()
-        setup_audit(app)
         setup_security_provider(app)
 
     app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
@@ -909,6 +925,26 @@ def create_app(config_name='default', config_extra=None):
 
     # Command line handler
     app.cli.add_command(init_db_command)
+
+    # Enable profiling if desired. The options are debatable and could be
+    # made more configurable. OTOH, we could all have a pony.
+    profiling = False
+    if app.config['PROFILE']:
+        try:                    # Werkzeug >= 1.0.0
+            from werkzeug.middleware.profiler import ProfilerMiddleware
+            profiling = True
+        except ImportError:
+            try:                # Werkzeug < 1.0.0
+                from werkzeug.contrib.profiler import ProfilerMiddleware
+                profiling = True
+            except ImportError:
+                log.error("PROFILE is enabled but ProfilerMiddleware could "
+                          "not be imported. No profiling for you!")
+        if profiling:
+            app.wsgi_app = ProfilerMiddleware(
+                app.wsgi_app, profile_dir='profile',
+                restrictions=[30], sort_by=['cumulative'])
+            log.info("PROFILE is enabled (do not use this in production!)")
 
     return app
 

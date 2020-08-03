@@ -8,7 +8,6 @@ NEW_VERSION='@@@DEB_VERSION@@@'
 
 CONFIG_DIR=/etc/linotp
 export LINOTP_CFG=$CONFIG_DIR/linotp.cfg
-export LINOTP_CONFIG_FILE=$LINOTP_CFG     # compatibility
 ENCKEYFILE=$CONFIG_DIR/encKey
 REALM="LinOTP admin area"
 DIGESTFILE=$CONFIG_DIR/admins
@@ -434,18 +433,30 @@ case "$1" in
     #
     # create sql Audit trail as default
     #
-    PRIVKEY=$CONFIG_DIR/private.pem
-    PUBKEY=$CONFIG_DIR/public.pem
+    OLD_PRIVKEY="$CONFIG_DIR"/private.pem
+    OLD_PUBKEY="$CONFIG_DIR"/public.pem
+    PRIVKEY="$CONFIG_DIR"/audit-private.pem
+    PUBKEY="$CONFIG_DIR"/audit-public.pem
 
     if [ ! -f "$PRIVKEY" ];  then
-      echo_log "Creating private/public key pair"
-      # create keypair:
-      openssl genrsa -out "$PRIVKEY" 2048
-      # extract the public key:
+      if [ -f "$OLD_PRIVKEY" ]; then
+	# We have an old key pair that should be moved, lest people
+	# lose access to their existing audit log.
+	echo_log "Moving $OLD_PRIVKEY to $PRIVKEY"
+	mv "$OLD_PRIVKEY" "$PRIVKEY"
+	rm -f "$OLD_PUBKEY"	# no longer required
+      else
+	echo_log "Creating private/public key pair for audit log"
+	openssl genrsa -out "$PRIVKEY" 2048
+      fi
+      # Extract the public key from the private key. We do this even
+      # when we have copied an old private key, to be very sure that
+      # the public key matches the private key.
       openssl rsa -in "$PRIVKEY" -pubout -out "$PUBKEY"
+      # Fix ownership and permissions
       chmod 600 "$PRIVKEY"
+      chown "$LINOTP_USER" "$PRIVKEY"
     fi
-    chown "$LINOTP_USER" "$PRIVKEY"
 
     #
     # Finally, if we are in the appliance, we activate the Mysql Audit.

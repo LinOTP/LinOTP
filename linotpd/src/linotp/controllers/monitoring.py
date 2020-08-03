@@ -29,6 +29,8 @@ monitoring controller - interfaces to monitor LinOTP
 
 import logging
 
+from flask import current_app, g
+
 from linotp.flap import request, response, config, tmpl_context as c
 
 from linotp.controllers.base import BaseController
@@ -81,10 +83,9 @@ class MonitoringController(BaseController):
 
         try:
 
-            c.audit = request_context['audit']
-            c.audit['success'] = False
+            g.audit['success'] = False
 
-            c.audit['client'] = get_client(request)
+            g.audit['client'] = get_client(request)
 
             # Session handling
             check_session(request)
@@ -111,10 +112,9 @@ class MonitoringController(BaseController):
         '''
 
         try:
-            c.audit['administrator'] = getUserFromRequest(request).get('login')
+            g.audit['administrator'] = getUserFromRequest(request).get('login')
 
-            audit = config.get('audit')
-            audit.log(c.audit)
+            current_app.audit_obj.log(g.audit)
             Session.commit()
             return response
 

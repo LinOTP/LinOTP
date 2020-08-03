@@ -36,8 +36,8 @@ from linotp.settings import config_show_cmd, config_explain_cmd
 
 
 @pytest.fixture
-def runner():
-    env = {'LINOTP_LOGFILE_DIR': '/tmp', 'FLASK_APP': 'linotp.app'}
+def runner(tmpdir):
+    env = {'LINOTP_LOGFILE_DIR': str(tmpdir), 'FLASK_APP': 'linotp.app', 'LINOTP_ROOT_DIR': str(tmpdir)}
     return CliRunner(env=env, mix_stderr=False)
 
 

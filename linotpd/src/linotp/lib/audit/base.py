@@ -25,8 +25,6 @@
 #
 """This is the BaseClass for logging Audit Trails"""
 
-import logging
-log = logging.getLogger(__name__)
 import os
 import socket
 
@@ -36,8 +34,8 @@ from flask import current_app
 from linotp.lib.token import get_used_tokens_count
 from linotp.lib.support import get_license_type
 
-from linotp.lib.context import request_context as context
-from linotp.model import meta
+import logging
+log = logging.getLogger(__name__)
 
 
 def getAudit(config):
@@ -83,16 +81,8 @@ class AuditBase(object):
 
     def __init__(self, config):
         self.config = config
-
-        rootdir = current_app.getConfigRootDirectory()
-
         self.publicKeyFilename = self.config.get("AUDIT_PUBLIC_KEY_FILE")
-        if not self.publicKeyFilename:
-            self.publicKeyFilename = os.path.join(rootdir, "public.pem")
-
         self.privateKeyFilename = self.config.get("AUDIT_PRIVATE_KEY_FILE")
-        if not self.privateKeyFilename:
-            self.privateKeyFilename = os.path.join(rootdir, "private.pem")
 
     def initialize(self, request, client=None):
         # defaults
@@ -204,7 +194,7 @@ class AuditBase(object):
 
 def search(param, user=None, columns=None):
 
-    audit = context['Audit']
+    audit_obj = current_app.audit_obj
     search_dict = {}
 
     if "query" in param:
@@ -240,7 +230,7 @@ def search(param, user=None, columns=None):
         search_dict['user'] = user.login
         search_dict['realm'] = user.realm
 
-    result = audit.searchQuery(search_dict, rp_dict=rp_dict)
+    result = audit_obj.searchQuery(search_dict, rp_dict=rp_dict)
 
     lines = []
 
@@ -270,7 +260,7 @@ def search(param, user=None, columns=None):
         lines.append({'id': a['id'], 'cell': cell})
 
     # get the complete number of audit logs
-    total = audit.getTotal(search_dict)
+    total = audit_obj.getTotal(search_dict)
 
     return lines, total, page
 

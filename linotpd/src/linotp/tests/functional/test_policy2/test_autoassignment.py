@@ -32,6 +32,8 @@ import json
 
 from copy import deepcopy
 
+from flask import g
+
 import pytest
 from mock import patch
 from linotp.tests import TestController
@@ -626,26 +628,20 @@ class TestAutoassignmentController(TestController):
 
         # validate/check with otp only to autoassign token to users
 
-        class Mocked_c():
-            audit = {}
-
         for i in range(5):
             user_name = users[i]
             token = token_list[i]
 
-            mocked_context = Mocked_c()
+            params = {
+                'user': user_name.encode('UTF-8'),
+                'pass': token['otps'][0]}
 
-            with patch("linotp.controllers.validate.c", mocked_context):
-                params = {
-                    'user': user_name.encode('UTF-8'),
-                    'pass': token['otps'][0]}
+            response = self.make_validate_request('check', params=params)
 
-                response = self.make_validate_request('check', params=params)
+            msg = 'Error 65537 while instatiating the CBC mode'
+            assert msg not in g.audit['info']
 
-                msg = 'Error 65537 while instatiating the CBC mode'
-                assert msg not in mocked_context.audit['info']
-
-                assert '"value": true' in response
+            assert '"value": true' in response
 
         # ----------------------------------------------------------------- --
 

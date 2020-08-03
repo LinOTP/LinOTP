@@ -190,6 +190,10 @@ _config_schema = ConfigSchema([
     ConfigItem("TOKEN_MODULES", str, default="",
                help=("Token support modules to enable. If this parameter is "
                      "empty, all available token modules will be loaded.")),
+    ConfigItem("ADMIN_USERNAME", str, default=None,
+               help=("Administrator user name for 'cloud mode'.")),
+    ConfigItem("ADMIN_PASSWORD", str, default=None,
+               help=("Administrator password for 'cloud mode'.")),
     ConfigItem("LOGFILE_DIR", str, default="logs",
                help=("Directory for log files. We're using a "
                      "`RotatingFileHandler` to manage log files, and the main "
@@ -249,9 +253,9 @@ _config_schema = ConfigSchema([
                      "database URI which specifies the database to be used. "
                      "You need to ensure that the database exists and is "
                      "accessed with the proper credentials and permissions.")),
-    ConfigItem("AUDIT_PUBLIC_KEY_FILE", str, default="public.pem",
+    ConfigItem("AUDIT_PUBLIC_KEY_FILE", str, default="audit-public.pem",
                help=("The public key used for the audit log.")),
-    ConfigItem("AUDIT_PRIVATE_KEY_FILE", str, default="private.pem",
+    ConfigItem("AUDIT_PRIVATE_KEY_FILE", str, default="audit-private.pem",
                help=("The private key used for the audit log.")),
     ConfigItem("AUDIT_POOL_RECYCLE", int, validate=check_int_in_range(min=0),
                default=3600,
@@ -322,6 +326,10 @@ _config_schema = ConfigSchema([
                help=("Whether users can retrieve OTPs for their own tokens. "
                      "This is helpful for corner cases like printed "
                      "OTP lists.")),
+    ConfigItem("PROFILE", bool, convert=to_boolean, default=False,
+               help=("Whether profiling is enabled for WSGI requests. This "
+                     "is only interesting for LinOTP developers. Do not use "
+                     "it in production or you will regret it.")),
 ])
 
 

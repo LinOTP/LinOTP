@@ -26,18 +26,23 @@
 Tests the create of audit entries
 """
 
+import pytest
 import unittest
 from mock import patch
+
+from flask import g
+
 from linotp.lib.auth.finishtokens import FinishTokens
 
 
 mocked_context = {'audit': {}}
 
 
+@pytest.mark.usefixtures("app")
 class TestAuditEntryCase(unittest.TestCase):
 
-    @patch("linotp.lib.auth.finishtokens.context", mocked_context)
     def test_create_audit_entry(self):
+        g.audit = {}
 
         finish_tokens = FinishTokens(
                               valid_tokens=[],
@@ -48,7 +53,7 @@ class TestAuditEntryCase(unittest.TestCase):
                               user=None, options=None,
                               audit_entry={})
 
-        audit_entry = mocked_context['audit']
+        audit_entry = {}
 
         # 1.a Test  - no previous 'action detail'
 
@@ -57,16 +62,16 @@ class TestAuditEntryCase(unittest.TestCase):
             action_detail=audit_entry.get('action_detail', msg),
             tokens=[])
 
-        assert 'action_detail' in mocked_context['audit']
-        assert msg in mocked_context['audit']['action_detail']
+        assert 'action_detail' in g.audit
+        assert msg in g.audit['action_detail']
 
         # 1.b Test  - previous 'action detail' is default
 
         msg = "Failcounter exceeded!"
         finish_tokens.create_audit_entry(action_detail=msg, tokens=[])
 
-        assert 'action_detail' in mocked_context['audit']
-        assert msg in mocked_context['audit']['action_detail']
+        assert 'action_detail' in g.audit
+        assert msg in g.audit['action_detail']
 
         # 2. Test  - previous 'action detail' is default
 
@@ -74,8 +79,8 @@ class TestAuditEntryCase(unittest.TestCase):
         msg = "no sun, no fun"
         finish_tokens.create_audit_entry(msg, tokens=[])
 
-        assert 'action_detail' in mocked_context['audit']
-        assert msg in mocked_context['audit']['action_detail']
+        assert 'action_detail' in g.audit
+        assert msg in g.audit['action_detail']
 
         # 3. Test  - previous 'action detail' is default
 
@@ -83,9 +88,8 @@ class TestAuditEntryCase(unittest.TestCase):
         finish_tokens.create_audit_entry(audit_entry['action_detail'],
                                          tokens=[])
 
-        assert 'action_detail' in mocked_context['audit']
-        assert "no sun, no fun" in \
-                        mocked_context['audit']['action_detail']
+        assert 'action_detail' in g.audit
+        assert "no sun, no fun" in g.audit['action_detail']
 
         # 4. Test  - no parameter, falling back to 'no token found!'
 
@@ -93,8 +97,7 @@ class TestAuditEntryCase(unittest.TestCase):
         msg = "no token found!"
         finish_tokens.create_audit_entry(tokens=[])
 
-        assert 'action_detail' in mocked_context['audit']
-        assert msg in \
-                        mocked_context['audit']['action_detail']
+        assert 'action_detail' in g.audit
+        assert msg in g.audit['action_detail']
 
         return

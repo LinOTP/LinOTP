@@ -23,8 +23,9 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+from flask import g
+
 from linotp.lib.challenges import Challenges
-from linotp.lib.context import request_context as context
 from linotp.lib.error import UserError
 
 from linotp.lib.policy import supports_offline
@@ -226,7 +227,7 @@ class FinishTokens(object):
 
             janitor_to_remove_enrollment_token(valid_tokens=valid_tokens)
 
-            context['audit']['action_detail'] = "Multiple valid tokens found!"
+            g.audit['action_detail'] = "Multiple valid tokens found!"
             if user:
                 log.error("multiple token match error: "
                           "Several Tokens matching with the same OTP PIN "
@@ -362,21 +363,18 @@ class FinishTokens(object):
         :param action_detail:
         """
 
-        # get the audit dict from the context
-        audit = context['audit']
+        g.audit.update(self.audit_entry)
 
-        audit.update(self.audit_entry)
-
-        audit['action_detail'] = action_detail
+        g.audit['action_detail'] = action_detail
 
         if not tokens:
-            audit['serial'] = ''
-            audit['token_type'] = ''
+            g.audit['serial'] = ''
+            g.audit['token_type'] = ''
             return
 
         if len(tokens) == 1:
-            audit['serial'] = tokens[0].getSerial()
-            audit['token_type'] = tokens[0].getType()
+            g.audit['serial'] = tokens[0].getSerial()
+            g.audit['token_type'] = tokens[0].getType()
             return
 
         # for multiple tokens we concat the serials / types of all token
@@ -388,8 +386,8 @@ class FinishTokens(object):
             types.add(token.getType())
 
         # TODO: move the limit of serials and types into the audit module
-        audit['serial'] = ' '.join(list(serials))[:29]
-        audit['token_type'] = ' '.join(list(types))[:39]
+        g.audit['serial'] = ' '.join(list(serials))[:29]
+        g.audit['token_type'] = ' '.join(list(types))[:39]
 
         return
 
@@ -462,9 +460,7 @@ def janitor_to_remove_enrollment_token(valid_tokens):
 
     # add info about the purging
 
-    audit = context['audit']
-
     if serials:
-        audit['info'] += 'purged rollout tokens:' + ', '.join(serials)
+        g.audit['info'] += 'purged rollout tokens:' + ', '.join(serials)
 
 # eof #########################################################################
