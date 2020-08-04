@@ -365,46 +365,35 @@ e2e-test-softhsm:
     LINOTP_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"
     LINOTP_DB_PORT: "3306"
     LINOTP_ACTIVE_SECURITY_MODULE: "pkcs11"
-    LINOTP_HSM_PKCS11_CONFIG: "{ \
-      'module': 'linotp.lib.security.pkcs11.Pkcs11SecurityModule', \
-      'library': '/usr/local/Cellar/softhsm/2.6.1/lib/softhsm/libsofthsm2.so', \
-      'password': '1234', \
-      'slotid': 1464950014, \
-      'configLabel': 'config', \
-      'tokenLabel': 'token', \
-      'valueLabel': 'value', \
-      'defaultLabel': 'default', \
-      'poolsize': 1 \
-    }"
-###
-
   script:
     # prepare softhsm2 and add configuration to linotp.cfg
     - ls /etc/softhsm
-    - export SLOTID="$(softhsm2-util --show-slots | grep \"Slot\" | head -n1 | cut -d\" \" -f2)"
+    - softhsm2-util --show-slots
+    - export SLOTID="$(softhsm2-util --show-slots | grep 'Slot' | head -n1 | cut -d' ' -f2)"
+    - export PKCS11_DLL=/usr/lib/softhsm/libsofthsm2.so
     - cd linotpd/src/linotp/lib/security
     - python3 ./pkcs11.py -s ${SLOTID} -p 1234 -n config
     - python3 ./pkcs11.py -s ${SLOTID} -p 1234 -n token
     - python3 ./pkcs11.py -s ${SLOTID} -p 1234 -n value
     - cd -
     - > 
-        cat <<EOF > linotpd/src/linotp/linotp.cfg
-        HSM_PKCS11_CONFIG = {
-          'module': 'linotp.lib.security.pkcs11.Pkcs11SecurityModule',
-          'library': '/usr/lib/softhsm/libsofthsm2.so',
-          'password': '1234',
-          'slotid': ${SLOTID},
-          'configLabel': 'config',
-          'tokenLabel': 'token',
-          'valueLabel': 'value',
-          'defaultLabel': 'default',
-          'configHandle': None,
-          'tokenHandle': None,
-          'valueHandle': None,
-          'defaultHandle': None,
-          'poolsize': 1,
-        }
-        EOF
+        export LINOTP_HSM_PKCS11_CONFIG="{
+        'module': 'linotp.lib.security.pkcs11.Pkcs11SecurityModule',
+        'library': '/usr/lib/softhsm/libsofthsm2.so',
+        'password': '1234',
+        'slotid': ${SLOTID},
+        'configLabel': 'config',
+        'tokenLabel': 'token',
+        'valueLabel': 'value',
+        'defaultLabel': 'config',
+        'configHandle': None,
+        'tokenHandle': None,
+        'valueHandle': None,
+        'defaultHandle': None,
+        'poolsize': 1
+        }"
+    - echo "HSM_PKCS11_CONFIG = $LINOTP_HSM_PKCS11_CONFIG" > linotpd/src/linotp/linotp.cfg
+    - cat linotpd/src/linotp/linotp.cfg
     - env | grep LINOTP_
     - cd linotpd/src/linotp/tests/integration
     - > 
