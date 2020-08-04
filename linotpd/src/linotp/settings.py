@@ -8,13 +8,16 @@ from typing import Any, Type, Callable
 import click
 from flask import current_app
 from flask.cli import AppGroup
+from jsonschema import Draft4Validator
 
 from .lib.type_utils import boolean as to_boolean
+from .lib.security.pkcs11 import Pkcs11SecurityModule
+from .lib.security.yubihsm import YubiSecurityModule
+from  .lib.security import provider
 
 basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 VALID_LOG_LEVELS = {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}
-
 
 # Validation functions for configuration items. The `ConfigSchema.validate`
 # attribute is supposed to contain a function that takes `key` and `value`
@@ -67,6 +70,24 @@ def check_int_in_range(min=None, max=None):
         f.__doc__ = f"{min} <= value <= {max}"
     return f
 
+def check_json_schema(schema={}):
+    """Factory function that will return a function that ensures that
+    `value` agrees to the schema
+    """
+    def f(key, value):
+        # check if given schema is correct
+        if Draft4Validator.check_schema(schema):
+            print("schema is correct")
+        else:
+            raise LinOTPConfigValueError(
+                f"schema {schema} definition is not correct.")
+        if Draft3Validator(schema).is_valid([value]):
+            print("value agrees with schema")
+        else:
+            raise LinOTPConfigValueError(
+                f"{value} does not agree with schema {schema}.")
+        f.__doc__ = f"value should apply {schema}"
+        return f
 
 def check_membership(allowed={}):
     """Factory function that will return a function that ensures that
@@ -326,6 +347,89 @@ _config_schema = ConfigSchema([
                help=("Whether users can retrieve OTPs for their own tokens. "
                      "This is helpful for corner cases like printed "
                      "OTP lists.")),
+    ConfigItem("ACTIVE_SECURITY_MODULE", str, default="default",
+               help=("The active security module is used to support hardware "
+                     "security modules (HSM) via pkcs#11. A HSM performes the "
+                     "encryption and decryption on the hardware itself. "
+                     "Therefore the key will not leave the hardware. "
+                     "The default security module will use no HSM. It "
+                     "implements a concept of a security module abstraction "
+                     "layer i.e. even the old encryption key stored at "
+                     "/etc/linotp2/encKey now is handled via a security "
+                     "module. In LinOTP token secrets, configuration values, and general "
+                     "values are protected by encryption."
+                     "Possible values: default, pkcs11, yubihsm")),
+    ConfigItem("HSM_DEFAULT_CONFIG", dict, convert=json.loads,
+               default={
+                   'module': 'linotp.lib.security.default.DefaultSecurityModule',
+                   'tokenHandle': provider.TOKEN_KEY,
+                   'configHandle': provider.CONFIG_KEY,
+                   'valueHandle': provider.VALUE_KEY,
+                   'defaultHandle': provider.DEFAULT_KEY,
+                   'poolsize': 20,
+                   'crypted': 'FALSE',
+                   #'file': config['SECRET_FILE'], will be added in provider.py
+                },
+                help=("The default security provider configuration")),
+    ConfigItem("HSM_PKCS11_CONFIG", dict, convert=json.loads,
+               default={
+                   'module': 'linotp.lib.security.pkcs11.Pkcs11SecurityModule',
+                   'library': 'libCryptoki2_64.so',
+                   'password': '<your password>',
+                   'slotid': '<slotid as int>',
+                   'configLabel': None,
+                   'tokenLabel': None,
+                   'valueLabel': None,
+                   'defaultLabel': 'default',
+                   'configHandle': None,
+                   'tokenHandle': None,
+                   'valueHandle': None,
+                   'defaultHandle': None,
+                   'poolsize': 10,
+               },
+               validate=check_json_schema(Pkcs11SecurityModule.schema),
+               help=("The PKCS11 config defines the configuration for "
+                     "a hsm compatible with the pkcs11 api. For example you "
+                     "can use `SafeNet LunaSA` or `softhsm2`. This config "
+                     "has to be given as python dict. The following key / "
+                     "value pairs are available: "
+                     "`module` is the python module used. i.e. "
+                     "linotp.lib.security.pkcs11.Pkcs11SecurityModule. "
+                     "`library` is the PKCS11 library file (so). "
+                     "`password` of the PKCS11 slot aka. the "
+                     "smartcard PIN."
+                     "`slotid` is the slot where the AES keys are "
+                     "located. In case of the LunaSA this is the partition. "
+                     "You can check for the slot number by issuing the "
+                     "command `vtl verify`. In case of softhsm2 it is the "
+                     "slotid which can be checked by `softhsm2-util --shows`. " 
+                     "`configHandle`, `valueHandle`, `tokenHandle` and "
+                     "`defaultHandle` are the handles of token in the hsm for "
+                     "a slot which holds in our case an AES key objects. "
+                     "If one of the parameters (configHandle, valueHandle, "
+                     "tokenHandle) is missing, the defaultHandle is used. "
+                     "`configLabel`, `valueLabel`, `tokenLabel`, and"
+                     "`defaultLabel` are used to refer to a token, in the hsm "
+                     "for a slot, by name. If a label is set, "
+                     "it will override the given handle entry i.e. configLabel "
+                     "will override configHandle. "
+                     "For more information check the LinOTP documenation at "
+                     "https://linotp.org/doc/latest/part-installation/"
+                     "HSM/defining_lunasa.html")),
+    ConfigItem("HSM_YUBIHSM_CONFIG", dict, convert=json.loads,
+                default={
+                    'module': 'linotp.lib.security.yubihsm.YubiSecurityModule',
+                    'defaultHandle': 0x1111,
+                    'password': 'your password',
+                    'device': '/dev/ttyACM3',
+                    'poolsize': 10,
+               },
+               validate=check_json_schema(YubiSecurityModule.schema),
+               help=("The YUBIHSM config defines the configuration for the "
+                     "YubiHSM. "
+                     "You need to change the access rights of /dev/ttyACM? "
+                     "You could add the user `linotp` to the group `dialout`")),
+
     ConfigItem("PROFILE", bool, convert=to_boolean, default=False,
                help=("Whether profiling is enabled for WSGI requests. This "
                      "is only interesting for LinOTP developers. Do not use "

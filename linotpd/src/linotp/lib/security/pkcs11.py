@@ -30,9 +30,9 @@
     linotpActiveSecurityModule = lunasa
     linotpSecurity.lunasa.module = linotp.lib.security.pkcs11.Pkcs11SecurityModule
     linotpSecurity.lunasa.library = libCryptoki2_64.so
-    linotpSecurity.lunasa.pinHandle =21
+    linotpSecurity.lunasa.tokenHandle =21
     linotpSecurity.lunasa.valueHandle =22
-    linotpSecurity.lunasa.passwordHandle =23
+    linotpSecurity.lunasa.configHandle =23
     linotpSecurity.lunasa.defaultHandle =22
     linotpSecurity.lunasa.configLabel = config
     linotpSecurity.lunasa.tokenLabel = token
@@ -187,6 +187,29 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
     '''
     Class that handles all AES stuff
     '''
+
+    # Add schema for validating configuration in settings.py
+    schema = {
+        "type" : "object",
+        "properties" : {
+            "module": {"type" : "string"},
+            "library": {"type" : "string"},
+            "password": {"type" : "string"},
+            "slotid": {"type" : "number"},
+            "configLabel": {"type" : "string"},
+            "tokenLabel": {"type" : "string"},
+            "valueLabel": {"type" : "string"},
+            "defaultLabel": {"type" : "string"},
+            "configHandle": {"type" : "number"},
+            "tokenHandle": {"type" : "number"},
+            "valueHandle": {"type" : "number"},
+            "defaultHandle": {"type" : "number"},
+            "poolsize": {"type": "number"},
+        },
+        "required": [
+            "module", "library", "password", "slotid", "defaultLabel"
+        ],
+    }
 
     def __init__(self, config=None, add_conf=None):
         output("debug", "[__init__] Initializing the Pkcs11 Security Module")
@@ -480,8 +503,8 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
     def find_aes_keys(self, label="testAES", wanted=1):
         '''
         Find and AES key with the given label
-        The number of keys to be found is restricted by "wanted"
 
+        The number of keys to be found is restricted by "wanted"
         finding aes keys is done by setting some search attributes when
         searching for objects. the search attributes which describe an aes
         key are:
@@ -681,7 +704,8 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
                             % (rv, pkcs11error(rv)))
         return key
 
-    def decrypt(self, value: bytes, iv: bytes, id: int = 0) -> bytes:
+
+    def decrypt(self, value: bytes, iv: bytes, id: int = DEFAULT_KEY) -> bytes:
         '''
         decrypts the given data, using the IV and the key specified by
         the handle lookup id
@@ -729,7 +753,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         return self.unpad(plaintext.value)
 
-    def encrypt(self, data: bytes, iv: bytes, id: int = 0) -> bytes:
+    def encrypt(self, data: bytes, iv: bytes, id: int = DEFAULT_KEY) -> bytes:
         '''
         encrypts the given input data
 

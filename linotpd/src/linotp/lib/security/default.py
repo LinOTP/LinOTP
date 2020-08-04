@@ -55,6 +55,24 @@ class DefaultSecurityModule(SecurityModule):
       interface to all LinOTP operations
     """
 
+    # Add schema for validating configuration in settings.py
+    schema = {
+        "type" : "object",
+        "properties" : {
+            "module": {"type" : "string"},
+            "tokenHandle": {"type" : "number"},
+            "configHandle": {"type" : "number"},
+            "valueHandle": {"type" : "number"},
+            "defaultHandle": {"type" : "number"},
+            "poolsize": {"type": "number"},
+            'crypted': 'FALSE',
+        },
+        "required": [
+            "module", "tokenHandle", "configHandle", "configHandle",
+            "valueHandle", "defaultHandle"
+        ],
+    }
+
     def __init__(self, config=None, add_conf=None):
         '''
         initialsation of the security module
@@ -154,7 +172,7 @@ class DefaultSecurityModule(SecurityModule):
         # #
         # After this we do not require the password anymore
 
-        handles = ['pinHandle', 'passHandle', 'valueHandle', 'defaultHandle']
+        handles = ['tokenHandle', 'passHandle', 'valueHandle', 'defaultHandle']
         for handle in handles:
             self.getSecret(self.config.get(handle, '0'))
 
@@ -175,7 +193,7 @@ class DefaultSecurityModule(SecurityModule):
 
         return os.urandom(len)
 
-    def encrypt(self, data: bytes, iv: bytes, id: int = 0) -> bytes:
+    def encrypt(self, data: bytes, iv: bytes, id: int = DEFAULT_KEY) -> bytes:
         '''
         security module methods: encrypt
 
@@ -216,7 +234,7 @@ class DefaultSecurityModule(SecurityModule):
             del key
         return res
 
-    def decrypt(self, value: bytes, iv: bytes, id: int = 0) -> bytes:
+    def decrypt(self, value: bytes, iv: bytes, id: int = DEFAULT_KEY) -> bytes:
         '''
         security module methods: decrypt
 

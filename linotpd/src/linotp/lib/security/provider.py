@@ -77,76 +77,34 @@ class SecurityProvider(object):
         self.rwLock = secLock
         self.max_retry = 5
 
-    def __createDefault__(self, config):
-        '''
-        create a backward compatible default security provider
-
-        :param config:
-
-        '''
-        provider_config = {}
-
-        keyFile = config['SECRET_FILE']
-        provider_config['default'] = {
-            'pinHandle': TOKEN_KEY,
-            'passHandle': CONFIG_KEY,
-            'valueHandle': VALUE_KEY,
-            'defaultHandle': DEFAULT_KEY,
-            'crypted': 'FALSE',
-            'file': keyFile,
-            'module': 'linotp.lib.security.default.DefaultSecurityModule',
-            'poolsize': 20, }
-
-        for key, value in list(config.items()):
-            for provider in list(provider_config.keys()):
-                if key.startswith('linotpSecurity.%s' % provider):
-                    entry = key.split('.')[-1]
-                    provider_config[provider][entry] = value
-
-        return provider_config
-
     def load_config(self, config):
         '''
         load the security modules configuration
         '''
-        p_config = {}
-        p_config.update(config)
 
         try:
-            # load backward compatible defaults
-            default_config = self.__createDefault__(config)
-            self.config.update(default_config)
-
-            if 'linotpActiveSecurityModule' in config:
-                # look the active security module up
-                self.activeOne = config['linotpActiveSecurityModule']
-                log.debug("[SecurityProvider:load_config] setting active"
-                          " security module: %s", self.activeOne)
-
-            for key in config:
-
-                # look the active security module up
-                if key == 'linotpActiveSecurityModule':
-                    self.activeOne = config.get(key)
-                    log.debug(
-                        "[SecurityProvider:load_config] setting active security module: %s" % self.activeOne)
-
-                if key.startswith('linotpSecurity'):
-                    entry = key.replace('linotpSecurity.', '')
-                    try:
-                        (id, val) = entry.split('.')
-                    except Exception as e:
-                        error = ('[SecurityProvider:load_config] failed to '
-                                 'identify config entry: %r ' % key)
-                        log.exception(error)
-                        raise HSMException(error, id=707)
-
-                    if id in self.config:
-                        id_config = self.config.get(id)
-                        id_config[val] = config.get(key)
-                    else:
-                        self.config[id] = {val: config.get(key)}
-
+            security_provider = config.get('ACTIVE_SECURITY_MODULE', 'default')
+            self.activeOne = security_provider # self.active one is legacy.. therefore we set it here
+            log.debug("[SecurityProvider:load_config] setting active"
+                      " security module: %s", self.activeOne)
+            
+            # add active provider config to self.config with the active
+            # provider as key and the config dict as value
+            if self.activeOne == 'default':
+                default_security_provider_config = config.get('HSM_DEFAULT_CONFIG')
+                keyFile = config['SECRET_FILE']
+                default_security_provider_config['file'] = keyFile
+                security_provider_config = {'default': default_security_provider_config}       
+                self.config.update(security_provider_config)        
+            
+            if self.activeOne ==  'pkcs11':
+                security_provider_config = {'pkcs11': config.get('HSM_PKCS11_CONFIG')}
+                self.config.update(security_provider_config)
+            
+            if self.activeOne == 'yubihsm':
+                security_provider_config = {'yubihsm': config.get('HSM_YUBIHSM_CONFIG')}  
+                self.config.update(security_provider_config)
+            
         except Exception as e:
             log.exception("[load_config] failed to identify module")
             error = "failed to identify module: %r " % e

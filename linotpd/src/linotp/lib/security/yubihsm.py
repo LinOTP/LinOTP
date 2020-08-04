@@ -30,9 +30,9 @@
     linotpActiveSecurityModule = yubihsm
     linotpSecurity.yubihsm.module =
                         linotp.lib.security.yubihsm.YubiSecurityModule
-    linotpSecurity.yubihsm.pinHandle =21
+    linotpSecurity.yubihsm.tokenHandle =21
     linotpSecurity.yubihsm.valueHandle =22
-    linotpSecurity.yubihsm.passwordHandle =23
+    linotpSecurity.yubihsm.configHandle =23
     linotpSecurity.yubihsm.defaultHandle = 0x1111
     linotpSecurity.yubihsm.password = 14fda9321ae820aa34e57852a31b10d0
     linotpSecurity.yubihsm.device = /dev/ttyACM3
@@ -69,6 +69,29 @@ class YubiSecurityModule(SecurityModule):
     '''
     Class that handles all AES stuff
     '''
+
+    # Add schema for validating configuration in settings.py
+    schema = {
+        "type" : "object",
+        "properties" : {
+            "module": {"type" : "string"},
+            "password": {"type" : "string"},
+            "slotid": {"type" : "number"},
+            "configLabel": {"type" : "string"},
+            "tokenLabel": {"type" : "string"},
+            "valueLabel": {"type" : "string"},
+            "defaultLabel": {"type" : "string"},
+            "configHandle": {"type" : "number"},
+            "tokenHandle": {"type" : "number"},
+            "valueHandle": {"type" : "number"},
+            "defaultHandle": {"type" : "number"},
+            "device": {"type": "string"},
+            "poolsize": {"type": "number"},
+        },
+        "required": [
+            "module", "device", "password"
+        ],
+    }
 
     def __init__(self, config=None, add_conf=None):
 
@@ -257,7 +280,7 @@ class YubiSecurityModule(SecurityModule):
         log.debug("[random] creating %i random bytes" % l)
         return self.hsm.random(l)
 
-    def decrypt(self, data, iv, id=0):
+    def decrypt(self, data, iv, id=DEFAULT_KEY):
         '''
         decrypts the given data, using the IV and the key
         specified by the handle
@@ -278,7 +301,7 @@ class YubiSecurityModule(SecurityModule):
         s = self.unpad(s)
         return s
 
-    def encrypt(self, data, iv, id=0):
+    def encrypt(self, data, iv, id=DEFAULT_KEY):
         '''
         encrypts the given input data
 
