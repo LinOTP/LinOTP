@@ -33,8 +33,12 @@ for `FLASK_APP`.
 """
 
 import os
+import click
 
+from flask import current_app
 from flask.cli import main as flask_main
+from flask.cli import AppGroup
+from linotp.lib.tools.enckey import create_secret_key
 
 FLASK_APP_DEFAULT = "linotp.app"   # Contains default `create_app()` factory
 FLASK_ENV_DEFAULT = "development"  # Default Flask environment, for debugging
@@ -49,3 +53,30 @@ def main():
     if "FLASK_ENV" not in os.environ:
         os.environ["FLASK_ENV"] = FLASK_ENV_DEFAULT
     flask_main()
+
+
+init_cmds = AppGroup('init')
+
+@init_cmds.command('enc-key', 
+                   help='Generate aes key for encryption and decryption')
+@click.option('--force', '-f', is_flag=True,
+              help='Override encKey file if exits already.')
+def init_enc_key(force):
+    """Creates a LinOTP secret file to encrypt and decrypt values in database
+
+    The key file is used via the default security provider to encrypt
+    token seeds, configuration values...
+    If --force or -f is set and the encKey file exists already, it
+    will be overwritten.
+    """
+
+    filename = current_app.config["SECRET_FILE"]
+    if os.path.exists(filename) and not force:
+        click.echo(f'Not overwriting existing enc-key in {filename}', err=True)
+    else:
+        try:
+            create_secret_key(filename)
+            click.echo(f'Wrote enc-key to {filename}', err=True)
+        except IOError as ex:
+            click.echo(f'Error writing enc-key to {filename}: {ex!s}',
+                       err=True)
