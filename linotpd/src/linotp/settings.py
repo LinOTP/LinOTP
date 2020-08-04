@@ -349,9 +349,9 @@ _config_schema = ConfigSchema([
                      "OTP lists.")),
     ConfigItem("ACTIVE_SECURITY_MODULE", str, default="default",
                help=("The active security module is used to support hardware "
-                     "security modules (HSM). A HSM performes the encryption "
-                     "and decryption on the hardware itself. Therefore the key "
-                     "will not leave the hardware. "
+                     "security modules (HSM) via pkcs#11. A HSM performes the "
+                     "encryption and decryption on the hardware itself. "
+                     "Therefore the key will not leave the hardware. "
                      "The default security module will use no HSM. It "
                      "implements a concept of a security module abstraction "
                      "layer i.e. even the old encryption key stored at "
