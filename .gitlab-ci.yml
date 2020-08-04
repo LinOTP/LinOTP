@@ -374,30 +374,33 @@ e2e-test-softhsm:
       'tokenLabel': 'token', \
       'valueLabel': 'value', \
       'defaultLabel': 'default', \
-      'configHandle': None, \
-      'tokenHandle': None, \
-      'valueHandle': None, \
-      'defaultHandle': None \
+      'poolsize': 1 \
     }"
 ###
 
   script:
     # prepare softhsm2 and add configuration to linotp.cfg
-    - SLOTID="$(softhsm2-util --show-slots | grep \"Slot\" | head -n1 | cut -d\" \" -f2)"
+    - softhsm2-util --init-token --slot 0 --label "test" --so-pin 1234 --pin 1234
+    - export SLOTID="$(softhsm2-util --show-slots | grep \"Slot\" | head -n1 | cut -d\" \" -f2)"
+    - cd linotpd/src/linotp/lib/security
+    - python3 ./pkcs11.py -s ${SLOTID} p 1234 -n config
+    - python3 ./pkcs11.py -s ${SLOTID} p 1234 -n token
+    - python3 ./pkcs11.py -s ${SLOTID} p 1234 -n value
     - > 
         export LINOTP_HSM_PKCS11_CONFIG="{
         'module': 'linotp.lib.security.pkcs11.Pkcs11SecurityModule',
-        'library': '/usr/local/Cellar/softhsm/2.6.1/lib/softhsm/libsofthsm2.so',
+        'library': '/usr/lib/softhsm/libsofthsm2.so',
         'password': '1234',
         'slotid': ${SLOTID},
         'configLabel': 'config',
         'tokenLabel': 'token',
         'valueLabel': 'value',
-        'defaultLabel': 'default',
+        'defaultLabel': 'config',
         'configHandle': None,
         'tokenHandle': None,
         'valueHandle': None,
-        'defaultHandle': None
+        'defaultHandle': None,
+        'poolsize': 1
         }"
     - env | grep LINOTP_
     - cd linotpd/src/linotp/tests/integration
