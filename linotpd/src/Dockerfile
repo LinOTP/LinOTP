@@ -180,7 +180,7 @@ RUN mkdir -p /var/lib/softhsm/tokens \
     && mkdir -p /etc/softhsm \
     && echo "directories.tokendir = /var/lib/softhsm/tokens" > /etc/softhsm2.conf \
     && echo "objectstore.backend = file" >> /etc/softhsm/softhsm2.conf \
-    && softhsm2-util --init-token --slot 0 --label "${SOFTHSM2_LABEL}" --so-pin ${SOFTHSM2_SO_PIN}  --pin ${SOFTHSM2_PIN}
+    && softhsm2-util --init-token --free --label "test" --so-pin 1234  --pin 1234
 
 WORKDIR $LINOTP_HOME
 
