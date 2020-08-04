@@ -178,7 +178,7 @@ RUN echo "linotp linotp/apache/activate boolean true" > /opt/linotp/apt/debconf-
 # Setup softhsm2 and add config entries to linotp.cfg
 RUN mkdir -p /var/lib/softhsm/tokens \
     && mkdir -p /etc/softhsm \
-    && echo "directories.tokendir = /var/lib/softhsm/tokens" > /etc/softhsm2.conf \
+    && echo "directories.tokendir = /var/lib/softhsm/tokens" > /etc/softhsm/softhsm2.conf \
     && echo "objectstore.backend = file" >> /etc/softhsm/softhsm2.conf \
     && softhsm2-util --init-token --free --label "test" --so-pin 1234  --pin 1234
 
