@@ -403,17 +403,17 @@ e2e-test-softhsm:
         --timeout 60m 
         --wait tcp://$LINOTP_HOST:$LINOTP_PORT 
         --timeout 60m
-    - > 
-        make integrationtests 
-        TCFILE=/tmp/server_cfg.ini 
-        PYTESTARGS=
-        "
-        -m smoketest 
-        -v 
-        --test-group-count=$CI_NODE_TOTAL 
-        --test-group=$CI_NODE_INDEX  
-        --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml
-        "
+    # - > 
+    #     make integrationtests 
+    #     TCFILE=/tmp/server_cfg.ini 
+    #     PYTESTARGS=
+    #     "
+    #     -m smoketest 
+    #     -v 
+    #     --test-group-count=$CI_NODE_TOTAL 
+    #     --test-group=$CI_NODE_INDEX  
+    #     --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml
+    #     "
 
 
 # Upload deb packages to development repository.
