@@ -597,12 +597,12 @@ def init_logging(app):
             'disable_existing_loggers': False,
             'handlers': {
                 'console': {
-                    'level': 'DEBUG',
+                    'level': app.config["LOGGING_CONSOLE_LEVEL"],
                     'class': 'logging.StreamHandler',
                     'formatter': 'linotp',
                 },
                 'file': {
-                    'level': 'INFO',
+                    'level': app.config["LOGGING_FILE_LEVEL"],
                     'class': 'logging.handlers.RotatingFileHandler',
                     'filename': os.path.join(
                         app.config["LOGFILE_DIR"], app.config["LOGFILE_NAME"]),
@@ -616,24 +616,14 @@ def init_logging(app):
                 },
             },
             'loggers': {
-                'linotp.app': {
-                    'handlers': ['console'],
+                'linotp': {
+                    'handlers': ['console', 'file'],
                     'level': app.config["LOGGING_LEVEL"],
                     'propagate': True,
                 },
-                'linotp.lib': {
-                    'handlers': ['console'],
-                    'level': app.config["LOGGING_LEVEL"],
-                    'propagate': True,
-                },
-                'linotp.lib.config.db_api': {
-                    'handlers': ['console'],
-                    'level': 'INFO',
-                    'propagate': True,
-                },
-                'linotp.lib.security.provider': {
-                    'handlers': ['console'],
-                    'level': 'INFO',
+                'sqlalchemy.engine': {
+                    'handlers': ['console', 'file'],
+                    'level': app.config["SQLALCHEMY_LOGGING_LEVEL"],
                     'propagate': True,
                 },
             },
