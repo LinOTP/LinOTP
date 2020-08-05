@@ -723,28 +723,6 @@ def setup_db(app, drop_data=False):
     meta.Session.commit()
 
 
-def generate_secret_key_file(app):
-    """Generate a secret-key file if it doesn't exist."""
-
-    filename = app.config["SECRET_FILE"]
-    if filename is not None:
-        try:
-            open(filename)
-        except IOError:
-            app.logger.warning(
-                "The Linotp Secret File could not be found. "
-                "Creating a new one at {}".format(filename))
-            with open(filename, "ab+") as f:
-                # We're protecting the file before we're writing the
-                # secret key material to it in order to avoid a
-                # possible race condition.
-
-                os.fchmod(f.fileno(), 0o400)
-                secret = os.urandom(32 * 5)
-                f.write(secret)
-        app.logger.debug("SECRET_FILE: {}".format(filename))
-
-
 def setup_security_provider(app):
     """
     Set up the security provider (HSM or software). This is straight from
@@ -842,7 +820,6 @@ def create_app(config_name='default', config_extra=None):
         set_config()       # ensure `request_context` exists
         setup_audit(app)
         initGlobalObject()
-        generate_secret_key_file(app)
         reload_token_classes()
         app.check_license()
         app.load_providers()

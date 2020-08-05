@@ -36,6 +36,7 @@ import tempfile
 
 from linotp.app import create_app
 from linotp.flap import set_config, tmpl_context as c
+from linotp.lib.tools.enckey import create_secret_key
 from linotp.model import meta
 from . import TestController
 from flask.testing import FlaskClient
@@ -127,7 +128,12 @@ def base_app(tmpdir, request, sqlalchemy_uri, key_directory):
             AUDIT_PRIVATE_KEY_FILE=key_directory / "audit-private.pem",
             SECRET_FILE=key_directory / "encKey",
         )
+
         os.environ["LINOTP_CFG"] = ""
+
+        secret_file = base_app_config['SECRET_FILE']
+        if not os.path.exists(secret_file):
+            create_secret_key(filename=secret_file)
 
         app = create_app('testing', base_app_config)
 
