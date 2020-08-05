@@ -224,7 +224,7 @@ DOCKER_BUILD_ARGS=
 DOCKER_TAGS=latest
 
 # Override to change the mirror used for image building
-DEBIAN_MIRROR=ftp.debian.org
+DEBIAN_MIRROR=deb.debian.org
 
 # Override to change the Debian release used to build with
 DEBIAN_RELEASE_NAME=buster
