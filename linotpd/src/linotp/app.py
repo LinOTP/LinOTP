@@ -594,7 +594,7 @@ def init_logging(app):
     if app.config["LOGGING"] is None:
         app.config["LOGGING"] = {
             'version': 1,
-            'disable_existing_loggers': False,
+            'disable_existing_loggers': True,
             'handlers': {
                 'console': {
                     'level': app.config["LOGGING_CONSOLE_LEVEL"],
@@ -635,6 +635,7 @@ def init_logging(app):
 
     logging_dictConfig(app.config["LOGGING"])
 
+    app.logger = logging.getLogger(app.name)
     app.logger.info("LinOTP {} starting ...".format(__version__))
 
 
