@@ -240,6 +240,10 @@ _config_schema = ConfigSchema([
                validate=check_membership(VALID_LOG_LEVELS), default="INFO",
                help=("Messages will be logged only if they are at this level "
                      "or above.")),
+    ConfigItem("SQLALCHEMY_LOGGING_LEVEL", str,
+               validate=check_membership(VALID_LOG_LEVELS), default="WARNING",
+               help=("Messages from the SQLAlchemy subsystem will be logged "
+                     "only if they are at this level or above.")),
     ConfigItem("LOGGING_FILE_LEVEL", str,
                validate=check_membership(VALID_LOG_LEVELS), default="WARNING",
                help=("Messages will be written to the log file only if they "
@@ -248,6 +252,14 @@ _config_schema = ConfigSchema([
                      "`LOGGING_FILE_LEVEL` is more relaxed than "
                      "`LOGGING_LEVEL`, only messages at `LOGGING_LEVEL` or "
                      "above will be logged to the file.")),
+    ConfigItem("LOGGING_CONSOLE_LEVEL", str,
+               validate=check_membership(VALID_LOG_LEVELS), default="WARNING",
+               help=("Messages will be written to the console only if they "
+                     "are at this level or above. Messages must clear "
+                     "`LOGGING_LEVEL` first, i.e., even if "
+                     "`LOGGING_FILE_LEVEL` is more relaxed than "
+                     "`LOGGING_LEVEL`, only messages at `LOGGING_LEVEL` or "
+                     "above will be logged to the console.")),
     ConfigItem("LOGGING", dict, convert=json.loads, default=None,
                help=("You can completely redefine the LinOTP logging setup by "
                      "passing a configuration dictionary in `LOGGING`. Do "
