@@ -247,7 +247,7 @@ _config_schema = ConfigSchema([
     ConfigItem("LOGGING_FILE_LEVEL", str,
                validate=check_membership(VALID_LOG_LEVELS), default="WARNING",
                help=("Messages will be written to the log file only if they "
-                     "are at this level or above. Messages must clear "
+                     "are at this level or above. Messages must pass "
                      "`LOGGING_LEVEL` first, i.e., even if "
                      "`LOGGING_FILE_LEVEL` is more relaxed than "
                      "`LOGGING_LEVEL`, only messages at `LOGGING_LEVEL` or "
@@ -255,7 +255,7 @@ _config_schema = ConfigSchema([
     ConfigItem("LOGGING_CONSOLE_LEVEL", str,
                validate=check_membership(VALID_LOG_LEVELS), default="WARNING",
                help=("Messages will be written to the console only if they "
-                     "are at this level or above. Messages must clear "
+                     "are at this level or above. Messages must pass "
                      "`LOGGING_LEVEL` first, i.e., even if "
                      "`LOGGING_FILE_LEVEL` is more relaxed than "
                      "`LOGGING_LEVEL`, only messages at `LOGGING_LEVEL` or "
