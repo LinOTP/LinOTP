@@ -594,15 +594,15 @@ def init_logging(app):
     if app.config["LOGGING"] is None:
         app.config["LOGGING"] = {
             'version': 1,
-            'disable_existing_loggers': False,
+            'disable_existing_loggers': True,
             'handlers': {
                 'console': {
-                    'level': 'DEBUG',
+                    'level': app.config["LOGGING_CONSOLE_LEVEL"],
                     'class': 'logging.StreamHandler',
                     'formatter': 'linotp',
                 },
                 'file': {
-                    'level': 'INFO',
+                    'level': app.config["LOGGING_FILE_LEVEL"],
                     'class': 'logging.handlers.RotatingFileHandler',
                     'filename': os.path.join(
                         app.config["LOGFILE_DIR"], app.config["LOGFILE_NAME"]),
@@ -616,24 +616,14 @@ def init_logging(app):
                 },
             },
             'loggers': {
-                'linotp.app': {
-                    'handlers': ['console'],
+                'linotp': {
+                    'handlers': ['console', 'file'],
                     'level': app.config["LOGGING_LEVEL"],
                     'propagate': True,
                 },
-                'linotp.lib': {
-                    'handlers': ['console'],
-                    'level': app.config["LOGGING_LEVEL"],
-                    'propagate': True,
-                },
-                'linotp.lib.config.db_api': {
-                    'handlers': ['console'],
-                    'level': 'INFO',
-                    'propagate': True,
-                },
-                'linotp.lib.security.provider': {
-                    'handlers': ['console'],
-                    'level': 'INFO',
+                'sqlalchemy.engine': {
+                    'handlers': ['console', 'file'],
+                    'level': app.config["SQLALCHEMY_LOGGING_LEVEL"],
                     'propagate': True,
                 },
             },
@@ -645,6 +635,7 @@ def init_logging(app):
 
     logging_dictConfig(app.config["LOGGING"])
 
+    app.logger = logging.getLogger(app.name)
     app.logger.info("LinOTP {} starting ...".format(__version__))
 
 
