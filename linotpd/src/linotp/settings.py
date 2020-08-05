@@ -238,7 +238,7 @@ _config_schema = ConfigSchema([
                help=("Up to this many old log files will be kept.")),
     ConfigItem("LOGGING_LEVEL", str,
                validate=check_membership(VALID_LOG_LEVELS), default="INFO",
-               help=("Messages will be logged only if the are at this level "
+               help=("Messages will be logged only if they are at this level "
                      "or above.")),
     ConfigItem("LOGGING_FILE_LEVEL", str,
                validate=check_membership(VALID_LOG_LEVELS), default="WARNING",
