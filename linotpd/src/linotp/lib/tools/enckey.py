@@ -29,6 +29,7 @@ import click
 
 KEY_COUNT = 3
 KEY_LENGTH = 32
+SECRET_FILE_PERMISSIONS = 0o400
 
 
 def create_secret_key(filename):
@@ -43,6 +44,6 @@ def create_secret_key(filename):
     with tempfile.NamedTemporaryFile(mode='wb',
                                      dir=os.path.dirname(filename),
                                      delete=False) as f:
-        os.fchmod(f.fileno(), 0o400)
+        os.fchmod(f.fileno(), SECRET_FILE_PERMISSIONS)
         f.write(os.urandom(KEY_COUNT * KEY_LENGTH))
     os.replace(f.name, filename)     # atomic rename, since Python 3.3
