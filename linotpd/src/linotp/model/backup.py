@@ -222,3 +222,222 @@ def list_backups(app, file_template):
     app.logger.info("backups for dates found: %r" % sorted(backups))
 
     return sorted(backups)
+
+# -------------------------------------------------------------------------- --
+
+# restore
+
+def _get_restore_filename(app, template, file=None, date=None):
+    """
+    helper for restore, to determin a filename from a given date or file name
+
+    @param app - the current app
+    @param template - the file name template to search for
+    @param filename - the absolute or relative backup file name
+    @param date - find a backup file by date
+    @return the matching filename or None
+    """
+
+    backup_filename = None
+    backup_dir = app.config["BACKUP_DIR"]
+
+    if date:
+        backup_filename = os.path.join(
+            backup_dir, template % date)
+
+    elif filename:
+
+        # check if file is absolute or relative to the backup directory
+
+        if os.path.isfile(filename):
+            backup_filename = filename
+        else:
+            backup_filename = os.path.join(backup_dir, filename)
+
+    # ---------------------------------------------------------------------- --
+
+    # no file or data parameter was provided
+
+    if not filename and not date:
+        app.logger.error(
+            "failed to restore - not date or file name parameter provided")
+        return None
+
+    # ---------------------------------------------------------------------- --
+
+    # verify that the file to restore from exists
+
+    if not os.path.isfile(backup_filename):
+
+        app.logger.info(
+            "failed to restore %s - not found or not accessible"
+            % backup_filename)
+        return None
+
+    return backup_filename
+
+
+def restore_audit_table(app, file:str =None, date:str =None):
+    """
+    restore audit only backup file
+
+    @param app - the current app
+    @param filename - the absolute or relative backup file name
+    @param date - find a backup file by date
+    """
+    restore_names = ['AuditTable']
+
+    # ---------------------------------------------------------------------- --
+
+    # determin the backup file for the audit restore
+
+    backup_filename = _get_restore_filename(
+                        app, "linotp_audit_backup_%s.sqldb", filename, date)
+
+    if not backup_filename:
+        return
+
+    # ---------------------------------------------------------------------- --
+
+    # get the database uri for audit or fallback to sql uri if the audit is
+    # shared in the same database
+
+    sql_uri = app.config["AUDIT_DATABASE_URI"]
+    if sql_uri == 'SHARED':
+        sql_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
+
+    # ---------------------------------------------------------------------- --
+
+    # run the restore of the audit table
+
+    restore_tables(app, sql_uri, backup_filename, restore_names)
+
+
+def restore_database_tables(
+        app, file:str =None, date:str =None, table:str =None):
+    """
+    restore the database tables from a file or for a given date
+       optionally restore only one table
+
+    @param app - the current app
+    @param filename - the absolute or relative backup file name
+    @param date - find a backup file by date
+    @param table - restore only one database table e.g. tokens
+    """
+
+    restore_names = list(ORM_Models.keys())
+
+    audit_uri = app.config["AUDIT_DATABASE_URI"]
+    if audit_uri == 'SHARED':
+        restore_names.append('AuditTable')
+
+    # ---------------------------------------------------------------------- --
+
+    # determine which table should be restored specified by the table parameter
+    #  If the token table should be restored we require to restore Realm and
+    #  TokenRealm as well, as the have an n:m relationship
+
+    if table:
+
+        if table.lower() == 'config':
+            restore_names = ['Config']
+
+        elif table.lower() == 'audit':
+            restore_names = ['AuditTable']
+
+        elif table.lower() == 'token':
+            restore_names = ['Token', 'TokenRealm', 'Realm']
+
+        else:
+            app.logger.error(
+                f"selected table {table} is not in the set of supported tables"
+                )
+            return EXIT_ERROR
+
+    # ---------------------------------------------------------------------- --
+
+    # determine the backup file for the database restore
+
+    backup_filename = _get_restore_filename(
+                        app, "linotp_backup_%s.sqldb", filename, date)
+
+    if not backup_filename:
+        return
+
+    # ---------------------------------------------------------------------- --
+
+    # get the database uri for the linotp database
+
+    sql_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
+
+    # ---------------------------------------------------------------------- --
+
+    # run the restore of the list of tables into the database
+
+    restore_tables(app, sql_uri, backup_filename, restore_names)
+
+def restore_tables(app, sql_uri:str, backup_file:str, restore_names: list):
+    """
+    use the sqlalchemy de-serializer to restore the database mapped objects
+
+    @param app - the current app
+    @param sql_uri - the target sql database uri
+    @param backup_filename - the file with the serialized db objects
+    @param restore_names - list of table names to restore
+    """
+    # ---------------------------------------------------------------------- --
+
+    # setup db engine, session and meta from sql uri
+
+    engine = create_engine(sql_uri)
+
+    init_model(engine)
+
+    # ---------------------------------------------------------------------- --
+
+    # restore the sqlalchemy dump from file
+
+    with open(backup_filename, "r") as backup_file:
+
+        line = backup_file.readline()
+
+        while line:
+
+            if line:
+                line = line.strip()
+
+            if not line:
+                line = backup_file.readline()
+                continue
+
+            if line.startswith('--- END '):
+                name = None
+                line = backup_file.readline()
+                continue
+
+            if line.startswith('--- BEGIN '):
+                name = line[len('--- BEGIN '):]
+                line = backup_file.readline()
+                continue
+
+            if name in restore_names:
+
+                # unhexlify the serialized data first
+
+                data = binascii.unhexlify(line.encode('utf-8'))
+
+                # use sqlalchemy loads to de-serialize the data objects
+
+                restore_query = loads(data, meta.metadata, session)
+
+                # merge the objects into the current session
+
+                session.merge(restore_query)
+
+                app.logger.info("restoring %r" % name)
+
+            line = backup_file.readline()
+
+    # finally commit all de-serialized objects
+
+    session.commit()
