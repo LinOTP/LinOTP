@@ -162,3 +162,63 @@ def backup_tables(app, sql_uri, backup_file_template, backup_classes):
 
             backup_file.write("\n--- END %s\n" % name)
 
+def list_database_backups(app):
+    """
+    find all backup files in the backup directory
+
+    @param app : the current app
+    @return list of backup dates
+    """
+
+    return list_backups(app, file_template='linotp_backup_')
+
+def list_audit_backups(app):
+    """
+    find all audit backup files in the backup directory
+
+    @param app : the current app
+    @return list of backup dates
+    """
+
+    return list_backups(app, file_template='linotp_audit_backup_')
+
+def list_backups(app, file_template):
+    """
+    find all backup files in the backup directory
+
+    @param app : the current app
+    @param file_template - either the audit or the std backup file name
+    @return list of backup dates
+    """
+
+    # ---------------------------------------------------------------------- --
+
+    # setup the backup location
+
+    backup_dir = current_app.config["BACKUP_DIR"]
+
+    if not os.path.isdir(backup_dir):
+        app.logger.error("no backup directory found: %s" % backup_dir)
+        os.mkdir(backup_dir)
+        app.logger.error("backup directory created: %s" % backup_dir)
+    # ---------------------------------------------------------------------- --
+
+    # lookup for all files in the directory that match the template
+
+    backups = []
+
+    for backup_file in os.listdir(backup_dir):
+
+        # backup files match the 'template' + "%s.sqldb" format
+
+        if (backup_file.startswith(filename_template)
+            and backup_file.endswith('.sqldb')):
+
+            backup_date, _, _ext = backup_file[
+                len(filename_template):].rpartition('.')
+
+            backups.append(backup_date)
+
+    app.logger.info("backups for dates found: %r" % sorted(backups))
+
+    return sorted(backups)
