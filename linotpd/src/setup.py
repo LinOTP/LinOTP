@@ -296,6 +296,7 @@ setup(
             'linotp = linotp.cli:main',  # LinOTP command line interface
         ],
         'flask.commands': [
+            'backup = linotp.cli:backup_cmds',
             'config = linotp.settings:config_cmds',
             'init = linotp.cli:init_cmds',
             'ldap-test = linotp.useridresolver.LDAPIdResolver:ldap_test',

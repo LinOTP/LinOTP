@@ -34,11 +34,15 @@ for `FLASK_APP`.
 
 import os
 import click
+from subprocess import call
 
 from flask import current_app
 from flask.cli import main as flask_main
 from flask.cli import AppGroup
 from linotp.lib.tools.enckey import create_secret_key
+
+from linotp.model.backup import backup_audit_tables
+from linotp.model.backup import backup_database_tables
 
 FLASK_APP_DEFAULT = "linotp.app"   # Contains default `create_app()` factory
 FLASK_ENV_DEFAULT = "development"  # Default Flask environment, for debugging
@@ -57,7 +61,7 @@ def main():
 
 init_cmds = AppGroup('init')
 
-@init_cmds.command('enc-key', 
+@init_cmds.command('enc-key',
                    help='Generate aes key for encryption and decryption')
 @click.option('--force', '-f', is_flag=True,
               help='Override encKey file if exits already.')
@@ -80,3 +84,30 @@ def init_enc_key(force):
         except IOError as ex:
             click.echo(f'Error writing enc-key to {filename}: {ex!s}',
                        err=True)
+# -------------------------------------------------------------------------- --
+
+# backup commands
+
+backup_cmds = AppGroup('backup')
+
+@backup_cmds.command('database', help='create a backup of the database tables')
+def backup_database():
+    """Create backup file for your database tables
+    """
+
+    current_app.logger.info("Backup database ...")
+
+    backup_database_tables(current_app)
+
+    current_app.logger.info("finished")
+
+@backup_cmds.command('audit', help='create a backup of the audit database')
+def backup_audit():
+    """Create backup file for your audit database table
+    """
+
+    current_app.logger.info("Backup database ...")
+
+    backup_audit_tables(current_app)
+
+    current_app.logger.info("finished")
