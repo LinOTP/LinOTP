@@ -40,6 +40,8 @@ from sqlalchemy.ext.serializer import loads, dumps
 
 from sqlalchemy import create_engine
 
+from linotp.app import LinOTPApp
+
 from linotp.model.meta import Session as session
 from linotp.model import Config, Token, TokenRealm, Realm
 from linotp.model import Reporting, LoggingConfig
@@ -74,7 +76,7 @@ def which(program:str) -> str:
 
     return exececutable
 
-def backup_audit_tables(app):
+def backup_audit_tables(app:LinOTPApp) -> int:
     """
     create a dedicated backup of the audit database
 
@@ -94,7 +96,7 @@ def backup_audit_tables(app):
         app, audit_uri, backup_filename_template, backup_classes)
 
 
-def backup_database_tables(app):
+def backup_database_tables(app:LinOTPApp) -> int:
     """
     use the sqlalchemy serializer to dump the database mapped objects
 
@@ -123,7 +125,9 @@ def backup_database_tables(app):
     return backup_tables(app, sql_uri, backup_filename_template, backup_classes)
 
 
-def backup_tables(app, sql_uri, backup_file_template, backup_classes):
+def backup_tables(
+        app:LinOTPApp, sql_uri:str, backup_filename_template:str,
+        backup_classes:dict) -> int:
     """
     use the sqlalchemy serializer to dump the database mapped objects
     - lower level backend used by backup database and backup audit
@@ -186,7 +190,8 @@ def backup_tables(app, sql_uri, backup_file_template, backup_classes):
 
     return EXIT_OK
 
-def list_database_backups(app):
+
+def list_database_backups(app:LinOTPApp) -> list :
     """
     find all backup files in the backup directory
 
@@ -196,7 +201,7 @@ def list_database_backups(app):
 
     return list_backups(app, filename_template='linotp_backup_')
 
-def list_audit_backups(app):
+def list_audit_backups(app:LinOTPApp) -> list:
     """
     find all audit backup files in the backup directory
 
@@ -206,7 +211,7 @@ def list_audit_backups(app):
 
     return list_backups(app, filename_template='linotp_audit_backup_')
 
-def list_backups(app, file_template):
+def list_backups(app:LinOTPApp, filename_template:str) -> list:
     """
     find all backup files in the backup directory
 
@@ -251,7 +256,8 @@ def list_backups(app, file_template):
 
 # restore
 
-def _get_restore_filename(app, template, file=None, date=None):
+def _get_restore_filename(
+        app:LinOTPApp, template:str, filename:str=None, date:str=None) -> str or None:
     """
     helper for restore, to determin a filename from a given date or file name
 
@@ -301,7 +307,7 @@ def _get_restore_filename(app, template, file=None, date=None):
     return backup_filename
 
 
-def restore_audit_table(app, file:str =None, date:str =None):
+def restore_audit_table(app:LinOTPApp, filename:str=None, date:str=None) -> int:
     """
     restore audit only backup file
 
@@ -337,7 +343,7 @@ def restore_audit_table(app, file:str =None, date:str =None):
     return restore_tables(app, sql_uri, backup_filename, restore_names)
 
 def restore_database_tables(
-        app, file:str =None, date:str =None, table:str =None):
+        app:LinOTPApp, filename:str=None, date:str=None, table:str=None) -> int:
     """
     restore the database tables from a file or for a given date
        optionally restore only one table
@@ -399,7 +405,9 @@ def restore_database_tables(
 
     return restore_tables(app, sql_uri, backup_filename, restore_names)
 
-def restore_tables(app, sql_uri:str, backup_file:str, restore_names: list):
+def restore_tables(
+        app:LinOTPApp, sql_uri:str, backup_filename:str,
+        restore_names: list)-> int:
     """
     use the sqlalchemy de-serializer to restore the database mapped objects
 
@@ -467,7 +475,7 @@ def restore_tables(app, sql_uri:str, backup_file:str, restore_names: list):
 
     return EXIT_OK
 
-def restore_legacy_database(app:LinOTPApp, file:str) -> int:
+def restore_legacy_database(app:LinOTPApp, filename:str) -> int:
     """
     restore the mysql dump of a former linotp tools backup
 
