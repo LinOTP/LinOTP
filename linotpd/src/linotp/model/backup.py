@@ -90,7 +90,8 @@ def backup_audit_tables(app):
     backup_classes = {}
     backup_classes['AuditTable'] = AuditTable
 
-    backup_tables(app, audit_uri, backup_file_template, backup_classes)
+    return backup_tables(
+        app, audit_uri, backup_filename_template, backup_classes)
 
 
 def backup_database_tables(app):
@@ -119,7 +120,7 @@ def backup_database_tables(app):
 
     # run the backup
 
-    backup_tables(app, sql_uri, backup_file_template, backup_classes)
+    return backup_tables(app, sql_uri, backup_filename_template, backup_classes)
 
 
 def backup_tables(app, sql_uri, backup_file_template, backup_classes):
@@ -183,6 +184,8 @@ def backup_tables(app, sql_uri, backup_file_template, backup_classes):
 
             backup_file.write("\n--- END %s\n" % name)
 
+    return EXIT_OK
+
 def list_database_backups(app):
     """
     find all backup files in the backup directory
@@ -191,7 +194,7 @@ def list_database_backups(app):
     @return list of backup dates
     """
 
-    return list_backups(app, file_template='linotp_backup_')
+    return list_backups(app, filename_template='linotp_backup_')
 
 def list_audit_backups(app):
     """
@@ -201,7 +204,7 @@ def list_audit_backups(app):
     @return list of backup dates
     """
 
-    return list_backups(app, file_template='linotp_audit_backup_')
+    return list_backups(app, filename_template='linotp_audit_backup_')
 
 def list_backups(app, file_template):
     """
@@ -316,7 +319,7 @@ def restore_audit_table(app, file:str =None, date:str =None):
                         app, "linotp_audit_backup_%s.sqldb", filename, date)
 
     if not backup_filename:
-        return
+        return EXIT_ERROR
 
     # ---------------------------------------------------------------------- --
 
@@ -331,8 +334,7 @@ def restore_audit_table(app, file:str =None, date:str =None):
 
     # run the restore of the audit table
 
-    restore_tables(app, sql_uri, backup_filename, restore_names)
-
+    return restore_tables(app, sql_uri, backup_filename, restore_names)
 
 def restore_database_tables(
         app, file:str =None, date:str =None, table:str =None):
@@ -383,7 +385,7 @@ def restore_database_tables(
                         app, "linotp_backup_%s.sqldb", filename, date)
 
     if not backup_filename:
-        return
+        return EXIT_ERROR
 
     # ---------------------------------------------------------------------- --
 
@@ -395,7 +397,7 @@ def restore_database_tables(
 
     # run the restore of the list of tables into the database
 
-    restore_tables(app, sql_uri, backup_filename, restore_names)
+    return restore_tables(app, sql_uri, backup_filename, restore_names)
 
 def restore_tables(app, sql_uri:str, backup_file:str, restore_names: list):
     """
@@ -462,6 +464,8 @@ def restore_tables(app, sql_uri:str, backup_file:str, restore_names: list):
     # finally commit all de-serialized objects
 
     session.commit()
+
+    return EXIT_OK
 
 def restore_legacy_database(app:LinOTPApp, file:str) -> int:
     """

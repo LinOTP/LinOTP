@@ -34,6 +34,8 @@ for `FLASK_APP`.
 
 import os
 import click
+import sys
+
 from subprocess import call
 
 from flask import current_app
@@ -48,7 +50,6 @@ from linotp.model.backup import list_audit_backups
 from linotp.model.backup import restore_database_tables
 from linotp.model.backup import restore_audit_table
 from linotp.model.backup import restore_legacy_database
-
 
 FLASK_APP_DEFAULT = "linotp.app"   # Contains default `create_app()` factory
 FLASK_ENV_DEFAULT = "development"  # Default Flask environment, for debugging
@@ -149,7 +150,7 @@ def restore_database(file=None, date=None, table=None, list=False):
 
         current_app.logger.info("Available backup files for restore")
 
-        exit_code =list_database_backups(current_app)
+        exit_code = list_database_backups(current_app)
 
         current_app.logger.info("finished")
 
@@ -189,7 +190,7 @@ def restore_audit(file=None, date=None, list=False):
 
     current_app.logger.info("Restoring audit ...")
 
-    exit_code = restore_audit_table(current_app, file, date)
+    exit_code = restore_audit_table(current_app, filename=file, date=date)
 
     current_app.logger.info("finished")
 
