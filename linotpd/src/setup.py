@@ -161,7 +161,6 @@ setup(
         'tools/linotp-token-usage',
         'tools/linotp-create-ad-users',
         'tools/linotp-auth-radius',
-        'tools/linotp-sql-janitor',
         'tools/linotp-tokens-used',
         'tools/linotp-decrypt-otpkey',
         'tools/linotp-convert-gemalto',
@@ -294,6 +293,7 @@ setup(
             'linotp = linotp.cli:main',  # LinOTP command line interface
         ],
         'flask.commands': [
+            'audit-janitor = linotp.cli:audit_janitor',
             'backup = linotp.cli:backup_cmds',
             'config = linotp.settings:config_cmds',
             'init = linotp.cli:init_cmds',

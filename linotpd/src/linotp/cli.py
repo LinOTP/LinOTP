@@ -41,7 +41,9 @@ from subprocess import call
 from flask import current_app
 from flask.cli import main as flask_main
 from flask.cli import AppGroup
+from flask.cli import with_appcontext
 from linotp.lib.tools.enckey import create_secret_key
+from linotp.lib.tools.sql_janitor import SQLJanitor
 
 from linotp.model.backup import backup_audit_tables
 from linotp.model.backup import backup_database_tables
@@ -91,6 +93,7 @@ def init_enc_key(force):
         except IOError as ex:
             click.echo(f'Error writing enc-key to {filename}: {ex!s}',
                        err=True)
+
 # -------------------------------------------------------------------------- --
 
 # backup commands
@@ -208,3 +211,33 @@ def restore_legacy(file):
     current_app.logger.info("finished")
 
     sys.exit(exit_code)
+
+
+@click.command('audit_janitor',
+                help='Reduce the amount of audit log entries in the database')
+@click.option('--max',
+              default=10000,
+              help='The maximum entries. If not given 10.000 as default is ' +
+                   'assumed.')
+@click.option('--min',
+              default=5000,
+              help='The minimum old remaining entries. If not given 5.000 ' +
+                   'as default is assumed.')
+@click.option('--exportdir', '-e',
+               type=click.Path(exists=True, dir_okay=True),
+               help='Defines the directory where the audit entries which ' +
+               'are cleaned up are exported. A example filename would be: ' +
+               'SQLData.yeah.month.day-max_id.csv')
+@with_appcontext
+def audit_janitor(max, min, exportdir):
+    """This function removes old entries from the audit table.
+
+    If more than max entries are in the audit table, older entries
+    will be deleted so that only min entries remain in the table.
+    This tool can decrypt the OTP Key stored in the LinOTP database. You need
+    to pass the encrypted key, the IV and the filename of the encryption key.
+    """
+
+    sqljanitor = SQLJanitor(current_app.audit_obj.engine, export=exportdir)
+    sqljanitor.cleanup(max, min)
+
