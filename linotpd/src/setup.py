@@ -300,6 +300,7 @@ setup(
             'config = linotp.settings:config_cmds',
             'init = linotp.cli:init_cmds',
             'ldap-test = linotp.useridresolver.LDAPIdResolver:ldap_test',
+            'restore = linotp.cli:restore_cmds',
         ],
     },
 )

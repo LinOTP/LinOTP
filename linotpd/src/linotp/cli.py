@@ -43,6 +43,11 @@ from linotp.lib.tools.enckey import create_secret_key
 
 from linotp.model.backup import backup_audit_tables
 from linotp.model.backup import backup_database_tables
+from linotp.model.backup import list_database_backups
+from linotp.model.backup import list_audit_backups
+from linotp.model.backup import restore_database_tables
+from linotp.model.backup import restore_audit_table
+
 
 FLASK_APP_DEFAULT = "linotp.app"   # Contains default `create_app()` factory
 FLASK_ENV_DEFAULT = "development"  # Default Flask environment, for debugging
@@ -109,5 +114,74 @@ def backup_audit():
     current_app.logger.info("Backup database ...")
 
     backup_audit_tables(current_app)
+
+    current_app.logger.info("finished")
+
+# -------------------------------------------------------------------------- --
+
+# restore commands
+
+restore_cmds = AppGroup('restore')
+
+@restore_cmds.command('database',
+                      help='restore a backup of the database tables')
+@click.option('--file', help='name of the backup file')
+@click.option('--date', help='restore the backup from a given date.'
+              '"date" must be in format "%y%m%d%H%M"')
+@click.option('--table', help='restore the backup of a table - '
+              'table must be one of "Config", "Token", "Audit"')
+@click.option('--list',  is_flag=True,
+              help='show available backup files that can be restored')
+def restore_database(file=None, date=None, table=None, list=False):
+    """ restore a database backup
+
+    @param file - the backup file name, could be absolute or relative
+    @param date - select a backup for restore by date
+    @param table - allows to restore only one database table
+    @param list - list all available database backups
+    """
+    if list:
+
+        current_app.logger.info("Available backup files for restore")
+
+        list_database_backups(current_app)
+
+        current_app.logger.info("finished")
+
+        return
+
+    current_app.logger.info("Restoring database ...")
+
+    restore_database_tables(current_app, file, date, table)
+
+    current_app.logger.info("finished")
+
+@restore_cmds.command('audit',
+                      help='restore a backup of the database tables')
+@click.option('--file', help='name of the backup file')
+@click.option('--date', help='restore the backup from a given date.'
+              '"date" must be in format "%y%m%d%H%M"')
+@click.option('--list',  is_flag=True,
+              help='show available backup files that can be restored')
+def restore_audit(file=None, date=None, list=False):
+    """restore an audit backup
+
+    @param file - the backup file name, could be absolute or relative
+    @param data - select a backup for restore by date
+    @param list - list all available audit backups
+    """
+    if list:
+
+        current_app.logger.info("Available audit backup files for restore")
+
+        list_audit_backups(current_app)
+
+        current_app.logger.info("finished")
+
+        return
+
+    current_app.logger.info("Restoring audit ...")
+
+    restore_audit_table(current_app, file, date)
 
     current_app.logger.info("finished")
