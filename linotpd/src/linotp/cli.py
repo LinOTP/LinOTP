@@ -47,6 +47,7 @@ from linotp.model.backup import list_database_backups
 from linotp.model.backup import list_audit_backups
 from linotp.model.backup import restore_database_tables
 from linotp.model.backup import restore_audit_table
+from linotp.model.backup import restore_legacy_database
 
 
 FLASK_APP_DEFAULT = "linotp.app"   # Contains default `create_app()` factory
@@ -185,3 +186,16 @@ def restore_audit(file=None, date=None, list=False):
     restore_audit_table(current_app, file, date)
 
     current_app.logger.info("finished")
+
+@restore_cmds.command('legacy',
+                      help='restore a legacy backup file (mysql)')
+@click.option('--file', help='name of the backup file')
+def restore_legacy(file):
+
+    current_app.logger.info("Restoring legacy database ...")
+
+    exit_code = restore_legacy_database(current_app, filename=file)
+
+    current_app.logger.info("finished")
+
+    sys.exit(exit_code)

@@ -30,6 +30,8 @@ database backup implementation
 
 import os
 import binascii
+import shutil
+import subprocess
 
 from datetime import datetime
 
@@ -45,6 +47,8 @@ from linotp.model import init_model, meta
 
 from linotp.lib.audit.SQLAudit import AuditTable
 
+EXIT_OK = 0
+EXIT_ERROR = 1
 
 ORM_Models = {
     'Config': Config, 
@@ -52,6 +56,23 @@ ORM_Models = {
     'TokenRealm': TokenRealm, 
     'Realm': Realm
     }
+
+def which(program:str) -> str:
+    """
+    helper to identify a program in the environment path
+
+    @param program: the name of the program
+    @return executable with absolute path
+    """
+
+    path = os.environ.get('PATH')
+    exececutable = shutil.which(program, path=path)
+
+    if not exececutable:
+        path = path + os.pathsep + "/usr/local/bin"
+        exececutable = shutil.which(program, path=path)
+
+    return exececutable
 
 def backup_audit_tables(app):
     """
@@ -441,3 +462,76 @@ def restore_tables(app, sql_uri:str, backup_file:str, restore_names: list):
     # finally commit all de-serialized objects
 
     session.commit()
+
+def restore_legacy_database(app:LinOTPApp, file:str) -> int:
+    """
+    restore the mysql dump of a former linotp tools backup
+
+    @param file: backup file name - absolute filename
+    """
+
+    backup_filename = os.path.abspath(filename.strip())
+
+    if not os.path.isfile(backup_filename):
+        app.logger.error("legacy backup file %r could not be accessed."
+                         % filename)
+        return EXIT_ERROR
+
+    # ---------------------------------------------------------------------- --
+
+    # setup db engine, session and meta from sql uri
+
+    sql_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
+
+    engine = create_engine(sql_uri)
+
+    if 'mysql' not in engine.url.drivername:
+        app.logger.error("legacy backup file could only restored in a"
+                         " mysql database. current database driver is %r" %
+                          engine.url.drivername)
+        return EXIT_ERROR
+
+    # ---------------------------------------------------------------------- --
+
+    # determine the mysql command parameters
+
+    mysql = which('mysql')
+    if not mysql:
+        app.logger.error("mysql executable not found in path")
+        return EXIT_ERROR
+
+    username = engine.url.username
+    database = engine.url.database
+    host = engine.url.host
+    password = engine.url.password_original
+    port = engine.url.port or '3306'
+
+    command = [
+        f'{mysql}',
+        f'--user={username}',
+        f'--password={password}',
+        f'--host={host}',
+        f'--port={port}',
+        '-D', f'{database}'
+        ]
+
+    # ---------------------------------------------------------------------- --
+
+    # run the restore in subprocess
+
+    app.logger.info("restoring backup %r" % backup_filename)
+
+    with open(backup_filename, 'r') as backup_file:
+        result = subprocess.run(
+            command, stdin=backup_file, capture_output=True)
+
+        if result.returncode != EXIT_OK:
+            app.logger.info("failed to restore legacy backup file: %s"
+                            % result.stderr.decode('utf-8'))
+        else:
+            app.logger.info("legacy backup file restored: %s"
+                            % result.stdout.decode('utf-8'))
+
+        return result.returncode
+
+    return EXIT_ERROR
