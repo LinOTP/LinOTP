@@ -154,7 +154,6 @@ setup(
         'tools/linotp-create-sqlidresolver-user',
         'tools/linotp-setpins',
         'tools/linotp-pip-update',
-        'tools/linotp-create-enckey',
         'tools/linotp-create-auditkeys',
         'tools/linotp-create-certificate',
         'tools/linotp-create-database',
@@ -299,6 +298,7 @@ setup(
         ],
         'flask.commands': [
             'config = linotp.settings:config_cmds',
+            'init = linotp.cli:init_cmds',
             'ldap-test = linotp.useridresolver.LDAPIdResolver:ldap_test',
         ],
     },
