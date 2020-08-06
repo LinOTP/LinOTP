@@ -103,9 +103,11 @@ def backup_database():
 
     current_app.logger.info("Backup database ...")
 
-    backup_database_tables(current_app)
+    exit_code = backup_database_tables(current_app)
 
     current_app.logger.info("finished")
+
+    sys.exit(exit_code)
 
 @backup_cmds.command('audit', help='create a backup of the audit database')
 def backup_audit():
@@ -114,9 +116,11 @@ def backup_audit():
 
     current_app.logger.info("Backup database ...")
 
-    backup_audit_tables(current_app)
+    exit_code = backup_audit_tables(current_app)
 
     current_app.logger.info("finished")
+
+    sys.exit(exit_code)
 
 # -------------------------------------------------------------------------- --
 
@@ -145,17 +149,19 @@ def restore_database(file=None, date=None, table=None, list=False):
 
         current_app.logger.info("Available backup files for restore")
 
-        list_database_backups(current_app)
+        exit_code =list_database_backups(current_app)
 
         current_app.logger.info("finished")
 
-        return
+        sys.exit(exit_code)
 
     current_app.logger.info("Restoring database ...")
 
-    restore_database_tables(current_app, file, date, table)
+    exit_code = restore_database_tables(current_app, file, date, table)
 
     current_app.logger.info("finished")
+
+    sys.exit(exit_code)
 
 @restore_cmds.command('audit',
                       help='restore a backup of the database tables')
@@ -175,17 +181,19 @@ def restore_audit(file=None, date=None, list=False):
 
         current_app.logger.info("Available audit backup files for restore")
 
-        list_audit_backups(current_app)
+        exit_code = list_audit_backups(current_app)
 
         current_app.logger.info("finished")
 
-        return
+        sys.exit(exit_code)
 
     current_app.logger.info("Restoring audit ...")
 
-    restore_audit_table(current_app, file, date)
+    exit_code = restore_audit_table(current_app, file, date)
 
     current_app.logger.info("finished")
+
+    return sys.exit(exit_code)
 
 @restore_cmds.command('legacy',
                       help='restore a legacy backup file (mysql)')
