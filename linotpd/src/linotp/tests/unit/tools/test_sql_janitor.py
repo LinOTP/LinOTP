@@ -24,24 +24,116 @@
 #    Support: www.keyidentity.com
 #
 
+from click.testing import CliRunner
+from linotp.cli import audit_janitor
 from mock import patch
+import os
+from os.path import join
+import pytest
+from sqlalchemy import *
 
 from .script_testing_lib import ScriptTester
 
 # -------------------------------------------------------------------------- --
 
-class TestLinotpTokenUsage(ScriptTester):
+#class TestLinotpTokenUsage(ScriptTester):
 
-    script_name = 'linotp-sql-janitor'
+#    script_name = 'linotp-sql-janitor'
 
-    @patch('os.path.isfile')
-    @patch('logging.FileHandler')
-    @patch('logging.getLogger')
-    @patch('sys.exit')
-    def test_main(self, mock_exit, mock_getLogger, mock_log, mock_isfile):
-        with patch('sys.argv', ['']):
-            self.script_module.main()
-        mock_exit.assert_called_with(0)
+#    @patch('os.path.isfile')
+#    @patch('logging.FileHandler')
+#    @patch('logging.getLogger')
+#    @patch('sys.exit')
+#    def test_main(self, mock_exit, mock_getLogger, mock_log, mock_isfile):
+#        with patch('sys.argv', ['']):
+#            self.script_module.main()
+#        mock_exit.assert_called_with(0)
 
-    def test_usage(self):
-        self.script_module.usage()
+#    def test_usage(self):
+#        self.script_module.usage()
+
+
+AUDIT_AMOUNT_ENTRIES = 100
+
+class TestAuditJanitor:
+
+    @pytest.fixture
+    def setup_audit_table(self, app):
+        """Add AUDIT_AMOUNT_ENTRIES entries into the fresh audit database"""
+
+        entry = {
+            'action' : 'validate/check',
+        }
+        for count in range(AUDIT_AMOUNT_ENTRIES):
+            app.audit_obj.log_entry(entry)
+
+
+    @pytest.fixture(autouse=True)
+    def runner(self, app, tmp_path):
+        """Set common configuration 
+        
+        Note: LINOTP_SQLALCHEMY_DATABASE_URI and LINOTP_DATABASE_URL have to
+        set. Otherwise the created database (sqlite) from conftest.py would
+        not be used. This env and CLIRunner would create a second database.
+        But if the runner is invoked the database from conftest.py will be used
+        (due to flask.current_app) which differs from this in this test
+        (tmp_path...). Therefore we pass the app.audit_obj.engine.url into
+        env['LINOTP_SQLALCHEMY_DATABASE_URI'] and env['LINOTP_DATABASE_URL']
+        so we have the same database for the setup of the test (where 
+        AUDIT_AMOUNT_ENTRIES entries will be generated) and executing
+        `linotp audit-janitor` command
+        """
+        sqlite_db = os.path.join(str(tmp_path), 'sqlite.db')
+        env = {
+            'FLASK_APP': 'linotp.app', 
+            'LINOTP_ROOT_DIR': str(tmp_path),
+            'LINOTP_AUDIT_DATABASE_URI': 'SHARED',
+            'LINOTP_SQLALCHEMY_DATABASE_URI':
+                    str(app.audit_obj.engine.url),
+            'LINOTP_DATABASE_URL':
+                    str(app.audit_obj.engine.url),
+            }
+        self.runner = CliRunner(env=env, mix_stderr=False)
+        self.export_dir = tmp_path
+
+
+    def test_run_janitor(self, app, setup_audit_table):
+        """Run janiter with default values
+
+        By default the max entries value is 10000 and the min value entry is
+        set to 5000. Because no export directory is given, no export are
+        made.
+        """
+
+        # run linotp audit-janitor
+        result = self.runner.invoke(audit_janitor, [])
+        assert result.exit_code == 0
+
+    def test_run_janitor_with_params(self, app, setup_audit_table):
+        """Run janitor with different max, min and export directory
+      
+        Max = 10, Min = 5. Prepared Database with AUDIT_AMOUNT_ENTRIES entries.
+        5 entries left and AUDIT_AMOUNT_ENTRIES - min exported.
+        """
+        max = 10
+        min = 5
+
+        # run linotp audit-janitor --max 10 --min 5
+        result = self.runner.invoke(audit_janitor, [
+            '--max', max,
+            '--min', min,
+            '--exportdir', self.export_dir,
+            ])
+        assert result.exit_code == 0
+
+        list_of_files =  os.listdir(self.export_dir)
+        export_file = None
+        for f in list_of_files:
+            if 'SQLData' in f:
+                export_file = os.path.join(self.export_dir, f)
+                break
+
+        
+        assert export_file != None
+        num_lines = sum(1 for line in open(export_file))
+        assert num_lines == AUDIT_AMOUNT_ENTRIES - min
