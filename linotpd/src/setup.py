@@ -37,7 +37,6 @@ package_directory = os.path.realpath(os.path.dirname(__file__))
 
 install_requirements = [
     'Flask',
-    'Flask-Mako',
     'Flask-Babel',
     'SQLAlchemy>=0.6',
     'beaker',

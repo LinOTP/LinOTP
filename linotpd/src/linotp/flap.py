@@ -6,10 +6,12 @@ import logging
 import os.path
 from builtins import KeyError
 
+from mako.lookup import TemplateLookup
+from mako.exceptions import text_error_template
+
 import flask
 from flask import Response as response
 from flask import abort, redirect
-from flask_mako import TemplateError, render_template
 from werkzeug.exceptions import Forbidden as HTTPForbidden
 from werkzeug.exceptions import Unauthorized as HTTPUnauthorized
 from werkzeug.local import LocalProxy
@@ -108,6 +110,50 @@ def set_config():
     flask.g.request_context['config'].update(flask.current_app.config)
 
 
+def setup_mako(app):
+    if not hasattr(app, 'mako_template_lookup'):
+        app.mako_template_lookup = None
+
+
+def _make_mako_lookup(app):
+    # Make a Mako `TemplateLookup` from the app configuration.
+
+    kwargs = {
+        'input_encoding': 'utf-8',
+        'output_encoding': 'utf-8',
+        'default_filters': app.config['MAKO_DEFAULT_FILTERS'],
+        'imports': [
+            ('from flask_babel import gettext as _, ngettext, '
+             'pgettext, npgettext'),
+        ],
+    }
+
+    # Tokens can come with their own Mako templates, all of which are
+    # in the `tokens` folder, but it seems overkill to add an
+    # otherwise-empty blueprint for that just so the very contrived
+    # blueprint-scanning code can find it. It's easier to add the folder
+    # here and omit the blueprint-scanning loop (see below).
+
+    dirs = [os.path.join(app.root_path, app.template_folder),
+            os.path.join(app.root_path, "tokens")]
+    custom_templates_dir = app.config["CUSTOM_TEMPLATES_DIR"]
+    if custom_templates_dir is not None:
+        dirs.insert(0, custom_templates_dir)
+
+    # We don't bother with `template_folder` directories of blueprints
+    # because we're not using that feature in LinOTP (yet anyway).
+
+    return TemplateLookup(directories=dirs, **kwargs)
+
+
+class TemplateError(RuntimeError):
+
+    def __init__(self, template):
+        self.text = text_error_template().render()
+        message = f"Error rendering template '{template.uri}'"
+        super().__init__(message)
+
+
 def render_mako(template_name, extra_context=None):
     """This is loosely compatible with the Pylons `render_mako()`
     function, so we don't need to change all the occurrences of this
@@ -119,12 +165,17 @@ def render_mako(template_name, extra_context=None):
     eventually the templates may be rewritten to use that.
     """
 
+    app = flask.current_app
+    if app.mako_template_lookup is None:
+        app.mako_template_lookup = _make_mako_lookup(app)
+
     if extra_context:
         flask.g.request_context.update(extra_context)
 
     try:
-        ret = render_template(template_name.lstrip('/'),
-                              c=tmpl_context,
+        template = app.mako_template_lookup.get_template(
+            template_name.lstrip('/'))
+        ret = template.render(c=tmpl_context,
                               lang=get_locale().language)
     except TemplateError as e:
         log.error(e.text)
