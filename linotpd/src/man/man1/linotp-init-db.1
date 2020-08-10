@@ -1,0 +1,25 @@
+.\" Manpage for linotp config.
+.\" Copyright (c) 2020 arxes-tolina GmbH
+
+.TH linotp-init-db 1 "10 Aug 2020" "3.0" "LinOTP"
+
+.SH NAME
+linotp-init-db \- initialize a LinOTP database
+
+.SH SYNOPSIS
+
+\fIlinotp init-db\fR
+
+.SH DESCRIPTION
+Use \fIlinotp init-db\fR to initialize a database to store LinOTP data.
+
+The database connection must be configured in \fB/etc/linotp/linotp.cfg\fR with
+an existing database and user, like in this example:
+
+    SQLALCHEMY_DATABASE_URI = mysql://user:password@localhost/LinOTP2
+
+.SH SEE ALSO
+\fBlinotp\fR(1)
+
+.SH INTERNET SOURCES
+https://www.linotp.org
