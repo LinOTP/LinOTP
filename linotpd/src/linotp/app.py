@@ -35,7 +35,6 @@ from flask import (Flask, Config as FlaskConfig, current_app, g as flask_g,
                    jsonify, Blueprint, redirect)
 from flask.cli import with_appcontext
 from flask_babel import Babel, gettext
-import flask_mako
 
 from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
@@ -71,7 +70,7 @@ from .lib.type_utils import boolean
 from .lib.util import get_client
 
 from . import __version__
-from .flap import config, set_config, tmpl_context as c, request
+from .flap import config, set_config, tmpl_context as c, request, setup_mako
 from .defaults import set_defaults
 from .settings import configs, LinOTPConfigKeyError
 from .tokens import reload_classes as reload_token_classes
@@ -90,18 +89,6 @@ start_time = time.time()
 this_dir = os.path.dirname(os.path.abspath(__file__))
 
 LINOTP_CFG_DEFAULT = "linotp.cfg"  # within app.root_path
-
-# Monkey-patch the value of `_BABEL_IMPORTS`, which in the original
-# Flask-Mako package refers to the old-style Flask extension import
-# mechanism that no longer works, and would make LinOTP crash. The
-# Flask-Mako guys may eventually get their act together and fix this
-# (it's not as if this is a new thing), at which point this line won't
-# hurt and we can get rid of it again.
-
-flask_mako._BABEL_IMPORTS = flask_mako._BABEL_IMPORTS.replace(
-    "flask.ext.babel", "flask_babel")
-
-mako = flask_mako.MakoTemplates()
 
 
 class ConfigurationError(Exception):
@@ -792,16 +779,6 @@ def create_app(config_name='default', config_extra=None):
 
     _configure_app(app, config_name, config_extra)
 
-    # Enable custom template directory for Mako. We can get away with this
-    # because Mako's `TemplateLookup` object is only created when the first
-    # template is rendered. Note that “`app.template_folder` as a tuple” is
-    # a Flask-Mako thing and won't work with Jinja2; if we ever decide we
-    # want to move over, we will need to come up with something else.
-
-    if app.config["CUSTOM_TEMPLATES_DIR"] is not None:
-        app.template_folder = (app.config["CUSTOM_TEMPLATES_DIR"],
-                               app.template_folder)
-
     babel = Babel(app, configure_jinja=False, default_domain="linotp")
 
     # Determine which languages are available in the i18n directory.
@@ -811,7 +788,7 @@ def create_app(config_name='default', config_extra=None):
         {'en'} | {t.language for t in babel.list_translations()}
     )
 
-    mako.init_app(app)
+    setup_mako(app)
     init_logging(app)
 
     with app.app_context():
@@ -864,8 +841,6 @@ def create_app(config_name='default', config_extra=None):
         @app.route('/account/logout')
         def logout():
             return redirect('/selfservice/logout')
-
-    _setup_token_template_path(app)
 
     # Post handlers
     app.teardown_request(app.finalise_request)
@@ -943,19 +918,6 @@ def init_db_command(erase_all_data):
     click.echo(info)
     setup_db(current_app, erase_all_data)
 
-def _setup_token_template_path(app):
-    """
-    Add Mako templates from tokens to the template path
-
-    Tokens can bring their own Mako template with them, so
-    we want to add the token directory to the template path.
-    Flask allows us to do this by defining a Blueprint with
-    a template path.
-
-    This function should be called during application setup.
-    """
-    bp = Blueprint('token_templates', __name__, template_folder="tokens")
-    app.register_blueprint(bp)
 
 def healthcheck():
     uptime = time.time() - start_time
