@@ -7,12 +7,20 @@
 linotp-backup \- Backup LinOTP data.
 
 .SH SYNOPSIS
-\fIlinotp backup\fR
+\fIlinotp backup database\fR
+
+\fIlinotp backup audit\fR
+
 
 .SH DESCRIPTION
-This command backs up the LinOTP database and encryption key. It creates a GPG
-encrypted file to protect sensitive data. The database backup information is
-taken from the linotp.ini file.
+This command backs up the LinOTP database tables or the audit data. The database backup information is
+taken from the linotp configuration e.g the linotp.cfg file.
+
+The backups are stored in the directory specified by LINOTP_BACKUP_DIRECTORY
+which by default LINOTP_ROOT/backups. The backups adhere the pattern linotp_backup_$DATE.sqldb
+and contain serialized sqlalchemy query dumps with a section for each database
+table. Using sqlalchemy query dumps enables with linotp3 to have database independend
+backups.
 
 .SH SEE ALSO
 \fBlinotp\fR(1), \fBlinotp-enckey\fR(1), \fBlinotp-restore\fR(1)

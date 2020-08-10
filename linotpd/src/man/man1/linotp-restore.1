@@ -7,23 +7,45 @@
 linotp-restore \- restore a backup that was made with linotp-backup
 
 .SH SYNOPSIS
-\fIlinotp restore\fR <sql-dump-file> <encKey-File>
+\fIlinotp restore [database|audit]\fR  <--list>
+
+\fIlinotp restore database\fR  <--file backup>  <--date date-of-backup>  <--table table name>
+
+\fIlinotp restore audit\fR  <--file backup>  <--date date-of-backup>
+
+\fIlinotp restore legacy\fR  <--file backup>
+
 
 .SH DESCRIPTION
-This tool can restore a previous made backup. You need to pass the SQL Dumpfile and the encryption key.
+This tool can restore a previous made backup. As the backups for database or audit are stored
+in the LINOTP_BACKUP_DIRECTORY, the --list option will show all avaliable backup by date.
+Thus it is possible to define the backup by the listed timstamp or by the filename, which could
+be relative or absolute.
+
+When restoring a database there exists an additionl option, which allows to define which table
+only should be restored. This will allow to restore either the config data or the token data.
+
+To support formeri, mysql only, backup files the restore legacy command could be used.
 
 .SH COMMON OPTIONS
 
 .PP
-\fB\<sql-dump-file>\fR
+\fB\<backup-file>\fR
 .RS 4
-The MySQL dump.
+The backup file to be restored. Could be a relative filename from within the LINOTP_BACKUP_DIRECTORY
+or from an absolute path
 .RE
 
 .PP
-\fB\<encKey-File>\fR
+\fB\<date>\fR
 .RS 4
-The encryption key file.
+The backup of the date that should be listed.
+.RE
+
+.PP
+\fB\<table>\fR
+.RS 4
+The name of the table that should be resored only.
 .RE
 
 .SH SEE ALSO
