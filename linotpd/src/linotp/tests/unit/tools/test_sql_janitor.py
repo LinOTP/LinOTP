@@ -36,23 +36,6 @@ from .script_testing_lib import ScriptTester
 
 # -------------------------------------------------------------------------- --
 
-#class TestLinotpTokenUsage(ScriptTester):
-
-#    script_name = 'linotp-sql-janitor'
-
-#    @patch('os.path.isfile')
-#    @patch('logging.FileHandler')
-#    @patch('logging.getLogger')
-#    @patch('sys.exit')
-#    def test_main(self, mock_exit, mock_getLogger, mock_log, mock_isfile):
-#        with patch('sys.argv', ['']):
-#            self.script_module.main()
-#        mock_exit.assert_called_with(0)
-
-#    def test_usage(self):
-#        self.script_module.usage()
-
-
 AUDIT_AMOUNT_ENTRIES = 100
 
 class TestAuditJanitor:
