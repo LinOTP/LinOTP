@@ -1,45 +1,40 @@
 .\" Manpage for linotp config.
 .\" Copyright (c) 2020 arxes-tolina GmbH
-.nh
-.ad l
-.TH linotp-config 1 "15 May 2020" "3.0" "LinOTP"
+.TH linotp-config 1 "10 Aug 2020" "3.0" "LinOTP"
+
 .SH NAME
 linotp-config \- inspect and explain LinOTP configuration
+
 .SH SYNOPSIS
-.sp
-.nf
 \fIlinotp config\fR show [\-m|\-\-modified] [\-V|\-\-values] [<item>\&...]
 \fIlinotp config\fR explain [\-\-sample\-file] [\-\-banner|\-\-no\-banner] [<item>\&...]
-.fi
-.sp
+
 .SH DESCRIPTION
-.sp
 Use \fBlinotp config\fR to inspect the configuration of your LinOTP server.
 The \fBlinotp config show\fR command gives you a quick overview of configuration
 settings and their current values, while \fBlinotp config explain\fR shows you
 individual settings together with important and additional extra information about
 them.
+
 .SH OPTIONS
-.PP
+
 show [\-m|\-\-modified] [\-V|\-\-values] [<item>\&...]
 .RS 4
 Show the <item> together with its current value. Multiple <item>s may be specified.
 If no <item> is specified, display all configuration settings.
-.sp
+
 Note that this command takes into consideration Flask configuration
 settings that are not actually part of the LinOTP configuration but
 can also influence the Flask server that LinOTP is based upon. These
 will show up in listings but cannot be processed using the
 \fB\-\-modified\fR
 option, which will silently ignore them.
-.sp
-The
-\fB\-\-values\fR
-option causes only the values of the <item>s to
+
+The \fB\-\-values\fR option causes only the values of the <item>s to
 be output, not their names. This is useful when you want to use the
 values in shell scripts.
 .RE
-.PP
+
 explain [\-\-sample-file] [\-\-banner|\-\-no-banner] [<item>\&...]
 .RS 4
 Show an "explanation" of the <item> (or <item>s). This includes the
@@ -47,7 +42,7 @@ item's name, type, any constraints that apply to its value, its
 default and current values, and a textual explanation of what it does.
 If no <item>s are given, all configuration settings in the schema are
 output.
-.sp
+
 If the \fB\-\-sample\-file\fR option is given, the explanation is
 written to standard output in a format that would be suitable for a
 "sample" \fIlinotp.cfg\fR configuration file. This includes the
@@ -55,17 +50,18 @@ textual explanation as a comment and a commented-out assignment that
 would set the configuration item to its hard-coded default value. If
 the \fB\-\-banner\fR option is specified, an explanatory note is
 output at the start of the file.
-.sp
+
 This works only for <item>s that are part of the LinOTP configuration
 schema, not Flask configuration settings.
 .RE
+
 .SH SEE ALSO
 \fBlinotp\fR(1)
+
 .SH BUGS
-.PP
 The \fBshow\fR subcommand outputs both Flask configuration settings
 and LinOTP configuration settings, with no clear demarcation between
 the two.
-.SH LinOTP
-.sp
-Part of the \fBlinotp\fR(1) suite.
+
+.SH INTERNET SOURCES
+https://www.linotp.org
