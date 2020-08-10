@@ -21,7 +21,6 @@
 import importlib
 import logging
 from logging.config import dictConfig as logging_dictConfig
-import re
 import sys
 import os
 import time
@@ -40,8 +39,6 @@ from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
 
 from .lib.config import getLinotpConfig
-from .lib.config.db_api import _retrieveAllConfigDB
-from .lib.config.global_api import getGlobalObject
 
 from .lib.context import request_context
 
@@ -65,14 +62,12 @@ from .lib.realm import getDefaultRealm
 from .lib.realm import getRealms
 from .lib.reply import sendError
 
-from .lib.type_utils import boolean
-
 from .lib.util import get_client
 
 from . import __version__
 from .flap import config, set_config, tmpl_context as c, request, setup_mako
 from .defaults import set_defaults
-from .settings import configs, LinOTPConfigKeyError
+from .settings import configs
 from .tokens import reload_classes as reload_token_classes
 from .lib.audit.base import getAudit
 from .lib.config.global_api import initGlobalObject
