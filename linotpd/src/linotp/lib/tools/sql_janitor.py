@@ -51,17 +51,15 @@ from getopt import getopt, GetoptError
 import configparser
 
 
-log = logging.getLogger(__name__)
-
-
 class SQLJanitor():
     """
     script to help the house keeping of audit entries
     """
 
-    def __init__(self, engine, export=None):
+    def __init__(self, app, engine, export=None):
 
         self.export_dir = export
+        self.app = app
 
         engine.echo = False  # We want to see the SQL we're creating
         metadata = MetaData(engine)
@@ -75,25 +73,17 @@ class SQLJanitor():
         export each audit row into a csv output
 
         :param max_id: all entries with lower id will be dumped
-        :return: - nothing -
+        :return: string (filename) if export succeeds, None if export failed
         """
 
         if not self.export_dir:
-            log.info('no export directory defined')
-            return
-
-        if not os.path.isdir(self.export_dir):
-            log.error('export directory %r not found' % self.export_dir)
-            return
+            return None
 
         # create the filename
         t2 = datetime.datetime.now()
         filename = "SQLData.%d.%d.%d-%d.csv" % (t2.year, t2.month, t2.day, max_id)
 
-        f = None
-        try:
-            f = open(os.path.join(self.export_dir, filename), "w")
-
+        with open(os.path.join(self.export_dir, filename), "w") as f:
             s = self.audit.select(self.audit.c.id < max_id).order_by(desc(self.audit.c.id))
             result = s.execute()
 
@@ -115,17 +105,12 @@ class SQLJanitor():
                         row_data.append(" ")
                     else:
                         row_data.append("?")
-                        log.error('exporting of unknown data / data type %r' % val)
+                        self.app.logger.error('exporting of unknown data / data type %r' % val)
                 prin = "; ".join(row_data)
                 f.write(prin)
                 f.write("\n")
-        except Exception as exx:
-            log.error('failed to export data %r' % exx)
-            raise exx
-        finally:
-            if f:
-                f.close()
-        return
+
+        return filename
 
     def cleanup(self, max_entries, min_entries):
         """
@@ -134,8 +119,27 @@ class SQLJanitor():
         :param max_entries: the maximum amount of data
         :param min_entries: the minimum amount of data that should not be deleted
 
-        :return: - nothing -
+        :return: cleanup_infos - {
+            'cleaned': False,
+            'entries_in_audit': 0,
+            'entries_deleted': 0,
+            'export_filename' : None,
+            'first_entry_id': 0,
+            'last_entry_id': 0,
+            'time_taken': 0,
+            } -
         """
+
+        cleanup_infos = {
+            'cleaned': False,
+            'entries_in_audit': 0,
+            'entries_deleted': 0,
+            'export_filename' : None,
+            'first_entry_id': 0,
+            'last_entry_id': 0,
+            'time_taken': 0,
+            }
+
         t1 = datetime.datetime.now()
         id_pos = 0
         overall_number = 0
@@ -144,41 +148,32 @@ class SQLJanitor():
         row = rows.fetchone()
         overall_number = int(row[id_pos])
 
-
-        log.info("Found %i entries in the audit" % overall_number)
+        cleanup_infos['entries_in_audit'] = overall_number
         if overall_number >= max_entries:
 
-            log.info("Deleting older entries")
             s = self.audit.select().order_by(asc(self.audit.c.id)).limit(1)
             rows = s.execute()
             first_id = int(rows.fetchone()[id_pos])
+            cleanup_infos['first_entry_id'] = first_id
+
 
             s = self.audit.select().order_by(desc(self.audit.c.id)).limit(1)
             rows = s.execute()
             last_id = int (rows.fetchone()[id_pos])
-
-            log.info("Found ids between %i and %i" % (first_id, last_id))
+            cleanup_infos['last_entry_id'] = last_id
+            
             delete_from = last_id - min_entries
-
             if delete_from > 0:
                 # if export is enabled, we start the export now
-                self.export_data(delete_from)
-
-                log.info("Deleting all IDs less than %i" % delete_from)
+                export_filename = self.export_data(delete_from)
+                cleanup_infos['export_filename'] = export_filename
                 s = self.audit.delete(self.audit.c.id < delete_from)
                 s.execute()
-
-            else:
-                log.info("Nothing to do. "
-                        "There are less entries than the low watermark")
-
-        else:
-            log.info("Nothing to be done: %i below high watermark %i" %
-                (overall_number, max_entries))
-
+                cleanup_infos['entries_deleted'] = overall_number - min_entries
+                cleanup_infos['cleaned'] = True
 
         t2 = datetime.datetime.now()
 
         duration = t2 - t1
-        log.info("Took me %i seconds" % duration.seconds)
-        return
+        cleanup_infos['time_taken'] = duration.seconds
+        return cleanup_infos

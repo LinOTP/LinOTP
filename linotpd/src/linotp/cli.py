@@ -238,6 +238,24 @@ def audit_janitor(max, min, exportdir):
     to pass the encrypted key, the IV and the filename of the encryption key.
     """
 
-    sqljanitor = SQLJanitor(current_app.audit_obj.engine, export=exportdir)
-    sqljanitor.cleanup(max, min)
+    try:
+        sqljanitor = SQLJanitor(current_app, current_app.audit_obj.engine, export=exportdir)
+        cleanup_infos = sqljanitor.cleanup(max, min)
+        click.echo(f'{cleanup_infos["entries_in_audit"]} entries found in database.')
+        if cleanup_infos['entries_deleted'] > 0:
+            click.echo(
+                f'{cleanup_infos["entries_in_audit"] - min} entries cleaned up. {min} ' +
+                'entries left in database.\n'+
+                f'Min: {min}, Max: {max}.')
+            if cleanup_infos["export_filename"]:
+                click.echo(f'Exported into {cleanup_infos["export_filename"]}')
+            click.echo(f'Cleaning up took {cleanup_infos["time_taken"]} seconds')
+        else:
+            click.echo(
+                f'Nothing cleaned up. {cleanup_infos["entries_in_audit"]} ' +
+                f'entries in database.\n'+
+                f'Min: {min}, Max: {max}.')
 
+    except Exception as ex:
+        click.echo(f'Error while cleanup up audit table: {ex!s}')
+      
