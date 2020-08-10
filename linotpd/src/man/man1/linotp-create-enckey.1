@@ -1,37 +1,21 @@
-.\"  LinOTP - the open source solution for two factor authentication
-.\"  Copyright (C) 2010 - 2019 KeyIdentity GmbH
-.\"
-.\"  This file is part of LinOTP server.
-.\"
-.\"  This program is free software: you can redistribute it and/or
-.\"  modify it under the terms of the GNU Affero General Public
-.\"  License, version 3, as published by the Free Software Foundation.
-.\"
-.\"  This program is distributed in the hope that it will be useful,
-.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
-.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-.\"  GNU Affero General Public License for more details.
-.\"
-.\"  You should have received a copy of the
-.\"             GNU Affero General Public License
-.\"  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-.\"
-.\"
-.\"  E-mail: linotp@keyidentity.com
-.\"  Contact: www.linotp.org
-.\"  Support: www.keyidentity.com
-.\"
-.\" Manpage for linotp-create-enckey.
-.\" Contact linotp@keyidentity.com for any feedback.
-.TH LINOTP-CREATE-ENCKEY 1 "22 Mar 2013" "2.5" "linotp-create-enckey man page"
+.\" Manpage for linotp.
+.\" Copyright (c) 2020 arxes-tolina GmbH
+
+.TH linotp-create-enckey 1 "10 Aug 2020" "3.0" "LinOTP"
+
 .SH NAME
-linotp-create-enckey \- create the encryption key.
+linotp-create-enckey \- create an encryption key to protect sensitive LinOTP
+data
+
 .SH SYNOPSIS
-linotp-create-enckey -f <ini file>
+\fIlinotp create-enckey\fR -f <ini file>
+
 .SH DESCRIPTION
-This tool creates the encryption key for LinOTP. It reads the configuration from the linotp.ini file
-to determine, where the encryption key should be generated.
+This command creates an encryption key for LinOTP. It reads the configuration
+from the linotp.ini file to determine where the encryption key should be generated.
+
 .SH COMMON OPTIONS
+
 .PP
 \fB\-f <ini file> \fR
 .RS 4
@@ -44,11 +28,8 @@ The linotp.ini file containing the information where the encryption key is locat
 Display a help message.
 .RE
 
-.SH INTERNET SOURCES
-https://www.linotp.org,  https://www.keyidentity.com
 .SH SEE ALSO
+\fBlinotp\fR(1), \fBlinotp-backup\fR(1), \fBlinotp-restore\fR(1)
 
-.SH BUGS
-No known bugs.
-.SH AUTHOR
-KeyIdentity GmbH <linotp@keyidentity.com>
+.SH INTERNET SOURCES
+https://www.linotp.org
