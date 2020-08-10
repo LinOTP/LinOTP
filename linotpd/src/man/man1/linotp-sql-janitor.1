@@ -1,43 +1,25 @@
-.\"  LinOTP - the open source solution for two factor authentication
-.\"  Copyright (C) 2010 - 2019 KeyIdentity GmbH
-.\"
-.\"  This file is part of LinOTP server.
-.\"
-.\"  This program is free software: you can redistribute it and/or
-.\"  modify it under the terms of the GNU Affero General Public
-.\"  License, version 3, as published by the Free Software Foundation.
-.\"
-.\"  This program is distributed in the hope that it will be useful,
-.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
-.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-.\"  GNU Affero General Public License for more details.
-.\"
-.\"  You should have received a copy of the
-.\"             GNU Affero General Public License
-.\"  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-.\"
-.\"
-.\"  E-mail: linotp@keyidentity.com
-.\"  Contact: www.linotp.org
-.\"  Support: www.keyidentity.com
-.\"
-.\" Manpage for linotp-sql-janitor
-.\" Contact linotp@keyidentity.com for any feedback.
-.TH man 1 "04 Feb 2013" "2.5" "linotp-sql-janitor man page"
+.\" Manpage for linotp.
+.\" Copyright (c) 2020 arxes-tolina GmbH
+
+.TH linotp-sql-janitor 1 "10 Aug 2020" "3.0" "LinOTP"
+
 .SH NAME
 linotp-sql-janitor \- remove old entries from the audit table.
+
 .SH SYNOPSIS
-linotp-sql-janitor [--high=<high watermark>] [--low=<low watermark>]
+\fIlinotp sql-janitor\fR [--high=<high watermark>] [--low=<low watermark>]
+
 .SH DESCRIPTION
 This tool removes old entries from the audit table. If more than "high watermark" entries are in the audit table, older entries will be deleted so that only "low watermark"
 entries remain in the table. 
 This tool can decrypt the OTP Key stored in the LinOTP database. You need to pass the encrypted key, the IV and the filename of the encryption key.
 
 .SH COMMON OPTIONS
+
 .PP
 \fB\--high=<high watermark>\fR
 .RS 4
-The maximum entries. If not given 10.000 as default is assumed.
+The maximum entries. If not given, 10.000 as default is assumed.
 .RE
 
 .PP
@@ -46,15 +28,8 @@ The maximum entries. If not given 10.000 as default is assumed.
 The minimum old remaining entries. If not given 5.000 as default is assumed.
 .RE
 
-
+.SH SEE ALSO
+\fBlinotp\fR(1)
 
 .SH INTERNET SOURCES
-https://www.linotp.org,  https://www.keyidentity.com
-.SH SEE ALSO
-
-linotpadm (1)
-
-.SH BUGS
-No known bugs.
-.SH AUTHOR
-KeyIdentity GmbH <linotp@keyidentity.com>
+https://www.linotp.org
