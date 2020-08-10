@@ -1,0 +1,60 @@
+.\" Manpage for linotp.
+.\" Copyright (c) 2020 arxes-tolina GmbH
+.TH linotp 1 "10 Aug 2020" "3.0" "LinOTP"
+
+.SH NAME
+linotp \- the open source solution for multi-factor authentication
+
+.SH SYNOPSIS
+\fIlinotp\fR <command> [<args>]
+
+.SH DESCRIPTION
+LinOTP is a modular and open source project that lets you choose from various
+different one time password algorithms to authenticate your users. With the aim
+of not locking you into any particular authentication method, protocol or
+user information storage, LinOTP provides libraries, utilities and APIs to let
+you customize your authentication processes.
+
+Additional components such as the LinOTP authentication modules or the LinOTP
+administration clients make it easy to integrate into your environment.
+
+
+.SH LINOTP COMMANDS
+Below is a list of the commands provided by LinOTP for your convenience.
+Each of them has a detailed manpage you can refer to.
+
+\fBlinotp-backup\fR(1)
+.RS 4
+\fIlinotp backup\fR creates an encrypted backup of the LinOTP database and
+encryption key.
+.RE
+
+\fBlinotp-config\fR(1)
+.RS 4
+\fIlinotp config\fR explains LinOTP configuration and lets you inspect current
+values.
+.RE
+
+\fBlinotp-create-enckey\fR(1)
+.RS 4
+\fIlinotp create-enckey\fR generates a key to encrypt LinOTP data.
+.RE
+
+\fBlinotp-init-db\fR(1)
+.RS 4
+\fIlinotp init-db\fR initializes a database for storing LinOTP data.
+.RE
+
+\fBlinotp-restore\fR(1)
+.RS 4
+\fIlinotp restore\fR loads a previously made backup into the LinOTP database.
+.RE
+
+\fBlinotp-sql-janitor\fR(1)
+.RS 4
+\fIlinotp sql-janitor\fR clears old entries from the audit log.
+.RE
+
+.SH INTERNET SOURCES
+https://www.linotp.org
+
