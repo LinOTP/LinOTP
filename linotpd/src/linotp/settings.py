@@ -194,6 +194,9 @@ _config_schema = ConfigSchema([
                validate=check_absolute_pathname(),
                help=("The directory prepended to relative directory and file "
                      "names in configuration files.")),
+    ConfigItem("BACKUP_DIR", str, default="backup",
+           help=("Directory for the backup files creates via "
+                 "'linotp backup' command")),
     ConfigItem("CACHE_DIR", str, default="cache",
                help=("Directory for miscellaneous resolver caches.")),
     ConfigItem("CONTROLLERS", str,
@@ -276,6 +279,8 @@ _config_schema = ConfigSchema([
                      "`BEAKER_CACHE_TYPE` is `file`.")),
     ConfigItem("SECRET_FILE", str, default="encKey",
                help=("Contains a server-specific encryption key.")),
+    ConfigItem("SQLALCHEMY_DATABASE_URI", str, default="sqlite:///{}",
+               help=("Contains uri to your database.")),
     ConfigItem("AUDIT_DATABASE_URI", str, default="SHARED",
                help=("Determines the method used for audit logging. Valid "
                      "values are: `OFF` (no audit logs are generated, not "

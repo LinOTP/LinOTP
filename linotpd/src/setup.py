@@ -163,10 +163,8 @@ setup(
         'tools/linotp-auth-radius',
         'tools/linotp-sql-janitor',
         'tools/linotp-tokens-used',
-        'tools/linotp-backup',
         'tools/linotp-decrypt-otpkey',
         'tools/linotp-convert-gemalto',
-        'tools/linotp-restore',
         'tools/linotp-enroll-smstoken',
     ],
     data_files=[
@@ -296,9 +294,11 @@ setup(
             'linotp = linotp.cli:main',  # LinOTP command line interface
         ],
         'flask.commands': [
+            'backup = linotp.cli:backup_cmds',
             'config = linotp.settings:config_cmds',
             'init = linotp.cli:init_cmds',
             'ldap-test = linotp.useridresolver.LDAPIdResolver:ldap_test',
+            'restore = linotp.cli:restore_cmds',
         ],
     },
 )
