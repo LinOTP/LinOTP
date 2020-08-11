@@ -239,6 +239,10 @@ def audit_janitor(max, min, exportdir):
     """
 
     try:
+        if max <= min:
+            click.echo('Error: max has to be greater than min.')
+            sys.exit(1)
+
         sqljanitor = SQLJanitor(current_app, current_app.audit_obj.engine, export=exportdir)
         cleanup_infos = sqljanitor.cleanup(max, min)
         click.echo(f'{cleanup_infos["entries_in_audit"]} entries found in database.')
