@@ -30,7 +30,6 @@ import mock
 import click
 from click.testing import CliRunner
 from linotp.cli import init_enc_key
-from linotp.lib.tools.enckey import create_secret_key
 import linotp.lib.tools.enckey as enckey
 
 
