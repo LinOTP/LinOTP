@@ -26,6 +26,8 @@
 
 import pytest
 import stat
+import mock
+import click
 from click.testing import CliRunner
 from linotp.cli import init_enc_key
 from linotp.lib.tools.enckey import create_secret_key
@@ -91,18 +93,23 @@ class TestInitEncKey:
         if not self.secret_file.exists():
             result = self.runner.invoke(init_enc_key, [])
             assert result.exit_code == 0
-         
+
         # Check that file exists
         assert self.secret_file.exists()
         # load secret from file to compare afterwards
         with open(self.secret_file, 'rb') as f:
             secret = f.read()
 
-        # Try to create secret file
-        # Try to create secret file
-        result = self.runner.invoke(init_enc_key, ['--force'])
+        result = self.runner.invoke(init_enc_key, ['--force'],  input="no")
         assert result.exit_code == 0
         # secret file stays the same as before
+        with open(self.secret_file, 'rb') as f:
+            secret_2 = f.read()
+        assert secret == secret_2
+
+        result = self.runner.invoke(init_enc_key, ['--force'],  input="yes")
+        assert result.exit_code == 0
+        # secret file was overwritten and is changed now
         with open(self.secret_file, 'rb') as f:
             secret_2 = f.read()
         assert secret != secret_2
