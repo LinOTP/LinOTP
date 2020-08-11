@@ -1,0 +1,35 @@
+.\" Manpage for linotp init.
+.\" Copyright (c) 2020 arxes-tolina GmbH
+
+.TH linotp-init 1 "10 Aug 2020" "3.0" "LinOTP"
+
+.SH NAME
+linotp-init \- initialize LinOTP database, audit database, encryption keys
+data
+
+.SH SYNOPSIS
+\fIlinotp init enc-key\fR [\-f|\-\-force]
+
+.SH DESCRIPTION
+This command creates an encryption key for LinOTP. It reads the configuration
+from the linotp.ini file to determine where the encryption key should be generated.
+
+.SH OPTIONS
+
+enc-key [\-f|\-\-force]
+.RS 4
+Create the “encryption key” (encKey file) which will be used to encrypt and decrypt
+sensitive data into the database (token seeds, configuration values, passwords). The
+encKey itself will be used by the default security module.
+
+Note: If the key already exists, and you need to create a new encKey using 
+\fB\-\-force\fR
+option, the old database entries which were protected using that old encKey are not
+readable anymore.
+.RE
+
+.SH SEE ALSO
+\fBlinotp\fR(1)
+
+.SH INTERNET SOURCES
+https://www.linotp.org
