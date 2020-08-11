@@ -163,10 +163,8 @@ setup(
         'tools/linotp-auth-radius',
         'tools/linotp-sql-janitor',
         'tools/linotp-tokens-used',
-        'tools/linotp-backup',
         'tools/linotp-decrypt-otpkey',
         'tools/linotp-convert-gemalto',
-        'tools/linotp-restore',
         'tools/linotp-enroll-smstoken',
     ],
     data_files=[
