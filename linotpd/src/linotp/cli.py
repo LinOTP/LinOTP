@@ -265,7 +265,7 @@ def audit_janitor(max, min, exportdir):
     """
 
     try:
-        if max <= min:
+        if not(0 <= min < max):
             click.echo('Error: max has to be greater than min.')
             sys.exit(1)
 
