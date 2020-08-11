@@ -120,3 +120,14 @@ class TestAuditJanitor:
         assert export_file != None
         num_lines = sum(1 for line in open(export_file))
         assert num_lines == AUDIT_AMOUNT_ENTRIES - min
+
+    def test_run_janitor_max_min(self, app, setup_audit_table):
+        """Run janiter with max not greater than min"""
+        max = 5
+        min = 5
+        # run linotp audit-janitor
+        result = self.runner.invoke(audit_janitor, [
+            '--max', max,
+            '--min', min,
+        ])
+        assert result.exit_code == 1
