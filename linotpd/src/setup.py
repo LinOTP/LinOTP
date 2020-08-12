@@ -260,11 +260,10 @@ setup(
         ],
         'flask.commands': [
             'audit-janitor = linotp.cli:audit_janitor',
-            'backup = linotp.cli:backup_cmds',
+            'backup = linotp.cli.backup_cmd:backup_cmds',
             'config = linotp.settings:config_cmds',
             'init = linotp.cli:init_cmds',
             'ldap-test = linotp.useridresolver.LDAPIdResolver:ldap_test',
-            'restore = linotp.cli:restore_cmds',
         ],
     },
 )

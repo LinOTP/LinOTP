@@ -29,9 +29,11 @@ database backup implementation
 """
 
 import os
+import sys
 import binascii
 import shutil
 import subprocess
+import click
 
 from datetime import datetime
 
@@ -39,6 +41,8 @@ from flask import current_app
 from sqlalchemy.ext.serializer import loads, dumps
 
 from sqlalchemy import create_engine
+
+from flask.cli import AppGroup
 
 from linotp.app import LinOTPApp
 
@@ -49,59 +53,108 @@ from linotp.model import init_model, meta
 
 from linotp.lib.audit.SQLAudit import AuditTable
 
-EXIT_OK = 0
-EXIT_ERROR = 1
+TIME_FORMAT = '%Y-%m-%d_%H-%M'
+
 
 ORM_Models = {
-    'Config': Config, 
-    'Token': Token, 
-    'TokenRealm': TokenRealm, 
+    'Config': Config,
+    'Token': Token,
+    'TokenRealm': TokenRealm,
     'Realm': Realm
     }
 
-def which(program:str) -> str:
-    """
-    helper to identify a program in the environment path
+# -------------------------------------------------------------------------- --
 
-    @param program: the name of the program
-    @return executable with absolute path
-    """
+# backup commands
 
-    path = os.environ.get('PATH')
-    exececutable = shutil.which(program, path=path)
+backup_cmds = AppGroup('backup')
 
-    if not exececutable:
-        path = path + os.pathsep + "/usr/local/bin"
-        exececutable = shutil.which(program, path=path)
-
-    return exececutable
-
-def backup_audit_tables(app:LinOTPApp) -> int:
-    """
-    create a dedicated backup of the audit database
-
-    @param app : the current app
+@backup_cmds.command('create', help='create a backup of the database tables')
+def create_command():
+    """Create backup file for your database tables
     """
 
-    backup_filename_template = "linotp_audit_backup_%s.sqldb"
-
-    audit_uri = app.config["AUDIT_DATABASE_URI"]
-    if audit_uri == 'SHARED':
-        audit_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
-
-    backup_classes = {}
-    backup_classes['AuditTable'] = AuditTable
-
-    return backup_tables(
-        app, audit_uri, backup_filename_template, backup_classes)
+    try:
+        current_app.logger.info("Backup database ...")
+        backup_database_tables()
+        current_app.logger.info("finished")
+    except Exception as exx:
+        current_app.logger.error('Failed to backup: %r' % exx)
+        sys.exit(1)
 
 
-def backup_database_tables(app:LinOTPApp) -> int:
+@backup_cmds.command('restore',
+                      help='restore a backup of the database tables')
+@click.option('--file', help='name of the backup file')
+@click.option('--date', help='restore the backup from a given date.'
+              '"date" must be in format "%s"' % TIME_FORMAT)
+@click.option('--table', help='restore the backup of a table - '
+              'table must be one of "Config", "Token", "Audit"')
+def restore_command(file=None, date=None, table=None):
+    """ restore a database backup
+
+    @param file - the backup file name, could be absolute or relative
+    @param date - select a backup for restore by date
+    @param table - allows to restore only one database table
+    """
+    try:
+        current_app.logger.info("Restoring database ...")
+        restore_database_tables(file, date, table)
+        current_app.logger.info("finished")
+    except Exception as exx:
+        current_app.logger.error('Failed to restore: %r' % exx)
+        sys.exit(1)
+
+
+@backup_cmds.command('list',
+                      help='restore a backup of the database tables')
+def list_command():
+    """ list available database backups."""
+    try:
+        current_app.logger.info("Available backup files for restore")
+        for backup_date, backup_file in list_database_backups():
+            click.echo(f'{backup_date} {backup_file}')
+        current_app.logger.info("finished")
+    except Exception as exx:
+        current_app.logger.error('Failed to list backup files: %r' % exx)
+        sys.exit(1)
+
+@backup_cmds.command('restore-mysql',
+                      help='restore a mysql backup file')
+@click.option('--file', help='name of the mysql backup file')
+def restore_mysql_command(file):
+    """ restore mysql backups."""
+    try:
+        current_app.logger.info("Restoring legacy database ...")
+        restore_mysql_database(filename=file)
+        current_app.logger.info("finished")
+    except Exception as exx:
+        current_app.logger.error('Failed to restore mysql backup: %r' % exx)
+        sys.exit(1)
+
+
+
+@backup_cmds.command('backup-mysql',
+                      help='create a backup file via mysqldump')
+def backup_mysql_command():
+    """ backup mysql database."""
+    try:
+        current_app.logger.info("Backup mysql database ...")
+        backup_mysql_database()
+        current_app.logger.info("finished")
+    except Exception as exx:
+        current_app.logger.error('Failed to backup mysql: %r' % exx)
+        sys.exit(1)
+
+# -------------------------------------------------------------------------- --
+
+# backend implementation
+
+def backup_database_tables() -> int:
     """
     use the sqlalchemy serializer to dump the database mapped objects
-
-    @param app : the current app
     """
+    app = current_app
 
     backup_filename_template = "linotp_backup_%s.sqldb"
 
@@ -120,33 +173,13 @@ def backup_database_tables(app:LinOTPApp) -> int:
 
     # ---------------------------------------------------------------------- --
 
-    # run the backup
-
-    return backup_tables(app, sql_uri, backup_filename_template, backup_classes)
-
-
-def backup_tables(
-        app:LinOTPApp, sql_uri:str, backup_filename_template:str,
-        backup_classes:dict) -> int:
-    """
-    use the sqlalchemy serializer to dump the database mapped objects
-    - lower level backend used by backup database and backup audit
- 
-    @param app : the current app
-    @param sql_uri - the database uri to connect
-    @param backup_filename_template - store the audit or as std backup file
-    @param backup_classes - list of orm classes that should be queried
-    """
-
-    # ---------------------------------------------------------------------- --
-
     # setup db engine, session and meta from sql uri
 
     engine = create_engine(sql_uri)
 
     init_model(engine)
 
-    app.logger.info("extracting data from: %r:%r" % 
+    app.logger.info("extracting data from: %r:%r" %
                     (engine.url.drivername, engine.url.database))
 
     # ---------------------------------------------------------------------- --
@@ -154,15 +187,14 @@ def backup_tables(
     # setup the backup location
 
     backup_dir = current_app.config["BACKUP_DIR"]
-    if not os.path.exists(backup_dir):
-        os.makedirs(backup_dir)
+    os.makedirs(backup_dir, exist_ok=True)
 
     # ---------------------------------------------------------------------- --
 
     # determin the datetime extension
 
     now = datetime.now()
-    now_str = now.strftime('%y%m%d%H%M')
+    now_str = now.strftime(TIME_FORMAT)
 
     # ---------------------------------------------------------------------- --
 
@@ -182,59 +214,40 @@ def backup_tables(
             backup_file.write("--- BEGIN %s\n" % name)
 
             data_query = session.query(model_class)
-            for data in data_query.all():
-                serialized = dumps(data)
-                backup_file.write(binascii.hexlify(serialized).decode('utf-8'))
+
+            pb_file = None if app.echo.verbosity > 1 else open("/dev/null", "w")  # None => stdout
+
+            with click.progressbar(
+                data_query.all(), label=name, file=pb_file) as all_data:
+                for data in all_data:
+                    backup_file.write(binascii.hexlify(dumps(data)).decode('utf-8'))
 
             backup_file.write("\n--- END %s\n" % name)
 
-    return EXIT_OK
 
-
-def list_database_backups(app:LinOTPApp) -> list :
+def list_database_backups() -> list:
     """
     find all backup files in the backup directory
 
-    @param app : the current app
     @return list of backup dates
     """
+    app = current_app
 
-    return list_backups(app, filename_template='linotp_backup_')
-
-def list_audit_backups(app:LinOTPApp) -> list:
-    """
-    find all audit backup files in the backup directory
-
-    @param app : the current app
-    @return list of backup dates
-    """
-
-    return list_backups(app, filename_template='linotp_audit_backup_')
-
-def list_backups(app:LinOTPApp, filename_template:str) -> list:
-    """
-    find all backup files in the backup directory
-
-    @param app : the current app
-    @param file_template - either the audit or the std backup file name
-    @return list of backup dates
-    """
+    filename_template ='linotp_backup_'
 
     # ---------------------------------------------------------------------- --
 
     # setup the backup location
 
-    backup_dir = current_app.config["BACKUP_DIR"]
+    backup_dir = app.config["BACKUP_DIR"]
 
-    if not os.path.isdir(backup_dir):
-        app.logger.error("no backup directory found: %s" % backup_dir)
-        os.mkdir(backup_dir)
-        app.logger.error("backup directory created: %s" % backup_dir)
+    if not os.path.exists(backup_dir):
+        app.logger.debug("no backup directory found: %s" % backup_dir)
+        return
+
     # ---------------------------------------------------------------------- --
 
     # lookup for all files in the directory that match the template
-
-    backups = []
 
     for backup_file in os.listdir(backup_dir):
 
@@ -246,27 +259,23 @@ def list_backups(app:LinOTPApp, filename_template:str) -> list:
             backup_date, _, _ext = backup_file[
                 len(filename_template):].rpartition('.')
 
-            backups.append(backup_date)
-
-    app.logger.info("backups for dates found: %r" % sorted(backups))
-
-    return sorted(backups)
+            yield backup_date, backup_file
 
 # -------------------------------------------------------------------------- --
 
 # restore
 
 def _get_restore_filename(
-        app:LinOTPApp, template:str, filename:str=None, date:str=None) -> str or None:
+        template:str, filename:str=None, date:str=None) -> str or None:
     """
     helper for restore, to determin a filename from a given date or file name
 
-    @param app - the current app
     @param template - the file name template to search for
     @param filename - the absolute or relative backup file name
     @param date - find a backup file by date
     @return the matching filename or None
     """
+    app = current_app
 
     backup_filename = None
     backup_dir = app.config["BACKUP_DIR"]
@@ -307,52 +316,17 @@ def _get_restore_filename(
     return backup_filename
 
 
-def restore_audit_table(app:LinOTPApp, filename:str=None, date:str=None) -> int:
-    """
-    restore audit only backup file
-
-    @param app - the current app
-    @param filename - the absolute or relative backup file name
-    @param date - find a backup file by date
-    """
-    restore_names = ['AuditTable']
-
-    # ---------------------------------------------------------------------- --
-
-    # determin the backup file for the audit restore
-
-    backup_filename = _get_restore_filename(
-                        app, "linotp_audit_backup_%s.sqldb", filename, date)
-
-    if not backup_filename:
-        return EXIT_ERROR
-
-    # ---------------------------------------------------------------------- --
-
-    # get the database uri for audit or fallback to sql uri if the audit is
-    # shared in the same database
-
-    sql_uri = app.config["AUDIT_DATABASE_URI"]
-    if sql_uri == 'SHARED':
-        sql_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
-
-    # ---------------------------------------------------------------------- --
-
-    # run the restore of the audit table
-
-    return restore_tables(app, sql_uri, backup_filename, restore_names)
-
 def restore_database_tables(
-        app:LinOTPApp, filename:str=None, date:str=None, table:str=None) -> int:
+        filename:str=None, date:str=None, table:str=None) -> int:
     """
     restore the database tables from a file or for a given date
        optionally restore only one table
 
-    @param app - the current app
     @param filename - the absolute or relative backup file name
     @param date - find a backup file by date
     @param table - restore only one database table e.g. tokens
     """
+    app = current_app
 
     restore_names = list(ORM_Models.keys())
 
@@ -381,41 +355,24 @@ def restore_database_tables(
             app.logger.error(
                 f"selected table {table} is not in the set of supported tables"
                 )
-            return EXIT_ERROR
+            raise click.Abort()
 
     # ---------------------------------------------------------------------- --
 
     # determine the backup file for the database restore
 
     backup_filename = _get_restore_filename(
-                        app, "linotp_backup_%s.sqldb", filename, date)
+                        "linotp_backup_%s.sqldb", filename, date)
 
     if not backup_filename:
-        return EXIT_ERROR
-
+        app.logger.error("no backup file found!")
+        raise click.Abort()
     # ---------------------------------------------------------------------- --
 
     # get the database uri for the linotp database
 
     sql_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
 
-    # ---------------------------------------------------------------------- --
-
-    # run the restore of the list of tables into the database
-
-    return restore_tables(app, sql_uri, backup_filename, restore_names)
-
-def restore_tables(
-        app:LinOTPApp, sql_uri:str, backup_filename:str,
-        restore_names: list)-> int:
-    """
-    use the sqlalchemy de-serializer to restore the database mapped objects
-
-    @param app - the current app
-    @param sql_uri - the target sql database uri
-    @param backup_filename - the file with the serialized db objects
-    @param restore_names - list of table names to restore
-    """
     # ---------------------------------------------------------------------- --
 
     # setup db engine, session and meta from sql uri
@@ -430,28 +387,16 @@ def restore_tables(
 
     with open(backup_filename, "r") as backup_file:
 
-        line = backup_file.readline()
-
-        while line:
-
-            if line:
-                line = line.strip()
-
-            if not line:
-                line = backup_file.readline()
-                continue
+        for line in backup_file:
+            line = line.strip()
 
             if line.startswith('--- END '):
                 name = None
-                line = backup_file.readline()
-                continue
 
-            if line.startswith('--- BEGIN '):
+            elif line.startswith('--- BEGIN '):
                 name = line[len('--- BEGIN '):]
-                line = backup_file.readline()
-                continue
 
-            if name in restore_names:
+            elif line and name in restore_names:
 
                 # unhexlify the serialized data first
 
@@ -467,20 +412,38 @@ def restore_tables(
 
                 app.logger.info("restoring %r" % name)
 
-            line = backup_file.readline()
-
     # finally commit all de-serialized objects
 
     session.commit()
 
-    return EXIT_OK
 
-def restore_legacy_database(app:LinOTPApp, filename:str) -> int:
+def _which(program:str) -> str:
+    """
+    helper to identify a program in the environment path
+
+    @param program: the name of the program
+    @return executable with absolute path
+    """
+
+    path = os.environ.get('PATH')
+    exececutable = shutil.which(program, path=path)
+
+    if not exececutable:
+        path = path + os.pathsep + "/usr/local/bin"
+        exececutable = shutil.which(program, path=path)
+
+    return exececutable
+
+def backup_mysql_database():
+    raise NotImplementedError()
+
+def restore_mysql_database(filename:str):
     """
     restore the mysql dump of a former linotp tools backup
 
     @param file: backup file name - absolute filename
     """
+    app = current_app
 
     backup_filename = os.path.abspath(filename.strip())
 
@@ -507,7 +470,7 @@ def restore_legacy_database(app:LinOTPApp, filename:str) -> int:
 
     # determine the mysql command parameters
 
-    mysql = which('mysql')
+    mysql = _which('mysql')
     if not mysql:
         app.logger.error("mysql executable not found in path")
         return EXIT_ERROR
@@ -537,13 +500,11 @@ def restore_legacy_database(app:LinOTPApp, filename:str) -> int:
         result = subprocess.run(
             command, stdin=backup_file, capture_output=True)
 
-        if result.returncode != EXIT_OK:
+        if result.returncode != 0:
             app.logger.info("failed to restore legacy backup file: %s"
                             % result.stderr.decode('utf-8'))
-        else:
-            app.logger.info("legacy backup file restored: %s"
-                            % result.stdout.decode('utf-8'))
+            raise click.Abort()
 
-        return result.returncode
+        app.logger.info("legacy backup file restored: %s"
+                        % result.stdout.decode('utf-8'))
 
-    return EXIT_ERROR
