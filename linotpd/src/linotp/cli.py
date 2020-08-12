@@ -38,13 +38,13 @@ import sys
 
 from subprocess import call
 
+from datetime import datetime
 from flask import current_app
 from flask.cli import main as flask_main
 from flask.cli import AppGroup
 from flask.cli import with_appcontext
 from linotp.lib.tools.enckey import create_secret_key
 from linotp.lib.tools.sql_janitor import SQLJanitor
-
 from linotp.model.backup import backup_audit_tables
 from linotp.model.backup import backup_database_tables
 from linotp.model.backup import list_database_backups
@@ -73,7 +73,7 @@ init_cmds = AppGroup('init')
 @init_cmds.command('enc-key',
                    help='Generate aes key for encryption and decryption')
 @click.option('--force', '-f', is_flag=True,
-              help='Override encKey file if exits already.')
+              help='Overwrite encKey file if it exists already.')
 def init_enc_key(force):
     """Creates a LinOTP secret file to encrypt and decrypt values in database
 
@@ -84,12 +84,38 @@ def init_enc_key(force):
     """
 
     filename = current_app.config["SECRET_FILE"]
-    if os.path.exists(filename) and not force:
-        click.echo(f'Not overwriting existing enc-key in {filename}', err=True)
+
+    if os.path.exists(filename):
+        if force:
+            click.echo(
+                f"The enc-key file, {filename}, already exists.\n"
+                "Overwriting an existing enc-key might make existing data in "
+                "the database inaccessible.\n"
+                "THAT WOULD BE VERY BAD.")
+            answer = click.prompt(
+                "Overwrite the existing enc-key", default="no",
+                type=click.Choice(['yes', 'no'], case_sensitive=True),
+                show_choices=True)
+            if answer == 'yes':
+                backup_filename = filename + '.' + datetime.now().isoformat(timespec='seconds')
+                try:
+                    os.replace(filename, backup_filename)
+                    click.echo(f"Moved existing enc-key file to {backup_filename}")
+                except IOError as ex:
+                    click.echo(f"Error moving existing enc-key file to {backup_filename}: {ex!s}",
+                            err=True)
+                    sys.exit(1)
+                try:
+                    create_secret_key(filename)
+                    click.echo(f"Wrote enc-key to {filename}", err=True)
+                except IOError as ex:
+                    click.echo(f"Error writing enc-key to {filename}: {ex!s}", err=True)
+            else:
+                click.echo(f"Not overwriting existing enc-key in {filename}", err=True)
     else:
         try:
             create_secret_key(filename)
-            click.echo(f'Wrote enc-key to {filename}', err=True)
+            click.echo(f'Wrote enc-key to {filename}')
         except IOError as ex:
             click.echo(f'Error writing enc-key to {filename}: {ex!s}',
                        err=True)
