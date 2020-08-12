@@ -23,23 +23,26 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-
+import os
 import pytest
 import stat
-import mock
-import click
+
 from click.testing import CliRunner
-from linotp.cli import init_enc_key
-import linotp.lib.tools.enckey as enckey
+from linotp.cli.init_cmd import init_enc_key
+from linotp.cli.init_cmd import KEY_COUNT, KEY_LENGTH, SECRET_FILE_PERMISSIONS
 
 
 class TestInitEncKey:
     @pytest.fixture(autouse=True)
     def runner(self, tmp_path):
         """Set common configuration """
+
         self.secret_file = tmp_path / 'encKey'
-        env = {'FLASK_APP': 'linotp.app', 'LINOTP_ROOT_DIR': str(tmp_path),
-               'LINOTP_SECRET_FILE': str(self.secret_file)}
+        env = {
+            'FLASK_APP': 'linotp.app',
+            'LINOTP_ROOT_DIR': str(tmp_path),
+            'LINOTP_SECRET_FILE': str(self.secret_file)
+            }
         self.runner = CliRunner(env=env, mix_stderr=False)
 
 
@@ -128,14 +131,14 @@ class TestInitEncKey:
         with open(self.secret_file, 'rb') as f:
             # get 3 keys out with 32
             # the 4th try to get a key should be 0
-            for count in range(enckey.KEY_COUNT + 1):
-                key = f.read(enckey.KEY_LENGTH)
+            for count in range(KEY_COUNT + 1):
+                key = f.read(KEY_LENGTH)
 
-                if count >= enckey.KEY_COUNT:
+                if count >= KEY_COUNT:
                     # at KEY_COUNT +1 iteration the key should be empty
                     assert len(key) == 0
                 else:
-                    assert len(key) == enckey.KEY_LENGTH
+                    assert len(key) == KEY_LENGTH
 
 
     def test_file_access(self):
@@ -144,5 +147,7 @@ class TestInitEncKey:
         if not self.secret_file.exists():
             result = self.runner.invoke(init_enc_key, [])
             assert result.exit_code == 0
-        secret_key_file_permissions = stat.S_IMODE(self.secret_file.stat().st_mode)
-        assert secret_key_file_permissions == enckey.SECRET_FILE_PERMISSIONS
+
+        secret_key_file_permissions = stat.S_IMODE(
+                                            self.secret_file.stat().st_mode)
+        assert secret_key_file_permissions == SECRET_FILE_PERMISSIONS
