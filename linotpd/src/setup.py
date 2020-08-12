@@ -259,7 +259,7 @@ setup(
             'linotp = linotp.cli:main',  # LinOTP command line interface
         ],
         'flask.commands': [
-            'audit-janitor = linotp.cli:audit_janitor',
+            'audit = linotp.cli.audit_cmd:audit_cmds',
             'backup = linotp.cli.backup_cmd:backup_cmds',
             'config = linotp.settings:config_cmds',
             'init = linotp.cli.init_cmd:init_cmds',

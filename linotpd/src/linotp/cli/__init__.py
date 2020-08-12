@@ -43,8 +43,6 @@ from flask import current_app
 from flask.cli import main as flask_main
 from flask.cli import AppGroup
 from flask.cli import with_appcontext
-from linotp.lib.tools.sql_janitor import SQLJanitor
-
 
 FLASK_APP_DEFAULT = "linotp.app"   # Contains default `create_app()` factory
 FLASK_ENV_DEFAULT = "development"  # Default Flask environment, for debugging

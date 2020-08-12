@@ -25,7 +25,8 @@
 #    Support: www.keyidentity.com
 #
 
-""" This is a janitor program, that cleans up the audit log
+""" This is a janitor program, that cleans up the audit log.
+
     If the audit entries exceed the linotpAudit.sql.highwatermark
     the tool will delete old entries and only leave the
        linotpAudit.sql.lowwatermark entries
@@ -44,11 +45,86 @@
 
 import os
 import sys
+import click
 import datetime
-import logging
-from sqlalchemy import *
-from getopt import getopt, GetoptError
-import configparser
+
+from sqlalchemy import MetaData, Table
+from sqlalchemy import desc, select, func, asc
+
+from flask import current_app
+
+from flask.cli import AppGroup
+from flask.cli import with_appcontext
+
+# -------------------------------------------------------------------------- --
+
+# audit commands: cleanup (more commands to come ...)
+
+audit_cmds = AppGroup('audit')
+
+@audit_cmds.command('cleanup',
+                help='Reduce the amount of audit log entries in the database')
+@click.option('--max', 'maximum',
+              default=10000,
+              help='The maximum entries. If not given 10.000 as default is ' +
+                   'assumed.')
+@click.option('--min', 'minimum',
+              default=5000,
+              help='The minimum old remaining entries. If not given 5.000 ' +
+                   'as default is assumed.')
+@click.option('--exportdir', '-e',
+               type=click.Path(exists=True, dir_okay=True),
+               help='Defines the directory where the audit entries which ' +
+               'are cleaned up are exported. A example filename would be: ' +
+               'SQLData.yeah.month.day-max_id.csv')
+@with_appcontext
+def cleanup_command(maximum, minimum, exportdir):
+    """This function removes old entries from the audit table.
+
+    If more than max entries are in the audit table, older entries
+    will be deleted so that only min entries remain in the table.
+    This tool can decrypt the OTP Key stored in the LinOTP database. You need
+    to pass the encrypted key, the IV and the filename of the encryption key.
+    """
+
+    try:
+
+        if not(0 <= minimum < maximum):
+            click.echo('Error: max has to be greater than min.')
+            sys.exit(1)
+
+        sqljanitor = SQLJanitor(export=exportdir)
+
+        cleanup_infos = sqljanitor.cleanup(maximum, minimum)
+
+        click.echo(
+            f'{cleanup_infos["entries_in_audit"]} entries found in database.')
+
+        if cleanup_infos['entries_deleted'] > 0:
+            click.echo(
+                f'{cleanup_infos["entries_in_audit"] - minimum} entries '
+                'cleaned up. {minimum} entries left in database.\n'
+                'Min: {minimum}, Max: {maximum}.'
+                )
+
+            if cleanup_infos["export_filename"]:
+                click.echo(
+                    f'Exported into {cleanup_infos["export_filename"]}'
+                    )
+
+            click.echo(
+                f'Cleaning up took {cleanup_infos["time_taken"]} seconds'
+                )
+        else:
+            click.echo(
+                f'Nothing cleaned up. {cleanup_infos["entries_in_audit"]} '
+                'entries in database.\n'
+                'Min: {minimum}, Max: {maximum}.'
+                )
+
+    except Exception as exx:
+        click.echo(f'Error while cleanup up audit table: {exx!s}')
+        sys.exit(1)
 
 
 class SQLJanitor():
@@ -56,10 +132,13 @@ class SQLJanitor():
     script to help the house keeping of audit entries
     """
 
-    def __init__(self, app, engine, export=None):
+    def __init__(self, export=None):
+
 
         self.export_dir = export
-        self.app = app
+
+        self.app = current_app
+        engine = current_app.audit_obj.engine
 
         engine.echo = False  # We want to see the SQL we're creating
         metadata = MetaData(engine)
@@ -81,10 +160,12 @@ class SQLJanitor():
 
         # create the filename
         t2 = datetime.datetime.now()
-        filename = "SQLData.%d.%d.%d-%d.csv" % (t2.year, t2.month, t2.day, max_id)
+        filename = ("SQLData.%d.%d.%d-%d.csv" %
+                    (t2.year, t2.month, t2.day, max_id))
 
         with open(os.path.join(self.export_dir, filename), "w") as f:
-            s = self.audit.select(self.audit.c.id < max_id).order_by(desc(self.audit.c.id))
+            s = self.audit.select(
+                self.audit.c.id < max_id).order_by(desc(self.audit.c.id))
             result = s.execute()
 
             # write the csv header
@@ -97,15 +178,17 @@ class SQLJanitor():
                 row_data = []
                 vals = list(row.values())
                 for val in vals:
-                    if type(val) in [int, int]:
+                    if isinstance(val, int):
                         row_data.append("%d" % val)
-                    elif type(val) in [str, str]:
+                    elif isinstance(val, str):
                         row_data.append('"%s"' % val)
                     elif val is None:
                         row_data.append(" ")
                     else:
                         row_data.append("?")
-                        self.app.logger.error('exporting of unknown data / data type %r' % val)
+                        self.app.logger.error(
+                            'exporting of unknown data / data type %r' % val)
+
                 prin = "; ".join(row_data)
                 f.write(prin)
                 f.write("\n")
@@ -117,7 +200,8 @@ class SQLJanitor():
         identify the audit data and delete them
 
         :param max_entries: the maximum amount of data
-        :param min_entries: the minimum amount of data that should not be deleted
+        :param min_entries: the minimum amount of data that should
+                            not be deleted
 
         :return: cleanup_infos - {
             'cleaned': False,
@@ -143,6 +227,8 @@ class SQLJanitor():
         t1 = datetime.datetime.now()
         id_pos = 0
         overall_number = 0
+
+        # TODO: replace with a select between query
 
         rows = select([func.count()]).select_from(self.audit).execute()
         row = rows.fetchone()
