@@ -147,25 +147,6 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data={'linotp': ['linotp/i18n/*/LC_MESSAGES/*.mo']},
-    scripts=[
-        'tools/linotp-convert-token',
-        'tools/linotp-create-pwidresolver-user',
-        'tools/linotp-create-sqlidresolver-user',
-        'tools/linotp-setpins',
-        'tools/linotp-pip-update',
-        'tools/linotp-create-auditkeys',
-        'tools/linotp-create-certificate',
-        'tools/linotp-create-database',
-        'tools/linotp-fix-access-rights',
-        'tools/totp-token',
-        'tools/linotp-token-usage',
-        'tools/linotp-create-ad-users',
-        'tools/linotp-auth-radius',
-        'tools/linotp-tokens-used',
-        'tools/linotp-decrypt-otpkey',
-        'tools/linotp-convert-gemalto',
-        'tools/linotp-enroll-smstoken',
-    ],
     data_files=[
         (
             'etc/linotp/',
@@ -192,31 +173,16 @@ setup(
         (
             'share/man/man1',
             [
+                "man/man1/linotp-audit-janitor.1",
+                "man/man1/linotp-backup.1",
                 "man/man1/linotp-config.1",
-                "tools/linotp-convert-token.1",
-                "tools/linotp-create-pwidresolver-user.1",
-                "tools/linotp-create-sqlidresolver-user.1",
-                "tools/totp-token.1",
-                "tools/linotp-setpins.1",
-                "tools/linotp-pip-update.1",
-                "tools/linotp-create-enckey.1",
-                "tools/linotp-create-auditkeys.1",
-                "tools/linotp-create-certificate.1",
-                "tools/linotp-create-database.1",
-                "tools/linotp-fix-access-rights.1",
-                "tools/linotp-token-usage.1",
-                "tools/linotp-sql-janitor.1",
-                "tools/linotp-tokens-used.1",
-                "tools/linotp-backup.1",
-                "tools/linotp-decrypt-otpkey.1",
-                "tools/linotp-convert-gemalto.1",
-                "tools/linotp-restore.1"
+                "man/man1/linotp-init.1",
+                "man/man1/linotp-restore.1",
             ]
         ),
         (
             'share/linotp',
             [
-                'tools/LinotpLDAPProxy.pm',
                 'config/linotp.cfg',
             ]
         ),
