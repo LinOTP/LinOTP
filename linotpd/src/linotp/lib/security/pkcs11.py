@@ -188,6 +188,11 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
     Class that handles all AES stuff
     '''
 
+    number_or_null = { "anyOf": [
+                        {"type": "number"},
+                        {"type": "null"}
+                     ]}
+
     # Add schema for validating configuration in settings.py
     schema = {
         "type" : "object",
@@ -200,10 +205,10 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
             "tokenLabel": {"type" : "string"},
             "valueLabel": {"type" : "string"},
             "defaultLabel": {"type" : "string"},
-            "configHandle": {"type" : "number"},
-            "tokenHandle": {"type" : "number"},
-            "valueHandle": {"type" : "number"},
-            "defaultHandle": {"type" : "number"},
+            "configHandle": number_or_null,
+            "tokenHandle": number_or_null,
+            "valueHandle": number_or_null,
+            "defaultHandle": number_or_null,
             "poolsize": {"type": "number"},
         },
         "required": [
@@ -235,10 +240,10 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         # load handles and labels
 
         self.handles = {
-            CONFIG_KEY: config.get("configHandle", None),
-            TOKEN_KEY: config.get("tokenHandle", None),
-            VALUE_KEY: config.get("valueHandle", None),
-            DEFAULT_KEY: config.get("defaultHandle", None),
+            CONFIG_KEY: config.get("configHandle"),
+            TOKEN_KEY: config.get("tokenHandle"),
+            VALUE_KEY: config.get("valueHandle"),
+            DEFAULT_KEY: config.get("defaultHandle"),
         }
 
         # adjust handle type to int
