@@ -45,6 +45,36 @@ def test_check_int_in_range_doc(min, max, doc):
     assert validate.__doc__ == doc
 
 
+json_schema = {
+    "type": "object",
+    "properties": {
+        "foo": {"type": "string", "maxLength": 5},
+        "bar": {"type": "integer"},
+    },
+    "required": [
+        "foo",
+    ],
+}
+
+
+@pytest.mark.parametrize('schema,value,result', [
+    (json_schema, {"foo": "baz", "bar": 123}, 'OK'),
+    (json_schema, {"foo": "yabbadabbadoo", "bar": 123}, 'ERR'),
+    (json_schema, {"foo": "baz", "bar": "quux"}, 'ERR'),
+    (json_schema, {"foo": "baz", "bar": 123.45}, 'ERR'),
+    (json_schema, {"foo": "baz"}, "OK"),
+    (json_schema, {"bar": 123}, "ERR"),  # required `foo` missing
+])
+def test_check_json_schema(schema, value, result):
+    validator = s.check_json_schema(schema)
+    if result == 'OK':
+        assert validator("k", value) is None
+    else:
+        with pytest.raises(s.LinOTPConfigValueError) as ex:
+            validator("k", value)
+        assert str(ex.value) == f'{value} does not agree with schema {schema}.'
+
+
 @pytest.mark.parametrize('allowed,value,result,msg', [
     ({'A', 'B'}, 'A', 'OK', ''),
     ({'A', 'B'}, 'C', 'ERR', "k is C but must be one of 'A', 'B'."),
