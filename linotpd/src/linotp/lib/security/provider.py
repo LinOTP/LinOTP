@@ -100,11 +100,7 @@ class SecurityProvider(object):
             if self.activeOne ==  'pkcs11':
                 security_provider_config = {'pkcs11': config.get('HSM_PKCS11_CONFIG')}
                 self.config.update(security_provider_config)
-            
-            if self.activeOne == 'yubihsm':
-                security_provider_config = {'yubihsm': config.get('HSM_YUBIHSM_CONFIG')}  
-                self.config.update(security_provider_config)
-            
+
         except Exception as e:
             log.exception("[load_config] failed to identify module")
             error = "failed to identify module: %r " % e

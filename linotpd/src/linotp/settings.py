@@ -12,7 +12,6 @@ from jsonschema import Draft4Validator
 
 from .lib.type_utils import boolean as to_boolean
 from .lib.security.pkcs11 import Pkcs11SecurityModule
-from .lib.security.yubihsm import YubiSecurityModule
 from  .lib.security import provider
 
 basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
@@ -375,7 +374,7 @@ _config_schema = ConfigSchema([
                      "/etc/linotp2/encKey now is handled via a security "
                      "module. In LinOTP token secrets, configuration values, and general "
                      "values are protected by encryption."
-                     "Possible values: default, pkcs11, yubihsm")),
+                     "Possible values: default, pkcs11")),
     ConfigItem("HSM_DEFAULT_CONFIG", dict, convert=json.loads,
                default={
                    'module': 'linotp.lib.security.default.DefaultSecurityModule',
@@ -433,20 +432,6 @@ _config_schema = ConfigSchema([
                      "For more information check the LinOTP documenation at "
                      "https://linotp.org/doc/latest/part-installation/"
                      "HSM/defining_lunasa.html")),
-    ConfigItem("HSM_YUBIHSM_CONFIG", dict, convert=json.loads,
-                default={
-                    'module': 'linotp.lib.security.yubihsm.YubiSecurityModule',
-                    'defaultHandle': 0x1111,
-                    'password': 'your password',
-                    'device': '/dev/ttyACM3',
-                    'poolsize': 10,
-               },
-               validate=check_json_schema(YubiSecurityModule.schema),
-               help=("The YUBIHSM config defines the configuration for the "
-                     "YubiHSM. "
-                     "You need to change the access rights of /dev/ttyACM? "
-                     "You could add the user `linotp` to the group `dialout`")),
-
     ConfigItem("PROFILE", bool, convert=to_boolean, default=False,
                help=("Whether profiling is enabled for WSGI requests. This "
                      "is only interesting for LinOTP developers. Do not use "
