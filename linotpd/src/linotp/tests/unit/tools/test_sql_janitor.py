@@ -23,15 +23,17 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-
-from click.testing import CliRunner
-from linotp.cli import audit_janitor
-from mock import patch
 import os
 from os.path import join
-import pytest
+
 from sqlalchemy import *
 
+import pytest
+from mock import patch
+
+
+from click.testing import CliRunner
+from linotp.cli.audit_cmd import cleanup_command
 from .script_testing_lib import ScriptTester
 
 # -------------------------------------------------------------------------- --
@@ -89,7 +91,7 @@ class TestAuditJanitor:
         """
 
         # run linotp audit-janitor
-        result = self.runner.invoke(audit_janitor, [])
+        result = self.runner.invoke(cleanup_command, [])
         assert result.exit_code == 0
 
     def test_run_janitor_with_params(self, app, setup_audit_table):
@@ -102,7 +104,7 @@ class TestAuditJanitor:
         min = 5
 
         # run linotp audit-janitor --max 10 --min 5
-        result = self.runner.invoke(audit_janitor, [
+        result = self.runner.invoke(cleanup_command, [
             '--max', max,
             '--min', min,
             '--exportdir', self.export_dir,
@@ -126,7 +128,7 @@ class TestAuditJanitor:
         max = 5
         min = 5
         # run linotp audit-janitor
-        result = self.runner.invoke(audit_janitor, [
+        result = self.runner.invoke(cleanup_command, [
             '--max', max,
             '--min', min,
         ])
