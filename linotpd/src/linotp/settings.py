@@ -73,20 +73,18 @@ def check_json_schema(schema={}):
     """Factory function that will return a function that ensures that
     `value` agrees to the schema
     """
+    Draft4Validator.check_schema(schema)
+
     def f(key, value):
         # check if given schema is correct
-        if Draft4Validator.check_schema(schema):
-            print("schema is correct")
-        else:
-            raise LinOTPConfigValueError(
-                f"schema {schema} definition is not correct.")
-        if Draft3Validator(schema).is_valid([value]):
+        if Draft4Validator(schema).is_valid(value):
             print("value agrees with schema")
         else:
             raise LinOTPConfigValueError(
                 f"{value} does not agree with schema {schema}.")
-        f.__doc__ = f"value should apply {schema}"
-        return f
+
+    f.__doc__ = f"value should apply {schema}"
+    return f
 
 def check_membership(allowed={}):
     """Factory function that will return a function that ensures that
@@ -392,10 +390,10 @@ _config_schema = ConfigSchema([
                    'module': 'linotp.lib.security.pkcs11.Pkcs11SecurityModule',
                    'library': 'libCryptoki2_64.so',
                    'password': '<your password>',
-                   'slotid': '<slotid as int>',
-                   'configLabel': None,
-                   'tokenLabel': None,
-                   'valueLabel': None,
+                   'slotid': 0,
+                   'configLabel': '',
+                   'tokenLabel': '',
+                   'valueLabel': '',
                    'defaultLabel': 'default',
                    'configHandle': None,
                    'tokenHandle': None,
