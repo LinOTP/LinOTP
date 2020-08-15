@@ -40,9 +40,13 @@ from subprocess import call
 
 from datetime import datetime
 from flask import current_app
+
 from flask.cli import main as flask_main
-from flask.cli import AppGroup
 from flask.cli import with_appcontext
+from flask.cli import AppGroup
+from flask.cli import FlaskGroup
+
+from linotp.app import create_app
 
 FLASK_APP_DEFAULT = "linotp.app"   # Contains default `create_app()` factory
 FLASK_ENV_DEFAULT = "development"  # Default Flask environment, for debugging
@@ -52,8 +56,12 @@ def main():
     """Main CLI entry point for LinOTP. All the heavy lifting is delegated
     to Flask.
     """
-
     os.environ["FLASK_APP"] = FLASK_APP_DEFAULT
     if "FLASK_ENV" not in os.environ:
         os.environ["FLASK_ENV"] = FLASK_ENV_DEFAULT
     flask_main()
+
+backup_cmds = AppGroup('backup')
+
+
+backup_cmds = AppGroup('backup')
