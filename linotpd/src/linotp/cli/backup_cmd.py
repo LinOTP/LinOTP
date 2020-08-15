@@ -76,21 +76,20 @@ def create_command():
     """
 
     try:
-        current_app.logger.info("Backup database ...")
+        current_app.echo("Backup database ...", v=1)
         backup_database_tables()
-        current_app.logger.info("finished")
+        current_app.echo("finished", v=1)
     except Exception as exx:
-        current_app.logger.error('Failed to backup: %r' % exx)
+        current_app.echo('Failed to backup: %r' % exx)
         sys.exit(1)
 
-
 @backup_cmds.command('restore',
-                      help='restore a backup of the database tables')
+                  help='restore a backup of the database tables')
 @click.option('--file', help='name of the backup file')
 @click.option('--date', help='restore the backup from a given date.'
-              '"date" must be in format "%s"' % TIME_FORMAT)
+          '"date" must be in format "%s"' % TIME_FORMAT)
 @click.option('--table', help='restore the backup of a table - '
-              'table must be one of "Config", "Token", "Audit"')
+          'table must be one of "Config", "Token", "Audit"')
 def restore_command(file=None, date=None, table=None):
     """ restore a database backup
 
@@ -99,25 +98,24 @@ def restore_command(file=None, date=None, table=None):
     @param table - allows to restore only one database table
     """
     try:
-        current_app.logger.info("Restoring database ...")
+        current_app.echo("Restoring database ...", v=1)
         restore_database_tables(file, date, table)
-        current_app.logger.info("finished")
+        current_app.echo("finished", v=1)
     except Exception as exx:
-        current_app.logger.error('Failed to restore: %r' % exx)
+        current_app.echo('Failed to restore: %r' % exx)
         sys.exit(1)
 
-
 @backup_cmds.command('list',
-                      help='restore a backup of the database tables')
+                  help='restore a backup of the database tables')
 def list_command():
     """ list available database backups."""
     try:
-        current_app.logger.info("Available backup files for restore")
+        current_app.echo("Available backup files for restore", v=1)
         for backup_date, backup_file in list_database_backups():
-            click.echo(f'{backup_date} {backup_file}')
-        current_app.logger.info("finished")
+            current_app.echo(f'{backup_date} {backup_file}', err=False)
+        current_app.echo("finished", v=1)
     except Exception as exx:
-        current_app.logger.error('Failed to list backup files: %r' % exx)
+        current_app.echo('Failed to list backup files: %r' % exx)
         sys.exit(1)
 
 # -------------------------------------------------------------------------- --
@@ -153,8 +151,8 @@ def backup_database_tables() -> int:
 
     init_model(engine)
 
-    app.logger.info("extracting data from: %r:%r" %
-                    (engine.url.drivername, engine.url.database))
+    app.echo("extracting data from: %r:%r" %
+                    (engine.url.drivername, engine.url.database), v=1)
 
     # ---------------------------------------------------------------------- --
 
@@ -177,13 +175,13 @@ def backup_database_tables() -> int:
     backup_filename = os.path.join(
         backup_dir, backup_filename_template % now_str)
 
-    app.logger.info("creating backup file: %s" % backup_filename)
+    app.echo("creating backup file: %s" % backup_filename, v=1)
 
     with open(backup_filename, "w") as backup_file:
 
         for name, model_class in backup_classes.items():
 
-            app.logger.info("saving %s" % name)
+            app.echo("saving %s" % name, v=1)
 
             backup_file.write("--- BEGIN %s\n" % name)
 
@@ -195,6 +193,11 @@ def backup_database_tables() -> int:
                 data_query.all(), label=name, file=pb_file) as all_data:
                 for data in all_data:
                     backup_file.write(binascii.hexlify(dumps(data)).decode('utf-8'))
+
+                app.echo(".", v=2, nl=False)
+
+            # final newline for detail
+            app.echo("", v=2)
 
             backup_file.write("\n--- END %s\n" % name)
 
@@ -216,7 +219,7 @@ def list_database_backups() -> list:
     backup_dir = app.config["BACKUP_DIR"]
 
     if not os.path.exists(backup_dir):
-        app.logger.debug("no backup directory found: %s" % backup_dir)
+        app.echo("no backup directory found: %s" % backup_dir, v=2)
         return
 
     # ---------------------------------------------------------------------- --
@@ -272,9 +275,11 @@ def _get_restore_filename(
     # no file or data parameter was provided
 
     if not filename and not date:
-        app.logger.error(
-            "failed to restore - not date or file name parameter provided")
-        return None
+        app.echo(
+            "failed to restore - no date or file name parameter provided",
+            v=1)
+        raise ValueError("no date or file name parameter provided!")
+
 
     # ---------------------------------------------------------------------- --
 
@@ -282,10 +287,11 @@ def _get_restore_filename(
 
     if not os.path.isfile(backup_filename):
 
-        app.logger.info(
+        app.echo(
             "failed to restore %s - not found or not accessible"
             % backup_filename)
-        return None
+        raise FileNotFoundError("failed to restore %s - not found or not"
+                                " accessible" % backup_filename)
 
     return backup_filename
 
@@ -326,10 +332,11 @@ def restore_database_tables(
             restore_names = ['Token', 'TokenRealm', 'Realm']
 
         else:
-            app.logger.error(
-                f"selected table {table} is not in the set of supported tables"
-                )
-            raise click.Abort()
+            app.echo(
+                f"selected table {table} is not in the set of supported tables",
+                v=1)
+            raise ValueError(f"selected table {table} is not in the set "
+                             "of supported tables")
 
     # ---------------------------------------------------------------------- --
 
@@ -338,9 +345,6 @@ def restore_database_tables(
     backup_filename = _get_restore_filename(
                         "linotp_backup_%s.sqldb", filename, date)
 
-    if not backup_filename:
-        app.logger.error("no backup file found!")
-        raise click.Abort()
     # ---------------------------------------------------------------------- --
 
     # get the database uri for the linotp database
@@ -384,7 +388,7 @@ def restore_database_tables(
 
                 session.merge(restore_query)
 
-                app.logger.info("restoring %r" % name)
+                app.echo("restoring %r" % name, v=1)
 
     # finally commit all de-serialized objects
 

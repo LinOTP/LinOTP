@@ -30,11 +30,7 @@ import freezegun
 from datetime import datetime
 
 from click.testing import CliRunner
-from linotp.cli.backup_cmd import (
-    create_command,
-    list_command,
-    restore_command,
-    )
+from linotp.cli import main as cli_main
 
 from linotp.cli.backup_cmd import TIME_FORMAT
 
@@ -78,7 +74,7 @@ class TestInitBackupRestore:
         with freezegun.freeze_time(now):
 
             # Create a database backup
-            result = self.runner.invoke(create_command, [])
+            result = self.runner.invoke(cli_main, ['backup', 'create'])
             assert result.exit_code == 0
     
             # check that the backup directory was created
@@ -96,30 +92,36 @@ class TestInitBackupRestore:
                 assert 'Config' in content
 
         # list database backups
-        result = self.runner.invoke(list_command, [])
+        result = self.runner.invoke(
+            cli_main, ['backup', 'list'])
         assert str_now in result.output
 
         # restore backup by date
-        result = self.runner.invoke(restore_command, ['--date', str_now])
+        result = self.runner.invoke(
+            cli_main, ['backup', 'restore', '--date', str_now])
         assert result.exit_code == 0
 
         # restore backup by date
         result = self.runner.invoke(
-            restore_command, ['--file', f"linotp_backup_{str_now}.sqldb"])
+            cli_main, ['backup', 'restore', '--file',
+                       f"linotp_backup_{str_now}.sqldb"])
         assert result.exit_code == 0
 
         # restore backup by absolute file
-        result = self.runner.invoke(restore_command, ['--file', backup_file])
+        result = self.runner.invoke(
+            cli_main, ['backup', 'restore', '--file', backup_file])
         assert result.exit_code == 0
 
         # restore backup by date
-        result = self.runner.invoke(restore_command,
-                                    ['--date', str_now, '--table', 'Config'])
+        result = self.runner.invoke(
+            cli_main, ['backup', 'restore','--date', str_now,
+                       '--table', 'Config'])
         assert result.exit_code == 0
 
         # restore backup by date
-        result = self.runner.invoke(restore_command,
-                                    ['--date', str_now, '--table', 'Foo'])
+        result = self.runner.invoke(
+            cli_main, ['backup', 'restore', '--date', str_now,
+                       '--table', 'Foo'])
         assert result.exit_code == 1
 
         return
