@@ -30,11 +30,11 @@ mysql database backup implementation
 
 import os
 import sys
-
 from datetime import datetime
 import subprocess
 import click
 
+TIME_FORMAT = '%y%m%d%H%M'
 
 from flask import current_app
 from flask.cli import AppGroup
@@ -81,7 +81,66 @@ def backup_mysql_command():
 # backend implementation
 
 def backup_mysql_database():
-    raise NotImplementedError()
+    """ backup the mysql database via mysqldump
+
+    similar to the original bash script, thus
+    - using the same time-stamp format
+    - backup of the enckey
+    """
+    app = current_app
+
+    now = datetime.now()
+    now_str = now.strftime(TIME_FORMAT)
+
+    filename = f'linotp_backup_{now_str}.sql'
+    backup_filename = os.path.abspath(filename)
+    # ---------------------------------------------------------------------- --
+
+    # setup db engine, session and meta from sql uri
+
+    sql_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
+
+    engine = create_engine(sql_uri)
+
+    if 'mysql' not in engine.url.drivername:
+        app.logger.error("mysql backup file could only restored in a"
+                         " mysql database. current database driver is %r" %
+                          engine.url.drivername)
+        raise click.Abort()
+
+    # ---------------------------------------------------------------------- --
+
+    # determine the mysql command parameters
+
+    username = engine.url.username
+    database = engine.url.database
+    host = engine.url.host
+    password = engine.url.password_original
+    port = engine.url.port or '3306'
+
+    command = [
+        'mysqldump',
+        f'--user={username}',
+        f'--password={password}',
+        f'--port={port}',
+        f'--host={host}',
+        f'--result-file={backup_filename}',
+        f'{database}']
+
+    # ---------------------------------------------------------------------- --
+
+    # run the backup in subprocess
+
+    app.logger.info("mysql backup %r" % backup_filename)
+
+    cmd = " ".join(command)
+    result = subprocess.call(cmd, shell=True)
+
+    if result != 0 or not os.path.isfile(backup_filename):
+        app.logger.error("failed to create mysql backup file: %r" % result)
+        raise click.Abort()
+
+    app.logger.info("mysql backup file %s created!" % backup_filename)
 
 def restore_mysql_database(filename:str):
     """
