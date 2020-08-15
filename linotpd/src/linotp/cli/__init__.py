@@ -27,9 +27,6 @@
 
 The `main()` function in this file is installed as a console entry point
 in `setup.py()`, so that the shell command `linotp` calls that function.
-We use this to ensure that Flask is initialised with the correct value
-for `FLASK_APP`.
-
 """
 
 import os
@@ -38,7 +35,6 @@ import sys
 
 from subprocess import call
 
-from datetime import datetime
 from flask import current_app
 
 from flask.cli import main as flask_main
@@ -48,20 +44,56 @@ from flask.cli import FlaskGroup
 
 from linotp.app import create_app
 
+from flask.cli import FlaskGroup
+from linotp.app import create_app
+
 FLASK_APP_DEFAULT = "linotp.app"   # Contains default `create_app()` factory
 FLASK_ENV_DEFAULT = "development"  # Default Flask environment, for debugging
 
 
-def main():
-    """Main CLI entry point for LinOTP. All the heavy lifting is delegated
-    to Flask.
+class Echo:
+    """ Echo class, which extends the click.echo() to respect verbosity.
+
+        The verbosity of the respective line is expressed by an
+        additional parameter 'v' or 'verbosity'
+
+        The verbosity is expressed by numbers where for suggestion:
+            1 is for error and warnings
+            2 is for infos
+            3 is for details
+            while more levels could be used
+
+        other than click.echo, the default output will go to stderr
     """
-    os.environ["FLASK_APP"] = FLASK_APP_DEFAULT
-    if "FLASK_ENV" not in os.environ:
-        os.environ["FLASK_ENV"] = FLASK_ENV_DEFAULT
-    flask_main()
+
+    def __init__(self, verbosity=0):
+        self.verbosity = verbosity
+
+    def __call__(self, message, **kwargs):
+        """ make instance of echo callable like a function.
+
+            so we can wrap the click.echo with the difference of evaluating
+            an verbosity parameter 'v' or 'verbosity' in the keyword arguments
+        """
+
+        verbosity = kwargs.pop('v', kwargs.pop('verbosity', 0))
+        if verbosity <= self.verbosity:
+
+            err = kwargs.pop('err', True)
+            click.echo(message, err=err, **kwargs)
+
+
+
+@click.group(cls=FlaskGroup, create_app=create_app)
+@click.option('--verbose', '-v', count=True,
+              help=("Increase amount of output from the command "
+                    "(can be specified several times)."))
+@click.option('--quiet', '-q', is_flag=True, default=False,
+              help=("Don't generate any output at all (check exit "
+                    "code for success/failure)."))
+@with_appcontext
+def main(verbose, quiet):
+    current_app.echo = Echo(-1 if quiet else verbose)
 
 backup_cmds = AppGroup('backup')
 
-
-backup_cmds = AppGroup('backup')
