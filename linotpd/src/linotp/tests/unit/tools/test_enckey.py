@@ -28,7 +28,8 @@ import pytest
 import stat
 
 from click.testing import CliRunner
-from linotp.cli.init_cmd import init_enc_key
+from linotp.cli import main as cli_main
+
 from linotp.cli.init_cmd import KEY_COUNT, KEY_LENGTH, SECRET_FILE_PERMISSIONS
 
 
@@ -55,7 +56,8 @@ class TestInitEncKey:
         assert not self.secret_file.exists()
 
         # Create secret file
-        result = self.runner.invoke(init_enc_key, [])
+        result = self.runner.invoke(
+            cli_main, ['init', 'enc-key'])
         assert result.exit_code == 0
         # check that secret file exists
         assert self.secret_file.exists()
@@ -67,7 +69,8 @@ class TestInitEncKey:
         Force overwrite is not enabeld => File should not be overwritten
         """
         if not self.secret_file.exists():
-            result = self.runner.invoke(init_enc_key, [])
+            result = self.runner.invoke(
+                cli_main, ['init', 'enc-key'])
             assert result.exit_code == 0
             
 
@@ -78,7 +81,8 @@ class TestInitEncKey:
             secret = f.read()
 
         # Try to create secret file
-        result = self.runner.invoke(init_enc_key, [])
+        result = self.runner.invoke(
+            cli_main, ['init', 'enc-key'])
         assert result.exit_code == 0
         
         # secret file stays the same as before
@@ -93,7 +97,8 @@ class TestInitEncKey:
         Force overwrite is enabeld => File should be overwritten
         """
         if not self.secret_file.exists():
-            result = self.runner.invoke(init_enc_key, [])
+            result = self.runner.invoke(
+                cli_main, ['init', 'enc-key'])
             assert result.exit_code == 0
 
         # Check that file exists
@@ -102,14 +107,16 @@ class TestInitEncKey:
         with open(self.secret_file, 'rb') as f:
             secret = f.read()
 
-        result = self.runner.invoke(init_enc_key, ['--force'],  input="no")
+        result = self.runner.invoke(
+            cli_main, ['init', 'enc-key', '--force'],  input="no")
         assert result.exit_code == 0
         # secret file stays the same as before
         with open(self.secret_file, 'rb') as f:
             secret_2 = f.read()
         assert secret == secret_2
 
-        result = self.runner.invoke(init_enc_key, ['--force'],  input="yes")
+        result = self.runner.invoke(
+            cli_main, ['init', 'enc-key', '--force'],  input="yes")
         assert result.exit_code == 0
         # secret file was overwritten and is changed now
         with open(self.secret_file, 'rb') as f:
@@ -124,7 +131,8 @@ class TestInitEncKey:
         enckey.KEY_LENGTH byte
         """
         if not self.secret_file.exists():
-            result = self.runner.invoke(init_enc_key, [])
+            result = self.runner.invoke(
+                cli_main, ['init', 'enc-key'])
             assert result.exit_code == 0
 
         assert self.secret_file.exists()
@@ -145,7 +153,8 @@ class TestInitEncKey:
         """Test file is only readable by the owner (400)"""
 
         if not self.secret_file.exists():
-            result = self.runner.invoke(init_enc_key, [])
+            result = self.runner.invoke(
+                cli_main, ['init', 'enc-key'])
             assert result.exit_code == 0
 
         secret_key_file_permissions = stat.S_IMODE(

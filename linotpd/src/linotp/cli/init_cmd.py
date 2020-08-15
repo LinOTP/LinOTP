@@ -90,7 +90,7 @@ def init_db_command(erase_all_data):
     else:
         info = 'Creating database'
 
-    current_app.logger.info(info)
+    current_app.echo(info, v=1)
 
     try:
 
@@ -98,10 +98,10 @@ def init_db_command(erase_all_data):
 
     except Exception as exx:
 
-        current_app.logger.error(f'Failed to create database: {exx!s}')
+        current_app.echo(f'Failed to create database: {exx!s}')
         raise click.Abort()
 
-    current_app.logger.info('database created')
+    current_app.echo('database created', v=1)
 
 @init_cmds.command('enc-key',
                    help='Generate aes key for encryption and decryption')
@@ -115,44 +115,66 @@ def init_enc_key(force):
     If --force or -f is set and the encKey file exists already, it
     will be overwritten.
     """
+    app = current_app
+    filename = app.config["SECRET_FILE"]
 
-    filename = current_app.config["SECRET_FILE"]
-
-    if os.path.exists(filename):
-        if force:
-            click.echo(
-                f"The enc-key file, {filename}, already exists.\n"
-                "Overwriting an existing enc-key might make existing data in "
-                "the database inaccessible.\n"
-                "THAT WOULD BE VERY BAD.")
-            answer = click.prompt(
-                "Overwrite the existing enc-key", default="no",
-                type=click.Choice(['yes', 'no'], case_sensitive=True),
-                show_choices=True)
-            if answer == 'yes':
-                backup_filename = filename + '.' + datetime.now().isoformat(timespec='seconds')
-                try:
-                    os.replace(filename, backup_filename)
-                    click.echo(f"Moved existing enc-key file to {backup_filename}")
-                except IOError as ex:
-                    click.echo(f"Error moving existing enc-key file to {backup_filename}: {ex!s}",
-                            err=True)
-                    sys.exit(1)
-                try:
-                    create_secret_key(filename)
-                    click.echo(f"Wrote enc-key to {filename}", err=True)
-                except IOError as ex:
-                    click.echo(f"Error writing enc-key to {filename}: {ex!s}", err=True)
-            else:
-                click.echo(f"Not overwriting existing enc-key in {filename}", err=True)
-    else:
+    if not os.path.exists(filename):
         try:
-            create_secret_key(filename)
-            click.echo(f'Wrote enc-key to {filename}')
-        except IOError as ex:
-            click.echo(f'Error writing enc-key to {filename}: {ex!s}',
-                       err=True)
 
+            create_secret_key(filename)
+            app.echo(f'Wrote enc-key to {filename}', v=1)
+
+        except IOError as exx:
+            app.echo(f'Error writing enc-key to {filename}: {exx!s}')
+            sys.exit(1)
+
+        sys.exit(0)
+
+    if not force:
+        app.echo(f"Not overwriting existing enc-key in {filename}")
+        sys.exit(0)
+
+    click.echo(
+        f"The enc-key file, {filename}, already exists.\n"
+        "Overwriting an existing enc-key might make existing data in "
+        "the database inaccessible.\n"
+        "THAT WOULD BE VERY BAD.")
+    answer = click.prompt(
+        "Overwrite the existing enc-key", default="no",
+        type=click.Choice(['yes', 'no'], case_sensitive=True),
+        show_choices=True)
+
+    if answer != 'yes':
+        app.echo(f"Not overwriting existing enc-key in {filename}")
+        sys.exit(0)
+
+    # if we reach this line: force was True and the answer was 'yes'
+
+    # first we create a backup of the old key file with a time stamp
+
+    backup_filename = "%s.%s" % (
+                    filename, datetime.now().isoformat(timespec='seconds')
+                    )
+
+    try:
+        os.replace(filename, backup_filename)
+        app.echo(
+            f"Moved existing enc-key file to {backup_filename}",
+            v=2)
+    except IOError as exx:
+        app.echo(f"Error moving existing enc-key file to "
+                 "{backup_filename}: {exx!s}")
+        sys.exit(1)
+
+    # next try to create a new key file
+
+    try:
+        create_secret_key(filename)
+        app.echo(f"Wrote enc-key to {filename}", v=1)
+    except IOError as ex:
+        app.echo(
+            f"Error writing enc-key to {filename}: {ex!s}")
+        sys.exit(1)
 
 # -------------------------------------------------------------------------- --
 
@@ -192,11 +214,11 @@ def setup_db(app, drop_data=False):
 
     # (Re)create and setup database tables if they don't already exist
 
-    app.logger.info("Setting up database...")
+    app.echo("Setting up database...", v=1)
 
     try:
         if drop_data:
-            app.logger.info("Dropping tables to erase all data...")
+            app.echo("Dropping tables to erase all data...", v=1)
             meta.metadata.drop_all(bind=meta.engine)
 
         meta.metadata.create_all(bind=meta.engine)
@@ -211,7 +233,7 @@ def setup_db(app, drop_data=False):
         admin_password = app.config.get('ADMIN_PASSWORD')
 
         if admin_username is not None and admin_password is not None:
-            app.logger.info("Setting up cloud admin user...")
+            app.echo("Setting up cloud admin user...", v=1)
             from linotp.lib.tools.set_password import (
                 SetPasswordHandler, DataBaseContext
             )
@@ -222,8 +244,8 @@ def setup_db(app, drop_data=False):
                 username=admin_username, crypted_password=admin_password)
 
     except Exception as exx:
-        app.logger.exception(
-            "Exception occured during database setup: %r", exx)
+        app.echo(
+            "Exception occured during database setup: %r" % exx)
         meta.Session.rollback()
         raise exx
 
