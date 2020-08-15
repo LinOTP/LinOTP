@@ -56,24 +56,23 @@ backup_cmds = AppGroup('backup-legacy')
 def restore_mysql_command(file):
     """ restore mysql backups."""
     try:
-        current_app.logger.info("Restoring legacy database ...")
+        current_app.echo("Restoring legacy database ...", v=1)
         restore_mysql_database(filename=file)
-        current_app.logger.info("finished")
+        current_app.echo("finished", v=1)
     except Exception as exx:
-        current_app.logger.error('Failed to restore mysql backup: %r' % exx)
+        current_app.echo('Failed to restore mysql backup: %r' % exx)
         sys.exit(1)
-
 
 @backup_cmds.command('create',
                       help='create a backup file via mysqldump')
 def backup_mysql_command():
     """ backup mysql database."""
     try:
-        current_app.logger.info("Backup mysql database ...")
+        current_app.echo("Backup mysql database ...", v=1)
         backup_mysql_database()
-        current_app.logger.info("finished")
+        current_app.echo("finished", v=1)
     except Exception as exx:
-        current_app.logger.error('Failed to backup mysql: %r' % exx)
+        current_app.echo('Failed to backup mysql: %r' % exx)
         sys.exit(1)
 
 # -------------------------------------------------------------------------- --
@@ -103,7 +102,7 @@ def backup_mysql_database():
     engine = create_engine(sql_uri)
 
     if 'mysql' not in engine.url.drivername:
-        app.logger.error("mysql backup file could only restored in a"
+        app.echo("mysql backup file could only restored in a"
                          " mysql database. current database driver is %r" %
                           engine.url.drivername)
         raise click.Abort()
@@ -131,16 +130,16 @@ def backup_mysql_database():
 
     # run the backup in subprocess
 
-    app.logger.info("mysql backup %r" % backup_filename)
+    app.echo("mysql backup %r" % backup_filename, v=1)
 
     cmd = " ".join(command)
     result = subprocess.call(cmd, shell=True)
 
     if result != 0 or not os.path.isfile(backup_filename):
-        app.logger.error("failed to create mysql backup file: %r" % result)
+        app.echo("failed to create mysql backup file: %r" % result)
         raise click.Abort()
 
-    app.logger.info("mysql backup file %s created!" % backup_filename)
+    app.echo("mysql backup file %s created!" % backup_filename, v=1)
 
 def restore_mysql_database(filename:str):
     """
@@ -153,8 +152,8 @@ def restore_mysql_database(filename:str):
     backup_filename = os.path.abspath(filename.strip())
 
     if not os.path.isfile(backup_filename):
-        app.logger.error("mysql backup file %r can not be accessed."
-                         % filename)
+        app.echo("mysql backup file %r can not be accessed."
+                         % filename, v=1)
         raise click.Abort()
 
     # ---------------------------------------------------------------------- --
@@ -166,9 +165,9 @@ def restore_mysql_database(filename:str):
     engine = create_engine(sql_uri)
 
     if 'mysql' not in engine.url.drivername:
-        app.logger.error("mysql backup file can only be restored in a"
-                         " mysql database. current database driver is %r" %
-                          engine.url.drivername)
+        app.echo("mysql backup file can only be restored in a "
+                 "mysql database. current database driver is %r" %
+                 engine.url.drivername)
         raise click.Abort()
 
     # ---------------------------------------------------------------------- --
@@ -194,21 +193,19 @@ def restore_mysql_database(filename:str):
 
     # run the restore in subprocess
 
-    app.logger.info("restoring mysql backup %r" % backup_filename)
-
     msg = ''
+
+    app.echo("restoring mysql backup %r" % backup_filename, v=1)
 
     with open(backup_filename, 'r') as backup_file:
         result = subprocess.run(
             command, stdin=backup_file, capture_output=True)
 
         if result.returncode != 0:
-            app.logger.info("failed to restore mysql backup file: %s"
+            app.echo("failed to restore mysql backup file: %s"
                             % result.stderr.decode('utf-8'))
             raise click.Abort()
 
         msg = result.stdout.decode('utf-8')
 
-    app.logger.info("mysql backup file restored: %s" % msg)
-
-
+    app.echo("mysql backup file restored: %s" % msg, v=1)
