@@ -87,45 +87,46 @@ def cleanup_command(maximum, minimum, exportdir):
     to pass the encrypted key, the IV and the filename of the encryption key.
     """
 
+    app = current_app
     try:
 
         if not(0 <= minimum < maximum):
-            click.echo('Error: max has to be greater than min.')
+            app.echo('Error: max has to be greater than min.')
             sys.exit(1)
 
         sqljanitor = SQLJanitor(export=exportdir)
 
         cleanup_infos = sqljanitor.cleanup(maximum, minimum)
 
-        click.echo(
-            f'{cleanup_infos["entries_in_audit"]} entries found in database.')
+        app.echo(
+            f'{cleanup_infos["entries_in_audit"]} entries found in database.',
+            v=2)
 
         if cleanup_infos['entries_deleted'] > 0:
-            click.echo(
+            app.echo(
                 f'{cleanup_infos["entries_in_audit"] - minimum} entries '
                 'cleaned up. {minimum} entries left in database.\n'
-                'Min: {minimum}, Max: {maximum}.'
-                )
+                'Min: {minimum}, Max: {maximum}.',
+                v=2)
 
             if cleanup_infos["export_filename"]:
-                click.echo(
-                    f'Exported into {cleanup_infos["export_filename"]}'
-                    )
+                app.echo(
+                    f'Exported into {cleanup_infos["export_filename"]}',
+                    v=2)
 
-            click.echo(
-                f'Cleaning up took {cleanup_infos["time_taken"]} seconds'
-                )
+            app.echo(
+                f'Cleaning up took {cleanup_infos["time_taken"]} seconds',
+                v=2)
         else:
-            click.echo(
+            app.echo(
                 f'Nothing cleaned up. {cleanup_infos["entries_in_audit"]} '
                 'entries in database.\n'
-                'Min: {minimum}, Max: {maximum}.'
-                )
+                'Min: {minimum}, Max: {maximum}.',
+                v=2)
 
     except Exception as exx:
-        click.echo(f'Error while cleanup up audit table: {exx!s}')
+        app.echo(f'Error while cleanup up audit table: {exx!s}')
         sys.exit(1)
-
 
 class SQLJanitor():
     """
@@ -186,8 +187,9 @@ class SQLJanitor():
                         row_data.append(" ")
                     else:
                         row_data.append("?")
-                        self.app.logger.error(
-                            'exporting of unknown data / data type %r' % val)
+                        self.app.echo(
+                            'exporting of unknown data / data type %r' % val,
+                            v=1)
 
                 prin = "; ".join(row_data)
                 f.write(prin)
@@ -242,12 +244,11 @@ class SQLJanitor():
             first_id = int(rows.fetchone()[id_pos])
             cleanup_infos['first_entry_id'] = first_id
 
-
             s = self.audit.select().order_by(desc(self.audit.c.id)).limit(1)
             rows = s.execute()
             last_id = int (rows.fetchone()[id_pos])
             cleanup_infos['last_entry_id'] = last_id
-            
+
             delete_from = last_id - min_entries
             if delete_from > 0:
                 # if export is enabled, we start the export now
