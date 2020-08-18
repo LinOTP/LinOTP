@@ -45,7 +45,7 @@ from flask import current_app
 from flask.cli import AppGroup
 from flask.cli import with_appcontext
 
-from linotp.model import init_model, meta         # FIXME: With Flask-SQLAlchemy
+from linotp.model import init_model, meta       # FIXME: With Flask-SQLAlchemy
 from linotp.model.migrate import run_data_model_migration
 from linotp.defaults import set_defaults
 
@@ -61,6 +61,7 @@ SECRET_FILE_PERMISSIONS = 0o400
 
 init_cmds = AppGroup('init')
 
+
 def erase_confirm(ctx, param, value):
     if ctx.params['erase_all_data']:
         # The user asked for data to be erased. We now look for a confirmation
@@ -74,9 +75,9 @@ def erase_confirm(ctx, param, value):
 
 @init_cmds.command('database', help="Create tables in the database")
 @click.option('--erase-all-data', is_flag=True, help="Erase ALL existing data")
-@click.option('--yes', is_flag=True, callback=erase_confirm, expose_value=False,
+@click.option('--yes', is_flag=True, callback=erase_confirm,
+              expose_value=False,
               help="Erase data without prompting for confirmation")
-
 @with_appcontext
 def init_db_command(erase_all_data):
     """
@@ -91,17 +92,13 @@ def init_db_command(erase_all_data):
         info = 'Creating database'
 
     current_app.echo(info, v=1)
-
     try:
-
         setup_db(current_app, erase_all_data)
-
     except Exception as exx:
-
         current_app.echo(f'Failed to create database: {exx!s}')
         raise click.Abort()
-
     current_app.echo('database created', v=1)
+
 
 @init_cmds.command('enc-key',
                    help='Generate aes key for encryption and decryption')
@@ -120,14 +117,11 @@ def init_enc_key(force):
 
     if not os.path.exists(filename):
         try:
-
             create_secret_key(filename)
             app.echo(f'Wrote enc-key to {filename}', v=1)
-
         except IOError as exx:
             app.echo(f'Error writing enc-key to {filename}: {exx!s}')
             sys.exit(1)
-
         sys.exit(0)
 
     if not force:
@@ -176,6 +170,7 @@ def init_enc_key(force):
             f"Error writing enc-key to {filename}: {ex!s}")
         sys.exit(1)
 
+
 # -------------------------------------------------------------------------- --
 
 # backend implementation
@@ -196,7 +191,7 @@ def setup_db(app, drop_data=False):
 
     # Initialise the SQLAlchemy engine
 
-    sql_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
+    sql_uri = app.config["SQLALCHEMY_DATABASE_URI"]
 
     # sqlite in-memory databases require special sqlalchemy setup:
     # https://docs.sqlalchemy.org/en/13/dialects/sqlite.html#using-a-memory-database-in-multiple-threads
@@ -229,8 +224,8 @@ def setup_db(app, drop_data=False):
         # For the cloud mode, we require the `admin_user` table to
         # manage the admin users to allow password setting
 
-        admin_username = app.config.get('ADMIN_USERNAME')
-        admin_password = app.config.get('ADMIN_PASSWORD')
+        admin_username = app.config['ADMIN_USERNAME']
+        admin_password = app.config['ADMIN_PASSWORD']
 
         if admin_username is not None and admin_password is not None:
             app.echo("Setting up cloud admin user...", v=1)
@@ -250,6 +245,7 @@ def setup_db(app, drop_data=False):
         raise exx
 
     meta.Session.commit()
+
 
 def create_secret_key(filename):
     """Creates a LinOTP secret file to encrypt and decrypt values in database
