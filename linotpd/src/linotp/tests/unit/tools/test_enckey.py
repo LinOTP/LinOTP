@@ -23,23 +23,27 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-
+import os
 import pytest
 import stat
-import mock
-import click
+
 from click.testing import CliRunner
-from linotp.cli import init_enc_key
-import linotp.lib.tools.enckey as enckey
+from linotp.cli import main as cli_main
+
+from linotp.cli.init_cmd import KEY_COUNT, KEY_LENGTH, SECRET_FILE_PERMISSIONS
 
 
 class TestInitEncKey:
     @pytest.fixture(autouse=True)
     def runner(self, tmp_path):
         """Set common configuration """
+
         self.secret_file = tmp_path / 'encKey'
-        env = {'FLASK_APP': 'linotp.app', 'LINOTP_ROOT_DIR': str(tmp_path),
-               'LINOTP_SECRET_FILE': str(self.secret_file)}
+        env = {
+            'FLASK_APP': 'linotp.app',
+            'LINOTP_ROOT_DIR': str(tmp_path),
+            'LINOTP_SECRET_FILE': str(self.secret_file)
+            }
         self.runner = CliRunner(env=env, mix_stderr=False)
 
 
@@ -52,7 +56,8 @@ class TestInitEncKey:
         assert not self.secret_file.exists()
 
         # Create secret file
-        result = self.runner.invoke(init_enc_key, [])
+        result = self.runner.invoke(
+            cli_main, ['init', 'enc-key'])
         assert result.exit_code == 0
         # check that secret file exists
         assert self.secret_file.exists()
@@ -64,7 +69,8 @@ class TestInitEncKey:
         Force overwrite is not enabeld => File should not be overwritten
         """
         if not self.secret_file.exists():
-            result = self.runner.invoke(init_enc_key, [])
+            result = self.runner.invoke(
+                cli_main, ['init', 'enc-key'])
             assert result.exit_code == 0
             
 
@@ -75,7 +81,8 @@ class TestInitEncKey:
             secret = f.read()
 
         # Try to create secret file
-        result = self.runner.invoke(init_enc_key, [])
+        result = self.runner.invoke(
+            cli_main, ['init', 'enc-key'])
         assert result.exit_code == 0
         
         # secret file stays the same as before
@@ -90,7 +97,8 @@ class TestInitEncKey:
         Force overwrite is enabeld => File should be overwritten
         """
         if not self.secret_file.exists():
-            result = self.runner.invoke(init_enc_key, [])
+            result = self.runner.invoke(
+                cli_main, ['init', 'enc-key'])
             assert result.exit_code == 0
 
         # Check that file exists
@@ -99,14 +107,16 @@ class TestInitEncKey:
         with open(self.secret_file, 'rb') as f:
             secret = f.read()
 
-        result = self.runner.invoke(init_enc_key, ['--force'],  input="no")
+        result = self.runner.invoke(
+            cli_main, ['init', 'enc-key', '--force'],  input="no")
         assert result.exit_code == 0
         # secret file stays the same as before
         with open(self.secret_file, 'rb') as f:
             secret_2 = f.read()
         assert secret == secret_2
 
-        result = self.runner.invoke(init_enc_key, ['--force'],  input="yes")
+        result = self.runner.invoke(
+            cli_main, ['init', 'enc-key', '--force'],  input="yes")
         assert result.exit_code == 0
         # secret file was overwritten and is changed now
         with open(self.secret_file, 'rb') as f:
@@ -121,28 +131,32 @@ class TestInitEncKey:
         enckey.KEY_LENGTH byte
         """
         if not self.secret_file.exists():
-            result = self.runner.invoke(init_enc_key, [])
+            result = self.runner.invoke(
+                cli_main, ['init', 'enc-key'])
             assert result.exit_code == 0
 
         assert self.secret_file.exists()
         with open(self.secret_file, 'rb') as f:
             # get 3 keys out with 32
             # the 4th try to get a key should be 0
-            for count in range(enckey.KEY_COUNT + 1):
-                key = f.read(enckey.KEY_LENGTH)
+            for count in range(KEY_COUNT + 1):
+                key = f.read(KEY_LENGTH)
 
-                if count >= enckey.KEY_COUNT:
+                if count >= KEY_COUNT:
                     # at KEY_COUNT +1 iteration the key should be empty
                     assert len(key) == 0
                 else:
-                    assert len(key) == enckey.KEY_LENGTH
+                    assert len(key) == KEY_LENGTH
 
 
     def test_file_access(self):
         """Test file is only readable by the owner (400)"""
 
         if not self.secret_file.exists():
-            result = self.runner.invoke(init_enc_key, [])
+            result = self.runner.invoke(
+                cli_main, ['init', 'enc-key'])
             assert result.exit_code == 0
-        secret_key_file_permissions = stat.S_IMODE(self.secret_file.stat().st_mode)
-        assert secret_key_file_permissions == enckey.SECRET_FILE_PERMISSIONS
+
+        secret_key_file_permissions = stat.S_IMODE(
+                                            self.secret_file.stat().st_mode)
+        assert secret_key_file_permissions == SECRET_FILE_PERMISSIONS

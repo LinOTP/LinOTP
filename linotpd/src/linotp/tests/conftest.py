@@ -36,7 +36,7 @@ import tempfile
 
 from linotp.app import create_app
 from linotp.flap import set_config, tmpl_context as c
-from linotp.lib.tools.enckey import create_secret_key
+from linotp.cli.init_cmd import create_secret_key
 from linotp.model import meta
 from . import TestController
 from flask.testing import FlaskClient
