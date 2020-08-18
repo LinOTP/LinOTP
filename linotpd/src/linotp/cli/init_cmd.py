@@ -162,8 +162,8 @@ def init_enc_key(force):
             f"Moved existing enc-key file to {backup_filename}",
             v=2)
     except IOError as exx:
-        app.echo(f"Error moving existing enc-key file to "
-                 "{backup_filename}: {exx!s}")
+        app.echo("Error moving existing enc-key file to "
+                 f"{backup_filename}: {exx!s}")
         sys.exit(1)
 
     # next try to create a new key file
