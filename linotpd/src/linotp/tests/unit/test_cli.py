@@ -29,6 +29,8 @@
 """
 Command line tests
 """
+from datetime import datetime
+
 import pytest
 from sqlalchemy import create_engine
 
@@ -36,6 +38,8 @@ from linotp.app import LinOTPApp, init_db_command, setup_db
 from linotp.defaults import set_defaults
 from linotp.flap import set_config
 from linotp.model import meta, Config
+
+from linotp.cli import get_backup_filename
 
 
 @pytest.fixture
@@ -82,6 +86,29 @@ def engine(sqllitedb_url):
     """
     return create_engine(sqllitedb_url)
 
+
+# ----------------------------------------------------------------------
+# Tests for `get_backup_filename()`
+# ----------------------------------------------------------------------
+
+@pytest.mark.parametrize('fmt,filename,now', [
+    ('%Y-%m-%d_%H-%M', 'foo.2020-08-18_19-25', None),
+    ('%Y-%m-%d_%H-%M', 'bar.2000-01-01_00-00', "2000-01-01T00:00:00"),
+    ('%d%m%Y', 'baz.18082020', None),
+    ('%d%m%Y', 'quux.01012000', "2000-01-01T00:00:00"),
+])
+def test_get_backup_filename(freezer, monkeypatch, app, fmt, filename, now):
+    freezer.move_to("2020-08-18 19:25:33")
+    monkeypatch.setitem(app.config, 'BACKUP_FILE_TIME_FORMAT', fmt)
+    fn = filename[:filename.rfind('.')]
+    now_dt = datetime.fromisoformat(now) if isinstance(now, str) else None
+    bfn = get_backup_filename(fn, now_dt)
+    assert bfn == filename
+
+
+# ----------------------------------------------------------------------
+# Tests for `linotp init-db`
+# ----------------------------------------------------------------------
 
 def test_init_db_creates_tables(runner, engine):
     # GIVEN an empty database

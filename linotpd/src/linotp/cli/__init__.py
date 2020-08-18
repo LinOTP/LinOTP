@@ -29,6 +29,8 @@ The `main()` function in this file is installed as a console entry point
 in `setup.py()`, so that the shell command `linotp` calls that function.
 """
 
+from datetime import datetime
+
 import click
 
 from flask import current_app
@@ -79,6 +81,16 @@ class Echo:
         if verbosity <= self.verbosity:
             err = kwargs.pop('err', True)
             click.echo(message, err=err, **kwargs)
+
+
+def get_backup_filename(filename: str, now: datetime = None) -> str:
+    """Given a `filename`, return a time-stamped file name suitable for
+    use as a “backup filename”. The time used is given as `now`; if
+    `now` is `None`, the current time will be used.
+    """
+    ext = (now or datetime.now()).strftime(
+        current_app.config["BACKUP_FILE_TIME_FORMAT"])
+    return filename + "." + ext
 
 
 # Main command group for the application. Here's where we end up when

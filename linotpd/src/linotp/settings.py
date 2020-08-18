@@ -192,8 +192,13 @@ _config_schema = ConfigSchema([
                help=("The directory prepended to relative directory and file "
                      "names in configuration files.")),
     ConfigItem("BACKUP_DIR", str, default="backup",
-           help=("Directory for the backup files creates via "
-                 "'linotp backup' command")),
+               help=("Directory for the backup files creates via "
+                     "`linotp backup` command")),
+    ConfigItem("BACKUP_FILE_TIME_FORMAT", str, default="%Y-%m-%d_%H-%M",
+               help=("String that will be appended to various backup files "
+                     "in order to time-stamp them. Consult the "
+                     "`datetime.datetime.strftime()` documentation to find "
+                     "out about allowable `%` placeholders.")),
     ConfigItem("CACHE_DIR", str, default="cache",
                help=("Directory for miscellaneous resolver caches.")),
     ConfigItem("CONTROLLERS", str,
