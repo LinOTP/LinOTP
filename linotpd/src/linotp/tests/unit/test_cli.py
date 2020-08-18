@@ -30,11 +30,10 @@
 Command line tests
 """
 import pytest
-from flask.cli import ScriptInfo
 from sqlalchemy import create_engine
 
 from linotp.app import LinOTPApp, init_db_command, setup_db
-from linotp.defaults import set_config, set_defaults
+from linotp.defaults import set_defaults
 from linotp.flap import set_config
 from linotp.model import meta, Config
 
@@ -49,6 +48,7 @@ def sqllitedb_url(tmpdir):
     """
     dbfile = tmpdir / 'testdb'
     return f'sqlite:///{dbfile}'
+
 
 @pytest.fixture
 def app(sqllitedb_url):
@@ -65,12 +65,14 @@ def app(sqllitedb_url):
     app.config.update(config)
     return app
 
+
 @pytest.fixture
 def runner(app):
     """
     Return a test runner instance which can be used to run commands against
     """
     return app.test_cli_runner()
+
 
 @pytest.fixture
 def engine(sqllitedb_url):
@@ -79,6 +81,7 @@ def engine(sqllitedb_url):
     test the app database
     """
     return create_engine(sqllitedb_url)
+
 
 def test_init_db_creates_tables(runner, engine):
     # GIVEN an empty database
@@ -92,6 +95,7 @@ def test_init_db_creates_tables(runner, engine):
     assert 'Creating database' in result.output
     assert 'Config' in engine.table_names()
 
+
 @pytest.fixture
 def db_with_config(app):
     """
@@ -104,6 +108,7 @@ def db_with_config(app):
 
     assert meta.Session.query(Config).count() > 0
     meta.Session.remove()
+
 
 @pytest.mark.usefixtures('db_with_config')
 @pytest.mark.parametrize('erase', (True, False))
