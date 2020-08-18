@@ -29,22 +29,13 @@ The `main()` function in this file is installed as a console entry point
 in `setup.py()`, so that the shell command `linotp` calls that function.
 """
 
-import os
 import click
-import sys
-
-from subprocess import call
 
 from flask import current_app
 
-from flask.cli import main as flask_main
 from flask.cli import with_appcontext
-from flask.cli import AppGroup
 from flask.cli import FlaskGroup
 
-from linotp.app import create_app
-
-from flask.cli import FlaskGroup
 from linotp.app import create_app
 
 FLASK_APP_DEFAULT = "linotp.app"   # Contains default `create_app()` factory
@@ -52,37 +43,49 @@ FLASK_ENV_DEFAULT = "development"  # Default Flask environment, for debugging
 
 
 class Echo:
-    """ Echo class, which extends the click.echo() to respect verbosity.
+    """Echo class, which extends `click.echo()` to respect verbosity.
 
-        The verbosity of the respective line is expressed by an
-        additional parameter 'v' or 'verbosity'
+    The verbosity of the respective line is expressed by an additional
+    parameter, `v` or `verbosity`.
 
-        The verbosity is expressed by numbers where for suggestion:
-            1 is for error and warnings
-            2 is for infos
-            3 is for details
-            while more levels could be used
+    The verbosity is expressed by numbers where, for example:
 
-        other than click.echo, the default output will go to stderr
+    - 0 is used for error messages and warnings (always displayed)
+    - 1 is used for informational messages  (seen with `-v`)
+    - 2 is used for more detailed information (seen with `-vv`)
+
+    and so on. The verbosity level corresponds to the number of `-v`
+    options that must be specified on the command like for the message
+    to be visible. If the verbosity level is set to `-1`, no messages
+    will be output at all; this is useful to implement a `--quiet`
+    option that suppresses all output.
+
+    Unlike `click.echo()`, messages go to `stderr` by default. Use
+    `err=False` to redirect them to `stdout` instead.
     """
 
     def __init__(self, verbosity=0):
         self.verbosity = verbosity
 
     def __call__(self, message, **kwargs):
-        """ make instance of echo callable like a function.
+        """Make instance of echo callable like a function.
 
-            so we can wrap the click.echo with the difference of evaluating
-            an verbosity parameter 'v' or 'verbosity' in the keyword arguments
+        This is our equivalent to `click.echo()`, except that we take
+        an additional `v` or `verbosity` parameter (which defaults to `0`),
+        and `err` defaults to `True`.
         """
 
         verbosity = kwargs.pop('v', kwargs.pop('verbosity', 0))
         if verbosity <= self.verbosity:
-
             err = kwargs.pop('err', True)
             click.echo(message, err=err, **kwargs)
 
 
+# Main command group for the application. Here's where we end up when
+# the user gives the `linotp` command on the command line. We rely on
+# Click to dispatch to subcommands in their respective groups. Note that
+# new subcommands (or subcommand groups) must be registered in `setup.py`
+# to become reachable.
 
 @click.group(cls=FlaskGroup, create_app=create_app)
 @click.option('--verbose', '-v', count=True,
@@ -94,6 +97,3 @@ class Echo:
 @with_appcontext
 def main(verbose, quiet):
     current_app.echo = Echo(-1 if quiet else verbose)
-
-backup_cmds = AppGroup('backup')
-
