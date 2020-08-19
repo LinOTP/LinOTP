@@ -29,9 +29,6 @@ import threading
 import copy
 import logging
 
-from linotp.lib.security.provider import SecurityProvider
-
-
 log = logging.getLogger(__name__)
 
 class Globals(object):
@@ -53,9 +50,6 @@ class Globals(object):
         self.config = {}
         self.config_incomplete = False
         self.configLock = RWLock()
-        secLock = RWLock()
-
-        self.security_provider = SecurityProvider(secLock)
 
         self.cache_manager = None
 
