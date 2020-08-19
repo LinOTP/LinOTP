@@ -376,7 +376,7 @@ e2e-test-softhsm:
     - python3 ./pkcs11.py -s ${SLOTID} -p 1234 -n token
     - python3 ./pkcs11.py -s ${SLOTID} -p 1234 -n value
     - cd -
-    - > 
+    - >
         export LINOTP_HSM_PKCS11_CONFIG="{
         'module': 'linotp.lib.security.pkcs11.Pkcs11SecurityModule',
         'library': '/usr/lib/softhsm/libsofthsm2.so',
@@ -396,12 +396,12 @@ e2e-test-softhsm:
     - cat linotpd/src/linotp/linotp.cfg
     - env | grep LINOTP_
     - cd linotpd/src/linotp/tests/integration
-    - > 
-        /usr/local/bin/dockerfy 
+    - >
+        /usr/local/bin/dockerfy
         --template docker_cfg.ini.tmpl:/tmp/server_cfg.ini
-        --wait tcp://$SELENIUM_HOST:$SELENIUM_PORT 
-        --timeout 60m 
-        --wait tcp://$LINOTP_HOST:$LINOTP_PORT 
+        --wait tcp://$SELENIUM_HOST:$SELENIUM_PORT
+        --timeout 60m
+        --wait tcp://$LINOTP_HOST:$LINOTP_PORT
         --timeout 60m
     - >
         make integrationtests
