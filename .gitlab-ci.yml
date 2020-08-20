@@ -69,6 +69,7 @@ include:
         docker-build-linotp-builder
         docker-build-linotp
         docker-build-linotp-test-image
+        docker-build-linotp-softhsm
         BUILDDIR="${CI_PROJECT_DIR}"
         DOCKER_BUILD_ARGS="
         --build-arg BUILDKIT_INLINE_CACHE=1
@@ -88,10 +89,12 @@ include:
     - docker tag linotp:latest "$REGISTRY_IMAGE:${CI_PIPELINE_ID}"
     - docker push "${LINOTP_CACHE_IMAGE}"
     - docker push "$REGISTRY_IMAGE:${CI_PIPELINE_ID}"
-    # Now we push the testenv image. We do not bother to cache this because it changes
-    # every time we do a new linotp build.
+    # Now we push the testenv and softhsm images. We do not bother to cache
+    # this because they change every time we do a new linotp build.
     - docker tag linotp-testenv:latest "$REGISTRY_IMAGE-testenv:${CI_PIPELINE_ID}"
     - docker push "$REGISTRY_IMAGE-testenv:${CI_PIPELINE_ID}"
+    - docker tag linotp-softhsm:latest "$REGISTRY_IMAGE-softhsm:${CI_PIPELINE_ID}"
+    - docker push "$REGISTRY_IMAGE-softhsm:${CI_PIPELINE_ID}"
     # Log all the images to stdout
     - docker images
 
@@ -364,37 +367,14 @@ e2e-test-softhsm:
     DB: mariadb:10.1
     LINOTP_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"
     LINOTP_DB_PORT: "3306"
-    LINOTP_ACTIVE_SECURITY_MODULE: "pkcs11"
+  services:
+    - name: ${DB}
+      alias: db
+    - name: "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-softhsm:${CI_PIPELINE_ID}"
+      alias: test-linotp
+    - name: selenium/standalone-chrome-debug
+      alias: test-chrome
   script:
-    # prepare softhsm2 and add configuration to linotp.cfg
-    - ls /etc/softhsm
-    - softhsm2-util --show-slots
-    - export SLOTID="$(softhsm2-util --show-slots | grep 'Slot' | head -n1 | cut -d' ' -f2)"
-    - export PKCS11_DLL=/usr/lib/softhsm/libsofthsm2.so
-    - cd linotpd/src/linotp/lib/security
-    - python3 ./pkcs11.py -s ${SLOTID} -p 1234 -n config
-    - python3 ./pkcs11.py -s ${SLOTID} -p 1234 -n token
-    - python3 ./pkcs11.py -s ${SLOTID} -p 1234 -n value
-    - cd -
-    - >
-        export LINOTP_HSM_PKCS11_CONFIG="{
-        'module': 'linotp.lib.security.pkcs11.Pkcs11SecurityModule',
-        'library': '/usr/lib/softhsm/libsofthsm2.so',
-        'password': '1234',
-        'slotid': ${SLOTID},
-        'configLabel': 'config',
-        'tokenLabel': 'token',
-        'valueLabel': 'value',
-        'defaultLabel': 'config',
-        'configHandle': None,
-        'tokenHandle': None,
-        'valueHandle': None,
-        'defaultHandle': None,
-        'poolsize': 1
-        }"
-    - echo "HSM_PKCS11_CONFIG = $LINOTP_HSM_PKCS11_CONFIG" > linotpd/src/linotp/linotp.cfg
-    - cat linotpd/src/linotp/linotp.cfg
-    - env | grep LINOTP_
     - cd linotpd/src/linotp/tests/integration
     - >
         /usr/local/bin/dockerfy
@@ -411,7 +391,6 @@ e2e-test-softhsm:
         -v
         --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml
         "
-
 
 # Upload deb packages to development repository.
 # We use scp to upload all the files to an incoming directory.

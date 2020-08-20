@@ -73,9 +73,6 @@ ARG DEPENDENCY_GPG_KEY_URL
 # To add ssl certificates that LDAP should
 # trust, set SSL_TRUSTED_CERT to the
 # contents of the certificate
-#
-# Softhsm2 config pin und so-pin
-# for more details see: https://github.com/opendnssec/SoftHSMv2
 
 ENV TZ="Europe/Berlin" \
     LINOTP_USER=linotp \
@@ -151,8 +148,7 @@ RUN apt-get install \
         dh-python \
         python3-flask \
         python3-psycopg2 python3-pymysql \
-	softhsm2 \
-	python3-pip
+        python3-pip
 
 # Install linotp packages from local files.
 COPY apt /opt/linotp/apt
@@ -169,13 +165,6 @@ RUN echo "linotp linotp/apache/activate boolean true" > /opt/linotp/apt/debconf-
     && rm /etc/linotp/encKey /etc/linotp/*.pem \
     && mkdir -p /etc/ssl/private /etc/ssl/certs \
     && chown linotp /var/log/linotp
-
-# Setup softhsm2 and add config entries to linotp.cfg
-RUN mkdir -p /var/lib/softhsm/tokens \
-    && mkdir -p /etc/softhsm \
-    && echo "directories.tokendir = /var/lib/softhsm/tokens" > /etc/softhsm/softhsm2.conf \
-    && echo "objectstore.backend = file" >> /etc/softhsm/softhsm2.conf \
-    && softhsm2-util --init-token --free --label "test" --so-pin 1234  --pin 1234
 
 WORKDIR $LINOTP_HOME
 

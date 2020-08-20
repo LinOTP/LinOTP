@@ -259,7 +259,7 @@ FUNCTIONAL_TESTS_DIR=$(TESTS_DIR)/functional
 
 ## Toplevel targets
 # Toplevel target to build all containers
-docker-build-all: docker-build-debs docker-build-linotp docker-build-linotp-test-image
+docker-build-all: docker-build-debs docker-build-linotp docker-build-linotp-test-image docker-build-linotp-softhsm
 
 # Toplevel target to build linotp container
 docker-linotp: docker-build-debs  docker-build-linotp
@@ -328,7 +328,7 @@ docker-build-linotp: DOCKER_IMAGE=linotp
 docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	cp linotpd/src/Dockerfile \
 		linotpd/src/config/*.tmpl \
-		linotpd/src/tools/linotp-create-htdigest \
+		linotpd/src/tools/* \
 		linotpd/src/linotp/tests/integration/testdata/se_mypasswd \
 		$(BUILDDIR)
 	cp -r linotpd/src/config/docker-initscripts.d $(BUILDDIR)
@@ -353,6 +353,31 @@ docker-build-linotp-test-image:
 	&& $(DOCKER_BUILD) \
 		$(DOCKER_TAG_ARGS) \
 		-t $(DOCKER_IMAGE) .
+
+# Build Softhsm test container
+.PHONY: docker-build-linotp-softhsm
+docker-build-linotp-softhsm: DOCKER_IMAGE=linotp-softhsm
+docker-build-linotp-softhsm: BASE_IMAGE=linotp:latest
+docker-build-linotp-softhsm:
+	cd $(SELENIUM_TESTS_DIR) \
+	&& $(DOCKER_BUILD) \
+		$(DOCKER_TAG_ARGS) \
+		-f Dockerfile.softhsm \
+		-t $(DOCKER_IMAGE) .
+
+# Run Selenium based smoketest against LinOTP configured with
+# softhsm security module
+.PHONY: docker-run-softhsm-smoketest
+docker-run-softhsm-smoketest:
+	cd $(SELENIUM_TESTS_DIR) \
+		&& docker-compose \
+			-f docker-compose.yml -f docker-compose-softhsm.yml \
+			run \
+			--rm \
+			-e PYTESTARGS="-m smoketest ${PYTESTARGS}" \
+			selenium_tester
+	cd $(SELENIUM_TESTS_DIR) \
+		&& docker-compose down
 
 
 # Pass PYTESTARGS=test_manage.py for picking a specific test file
