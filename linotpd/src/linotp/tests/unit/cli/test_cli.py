@@ -32,30 +32,13 @@ Command line tests
 from datetime import datetime
 
 import pytest
-from sqlalchemy import create_engine
 
-from linotp.app import LinOTPApp, init_db_command, setup_db
-from linotp.defaults import set_defaults
-from linotp.flap import set_config
-from linotp.model import meta, Config
-
+from linotp.app import LinOTPApp
 from linotp.cli import get_backup_filename
 
 
 @pytest.fixture
-def sqllitedb_url(tmpdir):
-    """
-    Return the URL for a sqlite database file
-
-    This is created in the temporary directory tmpdir
-    which will be removed afterwards
-    """
-    dbfile = tmpdir / 'testdb'
-    return f'sqlite:///{dbfile}'
-
-
-@pytest.fixture
-def app(sqllitedb_url):
+def app():
     """
     A minimal app for testing
 
@@ -64,27 +47,9 @@ def app(sqllitedb_url):
     app = LinOTPApp()
     config = {
         'TESTING': True,
-        'SQLALCHEMY_DATABASE_URI': sqllitedb_url,
     }
     app.config.update(config)
     return app
-
-
-@pytest.fixture
-def runner(app):
-    """
-    Return a test runner instance which can be used to run commands against
-    """
-    return app.test_cli_runner()
-
-
-@pytest.fixture
-def engine(sqllitedb_url):
-    """
-    Return an SQL Alchemy engine instance which can be used to
-    test the app database
-    """
-    return create_engine(sqllitedb_url)
 
 
 # ----------------------------------------------------------------------
@@ -104,58 +69,3 @@ def test_get_backup_filename(freezer, monkeypatch, app, fmt, filename, now):
     now_dt = datetime.fromisoformat(now) if isinstance(now, str) else None
     bfn = get_backup_filename(fn, now_dt)
     assert bfn == filename
-
-
-# ----------------------------------------------------------------------
-# Tests for `linotp init-db`
-# ----------------------------------------------------------------------
-
-def test_init_db_creates_tables(runner, engine):
-    # GIVEN an empty database
-    assert 'Config' not in engine.table_names()
-
-    # WHEN I call init-db without additional arguments
-    result = runner.invoke(init_db_command)
-    assert result.exit_code == 0, (str(result), result.output)
-
-    # THEN the tables are created
-    assert 'Creating database' in result.output
-    assert 'Config' in engine.table_names()
-
-
-@pytest.fixture
-def db_with_config(app):
-    """
-    Set up the database with default config records
-    """
-    with app.app_context():
-        setup_db(app)
-        set_config()
-        set_defaults(app)
-
-    assert meta.Session.query(Config).count() > 0
-    meta.Session.remove()
-
-
-@pytest.mark.usefixtures('db_with_config')
-@pytest.mark.parametrize('erase', (True, False))
-def test_clear_db(runner, erase):
-    if erase:
-        args = '--erase-all-data --yes'
-    else:
-        args = None
-
-    # GIVEN a database with records
-    # WHEN I invoke init-db
-    result = runner.invoke(init_db_command, args=args)
-    assert result.exit_code == 0
-
-    if erase:
-        assert 'Recreating database' in result.output
-    else:
-        assert 'Creating database' in result.output
-
-    # Then the database contains the base set of config entries
-
-    rec_count = meta.Session.query(Config).count()
-    assert rec_count > 0
