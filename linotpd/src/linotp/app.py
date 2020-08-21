@@ -45,6 +45,7 @@ from .lib.context import request_context
 from .lib.crypto.utils import init_key_partition
 
 from .lib.security.provider import SecurityProvider
+from .lib.config.global_api import LinotpAppConfig
 
 from .lib.error import LinotpError
 
@@ -220,6 +221,16 @@ class LinOTPApp(Flask):
         self.config_class = ExtFlaskConfig  # our special `Config` class
         self.audit_obj = None               # No audit logging so far
         self.security_provider: SecurityProvider = None
+
+        # ------------------------------------------------------------------ --
+
+        # we create a app shared linotp config object which main purpose is
+        # to syncronize the access to changes within multiple threads
+
+        self.linotp_app_config: LinotpAppConfig = None
+
+        # ------------------------------------------------------------------ --
+
         super().__init__(__name__,
                          static_folder='public', static_url_path='/static')
 
@@ -688,6 +699,15 @@ def setup_db(app, drop_data=False):
 
 # -------------------------------------------------------------------------- --
 
+# linotp config
+
+def init_linotp_config(app):
+    """ initialize the app global linotp config manager """
+
+    app.linotp_app_config = LinotpAppConfig()
+
+# -------------------------------------------------------------------------- --
+
 # security provider
 
 def init_security_provider():
@@ -811,6 +831,8 @@ def create_app(config_name='default', config_extra=None):
     with app.app_context():
         setup_cache(app)
         setup_db(app)
+
+        init_linotp_config(app)
         set_config()       # ensure `request_context` exists
         init_security_provider()
         setup_audit(app)
