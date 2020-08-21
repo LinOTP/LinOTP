@@ -23,14 +23,14 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-"""
-    handle all configuration items with aspekts like persitance and
-       syncronysation and provides this to all requests
+""" LinOTP Configuration class.
+
+    a dictionary to hold the linotp configuration entries with
+    - a database back-end and
+    - application wide synchronization
 """
 
 import logging
-import os
-import time
 
 from datetime import datetime
 
@@ -43,16 +43,9 @@ from linotp.lib.config.db_api import _retrieveAllConfigDB
 from linotp.lib.config.db_api import _storeConfigDB
 from linotp.lib.config.db_api import _retrieveConfigDB
 
-from linotp.lib.config.global_api import getGlobalObject
-from linotp.lib.config.global_api import _getConfigReadLock
-from linotp.lib.config.global_api import _releaseConfigLock
 
 from linotp.lib.config.type_definition import Config_Types
 
-"""
-    LinOTP Config class
-    - a dictionary to hold the config entries with a backend database
-"""
 
 log = logging.getLogger(__name__)
 
@@ -71,10 +64,11 @@ class LinOtpConfig(dict):
 
     """
 
-    def __init__(self, *args, **kw):
+    def __init__(self):
+
         self.delay = False
         self.realms = None
-        self.glo = getGlobalObject()
+        self.glo = current_app.linotp_app_config
         conf = self.glo.getConfig()
 
         do_reload = False
