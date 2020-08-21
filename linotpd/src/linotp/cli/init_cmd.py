@@ -27,16 +27,19 @@
 
 linotp init database
 linotp init enc-key
+linotp init audit-keys
 
 """
 
 import binascii
+from dataclasses import dataclass
 import datetime
 import hashlib
 import os
 import subprocess
 import sys
 import tempfile
+from typing import Any, Dict, List
 
 import click
 
@@ -86,6 +89,40 @@ def _make_backup(what: str, filename: str) -> bool:
     return True
 
 
+def _run_command(task: str, cmd: List[str], **kwargs: Dict[str, Any]) -> bool:
+    """Execute a shell command given as a list of strings, with
+    error checking.
+    """
+
+    @dataclass
+    class CmdResult:
+        exception: bool = True
+        exit_code: int = 0
+        output: str = ""
+
+    kwargs.update({'stdout': subprocess.PIPE, 'stderr': subprocess.STDOUT})
+    try:
+        result = subprocess.run(cmd, **kwargs)
+    except OSError as ex:
+        ret = CmdResult(True, None, str(ex))
+    else:
+        ret = CmdResult(False, result.returncode,
+                        result.stdout.decode("utf-8"))
+    if ret.exception or ret.exit_code != 0:
+        cmd_str = " ".join(cmd)
+        current_app.echo(f"{task} failed:")
+        if ret.exception:
+            current_app.echo(
+                f"Command '{cmd_str}' raised exception")
+        elif ret.exit_code < 0:
+            current_app.echo(
+                f"Command '{cmd_str}' terminated by signal {-ret.exit_code}")
+        else:
+            current_app.echo(
+                f"Command '{cmd_str}' returned exit code {ret.exit_code}")
+        current_app.echo(f"Output was:\n{ret.output}")
+
+    return ret
 
 # init commands: database + enc-key
 
@@ -219,3 +256,58 @@ def create_secret_key(filename, data=''):
         else:
             f.write(bytes.fromhex(data))
     os.replace(f.name, filename)     # atomic rename, since Python 3.3
+
+
+# ----------------------------------------------------------------------
+# Command `linotp init audit-keys`
+# ----------------------------------------------------------------------
+
+AUDIT_PRIVKEY_BITS = 2048       # Number of bits in a private audit key
+
+
+@init_cmds.command('audit-keys',
+                   help='Generate RSA key pair for audit log signing')
+@click.option('--force', '-f', is_flag=True,
+              help='Overwrite key pair if it exists already.')
+@with_appcontext
+def init_audit_keys_cmd(force):
+    privkey_filename = current_app.config["AUDIT_PRIVATE_KEY_FILE"]
+    pubkey_filename = current_app.config["AUDIT_PUBLIC_KEY_FILE"]
+
+    if os.path.exists(privkey_filename):
+        if not force:
+            if not _overwrite_check("private audit key", privkey_filename):
+                sys.exit(0)
+        if not _make_backup("private audit key", privkey_filename):
+            sys.exit(1)
+
+    create_audit_keys(privkey_filename, pubkey_filename)
+
+
+def create_audit_keys(privkey_filename, pubkey_filename):
+    ret = _run_command("Creating private audit key",
+                       ["openssl", "genrsa", "-out", privkey_filename,
+                        str(AUDIT_PRIVKEY_BITS)])
+    if ret.exit_code == 0:
+        try:
+            current_app.echo(f"Wrote private audit key to {privkey_filename}",
+                             v=1)
+        except RuntimeError:
+            pass
+    else:
+        sys.exit(1)
+
+    # The public key can always be reconstructed from the private key, so
+    # we don't worry about a backup of the public key file.
+
+    ret = _run_command("Extracting public audit key",
+                       ["openssl", "rsa", "-in", privkey_filename,
+                        "-pubout", "-out", pubkey_filename])
+    if ret.exit_code == 0:
+        try:
+            current_app.echo(
+                f"Extracted public audit key to {pubkey_filename}", v=1)
+        except RuntimeError:
+            pass
+    else:
+        sys.exit(1)
