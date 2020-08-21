@@ -30,9 +30,14 @@ linotp init enc-key
 
 """
 
-import sys
+import binascii
+import datetime
+import hashlib
 import os
+import subprocess
+import sys
 import tempfile
+
 import click
 
 from datetime import datetime
@@ -45,12 +50,42 @@ from flask.cli import with_appcontext
 from linotp.model import setup_db
 
 
-KEY_COUNT = 3
-KEY_LENGTH = 32
+from linotp.cli import get_backup_filename, main as cli_main
+
+KEY_COUNT = 3                    # Number of keys in the `SECRET_FILE`
+KEY_LENGTH = 32                  # Number of bytes per key in the `SECRET_FILE`
 SECRET_FILE_PERMISSIONS = 0o400
 
 
-# -------------------------------------------------------------------------- --
+# ----------------------------------------------------------------------
+# Subroutines of general interest
+# ----------------------------------------------------------------------
+
+def _overwrite_check(what: str, filename: str) -> bool:
+    n = "n" if what[0].lower() in "aeio" else ""
+    click.echo(f"There is already a{n} {what} in '{filename}'.\n"
+               "Overwriting this might have Dire Consequences.\n")
+    answer = click.prompt(
+        f"Overwrite existing {what}", default="no",
+        type=click.Choice(['yes', 'no'], case_sensitive=True),
+        show_choices=True)
+    if answer != 'yes':
+        click.echo(f'Not overwriting existing {what}.')
+        return False
+    return True
+
+
+def _make_backup(what: str, filename: str) -> bool:
+    backup_filename = get_backup_filename(filename)
+    try:
+        os.replace(filename, backup_filename)
+        current_app.echo(f"Moved existing {what} to {backup_filename}", v=1)
+    except OSError as ex:
+        current_app.echo(f"Error moving {what} to {backup_filename}: {ex!s}")
+        return False
+    return True
+
+
 
 # init commands: database + enc-key
 
@@ -93,13 +128,52 @@ def init_db_command(erase_all_data):
         current_app.echo(f'Failed to create database: {exx!s}')
         raise click.Abort()
     current_app.echo('database created', v=1)
+# ----------------------------------------------------------------------
+# Command `linotp init enc-key`
+# ----------------------------------------------------------------------
+
+CHUNK_SIZE = 16
+
+
+def dump_key(filename, instructions=True):
+    with open(filename, "rb") as f:
+        secret_key = f.read().hex()
+
+    if instructions:
+        click.echo(f"{filename} {datetime.datetime.now().isoformat()}\n")
+        click.echo("INSTRUCTIONS: Print this and store it in a safe place. "
+                   "Remember where you put\nit.\n\n"
+                   "To recover the keys, concatenate the FIRST column of each "
+                   "line and pass the\nresult to `linotp init enc-key` "
+                   "using the `--keys` option (spaces are\n"
+                   "allowed to make the key data easier to enter):\n\n"
+                   "  linotp init enc-key --keys "
+                   f"'{secret_key[:12]}...{secret_key[-12:]}'\n\n"
+                   "Compare the output to this list; if the values on the "
+                   "final lines agree,\neverything is probably OK. "
+                   "Otherwise compare the values in the second columns;\n"
+                   "if there is a mismatch, then the data in the first "
+                   "column on that line\ncontains one or more typoes. "
+                   "Enjoy!\n")
+
+    m = hashlib.sha1()
+    for k in range(0, len(secret_key), CHUNK_SIZE):
+        chunk = secret_key[k:k+CHUNK_SIZE]
+        check = binascii.crc32(chunk.encode('ascii')) & 0xffffffff
+        m.update(chunk.encode('ascii'))
+        click.echo(f"{chunk} {check:08x}")
+    click.echo(f"{' '*CHUNK_SIZE} {m.hexdigest()[:8]}")
 
 
 @init_cmds.command('enc-key',
-                   help='Generate aes key for encryption and decryption')
+                   help='Generate AES keys for encryption and decryption')
 @click.option('--force', '-f', is_flag=True,
-              help='Overwrite encKey file if it exists already.')
-def init_enc_key(force):
+              help='Overwrite key file if it exists already.')
+@click.option('--dump', is_flag=True,
+              help='Output paper emergency-backup version of the key file.')
+@click.option('--keys', default='',
+              help='Decode key from emergency backup data.')
+def init_enc_key_cmd(force, dump, keys):
     """Creates a LinOTP secret file to encrypt and decrypt values in database
 
     The key file is used via the default security provider to encrypt
@@ -107,69 +181,27 @@ def init_enc_key(force):
     If --force or -f is set and the encKey file exists already, it
     will be overwritten.
     """
-    app = current_app
-    filename = app.config["SECRET_FILE"]
+    filename = current_app.config["SECRET_FILE"]
 
-    if not os.path.exists(filename):
-        try:
-            create_secret_key(filename)
-            app.echo(f'Wrote enc-key to {filename}', v=1)
-        except IOError as exx:
-            app.echo(f'Error writing enc-key to {filename}: {exx!s}')
+    if os.path.exists(filename):
+        if not force:
+            if not _overwrite_check("enc-key", filename):
+                sys.exit(0)
+        if not _make_backup("enc-key", filename):
             sys.exit(1)
-        sys.exit(0)
-
-    if not force:
-        app.echo(f"Not overwriting existing enc-key in {filename}")
-        sys.exit(0)
-
-    click.echo(
-        f"The enc-key file, {filename}, already exists.\n"
-        "Overwriting an existing enc-key might make existing data in "
-        "the database inaccessible.\n"
-        "THAT WOULD BE VERY BAD.")
-    answer = click.prompt(
-        "Overwrite the existing enc-key", default="no",
-        type=click.Choice(['yes', 'no'], case_sensitive=True),
-        show_choices=True)
-
-    if answer != 'yes':
-        app.echo(f"Not overwriting existing enc-key in {filename}")
-        sys.exit(0)
-
-    # if we reach this line: force was True and the answer was 'yes'
-
-    # first we create a backup of the old key file with a time stamp
-
-    backup_filename = "%s.%s" % (
-                    filename, datetime.now().isoformat(timespec='seconds')
-                    )
 
     try:
-        os.replace(filename, backup_filename)
-        app.echo(
-            f"Moved existing enc-key file to {backup_filename}",
-            v=2)
-    except IOError as exx:
-        app.echo("Error moving existing enc-key file to "
-                 f"{backup_filename}: {exx!s}")
+        create_secret_key(filename, data=keys.replace(' ', ''))
+        current_app.echo(f"Wrote enc-key to {filename}", v=1)
+    except OSError as ex:
+        current_app.echo(f"Error writing enc-key to {filename}: {ex!s}")
         sys.exit(1)
 
-    # next try to create a new key file
-
-    try:
-        create_secret_key(filename)
-        app.echo(f"Wrote enc-key to {filename}", v=1)
-    except IOError as ex:
-        app.echo(
-            f"Error writing enc-key to {filename}: {ex!s}")
-        sys.exit(1)
+    if dump or keys:
+        dump_key(filename, instructions=dump)
 
 
-# -------------------------------------------------------------------------- --
-
-
-def create_secret_key(filename):
+def create_secret_key(filename, data=''):
     """Creates a LinOTP secret file to encrypt and decrypt values in database
 
     The key file is used via the default security provider to encrypt
@@ -182,5 +214,8 @@ def create_secret_key(filename):
                                      dir=os.path.dirname(filename),
                                      delete=False) as f:
         os.fchmod(f.fileno(), SECRET_FILE_PERMISSIONS)
-        f.write(os.urandom(KEY_COUNT * KEY_LENGTH))
+        if not data:
+            f.write(os.urandom(KEY_COUNT * KEY_LENGTH))
+        else:
+            f.write(bytes.fromhex(data))
     os.replace(f.name, filename)     # atomic rename, since Python 3.3
