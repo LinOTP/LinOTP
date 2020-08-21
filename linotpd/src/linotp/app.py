@@ -73,7 +73,6 @@ from .defaults import set_defaults
 from .settings import configs
 from .tokens import reload_classes as reload_token_classes
 from .lib.audit.base import getAudit
-from .lib.config.global_api import initGlobalObject
 
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
@@ -834,9 +833,11 @@ def create_app(config_name='default', config_extra=None):
 
         init_linotp_config(app)
         set_config()       # ensure `request_context` exists
+
         init_security_provider()
+
         setup_audit(app)
-        initGlobalObject()
+
         reload_token_classes()
         app.check_license()
         app.load_providers()
@@ -857,8 +858,6 @@ def create_app(config_name='default', config_extra=None):
 
         set_config()
         allocate_security_module()
-
-        initGlobalObject()
 
     app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
 
