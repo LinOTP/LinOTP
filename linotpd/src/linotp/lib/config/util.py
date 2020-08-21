@@ -28,9 +28,7 @@
     - located here as required in certain places
 """
 
-from linotp.flap import config
-from linotp.lib.crypto.encrypted_data import EncryptedData
-
+from flask import current_app
 
 def expand_here(value):
     """
@@ -39,18 +37,11 @@ def expand_here(value):
     :param value: the input value
     :return: the expanded value
     """
-    linotp_root = config.get("linotp.root")
 
-    if not linotp_root:
-        return value
+    if isinstance(value, str) and "%(here)s" in value:
 
-    if not isinstance(value, str):
-        return value
+        linotp_root = current_app.config['ROOT_DIR']
 
-    if isinstance(value, EncryptedData):
-        return value
-
-    if "%(here)s" in value:
         return value.replace("%(here)s", linotp_root)
 
     return value
