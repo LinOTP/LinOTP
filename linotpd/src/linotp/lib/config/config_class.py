@@ -77,7 +77,7 @@ class LinOtpConfig(dict):
         if len(list(conf.keys())) == 0:
             do_reload = True
 
-        if self.glo.isConfigComplet() is False:
+        if self.glo.isConfigComplete() is False:
             do_reload = True
             self.delay = True
 
