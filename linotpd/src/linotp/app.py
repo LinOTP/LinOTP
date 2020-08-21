@@ -26,13 +26,11 @@ import os
 import time
 from typing import List
 
-import click
 from datetime import datetime
 from uuid import uuid4
 
 from flask import (Flask, Config as FlaskConfig, current_app, g as flask_g,
                    jsonify, Blueprint, redirect)
-from flask.cli import with_appcontext
 from flask_babel import Babel, gettext
 
 from beaker.cache import CacheManager
@@ -69,16 +67,11 @@ from .lib.util import get_client
 
 from . import __version__
 from .flap import config, set_config, tmpl_context as c, request, setup_mako
-from .defaults import set_defaults
 from .settings import configs
 from .tokens import reload_classes as reload_token_classes
 from .lib.audit.base import getAudit
 
-from sqlalchemy import create_engine
-from sqlalchemy.pool import StaticPool
-
-from .model import init_model, meta         # FIXME: With Flask-SQLAlchemy
-from .model.migrate import run_data_model_migration
+from .model import setup_db, meta    # FIXME: With Flask-SQLAlchemy
 
 log = logging.getLogger(__name__)
 
@@ -625,77 +618,6 @@ def setup_cache(app):
     app.cache = CacheManager(**parse_cache_config_options(cache_opts))
 
 
-def setup_db(app, drop_data=False):
-    """Set up the database for LinOTP.
-
-    This method is used during create_app() phase and as a separate
-    flask command `init-db` in init_db_command() to initialize and setup
-    the linotp database.
-
-    FIXME: This is not how we would do this in Flask. We want to
-    rewrite it once we get Flask-SQLAlchemy and Flask-Migrate
-    working properly.
-
-    :param drop_data: If True, all data will be cleared. Use with caution!
-    """
-
-    # Initialise the SQLAlchemy engine
-
-    sql_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
-
-    # sqlite in-memory databases require special sqlalchemy setup:
-    # https://docs.sqlalchemy.org/en/13/dialects/sqlite.html#using-a-memory-database-in-multiple-threads
-
-    if sql_uri == "sqlite://":
-        engine = create_engine(sql_uri,
-                               connect_args={'check_same_thread': False},
-                               poolclass=StaticPool)
-    else:
-        engine = create_engine(sql_uri)
-
-    # Initialise database table model
-
-    init_model(engine)
-
-    # (Re)create and setup database tables if they don't already exist
-
-    app.logger.info("Setting up database...")
-
-    try:
-        if drop_data:
-            app.logger.info("Dropping tables to erase all data...")
-            meta.metadata.drop_all(bind=meta.engine)
-
-        meta.metadata.create_all(bind=meta.engine)
-
-        run_data_model_migration(meta)
-        set_defaults(app)
-
-        # For the cloud mode, we require the `admin_user` table to
-        # manage the admin users to allow password setting
-
-        admin_username = app.config.get('ADMIN_USERNAME')
-        admin_password = app.config.get('ADMIN_PASSWORD')
-
-        if admin_username is not None and admin_password is not None:
-            app.logger.info("Setting up cloud admin user...")
-            from .lib.tools.set_password import (
-                SetPasswordHandler, DataBaseContext
-            )
-            db_context = DataBaseContext(sql_url=meta.engine.url)
-            SetPasswordHandler.create_table(db_context)
-            SetPasswordHandler.create_admin_user(
-                db_context,
-                username=admin_username, crypted_password=admin_password)
-
-    except Exception as exx:
-        app.logger.exception(
-            "Exception occured during database setup: %r", exx)
-        meta.Session.rollback()
-        raise exx
-
-    meta.Session.commit()
-
 # -------------------------------------------------------------------------- --
 
 # linotp config
@@ -906,9 +828,6 @@ def create_app(config_name='default', config_extra=None):
         return request.accept_languages.best_match(app.available_languages,
                                                    "en")
 
-    # Command line handler
-    app.cli.add_command(init_db_command)
-
     # Enable profiling if desired. The options are debatable and could be
     # made more configurable. OTOH, we could all have a pony.
     profiling = False
@@ -930,33 +849,6 @@ def create_app(config_name='default', config_extra=None):
             log.info("PROFILE is enabled (do not use this in production!)")
 
     return app
-
-def erase_confirm(ctx, param, value):
-    if ctx.params['erase_all_data']:
-        # The user asked for data to be erased. We now look for a confirmation
-        # or prompt the user
-        if not value:
-            prompt = click.prompt('Do you really want to erase the database?', type=click.BOOL)
-            if not prompt:
-                ctx.abort()
-
-@click.command('init-db', help="Create tables in the database")
-@click.option('--erase-all-data', is_flag=True, help="Erase ALL existing data")
-@click.option('--yes', is_flag=True, callback=erase_confirm, expose_value=False, help="Erase data without prompting for confirmation")
-@with_appcontext
-def init_db_command(erase_all_data):
-    """
-    Create new tables
-
-    The database is initialised and optionally data is cleared.
-    """
-    if erase_all_data:
-        info = 'Recreating database'
-    else:
-        info = 'Creating database'
-
-    click.echo(info)
-    setup_db(current_app, erase_all_data)
 
 
 def healthcheck():

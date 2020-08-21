@@ -37,17 +37,12 @@ import click
 
 from datetime import datetime
 
-from sqlalchemy import create_engine
-from sqlalchemy.pool import StaticPool
-
 from flask import current_app
 
 from flask.cli import AppGroup
 from flask.cli import with_appcontext
 
-from linotp.model import init_model, meta       # FIXME: With Flask-SQLAlchemy
-from linotp.model.migrate import run_data_model_migration
-from linotp.defaults import set_defaults
+from linotp.model import setup_db
 
 
 KEY_COUNT = 3
@@ -172,79 +167,6 @@ def init_enc_key(force):
 
 
 # -------------------------------------------------------------------------- --
-
-# backend implementation
-
-def setup_db(app, drop_data=False):
-    """Set up the database for LinOTP.
-
-    This method is used during create_app() phase and as a separate
-    flask command `init-db` in init_db_command() to initialize and setup
-    the linotp database.
-
-    FIXME: This is not how we would do this in Flask. We want to
-    rewrite it once we get Flask-SQLAlchemy and Flask-Migrate
-    working properly.
-
-    :param drop_data: If True, all data will be cleared. Use with caution!
-    """
-
-    # Initialise the SQLAlchemy engine
-
-    sql_uri = app.config["SQLALCHEMY_DATABASE_URI"]
-
-    # sqlite in-memory databases require special sqlalchemy setup:
-    # https://docs.sqlalchemy.org/en/13/dialects/sqlite.html#using-a-memory-database-in-multiple-threads
-
-    if sql_uri == "sqlite://":
-        engine = create_engine(sql_uri,
-                               connect_args={'check_same_thread': False},
-                               poolclass=StaticPool)
-    else:
-        engine = create_engine(sql_uri)
-
-    # Initialise database table model
-
-    init_model(engine)
-
-    # (Re)create and setup database tables if they don't already exist
-
-    app.echo("Setting up database...", v=1)
-
-    try:
-        if drop_data:
-            app.echo("Dropping tables to erase all data...", v=1)
-            meta.metadata.drop_all(bind=meta.engine)
-
-        meta.metadata.create_all(bind=meta.engine)
-
-        run_data_model_migration(meta)
-        set_defaults(app)
-
-        # For the cloud mode, we require the `admin_user` table to
-        # manage the admin users to allow password setting
-
-        admin_username = app.config['ADMIN_USERNAME']
-        admin_password = app.config['ADMIN_PASSWORD']
-
-        if admin_username is not None and admin_password is not None:
-            app.echo("Setting up cloud admin user...", v=1)
-            from linotp.lib.tools.set_password import (
-                SetPasswordHandler, DataBaseContext
-            )
-            db_context = DataBaseContext(sql_url=meta.engine.url)
-            SetPasswordHandler.create_table(db_context)
-            SetPasswordHandler.create_admin_user(
-                db_context,
-                username=admin_username, crypted_password=admin_password)
-
-    except Exception as exx:
-        app.echo(
-            "Exception occured during database setup: %r" % exx)
-        meta.Session.rollback()
-        raise exx
-
-    meta.Session.commit()
 
 
 def create_secret_key(filename):
