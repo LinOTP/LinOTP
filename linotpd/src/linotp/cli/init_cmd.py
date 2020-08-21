@@ -43,15 +43,14 @@ from typing import Any, Dict, List
 
 import click
 
-from datetime import datetime
+from sqlalchemy import create_engine
 
 from flask import current_app
 
 from flask.cli import AppGroup
 from flask.cli import with_appcontext
 
-from linotp.model import setup_db
-
+from linotp.model import setup_db       # FIXME: With Flask-SQLAlchemy
 
 from linotp.cli import get_backup_filename, main as cli_main
 
@@ -124,10 +123,13 @@ def _run_command(task: str, cmd: List[str], **kwargs: Dict[str, Any]) -> bool:
 
     return ret
 
-# init commands: database + enc-key
 
 init_cmds = AppGroup('init')
 
+
+# ----------------------------------------------------------------------
+# Command `linotp init database`
+# ----------------------------------------------------------------------
 
 def erase_confirm(ctx, param, value):
     if ctx.params['erase_all_data']:
@@ -137,7 +139,7 @@ def erase_confirm(ctx, param, value):
             prompt = click.prompt('Do you really want to erase the database?',
                                   type=click.BOOL)
             if not prompt:
-                ctx.abort()
+                sys.exit(0)
 
 
 @init_cmds.command('database', help="Create tables in the database")
@@ -163,8 +165,10 @@ def init_db_command(erase_all_data):
         setup_db(current_app, erase_all_data)
     except Exception as exx:
         current_app.echo(f'Failed to create database: {exx!s}')
-        raise click.Abort()
-    current_app.echo('database created', v=1)
+        raise sys.exit(1)
+    current_app.echo('Database created', v=1)
+
+
 # ----------------------------------------------------------------------
 # Command `linotp init enc-key`
 # ----------------------------------------------------------------------
