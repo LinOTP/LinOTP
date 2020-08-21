@@ -45,7 +45,6 @@ from .lib.context import request_context
 from .lib.crypto.utils import init_key_partition
 
 from .lib.security.provider import SecurityProvider
-from .lib.app_globals import RWLock
 
 from .lib.error import LinotpError
 
@@ -697,19 +696,12 @@ def init_security_provider():
     the security provider is an manager for a pool of security module
     connections.
 
-    To regulate the access to that pool, an RWLock is required.
-    Thus the rw lock is as well an app global singleton.
-
-    TODO: embed this code into the security provider class.
-
     The security provider will then provide on each request an hsm connection
     out of the pool with in the request context (flask.g).
     """
     try:
 
-        current_app.rw_lock = RWLock()
-
-        security_provider = SecurityProvider(secLock=current_app.rw_lock)
+        security_provider = SecurityProvider()
         security_provider.load_config(current_app.config)
 
         current_app.security_provider = security_provider
