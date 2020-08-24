@@ -40,19 +40,27 @@ from linotp.cli import main, Echo, get_backup_filename
 import linotp.cli.init_cmd as c
 
 from sqlalchemy import create_engine
-from linotp.model import Config, meta, setup_db, set_defaults
+from linotp.model import Config, meta, setup_db, init_db_tables
 
 
 @pytest.fixture
 def app(tmp_path):
+    os.environ['LINOTP_CMD'] = 'init'
     app = LinOTPApp()
     config = {
         'TESTING': True,
         'BACKUP_FILE_TIME_FORMAT': '%Y-%m-%d_%H-%M',
-        'SQLALCHEMY_DATABASE_URI': "sqlite:///" + str(tmp_path/"linotp.sqlite")
+        'SQLALCHEMY_DATABASE_URI': "sqlite:///"+str(tmp_path/"linotp.sqlite"),
+        'ADMIN_USERNAME': '',
+        'ADMIN_PASSWORD': '',
     }
     app.config.update(config)
     return app
+
+
+@pytest.fixture
+def runner(app):
+    return app.test_cli_runner()
 
 
 def feed(input):
@@ -213,7 +221,7 @@ def engine(app):
     return create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
 
 
-def test_setup_db_creates_tables(app, engine, capsys):
+def test_setup_db_doesnt_create_tables(app, engine, capsys):
     app.echo = Echo(verbosity=1)
 
     # GIVEN an empty database
@@ -221,11 +229,9 @@ def test_setup_db_creates_tables(app, engine, capsys):
 
     # WHEN I call `setup_db` without additional arguments
     setup_db(app)
-    captured = capsys.readouterr()
 
-    # THEN the tables are created
-    assert 'Setting up database' in captured.err
-    assert 'Config' in engine.table_names()
+    # THEN the tables are NOT created (because `init_db_tables` does that).
+    assert 'Config' not in engine.table_names()
 
 
 @pytest.mark.parametrize('erase', (False, True))

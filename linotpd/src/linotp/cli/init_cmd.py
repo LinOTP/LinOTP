@@ -43,14 +43,12 @@ from typing import Any, Dict, List
 
 import click
 
-from sqlalchemy import create_engine
-
 from flask import current_app
 
 from flask.cli import AppGroup
 from flask.cli import with_appcontext
 
-from linotp.model import setup_db       # FIXME: With Flask-SQLAlchemy
+from linotp.model import init_db_tables
 
 from linotp.cli import get_backup_filename, main as cli_main
 
@@ -162,7 +160,7 @@ def init_db_command(erase_all_data):
 
     current_app.echo(info, v=1)
     try:
-        setup_db(current_app, erase_all_data)
+        init_db_tables(current_app, erase_all_data)
     except Exception as exx:
         current_app.echo(f'Failed to create database: {exx!s}')
         raise sys.exit(1)

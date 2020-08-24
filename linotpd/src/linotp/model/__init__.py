@@ -44,12 +44,14 @@ Common rules
 
 import binascii
 import logging
+import os
 import traceback
 from datetime import datetime
 
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
 
 import json
+import sys
 
 import sqlalchemy as sa
 
@@ -84,23 +86,31 @@ COL_PREFIX = ""
 #     COL_PREFIX = config.get("oracle.sql.column_prefix", "lino")
 
 
-def setup_db(app, drop_data=False):
+def setup_db(app):
     """Set up the database for LinOTP.
 
-    This method is used during create_app() phase and as a separate
-    flask command `init-db` in init_db_command() to initialize and setup
-    the linotp database.
+    This method is used to set up a SQLAlchemy database engine for the
+    main LinOTP database. It does NOT generate a table structure if
+    the database doesn't have one (see `init_db_tables()` below for that).
+
+    This method is called during `create_app()`, which means that it
+    happens pretty much always (during CLI commands and also when running
+    from a WSGI application server), even before our own code really gets
+    control. This is a hassle because we want to make sure that the
+    database is properly initialised before going on our merry way, except
+    when we know the database isn't properly initialised and the next
+    thing we're about to do is to initialise it. This is why we have
+    the revolting `app.cli_cmd` mechanism that is used below.
 
     FIXME: This is not how we would do this in Flask. We want to
     rewrite it once we get Flask-SQLAlchemy and Flask-Migrate
     working properly.
 
-    :param drop_data: If True, all data will be cleared. Use with caution!
     """
 
     # Initialise the SQLAlchemy engine
 
-    sql_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
+    sql_uri = app.config["SQLALCHEMY_DATABASE_URI"]
 
     # sqlite in-memory databases require special sqlalchemy setup:
     # https://docs.sqlalchemy.org/en/13/dialects/sqlite.html#using-a-memory-database-in-multiple-threads
@@ -112,23 +122,51 @@ def setup_db(app, drop_data=False):
     else:
         engine = create_engine(sql_uri)
 
-    # Initialise database table model
-
     init_model(engine)
 
-    # (Re)create and setup database tables if they don't already exist
+    # Check that the database is correctly initialised, except in situations
+    # where that doesn't matter.
 
-    app.echo(f"Setting up database... (drop_data={drop_data})", v=1)
+    if app.cli_cmd != 'init':
+        if 'Config' not in engine.table_names():
+            # To avoid chicken-and-egg issues, we don't abort the program
+            # just now even if the database isn't initialised yet. Commands
+            # other than `linotp init` will need to fend for themselves.
+
+            log.warning("Database schema must be initialised, "
+                        "run `linotp init database`.")
+            # sys.exit(11)
+
+
+def init_db_tables(app, drop_data=False, add_defaults=True):
+    """Initialise LinOTP database tables.
+
+    This function initialises the LinOTP tables given an empty database
+    (it also works if the database isn't empty).
+
+    :param drop_data: If `True`, all data will be cleared. Use with caution!
+    :param add_defaults: Adds default configuration variables if `True`.
+       Don't set this to `False` unless you know what you are doing.
+    """
+
+    # Use `app.echo()` if available, otherwise standard logging.
+    echo = getattr(app, 'echo',
+                   lambda msg, v=0: log.log(
+                       logging.INFO if v else logging.ERROR, msg))
+
+    echo(f"Setting up database...", v=1)
 
     try:
         if drop_data:
-            app.echo("Dropping tables to erase all data...", v=1)
+            echo("Dropping tables to erase all data...", v=1)
             meta.metadata.drop_all(bind=meta.engine)
 
+        echo(f"Creating tables...", v=1)
         meta.metadata.create_all(bind=meta.engine)
 
         run_data_model_migration(meta)
-        set_defaults(app)
+        if add_defaults:
+            set_defaults(app)
 
         # For the cloud mode, we require the `admin_user` table to
         # manage the admin users to allow password setting
@@ -137,7 +175,7 @@ def setup_db(app, drop_data=False):
         admin_password = app.config['ADMIN_PASSWORD']
 
         if admin_username and admin_password:
-            app.echo("Setting up cloud admin user...", v=1)
+            echo("Setting up cloud admin user...", v=1)
             from .lib.tools.set_password import (
                 SetPasswordHandler, DataBaseContext
             )
@@ -148,8 +186,7 @@ def setup_db(app, drop_data=False):
                 username=admin_username, crypted_password=admin_password)
 
     except Exception as exx:
-        app.echo(
-            f"Exception occured during database setup: {exx!r}")
+        echo(f"Exception occured during database setup: {exx!r}")
         meta.Session.rollback()
         raise exx
 

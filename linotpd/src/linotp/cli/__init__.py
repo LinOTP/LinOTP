@@ -30,6 +30,8 @@ in `setup.py()`, so that the shell command `linotp` calls that function.
 """
 
 from datetime import datetime
+import os
+import sys
 
 import click
 
@@ -93,13 +95,34 @@ def get_backup_filename(filename: str, now: datetime = None) -> str:
     return filename + "." + ext
 
 
+# Custom Click command group. We need this so we can take a peek at the
+# command line prior to the initialisation of the Flask app, to see what
+# sort of command we're running. That information is helpful because it
+# allows us to insist that the database is properly initialised, except
+# when we're doing `linotp init`.
+#
+# We need to do this at the earliest convenient moment (certainly before
+# the `LinOTPApp` constructor is invoked) because the Flask app factory
+# wants to do database initialisation. Once we end up in a Click-based
+# command function it is already too late.
+
+class LinOTPGroup(FlaskGroup):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        for arg in sys.argv[1:]:
+            if arg[0] != '-':
+                os.environ['LINOTP_CMD'] = arg
+                break
+
+
 # Main command group for the application. Here's where we end up when
 # the user gives the `linotp` command on the command line. We rely on
 # Click to dispatch to subcommands in their respective groups. Note that
 # new subcommands (or subcommand groups) must be registered in `setup.py`
 # to become reachable.
 
-@click.group(cls=FlaskGroup, create_app=create_app)
+@click.group(cls=LinOTPGroup, create_app=create_app)
 @click.option('--verbose', '-v', count=True,
               help=("Increase amount of output from the command "
                     "(can be specified several times)."))
