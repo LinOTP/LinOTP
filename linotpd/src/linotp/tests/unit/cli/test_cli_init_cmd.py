@@ -181,33 +181,35 @@ def test_run_command_signal(app, capsys, monkeypatch):
 # Tests for `linotp init database`
 # ----------------------------------------------------------------------
 
-def setup_db_ok(app, erase_all_data):
+def init_db_tables_ok(app, erase_all_data):
     print("ERASE" if erase_all_data else "KEEP")
 
 
-def setup_db_exception(app, erase_all_data):
+def init_db_tables_exception(app, erase_all_data):
     raise Exception("Generic exception")
 
 
-@pytest.mark.parametrize("args,setup_fn,input,output,result", [
-    (["-v", "init", "database"], setup_db_ok, "",
+@pytest.mark.parametrize("args,idt_fn,input,output,result", [
+    (["-v", "init", "database"], init_db_tables_ok, "",
      ["Creating database", "KEEP", "created"], 0),
-    (["-v", "init", "database", "--erase-all-data"], setup_db_ok, "no",
+    (["-v", "init", "database", "--erase-all-data"], init_db_tables_ok, "no",
      ["Do you really want to erase the database?"], 0),
-    (["-v", "init", "database", "--erase-all-data"], setup_db_ok, "yes",
+    (["-v", "init", "database", "--erase-all-data"], init_db_tables_ok, "yes",
      ["Do you really want to erase the database?",
       "Recreating", "ERASE", "Database created"], 0),
-    (["-v", "init", "database", "--erase-all-data", "--yes"], setup_db_ok, "",
-     ["Recreating", "ERASE", "Database created"], 0),
-    (["init", "database"], setup_db_exception, "",
+    (["-v", "init", "database", "--erase-all-data", "--yes"],
+     init_db_tables_ok, "", ["Recreating", "ERASE", "Database created"], 0),
+    (["init", "database"], init_db_tables_exception, "",
      ["Failed to create database: Generic exception"], 1),
 
 ])
 def test_init_database_cmd(app, monkeypatch, capsys, runner,
-                           args, setup_fn, input, output, result):
+                           args, idt_fn, input, output, result):
     # This tests option handling only. Database ops are tested elsewhere.
 
-    monkeypatch.setattr(c, 'setup_db', setup_fn)
+    monkeypatch.setattr('linotp.model.setup_db', lambda: None)
+    # Monkey-patch `init_db_tables` in `c` to get the correct one.
+    monkeypatch.setattr(c, 'init_db_tables', idt_fn)
     cmd_result = runner.invoke(main, args, input=input)
     assert cmd_result.exit_code == result
     for s in output:
@@ -240,6 +242,7 @@ def test_setup_db_erase_all(app, engine, capsys, erase):
 
     # GIVEN a database with records
     setup_db(app)
+    init_db_tables(app, drop_data=True, add_defaults=True)
 
     KEY = "linotp.foobar"
     item = Config(Key=KEY, Value="123", Type="int", Description="test item")
@@ -249,7 +252,8 @@ def test_setup_db_erase_all(app, engine, capsys, erase):
     meta.Session.remove()
 
     # WHEN I invoke `setup_db`
-    setup_db(app, drop_data=erase)
+    setup_db(app)
+    init_db_tables(app, drop_data=erase, add_defaults=False)
 
     if erase:
         # Additional record should have disappeared
