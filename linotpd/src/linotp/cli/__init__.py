@@ -122,7 +122,7 @@ class LinOTPGroup(FlaskGroup):
 # new subcommands (or subcommand groups) must be registered in `setup.py`
 # to become reachable.
 
-@click.group(cls=LinOTPGroup, create_app=create_app)
+@click.group(name="linotp", cls=LinOTPGroup, create_app=create_app)
 @click.option('--verbose', '-v', count=True,
               help=("Increase amount of output from the command "
                     "(can be specified several times)."))
