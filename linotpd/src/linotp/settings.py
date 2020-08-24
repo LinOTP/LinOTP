@@ -293,6 +293,10 @@ _config_schema = ConfigSchema([
                      "database URI which specifies the database to be used. "
                      "You need to ensure that the database exists and is "
                      "accessed with the proper credentials and permissions.")),
+    ConfigItem("AUDIT_ERROR_ON_TRUNCATION", bool, convert=to_boolean,
+               default=False,
+               help=("If set to `True`, having to truncate audit data to"
+                     "fit the database schema will be considered an error.")),
     ConfigItem("AUDIT_PUBLIC_KEY_FILE", str, default="audit-public.pem",
                help=("The public key used for the audit log.")),
     ConfigItem("AUDIT_PRIVATE_KEY_FILE", str, default="audit-private.pem",
