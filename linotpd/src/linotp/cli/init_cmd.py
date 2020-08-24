@@ -313,3 +313,25 @@ def create_audit_keys(privkey_filename, pubkey_filename):
             pass
     else:
         sys.exit(1)
+
+
+# ----------------------------------------------------------------------
+# Command `linotp init all`
+# ----------------------------------------------------------------------
+
+@init_cmds.command('all',
+                   help='Execute all "init" subcommands in sequence.')
+@click.option('--force', '-f', is_flag=True,
+              help='Pass the `--force` option to all subcommands.')
+@with_appcontext
+def init_all_cmd(force):
+    cmds = {
+        'enc-key': True,
+        'audit-keys': True,
+        'database': False,
+    }
+    for cmd, use_force in cmds.items():
+        args = ['init', cmd]
+        if force and use_force:  # The Force is strong in this one
+            args.append('--force')
+        cli_main(args, standalone_mode=False)

@@ -178,7 +178,6 @@ RUN chmod 755 /usr/local/bin/linotp-create-htdigest /etc/linotp/docker-init.d/*
 
 ENTRYPOINT [ "/usr/local/bin/dockerfy", \
     "--run", "/bin/run-parts", "--verbose", "--exit-on-error", "/etc/linotp/docker-init.d", "--", \
-    "--" \
 ]
 
 CMD [ \
