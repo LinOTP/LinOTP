@@ -1,0 +1,76 @@
+#! /bin/sh
+#
+#    LinOTP - the open source solution for two factor authentication
+#    Copyright (C) 2020 arxes-tolina GmbH
+#
+#    This file is part of LinOTP server.
+#
+#    This program is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU Affero General Public
+#    License, version 3, as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the
+#               GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#    E-mail: linotp@keyidentity.com
+#    Contact: www.linotp.org
+#    Support: www.keyidentity.com
+#
+
+# This script configures linotp before it is started.
+# It is intended to be run as the Docker entrypoint.
+
+set -e
+
+# Wait for database
+if [ -n "$LINOTP_DB_HOST" ]; then
+  echo Waiting for LinOTP database on "$LINOTP_DB_HOST:$LINOTP_DB_PORT"
+  /usr/local/bin/dockerfy \
+    --wait "tcp://$LINOTP_DB_HOST:$LINOTP_DB_PORT" \
+    --timeout "$LINOTP_DB_WAITTIME"
+fi
+
+# Write SSL certificate file from environment
+python3 -c "
+import os
+import re
+from pathlib import Path
+crt = os.getenv('SSL_TRUSTED_CERT')
+crt and Path('/usr/local/share/ca-certificates/docker.crt').write_text(re.sub(' *(-----(BEGIN|END) CERTIFICATE-----) *', r'\\n\\1\\n', crt))
+"
+
+update-ca-certificates
+
+echo Initialising LinOTP
+# TODO - replace this with new 'linotp init' commands
+/var/lib/dpkg/info/linotp.postinst configure
+
+# Initialise MariaDB database
+python3 -c "
+import os
+from urllib.parse import urlsplit
+db=urlsplit(os.getenv('LINOTP_DATABASE_URI'))
+db.scheme.startswith('mysql') and os.system(f\"mariadb --user='{db.username}' --password='{db.password}' --host='{db.hostname}' --port='{db.port or 3306}' --database='{db.path.strip('/')}' --execute='ALTER DATABASE CHARACTER SET=utf8 COLLATE=utf8_bin;'\")
+"
+
+# Create SSL certificate
+openssl req -new -x509 -newkey rsa:2048 \
+    -subj /CN=`hostname`.`dnsdomainname` \
+    -days 768 \
+    -out /etc/ssl/certs/linotpserver.pem \
+    -keyout /etc/ssl/private/linotpserver.key \
+    -nodes
+
+# Create Apache admin user for manage interface
+/usr/local/bin/linotp-create-htdigest "$LINOTP_ADMIN_USER" "$LINOTP_ADMIN_PASSWORD"
+
+# Initialise database tables
+/bin/su linotp -s /bin/sh -w LINOTP_CFG,FLASK_APP,FLASK_ENV \
+    -c "flask init-db"

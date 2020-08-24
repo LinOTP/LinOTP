@@ -183,25 +183,15 @@ WORKDIR $LINOTP_HOME
 COPY *.tmpl /etc/linotp/
 COPY dockerfy /usr/local/bin/
 COPY linotp-create-htdigest /usr/local/bin/
-RUN chmod 755 /usr/local/bin/linotp-create-htdigest
+# Initialisation scripts directory
+COPY docker-initscripts.d /etc/linotp/docker-init.d/
+RUN chmod 755 /usr/local/bin/linotp-create-htdigest /etc/linotp/docker-init.d/*
 
 ENTRYPOINT [ "/usr/local/bin/dockerfy", \
     "--template", "/etc/linotp/linotp-docker.cfg.tmpl:/etc/linotp/linotp.cfg", \
     "--template", "/etc/linotp/apache-docker.conf.tmpl:/etc/apache2/sites-enabled/linotp.conf", \
-    "--run", "/bin/sh", "-c", \
-        "if [ -n \"{{ .Env.LINOTP_DB_HOST }}\" ]; then /usr/local/bin/dockerfy --wait tcp://{{ .Env.LINOTP_DB_HOST }}:{{ .Env.LINOTP_DB_PORT }} --timeout {{ .Env.LINOTP_DB_WAITTIME }}; fi", \
-    "--", \
-    "--run", "python3", "-c", "import os; import re; from pathlib import Path; crt = os.getenv('SSL_TRUSTED_CERT'); crt and Path('/usr/local/share/ca-certificates/docker.crt').write_text(re.sub(' *(-----(BEGIN|END) CERTIFICATE-----) *', r'\\n\\1\\n', crt))", \
-    "--", \
-    "--run", "update-ca-certificates", "--", \
-    "--run", "/var/lib/dpkg/info/linotp.postinst", "configure", "--", \
-    "--run", "python3", "-c", "import os; from urllib.parse import urlsplit; db=urlsplit(os.getenv('LINOTP_DATABASE_URI')); db.scheme.startswith('mysql') and os.system(f\"mariadb --user='{db.username}' --password='{db.password}' --host='{db.hostname}' --port='{db.port or 3306}' --database='{db.path.strip('/')}' --execute='ALTER DATABASE CHARACTER SET=utf8 COLLATE=utf8_bin;'\")", \
-    "--", \
-    "--run", "/bin/sh", "-c", \
-    "openssl req -new -x509 -newkey rsa:2048 -subj /CN=`hostname`.`dnsdomainname` -days 768 -out /etc/ssl/certs/linotpserver.pem  -keyout /etc/ssl/private/linotpserver.key -nodes", \
-    "--", \
-    "--run", "/usr/local/bin/linotp-create-htdigest", "{{ .Env.LINOTP_ADMIN_USER }}", "{{ .Env.LINOTP_ADMIN_PASSWORD }}", "--", \
-    "--run", "/bin/su", "linotp", "-s", "/bin/sh", "-w", "LINOTP_CFG,FLASK_APP,FLASK_ENV", "-c", "flask init-db", "--" \
+    "--run", "/bin/run-parts", "--verbose", "--exit-on-error", "/etc/linotp/docker-init.d", "--", \
+    "--" \
 ]
 
 CMD [ \

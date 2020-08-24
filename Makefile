@@ -331,6 +331,7 @@ docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 		linotpd/src/tools/linotp-create-htdigest \
 		linotpd/src/linotp/tests/integration/testdata/se_mypasswd \
 		$(BUILDDIR)
+	cp -r linotpd/src/config/docker-initscripts.d $(BUILDDIR)
 
 	# We show the files sent to Docker context here to aid in debugging
 	find $(BUILDDIR)
