@@ -188,8 +188,6 @@ COPY docker-initscripts.d /etc/linotp/docker-init.d/
 RUN chmod 755 /usr/local/bin/linotp-create-htdigest /etc/linotp/docker-init.d/*
 
 ENTRYPOINT [ "/usr/local/bin/dockerfy", \
-    "--template", "/etc/linotp/linotp-docker.cfg.tmpl:/etc/linotp/linotp.cfg", \
-    "--template", "/etc/linotp/apache-docker.conf.tmpl:/etc/apache2/sites-enabled/linotp.conf", \
     "--run", "/bin/run-parts", "--verbose", "--exit-on-error", "/etc/linotp/docker-init.d", "--", \
     "--" \
 ]
