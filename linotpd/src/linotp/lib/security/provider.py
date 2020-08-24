@@ -32,6 +32,7 @@ import _thread
 import time
 import logging
 
+from linotp.lib.rw_lock import RWLock
 from linotp.lib.crypto.utils import zerome
 from linotp.lib.error import HSMException
 from linotp.lib.security import FatalHSMException
@@ -59,10 +60,10 @@ class SecurityProvider(object):
     the thread id is used as session identifier
     '''
 
-    def __init__(self, secLock):
+    def __init__(self):
         '''
         setup the security provider, which is called on server startup
-        from the app_globals init
+        from the flask app init
 
         :param secLock: RWLock() to support server wide locking
         :type  secLock: RWLock
@@ -74,7 +75,7 @@ class SecurityProvider(object):
         self.security_modules = {}
         self.activeOne = 'default'
         self.hsmpool = {}
-        self.rwLock = secLock
+        self.rwLock = RWLock()
         self.max_retry = 5
 
     def load_config(self, config):

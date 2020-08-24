@@ -44,6 +44,8 @@ from .lib.context import request_context
 
 from .lib.crypto.utils import init_key_partition
 
+from .lib.security.provider import SecurityProvider
+
 from .lib.error import LinotpError
 
 from .lib.logs import init_logging_config
@@ -217,6 +219,7 @@ class LinOTPApp(Flask):
     def __init__(self):
         self.config_class = ExtFlaskConfig  # our special `Config` class
         self.audit_obj = None               # No audit logging so far
+        self.security_provider: SecurityProvider = None
         super().__init__(__name__,
                          static_folder='public', static_url_path='/static')
 
@@ -227,16 +230,7 @@ class LinOTPApp(Flask):
         before_first_request function
         """
 
-        try:
-            hsm = self.security_provider.getSecurityModule()
-            self.hsm = hsm
-            c.hsm = hsm
-        except Exception as exx:
-            log.exception('failed to assign hsm device: %r' % exx)
-            raise exx
-
         l_config = getLinotpConfig()  # SQL-based configuration
-
         resolver_setup_done = config.get('resolver_setup_done', False)
         if resolver_setup_done is False:
             try:
@@ -247,16 +241,6 @@ class LinOTPApp(Flask):
                 config['resolver_setup_done'] = False
                 log.error("Failed to setup resolver: %r", exx)
                 raise exx
-
-        # TODO: verify merge dropped
-        # initResolvers()
-
-    @property
-    def security_provider(self):
-        """
-        Return the security provider, which is an instance of SecurityProvider
-        """
-        return flask_g.app_globals.security_provider
 
     def check_license(self):
         """
@@ -313,11 +297,9 @@ class LinOTPApp(Flask):
 
     def finalise_request(self, exc):
         meta.Session.remove()
-        # free the lock on the scurityPovider if any
-        # Make sure this doesn't crash in the absence of a `request_context`,
-        # which can happen in certain tests.
-        if hasattr(flask_g, 'request_context') and c.get('sep', False):
-            c.sep.dropSecurityModule()
+
+        drop_security_module()
+
         closeResolvers()
 
         # hint for the garbage collector to make the dishes
@@ -704,20 +686,60 @@ def setup_db(app, drop_data=False):
 
     meta.Session.commit()
 
+# -------------------------------------------------------------------------- --
 
-def setup_security_provider(app):
-    """
-    Set up the security provider (HSM or software). This is straight from
-    `load_environment()` and should be rewritten to use Flask-style config
-    settings, but this is a huge bowl of spaghetti.
+# security provider
+
+def init_security_provider():
+    """ Initialize the security provider.
+
+    the security provider is an manager for a pool of security module
+    connections.
+
+    The security provider will then provide on each request an hsm connection
+    out of the pool with in the request context (flask.g).
     """
     try:
-        flask_g.app_globals.security_provider.load_config(app.config)
-    except Exception as e:
-        app.logger.error("Failed to load security provider definition: {}"
-                         .format(e))
-        raise e
 
+        security_provider = SecurityProvider()
+        security_provider.load_config(current_app.config)
+
+        current_app.security_provider = security_provider
+
+    except Exception as exx:
+        current_app.logger.error("Failed to load security provider "
+                                 "definition: {}".format(exx))
+        raise exx
+
+def allocate_security_module():
+    """ Allocate a security module for the request.
+
+    As the security provider has been initialized at application start, we
+    can now fetch an security module connection from the SecurityProvider pool
+    and attach this to the request context (c)
+
+    TODO: c, which is the template context, should be replaced with the
+          app context (flask.g) which holds by definition the application
+          resources on a per request base
+
+    """
+    try:
+        c.hsm = current_app.security_provider.getSecurityModule()
+    except Exception as exx:
+        log.exception('Failed to get hsm connection for request!')
+        raise exx
+
+def drop_security_module():
+    """ Mark the request security module as free again.
+
+    drop the current security module (c.hsm) back to the security modules pool
+    of security provider
+    """
+    try:
+        current_app.security_provider.dropSecurityModule()
+    except Exception as exx:
+        log.exception('Failed to push hsm connection back to pool! %r', c.hsm)
+        raise exx
 
 def setup_audit(app):
     """
@@ -790,6 +812,7 @@ def create_app(config_name='default', config_extra=None):
         setup_cache(app)
         setup_db(app)
         set_config()       # ensure `request_context` exists
+        init_security_provider()
         setup_audit(app)
         initGlobalObject()
         reload_token_classes()
@@ -811,8 +834,9 @@ def create_app(config_name='default', config_extra=None):
         # variables suck.
 
         set_config()
+        allocate_security_module()
+
         initGlobalObject()
-        setup_security_provider(app)
 
     app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
 
