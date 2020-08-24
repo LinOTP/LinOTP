@@ -216,9 +216,9 @@ _config_schema = ConfigSchema([
     ConfigItem("TOKEN_MODULES", str, default="",
                help=("Token support modules to enable. If this parameter is "
                      "empty, all available token modules will be loaded.")),
-    ConfigItem("ADMIN_USERNAME", str, default=None,
+    ConfigItem("ADMIN_USERNAME", str, default='',
                help=("Administrator user name for 'cloud mode'.")),
-    ConfigItem("ADMIN_PASSWORD", str, default=None,
+    ConfigItem("ADMIN_PASSWORD", str, default='',
                help=("Administrator password for 'cloud mode'.")),
     ConfigItem("LOGFILE_DIR", str, default="logs",
                help=("Directory for log files. We're using a "

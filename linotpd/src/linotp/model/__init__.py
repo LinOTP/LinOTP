@@ -133,10 +133,10 @@ def setup_db(app, drop_data=False):
         # For the cloud mode, we require the `admin_user` table to
         # manage the admin users to allow password setting
 
-        admin_username = app.config.get('ADMIN_USERNAME')
-        admin_password = app.config.get('ADMIN_PASSWORD')
+        admin_username = app.config['ADMIN_USERNAME']
+        admin_password = app.config['ADMIN_PASSWORD']
 
-        if admin_username is not None and admin_password is not None:
+        if admin_username and admin_password:
             app.echo("Setting up cloud admin user...", v=1)
             from .lib.tools.set_password import (
                 SetPasswordHandler, DataBaseContext
