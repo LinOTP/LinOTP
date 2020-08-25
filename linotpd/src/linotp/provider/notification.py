@@ -28,8 +28,6 @@ provider notification handling
 """
 import logging
 
-from linotp.provider import loadProvider
-
 from linotp.lib.context import request_context
 
 from linotp.lib.policy import get_client_policy
@@ -108,9 +106,19 @@ def notify_user_by_email(provider_name, user, action, info):
     replacements.update(info)
     replacements.update(user_detail)
 
+    # --------------------------------------------------------------------- --
+
+    # we need to define the loadProvider from here as this module is loaded
+    # during a dynamic module which is detected as a recursive load and
+    # therefore gives an error on server start
+
+    from . import loadProvider
+
     try:
 
-        provider = loadProvider('email', provider_name=provider_name)
+        provider = loadProvider(
+            'email', provider_name=provider_name)
+
         provider.submitMessage(
             email_to=user_email,
             message=info.get('message',''),
@@ -122,4 +130,4 @@ def notify_user_by_email(provider_name, user, action, info):
         raise NotificationException(
             'Failed to notify user %r by email:%r' % (user_email, exx))
 
-# eof #
+# eof

@@ -55,7 +55,7 @@ def import_submodules(package_name):
 
         except Exception as exx:
 
-            log.warning("Failed to load %r - %r", name, exx)
+            log.error("Failed to load %r - %r", name, exx)
 
     return p_list
 
