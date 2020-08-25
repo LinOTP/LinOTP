@@ -1,0 +1,34 @@
+#! /bin/sh
+#
+#    LinOTP - the open source solution for two factor authentication
+#    Copyright (C) 2020 arxes-tolina GmbH
+#
+#    This file is part of LinOTP server.
+#
+#    This program is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU Affero General Public
+#    License, version 3, as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the
+#               GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#    E-mail: linotp@keyidentity.com
+#    Contact: www.linotp.org
+#    Support: www.keyidentity.com
+#
+
+# Generate linotp configuration file from environment
+
+set -e
+
+/usr/local/bin/dockerfy \
+    --template /etc/linotp/linotp-docker.cfg.tmpl:/etc/linotp/linotp.cfg \
+    --template /etc/linotp/apache-docker.conf.tmpl:/etc/apache2/sites-enabled/linotp.conf
+

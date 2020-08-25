@@ -44,8 +44,6 @@ VOLUME /linotpsrc
 WORKDIR /linotpsrc/linotpd/src/linotp/tests/unit
 
 RUN useradd -ms /bin/bash tester
-RUN chown -R  tester:tester /etc/softhsm/ /var/lib/softhsm/tokens
-RUN usermod -a -G softhsm tester
 
 # Install python modules which do not have equivalent Debian packages
 RUN pip3 install --upgrade \
