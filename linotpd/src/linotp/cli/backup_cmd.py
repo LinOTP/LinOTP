@@ -31,8 +31,6 @@ database backup implementation
 import os
 import sys
 import binascii
-import shutil
-import subprocess
 import click
 
 from datetime import datetime
@@ -44,11 +42,8 @@ from sqlalchemy import create_engine
 
 from flask.cli import AppGroup
 
-from linotp.app import LinOTPApp
-
 from linotp.model.meta import Session as session
 from linotp.model import Config, Token, TokenRealm, Realm
-from linotp.model import Reporting, LoggingConfig
 from linotp.model import init_model, meta
 
 from linotp.lib.audit.SQLAudit import AuditTable
@@ -70,6 +65,7 @@ ORM_Models = {
 
 backup_cmds = AppGroup('backup')
 
+
 @backup_cmds.command('create', help='create a backup of the database tables')
 def create_command():
     """Create backup file for your database tables
@@ -83,13 +79,14 @@ def create_command():
         current_app.echo('Failed to backup: %r' % exx)
         sys.exit(1)
 
+
 @backup_cmds.command('restore',
-                  help='restore a backup of the database tables')
+                     help='restore a backup of the database tables')
 @click.option('--file', help='name of the backup file')
 @click.option('--date', help='restore the backup from a given date.'
-          '"date" must be in format "%s"' % TIME_FORMAT)
+              '"date" must be in format "%s"' % TIME_FORMAT)
 @click.option('--table', help='restore the backup of a table - '
-          'table must be one of "Config", "Token", "Audit"')
+              'table must be one of "Config", "Token", "Audit"')
 def restore_command(file=None, date=None, table=None):
     """ restore a database backup
 
@@ -105,8 +102,9 @@ def restore_command(file=None, date=None, table=None):
         current_app.echo('Failed to restore: %r' % exx)
         sys.exit(1)
 
+
 @backup_cmds.command('list',
-                  help='restore a backup of the database tables')
+                     help='restore a backup of the database tables')
 def list_command():
     """ list available database backups."""
     try:
@@ -117,6 +115,7 @@ def list_command():
     except Exception as exx:
         current_app.echo('Failed to list backup files: %r' % exx)
         sys.exit(1)
+
 
 # -------------------------------------------------------------------------- --
 
@@ -152,7 +151,7 @@ def backup_database_tables() -> int:
     init_model(engine)
 
     app.echo("extracting data from: %r:%r" %
-                    (engine.url.drivername, engine.url.database), v=1)
+             (engine.url.drivername, engine.url.database), v=1)
 
     # ---------------------------------------------------------------------- --
 
@@ -187,12 +186,14 @@ def backup_database_tables() -> int:
 
             data_query = session.query(model_class)
 
-            pb_file = None if app.echo.verbosity > 1 else open("/dev/null", "w")  # None => stdout
+            pb_file = (None if app.echo.verbosity > 1
+                       else open("/dev/null", "w"))  # None => stdout
 
             with click.progressbar(
-                data_query.all(), label=name, file=pb_file) as all_data:
+                    data_query.all(), label=name, file=pb_file) as all_data:
                 for data in all_data:
-                    backup_file.write(binascii.hexlify(dumps(data)).decode('utf-8'))
+                    backup_file.write(binascii.hexlify(dumps(data))
+                                      .decode('utf-8'))
 
                 app.echo(".", v=2, nl=False)
 
@@ -210,7 +211,7 @@ def list_database_backups() -> list:
     """
     app = current_app
 
-    filename_template ='linotp_backup_'
+    filename_template = 'linotp_backup_'
 
     # ---------------------------------------------------------------------- --
 
@@ -231,19 +232,20 @@ def list_database_backups() -> list:
         # backup files match the 'template' + "%s.sqldb" format
 
         if (backup_file.startswith(filename_template)
-            and backup_file.endswith('.sqldb')):
+                and backup_file.endswith('.sqldb')):
 
             backup_date, _, _ext = backup_file[
                 len(filename_template):].rpartition('.')
 
             yield backup_date, backup_file
 
+
 # -------------------------------------------------------------------------- --
 
 # restore
 
 def _get_restore_filename(
-        template:str, filename:str=None, date:str=None) -> str or None:
+        template: str, filename: str = None, date: str = None) -> str or None:
     """
     helper for restore, to determin a filename from a given date or file name
 
@@ -280,7 +282,6 @@ def _get_restore_filename(
             v=1)
         raise ValueError("no date or file name parameter provided!")
 
-
     # ---------------------------------------------------------------------- --
 
     # verify that the file to restore from exists
@@ -297,7 +298,7 @@ def _get_restore_filename(
 
 
 def restore_database_tables(
-        filename:str=None, date:str=None, table:str=None) -> int:
+        filename: str = None, date: str = None, table: str = None) -> int:
     """
     restore the database tables from a file or for a given date
        optionally restore only one table
@@ -333,7 +334,8 @@ def restore_database_tables(
 
         else:
             app.echo(
-                f"selected table {table} is not in the set of supported tables",
+                f"selected table {table} is not in the set "
+                "of supported tables",
                 v=1)
             raise ValueError(f"selected table {table} is not in the set "
                              "of supported tables")
