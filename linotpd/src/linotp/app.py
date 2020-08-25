@@ -138,7 +138,7 @@ class ExtFlaskConfig(FlaskConfig):
                     config_key = key[7:]
                     item = self.config_schema.find_item(config_key)
                     if item is not None:
-                        self[config_key] = os.environ[key]
+                        self[config_key] = value
 
     def __setitem__(self, key, value):
         """Implementation of `self[key] = value` with some additional magic.
