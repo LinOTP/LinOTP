@@ -85,9 +85,10 @@ ENV TZ="Europe/Berlin" \
     LINOTP_APACHE_AUTH=true \
     LINOTP_APACHE_SSL=true \
     LINOTP_APACHE_HSTS=true \
-    LINOTP_LOGLEVEL=INFO \
-    LINOTP_CONSOLE_LOGLEVEL=INFO \
-    SQLALCHEMY_LOGLEVEL=ERROR \
+    LINOTP_LOGGING_LEVEL=INFO \
+    LINOTP_LOGGING_FILE_LEVEL=INFO \
+    LINOTP_LOGGING_CONSOLE_LEVEL=INFO \
+    SQLALCHEMY_LOGGING_LEVEL=ERROR \
     APACHE_LOGLEVEL=info \
     LOGSTASH_HOST= \
     LOGSTASH_PORT= \
@@ -177,7 +178,7 @@ COPY docker-initscripts.d /etc/linotp/docker-init.d/
 RUN chmod 755 /usr/local/bin/linotp-create-htdigest /etc/linotp/docker-init.d/*
 
 ENTRYPOINT [ "/usr/local/bin/dockerfy", \
-    "--run", "/bin/run-parts", "--verbose", "--exit-on-error", "/etc/linotp/docker-init.d", "--", \
+    "--run", "/bin/run-parts", "--verbose", "--exit-on-error", "/etc/linotp/docker-init.d", "--" \
 ]
 
 CMD [ \
