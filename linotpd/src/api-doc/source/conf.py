@@ -42,7 +42,7 @@ extensions = [
     'sphinx.ext.autodoc',
 ]
 
-MOCK_MODULES = ['osiam', 'pyhsm']
+MOCK_MODULES = ['pyhsm']
 for m in MOCK_MODULES:
     sys.modules[m] = mock.Mock()
 
