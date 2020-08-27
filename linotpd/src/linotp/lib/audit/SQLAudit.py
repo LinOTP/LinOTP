@@ -38,6 +38,7 @@ uses a public/private key for signing the log entries
 import datetime
 from sqlalchemy import schema, types, orm, and_, or_, asc, desc
 
+from flask import current_app
 
 from binascii import hexlify
 from binascii import unhexlify
@@ -147,8 +148,7 @@ class AuditTable(object):
             self.config = config_param
         else:
             self.config = config
-        self.trunc_as_err = self.config.get('linotpAudit.error_on_truncation',
-                                            'False') == 'True'
+        self.trunc_as_err = current_app.config["AUDIT_ERROR_ON_TRUNCATION"]
         self.serial = str(serial or '')
         self.action = str(action or '')
         self.success = str(success or '0')
@@ -322,8 +322,8 @@ class Audit(AuditBase):
         Get SQL Alchemy engine and sessionmaker for the audit interface
         """
 
-        connect_string = self.config.get("AUDIT_DATABASE_URI")
-        pool_recycle = self.config.get("AUDIT_POOL_RECYCLE", 3600)
+        connect_string = current_app.config["AUDIT_DATABASE_URI"]
+        pool_recycle = current_app.config["AUDIT_POOL_RECYCLE"]
 
         # If implicit_returning is explicitly set to True, we
         # get lots of mysql errors

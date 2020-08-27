@@ -27,8 +27,7 @@
 
 import os
 import socket
-
-from subprocess import check_call
+import sys
 
 from flask import current_app
 from linotp.lib.token import get_used_tokens_count
@@ -110,10 +109,11 @@ class AuditBase(object):
         """
         Create audit keys using the configured filenames
         """
-        if not os.path.exists(self.privateKeyFilename) and not os.path.exists(self.publicKeyFilename):
-            log.info("Generating audit keypair")
-            check_call("openssl genrsa -out %s 2048" % self.privateKeyFilename, shell=True)
-            check_call("openssl rsa -in %s -pubout -out %s" % (self.privateKeyFilename, self.publicKeyFilename), shell=True)
+        if not os.path.exists(self.privateKeyFilename) or not os.path.exists(self.publicKeyFilename):
+            log.critical("[createKeys] Audit log keypair does not exist; "
+                         "use `linotp init audit-keys` to generate one.")
+            # raise RuntimeError("Audit log keypair is missing")
+            sys.exit(11)
 
     def readKeys(self):
         self.createKeys()

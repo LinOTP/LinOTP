@@ -24,105 +24,74 @@
 #    Support: www.keyidentity.com
 #
 
-import pytest
-import os
-import freezegun
-from datetime import datetime
+"""
+test to verify that the linotp cli for backup and restore
+of linotp audit and database works
 
-from click.testing import CliRunner
+the test does not cover restore_legacy as this could only be verified
+against a mysql database which could not be used in a unit test
+"""
+
+import pytest
+from datetime import datetime
+from pathlib import Path
+
 from linotp.cli import main as cli_main
 
-from linotp.cli.backup_cmd import TIME_FORMAT
 
-class TestInitBackupRestore:
+@pytest.fixture
+def runner(app):
+    """Set common configuration """
+
+    env = {
+        'LINOTP_AUDIT_DATABASE_URI': 'SHARED',
+    }
+    return app.test_cli_runner(env=env, mix_stderr=False, echo_stdin=True)
+
+
+def test_database(app, runner, freezer):
+    """ verify that database backup and restore are working
+
+    - create a backup
+    - list the available backup
+    - restore the backup by date or file or absolute filename
     """
-    test to verify that the linotp cli for backup and restore
-    of linotp audit and database works
 
-    the test does not cover restore_legacy as this could only be verified
-    against a mysql database which could not be used in a unit test
-    """
+    freezer.move_to("2020-08-18 19:25:33")
+    str_now = datetime.now().strftime(app.config["BACKUP_FILE_TIME_FORMAT"])
 
-    @pytest.fixture(autouse=True)
-    def runner(self, tmp_path):
-        """Set common configuration """
+    # Create a database backup
+    print("Invoke 'backup create'")
+    result = runner.invoke(cli_main, ['-v', 'backup', 'create'])
+    assert result.exit_code == 0
 
-        sqlite_db = os.path.join(str(tmp_path), 'sqlite.db')
-        env = {
-            'FLASK_APP': 'linotp.app', 
-            'LINOTP_ROOT_DIR': str(tmp_path),
-            'LINOTP_BACKUP_DIR': 'backups',
-            'LINOTP_AUDIT_DATABASE_URI': 'SHARED',
-            'LINOTP_SQLALCHEMY_DATABASE_URI':
-                    'sqlite:///{}'.format(sqlite_db),
-            'DB_FILE': sqlite_db
-        }
-        self.runner = CliRunner(env=env, mix_stderr=False, echo_stdin=True)
+    # check that the backup directory was created
+    backup_dir = Path(app.config["BACKUP_DIR"])
+    assert backup_dir.is_dir()
+
+    backup_file = backup_dir / f"linotp_backup_{str_now}.sqldb"
+    assert backup_file.is_file()
+
+    assert 'Config' in backup_file.read_text()
+
+    # list database backups
+    result = runner.invoke(cli_main, ['backup', 'list'])
+    assert str_now in result.output
 
 
-    def test_database(self, tmp_path):
-        """ verify that database backup and restore are working
+@pytest.mark.parametrize("args,result", [
+    (['--date', 'NOW'], 0),
+    (['--file', 'linotp_backup_NOW.sqldb'], 0),
+    (['--date', 'NOW', '--table', 'Config'], 0),
+    (['--date', 'NOW', '--table', 'Foo'], 1),
+])
+def test_backup_restore_cmd(app, runner, freezer, args, result):
+    freezer.move_to("2020-08-18 19:25:33")
+    str_now = datetime.now().strftime(app.config["BACKUP_FILE_TIME_FORMAT"])
 
-        - create a backup
-        - list the available backup
-        - restore the backup by date or file or absolute filename
-        """
+    backup_result = runner.invoke(cli_main, ['backup', 'create'])
+    assert backup_result.exit_code == 0
 
-        now = datetime.now()
-        str_now = now.strftime(TIME_FORMAT)
-
-        with freezegun.freeze_time(now):
-
-            # Create a database backup
-            result = self.runner.invoke(cli_main, ['backup', 'create'])
-            assert result.exit_code == 0
-    
-            # check that the backup directory was created
-            backup_dir = os.path.join(str(tmp_path), 'backups')
-
-            assert os.path.isdir(backup_dir)
-
-            backup_file = os.path.join(
-                backup_dir, f"linotp_backup_{str_now}.sqldb")
-
-            assert os.path.isfile(backup_file)
-
-            with open(backup_file, 'r') as f:
-                content = f.read()
-                assert 'Config' in content
-
-        # list database backups
-        result = self.runner.invoke(
-            cli_main, ['backup', 'list'])
-        assert str_now in result.output
-
-        # restore backup by date
-        result = self.runner.invoke(
-            cli_main, ['backup', 'restore', '--date', str_now])
-        assert result.exit_code == 0
-
-        # restore backup by date
-        result = self.runner.invoke(
-            cli_main, ['backup', 'restore', '--file',
-                       f"linotp_backup_{str_now}.sqldb"])
-        assert result.exit_code == 0
-
-        # restore backup by absolute file
-        result = self.runner.invoke(
-            cli_main, ['backup', 'restore', '--file', backup_file])
-        assert result.exit_code == 0
-
-        # restore backup by date
-        result = self.runner.invoke(
-            cli_main, ['backup', 'restore','--date', str_now,
-                       '--table', 'Config'])
-        assert result.exit_code == 0
-
-        # restore backup by date
-        result = self.runner.invoke(
-            cli_main, ['backup', 'restore', '--date', str_now,
-                       '--table', 'Foo'])
-        assert result.exit_code == 1
-
-        return
-
+    args = [a.replace('NOW', str_now) for a in args]
+    cmd_result = runner.invoke(cli_main, ['backup', 'restore'] + args)
+    assert cmd_result.exit_code == result

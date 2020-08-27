@@ -25,20 +25,16 @@
 #
 """LinOTP test for `linotp config` command group."""
 
-import os
 import re
 
 import pytest
 
-from click.testing import CliRunner
-
-from linotp.settings import config_show_cmd, config_explain_cmd
+from linotp.cli import main as cli_main
 
 
 @pytest.fixture
-def runner(tmpdir):
-    env = {'LINOTP_LOGFILE_DIR': str(tmpdir), 'FLASK_APP': 'linotp.app', 'LINOTP_ROOT_DIR': str(tmpdir)}
-    return CliRunner(env=env, mix_stderr=False)
+def runner(app):
+    return app.test_cli_runner(mix_stderr=False)
 
 
 @pytest.mark.parametrize("name,options,value,expected", [
@@ -53,11 +49,10 @@ def runner(tmpdir):
     ("AUDIT_POOL_RECYCLE", ['-V', '-m'], None, ""),
     ("AUDIT_POOL_RECYCLE", ['-V', '-m'], 1000, "1000\n"),
 ])
-def test_config_show_single(monkeypatch, app, runner,
-                            name, options, value, expected):
+def test_config_show_single(app, runner, name, options, value, expected):
     if value is not None:
-        monkeypatch.setitem(os.environ, 'LINOTP_' + name, str(value))
-    result = runner.invoke(config_show_cmd, [name] + options)
+        app.config[name] = value
+    result = runner.invoke(cli_main, ['config', 'show', name] + options)
     assert result.exit_code == 0
     assert result.output == expected.replace('<>', str(app.config[name]))
 
@@ -75,18 +70,18 @@ def test_config_show_single(monkeypatch, app, runner,
     (["AUDIT_POOL_RECYCLE", "LOGFILE_NAME"], ['--modified', '--values'],
      {'LOGFILE_NAME': 'foo'}, "foo\n"),
 ])
-def test_config_show_multi(monkeypatch, app, runner,
-                           names, options, values, expected):
+def test_config_show_multi(app, runner, names, options, values, expected):
     for key, value in values.items():
-        monkeypatch.setitem(os.environ, 'LINOTP_' + key, str(value))
-    result = runner.invoke(config_show_cmd, names + options)
+        app.config[key] = value
+    result = runner.invoke(cli_main, ['config', 'show'] + names + options)
     assert result.exit_code == 0
+    print(f"output:\n{result.output}")
     assert result.output == re.sub(
         r'<(\w+?)>', lambda m: str(app.config[m.group(1)]), expected)
 
 
 def test_config_show_all(app, runner):
-    result = runner.invoke(config_show_cmd, [])
+    result = runner.invoke(cli_main, ['config', 'show'])
     assert result.exit_code == 0
 
     lines = result.output.strip('\n').split('\n')
@@ -172,18 +167,17 @@ def test_config_show_all(app, runner):
       "    the application requests a new connection.\n")),
     ("FIZZBIN", [], None, "No information on FIZZBIN\n"),
 ])
-def test_config_explain_single(monkeypatch, app, runner,
-                               name, options, value, expected):
+def test_config_explain_single(app, runner, name, options, value, expected):
     if value is not None:
-        monkeypatch.setitem(os.environ, 'LINOTP_' + name, str(value))
-    result = runner.invoke(config_explain_cmd, [name] + options)
+        app.config[name] = value
+    result = runner.invoke(cli_main, ['config', 'explain', name] + options)
     assert result.exit_code == 0
     assert result.output == expected
 
 
 def test_config_explain_multiple(runner):
-    result = runner.invoke(config_explain_cmd,
-                           ["BABEL_DOMAIN", "AUDIT_POOL_RECYCLE"])
+    result = runner.invoke(cli_main, ['config', 'explain',
+                                      "BABEL_DOMAIN", "AUDIT_POOL_RECYCLE"])
     assert result.exit_code == 0
     assert result.output == (
         "BABEL_DOMAIN:\n"
@@ -205,9 +199,8 @@ def test_config_explain_multiple(runner):
 
 
 def test_config_explain_multiple_sample(runner):
-    result = runner.invoke(config_explain_cmd,
-                           ["--sample-file",
-                            "BABEL_DOMAIN", "AUDIT_POOL_RECYCLE"])
+    result = runner.invoke(cli_main, ["config", "explain", "--sample-file",
+                                      "BABEL_DOMAIN", "AUDIT_POOL_RECYCLE"])
     assert result.exit_code == 0
     assert result.output == (
         "# This is a sample LinOTP configuration file.\n"
@@ -243,7 +236,7 @@ def test_config_explain_multiple_sample(runner):
 
 
 def test_config_explain_all(app, runner):
-    result = runner.invoke(config_explain_cmd, [])
+    result = runner.invoke(cli_main, ["config", "explain"])
     assert result.exit_code == 0
 
     # The number of unindented lines corresponds to the number of items
@@ -257,7 +250,7 @@ def test_config_explain_all(app, runner):
 
 
 def test_config_explain_all_schema(app, runner):
-    result = runner.invoke(config_explain_cmd, ['--sample-file'])
+    result = runner.invoke(cli_main, ['config', 'explain', '--sample-file'])
     assert result.exit_code == 0
 
     lines = result.output.strip('\n').split('\n')
@@ -277,13 +270,13 @@ def test_config_explain_all_schema(app, runner):
 
 
 def test_config_explain_invalid_argument(app, runner):
-    result = runner.invoke(config_explain_cmd, ['--foobar'])
+    result = runner.invoke(cli_main, ['config', 'explain', '--foobar'])
     assert result.exit_code == 2
     assert result.output == ""
-    assert result.stderr == (
+    assert result.stderr[result.stderr.find("Usage: "):] == (
         # The real error message has `linotp config explain` rather than just
         # `explain`, but the test runner can't know this.
-        "Usage: explain [OPTIONS] [ITEMS]...\n"
-        'Try "explain --help" for help.\n'
+        "Usage: linotp config explain [OPTIONS] [ITEMS]...\n"
+        'Try "linotp config explain --help" for help.\n'
         "\n"
         "Error: no such option: --foobar\n")

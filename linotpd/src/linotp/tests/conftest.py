@@ -34,10 +34,10 @@ import os
 import pytest
 import tempfile
 
-from linotp.app import create_app
+from linotp.app import create_app, init_logging
 from linotp.flap import set_config, tmpl_context as c
-from linotp.cli.init_cmd import create_secret_key
-from linotp.model import meta
+from linotp.cli.init_cmd import create_secret_key, create_audit_keys
+from linotp.model import meta, init_db_tables
 from . import TestController
 from flask.testing import FlaskClient
 
@@ -121,21 +121,34 @@ def base_app(tmpdir, request, sqlalchemy_uri, key_directory):
         # create the app with common test config
 
         base_app_config = dict(
+            ENV='testing',      # doesn't make a huge difference for us
             TESTING=True,
             SQLALCHEMY_DATABASE_URI=sqlalchemy_uri,
             ROOT_DIR=tmpdir,
             AUDIT_PUBLIC_KEY_FILE=key_directory / "audit-public.pem",
             AUDIT_PRIVATE_KEY_FILE=key_directory / "audit-private.pem",
             SECRET_FILE=key_directory / "encKey",
+            LOGGING_LEVEL="DEBUG",
+            LOGGING_CONSOLE_LEVEL="DEBUG",
         )
 
         os.environ["LINOTP_CFG"] = ""
 
+        # Fake running `linotp init enc-key`
         secret_file = base_app_config['SECRET_FILE']
         if not os.path.exists(secret_file):
             create_secret_key(filename=secret_file)
 
+        # Fake running `linotp init audit-keys`
+        audit_private_key_file = str(base_app_config['AUDIT_PRIVATE_KEY_FILE'])
+        if not os.path.exists(audit_private_key_file):
+            create_audit_keys(audit_private_key_file,
+                              str(base_app_config['AUDIT_PUBLIC_KEY_FILE']))
+
         app = create_app('testing', base_app_config)
+
+        # Fake running `linotp init database`
+        init_db_tables(app, drop_data=False, add_defaults=True)
 
         yield app
 

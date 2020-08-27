@@ -8,24 +8,96 @@ linotp-init \- initialize LinOTP database, audit database, encryption keys
 data
 
 .SH SYNOPSIS
+.nf
+\fIlinotp init all\fR [\-f|\-\-force]
+\fIlinotp init audit-keys\fR [\-f|\-\-force]
+\fIlinotp init database\fR [\-\-erase\-all\-data] [\-\-yes]
 \fIlinotp init enc-key\fR [\-f|\-\-force]
-
+.fi
+.sp
 .SH DESCRIPTION
-This command creates an encryption key for LinOTP. It reads the configuration
-from the linotp.ini file to determine where the encryption key should be generated.
-
+.sp
+This command is used to initialise various pieces of data that LinOTP requires
+to run. This includes encryption keys or the database structure.
+.sp
 .SH OPTIONS
-
-enc-key [\-f|\-\-force]
+.PP
+all [\-f|\-\-force]
 .RS 4
-Create the “encryption key” (encKey file) which will be used to encrypt and decrypt
-sensitive data into the database (token seeds, configuration values, passwords). The
-encKey itself will be used by the default security module.
-
-Note: If the key already exists, and you need to create a new encKey using 
-\fB\-\-force\fR
-option, the old database entries which were protected using that old encKey are not
-readable anymore.
+The \fIlinotp init all\fR command executes the \fIenc-key\fR,
+\fIaudit-keys\fR, and \fIdatabase\fR subcommands in sequence. If the
+\fB-f\fR (or \fB\-\-force\fR) option is given, it will be passed on to those
+subcommands that support a \fB\-\-force\fR option.
+.sp
+This is useful for package postinst scripts and similar situations.
+.RE
+.PP
+audit-keys [\-f|\-\-force]
+.RS 4
+The \fIlinotp init audit-keys\fR command creates a pair of RSA key
+(public and private) which is used to sign the audit log. These keys
+are deposited in the files named by the \fIAUDIT_PUBLIC_KEY_FILE\fR
+and \fIAUDIT_PRIVATE_KEY_FILE\fR configuration settings. If the
+private-key file already exists, it will only be overwritten if the
+\fB\-\-force\fR option is specified. In that case, the previous
+version of the file will be saved to a file with the same name and the
+current date and time appended. (This can be restored by renaming it
+to the name given by \fIAUDIT_PRIVATE_KEY_FILE\fR.) An existing
+public-key file will not be saved, but can always be recreated from
+the private-key file using the
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ openssl rsa -in private.pem -pubout -out public.pem
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+command.
+.RE
+.PP
+database [\-\-erase\-all\-data] [\-\-yes]
+.RS 4
+The \fIlinotp init database\fR command installs the (SQL DDL) schema
+for the main LinOTP database on a given supported database server. The
+connection to the database server is given by the
+\fISQLALCHEMY_DATABASE_URI\fR configuration setting. It is not a
+problem to run this command on an existing database; any data in the
+database is preserved unless the \fB\-\-erase\-all\-data\fR option is
+given (which will completely empty the database). Erasing all data
+must be confirmed unless the \fB\-\-yes\fR option is also specified.
+.RE
+.PP
+enc-key [\-f|\-\-force] [\-\-dump] [\-\-keys=<keys>]
+.RS 4
+The \fIlinotp init enc-key\fR command creates a set of symmetric
+encryption/decryption keys for LinOTP. This is used to protect
+sensitive data in the database (such as token seeds, configuration
+values, or passwords). It is also used by the default
+(software-simulated) security module.
+.sp
+The keys are written to the file named by the \fISECRET_FILE\fR
+configuration setting. If this file already exists, it will only be
+overwritten if the \fB\-\-force\fR option is specified. In that case,
+the previous version of the file will be saved to a file with the same
+name and the current date and time appended. (This can be restored by
+renaming it to the name given by \fISECRET_FILE\fR.)
+.sp
+\fBDO NOT OVERWRITE THE SECRET-KEYS FILE FOR A LINOTP SERVER THAT IS
+BEING USED PRODUCTIVELY!!!\fR If the secret keys are lost, the encrypted
+portions of the database become inaccessible (unless you know somebody
+who can crack AES).
+.sp
+With the \fB\-\-dump\fR option, the keys are output in a format that
+makes it feasible to re-enter the keys by hand in case of
+catastrophe. Print this out and store it somewhere safe (do consider
+that whoever gets hold of the keys and a backup of your database can
+look at the encrypted bits). If the unthinkable occurs and you need to
+restore your secret keys from the paper backup, refer to the printed
+instructions to use the \fB\-\-keys\fR option to re-enter the keys.
 .RE
 
 .SH SEE ALSO
