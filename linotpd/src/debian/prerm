@@ -1,6 +1,8 @@
 #!/bin/sh -e
 
 . /usr/share/debconf/confmodule
+. /usr/share/dbconfig-common/dpkg/prerm
+dbc_go linotp "$@"
 
 print_timestamp() {
 	date +"%Y/%m/%d - %T"

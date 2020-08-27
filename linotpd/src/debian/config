@@ -1,11 +1,6 @@
 #!/bin/bash -e
 . /usr/share/debconf/confmodule
 
-#if [ -f /usr/share/dbconfig-common/dpkg/config.mysql ]; then
-#  . /usr/share/dbconfig-common/dpkg/config.mysql
-#  dbc_go linotp "$@"
-#fi
-
 msg="LinOTP: "
 
 echo_prio() {
@@ -107,30 +102,6 @@ echo_log() {
 #     INFO [linotp config] Version downgrade: true
 
 
-MYSQLSERVER=/usr/sbin/mysqld
-MYSQLCLIENT=/usr/bin/mysql
-DBFILE_FS=/etc/linotp/token.db
-
-
-function check_mysql_tables() {
-  #mysql --host=localhost --user=linotp2 --password=linotppw --database=linotp2 --execute='show tables;'
-  #echo "Starting to check DB" >> /var/log/messages
-  # Test database connction
-  if [ -z "`mysql --host=$DBHOST --user=$DBUSER --password=$DBPASSWORD --database=$DBNAME --execute='quit' 2>&1`" ]; then
-    DB_OK=1
-    TABLES=`mysql --host=$DBHOST --user=$DBUSER --password=$DBPASSWORD --database=$DBNAME --execute='show tables;'`
-    if [ -n "`echo $TABLES | grep "Config Token"`" ]; then
-      TABLES_OK=1
-    else
-      TABLES_OK=0
-    fi
-  else
-    DB_OK=0
-    TABLES_OK=0
-  fi
-  #echo "DB: $DB_OK, TABLES: $TABLES_OK" >> /var/log/messages
-}
-
 NEW_VERSION='@@@DEB_VERSION@@@'
 
 INSTALL_ACTION=install
@@ -171,140 +142,28 @@ db_go
 db_get linotp/apache/activate
 APACHE=$RET
 
+dbc_dbtypes="mysql, pgsql"
 if [ "$APACHE" = "true" ]; then
   db_input high linotp/apache/admin_password || true
   db_go
 
   db_input high linotp/apache/ssl_create || true
   db_go
-
-  db_input high linotp/tokendb/dbtype_apache2 || true
-  db_go
-  db_get linotp/tokendb/dbtype_apache2
-  TOKENDB=$RET
 else
-  # If not choosen apache, you can also choose SQLlite
-  db_input high linotp/tokendb/dbtype || true
-  db_go
-  db_get linotp/tokendb/dbtype
-  TOKENDB=$RET
+  # If not using apache, you can also choose SQLlite
+  dbc_dbtypes="$dbc_dbtypes, sqlite"
 fi
 
-if [ "$TOKENDB" = "MySQL" ] || [ "$TOKENDB" = "PostgreSQL" ]; then
-  db_beginblock
-  db_go
+# Database configuration using dbconfig-common
+if [ -f /usr/share/dbconfig-common/dpkg/config ]; then
+  # Load library
+  . /usr/share/dbconfig-common/dpkg/config
 
-  db_input high linotp/tokendb/dbhost || true
-  db_go
-  db_get linotp/tokendb/dbhost
-  DBHOST=$RET
+  # Define default values for database
+  #dbc_authmethod_user="password"
+  dbc_first_version="3.0~a1"
 
-  db_input high linotp/tokendb/dbname || true
-  db_go
-  db_get linotp/tokendb/dbname
-  DBNAME=$RET
 
-  db_input high linotp/tokendb/dbuser || true
-  db_go
-  db_get linotp/tokendb/dbuser
-  DBUSER=$RET
-
-  db_input high linotp/tokendb/password || true
-  db_go
-  db_get linotp/tokendb/password
-  DBPASSWORD=$RET
-
-  db_endblock
-  db_go
+  # Ask questions
+  dbc_go linotp "$@"
 fi
-
-
-#
-# Do the postgres configuration.
-# In fact we only tell, that we do nothing.
-#
-if [ "$TOKENDB" == "PostgreSQL" ]; then
-  db_input high linotp/postgres/no_configuration
-  db_go
-fi
-#
-# Ask if we should create the sqlite file
-#
-if [ "$TOKENDB" == "SQLite" ]; then
-  if [ -f $DBFILE_FS ]; then
-    db_input high linotp/sqlite/ask_createdb
-    db_go
-  else
-    db_set linotp/sqlite/ask_createdb true
-  fi
-fi
-#
-# Check all effects for mysql: Does the DB exist? Do the table exist?
-#
-if [ "$TOKENDB" = "MySQL" ]; then
-  if [ "$INSTALL_MODE" = "reinstall" ] && [ "$INSTALL_ACTION" = "upgrade" ]
-  then
-    # In version 2.6 of LinOTP ask_createdb was RESET in the
-    # postinst. This meant the question appeared again,
-    # because the 'seen' flag had been reset too. The RESET was
-    # changed to a SET in LinOTP 2.7.1 .
-    # If we detect an upgrade from a version between 2.6 and
-    # 2.7.1 we force the 'seen' flag of the question to true,
-    # preventing the latter from being displayed to the user.
-    # In other versions (or when running dpkg-reconfigure)
-    # we don't want to interfere with the regular debian
-    # behaviour.
-    # See also issues #12298 and #12718
-    set +e
-    dpkg --compare-versions ${INSTALLED_VERSION} ge 2.6
-    result_ge=$?
-    dpkg --compare-versions ${INSTALLED_VERSION} lt 2.7.1
-    result_lt=$?
-    set -e
-    if [ $result_ge = 0 ] && [ $result_lt = 0 ]
-    then
-      # Version is >= than 2.6 and < than 2.7.1
-      db_fset linotp/mysql/ask_createdb seen true
-    fi
-  fi
-  if [ -x $MYSQLCLIENT ]; then
-    # check, if the database already exists
-    check_mysql_tables
-    if [ "$DB_OK" = "1" ]; then
-      if [ "$TABLES_OK" = "1" ]; then
-        # Database and Tables already exist. Good!
-        db_input high linotp/mysql/tables_exist || true
-        db_go
-      else
-        # Ask, if we should create the tables
-        db_input high linotp/mysql/ask_createtables || true
-        db_go
-      fi
-    else
-      if [ "$DBHOST" = "localhost" ]; then
-        if [ -x $MYSQLSERVER ]; then
-          # server is installed locally
-          db_input high linotp/mysql/ask_createdb || true
-          db_go
-          db_get linotp/mysql/ask_createdb
-          MYSQL_CREATE_DB=$RET
-        fi
-        # ELSE: localhost choosen, but no mysql installed on localhost.
-      else # SQL DB not on localhost
-        # client and server are installed locally
-        db_input high linotp/mysql/ask_createdb || true
-        db_go
-        db_get linotp/mysql/ask_createdb
-        MYSQL_CREATE_DB=$RET
-      fi
-      if [ "$MYSQL_CREATE_DB" = "true" ]; then
-        db_set linotp/mysql/ask_createtables true
-        # Ask for the administrative credentials
-        if [ ! -f /etc/lseappliance/mysql_root ]; then
-          db_input high linotp/mysql/ask_rootpw || true
-          db_go
-        fi
-      fi
-    fi # end of DB_OK
-  fi # end of mysqlclient
-fi  # end of $TOKENDB

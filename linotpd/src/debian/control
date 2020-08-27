@@ -19,6 +19,7 @@ Package: linotp
 Architecture: all
 Depends: adduser,
          apache2,
+         dbconfig-mysql | dbconfig-pgsql | dbconfig-no-thanks,
          debconf,
          libapache2-mod-wsgi-py3 | httpd-wsgi,
          openssl,
