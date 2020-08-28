@@ -22,7 +22,7 @@ override_dh_installdeb:
 			cp -a debian/$$pkg/usr/etc/* debian/$$pkg/etc ; \
 			rm -r debian/$$pkg/usr/etc ; \
 		fi ; \
-		sed -ie 's/@@@DEB_VERSION@@@/$(DEB_VERSION)/' debian/$$pkg/DEBIAN/*; \
+		sed -i -e 's/@@@DEB_VERSION@@@/$(DEB_VERSION)/' debian/$$pkg/DEBIAN/*; \
 	done
 
 	find debian/linotp/usr -ls | grep public
