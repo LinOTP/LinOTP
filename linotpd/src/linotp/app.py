@@ -762,6 +762,8 @@ def _configure_app(app, config_name='default', config_extra=None):
                 warn_on_error = False
                 fn = fn[1:]
             fn = root_path / fn  # better message
+            if fn.is_dir():
+                fn /= '*.cfg'
             # Check `fn` itself if glob doesn't yield results
             # (e.g., when checking `/foo/linotp.cfg` but `/foo` doesn't
             # exist).
