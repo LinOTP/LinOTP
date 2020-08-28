@@ -125,21 +125,6 @@ check_upgrade() {
   return 1
 }
 
-# check_apache_disabled
-#
-# If the file $CONFIG_DIR/apache_site_disabled exists, return 0 (and
-# remove the file), else return 1. (This is weird; the file is created
-# by the prerm script but over there it doesn't look like it makes a
-# great deal of sense.)
-
-check_apache_disabled() {
-  if [ -f $CONFIG_DIR/apache_site_disabled ]; then
-    rm -f $CONFIG_DIR/apache_site_disabled
-    return 0
-  fi
-  return 1
-}
-
 # create_cfg_file
 #
 # Create the file needed for configuration.
@@ -179,7 +164,6 @@ evaluate_answers() {
     APACHE_SSL_CREATE=$RET
     db_set linotp/apache/ssl_create false
 
-    echo_log "I got these keys: apache: $APACHE_SSL_CREATE"
   fi
 
 }
@@ -212,29 +196,41 @@ case "$1" in
     evaluate_answers
 
     if [ "$APACHE" = "true" ]; then
-      if ! check_apache_disabled; then
-        # Copy virtual host definition for LinOTP to /etc/apache2
-        APACHE2_VERSION=$(dpkg -s apache2 | grep "^Version:" | cut -d' ' -f2)
-        if [ -z "$APACHE2_VERSION" ]; then
-          echo_error "Apache requested but apache2 isn't installed, aborting"
-          exit 1
-        fi
-
-        echo_log "Setting up for Apache $APACHE2_VERSION"
-        if [ ! -f /etc/apache2/sites-available/linotp.conf ]; then
-          cp /usr/share/doc/linotp/examples/apache-site.conf /etc/apache2/sites-available/linotp.conf
-        else
-          echo_log "Apache already configured, leaving intact."
-        fi
-
-        a2ensite linotp
-
-        for mod in auth_digest wsgi ssl headers; do
-          a2enmod -q $mod
-        done
-
-        echo_log "Basic Apache configuration done"
+      # Copy virtual host definition for LinOTP to /etc/apache2
+      APACHE2_VERSION=$(dpkg -s apache2 | grep "^Version:" | cut -d' ' -f2)
+      if [ -z "$APACHE2_VERSION" ]; then
+        echo_error "Apache requested but apache2 isn't installed, aborting"
+        exit 1
       fi
+
+      if [ ! -f /etc/apache2/sites-available/linotp.conf ]; then
+        echo_log "Adding Apache available site: linotp.conf"
+        cp /usr/share/doc/linotp/examples/apache-site.conf /etc/apache2/sites-available/linotp.conf
+      else
+        echo_log "Apache already configured, leaving intact."
+      fi
+
+      a2ensite linotp
+
+      for mod in auth_digest wsgi ssl headers; do
+        a2enmod -q $mod
+      done
+
+      echo_log "Basic Apache configuration done"
+
+      # Ensure the Apache wsgi process can read the linotp configuration
+      WSGI_USER=www-data
+      SENSITIVE_FILES="audit-private.pem linotp.cfg encKey"
+
+      echo_log "Setting permissions on $SENSITIVE_FILES"
+      for name in $SENSITIVE_FILES; do
+        FILE="$CONFIG_DIR"/$name
+        if [ -f "$FILE" ]; then
+          chgrp "$WSGI_USER" "$FILE"
+          chmod g+r "$FILE"
+        fi
+      done
+
       if [ "$APACHE_SSL_CREATE" = "true" ]; then
         echo_log "Making self-signed certificate"
         # in appliance install these directories do not exist, yet
@@ -249,6 +245,7 @@ case "$1" in
       fi
       invoke-rc.d apache2 reload
       echo_log "done setting up apache with ssl"
+
     else
       a2dissite linotp || echo_warn "Could not disable Apache linotp host"
     fi
