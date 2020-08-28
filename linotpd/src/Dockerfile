@@ -156,6 +156,7 @@ COPY apt /opt/linotp/apt
 
 RUN echo "linotp linotp/apache/activate boolean true" > /opt/linotp/apt/debconf-selections \
     && echo "linotp linotp/apache/ssl_create boolean true" >> /opt/linotp/apt/debconf-selections \
+    && echo "linotp linotp/dbconfig-install boolean false" >> /opt/linotp/apt/debconf-selections \
     && debconf-set-selections /opt/linotp/apt/debconf-selections \
     && echo "deb [trusted=yes] file:/opt/linotp/apt ./" > /etc/apt/sources.list.d/linotp-local.list \
     && (echo "Package: *"; echo "Pin: origin \"\""; echo "Pin-Priority: 900") > /etc/apt/preferences.d/linotp \
