@@ -745,15 +745,23 @@ def _configure_app(app, config_name='default', config_extra=None):
     app.config.from_object(configs[config_name])
     configs[config_name].init_app(app)
 
-    # Read the configuration files
+    # Read the configuration files.
+    #
+    # A `-` at the start of a file name (which will not be considered
+    # part of the actual file name) suppresses the warning if the file
+    # could not be read.
 
     linotp_cfg_files = os.environ.get("LINOTP_CFG", LINOTP_CFG_DEFAULT)
     if linotp_cfg_files:
         for fn in linotp_cfg_files.split(':'):
+            warn_on_error = True
+            if fn and fn[0] == '-':
+                warn_on_error = False
+                fn = fn[1:]
             fn = os.path.join(app.config.root_path, fn)  # better message
             if app.config.from_pyfile(fn, silent=True):
                 print(f"Configuration loaded from {fn}", file=sys.stderr)
-            else:
+            elif warn_on_error:
                 print(f"Configuration from {fn} failed"
                       " (check location and permissions)",
                       file=sys.stderr)
