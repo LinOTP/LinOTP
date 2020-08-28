@@ -32,3 +32,6 @@ set -e
     --template /etc/linotp/linotp-docker.cfg.tmpl:/etc/linotp/linotp.cfg \
     --template /etc/linotp/apache-docker.conf.tmpl:/etc/apache2/sites-enabled/linotp.conf
 
+# The linotp.cfg file is protected because it contains the database password
+chown linotp /etc/linotp/linotp.cfg
+chmod 600 /etc/linotp/linotp.cfg
