@@ -48,7 +48,7 @@ from flask import current_app
 from flask.cli import AppGroup
 from flask.cli import with_appcontext
 
-from linotp.model import init_db_tables
+from linotp.model import init_db_tables, setup_db
 
 from linotp.cli import get_backup_filename, main as cli_main
 
@@ -160,6 +160,11 @@ def init_db_command(erase_all_data):
 
     current_app.echo(info, v=1)
     try:
+        # Even though we skip initialising the database when doing
+        # `linotp init …`, at this point we do need a database engine
+        # after all.
+        current_app.cli_cmd = 'init-database'  # anything but `init`
+        setup_db(current_app)
         init_db_tables(current_app, erase_all_data)
     except Exception as exx:
         current_app.echo(f'Failed to create database: {exx!s}')
