@@ -4,7 +4,6 @@
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
 
-import mock
 
 # -- Path setup --------------------------------------------------------------
 
@@ -42,10 +41,12 @@ extensions = [
     'sphinx.ext.autodoc',
 ]
 
-MOCK_MODULES = ['osiam', 'pyhsm']
-for m in MOCK_MODULES:
-    sys.modules[m] = mock.Mock()
-
+# Add modules here that need to be mocked in order to build the API
+# documentation.
+#
+# MOCK_MODULES = []
+# for mod_name in MOCK_MODULES:
+#     sys.modules[mod_name] = mock.Mock()
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
