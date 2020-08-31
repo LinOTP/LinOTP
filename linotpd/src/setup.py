@@ -39,6 +39,7 @@ install_requirements = [
     'Flask',
     'Flask-Babel',
     'SQLAlchemy>=0.6',
+    'mako',
     'beaker',
     'docutils>=0.4',
     'pycryptodomex>=3.4',
