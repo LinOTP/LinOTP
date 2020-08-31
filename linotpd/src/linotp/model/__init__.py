@@ -108,26 +108,27 @@ def setup_db(app):
 
     """
 
-    # Initialise the SQLAlchemy engine
-
-    sql_uri = app.config["SQLALCHEMY_DATABASE_URI"]
-
-    # sqlite in-memory databases require special sqlalchemy setup:
-    # https://docs.sqlalchemy.org/en/13/dialects/sqlite.html#using-a-memory-database-in-multiple-threads
-
-    if sql_uri == "sqlite://":
-        engine = create_engine(sql_uri,
-                               connect_args={'check_same_thread': False},
-                               poolclass=StaticPool)
-    else:
-        engine = create_engine(sql_uri)
-
-    init_model(engine)
-
-    # Check that the database is correctly initialised, except in situations
-    # where that doesn't matter.
-
     if app.cli_cmd != 'init':
+        # Don't bother with all this database business when doing
+        # `linotp init …`, because otherwise there will be chicken/egg
+        # issues galore.
+
+        # Initialise the SQLAlchemy engine
+
+        sql_uri = app.config["SQLALCHEMY_DATABASE_URI"]
+
+        # sqlite in-memory databases require special sqlalchemy setup:
+        # https://docs.sqlalchemy.org/en/13/dialects/sqlite.html#using-a-memory-database-in-multiple-threads
+
+        if sql_uri == "sqlite://":
+            engine = create_engine(sql_uri,
+                                   connect_args={'check_same_thread': False},
+                                   poolclass=StaticPool)
+        else:
+            engine = create_engine(sql_uri)
+
+        init_model(engine)
+
         if 'Config' not in engine.table_names():
             # To avoid chicken-and-egg issues, we don't abort the program
             # just now even if the database isn't initialised yet. Commands

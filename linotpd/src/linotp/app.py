@@ -366,6 +366,10 @@ class LinOTPApp(Flask):
 
         request_context['Client'] = client
 
+        # Just in case …
+        if self.audit_obj is None:
+            self.audit_obj = setup_audit(self)
+
         flask_g.audit = self.audit_obj.initialize(request, client=client)
 
         authUser = None
@@ -689,7 +693,14 @@ def setup_audit(app):
     `load_environment()` and as such should be looked at with a microscope,
     probably when we're fixing auditing.
     """
-    app.audit_obj = getAudit(app.config)
+
+    # Don't attempt to set up auditing when executing a `linotp init`
+    # command (in particular, `linotp init audit-keys`). This is because
+    # `getAudit()` will complain about missing audit keys, which is moot
+    # if we're currently executing the command that will create them.
+
+    if app.cli_cmd != 'init':
+        app.audit_obj = getAudit(app.config)
 
 
 def _configure_app(app, config_name='default', config_extra=None):
