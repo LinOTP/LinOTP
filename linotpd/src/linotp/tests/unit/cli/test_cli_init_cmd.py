@@ -44,8 +44,8 @@ from linotp.model import Config, meta, setup_db, init_db_tables
 
 
 @pytest.fixture
-def app(tmp_path):
-    os.environ['LINOTP_CMD'] = 'init'
+def app(tmp_path, monkeypatch):
+    monkeypatch.setitem(os.environ, 'LINOTP_CMD', 'init')
     app = LinOTPApp()
     config = {
         'TESTING': True,
@@ -55,7 +55,7 @@ def app(tmp_path):
         'ADMIN_PASSWORD': '',
     }
     app.config.update(config)
-    return app
+    yield app
 
 
 @pytest.fixture
