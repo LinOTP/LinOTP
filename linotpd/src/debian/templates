@@ -1,11 +1,16 @@
 Template: linotp/apache/activate
 Type: boolean
 Default: true
-_Description: Do you want to run LinOTP via Apache2?
- LinOTP 2 can be run within a webserver - here Apache2 - or via a paster start script.
- It is recommended to run LinOTP via the Apache2 webserver.
+_Description: Do you want to run LinOTP via Apache?
+ LinOTP can be run within a webserver - here Apache - or via another method.
+ .
+ It is recommended to run LinOTP via the Apache webserver.
  This means that a SSL virtual host is activated and the mod_wsgi is loaded.
- You might then want to modify /etc/apache2/sites-available/linotp to suite your needs as far as authentication is concerned.
+ You might then want to modify /etc/apache2/sites-available/linotp to suit your needs
+ as far as authentication is concerned.
+ .
+ Note that if you choose to enable this option, you will not be able to configure
+ LinOTP with a SQLite database.
 
 Template: linotp/apache/admin_password
 Type: password
@@ -19,7 +24,8 @@ Template: linotp/apache/ssl_create
 Type: boolean
 Default: true
 _Description: Do you want to create a self signed certificate?
- When LinOTP runs within apache2, you should talk to the server via SSL on port 443.
- So you need a certificate for the server, which can be created now. (By the way: if
- you need to run apache2 with ssl on another port, you need to configure apache2
- manually.)
+ When LinOTP runs within Apache, you should talk to the server via HTTPS on port 443.
+ So you need a certificate for the server, which can be created now.
+ .
+ If you need to run Apache with HTTPS on another port, you will need to configure Apache
+ manually.
