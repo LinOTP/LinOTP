@@ -539,7 +539,10 @@ def user_list_compare(policy_conditions, login):
     else:
         raise Exception("unsupported type of login")
 
+    full_qualified_names = user.get_full_qalified_names()
+
     matched = False
+    match_type = ''
 
     domain_comp = UserDomainCompare()
     attr_comp = AttributeCompare()
@@ -611,19 +614,37 @@ def user_list_compare(policy_conditions, login):
             else:
                 c_user = user
 
+            # check resolver of the user
             identified = domain_comp.exists(c_user, condition)
 
         else:  # simple user condition with string compare and wild cards
-
             identified = domain_comp.compare(user, condition)
 
-        if identified:
-            matched = True
+        if not identified:
+            continue
 
-            if its_a_not_condition:  # early exit on a not condition
-                return False
+        # early exit on a not condition: !user1
 
-    return matched
+        if its_a_not_condition:
+            return 'not:match', False
+
+        # if we came here, we got a least one match
+        matched = True
+
+        # evaluate the precission of the user match
+
+        if condition in full_qualified_names:
+            match_type = 'exact:match'
+
+        if condition == '*':
+            if not match_type:
+                match_type = 'wildcard:match'
+
+        else:
+            if match_type != 'exact:match':
+                match_type = 'regex:match'
+
+    return match_type, matched
 
 
 def _compare_cron_value(value, target):
