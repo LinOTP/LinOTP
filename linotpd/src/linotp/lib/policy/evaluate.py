@@ -108,7 +108,7 @@ class PolicyEvaluator(object):
             sec_filters = self.filters
 
             self.set_filters(param)
-            policies = self.evaluate(multiple=True)
+            policies = self.evaluate()
 
         finally:
             # and restore the preserved ones
@@ -116,7 +116,7 @@ class PolicyEvaluator(object):
 
         return policies
 
-    def evaluate(self, policy_set=None, multiple=True):
+    def evaluate(self, policy_set=None):
         """
         evaluate - compare all policies against the access request
 
@@ -138,9 +138,6 @@ class PolicyEvaluator(object):
 
         :param policy_set: optional, base policies against which all filter
                            are evaluated
-        :param multiple: define if the policies should be post processed to
-                         return the best matching ones. Default is to do no
-                         post proessing
         :return: the set of matching policies
         """
 
