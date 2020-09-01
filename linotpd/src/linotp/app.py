@@ -64,6 +64,7 @@ from .lib.realm import getRealms
 from .lib.reply import sendError
 
 from .lib.util import get_client
+from .lib.fs_utils import ensure_dir
 
 from . import __version__
 from .flap import config, set_config, tmpl_context as c, request, setup_mako
@@ -601,9 +602,7 @@ def init_logging(app):
             },
         }
 
-    logfile_dir = app.config["LOGFILE_DIR"]
-    if logfile_dir is not None and not os.path.exists(logfile_dir):
-        os.mkdir(logfile_dir)
+    ensure_dir(app, "log", "LOGFILE_DIR", mode=0o770)
 
     logging_dictConfig(app.config["LOGGING"])
 

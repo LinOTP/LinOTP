@@ -1,5 +1,6 @@
 
 import os
+
 import pytest                   # noqa: F401
 
 from flask import url_for, request
@@ -67,3 +68,18 @@ def test_dispatch_optional_id(base_app, client, path, status, id_value):
         assert request.view_args == {'id': id_value}
     else:
         assert request.view_args == {}
+
+
+# ----------------------------------------------------------------------
+# Tests for `CACHE_DIR` setting.
+# ----------------------------------------------------------------------
+
+@pytest.mark.app_config({
+    'CACHE_DIR': 'cache',
+    'BEAKER_CACHE_TYPE': 'file',
+})
+def test_cache_dir(app):
+    wanted_cache_dir = os.path.join(app.config['ROOT_DIR'], '.', 'cache')
+    assert app.config['CACHE_DIR'] == wanted_cache_dir
+    assert os.path.isdir(wanted_cache_dir)
+    assert os.path.isdir(os.path.join(wanted_cache_dir, "beaker"))
