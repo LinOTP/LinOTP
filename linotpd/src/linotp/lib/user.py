@@ -582,7 +582,7 @@ def getUserFromParam(param):
 
             ulogin, _, urealm = usr.login.rpartition('@')
 
-            if urealm in getRealms():
+            if urealm.lower() in getRealms():
                 realm = urealm
                 login = ulogin
                 usr = User(ulogin, urealm)
