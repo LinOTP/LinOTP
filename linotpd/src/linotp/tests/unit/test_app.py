@@ -75,11 +75,10 @@ def test_dispatch_optional_id(base_app, client, path, status, id_value):
 # ----------------------------------------------------------------------
 
 @pytest.mark.app_config({
-    'CACHE_DIR': 'cache',
     'BEAKER_CACHE_TYPE': 'file',
 })
 def test_cache_dir(app):
-    wanted_cache_dir = os.path.join(app.config['ROOT_DIR'], '.', 'cache')
+    wanted_cache_dir = os.path.join(app.config['ROOT_DIR'], 'cache')
     assert app.config['CACHE_DIR'] == wanted_cache_dir
     assert os.path.isdir(wanted_cache_dir)
     assert os.path.isdir(os.path.join(wanted_cache_dir, "beaker"))

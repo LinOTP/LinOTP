@@ -247,7 +247,9 @@ class LinOTPApp(Flask):
         resolver_setup_done = config.get('resolver_setup_done', False)
         if resolver_setup_done is False:
             try:
-                cache_dir = self.config["CACHE_DIR"]
+                cache_dir = ensure_dir(
+                    self, "resolver cache", "CACHE_DIR", "resolvers",
+                    mode=0o770)
                 setupResolvers(config=l_config, cache_dir=cache_dir)
                 config['resolver_setup_done'] = True
             except Exception as exx:
@@ -624,7 +626,8 @@ def setup_cache(app):
     cache_opts = {}
     cache_opts['cache_type'] = app.config["BEAKER_CACHE_TYPE"]
     if cache_opts['cache_type'] == 'file':
-        beaker_dir = app.config["BEAKER_CACHE_DIR"]
+        beaker_dir = ensure_dir(app, "file-based Beaker cache",
+                                "CACHE_DIR", "beaker", mode=0o770)
         cache_opts['cache.data_dir'] = os.path.join(beaker_dir, 'data')
         cache_opts['cache.lock_dir'] = os.path.join(beaker_dir, 'lock')
     app.cache = CacheManager(**parse_cache_config_options(cache_opts))

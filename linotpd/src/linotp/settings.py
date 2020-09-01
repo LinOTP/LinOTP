@@ -206,7 +206,10 @@ _config_schema = ConfigSchema([
                      "`datetime.datetime.strftime()` documentation to find "
                      "out about allowable `%` placeholders.")),
     ConfigItem("CACHE_DIR", str, default="cache",
-               help=("Directory for miscellaneous resolver caches.")),
+               help=("Directory for miscellaneous caches. The actual "
+                     "caches go into subdirectories, e.g., `resolvers` "
+                     "for resolver caches and `beaker` for a file-based "
+                     "Beaker cache, in order to avoid namespace issues.")),
     ConfigItem("CONTROLLERS", str,
                default=("admin audit auth gettoken "
                         "helpdesk:/api/helpdesk:HelpdeskController "
@@ -280,11 +283,10 @@ _config_schema = ConfigSchema([
     ConfigItem("BEAKER_CACHE_TYPE", str,
                validate=check_membership({"memory", "file"}), default="memory",
                help=("What type of Beaker cache to use (`memory` or `file`). "
+                     "For `file`, the cache will be in the `CACHE_DIR/beaker` "
+                     "directory. "
                      "If you don't know what this does, you probably don't "
                      "want to mess with it.")),
-    ConfigItem("BEAKER_CACHE_DIR", str, default="beaker_cache",
-               help=("Directory used for the Beaker cache if "
-                     "`BEAKER_CACHE_TYPE` is `file`.")),
     ConfigItem("SECRET_FILE", str, default="encKey",
                help=("Contains a server-specific encryption key.")),
     ConfigItem("SQLALCHEMY_DATABASE_URI", str, default="sqlite:///{}",
