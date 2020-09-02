@@ -65,6 +65,8 @@ $ pip3 install -e ".[test]"
 
 ## Configure LinOTP
 
+### Basics
+
 Configuration settings are hard-coded in
 `linotpd/src/linotp/settings.py`, which also defines a small set of
 "environments" that pre-cook basic configurations:
@@ -115,7 +117,7 @@ In the simplest case, configuration settings look like assignments to
 Python variables whose names consist strictly of uppercase letters,
 digits, and underscores, as in
 
-    LOG_DIR = "/var/log/linotp"
+	LOGFILE_DIR = "/var/log/linotp"
 
 (Variables with lowercase letters in their names are ignored when a
 configuration file is scoured for settings, so you could use them as
@@ -136,10 +138,10 @@ effective one even for other earlier settings that use relative path
 names: After
 
     ROOT_DIR = "/var/foo"
-    LOG_DIR = "linotp"
+	LOGFILE_DIR = "linotp"
 	ROOT_DIR = "/var/bar"
 
-the effective value of `LOG_DIR` will be `/var/bar/./linotp`. (Note
+the effective value of `LOGFILE_DIR` will be `/var/bar/./linotp`. (Note
 that we're inserting a `/./` to mark where the implicit value of
 `ROOT_DIR` stops and the configured value of the setting starts.) The
 only exception to this is `ROOT_DIR` itself, which must always contain
@@ -166,6 +168,65 @@ of `LINOTP_LOGFILE_MAX_LENGTH` will be converted to an integer to set
 the `LOGFILE_MAX_LENGTH` configuration setting, and you may wish to
 amuse yourself by investigating what happens to the value of
 `LINOTP_LOGGING`.
+
+### Predefined directory names
+
+LinOTP predefines certain directory names that should be adapted to
+the conventions of a specific Linux distribution when preparing a
+LinOTP distribution package for that distribution. These include:
+
+- `ROOT_DIR`: The “root directory” of the LinOTP configuration file
+  tree. By default this is the “Flask application root directory”,
+  `app.root_path`, IOW the directory where LinOTP's `app.py` file is
+  located. As mentioned above, the value of `ROOT_DIR` is prepended to
+  the values of other configuration settings for files and directories
+  if these are relative path names. A distribution will set this to
+  something more useful such as `/etc/linotp`.
+
+- `CACHE_DIR`: This directory is used for temporary storage of LinOTP
+  data. It defaults to `ROOT_DIR/cache`, but in a distribution will
+  more likely be something like `/var/cache/linotp`. Note that the
+  actual caches are supposed to be in subdirectories of this directory
+  in order to avoid namespace issues. For example, the resolver cache
+  is found in `CACHE_DIR/resolvers`, and if Beaker is used with a
+  file-backed cache (not the default method), that cache will be in
+  `CACHE_DIR/beaker`. These assignments cannot be changed except by
+  changing the LinOTP source code.
+
+- `DATA_DIR`: Short-lived temporary data can be stored in
+  subdirectories of this directory. It defaults to `ROOT_DIR/data` but
+  in a distribution wil probably end up as `/run/linotp`. Currently
+  this is only used to cache Mako templates that have been compiled to
+  Python, in the `template-cache` subdirectory. Again, this can only
+  be changed by editing the LinOTP source code.
+
+  Note that while the other directories can usually be created when
+  LinOTP is installed, the volatile nature of `/run` on most systems
+  can make it necessary to recreate `DATA_DIR` at odd times (e.g.,
+  after a system reboot). Since making new directories in `/run`
+  usually requires root privileges, LinOTP will generally not be a in
+  a position to do it by itself (or shouldn't be in such a position in
+  any case). A good approach to use instead is systemd's `tmpfiles`
+  mechanism. Installs that do not use systemd (such as Docker-based
+  installs) need to ensure that the directory is created by some other
+  means.
+
+- `LOGFILE_DIR`: This is where the log file ends up if you're logging
+  to a file (which is something LinOTP does by default). By default
+  this is `ROOT_DIR/logs` but distribution packages will probably wish
+  to use something like `/var/log/linotp`.
+
+If you're making a distribution package, don't edit LinOTP's
+`settings.py` file to adapt the values of these directories. Instead,
+make a new configuration file and put it in a reasonable place such as
+`/usr/share/linotp/linotp.cfg`. You can then arrange for `LINOTP_CFG`
+to default to something like
+
+	/usr/share/linotp/linotp.cfg:/etc/linotp/linotp.cfg
+
+as discussed in the previous subsection. (For the time being, you
+*will* need to edit the `LINOTP_CFG_DEFAULT` variable near the start
+of `app.py` to do this, but this may soon change for the better.)
 
 
 ## Run the LinOTP development server
@@ -206,7 +267,6 @@ will launch the Flask development server. (You can still use
 
 
 ## Run unit, functional, and integration tests
-
 
 ### Unit and functional tests
 
