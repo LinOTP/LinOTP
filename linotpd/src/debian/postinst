@@ -14,6 +14,7 @@ export LINOTP_CFG=$CONFIG_DIR/linotp.cfg:/usr/share/linotp/linotp.cfg
 REALM="LinOTP admin area"
 DIGESTFILE=$CONFIG_DIR/admins
 LOGDIR=/var/log/linotp
+CACHEDIR=/var/cache/linotp
 OLDCACHEDIR=$CONFIG_DIR/data
 TEMPLATEDIR=$CONFIG_DIR/custom-templates
 LIBDIR=/var/lib/linotp
@@ -196,7 +197,7 @@ if [ "$1" = configure ]; then
 
   create_dir "log" "$LOGDIR"
   create_dir "lib" "$LIBDIR"
-  create_dir "cache" "$CACHEDIR" clear
+  create_dir "cache" "$CACHEDIR"
   create_dir "template" "$TEMPLATEDIR"
   # On a system with systemd, use systemd-tmpfiles later (courtesy of dh).
   [ -d /run/systemd/system ] || create_tmpfiles linotp.conf  # for DATA_DIR
