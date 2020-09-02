@@ -12,11 +12,12 @@ from jsonschema import Draft4Validator
 
 from .lib.type_utils import boolean as to_boolean
 from .lib.security.pkcs11 import Pkcs11SecurityModule
-from  .lib.security import provider
+from .lib.security import provider
 
 basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 VALID_LOG_LEVELS = {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}
+
 
 # Validation functions for configuration items. The `ConfigSchema.validate`
 # attribute is supposed to contain a function that takes `key` and `value`
@@ -69,6 +70,7 @@ def check_int_in_range(min=None, max=None):
         f.__doc__ = f"{min} <= value <= {max}"
     return f
 
+
 def check_json_schema(schema={}):
     """Factory function that will return a function that ensures that
     `value` agrees to the schema
@@ -85,6 +87,7 @@ def check_json_schema(schema={}):
 
     f.__doc__ = f"value should apply {schema}"
     return f
+
 
 def check_membership(allowed={}):
     """Factory function that will return a function that ensures that
