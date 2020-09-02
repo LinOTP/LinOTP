@@ -170,6 +170,9 @@ class ConfigSchema:
                 raise LinOTPConfigKeyError(
                     f"Unknown configuration item \'{key}\'")
             return value
+        # Make sure path-like items are strings, not `pathlib` paths.
+        if key.endswith(('_DIR', '_FILE')):
+            value = str(value)
         # If `value` is `str` but the schema wants non-`str`, do a
         # conversion, either using the function provided or the type itself.
         if item.type != str and isinstance(value, str):
