@@ -24,8 +24,9 @@ Depends: adduser,
          libapache2-mod-wsgi-py3 | httpd-wsgi,
          openssl,
          pwgen,
-         ${misc:Depends},
+	 ${misc:Depends},
          ${python3:Depends},
+Suggests: systemd
 Replaces: linotp-ee (<< 2.7-1~),
           linotp-smsprovider (<< 2.10),
           linotp-useridresolver (<< 2.10)

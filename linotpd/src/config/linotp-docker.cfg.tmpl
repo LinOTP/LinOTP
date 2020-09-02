@@ -43,6 +43,7 @@ SECRET_FILE="{{ . }}"
 SECRET_FILE="/etc/linotp/encKey"
 {{end}}
 LOGFILE_DIR="/var/log/linotp"
+DATA_DIR="/run/linotp"
 
 # FIXME: The testing controller is enabled by default so we want to disable
 # it here. This is only possible by listing all the other controllers instead

@@ -168,6 +168,26 @@ evaluate_answers() {
 
 }
 
+# create_tmpfiles FILE
+#
+# This is a greatly simplified version of "systemd-tmpfiles" (it only
+# does what we need). It saves us from having to install systemd in
+# a Docker environment just to get at "systemd-tmpfiles". Of course
+# we could just create and chown /run/linotp instead but that wouldn't
+# be DRY.
+
+create_tmpfiles() {
+    while read -a f; do
+	case "${f[0]}" in
+	    d) mkdir -p -m "${f[2]}" "${f[1]}"
+	       chown "${f[3]}:${f[4]}" "${f[1]}"
+	       ;;
+	    *) echo >&2 "$0: unsupported entry type '${f[0]}', ignoring"
+	       ;;
+	esac
+    done </usr/lib/tmpfiles.d/$1
+}
+
 # Here's where the actual execution of the postinst file starts.
 
 if [ "$1" = configure ]; then
@@ -178,6 +198,8 @@ if [ "$1" = configure ]; then
   create_dir "lib" "$LIBDIR"
   create_dir "cache" "$CACHEDIR" clear
   create_dir "template" "$TEMPLATEDIR"
+  # On a system with systemd, use systemd-tmpfiles later (courtesy of dh).
+  [ -d /run/systemd/system ] || create_tmpfiles linotp.conf  # for DATA_DIR
 
   create_cfg_file
 

@@ -210,6 +210,11 @@ _config_schema = ConfigSchema([
                      "caches go into subdirectories, e.g., `resolvers` "
                      "for resolver caches and `beaker` for a file-based "
                      "Beaker cache, in order to avoid namespace issues.")),
+    ConfigItem("DATA_DIR", str, default="data",
+               help=("Directory for transient runtime data. The content of "
+                     "this directory is not expected to survive system "
+                     "reboots, i.e., it could be located below `/run` on "
+                     "systems where `/run` is a RAM disk.")),
     ConfigItem("CONTROLLERS", str,
                default=("admin audit auth gettoken "
                         "helpdesk:/api/helpdesk:HelpdeskController "
