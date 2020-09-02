@@ -219,7 +219,7 @@ _config_schema = ConfigSchema([
                default=("admin audit auth gettoken "
                         "helpdesk:/api/helpdesk:HelpdeskController "
                         "manage selfservice system "
-                        "test testing tools maintenance monitoring validate "
+                        "test tools maintenance monitoring validate "
                         "userservice reporting"),
                help=("List of all enabled controllers. Any controller `FOO` "
                      "mentioned here will be imported from "

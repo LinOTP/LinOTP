@@ -55,8 +55,6 @@ communicate with LinOTP. You can use the following controllers:
 +--------------------------------------------+------------------------------------------+
 | :py:class:`linotp.controllers.system`      | to configure the system                  |
 +--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.testing`     | for testing purposes                     |
-+--------------------------------------------+------------------------------------------+
 | :py:class:`linotp.controllers.tools`       | to access various tools                  |
 +--------------------------------------------+------------------------------------------+
 | :py:class:`linotp.controllers.u2f`         | U2F token API                            |
