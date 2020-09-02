@@ -288,7 +288,7 @@ def new_search_policy(param, only_active=True):
     #
     # finally we apply the filter
 
-    new_pols = policy_elve.evaluate(multiple=True)
+    new_pols = policy_elve.evaluate()
 
     return new_pols
 
@@ -438,7 +438,7 @@ def new_get_client_policy(client, scope=None, action=None, realm=None,
     elif user:
         policy_eval.filter_for_user(user)
 
-    policies = policy_eval.evaluate(multiple=False)
+    policies = policy_eval.evaluate()
 
     return policies
 

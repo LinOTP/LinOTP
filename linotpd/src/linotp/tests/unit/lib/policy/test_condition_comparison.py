@@ -178,22 +178,28 @@ class TestCompare(unittest.TestCase):
             '!*z')
 
         hugo = User('Hugo', 'realm')
-        self.assertTrue(
-            user_list_compare(user_conditions, hugo))
+        match_type, match = user_list_compare(user_conditions, hugo)
+        assert match
+        assert match_type == 'exact:match'
+
         emma = User('Emma')
-        self.assertFalse(
-            user_list_compare(user_conditions, emma))
+        match_type, match = user_list_compare(user_conditions, emma)
+        assert not match
+        assert match_type == 'not:match'
 
         betonz = User('betonz', 'realm')
-        self.assertFalse(
-            user_list_compare(user_conditions, betonz))
+        match_type, match = user_list_compare(user_conditions, betonz)
+        assert not match
+        assert match_type == 'not:match'
 
         wanda = User('wanda', 'realm')
-        self.assertTrue(
-            user_list_compare(user_conditions, wanda))
+        match_type, match = user_list_compare(user_conditions, wanda)
+        assert match
+        assert match_type == 'regex:match'
 
         wanda2 = 'wanda@realm'
-        self.assertTrue(
-            user_list_compare(user_conditions, wanda2))
+        match_type, match = user_list_compare(user_conditions, wanda2)
+        assert match
+        assert match_type == 'regex:match'
 
         return

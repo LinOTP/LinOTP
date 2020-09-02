@@ -108,7 +108,7 @@ class PolicyEvaluator(object):
             sec_filters = self.filters
 
             self.set_filters(param)
-            policies = self.evaluate(multiple=True)
+            policies = self.evaluate()
 
         finally:
             # and restore the preserved ones
@@ -116,7 +116,7 @@ class PolicyEvaluator(object):
 
         return policies
 
-    def evaluate(self, policy_set=None, multiple=True):
+    def evaluate(self, policy_set=None):
         """
         evaluate - compare all policies against the access request
 
@@ -129,21 +129,19 @@ class PolicyEvaluator(object):
         - during the filter definition the comparison function is defined, thus
           all filter evaluation steps could be treated equal by just calling
           the comparison function with the actual value.
+        - There is a special treatment of the user matching in policies, which
+          classifies the policies in those with a pure wildcard match, a regex
+          match and an exact matching. If there are exact matching, this set of
+          policies is prefered over those with a regex match, which is prefered
+          over the set of pure wildcard '*' match. Thus in case of a wildcard
+          match, all policies are returned
 
         :param policy_set: optional, base policies against which all filter
                            are evaluated
-        :param multiple: define if the policies should be post processed to
-                         return the best matching ones. Default is to do no
-                         post proessing
         :return: the set of matching policies
         """
 
         matching_policies = {}
-
-        #
-        # provide information about the policy evaluation - for debugging :)
-
-        matching_details = {}
 
         all_policies = self.all_policies
 
@@ -153,7 +151,12 @@ class PolicyEvaluator(object):
         if not self.filters:
             return all_policies
 
+        # preserve a dict with which policy matched best wrt the user
+        user_match = {}
+
         for p_name, p_dict in all_policies.items():
+
+            matching = False
 
             #
             # special case: for filtering of policies by name:
@@ -167,63 +170,56 @@ class PolicyEvaluator(object):
             # evaluate each filter against the policy. if one filter fails
             # we can skip the evaluation the given policy
 
-            for (f_key, f_value, f_compare) in self.filters:
+            user_match_type = None
 
+            for (f_key, f_value, f_compare) in self.filters:
                 policy_condition = p_dict.get(f_key)
-                matching = f_compare(policy_condition, f_value)
+
+                # here we honor the user matching, which in difference to the
+                # other matching functions returns more than a boolean -
+                # it returns the matching precission, which is either:
+                # exact:match, regex:match or wildcard:match
+                # - the evaluation of the set of policy conditions can
+                # only be evaluated within the user_list_compare
+                # function
+
+                if f_key == 'user':
+                    user_match_type, matching = f_compare(
+                        policy_condition, f_value)
+                else:
+                    matching = f_compare(policy_condition, f_value)
 
                 if not matching:
                     break
 
-            if matching:
-                matching_policies[p_name] = p_dict
+            # --------------------------------------------------------------- --
 
-        # if we have multiple policies and post processing should be made:
-        if not multiple and len(matching_policies):
+            # all conditions are evaluated: preserve results in case of a match
 
-            #
-            # so we do some post selection but dont care for the result, as
-            # this is done in the upper level
+            if not matching:
+                continue
 
-            matching_policies = self._most_precise_policy(matching_policies)
-            return matching_policies
+            matching_policies[p_name] = p_dict
 
-        return matching_policies
+            if user_match_type:
+                if user_match_type not in user_match:
+                    user_match[user_match_type] = {}
 
-    def _most_precise_policy(self, matching_policies):
+                user_match[user_match_type][p_name] = all_policies[p_name]
 
-        no_wild_card_match = {}
+        # ----------------------------------------------------------------- --
 
-        for key in ['user', 'client', 'realm']:
-            entry = []
-            for name, policy in matching_policies.items():
-                conditions = [x.strip() for x in policy[key].split(',')]
-                if '*' not in conditions:
-                    entry.append(name)
+        # all policies are evaluated:
+        # identify the most relvant policies wrt. to the user matching:
+        #  user name  >> ( *@realm | *.resolver: ) >> *
+        # if there is no exact or regex user match, we return all identified
+        # policies
 
-            if len(entry) > 0:
-                no_wild_card_match[key] = entry
+        if 'exact:match' in user_match:
+            return user_match['exact:match']
 
-        res = None
-
-        if ('realm' in no_wild_card_match and
-           len(no_wild_card_match['realm']) == 1):
-
-            res = no_wild_card_match['realm']
-
-        elif ('client' in no_wild_card_match and
-              len(no_wild_card_match['client']) == 1):
-
-            res = no_wild_card_match['client']
-
-        elif ('user' in no_wild_card_match and
-              len(no_wild_card_match['user']) == 1):
-
-            res = no_wild_card_match['user']
-
-        if res:
-            policy_name = res[0]
-            return {policy_name: matching_policies[policy_name]}
+        elif 'regex:match' in user_match:
+            return user_match['regex:match']
 
         return matching_policies
 
@@ -539,7 +535,10 @@ def user_list_compare(policy_conditions, login):
     else:
         raise Exception("unsupported type of login")
 
+    full_qualified_names = user.get_full_qalified_names()
+
     matched = False
+    match_type = ''
 
     domain_comp = UserDomainCompare()
     attr_comp = AttributeCompare()
@@ -611,19 +610,37 @@ def user_list_compare(policy_conditions, login):
             else:
                 c_user = user
 
+            # check resolver of the user
             identified = domain_comp.exists(c_user, condition)
 
         else:  # simple user condition with string compare and wild cards
-
             identified = domain_comp.compare(user, condition)
 
-        if identified:
-            matched = True
+        if not identified:
+            continue
 
-            if its_a_not_condition:  # early exit on a not condition
-                return False
+        # early exit on a not condition: !user1
 
-    return matched
+        if its_a_not_condition:
+            return 'not:match', False
+
+        # if we came here, we got a least one match
+        matched = True
+
+        # evaluate the precission of the user match
+
+        if condition in full_qualified_names:
+            match_type = 'exact:match'
+
+        if condition == '*':
+            if not match_type:
+                match_type = 'wildcard:match'
+
+        else:
+            if match_type != 'exact:match':
+                match_type = 'regex:match'
+
+    return match_type, matched
 
 
 def _compare_cron_value(value, target):

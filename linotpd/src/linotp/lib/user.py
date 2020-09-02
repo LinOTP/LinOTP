@@ -310,6 +310,25 @@ class User(object):
 
         return userlist
 
+    def get_full_qalified_names(self):
+        """Get full qualified names.
+
+        :return: list of full qualified names
+        """
+
+        fqn = []
+
+        fqn.append(self.login)
+
+        if self.realm:
+            fqn.append("%s@%s" % (self.login, self.realm))
+
+        if self.resolver_config_identifier:
+            fqn.append(
+                "%s.%s:" % (self.login, self.resolver_config_identifier))
+
+        return fqn
+
     def exists(self):
         """
         check if a user exists in the given realm
@@ -563,7 +582,7 @@ def getUserFromParam(param):
 
             ulogin, _, urealm = usr.login.rpartition('@')
 
-            if urealm in getRealms():
+            if urealm.lower() in getRealms():
                 realm = urealm
                 login = ulogin
                 usr = User(ulogin, urealm)
