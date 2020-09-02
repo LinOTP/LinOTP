@@ -843,8 +843,14 @@ class UserserviceController(BaseController):
             secure=secure_cookie(),
             expires=expires)
 
-        reply = {'message': 'credential verified - '
-                 'additional authentication parameter required'}
+        tokenList = getTokenForUser(
+            self.authUser, active=True, exclude_rollout=False)
+
+        reply = {
+            'message': 'credential verified - '
+                        'additional authentication parameter required',
+            'tokenList': tokenList,
+            }
 
         g.audit['action_detail'] = "expires: %s " % expiration
         g.audit['info'] = "%r credentials verified" % user
