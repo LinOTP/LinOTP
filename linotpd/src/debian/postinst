@@ -14,7 +14,7 @@ export LINOTP_CFG=$CONFIG_DIR/linotp.cfg:/usr/share/linotp/linotp.cfg
 REALM="LinOTP admin area"
 DIGESTFILE=$CONFIG_DIR/admins
 LOGDIR=/var/log/linotp
-CACHEDIR=$CONFIG_DIR/data
+OLDCACHEDIR=$CONFIG_DIR/data
 TEMPLATEDIR=$CONFIG_DIR/custom-templates
 LIBDIR=/var/lib/linotp
 FAKE_PASSWORD=This_is_not_the_real_password_we_just_do_not_want_to_be_asked_again_in_case_of_updating_the_package
@@ -215,6 +215,13 @@ case "$1" in
     linotp init enc-key
     linotp init audit-keys
 
+    # If we have a Mako template cache directory lying around from an
+    # earlier version of LinOTP, get rid of it.
+    if [ -d "$OLDCACHEDIR" ] && dpkg --compare-versions "$2" lt-nl "3.0~b0"; then
+	echo_log "Disposing of $OLDCACHEDIR (now using $CACHEDIR instead)"
+        rm -rf "$OLDCACHEDIR"
+    fi
+
     evaluate_answers
 
     if [ "$APACHE" = "true" ]; then
@@ -274,11 +281,6 @@ case "$1" in
 
     # TODO: probably not needed
     chown -R "$LINOTP_USER" "$LOGDIR"
-
-    # remove the template cache, as the templates might have changed
-    # TODO: probably not needed
-    rm -rf "$CACHEDIR"/*
-
 
     rm -f $CONFIG_DIR/we_are_doing_an_upgrade
   ;;
