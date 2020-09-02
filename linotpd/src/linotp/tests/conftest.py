@@ -87,7 +87,7 @@ def sqlalchemy_uri(request):
 
 
 @pytest.fixture
-def base_app(tmpdir, request, sqlalchemy_uri, key_directory):
+def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
     """
     App instance without context
 
@@ -125,7 +125,7 @@ def base_app(tmpdir, request, sqlalchemy_uri, key_directory):
             ENV='testing',      # doesn't make a huge difference for us
             TESTING=True,
             SQLALCHEMY_DATABASE_URI=sqlalchemy_uri,
-            ROOT_DIR=tmpdir,
+            ROOT_DIR=tmp_path,
             AUDIT_PUBLIC_KEY_FILE=key_directory / "audit-public.pem",
             AUDIT_PRIVATE_KEY_FILE=key_directory / "audit-private.pem",
             SECRET_FILE=key_directory / "encKey",
