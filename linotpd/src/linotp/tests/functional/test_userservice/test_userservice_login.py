@@ -26,17 +26,12 @@
 #
 
 
-import pytest
+from mock import patch
 
-import logging
-import json
-
-from linotp.tests import TestController, url
-
-log = logging.getLogger(__name__)
+from . import TestUserserviceController
 
 
-class TestUserserviceLogin(TestController):
+class TestUserserviceLogin(TestUserserviceController):
     '''
     Selfservice Authorization: test for user authentication with otp
     '''
@@ -53,7 +48,7 @@ class TestUserserviceLogin(TestController):
                         'setConfig', params={'splitAtSign': 'true'})
         assert 'false' not in response.body
 
-        TestController.setUp(self)
+        TestUserserviceController.setUp(self)
 
         # create the common resolvers and realm
         self.create_common_resolvers()
@@ -62,7 +57,7 @@ class TestUserserviceLogin(TestController):
 
     def tearDown(self):
 
-        TestController.tearDown(self)
+        TestUserserviceController.tearDown(self)
 
 
     def test_no_mfa_login(self):
@@ -91,7 +86,7 @@ class TestUserserviceLogin(TestController):
 
         assert 'false' not in response
 
-        cookies = TestController.get_cookies(response)
+        cookies = self.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
 
         params = {
@@ -157,7 +152,7 @@ class TestUserserviceLogin(TestController):
 
         assert 'false' not in response
 
-        cookies = TestController.get_cookies(response)
+        cookies = self.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
 
         # verify that the authentication was successfull by quering history
@@ -231,7 +226,7 @@ class TestUserserviceLogin(TestController):
             'detail'][
                 'tokenList'][0]['LinOtp.TokenSerialnumber'] == 'LoginToken'
 
-        cookies = TestController.get_cookies(response)
+        cookies = self.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
 
         # ------------------------------------------------------------------ --
@@ -253,7 +248,7 @@ class TestUserserviceLogin(TestController):
 
         assert 'false' not in response
 
-        cookies = TestController.get_cookies(response)
+        cookies = self.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
 
         # ------------------------------------------------------------------ --
