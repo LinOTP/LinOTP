@@ -162,7 +162,8 @@ class IdResolver(UserIdResolver):
         "USERINFO": (True, True, text),
         "UIDTYPE": (False, DEFAULT_UID_TYPE, text),
 
-        "EnforceTLS": (False, False, boolean),
+        "EnforceTLS": (False, True, boolean),
+        "only_trusted_certs": (False, True, boolean),
         "NOREFERRALS": (False, False, boolean),
         "PROXY": (False, False, boolean),
 
@@ -388,12 +389,8 @@ class IdResolver(UserIdResolver):
 
         caller.noreferrals = True
 
-        caller.only_trusted_certs = False
-        param_selfsigned_certs = str(params.get('only_trusted_certs',
-                                                True)).lower()
-        caller.only_trusted_certs = param_selfsigned_certs == 'true'
-
         caller.enforce_tls = l_config['EnforceTLS']
+        caller.only_trusted_certs = l_config['only_trusted_certs']
 
         try:
             # do a bind
@@ -509,16 +506,11 @@ class IdResolver(UserIdResolver):
         self.brokenconfig_text = ""
         self.sizelimit = 5
         self.noreferrals = False
-        self.enforce_tls = False
+        self.enforce_tls = True
         self.proxy = False
         self.uidType = DEFAULT_UID_TYPE
         self.l_obj = None
-
-        # As of now this can only be controlled via a global configuration
-        # setting (it used to be hard-coded to `False`, with a special
-        # exception in `testconnection()`).
-
-        self.only_trusted_certs = current_app.config["TLS_ONLY_TRUSTED_CERTS"]
+        self.only_trusted_certs = True
 
     def close(self):
         """
@@ -989,6 +981,7 @@ class IdResolver(UserIdResolver):
         # certificate related parameters
 
         self.enforce_tls = l_config["EnforceTLS"]
+        self.only_trusted_certs = l_config["only_trusted_certs"]
 
         # ------------------------------------------------------------------ --
 

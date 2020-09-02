@@ -616,7 +616,7 @@ table.tokeninfoInnerTable {
     padding: 0;
 }
 
-.ui-dialog form.cmxform input,
+.ui-dialog form.cmxform input:not([type="checkbox"]),
 .ui-dialog form.cmxform textarea,
 .ui-dialog form.cmxform select {
 	width: 100%;

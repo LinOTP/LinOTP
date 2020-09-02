@@ -34,6 +34,7 @@ musicians_ldap_resolver = {
     'title': "Musicians LDAP (Blackdog)",
     'type': 'ldapresolver',
     'uri': "ldaps://blackdog.corp.lsexperts.de",
+    'only_trusted_certs': True,
     'basedn': "ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de",
     # You may also use cn="Wolfgang Amadeus Mozart"
     'binddn': 'cn="عبد الحليم حافظ",ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de',
@@ -49,6 +50,7 @@ physics_ldap_resolver = {
     'title': "Physics LDAP (Blackdog)",
     'type': 'ldapresolver',
     'uri': "ldaps://hottybotty.corp.lsexperts.de",
+    'only_trusted_certs': True,
     'basedn': 'dc=hotad,dc=example,dc=net',
     'binddn': 'cn="Clark Maxwell",ou=corp,dc=hotad,dc=example,dc=net',
     'password': "Test123!",

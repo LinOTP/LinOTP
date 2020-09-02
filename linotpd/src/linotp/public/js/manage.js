@@ -2881,6 +2881,7 @@ function save_ldap_config(){
         '#ldap_uidtype': 'UIDTYPE',
         '#ldap_noreferrals' : 'NOREFERRALS',
         '#ldap_enforce_tls': 'EnforceTLS',
+        '#ldap_only_trusted_certs': 'only_trusted_certs',
     };
     var url = '/system/setResolver';
     var params = {}
@@ -2894,18 +2895,11 @@ function save_ldap_config(){
         var value = $(key).val();
         params[new_key] = value;
     }
-    // checkboxes
-    var noreferrals="False";
-    if ($("#ldap_noreferrals").is(':checked')) {
-        noreferrals = "True";
-    }
-    params["NOREFERRALS"] = noreferrals;
 
-    var ldap_enforce_tls="False";
-    if ($("#ldap_enforce_tls").is(':checked')) {
-        ldap_enforce_tls = "True";
-    }
-    params["EnforceTLS"] = ldap_enforce_tls;
+    // checkboxes
+    params["NOREFERRALS"] = $("#ldap_noreferrals").is(':checked') ? "True" : "False";
+    params["EnforceTLS"] = $("#ldap_enforce_tls").is(':checked') ? "True" : "False";
+    params["only_trusted_certs"] = $("#ldap_only_trusted_certs").is(':checked') ? "True" : "False";
 
     params["session"] = getsession();
 
@@ -4134,13 +4128,10 @@ $(document).ready(function(){
         params['ldap_sizelimit']    = $('#ldap_sizelimit').val();
         params['ldap_uidtype']      = $('#ldap_uidtype').val();
 
-        if ($('#ldap_noreferrals').is(':checked')) {
-            params["NOREFERRALS"] = "True";
-        }
-
-        if ($('#ldap_enforce_tls').is(':checked')) {
-            params["EnforceTLS"] = "True";
-        }
+        // checkboxes
+        params["NOREFERRALS"] = $("#ldap_noreferrals").is(':checked') ? "True" : "False";
+        params["EnforceTLS"] = $("#ldap_enforce_tls").is(':checked') ? "True" : "False";
+        params["only_trusted_certs"] = $("#ldap_only_trusted_certs").is(':checked') ? "True" : "False";
 
         clientUrlFetch(url, params, processLDAPTestResponse);
         return false;
@@ -6738,8 +6729,14 @@ function resolver_set_ldap(obj) {
     $('#ldap_uidtype').val(data.UIDTYPE);
 
     // get the configuration value of the enforce TLS (if exists) and adjust the checkbox
-    var checked = !!data.EnforceTLS && data.EnforceTLS.toLowerCase() == "true";
-    $('#ldap_enforce_tls').prop('checked', checked);
+    $('#ldap_enforce_tls').prop('checked',
+        !!data.EnforceTLS && data.EnforceTLS.toLowerCase() == "true"
+    );
+
+    // get the configuration value of the only_trusted_certs (if exists) and adjust the checkbox
+    $('#ldap_only_trusted_certs').prop('checked',
+        !!data.only_trusted_certs && data.only_trusted_certs.toLowerCase() == "true"
+    );
 
     $('#ldap_noreferrals').prop('checked', data.NOREFERRALS == "True");
 

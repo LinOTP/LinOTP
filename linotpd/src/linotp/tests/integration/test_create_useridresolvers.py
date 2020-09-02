@@ -104,6 +104,7 @@ class TestCreateUserIdResolvers(TestCase):
         ldap_data = data.musicians_ldap_resolver.copy()
         ldap_data['enforce_tls'] = False
         ldap_data['uri'] = ldap_data['uri'].replace('ldaps:', 'ldap:')
+        del ldap_data['only_trusted_certs']
 
         self.create_resolver(ldap_data)
 
