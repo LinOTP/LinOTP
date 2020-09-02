@@ -44,6 +44,7 @@ from flask.testing import FlaskClient
 
 def pytest_configure(config):
     add_marks = [
+        "app_config(dict): add contents of dict to app configuration",
         "nightly: mark test to run only nightly",
         "exclude_sqlite: mark test to always skip with sqlite database",
         "smoketest: mark test to run on softhsm (we do not want to run the full test collection)",
@@ -131,6 +132,10 @@ def base_app(tmpdir, request, sqlalchemy_uri, key_directory):
             LOGGING_LEVEL="DEBUG",
             LOGGING_CONSOLE_LEVEL="DEBUG",
         )
+
+        config = request.node.get_closest_marker("app_config")
+        if config is not None:
+            base_app_config.update(config.args[0])
 
         os.environ["LINOTP_CFG"] = ""
 
