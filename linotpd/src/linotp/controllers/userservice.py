@@ -664,6 +664,44 @@ class UserserviceController(BaseController):
 
             g.audit['success'] = False
 
+            # -------------------------------------------------------------- --
+
+            # determine the tokentype and adjust the offline, online reply
+
+            token_type = reply.get('linotp_tokentype')
+
+            # announce available reply channels via reply_mode
+            # - online: token supports online mode where the user can
+            #   independently answer the challenge via a different channel
+            #   without having to enter an OTP.
+            # - offline: token supports offline mode where the user needs
+            #   to manually enter an OTP.
+
+            reply_mode = ''
+
+            if token_type is 'push':
+                reply_mode =  ['online']
+            elif token_type is 'qr':
+                reply_mode =  ['offline', 'online']
+            else:
+                reply_mode = ['offline']
+
+            reply["reply_mode"] = reply_mode
+
+            # ------------------------------------------------------------- --
+
+            # add transaction data wrt to the new spec
+
+            if reply.get('img_src'):
+                reply["transactiondata"] = reply['message']
+
+            # ------------------------------------------------------------- --
+
+            # care for the messages as it is done with verify
+
+            if token_type is 'qr':
+                reply['message'] = _('Please scan the provided qr code')
+
             Session.commit()
             return sendResult(self.response, False, 0, opt=reply)
 
