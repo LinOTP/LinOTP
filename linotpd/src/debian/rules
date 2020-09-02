@@ -10,6 +10,16 @@ export DEB_VERSION = $(shell sed -ne '1{s/^.* (//;s/).*$$//;p}' debian/changelog
 %:
 	dh $@ --with python3 --buildsystem=pybuild
 
+override_dh_install:
+	dh_install
+
+	# Install dbconfig-common scripts in debian/dbconfig-common
+	install -m644 debian/dbconfig-common/dbconfig-common-lib.sh debian/linotp/usr/share/dbconfig-common/scripts/linotp/lib.sh
+	for DB in mysql pgsql; do \
+		install -m755 debian/dbconfig-common/$${DB}-install \
+			debian/linotp/usr/share/dbconfig-common/scripts/linotp/install/$${DB} ;\
+	done
+
 override_dh_installdeb:
 	dh_installdeb
 
@@ -22,7 +32,7 @@ override_dh_installdeb:
 			cp -a debian/$$pkg/usr/etc/* debian/$$pkg/etc ; \
 			rm -r debian/$$pkg/usr/etc ; \
 		fi ; \
-		sed -ie 's/@@@DEB_VERSION@@@/$(DEB_VERSION)/' debian/$$pkg/DEBIAN/*; \
+		sed -i -e 's/@@@DEB_VERSION@@@/$(DEB_VERSION)/' debian/$$pkg/DEBIAN/*; \
 	done
 
 	find debian/linotp/usr -ls | grep public

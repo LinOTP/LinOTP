@@ -1,5 +1,13 @@
 #!/bin/sh -e
 
+if [ -f /usr/share/debconf/confmodule ]; then
+	. /usr/share/debconf/confmodule
+fi
+if [ -f /usr/share/dbconfig-common/dpkg/postrm ]; then
+	. /usr/share/dbconfig-common/dpkg/postrm
+	dbc_go linotp "$@"
+fi
+
 print_timestamp() {
 	date +"%Y/%m/%d - %T"
 }

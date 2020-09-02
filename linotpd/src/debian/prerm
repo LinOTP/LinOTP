@@ -1,6 +1,8 @@
 #!/bin/sh -e
 
 . /usr/share/debconf/confmodule
+. /usr/share/dbconfig-common/dpkg/prerm
+dbc_go linotp "$@"
 
 print_timestamp() {
 	date +"%Y/%m/%d - %T"
@@ -8,13 +10,6 @@ print_timestamp() {
 
 # check if linotp was run via apache
 db_get linotp/apache/activate || true
-
-if [ ! -f /etc/apache2/sites-enabled/linotp ] &&
-        [ ! -f /etc/apache2/sites-enabled/linotp.conf ];
-    then
-	# site was manually disabled!
-	touch /etc/linotp/apache_site_disabled
-fi
 
 if [ "$RET" = "true" ]; then
     if ! a2dissite linotp; then

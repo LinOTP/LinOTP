@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# /usr/share/dbconfig-common/scripts/linotp/install/postgres
+# Create Postgres database from dbconfig-common
+
+. /usr/share/dbconfig-common/scripts/linotp/lib.sh
+
+if [ "${dbc_dbport}" != "" ]; then
+    dbport=":${dbc_dbport}"
+else
+    dbport=""
+fi
+
+SQLALCHEMY="postgres://$(escape_login)@${dbc_dbserver}${dbport}/${dbc_dbname}"
+configure_sql "$SQLALCHEMY"
+
+init_database

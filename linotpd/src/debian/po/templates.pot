@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: linotp\n"
 "Report-Msgid-Bugs-To: linotp@packages.debian.org\n"
-"POT-Creation-Date: 2016-08-12 18:59+0200\n"
+"POT-Creation-Date: 2020-09-01 10:54+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,18 +20,32 @@ msgstr ""
 #. Type: boolean
 #. Description
 #: ../templates:1001
-msgid "Do you want to run LinOTP 2 via Apache2?"
+msgid "Do you want to run LinOTP via Apache?"
 msgstr ""
 
 #. Type: boolean
 #. Description
 #: ../templates:1001
 msgid ""
-"LinOTP 2 can be run within a webserver - here Apache2 - or via a paster "
-"start script. It is recommended to run LinOTP 2 via the Apache2 webserver. "
-"This means that a SSL virtual host is activated and the mod_wsgi is loaded. "
-"You might then want to modify /etc/apache2/sites-available/linotp2 to suite "
-"your needs as far as authentication is concerned."
+"LinOTP can be run within a webserver - here Apache - or via another method."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../templates:1001
+msgid ""
+"It is recommended to run LinOTP via the Apache webserver. This means that a "
+"SSL virtual host is activated and the mod_wsgi is loaded. You might then "
+"want to modify /etc/apache2/sites-available/linotp to suit your needs as far "
+"as authentication is concerned."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../templates:1001
+msgid ""
+"Note that if you choose to enable this option, you will not be able to "
+"configure LinOTP with a SQLite database."
 msgstr ""
 
 #. Type: password
@@ -45,7 +59,7 @@ msgstr ""
 #: ../templates:2001
 msgid ""
 "LinOTP runs within the apache webserver. For authentication there is a user "
-"'admin'.  Here you may specify his password. If you want to do more detailed "
+"'admin'. Here you may specify his password. If you want to do more detailed "
 "authentication or maybe do authentication with client certificates, you need "
 "to edit the apache configuration manually."
 msgstr ""
@@ -60,229 +74,14 @@ msgstr ""
 #. Description
 #: ../templates:3001
 msgid ""
-"When LinOTP 2 runs within apache2, you should talk to the server via SSL on "
-"port 443. So you need a certificate for the server, which can be created "
-"now. (By the way: if you need to run apache2 with ssl on another port, you "
-"need to configure apache2  manually.)"
-msgstr ""
-
-#. Type: select
-#. Description
-#. Type: select
-#. Description
-#: ../templates:4001 ../templates:5001
-msgid "What SQL database do you want to use for the token database?"
-msgstr ""
-
-#. Type: select
-#. Description
-#: ../templates:4001
-msgid ""
-"LinOTP 2 stores its token data in a SQL database.  You may now choose the "
-"token database backend that is used by LinOTP. If you want to configure it "
-"manually,  since you want to use another backend like Microsoft SQL server "
-"or Oracle you need to choose 'none' and than edit the file /etc/linotp2/"
-"linotp.ini manually. Please note, that SQLite can not be used with Apache2!"
-msgstr ""
-
-#. Type: select
-#. Description
-#: ../templates:5001
-msgid ""
-"LinOTP 2 stores its token data in a SQL database.  You may now choose the "
-"token database backend that is used by LinOTP. If you want to configure it "
-"manually, since you want to use another backend like Microsoft SQL server or "
-"Oracle you need to choose 'none' and than edit the file /etc/linotp2/linotp."
-"ini manually. As you selected LinOTP 2 to run with apache2, you can not "
-"choose SQLite here."
-msgstr ""
-
-#. Type: string
-#. Description
-#: ../templates:6001
-msgid "Name of the token database:"
-msgstr ""
-
-#. Type: string
-#. Description
-#: ../templates:6001
-msgid ""
-"Here you may choose the name of the token database.  If you are using MySQL "
-"and you got the MySQL root password, the database will be also created for "
-"you. Otherwise this database needs to be created manually as it will not be "
-"created by this config."
-msgstr ""
-
-#. Type: string
-#. Description
-#: ../templates:7001
-msgid "Database hostname:"
-msgstr ""
-
-#. Type: string
-#. Description
-#: ../templates:7001
-msgid ""
-"Here you may choose the hostname of the computer where the database is "
-"located."
-msgstr ""
-
-#. Type: string
-#. Description
-#: ../templates:8001
-msgid "Database user:"
-msgstr ""
-
-#. Type: string
-#. Description
-#: ../templates:8001
-msgid ""
-"The token database is an SQL database. LinOTP needs a user and a password to "
-"internally connect to the token database. Here you may choose the name of "
-"the database user. This user needs to be created already and have access  to "
-"the database. The user will not be created by this config."
-msgstr ""
-
-#. Type: string
-#. Description
-#: ../templates:9001
-msgid "Database file:"
-msgstr ""
-
-#. Type: string
-#. Description
-#: ../templates:9001
-msgid "Here you may choose the filename of the sqlite database."
-msgstr ""
-
-#. Type: password
-#. Description
-#: ../templates:10001
-msgid "Database users password:"
-msgstr ""
-
-#. Type: password
-#. Description
-#: ../templates:10001
-msgid ""
-"The token database is an SQL database. LinOTP needs a user and a password to "
-"internally connect to the token database."
-msgstr ""
-
-#. Type: password
-#. Description
-#: ../templates:11001
-msgid "enter password again:"
+"When LinOTP runs within Apache, you should talk to the server via HTTPS on "
+"port 443. So you need a certificate for the server, which can be created now."
 msgstr ""
 
 #. Type: boolean
 #. Description
-#: ../templates:12001
-msgid "Do you want to create the LinOTP 2 database, now?"
-msgstr ""
-
-#. Type: boolean
-#. Description
-#: ../templates:12001
+#: ../templates:3001
 msgid ""
-"It seems that you have the mysql server and client installed. But the "
-"database that you configured for LinOTP 2 is not created, yet.  It might "
-"also be, that you entered the WRONG CREDENTIALS to access the database! If "
-"you got the necessary credentials, (root account for mysql database) and if "
-"you are sure, that the database does not exist, yet, the database can be "
-"created for you, now!"
-msgstr ""
-
-#. Type: boolean
-#. Description
-#: ../templates:13001
-msgid "Is this an appliance installation?"
-msgstr ""
-
-#. Type: boolean
-#. Description
-#. Type: boolean
-#. Description
-#: ../templates:13001 ../templates:14001
-msgid "nothing"
-msgstr ""
-
-#. Type: boolean
-#. Description
-#: ../templates:14001
-msgid "Should a linotp db user password be generated randomly?"
-msgstr ""
-
-#. Type: password
-#. Description
-#: ../templates:15001
-msgid "mysql root password:"
-msgstr ""
-
-#. Type: password
-#. Description
-#: ../templates:15001
-msgid ""
-"To create the token database for LinOTP 2 on the MySQL server, you need to  "
-"provide the password of the mysql root user. (This is not the system root "
-"account)."
-msgstr ""
-
-#. Type: boolean
-#. Description
-#: ../templates:16001
-msgid "Do you want to create the LinOTP tables in the database, now?"
-msgstr ""
-
-#. Type: boolean
-#. Description
-#: ../templates:16001
-msgid ""
-"Good. It seems that you already created the token database. Within the "
-"database LinOTP 2 needs some tables, that may be created now. You may also "
-"create the tables later by issuing the command: flask init-db"
-msgstr ""
-
-#. Type: text
-#. Description
-#: ../templates:17001
-msgid "Database connection works. Tables alreay exist!"
-msgstr ""
-
-#. Type: text
-#. Description
-#: ../templates:17001
-msgid ""
-"The database connection was tested successfully. The tables are already "
-"created!"
-msgstr ""
-
-#. Type: boolean
-#. Description
-#: ../templates:18001
-msgid "Create new token.db and overwrite old data?"
-msgstr ""
-
-#. Type: boolean
-#. Description
-#: ../templates:18001
-msgid ""
-"The token database SQLite file already exists. Do you want to overwrite this "
-"file? All data will be lost!"
-msgstr ""
-
-#. Type: text
-#. Description
-#: ../templates:19001
-msgid "Bummer."
-msgstr ""
-
-#. Type: text
-#. Description
-#: ../templates:19001
-msgid ""
-"LinOTP will be configured for the use of the postgress database. But you "
-"need to setup the postgres database yourself. So please create the database "
-"and the database user with your preferred postgres tools. Then create the "
-"tables in the database by issuing the command flask init-db"
+"If you need to run Apache with HTTPS on another port, you will need to "
+"configure Apache manually."
 msgstr ""

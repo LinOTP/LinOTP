@@ -117,7 +117,7 @@ linotp (2.10.7.1-1) jessie; urgency=low
    * Server: yubikey token import for otp length 8
    * Server: get otp calculation by using utc as base
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fr, 21 Oct 2019 17:15:18 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 21 Oct 2019 17:15:18 +0200
 
 linotp (2.10.7-1) jessie; urgency=low
 
