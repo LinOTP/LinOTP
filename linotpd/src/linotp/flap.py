@@ -18,6 +18,8 @@ from werkzeug.local import LocalProxy
 
 from flask_babel import get_locale
 
+from linotp.lib.fs_utils import ensure_dir
+
 log = logging.getLogger(__name__)
 
 config = LocalProxy(lambda: flask.g.request_context['config'])
@@ -118,6 +120,9 @@ def setup_mako(app):
 def _make_mako_lookup(app):
     # Make a Mako `TemplateLookup` from the app configuration.
 
+    mod_dir = ensure_dir(app, "Mako template cache",
+                         "DATA_DIR", "template-cache", mode=0o770)
+
     kwargs = {
         'input_encoding': 'utf-8',
         'output_encoding': 'utf-8',
@@ -126,6 +131,9 @@ def _make_mako_lookup(app):
             ('from flask_babel import gettext as _, ngettext, '
              'pgettext, npgettext'),
         ],
+        # `module_directory` points to a directory that is used to
+        # cache Mako templates that have been compiled to Python code.
+        'module_directory': mod_dir,
     }
 
     # Tokens can come with their own Mako templates, all of which are
