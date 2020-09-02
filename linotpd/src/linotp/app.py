@@ -141,6 +141,14 @@ class ExtFlaskConfig(FlaskConfig):
                     if item is not None:
                         self[config_key] = value
 
+    def update(self, config_dict):
+        """Take configuration variables from a dictionary. We don't want
+        to use `dict.update()` because that won't pass the settings through
+        `ExtFlaskConfig.__setitem__()`.
+        """
+        for key, value in config_dict.items():
+            self[key] = value
+
     def __setitem__(self, key, value):
         """Implementation of `self[key] = value` with some additional magic.
         If a configuration schema is defined and `key` occurs in the schema,
