@@ -1897,14 +1897,36 @@ function getSerialByOtp(otp, type, assigned, realm) {
  * which checks whether the enforce tls should be shown
  */
 function handler_ldaps_starttls_show() {
-    var isLdaps = $('#ldap_uri').val().toLowerCase().match(/^ldaps:/)!==null;
+    var onlyLdapsURI = $("#ldap_uri").val().toLowerCase().match(/ldap:/) === null;
+    var onlyLdapURI = $("#ldap_uri").val().toLowerCase().match(/ldaps:/) === null;
 
-    // disable start_tls option in combination with ldaps:// url
-    $('#ldap_enforce_tls').prop("disabled", isLdaps);
-    $('#ldap_enforce_tls_label').toggleClass('disabled', isLdaps);
+    var useStarttlsIsDisabled = $("#ldap_enforce_tls").prop("disabled");
+    var useStarttlsIsChecked = $("#ldap_enforce_tls").prop("checked");
+    var onlyTrustCertsIsDisabled = $("#ldap_only_trusted_certs").prop("disabled");
 
-    if(isLdaps) {
-        $('#ldap_enforce_tls').prop('checked', false);
+    var noEncryptionSelected = onlyLdapURI && !useStarttlsIsChecked;
+
+
+    // disable start_tls option if no server using "ldap://" URI
+    $("#ldap_enforce_tls").prop("disabled", onlyLdapsURI);
+    $("#ldap_enforce_tls_label").toggleClass("disabled", onlyLdapsURI);
+    if (onlyLdapsURI) {
+        $("#ldap_enforce_tls").prop("checked", false);
+    }
+    if (!onlyLdapsURI && useStarttlsIsDisabled) {
+        // reset to default value (that is true)
+        $("#ldap_enforce_tls").prop("checked", true);
+}
+
+    // disable only_trusted_certs option if no encryption used
+    $("#ldap_only_trusted_certs").prop("disabled", noEncryptionSelected);
+    $("#ldap_only_trusted_certs_label").toggleClass("disabled", noEncryptionSelected);
+    if (noEncryptionSelected) {
+        $("#ldap_only_trusted_certs").prop("checked", false);
+    }
+    if (!noEncryptionSelected && onlyTrustCertsIsDisabled) {
+        // reset to default value (that is true)
+        $("#ldap_only_trusted_certs").prop("checked", true);
     }
 }
 
