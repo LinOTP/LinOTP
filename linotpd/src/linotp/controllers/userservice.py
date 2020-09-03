@@ -900,6 +900,15 @@ class UserserviceController(BaseController):
 
             # -------------------------------------------------------------- --
 
+            # the new selfservice provides the parameter 'username' instead of
+            # 'login'. As all lower llayers expect 'login' we switch the case
+
+            if 'login' not in param and 'username' in param:
+                param['login'] = param['username']
+                del param['username']
+
+            # -------------------------------------------------------------- --
+
             # if this is an pre-authenticated login we continue
             # with the authentication states
 
