@@ -35,9 +35,63 @@ $ pip install linotp
 ```
 (note that we recommend using a virtual environment).
 
-You can start directly by creating the database::
+Before launching the LinOTP server, you must make sure that a number
+of important directories exist. You can inspect their default values
+using the command
 ```terminal
-$ linotp init-db
+$ linotp config show ROOT_DIR LOGFILE_DIR DATA_DIR CACHE_DIR
+```
+and use a configuration file to change them:
+```terminal
+$ sudo mkdir /etc/linotp
+$ sudoedit /etc/linotp/linotp.cfg
+# ... hack away at linotp.cfg ...
+$ export LINOTP_CFG=/etc/linotp/linotp.cfg
+$ cat $LINOTP_CFG
+DATA_DIR = "/tmp/linotp-data"    # for example
+$ linotp config show DATA_DIR
+…
+DATA_DIR=/tmp/linotp-data
+```
+Our recommendation is to use `/etc/linotp` as `ROOT_DIR`, and to place
+a `linotp.cfg` file there containing your settings. Suitable defaults
+for `LOGFILE_DIR`, `CACHE_DIR`, and `DATA_DIR` are `/var/log/linotp`,
+`/var/cache/linotp`, and `/run/linotp`, respectively. Note that these
+directories should belong to the user that will be running LinOTP. You
+may find it convenient to create a `linotp` system user for the
+purpose. Also note that modern Linux distributions commonly use a
+RAM-based file system for `/run`, so you will have to arrange for
+`/run/linotp` to be recreated whenever the system is booted. The
+`tmpfiles.d(5)` mechanism of systemd is helpful here.
+
+Also note that environment variables can be used to specify LinOTP
+configuration settings. If a configuration setting inside LinOTP is
+named `XYZ`, a variable named `LINOTP_XYZ` in the process environment
+can be used to set `XYZ`. This overrides any settings in configuration
+files or hard-coded defaults, and is useful in Docker-like setups
+where configuration files are inconvenient to use.
+
+(Refer to the detailed documentation for a more in-depth discussion of
+LinOTP configuration.)
+
+If you have adjusted the directories to your liking in the configuration
+file (or process environment), you can create them using a command like
+```terminal
+$ for d in $(linotp config show --values ROOT_DIR LOGFILE_DIR DATA_DIR CACHE_DIR)
+> do
+>    sudo mkdir -p "$d"
+>    sudo chown $USER "$d"
+> done
+```
+(The `sudo` is required if you're using directories like
+`/var/cache/linotp` which only `root` can create.)
+
+You can start directly by creating the encryption and audit-log keys
+and the database table structure:
+```terminal
+$ linotp init enc-key --dump
+$ linotp init audit-keys
+$ linotp init database
 ```
 Then start the webserver by issuing::
 ```terminal
@@ -46,20 +100,21 @@ $ linotp run
 Now you could go the the web interface at http://localhost:5000/manage
 and start creating the UserIdResolver, a Realm and enroll tokens.
 
+Note that by default, LinOTP will use a SQLite database which is good
+for testing and experiments but unsuitable for production use.
+
 ## Options
 
 You can adapt the `/etc/linotp/linotp.cfg` file. There you need to
 configure the database connection with an existing database and user:
 
-    SQLALCHEMY_DATABASE_URI = mysql://user:password@localhost/LinOTP2
+    SQLALCHEMY_DATABASE_URI = mysql://user:password@localhost/LinOTP
 
-Then you can create the database as above:
+Once you have ensured that your database server knows about the
+database and it is accessible using the given user name and password,
+you can create the database schema again as above:
 ```terminal
-$ linotp init-db
-```
-You can change the location of your log file:
-```terminal
-$ mkdir /var/log/linotp
+$ linotp init database
 ```
 
 ## Apache and Authentication
