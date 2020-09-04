@@ -126,6 +126,9 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
             TESTING=True,
             SQLALCHEMY_DATABASE_URI=sqlalchemy_uri,
             ROOT_DIR=tmp_path,
+            CACHE_DIR=tmp_path / "cache",
+            DATA_DIR=tmp_path / "data",
+            LOGFILE_DIR=tmp_path / "logs",
             AUDIT_PUBLIC_KEY_FILE=key_directory / "audit-public.pem",
             AUDIT_PRIVATE_KEY_FILE=key_directory / "audit-private.pem",
             SECRET_FILE=key_directory / "encKey",
@@ -138,6 +141,10 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
             base_app_config.update(config.args[0])
 
         os.environ["LINOTP_CFG"] = ""
+
+        # Pre-generate the important directories
+        for key in ('CACHE_DIR', 'DATA_DIR', 'LOGFILE_DIR'):
+            os.makedirs(base_app_config[key], mode=0o770, exist_ok=True)
 
         # Fake running `linotp init enc-key`
         secret_file = base_app_config['SECRET_FILE']

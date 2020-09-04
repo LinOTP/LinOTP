@@ -21,6 +21,7 @@
 import importlib
 import logging
 from logging.config import dictConfig as logging_dictConfig
+import stat
 import sys
 import os
 import time
@@ -205,6 +206,32 @@ class ExtFlaskConfig(FlaskConfig):
                         f"default (like {default!r}).")
             # raise LinOTPConfigKeyError(key)  # too drastic for now
             return default
+
+    def check_directories(self):
+        BASE_DIR_SETTINGS = {
+            'ROOT_DIR', 'CACHE_DIR', 'DATA_DIR', 'LOGFILE_DIR',
+        }
+        if self.config_schema is None:
+            return False
+        err = 0
+        for key in self.config_schema.as_dict():
+            if key not in BASE_DIR_SETTINGS:
+                continue
+            msg = ""
+            dir_name = self[key]
+            if os.path.exists(dir_name):
+                s = os.stat(dir_name)
+                if not stat.S_ISDIR(s.st_mode):
+                    msg = "is not a directory"
+            else:
+                msg = "does not exist"
+            if msg:
+                print(f"Error: Directory {dir_name} ({key}) {msg}",
+                      file=sys.stderr)
+                err += 1
+        if err:
+            print("This is a fatal condition, aborting.", file=sys.stderr)
+            sys.exit(1)
 
 
 class LinOTPApp(Flask):
@@ -612,9 +639,9 @@ def init_logging(app):
             },
         }
 
-    ensure_dir(app, "log", "LOGFILE_DIR", mode=0o770)
-
-    logging_dictConfig(app.config["LOGGING"])
+    if app.cli_cmd != 'config':
+        ensure_dir(app, "log", "LOGFILE_DIR", mode=0o770)
+        logging_dictConfig(app.config["LOGGING"])
 
     app.logger = logging.getLogger(app.name)
     app.logger.info("LinOTP {} starting ...".format(__version__))
@@ -742,6 +769,9 @@ def _configure_app(app, config_name='default', config_extra=None):
     # Check the environment for further settings
 
     app.config.from_env_variables()
+
+    if getattr(app, 'cli_cmd', '') != 'config':
+        app.config.check_directories()
 
 
 def create_app(config_name='default', config_extra=None):

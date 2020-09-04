@@ -190,6 +190,13 @@ class ConfigSchema:
         """
         return dict((item.name, item.default) for item in self.schema.values())
 
+    def items(self):
+        """Return the names and schema items of the schema as a dictionary
+        (generator really). Note that this is similar but not identical to the
+        `.as_dict()` method.
+        """
+        return self.schema.items()
+
 
 _config_schema = ConfigSchema([
     ConfigItem("ROOT_DIR", str, default="",
