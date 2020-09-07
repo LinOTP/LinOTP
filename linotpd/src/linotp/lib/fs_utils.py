@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 
 def ensure_dir(app,  # : HasConfig
                what: str, conf_name: str,
-               *sub_dirs: str, mode: int = 0o770):
+               *sub_dirs: str, mode: int = 0o770) -> str:
     """Make sure the directory whose name is given by
     `app.config[conf_name]/sub/dirs` exists. If it needs to be
     created, create all its parents if necessary, and use mode
