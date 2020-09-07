@@ -85,6 +85,7 @@ class SelfService(object):
         fill_form_element(driver, "login", login)
         fill_form_element(driver, "password", password)
         self._find_by_id("password").submit()
+        self.wait_for_element_visibility('tabs', 20)
 
     def wait_for_element_visibility(self, element_id, delay=5):
         WebDriverWait(self.driver, delay).until(
