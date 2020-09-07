@@ -44,6 +44,7 @@ from flask.testing import FlaskClient
 
 def pytest_configure(config):
     add_marks = [
+        "app_config(dict): add contents of dict to app configuration",
         "nightly: mark test to run only nightly",
         "exclude_sqlite: mark test to always skip with sqlite database",
         "smoketest: mark test to run on softhsm (we do not want to run the full test collection)",
@@ -86,7 +87,7 @@ def sqlalchemy_uri(request):
 
 
 @pytest.fixture
-def base_app(tmpdir, request, sqlalchemy_uri, key_directory):
+def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
     """
     App instance without context
 
@@ -124,7 +125,10 @@ def base_app(tmpdir, request, sqlalchemy_uri, key_directory):
             ENV='testing',      # doesn't make a huge difference for us
             TESTING=True,
             SQLALCHEMY_DATABASE_URI=sqlalchemy_uri,
-            ROOT_DIR=tmpdir,
+            ROOT_DIR=tmp_path,
+            CACHE_DIR=tmp_path / "cache",
+            DATA_DIR=tmp_path / "data",
+            LOGFILE_DIR=tmp_path / "logs",
             AUDIT_PUBLIC_KEY_FILE=key_directory / "audit-public.pem",
             AUDIT_PRIVATE_KEY_FILE=key_directory / "audit-private.pem",
             SECRET_FILE=key_directory / "encKey",
@@ -132,7 +136,15 @@ def base_app(tmpdir, request, sqlalchemy_uri, key_directory):
             LOGGING_CONSOLE_LEVEL="DEBUG",
         )
 
+        config = request.node.get_closest_marker("app_config")
+        if config is not None:
+            base_app_config.update(config.args[0])
+
         os.environ["LINOTP_CFG"] = ""
+
+        # Pre-generate the important directories
+        for key in ('CACHE_DIR', 'DATA_DIR', 'LOGFILE_DIR'):
+            os.makedirs(base_app_config[key], mode=0o770, exist_ok=True)
 
         # Fake running `linotp init enc-key`
         secret_file = base_app_config['SECRET_FILE']

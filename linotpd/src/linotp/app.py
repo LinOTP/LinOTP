@@ -21,6 +21,7 @@
 import importlib
 import logging
 from logging.config import dictConfig as logging_dictConfig
+import stat
 import sys
 import os
 import time
@@ -64,6 +65,7 @@ from .lib.realm import getRealms
 from .lib.reply import sendError
 
 from .lib.util import get_client
+from .lib.fs_utils import ensure_dir
 
 from . import __version__
 from .flap import config, set_config, tmpl_context as c, request, setup_mako
@@ -140,6 +142,14 @@ class ExtFlaskConfig(FlaskConfig):
                     if item is not None:
                         self[config_key] = value
 
+    def update(self, config_dict):
+        """Take configuration variables from a dictionary. We don't want
+        to use `dict.update()` because that won't pass the settings through
+        `ExtFlaskConfig.__setitem__()`.
+        """
+        for key, value in config_dict.items():
+            self[key] = value
+
     def __setitem__(self, key, value):
         """Implementation of `self[key] = value` with some additional magic.
         If a configuration schema is defined and `key` occurs in the schema,
@@ -197,6 +207,32 @@ class ExtFlaskConfig(FlaskConfig):
             # raise LinOTPConfigKeyError(key)  # too drastic for now
             return default
 
+    def check_directories(self):
+        BASE_DIR_SETTINGS = {
+            'ROOT_DIR', 'CACHE_DIR', 'DATA_DIR', 'LOGFILE_DIR',
+        }
+        if self.config_schema is None:
+            return False
+        err = 0
+        for key in self.config_schema.as_dict():
+            if key not in BASE_DIR_SETTINGS:
+                continue
+            msg = ""
+            dir_name = self[key]
+            if os.path.exists(dir_name):
+                s = os.stat(dir_name)
+                if not stat.S_ISDIR(s.st_mode):
+                    msg = "is not a directory"
+            else:
+                msg = "does not exist"
+            if msg:
+                print(f"Error: Directory {dir_name} ({key}) {msg}",
+                      file=sys.stderr)
+                err += 1
+        if err:
+            print("This is a fatal condition, aborting.", file=sys.stderr)
+            sys.exit(1)
+
 
 class LinOTPApp(Flask):
     """
@@ -238,7 +274,9 @@ class LinOTPApp(Flask):
         resolver_setup_done = config.get('resolver_setup_done', False)
         if resolver_setup_done is False:
             try:
-                cache_dir = self.config["CACHE_DIR"]
+                cache_dir = ensure_dir(
+                    self, "resolver cache", "CACHE_DIR", "resolvers",
+                    mode=0o770)
                 setupResolvers(config=l_config, cache_dir=cache_dir)
                 config['resolver_setup_done'] = True
             except Exception as exx:
@@ -601,11 +639,9 @@ def init_logging(app):
             },
         }
 
-    logfile_dir = app.config["LOGFILE_DIR"]
-    if logfile_dir is not None and not os.path.exists(logfile_dir):
-        os.mkdir(logfile_dir)
-
-    logging_dictConfig(app.config["LOGGING"])
+    if app.cli_cmd != 'config':
+        ensure_dir(app, "log", "LOGFILE_DIR", mode=0o770)
+        logging_dictConfig(app.config["LOGGING"])
 
     app.logger = logging.getLogger(app.name)
     app.logger.info("LinOTP {} starting ...".format(__version__))
@@ -617,7 +653,8 @@ def setup_cache(app):
     cache_opts = {}
     cache_opts['cache_type'] = app.config["BEAKER_CACHE_TYPE"]
     if cache_opts['cache_type'] == 'file':
-        beaker_dir = app.config["BEAKER_CACHE_DIR"]
+        beaker_dir = ensure_dir(app, "file-based Beaker cache",
+                                "CACHE_DIR", "beaker", mode=0o770)
         cache_opts['cache.data_dir'] = os.path.join(beaker_dir, 'data')
         cache_opts['cache.lock_dir'] = os.path.join(beaker_dir, 'lock')
     app.cache = CacheManager(**parse_cache_config_options(cache_opts))
@@ -732,6 +769,9 @@ def _configure_app(app, config_name='default', config_extra=None):
     # Check the environment for further settings
 
     app.config.from_env_variables()
+
+    if getattr(app, 'cli_cmd', '') != 'config':
+        app.config.check_directories()
 
 
 def create_app(config_name='default', config_extra=None):

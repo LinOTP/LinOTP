@@ -83,13 +83,13 @@ class TokenImport(ManageDialog):
             tf.write(file_content)
             tf.close()
             self.file_path = tf.name
-
-            # We need to make the created file available in the selenium
-            # docker container (Where the browser interaction is done).
-            self.driver.file_detector = LocalFileDetector()
         else:
             # Use the provided xml token file.
             self.file_path = file_path
+
+        # We need to make the file available in the selenium
+        # docker container (Where the browser interaction is done).
+        self.driver.file_detector = LocalFileDetector()
 
         # On firefox the lineedit is not cleared after dialog re-open
         # So we have to do this explicitly

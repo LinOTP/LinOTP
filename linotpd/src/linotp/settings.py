@@ -12,11 +12,12 @@ from jsonschema import Draft4Validator
 
 from .lib.type_utils import boolean as to_boolean
 from .lib.security.pkcs11 import Pkcs11SecurityModule
-from  .lib.security import provider
+from .lib.security import provider
 
 basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 VALID_LOG_LEVELS = {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}
+
 
 # Validation functions for configuration items. The `ConfigSchema.validate`
 # attribute is supposed to contain a function that takes `key` and `value`
@@ -69,6 +70,7 @@ def check_int_in_range(min=None, max=None):
         f.__doc__ = f"{min} <= value <= {max}"
     return f
 
+
 def check_json_schema(schema={}):
     """Factory function that will return a function that ensures that
     `value` agrees to the schema
@@ -85,6 +87,7 @@ def check_json_schema(schema={}):
 
     f.__doc__ = f"value should apply {schema}"
     return f
+
 
 def check_membership(allowed={}):
     """Factory function that will return a function that ensures that
@@ -167,6 +170,9 @@ class ConfigSchema:
                 raise LinOTPConfigKeyError(
                     f"Unknown configuration item \'{key}\'")
             return value
+        # Make sure path-like items are strings, not `pathlib` paths.
+        if key.endswith(('_DIR', '_FILE')):
+            value = str(value)
         # If `value` is `str` but the schema wants non-`str`, do a
         # conversion, either using the function provided or the type itself.
         if item.type != str and isinstance(value, str):
@@ -184,6 +190,13 @@ class ConfigSchema:
         """
         return dict((item.name, item.default) for item in self.schema.values())
 
+    def items(self):
+        """Return the names and schema items of the schema as a dictionary
+        (generator really). Note that this is similar but not identical to the
+        `.as_dict()` method.
+        """
+        return self.schema.items()
+
 
 _config_schema = ConfigSchema([
     ConfigItem("ROOT_DIR", str, default="",
@@ -200,12 +213,20 @@ _config_schema = ConfigSchema([
                      "`datetime.datetime.strftime()` documentation to find "
                      "out about allowable `%` placeholders.")),
     ConfigItem("CACHE_DIR", str, default="cache",
-               help=("Directory for miscellaneous resolver caches.")),
+               help=("Directory for miscellaneous caches. The actual "
+                     "caches go into subdirectories, e.g., `resolvers` "
+                     "for resolver caches and `beaker` for a file-based "
+                     "Beaker cache, in order to avoid namespace issues.")),
+    ConfigItem("DATA_DIR", str, default="data",
+               help=("Directory for transient runtime data. The content of "
+                     "this directory is not expected to survive system "
+                     "reboots, i.e., it could be located below `/run` on "
+                     "systems where `/run` is a RAM disk.")),
     ConfigItem("CONTROLLERS", str,
                default=("admin audit auth gettoken "
                         "helpdesk:/api/helpdesk:HelpdeskController "
                         "manage selfservice system "
-                        "test testing tools maintenance monitoring validate "
+                        "test tools maintenance monitoring validate "
                         "userservice reporting"),
                help=("List of all enabled controllers. Any controller `FOO` "
                      "mentioned here will be imported from "
@@ -274,11 +295,10 @@ _config_schema = ConfigSchema([
     ConfigItem("BEAKER_CACHE_TYPE", str,
                validate=check_membership({"memory", "file"}), default="memory",
                help=("What type of Beaker cache to use (`memory` or `file`). "
+                     "For `file`, the cache will be in the `CACHE_DIR/beaker` "
+                     "directory. "
                      "If you don't know what this does, you probably don't "
                      "want to mess with it.")),
-    ConfigItem("BEAKER_CACHE_DIR", str, default="beaker_cache",
-               help=("Directory used for the Beaker cache if "
-                     "`BEAKER_CACHE_TYPE` is `file`.")),
     ConfigItem("SECRET_FILE", str, default="encKey",
                help=("Contains a server-specific encryption key.")),
     ConfigItem("SQLALCHEMY_DATABASE_URI", str, default="sqlite:///{}",

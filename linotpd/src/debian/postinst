@@ -14,7 +14,8 @@ export LINOTP_CFG=$CONFIG_DIR/linotp.cfg:/usr/share/linotp/linotp.cfg
 REALM="LinOTP admin area"
 DIGESTFILE=$CONFIG_DIR/admins
 LOGDIR=/var/log/linotp
-CACHEDIR=$CONFIG_DIR/data
+CACHEDIR=/var/cache/linotp
+OLDCACHEDIR=$CONFIG_DIR/data
 TEMPLATEDIR=$CONFIG_DIR/custom-templates
 LIBDIR=/var/lib/linotp
 FAKE_PASSWORD=This_is_not_the_real_password_we_just_do_not_want_to_be_asked_again_in_case_of_updating_the_package
@@ -168,6 +169,26 @@ evaluate_answers() {
 
 }
 
+# create_tmpfiles FILE
+#
+# This is a greatly simplified version of "systemd-tmpfiles" (it only
+# does what we need). It saves us from having to install systemd in
+# a Docker environment just to get at "systemd-tmpfiles". Of course
+# we could just create and chown /run/linotp instead but that wouldn't
+# be DRY.
+
+create_tmpfiles() {
+    while read -a f; do
+	case "${f[0]}" in
+	    d) mkdir -p -m "${f[2]}" "${f[1]}"
+	       chown "${f[3]}:${f[4]}" "${f[1]}"
+	       ;;
+	    *) echo >&2 "$0: unsupported entry type '${f[0]}', ignoring"
+	       ;;
+	esac
+    done </usr/lib/tmpfiles.d/$1
+}
+
 # Here's where the actual execution of the postinst file starts.
 
 if [ "$1" = configure ]; then
@@ -176,8 +197,10 @@ if [ "$1" = configure ]; then
 
   create_dir "log" "$LOGDIR"
   create_dir "lib" "$LIBDIR"
-  create_dir "cache" "$CACHEDIR" clear
+  create_dir "cache" "$CACHEDIR"
   create_dir "template" "$TEMPLATEDIR"
+  # On a system with systemd, use systemd-tmpfiles later (courtesy of dh).
+  [ -d /run/systemd/system ] || create_tmpfiles linotp.conf  # for DATA_DIR
 
   create_cfg_file
 
@@ -192,6 +215,13 @@ case "$1" in
     echo_log "Initialising keys"
     linotp init enc-key
     linotp init audit-keys
+
+    # If we have a Mako template cache directory lying around from an
+    # earlier version of LinOTP, get rid of it.
+    if [ -d "$OLDCACHEDIR" ] && dpkg --compare-versions "$2" lt-nl "3.0~b0"; then
+	echo_log "Disposing of $OLDCACHEDIR (now using $CACHEDIR instead)"
+        rm -rf "$OLDCACHEDIR"
+    fi
 
     evaluate_answers
 
@@ -252,11 +282,6 @@ case "$1" in
 
     # TODO: probably not needed
     chown -R "$LINOTP_USER" "$LOGDIR"
-
-    # remove the template cache, as the templates might have changed
-    # TODO: probably not needed
-    rm -rf "$CACHEDIR"/*
-
 
     rm -f $CONFIG_DIR/we_are_doing_an_upgrade
   ;;
