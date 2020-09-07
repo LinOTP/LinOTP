@@ -1902,10 +1902,6 @@ function handler_ldaps_starttls_show() {
 
     var useStarttlsIsDisabled = $("#ldap_enforce_tls").prop("disabled");
     var useStarttlsIsChecked = $("#ldap_enforce_tls").prop("checked");
-    var onlyTrustCertsIsDisabled = $("#ldap_only_trusted_certs").prop("disabled");
-
-    var noEncryptionSelected = onlyLdapURI && !useStarttlsIsChecked;
-
 
     // disable start_tls option if no server using "ldap://" URI
     $("#ldap_enforce_tls").prop("disabled", onlyLdapsURI);
@@ -1913,10 +1909,25 @@ function handler_ldaps_starttls_show() {
     if (onlyLdapsURI) {
         $("#ldap_enforce_tls").prop("checked", false);
     }
+
+    if (onlyLdapsURI || useStarttlsIsChecked) {
+        $("#ldap_enforce_tls_warning").hide();
+    } else {
+        $("#ldap_enforce_tls_warning").show();
+    }
+
     if (!onlyLdapsURI && useStarttlsIsDisabled) {
         // reset to default value (that is true)
         $("#ldap_enforce_tls").prop("checked", true);
-}
+        $("#ldap_enforce_tls_warning").hide();
+    }
+
+    useStarttlsIsChecked = $("#ldap_enforce_tls").prop("checked");
+
+    var onlyTrustedCertsIsDisabled = $("#ldap_only_trusted_certs").prop("disabled");
+    var onlyTrustedCertsIsChecked = $("#ldap_only_trusted_certs").prop("checked");
+
+    var noEncryptionSelected = onlyLdapURI && !useStarttlsIsChecked;
 
     // disable only_trusted_certs option if no encryption used
     $("#ldap_only_trusted_certs").prop("disabled", noEncryptionSelected);
@@ -1924,9 +1935,17 @@ function handler_ldaps_starttls_show() {
     if (noEncryptionSelected) {
         $("#ldap_only_trusted_certs").prop("checked", false);
     }
-    if (!noEncryptionSelected && onlyTrustCertsIsDisabled) {
+
+    if (noEncryptionSelected || onlyTrustedCertsIsChecked) {
+        $("#ldap_only_trusted_certs_warning").hide();
+    } else {
+        $("#ldap_only_trusted_certs_warning").show();
+    }
+
+    if (!noEncryptionSelected && onlyTrustedCertsIsDisabled) {
         // reset to default value (that is true)
         $("#ldap_only_trusted_certs").prop("checked", true);
+        $("#ldap_only_trusted_certs_warning").hide();
     }
 }
 
@@ -6782,7 +6801,8 @@ function resolver_ldap(name, duplicate){
                 'data': {
                     'BINDDN': 'cn=administrator,dc=yourdomain,dc=tld',
                     'LDAPURI': 'ldap://linotpserver1, ldap://linotpserver2',
-                    'EnforceTLS' : 'False',
+                    'EnforceTLS': 'True',
+                    'only_trusted_certs': 'True',
                     'LDAPBASE': 'dc=yourdomain,dc=tld',
                     'TIMEOUT': '5',
                     'SIZELIMIT' : '500',

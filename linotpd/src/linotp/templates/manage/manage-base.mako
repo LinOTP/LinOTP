@@ -2018,10 +2018,12 @@
                         onkeyup="handler_ldaps_starttls_show();"></td></tr>
                 <tr><td rowspan="2" style="vertical-align: middle;">${_("TLS security")}:</td>
                     <td><input type="checkbox" name="ldap_enforce_tls" id="ldap_enforce_tls" onchange="handler_ldaps_starttls_show();">
-                        <label id="ldap_enforce_tls_label" for="ldap_enforce_tls">${_("Use STARTTLS for non-'ldaps://' connections")}</label></td></tr>
+                        <label id="ldap_enforce_tls_label" for="ldap_enforce_tls">${_("Use STARTTLS for 'ldap://' connections")}</label>
+                        <div id="ldap_enforce_tls_warning" class="warning">${_("Your connection will not be encrypted if you do not use STARTTLS or ldaps://")}</div></td></tr>
                 <tr>
                     <td><input type="checkbox" name="ldap_only_trusted_certs" id="ldap_only_trusted_certs" onchange="handler_ldaps_starttls_show();">
-                        <label id="ldap_only_trusted_certs_label" for="ldap_only_trusted_certs">${_("Only allow system-trusted certificates")}</label></td></tr>
+                        <label id="ldap_only_trusted_certs_label" for="ldap_only_trusted_certs">${_("Only allow system-trusted certificates")}</label>
+                        <div id="ldap_only_trusted_certs_warning" class="warning">${_("Your connection will be vulnerable to security attacks if you disable certificate chain validation")}</div></td></tr>
                 <tr><td><label for=ldap_basedn>${_("BaseDN")}:</label></td>
                     <td><input type="text" name="ldap_basedn" class="required"  id="ldap_basedn" size="35"></td></tr>
                 <tr><td><label for=ldap_binddn>${_("BindDN")}:</label></td>
