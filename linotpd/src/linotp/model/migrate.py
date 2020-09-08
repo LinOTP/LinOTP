@@ -162,7 +162,7 @@ def drop_column(engine, table_name, column):
 def run_data_model_migration(meta):
     """
     hook for database schema upgrade
-     - called by flask init-db and during flask app bootstrap
+     - called during database initialisation
     """
 
     # define the most recent target version
