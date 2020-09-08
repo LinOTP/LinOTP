@@ -345,13 +345,14 @@ class SelfserviceController(BaseController):
 
         request_context['reponse_redirect'] = True
 
-        response = redirect('login')
+        redirect_response = redirect(
+            url(controller='selfservice', action='login'))
 
         if request.cookies.get('user_selfservice'):
             remove_auth_cookie(request.cookies.get('user_selfservice'))
-            response.delete_cookie('user_selfservice')
+            redirect_response.delete_cookie('user_selfservice')
 
-        return response
+        return redirect_response
 
     def login(self):
         '''
