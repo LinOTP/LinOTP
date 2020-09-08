@@ -100,7 +100,15 @@ def setup_db(app):
     database is properly initialised before going on our merry way, except
     when we know the database isn't properly initialised and the next
     thing we're about to do is to initialise it. This is why we have
-    the revolting `app.cli_cmd` mechanism that is used below.
+    the revolting `app.cli_cmd` mechanism that is used below. It lets us
+    skip the database setup when we're doing `linotp init` or `linotp config`,
+    both of which don't touch the database, except for `linotp init database`,
+    which skips the database setup during `create_app()` but then comes
+    back to it in its own code after deviously setting `app.cli_cmd` to
+    `init-database` so it goes into the `if` below after all. But in
+    this case we still need to make an exception for it when it doesn't
+    find the `Config` table, because rather than croak with a fatal error
+    we want to *create* the `Config` table.
 
     FIXME: This is not how we would do this in Flask. We want to
     rewrite it once we get Flask-SQLAlchemy and Flask-Migrate
@@ -108,7 +116,8 @@ def setup_db(app):
 
     """
 
-    if app.cli_cmd != 'init':
+    cli_cmd = getattr(app, 'cli_cmd', '')
+    if cli_cmd not in ('init', 'config'):
         # Don't bother with all this database business when doing
         # `linotp init …`, because otherwise there will be chicken/egg
         # issues galore.
@@ -129,14 +138,15 @@ def setup_db(app):
 
         init_model(engine)
 
-        if 'Config' not in engine.table_names():
-            # To avoid chicken-and-egg issues, we don't abort the program
-            # just now even if the database isn't initialised yet. Commands
-            # other than `linotp init` will need to fend for themselves.
+        if 'Config' not in engine.table_names() and cli_cmd != 'init-database':
+            # Stop the program with a critical error if the database schema
+            # isn't initialised, unless you're about to initialise the
+            # database schema, in which case it is OK if the database schema
+            # isn't yet initialised.
 
-            log.warning("Database schema must be initialised, "
-                        "run `linotp init database`.")
-            # sys.exit(11)
+            log.critical("Database schema must be initialised, "
+                         "run `linotp init database`.")
+            sys.exit(11)
 
 
 def init_db_tables(app, drop_data=False, add_defaults=True):

@@ -157,6 +157,7 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
             create_audit_keys(audit_private_key_file,
                               str(base_app_config['AUDIT_PUBLIC_KEY_FILE']))
 
+        os.environ["LINOTP_CMD"] = "init-database"
         app = create_app('testing', base_app_config)
 
         # Fake running `linotp init database`
