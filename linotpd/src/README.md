@@ -93,15 +93,34 @@ $ linotp init enc-key --dump
 $ linotp init audit-keys
 $ linotp init database
 ```
-Then start the webserver by issuing::
+Note that by default, LinOTP will use a SQLite database which is good
+for testing and experiments but unsuitable for production use. LinOTP
+can create SQLite databases, so there is nothing to worry about. If
+you're using any other kind of database server (such as MariaDB,
+MySQL, or PostgreSQL), you must create the database – or talk your
+friendly neighbourhood DBA into creating the database for you – first
+so you know what to put into LinOTP's database configuration (see
+below).
+
+Once the database exists, you need to install LinOTP's tables, indexes
+and other sundry database artifacts so it can do what it needs to
+do. This is what `linotp init database` is for. The reason why this is
+a separate command rather than something LinOTP will do whenever it is
+needed is that this lets you use a database user with full DDL
+privileges to create the schema, and then later run LinOTP with a
+database user that has minimal privileges (basically `SELECT`,
+`INSERT`, `UPDATE`, and `DELETE`). If you forget to do `linotp init
+database`, then if you want to do anything interesting with LinOTP
+(i.e., anything that does not start with `linotp init` or `linotp
+config`, or that involves WSGI), LinOTP will just display an error
+message and quit.
+
+Next, you're ready to start the webserver by issuing::
 ```terminal
 $ linotp run
 ```
 Now you could go the the web interface at http://localhost:5000/manage
 and start creating the UserIdResolver, a Realm and enroll tokens.
-
-Note that by default, LinOTP will use a SQLite database which is good
-for testing and experiments but unsuitable for production use.
 
 ## Options
 
