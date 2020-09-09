@@ -59,6 +59,7 @@ class TokenImport(ManageDialog):
         # TopMenu->Import Token File-><safenet/aladdin,oath,yubikey,...>
         self.manage.activate_menu_item(self.menu_css,
                                        self.menu_item_id)
+        self.wait_for_dialog()
 
     def do_import(self, file_content=None, file_path=None):
         """

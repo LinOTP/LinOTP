@@ -40,10 +40,20 @@ from linotp_selenium_helper.token_import import TokenImportAladdin, TokenImportE
 def aladdin(manage_ui):
     return TokenImportAladdin(manage_ui)
 
+def check_menu_is_closed(manage_ui):
+    """
+    Check that import menu is closed
+
+    By checking that the aladdin menu entry is not visible
+    """
+    # Find element even when hidden
+    menu_element = manage_ui.driver.find_element_by_id('menu_load_aladdin_xml_tokenfile')
+    assert not menu_element.is_displayed(), menu_element
+
 def test_token_import_aladdin_invalid_xml(manage_ui, aladdin):
 
     with pytest.raises(TokenImportError):
         aladdin.do_import(
             file_path=os.path.join(manage_ui.test_data_dir,
                                     'wrong_token.xml'))
-
+    check_menu_is_closed(manage_ui)

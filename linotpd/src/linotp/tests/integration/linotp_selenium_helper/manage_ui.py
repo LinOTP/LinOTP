@@ -230,6 +230,7 @@ class ManageUi(object):
             element.click()
         except WebDriverException:
             self.close_all_dialogs()
+            self.close_all_menus()
             # Retry
             element.click()
 
@@ -251,6 +252,17 @@ class ManageUi(object):
                           dialog.get_attribute('aria-describedby'))
             dialog.find_element_by_css_selector(
                 ManageDialog.CLOSEBUTTON_CSS).click()
+
+    def close_all_menus(self) -> None:
+        """
+        Close all active menus
+        """
+        # Query all the menu class attributes to find if any are in the open state.
+        # We do it this way to avoid a wait in the case that all the menus are closed
+        for menu in self.find_all_by_css('#menu > li'):
+            if menu.get_attribute('class') == 'sfHover':
+                # Close using superfish method
+                self.driver.execute_script("$(arguments[0]).superfish('hide')", menu)
 
     def check_alert(self, expected_text=None, click_accept=False, click_dismiss=False) -> None:
         """
