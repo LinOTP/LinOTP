@@ -1065,7 +1065,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     # ---------------------------------------------------------------------- --
 
-    if method[0: len('max_count')] == 'max_count':
+    if method.startswith('max_count'):
         ret = 0
         serial = param.get("serial")
         ttype = linotp.lib.token.getTokenType(serial).lower()
@@ -1077,7 +1077,8 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
                                     "max_count definable for the token "
                                     "type %s.") % ttype)
 
-        policies = get_client_policy(client, scope='selfservice',
+        policies = get_client_policy(client,
+                                     scope='selfservice', action=pol_action,
                                      realm=urealm, user=authUser.login,
                                      userObj=authUser)
 
