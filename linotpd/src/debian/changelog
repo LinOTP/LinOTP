@@ -9,7 +9,7 @@ linotp (3.0~a0-1) buster-dev; urgency=low
     timeouts for Email and SMS tokens
   * A new 'linotp' command installed on the path provides:
     * config show/explain - configuration file diagnostics
-    * init-db - initialisation of the database tables
+    * init auth-keys/enc-key/database - key generation/database initialisation
     * ldap-test - extensive testing of LDAP backends
   * Settings can now be configured using environment variables
     LINOTP_<SETTING_NAME>
