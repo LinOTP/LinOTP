@@ -26,6 +26,7 @@
 """Contains TokenView class"""
 
 import logging
+from typing import Dict, Optional, List
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
@@ -161,11 +162,14 @@ class TokenView(ManageTab):
         self.select_all_tokens()
         self._delete_selected_tokens()
 
-    def get_selected_tokens(self):
+    def get_selected_tokens(self) -> List[str]:
         """
         Retrieve a list of currently selected token serials in the UI
         """
         selected_tokens = find_by_id(self.driver, "selected_tokens").text
+
+        if selected_tokens == '':
+            return []
 
         return selected_tokens.split(', ')
 
@@ -181,14 +185,31 @@ class TokenView(ManageTab):
                 return
 
     def select_token(self, token_serial):
-        """Selects (clicks on) a token in the WebUI. This function does not reload
-           the page (because otherwise the selection would be lost) neither before
-           nor after the selection.
-
-           If the token is already selected, this does nothing
         """
-        if token_serial not in self.get_selected_tokens():
+        Selects (clicks on) just this token in the WebUI.
+
+        If the token is already selected, this does nothing.
+        Any other selected tokens are deselected
+
+        This function does not reload the page (because
+        otherwise the selection would be lost) neither before
+        nor after the selection.
+
+        """
+        selected = self.get_selected_tokens()
+
+        # Deselect any other tokens
+        for selected_token in selected:
+            if token_serial != selected_token:
+                self.token_click(selected_token)
+
+        # Select the token we require
+        if token_serial not in selected:
             self.token_click(token_serial)
+
+        # Check that only the token we require is now displayed as selected
+        new_selection = self.get_selected_tokens()
+        assert new_selection == [token_serial], f"Selection failed for token {token_serial}"
 
     def deselect_token(self, token_serial):
         """
