@@ -66,32 +66,6 @@ class ManageUi(object):
 
     URL = "/manage"
 
-    testcase: 'TestCase' = None
-    "The UnitTest class that is running the tests"
-
-    welcome_screen: ManageDialog = None
-    "Welcome screen dialog"
-
-    useridresolver_manager: UserIdResolverManager = None
-    "UserIdResolver manager dialog"
-
-    realm_manager: RealmManager = None
-    "Realm manager dialog"
-    token_view = None
-    "Tokens tab"
-
-    token_enroll: EnrollTokenDialog = None
-    "Enroll token dialog"
-
-    user_view: UserView = None
-    "Users tab"
-
-    policy_view: PolicyManager = None
-    "Policy tab"
-
-    alert_dialog: ManageDialog = None
-    "Access to the alert box dialog element"
-
     # CSS selectors
 
     # Menu entry "Import Token File"
@@ -109,23 +83,34 @@ class ManageUi(object):
 
         :param testcase: The test case that is controlling the UI
         """
-        self.testcase = testcase
+
+        self.testcase: 'TestCase' = testcase
+        "The UnitTest class that is running the tests"
+
         self.test_data_dir = os.path.normpath(os.path.join(
             os.path.split(__file__)[0], '..', 'testdata'
         ))
 
         self.welcome_screen = ManageDialog(
             self, 'welcome_screen', 'welcome_screen_close')
+        "Welcome screen dialog"
 
         self.useridresolver_manager: UserIdResolverManager = UserIdResolverManager(self)
+        "UserIdResolver manager dialog"
         self.realm_manager: RealmManager = RealmManager(self)
+        "Realm manager dialog"
         self.token_view: TokenView = TokenView(self)
+        "Tokens tab"
         self.user_view: UserView = UserView(self)
+        "Users tab"
         self.policy_view = PolicyManager(self)
+        "Policy tab"
         self.system_config = SystemConfig(self)
         self.token_enroll = EnrollTokenDialog(self)
+        "Enroll token dialog"
 
         self.alert_dialog = ManageDialog(self, 'alert_box')
+        "Access to the alert box dialog element"
 
     def is_url_open(self):
         possible_urls = (self.URL, self.URL + '/', self.URL + '/#')
@@ -364,7 +349,7 @@ class AlertBoxInfoLine(object):
     """
     Represenation of a line in the alert box
     """
-    element: WebElement = None # The WebElement representing this line
+    element: WebElement = None
     ok_button: WebElement = None
     classes = None
     type: str = None
@@ -376,6 +361,7 @@ class AlertBoxInfoLine(object):
         """
         Parse the line contents
         """
+        # The WebElement representing this line
         self.element = element
         self.ok_button = element.find_element_by_css_selector('button')
         self.classes = element.get_attribute('class')
