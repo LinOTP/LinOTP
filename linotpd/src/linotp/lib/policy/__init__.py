@@ -23,6 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+
 """ policy processing """
 
 import logging
@@ -67,6 +68,8 @@ from linotp.lib.policy.util import _getUserRealms
 
 from linotp.lib.policy.util import letters, digits, special_characters
 from linotp.lib.policy.util import ascii_lowercase, ascii_uppercase
+from linotp.lib.policy.util import parse_action_value
+
 
 from linotp.lib.policy.maxtoken import check_maxtoken
 
@@ -1097,7 +1100,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == 'usersetdescription':
 
-        if 'setDescription' not in getSelfserviceActions(authUser):
+        if not get_selfservice_actions(authUser, 'setDescription'):
 
             log.warning("user %s@%s is not allowed to call this function!",
                         authUser.login, authUser.realm)
@@ -1107,7 +1110,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == 'usersetpin':
 
-        if 'setOTPPIN' not in getSelfserviceActions(authUser):
+        if not get_selfservice_actions(authUser, 'setOTPPIN'):
 
             log.warning("user %s@%s is not allowed to call this function!",
                         authUser.login, authUser.realm)
@@ -1117,7 +1120,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == 'userreset':
 
-        if 'reset' not in getSelfserviceActions(authUser):
+        if not get_selfservice_actions(authUser, 'reset'):
 
             log.warning("user %s@%s is not allowed to call this function!",
                         authUser.login, authUser.realm)
@@ -1127,7 +1130,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == 'userresync':
 
-        if 'resync' not in getSelfserviceActions(authUser):
+        if not get_selfservice_actions(authUser, 'resync'):
 
             log.warning("user %s@%s is not allowed to call this function!",
                         authUser.login, authUser.realm)
@@ -1137,7 +1140,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == 'userverify':
 
-        if 'verify' not in getSelfserviceActions(authUser):
+        if not get_selfservice_actions(authUser, 'verify'):
 
             log.warning("user %s@%s is not allowed to call this function!",
                         authUser.login, authUser.realm)
@@ -1147,7 +1150,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == 'usersetmpin':
 
-        if 'setMOTPPIN' not in getSelfserviceActions(authUser):
+        if not get_selfservice_actions(authUser, 'setMOTPPIN'):
 
             log.warning("user %r@%r is not allowed to call this function!",
                         authUser.login, authUser.realm)
@@ -1158,15 +1161,12 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == 'useractivateocra2token':
 
-        user_selfservice_actions = getSelfserviceActions(authUser)
-        typ = param.get('type').lower()
+        if param.get('type').lower() == 'ocra2':
 
-        if typ == 'ocra2':
-
-            if 'activate_OCRA2' in user_selfservice_actions:
+            if get_selfservice_actions(authUser, 'activate_OCRA2'):
                 return ret
 
-            if 'activateQR2' in user_selfservice_actions:
+            if get_selfservice_actions(authUser, 'activateQR2'):
                 return ret
 
         log.warning("user %r@%r is not allowed to call "
@@ -1177,7 +1177,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == 'userassign':
 
-        if 'assign' not in getSelfserviceActions(authUser):
+        if not get_selfservice_actions(authUser, 'assign'):
 
             log.warning("user %r@%r is not allowed to call "
                         "this function!", authUser.login, authUser.realm)
@@ -1195,7 +1195,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == 'usergetserialbyotp':
 
-        if 'getserial' not in getSelfserviceActions(authUser):
+        if not get_selfservice_actions(authUser, 'getserial'):
 
             log.warning("user %s@%s is not allowed to call this function!",
                         authUser.login, authUser.realm)
@@ -1205,7 +1205,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == 'userdisable':
 
-        if 'disable' not in getSelfserviceActions(authUser):
+        if not get_selfservice_actions(authUser, 'disable'):
 
             log.warning("user %r@%r is not allowed to call this function!",
                         authUser.login, authUser.realm)
@@ -1215,7 +1215,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == 'userenable':
 
-        if 'enable' not in getSelfserviceActions(authUser):
+        if not get_selfservice_actions(authUser, 'enable'):
             log.warning("user %s@%s is not allowed to call this function!",
                         authUser.login, authUser.realm)
 
@@ -1224,7 +1224,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == 'userunassign':
 
-        if 'unassign' not in getSelfserviceActions(authUser):
+        if not get_selfservice_actions(authUser, 'unassign'):
             log.warning("user %r@%r is not allowed to call this function!",
                         authUser.login, authUser.realm)
 
@@ -1233,7 +1233,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == 'userdelete':
 
-        if 'delete' not in getSelfserviceActions(authUser):
+        if not get_selfservice_actions(authUser, 'delete'):
 
             log.warning("user %r@%r is not allowed to call this function!",
                         authUser.login, authUser.realm)
@@ -1244,22 +1244,21 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
     elif method == 'userwebprovision':
 
         typ = param.get('type').lower()
-        user_selfservice_actions = getSelfserviceActions(authUser)
 
         if (typ == 'oathtoken' and
-            'webprovisionOATH' in user_selfservice_actions):
+                get_selfservice_actions(authUser, 'webprovisionOATH')):
             return ret
 
         if (typ == 'googleauthenticator_time' and
-                'webprovisionGOOGLEtime' in user_selfservice_actions):
+                get_selfservice_actions(authUser, 'webprovisionGOOGLEtime')):
             return ret
 
         if (typ == 'googleauthenticator' and
-                'webprovisionGOOGLE' in user_selfservice_actions):
+                get_selfservice_actions(authUser, 'webprovisionGOOGLE')):
             return ret
 
         if (typ == 'ocra2' and
-            'enrollOCRA2' in user_selfservice_actions):
+                get_selfservice_actions(authUser, 'enrollOCRA2')):
             return ret
 
         log.warning("[userwebprovision] user %r@%r is not allowed to "
@@ -1278,7 +1277,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
                                   "is reached!"))
 
     elif method == 'userhistory':
-        if 'history' not in getSelfserviceActions(authUser):
+        if not get_selfservice_actions(authUser, 'history'):
 
             log.warning("user %r@%r is not allowed to call this function!",
                         authUser.login, authUser.realm)
@@ -1288,11 +1287,10 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == 'userinit':
 
-        allowed_actions = getSelfserviceActions(authUser)
         typ = param['type'].lower()
-        meth = 'enroll' + typ.upper()
+        action = 'enroll' + typ.upper()
 
-        if meth not in allowed_actions:
+        if not get_selfservice_actions(authUser, action):
 
             log.warning("user %r@%r is not allowed to enroll %s!",
                         authUser.login, authUser.realm, typ)
@@ -1462,6 +1460,38 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
     # catch all
     return False
 
+def get_selfservice_actions(user, action=None):
+    '''
+    This function returns the allowed actions in the self service portal
+    for the given user
+
+    if there was an action as parameter, we copy only this one
+    into the result set
+
+    '''
+    login = user.login
+    realm = user.realm
+    client = _get_client()
+
+    log.debug("checking actions for scope=selfservice, realm=%r", realm)
+
+    policies = get_client_policy(
+        client, scope="selfservice", action=action,
+        realm=realm, user=login, userObj=user)
+
+    if not policies:
+        return {}
+
+    all_actions = {}
+    for policy in policies.values():
+        actions = parse_action_value(policy.get('action', {}))
+
+        if not action:
+            all_actions.update(actions)
+        elif action in actions:
+            all_actions[action] = actions[action]
+
+    return all_actions
 
 def getSelfserviceActions(user):
     '''
