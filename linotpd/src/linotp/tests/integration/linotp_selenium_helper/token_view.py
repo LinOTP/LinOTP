@@ -230,6 +230,16 @@ class TokenView(ManageTab):
         self.driver.find_element_by_id("button_enable").click()
         self.wait_for_waiting_finished()
 
+    def get_token_line(self, token_serial: str) -> Dict:
+        """
+        Returns the contents of the flexigrid row for the given token
+        """
+        contents = self.get_grid_contents()
+        for t in contents:
+            if t['Serial Number'] == token_serial:
+                return t
+        raise RuntimeError("Token serial not found")
+
     def get_token_info(self, token_serial):
         """
         Extracts the token info from the WebUI and returns it as a dictionary.
