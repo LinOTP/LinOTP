@@ -25,26 +25,33 @@
 #
 
 import logging
-from . import helper
 import os
-import requests
 import re
-
 from operator import methodcaller
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 from warnings import warn
 
-from selenium.common.exceptions import WebDriverException, NoSuchElementException
-from selenium.webdriver.support.ui import WebDriverWait
+import requests
+from selenium.common.exceptions import (NoSuchElementException,
+                                        WebDriverException)
+from selenium.webdriver import ActionChains, Chrome, Firefox
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webdriver import WebElement
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
+from . import helper
 from .manage_elements import ManageDialog
+from .policy import Policy, PolicyManager
 from .realm import RealmManager
-from .policy import PolicyManager
 from .system_config import SystemConfig
+from .token_enroll import EnrollTokenDialog
+from .token_view import TokenView
 from .user_id_resolver import UserIdResolverManager
 from .user_view import UserView
-from .token_view import TokenView
-from .token_enroll import EnrollTokenDialog
+
+if TYPE_CHECKING:
+    from .test_case import TestCase
 
 """
 This file contains the main manage page class
@@ -59,30 +66,30 @@ class ManageUi(object):
 
     URL = "/manage"
 
-    testcase = None
+    testcase: 'TestCase' = None
     "The UnitTest class that is running the tests"
 
-    welcome_screen = None
+    welcome_screen: ManageDialog = None
     "Welcome screen dialog"
 
-    useridresolver_manager = None
+    useridresolver_manager: UserIdResolverManager = None
     "UserIdResolver manager dialog"
 
-    realm_manager = None
+    realm_manager: RealmManager = None
     "Realm manager dialog"
     token_view = None
     "Tokens tab"
 
-    token_enroll = None
+    token_enroll: EnrollTokenDialog = None
     "Enroll token dialog"
 
-    user_view = None
+    user_view: UserView = None
     "Users tab"
 
-    policy_view = None
+    policy_view: PolicyManager = None
     "Policy tab"
 
-    alert_dialog = None
+    alert_dialog: ManageDialog = None
     "Access to the alert box dialog element"
 
     # CSS selectors
@@ -95,7 +102,7 @@ class ManageUi(object):
     MENU_LINOTP_CONFIG_CSS = '#menu > li'
     "CSS of the LinOTP Config menu"
 
-    def __init__(self, testcase):
+    def __init__(self, testcase: 'TestCase'):
         """
         Create a new ManageUi instance. Normally this will be called
         from a derived class
@@ -125,27 +132,27 @@ class ManageUi(object):
         return self.driver.current_url.endswith(possible_urls)
 
     @property
-    def manage_url(self):
+    def manage_url(self) -> str:
         """
         The URL of the page
         """
         return self.testcase.base_url + self.URL
 
     @property
-    def alert_box_handler(self):
+    def alert_box_handler(self) -> 'AlertBoxHandler':
         """
         Return an instance of an alert box handler.
         """
         return AlertBoxHandler(self)
 
     @property
-    def driver(self):
+    def driver(self) -> Union[Chrome, Firefox]:
         """
         Return a reference to the selenium driver
         """
         return self.testcase.driver
 
-    def check_url(self):
+    def check_url(self) -> None:
         """
         Check we are on the right page
         """
@@ -154,46 +161,46 @@ class ManageUi(object):
             (self.driver.current_url, self.URL)
         assert self.driver.title == 'Management - LinOTP'
 
-    def find_by_css(self, css_value):
+    def find_by_css(self, css_value) -> WebElement:
         """
         Return the element indicated by CSS selector
         """
         self.check_url()
         return helper.find_by_css(self.driver, css_value)
 
-    def find_all_by_css(self, css_value):
+    def find_all_by_css(self, css_value) -> List[WebElement]:
         """
         Return a list of elements indicated by CSS selector
         """
         self.check_url()
         return self.driver.find_elements_by_css_selector(css_value)
 
-    def find_by_id(self, id_value):
+    def find_by_id(self, id_value) -> WebElement:
         """
         Return the element by ID
         """
         self.check_url()
         return helper.find_by_id(self.driver, id_value)
 
-    def find_by_class(self, class_name):
+    def find_by_class(self, class_name) -> WebElement:
         """
         Return the element by its class name
         """
         return helper.find_by_class(self.driver, class_name)
 
-    def find_by_xpath(self, xpath):
+    def find_by_xpath(self, xpath) -> WebElement:
         """
         Return the element by its xpath
         """
         return helper.find_by_xpath(self.driver, xpath)
 
-    def open_manage(self):
+    def open_manage(self) -> None:
         if not self.is_url_open():
             self.driver.get(self.manage_url)
 
             self.welcome_screen.close_if_open()
 
-    def activate_menu_item(self, menu_css, menu_item_id):
+    def activate_menu_item(self, menu_css, menu_item_id) -> None:
         """
         Open the manage UI and select the given menu item.
 
@@ -214,7 +221,7 @@ class ManageUi(object):
 
         self.find_by_id(menu_item_id).click()
 
-    def close_dialogs_and_click(self, element):
+    def close_dialogs_and_click(self, element) -> None:
         """
         Click the given element. If it fails, close
         all dialogs and then retry
@@ -226,9 +233,9 @@ class ManageUi(object):
             # Retry
             element.click()
 
-    def close_all_dialogs(self):
+    def close_all_dialogs(self) -> None:
         """
-        Close all active dialogs down
+        Close all active dialogs
         """
 
         # Find all open dialogs
@@ -245,7 +252,7 @@ class ManageUi(object):
             dialog.find_element_by_css_selector(
                 ManageDialog.CLOSEBUTTON_CSS).click()
 
-    def check_alert(self, expected_text=None, click_accept=False, click_dismiss=False):
+    def check_alert(self, expected_text=None, click_accept=False, click_dismiss=False) -> None:
         """
         Process popup window:
         * check the text contents
@@ -270,7 +277,7 @@ class ManageUi(object):
             assert alert_text == expected_text, "Expecting alert text:%s found:%s" % (
                 expected_text, alert_text)
 
-    def wait_for_waiting_finished(self):
+    def wait_for_waiting_finished(self) -> None:
         """
         Some elements, e.g. the realms dialog, take some time for network communication.
         During this period, the do_waiting is displayed. Wait for this to disappear
@@ -278,7 +285,7 @@ class ManageUi(object):
         WebDriverWait(self.driver, self.testcase.backend_wait_time).until_not(
             EC.visibility_of_element_located((By.ID, "do_waiting")))
 
-    def is_element_visible(self, css):
+    def is_element_visible(self, css) -> bool:
         """
         Check whether a given element is visible without waiting
         """
@@ -296,8 +303,8 @@ class ManageUi(object):
         return is_visible
 
     def admin_api_call(self,
-                       call,
-                       params=None):
+                       call: str,
+                       params: Dict=None) -> Dict:
         """
         Give the API endpoint (call) and the params. Omit the session
         because it will be added automatically to your params.
@@ -345,10 +352,10 @@ class AlertBoxInfoLine(object):
     """
     Represenation of a line in the alert box
     """
-    element = None # The WebElement representing this line
-    ok_button = None
+    element: WebElement = None # The WebElement representing this line
+    ok_button: WebElement = None
     classes = None
-    type = None
+    type: str = None
 
     def __init__(self, element):
         self.parse(element)
@@ -371,10 +378,10 @@ class AlertBoxInfoLine(object):
             self.type = 'unknown'
 
     @property
-    def text(self):
+    def text(self) -> str:
         return self.element.text
 
-    def click_ok(self):
+    def click_ok(self) -> None:
         """
         Click OK button on individual info line
         """
@@ -396,20 +403,23 @@ class AlertBoxHandler(object):
             raise TokenImportError('Import failure:{}'.format(info))
     """
 
-    manageui = None
+    manageui: ManageUi = None
 
     msgs_parent_id = 'info_box'
     link_close_all_msgs_class = 'close_all'
 
-    def __init__(self, manage_ui):
+    def __init__(self, manage_ui: ManageUi):
         """
         Init the AlertBoxHandler
         :param manage_ui Reference to the manage_ui
         """
         self.manageui = manage_ui
         self.driver = manage_ui.driver
+        self.info_bar: WebElement = None
+        self.info_lines: List[AlertBoxInfoLine] = []
+        self.close_all: WebElement = None
 
-    def parse(self):
+    def parse(self) -> None:
         """
         Parse the contents of the info box
         """
@@ -434,7 +444,7 @@ class AlertBoxHandler(object):
                 else:
                     warn('Could not parse info element box id={} class={}'.format(id, classes))
 
-    def clear_messages(self):
+    def clear_messages(self) -> None:
         """
         Delete all action response messages
         """
@@ -448,7 +458,7 @@ class AlertBoxHandler(object):
             for l in self.info_lines:
                 l.click_ok()
 
-    def check_info_message(self, msg):
+    def check_info_message(self, msg: str) -> bool:
         """
         Wrap check_message with message type Info.
         """
@@ -461,7 +471,7 @@ class AlertBoxHandler(object):
         return self.check_message(msg, MsgType.Error)
 
     @property
-    def last_line(self):
+    def last_line(self) -> Optional[AlertBoxInfoLine]:
         """
         Return the last (latest) line in the box, or None if empty
 
@@ -500,7 +510,7 @@ class AlertBoxHandler(object):
             return None
 
 
-    def check_last_message(self, msg_regex):
+    def check_last_message(self, msg_regex: str) -> bool:
         """
         Get the last alert and search the message for
         regular expression pattern 'msg_regex'.
@@ -511,7 +521,7 @@ class AlertBoxHandler(object):
         """
         return re.search(msg_regex, self.last_line.text) is not None
 
-    def check_message(self, msg, msg_type):
+    def check_message(self, msg: str, msg_type: str) -> bool:
         """
         Return True if the message string is a substring of any(!)
         found info/error message. Maybe it makes sense to clean up

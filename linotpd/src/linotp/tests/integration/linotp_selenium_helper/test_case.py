@@ -26,7 +26,7 @@
 import logging
 import re
 from contextlib import contextmanager
-from typing import Optional
+from typing import Optional, Union
 from flaky import flaky
 import pytest
 import time
@@ -72,7 +72,7 @@ def is_flaky_exception(err, *args):
 class TestCase(object):
     """Basic LinOTP TestCase class"""
 
-    driver = None
+    driver: Union[webdriver.Chrome, webdriver.Firefox] = None
     "Selenium driver"
 
     implicit_wait_time = 5
