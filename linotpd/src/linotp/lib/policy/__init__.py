@@ -1653,14 +1653,14 @@ def get_tokenissuer(user="", realm="", serial=""):
     This function is used to create 'otpauth' tokens
     '''
     tokenissuer = "LinOTP"
+    action = "tokenissuer"
     client = _get_client()
 
-    pol = has_client_policy(client, scope="enrollment",
-                            realm=realm, user=user)
+    pol = has_client_policy(
+        client, scope="enrollment", action=action, realm=realm, user=user)
 
     if len(pol) != 0:
-        string_issuer = getPolicyActionValue(pol, "tokenissuer",
-                                             is_string=True)
+        string_issuer = getPolicyActionValue(pol, action, is_string=True)
         if string_issuer:
             string_issuer = re.sub('<u>', user, string_issuer)
             string_issuer = re.sub('<r>', realm, string_issuer)
@@ -1772,8 +1772,9 @@ def get_autoassignment(user):
     ret = False
     client = _get_client()
 
-    pol = has_client_policy(client, scope='enrollment',
-                            realm=user.realm, user=user.login, userObj=user)
+    pol = has_client_policy(
+        client, scope='enrollment', action="autoassignment",
+        realm=user.realm, user=user.login, userObj=user)
 
     if len(pol) > 0:
         val = getPolicyActionValue(pol, "autoassignment")
@@ -1797,16 +1798,18 @@ def get_auto_enrollment(user):
     '''
     ret = False
     token_typ = ''
+    action = "autoenrollment"
 
     client = _get_client()
 
-    pol = has_client_policy(client, scope='enrollment',
-                            realm=user.realm, user=user.login, userObj=user)
+    pol = has_client_policy(
+        client, scope='enrollment', action=action,
+        realm=user.realm, user=user.login, userObj=user)
 
     if len(pol) == 0:
         return False, ''
 
-    t_typ = getPolicyActionValue(pol, "autoenrollment", is_string=True)
+    t_typ = getPolicyActionValue(pol, action, is_string=True)
 
     if not isinstance(t_typ, str):
         log.info("unsupported token type for auto enrollment %r", t_typ)
