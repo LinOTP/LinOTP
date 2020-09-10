@@ -1940,8 +1940,9 @@ def getOTPPINEncrypt(serial=None, user=None):
     This function returns, if the otppin should be stored as
     an encrpyted value
     '''
-    # do store as hashed value
     encrypt_pin = 0
+    client = _get_client()
+
     Realms = []
     if serial:
         Realms = linotp.lib.token.getTokenRealms(serial)
@@ -1950,11 +1951,13 @@ def getOTPPINEncrypt(serial=None, user=None):
 
     log.debug("checking realms: %r", Realms)
 
-    for R in Realms:
-        pol = getPolicy({'scope': 'enrollment', 'realm': R,
-                         'action': 'otp_pin_encrypt'})
+    for realm in Realms:
 
-        log.debug("realm: %r, pol: %r", R, pol)
+        pol = get_client_policy(
+            client=client, scope='enrollment', action='otp_pin_encrypt',
+            realm=realm, user=user)
+
+        log.debug("realm: %r, pol: %r", realm, pol)
 
         if 1 == getPolicyActionValue(pol, 'otp_pin_encrypt'):
             encrypt_pin = 1
@@ -2931,15 +2934,20 @@ def supports_offline(realms, token):
 
     :returns bool
     """
+    client=_get_client()
 
     if realms is None or len(realms) == 0:
         realms = ['/:no realm:/']
 
     for realm in realms:
-        policy = getPolicy({"scope": "authentication", 'realm': realm,
-                            'action': 'support_offline'})
-        action_value = getPolicyActionValue(policy, 'support_offline',
-                                            is_string=True)
+
+        policy = get_client_policy(
+            client=client, scope='authentication', action='support_offline',
+            realm=realm)
+
+        action_value = getPolicyActionValue(
+            policy, 'support_offline', is_string=True)
+
         if action_value:
             token_types = action_value.split()
             if token.getType() in token_types:
@@ -2956,22 +2964,20 @@ def get_partition(realms, user):
     login = None
     ret = 0
 
+    client = _get_client()
+
     if realms is None or len(realms) == 0:
         realms = ['/:no realm:/']
 
-    action = 'partition'
-
-    params = {'scope': 'enrollment',
-              'action': action}
 
     for realm in realms:
-        params['realm'] = realm
-        if login:
-            params['user'] = login
+        policy = get_client_policy(
+            client=client, scope='enrollment', action='partition',
+            realm=realm, user=login)
 
-        policy = getPolicy(params)
-        action_value = getPolicyActionValue(policy, action,
-                                            is_string=True)
+        action_value = getPolicyActionValue(
+            policy, 'partition', is_string=True)
+
         if action_value:
             action_values.append(action_value)
 
