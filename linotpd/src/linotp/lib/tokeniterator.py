@@ -598,7 +598,11 @@ class TokenIterator(object):
         tok = next(self.it)
         desc = tok.get_vars(save=True)
         ''' add userinfo to token description '''
-        (userInfo, ret) = self.getUserDetail(tok)
+        userInfo = {}
+        try:
+            (userInfo, _ret) = self.getUserDetail(tok)
+        except Exception as exx:
+            log.error("failed to get user detail %r", exx)
         desc.update(userInfo)
 
         return desc
