@@ -129,6 +129,13 @@ class TestAuthorizeController(TestController):
         assert '"status": true' in resp, resp
 
     @pytest.fixture
+    def clear_all_policies(self):
+        '''
+        policy to allow user 'localuser' to authorize with IP 172.16.200.*
+        '''
+        self.delete_all_policies()
+
+    @pytest.fixture
     def policy_allow_localuser(self):
         '''
         policy to allow user 'localuser' to authorize with IP 172.16.200.*
@@ -182,6 +189,7 @@ class TestAuthorizeController(TestController):
                        }
         self.setPolicy(parameters1)
 
+    @pytest.mark.usefixtures('clear_all_policies')
     def test_00_localuser_allowed(self):
         '''
         Auth Test 00: Without policy the user is authorized to login
@@ -195,9 +203,10 @@ class TestAuthorizeController(TestController):
 
         assert '"value": true' in response, response
 
+    @pytest.mark.usefixtures('clear_all_policies')
     def test_00_horst_allowed(self):
         '''
-        Auth Test 00: without policy the user host is allowed
+        Auth Test 00: without policy the user horst is allowed
         '''
         parameters = {'user': 'horst',
                       'pass': '1234secret2'}
@@ -337,6 +346,7 @@ class TestAuthorizeController(TestController):
 
         assert '"value": true' in response, response
 
+    @pytest.mark.usefixtures('clear_all_policies')
     def test_07_pinpolicy(self):
         '''
         Auth Test 07: check on a client, that is not contained in policy => authenticate with OTP PIN
@@ -377,6 +387,7 @@ class TestAuthorizeController(TestController):
 #
 # Toke Type tests
 #
+    @pytest.mark.usefixtures('clear_all_policies')
     def test_10_tokentype(self):
         '''
         Auth Test 10: client not in policy. So every tokentype should be able to authenticate
