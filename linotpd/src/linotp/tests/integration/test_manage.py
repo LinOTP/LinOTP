@@ -26,6 +26,10 @@
 
 import pytest
 
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.manage_ui import ManageUi
 
@@ -42,3 +46,20 @@ class TestManage(TestCase):
 
         self.manage.open_manage()
         self.manage.check_url()
+
+    def test_close_menus(self):
+        """
+        Verify that the manage class is able to close an open menu
+        """
+        self.manage.open_manage()
+        menu = self.manage.find_by_css(self.manage.MENU_LINOTP_CONFIG_CSS)
+        menu_item_id = "menu_edit_resolvers"
+
+        menu.click()
+        WebDriverWait(self.driver, self.ui_wait_time).until(
+            EC.element_to_be_clickable((By.ID, menu_item_id))
+        )
+        self.manage.close_all_menus()
+        WebDriverWait(self.driver, self.ui_wait_time).until_not(
+            EC.element_to_be_clickable((By.ID, menu_item_id))
+        )

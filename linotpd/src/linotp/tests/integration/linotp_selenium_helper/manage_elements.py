@@ -24,7 +24,7 @@
 #    Support: www.keyidentity.com
 #
 
-import time
+from typing import Dict, List
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
@@ -175,6 +175,32 @@ class ManageTab(ManageElement):
         if reload_page or not self.manage.is_url_open():
             self.open_manage()
 
+    def get_grid_contents(self) -> List[Dict[str, str]]:
+        """
+        Parse the flexigrid contents and return a list of dicts
+
+        Each dict corresponds to one row in the table. The keys
+        are the table headings
+        """
+        result = []
+
+        grid = self.find_by_css(self.flexigrid_css)
+
+        heading_rows = grid.find_elements_by_css_selector('.hDiv table th')
+        headings = [h.text for h in heading_rows]
+
+        rows = grid.find_elements_by_css_selector('.bDiv table tr')
+
+        for row in rows:
+            values = [
+                cell.text
+                for cell in row.find_elements_by_css_selector('td')
+            ]
+            result.append(dict(
+                zip(headings, values)
+                ))
+
+        return result
 
 class ManageDialog(ManageElement):
     """
