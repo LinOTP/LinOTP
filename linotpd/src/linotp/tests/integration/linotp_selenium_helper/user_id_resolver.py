@@ -194,11 +194,12 @@ class UserIdResolverManager(ManageDialog):
         if data['type'] == 'ldapresolver':
             params = {
                 'EnforceTLS': 'False',
+                'only_trusted_certs': 'False',
                 'TIMEOUT': '5',
-                'EnforceTLS' : 'False',
+                'EnforceTLS': 'False',
                 'TIMEOUT': '5',
-                'SIZELIMIT' : '500',
-                'NOREFERRALS' : 'True',
+                'SIZELIMIT': '500',
+                'NOREFERRALS': 'True',
             }
             if 'preset_ldap' in data:
                 # Preset LDAP
@@ -239,13 +240,13 @@ class UserIdResolverManager(ManageDialog):
 
             'filename': 'fileName',
 
-            'expected_users': None, # Delete
+            'expected_users': None,  # Delete
             'preset_ldap': None,
         }
 
         params = {
             name_map.get(k, k): v
-            for k,v in params.items()
+            for k, v in params.items()
             if name_map.get(k, k) is not None
         }
 
@@ -259,7 +260,8 @@ class UserIdResolverManager(ManageDialog):
 
         Checks that the status was ok and returns the resulting data
         """
-        json = self.manage.admin_api_call("system/getResolver", dict(resolver=resolver_name))
+        json = self.manage.admin_api_call(
+            "system/getResolver", dict(resolver=resolver_name))
         assert json['result']['status'] == True, json
         return json['result']['value']
 
@@ -471,9 +473,25 @@ class LdapUserIdResolver(UserIdResolver):
 
         enforce_tls = data.get('enforce_tls')
 
-        if enforce_tls:
+        if enforce_tls is not None:
             assert data['uri'].startswith('ldap:')
-            find_by_id(driver, 'ldap_enforce_tls').click()
+            checkbox = find_by_id(driver, 'ldap_enforce_tls')
+            selected = checkbox.is_selected()
+            if ((not selected and enforce_tls) or
+                    (selected and not enforce_tls)):
+                checkbox.click()
+                assert selected is not checkbox.is_selected()
+
+        only_trusted_certs = data.get('only_trusted_certs')
+
+        if only_trusted_certs:
+            assert data['uri'].startswith('ldaps:') or enforce_tls is True
+            checkbox = find_by_id(driver, 'ldap_only_trusted_certs')
+            selected = checkbox.is_selected()
+            if ((not selected and only_trusted_certs) or
+                    (selected and not only_trusted_certs)):
+                checkbox.click()
+                assert selected is not checkbox.is_selected()
 
         fill_element_from_dict(driver, 'ldap_basedn', 'basedn', data)
         fill_element_from_dict(driver, 'ldap_binddn', 'binddn', data)

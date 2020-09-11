@@ -1897,14 +1897,55 @@ function getSerialByOtp(otp, type, assigned, realm) {
  * which checks whether the enforce tls should be shown
  */
 function handler_ldaps_starttls_show() {
-    var isLdaps = $('#ldap_uri').val().toLowerCase().match(/^ldaps:/)!==null;
+    var onlyLdapsURI = $("#ldap_uri").val().toLowerCase().match(/ldap:/) === null;
+    var onlyLdapURI = $("#ldap_uri").val().toLowerCase().match(/ldaps:/) === null;
 
-    // disable start_tls option in combination with ldaps:// url
-    $('#ldap_enforce_tls').prop("disabled", isLdaps);
-    $('#ldap_enforce_tls_label').toggleClass('disabled', isLdaps);
+    var useStarttlsIsDisabled = $("#ldap_enforce_tls").prop("disabled");
+    var useStarttlsIsChecked = $("#ldap_enforce_tls").prop("checked");
 
-    if(isLdaps) {
-        $('#ldap_enforce_tls').prop('checked', false);
+    // disable start_tls option if no server using "ldap://" URI
+    $("#ldap_enforce_tls").prop("disabled", onlyLdapsURI);
+    $("#ldap_enforce_tls_label").toggleClass("disabled", onlyLdapsURI);
+    if (onlyLdapsURI) {
+        $("#ldap_enforce_tls").prop("checked", false);
+    }
+
+    if (onlyLdapsURI || useStarttlsIsChecked) {
+        $("#ldap_enforce_tls_warning").hide();
+    } else {
+        $("#ldap_enforce_tls_warning").show();
+    }
+
+    if (!onlyLdapsURI && useStarttlsIsDisabled) {
+        // reset to default value (that is true)
+        $("#ldap_enforce_tls").prop("checked", true);
+        $("#ldap_enforce_tls_warning").hide();
+    }
+
+    useStarttlsIsChecked = $("#ldap_enforce_tls").prop("checked");
+
+    var onlyTrustedCertsIsDisabled = $("#ldap_only_trusted_certs").prop("disabled");
+    var onlyTrustedCertsIsChecked = $("#ldap_only_trusted_certs").prop("checked");
+
+    var noEncryptionSelected = onlyLdapURI && !useStarttlsIsChecked;
+
+    // disable only_trusted_certs option if no encryption used
+    $("#ldap_only_trusted_certs").prop("disabled", noEncryptionSelected);
+    $("#ldap_only_trusted_certs_label").toggleClass("disabled", noEncryptionSelected);
+    if (noEncryptionSelected) {
+        $("#ldap_only_trusted_certs").prop("checked", false);
+    }
+
+    if (noEncryptionSelected || onlyTrustedCertsIsChecked) {
+        $("#ldap_only_trusted_certs_warning").hide();
+    } else {
+        $("#ldap_only_trusted_certs_warning").show();
+    }
+
+    if (!noEncryptionSelected && onlyTrustedCertsIsDisabled) {
+        // reset to default value (that is true)
+        $("#ldap_only_trusted_certs").prop("checked", true);
+        $("#ldap_only_trusted_certs_warning").hide();
     }
 }
 
@@ -2881,6 +2922,7 @@ function save_ldap_config(){
         '#ldap_uidtype': 'UIDTYPE',
         '#ldap_noreferrals' : 'NOREFERRALS',
         '#ldap_enforce_tls': 'EnforceTLS',
+        '#ldap_only_trusted_certs': 'only_trusted_certs',
     };
     var url = '/system/setResolver';
     var params = {}
@@ -2894,18 +2936,11 @@ function save_ldap_config(){
         var value = $(key).val();
         params[new_key] = value;
     }
-    // checkboxes
-    var noreferrals="False";
-    if ($("#ldap_noreferrals").is(':checked')) {
-        noreferrals = "True";
-    }
-    params["NOREFERRALS"] = noreferrals;
 
-    var ldap_enforce_tls="False";
-    if ($("#ldap_enforce_tls").is(':checked')) {
-        ldap_enforce_tls = "True";
-    }
-    params["EnforceTLS"] = ldap_enforce_tls;
+    // checkboxes
+    params["NOREFERRALS"] = $("#ldap_noreferrals").is(':checked') ? "True" : "False";
+    params["EnforceTLS"] = $("#ldap_enforce_tls").is(':checked') ? "True" : "False";
+    params["only_trusted_certs"] = $("#ldap_only_trusted_certs").is(':checked') ? "True" : "False";
 
     params["session"] = getsession();
 
@@ -4134,13 +4169,10 @@ $(document).ready(function(){
         params['ldap_sizelimit']    = $('#ldap_sizelimit').val();
         params['ldap_uidtype']      = $('#ldap_uidtype').val();
 
-        if ($('#ldap_noreferrals').is(':checked')) {
-            params["NOREFERRALS"] = "True";
-        }
-
-        if ($('#ldap_enforce_tls').is(':checked')) {
-            params["EnforceTLS"] = "True";
-        }
+        // checkboxes
+        params["NOREFERRALS"] = $("#ldap_noreferrals").is(':checked') ? "True" : "False";
+        params["EnforceTLS"] = $("#ldap_enforce_tls").is(':checked') ? "True" : "False";
+        params["only_trusted_certs"] = $("#ldap_only_trusted_certs").is(':checked') ? "True" : "False";
 
         clientUrlFetch(url, params, processLDAPTestResponse);
         return false;
@@ -6738,8 +6770,14 @@ function resolver_set_ldap(obj) {
     $('#ldap_uidtype').val(data.UIDTYPE);
 
     // get the configuration value of the enforce TLS (if exists) and adjust the checkbox
-    var checked = !!data.EnforceTLS && data.EnforceTLS.toLowerCase() == "true";
-    $('#ldap_enforce_tls').prop('checked', checked);
+    $('#ldap_enforce_tls').prop('checked',
+        !!data.EnforceTLS && data.EnforceTLS.toLowerCase() == "true"
+    );
+
+    // get the configuration value of the only_trusted_certs (if exists) and adjust the checkbox
+    $('#ldap_only_trusted_certs').prop('checked',
+        !!data.only_trusted_certs && data.only_trusted_certs.toLowerCase() == "true"
+    );
 
     $('#ldap_noreferrals').prop('checked', data.NOREFERRALS == "True");
 
@@ -6763,7 +6801,8 @@ function resolver_ldap(name, duplicate){
                 'data': {
                     'BINDDN': 'cn=administrator,dc=yourdomain,dc=tld',
                     'LDAPURI': 'ldap://linotpserver1, ldap://linotpserver2',
-                    'EnforceTLS' : 'False',
+                    'EnforceTLS': 'True',
+                    'only_trusted_certs': 'True',
                     'LDAPBASE': 'dc=yourdomain,dc=tld',
                     'TIMEOUT': '5',
                     'SIZELIMIT' : '500',
