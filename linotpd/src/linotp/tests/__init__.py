@@ -1034,6 +1034,15 @@ class TestController(TestCase):
             assert content["result"]["status"]
             assert content["result"]["value"]
 
+            if realm.lower() == "myDefRealm".lower():
+                params = {
+                    'realm': realm.lower()
+                    }
+                response = self.make_system_request(
+                    'setDefaultRealm', params=params)
+
+                assert 'false' not in response
+
         # Assert 'myDefRealm' is default
         response = self.make_system_request("getRealms", {})
         content = response.json
