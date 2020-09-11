@@ -39,9 +39,8 @@ from linotp.flap import (
     render_mako as render,
 )
 
-from linotp.lib.policy import (get_client_policy,
-                               getSelfserviceActions,
-                               )
+from linotp.lib.policy.processing import get_client_policy
+from linotp.lib.policy.action import getSelfserviceActions
 
 
 from linotp.lib.util import (get_version,
@@ -54,9 +53,7 @@ from linotp.lib.realm import getRealms
 
 from linotp.lib.selfservice import get_imprint
 
-from linotp.lib.user import (
-                              getRealmBox,
-                             )
+from linotp.lib.user import getRealmBox
 
 from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.token import get_token_owner
