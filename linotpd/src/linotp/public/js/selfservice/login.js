@@ -113,17 +113,12 @@ function ssLoginSelectTokenClickHandler() {
 }
 
 function ssLoginSelectToken(token) {
-    transactiondata = i18n.gettext('Selfservice Login Request')
-        +"\n"+i18n.gettext('User')+": " + username;
-
     $.ajax({
         url: '/userservice/login',
         type: 'post',
         data: {
             session: getcookie("user_selfservice"),
             serial: token['LinOtp.TokenSerialnumber'],
-            data: transactiondata,
-            content_type: 0
         },
         success: function(data, status) {
             ssLoginChallengeCallback(data, status, token);

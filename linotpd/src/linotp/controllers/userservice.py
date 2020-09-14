@@ -617,6 +617,12 @@ class UserserviceController(BaseController):
         otp = params.get('otp', '')
         serial = params.get('serial')
 
+        # in case of a challenge trigger, provide default qr and push settings
+        if 'data' not in params and 'content_type' not in params:
+            params['data'] = _(
+                f'Selfservice Login Request\nUser: {user.login}')
+            params['content_type'] = 0
+
         vh = ValidationHandler()
 
         if 'serial' in params:
