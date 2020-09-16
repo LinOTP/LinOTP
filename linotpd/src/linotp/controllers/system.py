@@ -119,7 +119,7 @@ from linotp.lib.type_utils import boolean
 
 from linotp.lib.crypto import utils
 
-from cgi import escape
+from html import escape
 
 from linotp.lib.context import request_context
 
