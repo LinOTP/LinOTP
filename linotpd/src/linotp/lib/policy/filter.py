@@ -154,7 +154,10 @@ class UserDomainCompare(object):
 
         user_resolver = user_def[:-1]
         # remove the resolver from the user and compare
-        simple_user_def, _sep, _res = user_resolver.rpartition(".")
+        simple_user_def = user_resolver
+        if '.' in user_resolver:
+            simple_user_def, _sep, _res = user_resolver.rpartition(".")
+
         return self._compareUser(userObj, simple_user_def)
 
 
