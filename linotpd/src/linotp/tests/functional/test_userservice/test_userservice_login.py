@@ -29,8 +29,10 @@
 from mock import patch
 
 from . import TestUserserviceController
+from linotp.tests import url
 
 import linotp.provider.smsprovider.FileSMSProvider
+from .qr_token_validation import QR_Token_Validation as QR
 
 
 SMS_MESSAGE_OTP = None
@@ -417,5 +419,264 @@ class TestUserserviceLogin(TestUserserviceController):
         response.body = response.data.decode("utf-8")
 
         assert 'page' in response
+
+    def enroll_qr_token(self, serial='myQrToken'):
+        """Helper to enroll an qr token done in the following steps
+
+        * define the callback url
+        * define the selfservice policies to verify the token
+        * enroll the qr token
+        * pair the qr token
+        * run first challenge & challenge verification against /validate/check*
+
+        :return: token info and the pub / priv key
+        """
+
+        # set pairing callback policies
+
+        cb_url='/foo/bar/url'
+
+        params = {'name': 'dummy1',
+                  'scope': 'authentication',
+                  'realm': '*',
+                  'action': 'qrtoken_pairing_callback_url=%s' % cb_url,
+                  'user': '*'}
+
+        response = self.make_system_request(action='setPolicy', params=params)
+        assert 'false' not in response, response
+
+        # ----------------------------------------------------------------- --
+
+        # set challenge callback policies
+
+        params = {
+            'name': 'dummy3',
+            'scope': 'authentication',
+            'realm': '*',
+            'action': 'qrtoken_challenge_callback_url=%s' % cb_url,
+            'user': '*'
+        }
+
+        response = self.make_system_request(action='setPolicy', params=params)
+        assert 'false' not in response, response
+
+        params = {
+            'name': 'enroll_policy',
+            'scope': 'selfservice',
+            'realm': '*',
+            'action': 'activate_QRToken, enrollQR, verify',
+            'user': '*'
+        }
+
+        response = self.make_system_request(action='setPolicy', params=params)
+        assert 'false' not in response, response
+
+        # ----------------------------------------------------------------- --
+
+        # enroll the qr token:
+
+        # response should contain pairing url, check if it was sent and validate
+
+        user = 'passthru_user1@myDefRealm'
+        serial = serial
+        pin = '1234'
+
+        secret_key, public_key = QR.create_keys()
+
+        params = {'type': 'qr', 'pin': pin, 'user': user, 'serial': serial}
+        response = self.make_admin_request('init', params)
+
+        pairing_url = QR.get_pairing_url_from_response(response)
+
+        # ------------------------------------------------------------------- --
+
+        # do the pairing
+
+        token_info = QR.create_user_token_by_pairing_url(pairing_url, pin)
+
+        pairing_response = QR.create_pairing_response(
+            public_key, token_info, token_id=1)
+
+        params = {'pairing_response': pairing_response}
+
+        response = self.make_validate_request('pair', params)
+        response_dict = response.json
+
+        assert not response_dict.get('result', {}).get('value', True)
+        assert response_dict.get('result', {}).get('status', False)
+
+        # ------------------------------------------------------------------- --
+
+        # trigger a challenge
+
+        params = {'serial': serial, 'pass': pin, 'data': serial}
+
+        response = self.make_validate_request('check_s', params)
+        response_dict = response.json
+
+        assert 'detail' in response_dict
+        detail = response_dict.get('detail')
+
+        assert 'transactionid' in detail
+        assert 'message' in detail
+
+        # ------------------------------------------------------------------- --
+
+        # verify the transaction
+
+        # calculate the challenge response from the returned message
+        # for verification we can use tan or sig
+
+        message = detail.get('message')
+        challenge, _sig, tan = QR.claculate_challenge_response(
+                                        message, token_info, secret_key)
+
+        params = {'transactionid': challenge['transaction_id'], 'pass': tan}
+        response = self.make_validate_request('check_t', params)
+        assert 'false' not in response
+
+        return token_info, secret_key, public_key
+
+    def test_qr_token_login(self):
+        """Verify the userservice login with an qr token.
+
+        after the setup by
+          * defining the mfa policy and
+          * enrolling the qr token
+
+        we use the qrtoken for the login with following steps
+
+        1. submit the login credentials, getting
+           - the token list in response and
+           - the credential-verified cookie
+
+        2. submit the login with serial and credential-verified cookie
+           to trigger a qr token challenge, getting
+              - the challenge-started cookie and
+              - the challenge response with the qr code data
+
+        3. from the challenge data, we can calculate the tan or signature
+            where we use the
+            - tan as otp value and
+            - the transaction id and
+            - the challenge-started cookie
+
+        4. verification is done by accessing the userservice/history
+
+        """
+
+        serial='myQrToken'
+
+        # ----------------------------------------------------------------- --
+
+        # do the setup: enroll token and setup mfa policy
+
+        token_info, secret_key, _public_key = self.enroll_qr_token(serial)
+
+        policy = {
+            'name': 'mfa_login',
+            'action': 'mfa_login, history',
+            'user': ' passthru.*.myDefRes:',
+            'realm': '*',
+            'scope': 'selfservice'}
+
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response
+
+        # ----------------------------------------------------------------- --
+
+        # run the first credential verification step
+
+        auth_user = {
+            'login': 'passthru_user1@myDefRealm',
+            'password': 'geheim1'}
+
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=auth_user)
+
+        jresp = response.json
+        tokenlist = jresp['detail']["tokenList"]
+        assert len(tokenlist) == 1
+        assert tokenlist[0]['LinOtp.TokenSerialnumber'] == 'myQrToken'
+
+        # ----------------------------------------------------------------- --
+
+        cookies = self.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+        assert auth_cookie
+
+        # ----------------------------------------------------------------- --
+
+        # next request is to trigger the login challenge
+        # - response should contain the challenge information
+
+        self.set_cookie(self.client, 'user_selfservice', auth_cookie)
+
+        params = {}
+        params['session'] = auth_cookie
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=params)
+
+        jresp = response.json
+        assert jresp['detail']
+        assert 'detail' in jresp
+        detail = jresp.get('detail')
+
+        assert 'transactionid' in detail
+        assert 'message' in detail
+        assert 'transactiondata' in detail
+
+        # ----------------------------------------------------------------- --
+
+        # verify the transaction
+
+        # calculate the challenge response from the returned message
+        # - for verification we can use tan or sig as signature
+
+        message = detail.get('transactiondata')
+        challenge, _sig, tan = QR.claculate_challenge_response(
+                                        message, token_info, secret_key)
+
+        # ----------------------------------------------------------------- --
+
+        cookies = self.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+
+        # ----------------------------------------------------------------- --
+
+        self.set_cookie(self.client, 'user_selfservice', auth_cookie)
+
+        params = {
+            'transactionid': challenge['transaction_id'],
+            'session': auth_cookie,
+            'otp': tan
+            }
+
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=params)
+
+        response.body = response.data.decode("utf-8")
+        assert '"value": true' in response, response
+
+        # ----------------------------------------------------------------- --
+
+        cookies = self.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+
+        # ----------------------------------------------------------------- --
+
+        # verify that the authentication was successful
+
+        self.set_cookie(self.client, 'user_selfservice', auth_cookie)
+
+        params = {}
+        params['session'] = auth_cookie
+        response = self.client.post(url(controller='userservice',
+                                        action='history'), data=params)
+
+        response.body = response.data.decode("utf-8")
+        assert '"rows": [' in response, response
+
+        return
 
 # eof #
