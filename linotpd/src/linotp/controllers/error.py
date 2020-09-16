@@ -29,7 +29,7 @@ error controller - to display errors
 
 
 
-import cgi
+from html import escape
 
 from linotp.flap import (request, error_document_template)
 
@@ -55,7 +55,7 @@ class ErrorController(BaseController):
         else:
             message = request.GET.get('message',
                                       request.POST.get('message', ''))
-            content = cgi.escape(message)
+            content = escape(message)
 
         code = request.GET.get('code',
                                request.POST.get('code',
@@ -63,7 +63,7 @@ class ErrorController(BaseController):
 
         page = error_document_template % \
             dict(prefix=request.environ.get('SCRIPT_NAME', ''),
-                 code=cgi.escape(code),
+                 code=escape(code),
                  message=content)
         return page
 
