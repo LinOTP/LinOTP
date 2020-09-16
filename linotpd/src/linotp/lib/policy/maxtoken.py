@@ -122,6 +122,7 @@ def check_maxtoken_for_user(user):
     for user_realm in user_realms:
 
         policies = get_client_policy(client,
+                                     action="maxtoken",
                                      scope='enrollment',
                                      realm=user_realm,
                                      user=user.login,
@@ -178,6 +179,7 @@ def check_maxtoken_for_user_by_type(user, type_of_token):
     for user_realm in user_realms:
 
         policies = get_client_policy(client,
+                                     action="maxtoken%s" % type_of_token.upper(),
                                      scope='enrollment',
                                      realm=user_realm,
                                      user=user.login,

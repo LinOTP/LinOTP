@@ -15,7 +15,7 @@ Token = namedtuple('Token', ['type'])
 fake_context = {'translate': lambda x: x}
 
 
-def fake_get_client_policy(client, scope, realm, user, userObj):
+def fake_get_client_policy(client, scope, action, realm, user, userObj):
 
     if realm == 'defaultrealm':
         return {}

@@ -54,7 +54,7 @@ from linotp.lib.error import ParameterError
 from linotp.lib.token import getTokenType
 from linotp.lib.token import getTokens4UserOrSerial
 
-from linotp.lib.policy import getSelfserviceActions
+from linotp.lib.policy.action import getSelfserviceActions
 from linotp.lib.policy import _get_auth_PinPolicy
 
 from linotp.lib.util import remove_empty_lines

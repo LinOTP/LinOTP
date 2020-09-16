@@ -736,6 +736,8 @@ class IdResolver(UserIdResolver):
 
         # do the search
 
+        l_obj = None
+
         try:
 
             l_obj = self.bind()

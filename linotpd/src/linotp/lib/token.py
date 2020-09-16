@@ -401,10 +401,6 @@ class TokenHandler(object):
 
         client = context['Client']
 
-        pol = linotp.lib.policy.get_client_policy(client,
-                                                  scope="enrollment", realm=owner.realm,
-                                                  user=owner.login, userObj=owner)
-
         if not new_serial:
             new_serial = "lost%s" % serial
 
@@ -439,15 +435,23 @@ class TokenHandler(object):
                                 'to password token.' % owner.login)
 
         if init_params['type'] == 'pw':
-            pw_len = linotp.lib.policy.getPolicyActionValue(pol,
-                                                            "lostTokenPWLen")
+
+            pol = linotp.lib.policy.get_client_policy(
+                client, scope="enrollment", action="lostTokenPWLen",
+                realm=owner.realm, user=owner.login, userObj=owner)
+
+            pw_len = linotp.lib.policy.getPolicyActionValue(
+                pol, "lostTokenPWLen")
 
             if pw_len == -1:
                 pw_len = 10
 
-            contents = linotp.lib.policy.getPolicyActionValue(pol,
-                                                              "lostTokenPWContents",
-                                                              is_string=True)
+            pol = linotp.lib.policy.get_client_policy(
+                client, scope="enrollment", action="lostTokenPWContents",
+                realm=owner.realm, user=owner.login, userObj=owner)
+
+            contents = linotp.lib.policy.getPolicyActionValue(
+                pol, "lostTokenPWContents", is_string=True)
 
             character_pool = "%s%s%s" % (string.ascii_lowercase,
                                          string.ascii_uppercase, string.digits)
@@ -485,6 +489,9 @@ class TokenHandler(object):
             # ------------------------------------------------------------- --
 
             # set the validity of the temporary token
+            pol = linotp.lib.policy.get_client_policy(
+                client, scope="enrollment", action="lostTokenValid",
+                realm=owner.realm, user=owner.login, userObj=owner)
 
             validity = linotp.lib.policy.getPolicyActionValue(
                 pol, "lostTokenValid", max=False)

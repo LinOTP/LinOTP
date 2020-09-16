@@ -675,12 +675,87 @@ class TestSelfserviceController(TestController):
 
         return
 
-
     def test_getmultiotp(self):
+        '''selfservice: testing getting multiple otps.
+
+        1. user has no policy to lookup hotp otps, only for totp token
+          -> the lookup will fail
+        2. define system policy which allows the hotp lookup
+          -> the lookup will be successfull
         '''
-        TODO selfservice: testing getting multiple otps
-        '''
-        pass
+
+        user = 'passthru_user1@myDefRealm'
+        selfservice_user = {
+            'login': user,
+            'password': 'geheim1'
+        }
+
+        serial = 'multi_otp'
+        params = {
+            'type': 'hmac',
+            'serial': serial,
+            'genkey': 1,
+            'user': user
+            }
+
+        response = self.make_admin_request('init', params=params)
+        assert "googleurl" in response, response
+
+        # ----------------------------------------------------------------- --
+
+        # 1. user  is not allowed to lookup hotp otps only totp
+
+        policy = {
+            'name': 'user',
+            'action': 'max_count_totp=5,',
+            'user': 'passthru_user1',
+            'realm': '*',
+            'scope': 'selfservice',
+            'active': True,
+        }
+
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response
+
+        params={
+            'serial': serial,
+            'count': 5
+        }
+
+        response = self.make_userselfservice_request(
+            'getmultiotp', params=params, auth_user=selfservice_user)
+
+        assert not response.json['result']['status']
+
+        # ----------------------------------------------------------------- --
+
+        # 2. in general its now allowed to lookup hotp otps
+
+        policy = {
+            'name': 'general',
+            'action': 'max_count_hotp=10,',
+            'user': ' *',
+            'realm': '*',
+            'scope': 'selfservice',
+            'active': True,
+        }
+
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response
+
+        params={
+            'serial': serial,
+            'count': 5
+        }
+
+        response = self.make_userselfservice_request(
+            'getmultiotp', params=params, auth_user=selfservice_user)
+
+        jresp = response.json
+        assert jresp['result']['value']['type'] == "HMAC"
+        otps = jresp['result']['value']['otp']
+
+        assert len(otps) == 5
 
     def test_privilege_escalation_fix(self):
 
