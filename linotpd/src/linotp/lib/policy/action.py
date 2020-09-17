@@ -48,7 +48,11 @@ def get_selfservice_actions(user, action=None):
     if there was an action as parameter, we copy only this one
     into the result set
 
+    action value will be type converted according to the policy definition
+
+    :return: dictionary with all actions
     '''
+
     login = user.login
     realm = user.realm
     client = _get_client()
@@ -62,14 +66,16 @@ def get_selfservice_actions(user, action=None):
     if not policies:
         return {}
 
+    scope="selfservice"
+    pat = PolicyActionTyping()
+
     all_actions = {}
     for policy in policies.values():
         actions = parse_action_value(policy.get('action', {}))
-
         if not action:
-            all_actions.update(actions)
+            all_actions.update(pat.convert_actions(scope, actions))
         elif action in actions:
-            all_actions[action] = actions[action]
+            all_actions[action] = pat.convert(scope, action, actions[action])
 
     return all_actions
 
