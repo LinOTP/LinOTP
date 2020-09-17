@@ -9,7 +9,7 @@ NEW_VERSION='@@@DEB_VERSION@@@'
 
 CONFIG_DIR=/etc/linotp
 LINOTP_ETC_CFG=$CONFIG_DIR/linotp.cfg
-# TODO: why is this not the default?
+# TODO: Fix required (LINOTP-1448)
 export LINOTP_CFG=$CONFIG_DIR/linotp.cfg:/usr/share/linotp/linotp.cfg
 REALM="LinOTP admin area"
 DIGESTFILE=$CONFIG_DIR/admins
