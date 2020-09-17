@@ -20,9 +20,16 @@ override_dh_install:
 	install -m644 debian/dbconfig-common/dbconfig-common-lib.sh ${DBSCRIPTS_DEST}/lib.sh
 	install -m755 debian/dbconfig-common/dbconfig-vars ${DBSCRIPTS_DEST}/dbconfig-vars
 	for DB in mysql pgsql; do \
+		# Use the same script for install and upgrades \
 		installdir=${DBSCRIPTS_DEST}/install/$${DB} ;\
 		mkdir -p -m755 $$installdir ;\
 		install -m755 debian/dbconfig-common/db-install $$installdir ;\
+		# Upgrades from 2 -> 2.80 require the new configuration settings \
+		upgradedir=${DBSCRIPTS_DEST}/upgrade/$${DB} ;\
+		mkdir -p -m755 $$upgradedir ;\
+		for VERSION in 2.80; do \
+			install -m755 debian/dbconfig-common/db-install $$upgradedir/$${VERSION} ;\
+		done ;\
 	done
 
 override_dh_installdeb:
