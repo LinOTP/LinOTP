@@ -20,8 +20,9 @@ override_dh_install:
 	install -m644 debian/dbconfig-common/dbconfig-common-lib.sh ${DBSCRIPTS_DEST}/lib.sh
 	install -m755 debian/dbconfig-common/dbconfig-vars ${DBSCRIPTS_DEST}/dbconfig-vars
 	for DB in mysql pgsql; do \
-		install -m755 debian/dbconfig-common/$${DB}-install \
-			debian/linotp/usr/share/dbconfig-common/scripts/linotp/install/$${DB} ;\
+		installdir=${DBSCRIPTS_DEST}/install/$${DB} ;\
+		mkdir -p -m755 $$installdir ;\
+		install -m755 debian/dbconfig-common/db-install $$installdir ;\
 	done
 
 override_dh_installdeb:

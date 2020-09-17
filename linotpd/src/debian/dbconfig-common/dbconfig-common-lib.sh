@@ -48,6 +48,25 @@ print(loginstring)
   '
 }
 
+# get_sqlalchemy_uri
+#
+# Generate a database uri using the given dbc configuration
+get_sqlalchemy_uri() {
+  if [ "${dbc_dbtype}" = pgsql ]; then
+    scheme=postgres
+  else
+    scheme="${dbc_dbtype}"
+  fi
+
+  if [ "${dbc_dbport}" != "" ]; then
+      dbport=":${dbc_dbport}"
+  else
+      dbport=""
+  fi
+
+  echo "${scheme}://$(escape_login)@${dbc_dbserver}${dbport}/${dbc_dbname}"
+}
+
 # configure_sql [sqlalchemy url]
 #
 # This incorporates previously-determined SQL configuration
@@ -55,9 +74,9 @@ print(loginstring)
 
 configure_sql() {
   # Escape hash character for use in sed substitution: # -> \#
-  uri="$(echo "$1" | sed  's/#/\#/')"
-  sed -i -e "s#^\(SQLALCHEMY_DATABASE_URI\)=.*#\1=\"${uri}\"#" $LINOTP_CFG
-  echo_log "SQL configuration in $LINOTP_CFG changed."
+  escaped_uri="$(echo "$1" | sed  's/#/\#/')"
+  sed -i -e "s#^\(SQLALCHEMY_DATABASE_URI\)=.*#\1=\"${escaped_uri}\"#" $LINOTP_CONFIG_FILE
+  echo_log "SQL configuration in $LINOTP_CONFIG_FILE changed."
 }
 
 # init_database
@@ -66,4 +85,15 @@ configure_sql() {
 init_database() {
   echo_log "Initialising database"
   linotp init database
+}
+
+# configure_and_init_db
+#
+# Do all the steps needed to configure and initialise
+# or migrate the database
+#  - write configuration file
+#  - initialise or migrate tables
+configure_and_init_db() {
+  configure_sql "$(get_sqlalchemy_uri)"
+  init_database
 }

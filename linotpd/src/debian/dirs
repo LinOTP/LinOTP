@@ -3,5 +3,4 @@ etc/linotp/apache-site-includes
 etc/linotp/custom-style
 etc/linotp/custom-templates
 etc/linotp/custom-templates/mailtemplates
-usr/share/dbconfig-common/scripts/linotp/install
 var/log/linotp
