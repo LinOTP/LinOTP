@@ -3,8 +3,8 @@ linotp (3.0~a0-1) buster-dev; urgency=low
   * Set new version 3.0 Alpha
 
   Features:
-  * Each token now stores the creation / last access / last
-    verification time
+  * Each token can now store the creation / last access / last verification
+    time if enabled in "System Config -> Settings -> Authorization"
   * Setting via the manage interface of challenge expiration
     timeouts for Email and SMS tokens
   * A new 'linotp' command installed on the path provides:
