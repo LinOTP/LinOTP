@@ -220,8 +220,8 @@ case "$1" in
     # If we have a Mako template cache directory lying around from an
     # earlier version of LinOTP, get rid of it.
     if [ -d "$OLDCACHEDIR" ] && dpkg --compare-versions "$2" lt-nl "3.0~b0"; then
-	echo_log "Disposing of $OLDCACHEDIR (now using $CACHEDIR instead)"
-        rm -rf "$OLDCACHEDIR"
+      echo_log "Disposing of $OLDCACHEDIR (now using $CACHEDIR instead)"
+      rm -rf "$OLDCACHEDIR"
     fi
 
     evaluate_answers
