@@ -25,6 +25,9 @@ if [ -f /usr/share/dbconfig-common/dpkg/config ]; then
 
   # Define default values for database
   #dbc_authmethod_user="password"
+
+  # Script to import intial settings from previous packaging
+  dbc_load_include=exec:/usr/share/dbconfig-common/scripts/linotp/dbconfig-vars
   dbc_first_version="3.0~a1"
 
 

@@ -50,7 +50,7 @@ PUBKEY="$CONFIG_DIR"/audit-public.pem
 if [ -f "$OLD_PRIVKEY" -a ! -f "$PRIVKEY" ]; then
   # We have an old key pair that should be moved, lest people
   # lose access to their existing audit log.
-  echo_log "Moving $OLD_PRIVKEY to $PRIVKEY"
+  echo "Moving $OLD_PRIVKEY to $PRIVKEY"
   mv "$OLD_PRIVKEY" "$PRIVKEY"
   rm -f "$OLD_PUBKEY"	# no longer required
 

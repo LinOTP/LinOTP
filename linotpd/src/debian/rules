@@ -10,14 +10,26 @@ export DEB_VERSION = $(shell sed -ne '1{s/^.* (//;s/).*$$//;p}' debian/changelog
 %:
 	dh $@ --with python3 --buildsystem=pybuild
 
+# The directory where dbconfig-common install/upgrade scripts will be placed
+DBSCRIPTS_DEST=debian/linotp/usr/share/dbconfig-common/scripts/linotp
 override_dh_install:
 	dh_install
 
 	# Install dbconfig-common scripts in debian/dbconfig-common
-	install -m644 debian/dbconfig-common/dbconfig-common-lib.sh debian/linotp/usr/share/dbconfig-common/scripts/linotp/lib.sh
+	mkdir -p -m755 ${DBSCRIPTS_DEST}
+	install -m644 debian/dbconfig-common/dbconfig-common-lib.sh ${DBSCRIPTS_DEST}/lib.sh
+	install -m755 debian/dbconfig-common/dbconfig-vars ${DBSCRIPTS_DEST}/dbconfig-vars
 	for DB in mysql pgsql; do \
-		install -m755 debian/dbconfig-common/$${DB}-install \
-			debian/linotp/usr/share/dbconfig-common/scripts/linotp/install/$${DB} ;\
+		# Use the same script for install and upgrades \
+		installdir=${DBSCRIPTS_DEST}/install/$${DB} ;\
+		mkdir -p -m755 $$installdir ;\
+		install -m755 debian/dbconfig-common/db-install $$installdir ;\
+		# Upgrades from 2 -> 2.80 require the new configuration settings \
+		upgradedir=${DBSCRIPTS_DEST}/upgrade/$${DB} ;\
+		mkdir -p -m755 $$upgradedir ;\
+		for VERSION in 2.80; do \
+			install -m755 debian/dbconfig-common/db-install $$upgradedir/$${VERSION} ;\
+		done ;\
 	done
 
 override_dh_installdeb:
