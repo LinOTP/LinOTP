@@ -213,9 +213,12 @@ dbc_go linotp "$@"
 case "$1" in
   configure)
 
-    echo_log "Initialising keys"
-    linotp init enc-key
-    linotp init audit-keys
+    if [ ! -f $CONFIG_DIR/encKey ]; then
+      linotp init enc-key
+    fi
+    if [ ! -f $CONFIG_DIR/audit-private.pem ] && [ ! -f $CONFIG_DIR/audit-public.pem ]; then
+      linotp init audit-keys
+    fi
 
     # If we have a Mako template cache directory lying around from an
     # earlier version of LinOTP, get rid of it.
