@@ -28,10 +28,15 @@
 
 import logging
 
+from warnings import warn
+from typing import Dict, Any
+
 from .processing import get_client_policy
 
 from .util import _get_client
 from .util import parse_action_value
+
+from .definitions import get_policy_definitions
 
 log = logging.getLogger(__name__)
 
@@ -99,3 +104,89 @@ def getSelfserviceActions(user):
 
     # return the list with all actions
     return list(acts)
+
+class PolicyActionTyping():
+    """Convert the action value according to the policy definition.
+    """
+
+    def __init__(self):
+        """Helper class for the policy typing.
+        """
+        self.definitions = get_policy_definitions()
+
+    def convert(self, scope:str, action_name:str, action_value:str) -> Any:
+        """Convert the action values acording to the policy definitions.
+
+        :paran scope: of the action
+        :param action_name: the name of the action
+        :param action_value: the un parsed action value
+        :return: the typed value
+        """
+
+        if action_name not in self.definitions[scope]:
+            return action_value
+
+        typing = self.definitions[scope][action_name].get('type')
+
+        if typing is None:
+            return action_value
+
+        elif typing == 'bool':
+
+            if action_value in [True, False]:
+                return action_value
+
+            msg = ("%s:%s : action value %r is not compliant with "
+                   "action type 'bool'" % (scope, action_name, action_value))
+            warn(msg,DeprecationWarning)
+
+            if action_value in [-1, '-1']:
+                return False
+
+            if isinstance(action_value, int):
+                return action_value > 0
+
+            if isinstance(action_value, str):
+
+                if action_value.lower() == 'true':
+                    return True
+
+                if action_value.lower() == 'false':
+                    return False
+
+                if action_value.isdigit():
+                    return int(action_value) > 0
+
+                return False
+
+            return bool(action_value)
+
+        elif typing == 'int':
+            return int(action_value)
+
+        elif typing in ['str', 'string']:
+            return str(action_value)
+
+        elif typing == 'set':
+            # in case of a set, we try our best:
+            # if int() else return as is
+            if isinstance(action_value, str) and action_value.isdigit():
+                return int(action_value)
+
+        return action_value
+
+    def convert_actions(self, scope:str, actions:Dict) -> Dict:
+        """type conversion of an action dict.
+
+        utility to be used in the by functions like get_selfservice_actions
+        to make the code better readable
+
+        :param scope: the scope of the action in the policy definition
+        :param actions: dict with actions
+        :return: dict with all action and their converted values
+        """
+        all_actions = {}
+        for action_name, action_value in actions.items():
+            action_value = self.convert(scope, action_name, action_value)
+            all_actions[action_name] = action_value
+        return all_actions
