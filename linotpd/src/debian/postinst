@@ -207,6 +207,7 @@ if [ "$1" = configure ]; then
 fi
 
 # Allow dbconfig-common to configure the database
+dbc_first_version="3.0~a0"
 dbc_go linotp "$@"
 
 case "$1" in
