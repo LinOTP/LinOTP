@@ -1,3 +1,83 @@
+linotp (3.0~b0-1) buster-dev; urgency=low
+
+  * Set new version 3.0 Beta
+
+  Features:
+  * CLI: Migration of standalone scripts to linotp subcommands:
+    * `linotp-backup` is now available as `linotp backup create`
+    * `linotp-restore` is now available as `linotp backup restore`
+    * `linotp-create-enckey` is now available as `linotp init enc-key`
+  * CLI: initialization commands are now grouped as sub commands of
+    `linotp init`
+  * CLI: Configuration inspection commands added:
+    * `linotp config show` command displays current configuration settings
+      and can optionally only show settings whose values are different from the
+      hard-coded defaults
+    * `linotp config explain` command displays schema information of available
+      configuration settings
+  * Server: Improved config file handling via LINOTP_CFG environment variable:
+    * LINOTP_CFG env allows to set a custom search path for config files
+    * `/usr/share/linotp/linotp.cfg` contains distribution default settings
+    * By default, `/etc/linotp/linotp.cfg` is configured for adminsistrator
+    overrides
+  * Server: Improved path settings. See DEVELOP.md on how the new options
+    ROOT_DIR, CACHE_DIR, DATA_DIR, and LOGFILE_DIR are used and how they are
+    configured by default
+  * Server: LDAP UserID resolver now allows to configure LDAPS and STARTTLS
+    certificate validation settings per resolver instance. By default, only
+    System trusted certificates are allowed. This setting can be disabled in
+    the resolver configuration. Use the test connection feature to verify the
+    setup
+  * Support added to set up linotp with postgres in postinst through migration
+    to dbconfig-common for database setup
+
+  Fixes:
+  * Server: Logfiles are now correctly written if configured and will no
+    longer remain empty
+  * Server: CSV user import now works correctly with files using quote escaping
+  * Server: HSM support is restored and now supports SoftHSMv2 connections
+  * Server: HSM connections are now correctly pooled and are no longer failing
+    on consecutive requests
+  * Server: Increased server speed due to improved config, database
+    initialization, and audit setup handling not being done as often. Note
+    that the server now only performs a simple database check at startup; the
+    `linotp init database` command must be run manually if the database check
+    fails. The postinst script will still initialize the database though.
+  * Policies: Consistent evaluation of policies is ensured in the "enrollment"
+    scope. Evaluation is adjusted to match all actions for a given user if some
+    of the actions are less explicitly defined regarding user and realm fields
+  * Policies: Scope "selfservice" actions with user:* are no longer evaluated
+    if a more specific policy is matched. This brings parity to the
+    implementation of the legacy policy evaluation engine and ensures that
+    actions can be restricted for a subset of users.
+
+  Removed and no longer supported:
+  * The following tools scripts are no longer part of LinOTP:
+    * linotp-auth-radius
+    * linotp-convert-gemalto
+    * linotp-convert-token
+    * linotp-convert-xml-to-CSV
+    * linotp-create-ad-users
+    * linotp-create-auditkeys
+    * linotp-create-certificate
+    * linotp-create-database
+    * linotp-create-pwidresolver-user
+    * linotp-create-sqlidresolver-user
+    * linotp-decrypt-otpkey
+    * linotp-enroll-smstoken
+    * linotp-fix-access-rights
+    * linotp-pip-update
+    * linotp-qrtoken-shell.py
+    * linotp-setpins
+    * linotp-sql-janitor
+    * linotp-token-usage
+    * linotp-tokens-used
+    * testRadiusChallResponse.sh
+    * totp-token
+  * OSIAM SCIM UserIdResolver
+
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 17 Sep 2020 19:12:58 +0200
+
 linotp (3.0~a0-1) buster-dev; urgency=low
 
   * Set new version 3.0 Alpha
