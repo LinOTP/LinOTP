@@ -3,14 +3,14 @@ Section: net
 Priority: optional
 Maintainer: KeyIdentity GmbH <linotp@keyidentity.com>
 Build-Depends: debhelper (>=9),
+               dh-python,
                lsb-release,
                po-debconf,
                python3-all,
                python3-babel,
                python3-flask,
-               python3-setuptools,
-               dh-python,
                python3-jsonschema,
+               python3-setuptools
 Standards-Version: 3.9.8
 Homepage: https://www.linotp.org/
 X-Python-Version: >= 3.7
@@ -24,8 +24,8 @@ Depends: adduser,
          libapache2-mod-wsgi-py3 | httpd-wsgi,
          openssl,
          pwgen,
-	 ${misc:Depends},
-         ${python3:Depends},
+         ${misc:Depends},
+         ${python3:Depends}
 Suggests: systemd
 Replaces: linotp-ee (<< 2.7-1~),
           linotp-smsprovider (<< 2.10),
