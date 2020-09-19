@@ -393,7 +393,7 @@ class TestUserserviceLogin(TestUserserviceController):
         auth_data = {
             'session': auth_cookie,
             'serial': 'LoginToken',
-            'otp': otp,
+            'otp': otp.split()[0].strip(),
             'transactionid': transactionid
             }
 
