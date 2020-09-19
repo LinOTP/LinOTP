@@ -27,6 +27,7 @@
 
 import binascii
 import os
+import copy
 import datetime
 import hmac
 import hashlib
@@ -173,6 +174,8 @@ def create_auth_cookie(user, client, state='authenticated', state_data=None):
     # ---------------------------------------------------------------------- --
 
     # build the cache data
+    if state_data is not None:
+        state_data = copy.deepcopy(state_data)
 
     data = [user, client, expiration, state, state_data]
     hash_data = ("%r" % data).encode('utf-8')

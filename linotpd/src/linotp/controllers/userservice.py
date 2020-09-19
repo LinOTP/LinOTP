@@ -693,14 +693,14 @@ class UserserviceController(BaseController):
             else:
                 reply_mode = ['offline']
 
-            reply["reply_mode"] = reply_mode
+            reply["replyMode"] = reply_mode
 
             # ------------------------------------------------------------- --
 
             # add transaction data wrt to the new spec
 
             if reply.get('img_src'):
-                reply["transactiondata"] = reply['message']
+                reply["transactionData"] = reply['message']
 
             # ------------------------------------------------------------- --
 
@@ -708,6 +708,15 @@ class UserserviceController(BaseController):
 
             if token_type is 'qr':
                 reply['message'] = _('Please scan the provided qr code')
+
+            # ------------------------------------------------------------- --
+
+            # adjust the transactionid to transactionId for api conformance
+
+            if 'transactionid' in reply:
+                transaction_id = reply["transactionid"]
+                del reply["transactionid"]
+                reply["transactionId"] = transaction_id
 
             Session.commit()
             return sendResult(self.response, False, 0, opt=reply)
@@ -1915,14 +1924,14 @@ class UserserviceController(BaseController):
 
                 detail_response = {
                     "message": message,  # localized user facing message
-                    "reply_mode": reply_mode
+                    "replyMode": reply_mode
                 }
 
                 if transaction_id:
-                    detail_response['transactionid'] = transaction_id
+                    detail_response['transactionId'] = transaction_id
 
                 if transaction_data:
-                    detail_response['transactiondata'] = transaction_data
+                    detail_response['transactionData'] = transaction_data
 
                 # ---------------------------------------------------------- --
 
