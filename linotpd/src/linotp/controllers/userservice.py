@@ -125,6 +125,7 @@ from linotp.lib.userservice import (get_userinfo,
                                     create_auth_cookie,
                                     getTokenForUser,
                                     remove_auth_cookie,
+                                    get_transaction_detail,
                                     )
 
 
@@ -816,8 +817,10 @@ class UserserviceController(BaseController):
             g.audit['action_detail'] = "expires: %s " % expiration
             g.audit['info'] = "%r logged in " % user
 
+        detail = get_transaction_detail(transid)
+
         Session.commit()
-        return sendResult(self.response, verified)
+        return sendResult(self.response, verified, opt=detail)
 
     def _login_with_otp(self, user, passw, param):
         """
@@ -1828,25 +1831,11 @@ class UserserviceController(BaseController):
 
             elif action == "query transaction":
 
-                challenge_session = challenge.getSession()
-                if challenge_session:
-                    challenge_session = json.loads(challenge_session)
-                else:
-                    challenge_session = {}
-
-                details = {
-                    'received_count': challenge.received_count,
-                    'received_tan': challenge.received_tan,
-                    'valid_tan': challenge.valid_tan,
-                    'message': challenge.getChallenge(),
-                    'status': challenge.getStatus(),
-                    'accept': challenge_session.get('accept', False),
-                    'reject': challenge_session.get('reject', False),
-                }
+                detail = get_transaction_detail(transaction_id)
 
                 Session.commit()
                 return sendResult(
-                    self.response, details['valid_tan'], opt=details)
+                    self.response, detail.get('valid_tan', False), opt=detail)
 
             # -------------------------------------------------------------- --
 
