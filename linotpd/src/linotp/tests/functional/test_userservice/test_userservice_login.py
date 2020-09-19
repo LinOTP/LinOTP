@@ -380,9 +380,9 @@ class TestUserserviceLogin(TestUserserviceController):
 
         assert jresp['result']['status']
         assert not jresp['result']['value']
-        assert jresp['detail']['reply_mode'] == ["offline"]
+        assert jresp['detail']['replyMode'] == ["offline"]
 
-        transactionid = jresp['detail']['transactionid']
+        transactionid = jresp['detail']['transactionId']
 
         cookies = self.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
@@ -624,9 +624,9 @@ class TestUserserviceLogin(TestUserserviceController):
         assert 'detail' in jresp
         detail = jresp.get('detail')
 
-        assert 'transactionid' in detail
+        assert 'transactionId' in detail
         assert 'message' in detail
-        assert 'transactiondata' in detail
+        assert 'transactionData' in detail
 
         # ----------------------------------------------------------------- --
 
@@ -656,7 +656,7 @@ class TestUserserviceLogin(TestUserserviceController):
         # calculate the challenge response from the returned message
         # - for verification we can use tan or sig as signature
 
-        message = detail.get('transactiondata')
+        message = detail.get('transactionData')
         challenge, _sig, tan = QR.claculate_challenge_response(
                                         message, token_info, secret_key)
 
@@ -787,16 +787,16 @@ class TestUserserviceLogin(TestUserserviceController):
         assert 'detail' in jresp
         detail = jresp.get('detail')
 
-        assert 'transactionid' in detail
+        assert 'transactionId' in detail
         assert 'message' in detail
-        assert 'transactiondata' in detail
+        assert 'transactionData' in detail
 
         # ----------------------------------------------------------------- --
 
         # calculate the challenge response from the returned message
         # - for verification we can use tan or sig as signature
 
-        message = detail.get('transactiondata')
+        message = detail.get('transactionData')
         challenge, sig, tan = QR.claculate_challenge_response(
                                         message, token_info, secret_key)
 

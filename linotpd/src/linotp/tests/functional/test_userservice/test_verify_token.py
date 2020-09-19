@@ -341,7 +341,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
 
         jresp = response.json
         assert jresp['result']['value'] == False
-        assert jresp['detail']['reply_mode'] == ['offline']
+        assert jresp['detail']['replyMode'] == ['offline']
 
         otp = get_otp(seed, 1, digits=6)
 
@@ -508,7 +508,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
         assert 'detail' in response
 
         jresp = response.json
-        transaction_id = jresp['detail']['transactionid']
+        transaction_id = jresp['detail']['transactionId']
         assert transaction_id
         assert 'false' in response
 
@@ -664,9 +664,9 @@ class TestUserserviceTokenTest(TestUserserviceController):
         assert 'detail' in response_dict
         detail = response_dict.get('detail')
 
-        assert 'transactionid' in detail
+        assert 'transactionId' in detail
         assert 'message' in detail
-        assert 'transactiondata' in detail
+        assert 'transactionData' in detail
 
         # ------------------------------------------------------------------- --
 
@@ -675,7 +675,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
         # calculate the challenge response from the returned message
         # for verification we can use tan or sig
 
-        message = detail.get('transactiondata')
+        message = detail.get('transactionData')
         challenge, _sig, tan = QR.claculate_challenge_response(
                                         message, token_info, secret_key)
 
@@ -758,7 +758,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
         assert 'detail' in response
 
         jresp = response.json
-        transaction_id = jresp['detail']['transactionid']
+        transaction_id = jresp['detail']['transactionId']
         assert transaction_id
         assert 'false' in response
 
