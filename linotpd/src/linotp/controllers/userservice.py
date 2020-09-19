@@ -646,8 +646,8 @@ class UserserviceController(BaseController):
         # the the transaction info from the cookie cached data
 
         transid = state_data.get('transactionid')
-        _exp, challenges = Challenges.get_challenges(
-                                        transid=transid, filter_open=True)
+
+        _exp, challenges = Challenges.get_challenges(transid=transid)
         if not challenges:
             log.info("cannot login with challenge as challenges are expired!")
             abort(401, _('challenge expired!'))
@@ -683,9 +683,6 @@ class UserserviceController(BaseController):
 
         # if there is no otp in the request, we assume that we
         # have to poll for the transaction state
-
-        if not state_data:
-            raise Exception('invalid state data')
 
         verified = False
         transid = state_data.get('transactionid')
