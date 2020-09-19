@@ -630,6 +630,27 @@ class TestUserserviceLogin(TestUserserviceController):
 
         # ----------------------------------------------------------------- --
 
+        cookies = self.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+        assert auth_cookie
+
+        # ----------------------------------------------------------------- --
+
+        # query the status - the challenge might be answerd already via
+        # callback
+
+        self.set_cookie(self.client, 'user_selfservice', auth_cookie)
+
+        params = {}
+        params['session'] = auth_cookie
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=params)
+
+        jresp = response.json
+        assert jresp['detail']
+
+        # ----------------------------------------------------------------- --
+
         # verify the transaction
 
         # calculate the challenge response from the returned message
@@ -638,11 +659,6 @@ class TestUserserviceLogin(TestUserserviceController):
         message = detail.get('transactiondata')
         challenge, _sig, tan = QR.claculate_challenge_response(
                                         message, token_info, secret_key)
-
-        # ----------------------------------------------------------------- --
-
-        cookies = self.get_cookies(response)
-        auth_cookie = cookies.get('user_selfservice')
 
         # ----------------------------------------------------------------- --
 
