@@ -382,10 +382,12 @@ class TestUserserviceLogin(TestUserserviceController):
         assert not jresp['result']['value']
         assert jresp['detail']['reply_mode'] == ["offline"]
 
+        transactionid = jresp['detail']['transactionid']
+
         cookies = self.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
 
-        transactionid, otp = SMS_MESSAGE_OTP
+        phone, otp = SMS_MESSAGE_OTP
 
         # ------------------------------------------------------------------ --
 
