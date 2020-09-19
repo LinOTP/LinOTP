@@ -235,7 +235,6 @@ class LocalResponseProxy():
     def delete_cookie(self, key):
         self.delete_cookies.add(key)
 
-
 class UserserviceController(BaseController):
     """
     the interface from the service into linotp to execute the actions for the
@@ -696,72 +695,85 @@ class UserserviceController(BaseController):
         # the the transaction info from the cookie cached data
 
         transid = state_data.get('transactionid')
-        _exp, challenges = Challenges.get_challenges(
-                                        transid=transid, filter_open=True)
+
+        _exp, challenges = Challenges.get_challenges(transid=transid)
+
         if not challenges:
-            log.info("cannot login with challenge as challenges are expired!")
-            raise Unauthorized(_('challenge expired!'))
+            log.info("cannot login as the initial challenge does not exist"
+                     " or is expired!")
+            raise Unauthorized(_('no matching challenge found!'))
 
         if 'otp' in params:
+            return self._login_with_cookie_challenge_check_otp(
+                user, transid, params)
 
-            params['transactionid'] = transid
+        return self._login_with_cookie_challenge_check_status(
+            user, transid)
 
-            otp_value = params['otp']
+    def _login_with_cookie_challenge_check_otp(self, user, transid, params):
+        """Verify challenge against the otp.
 
-            vh = ValidationHandler()
-            res, _reply = vh.check_by_transactionid(
-                transid, passw=otp_value, options=params)
+        check if it is a valid otp, we grant access
 
+        state: challenge_tiggered
 
-            g.audit['success'] = res
+        :param user: the login user
+        :param transid: the transaction id, taken from the cookie context
+        :param params: all input parameters
+        """
 
-            if res:
-                (cookie, expires,
-                 expiration) = create_auth_cookie(user, self.client)
+        vh = ValidationHandler()
+        res, _reply = vh.check_by_transactionid(
+            transid, passw=params['otp'], options={'transactionid': transid})
 
-                self.response.set_cookie('user_selfservice', cookie,
-                                    secure=secure_cookie,
-                                    expires=expires)
+        if res:
+            (cookie, expires,
+             expiration) = create_auth_cookie(user, self.client)
 
-                g.audit['action_detail'] = "expires: %s " % expiration
-                g.audit['info'] = "%r logged in " % user
+            self.response.set_cookie(
+                'user_selfservice', cookie,
+                secure=secure_cookie, expires=expires)
 
-            Session.commit()
-            return sendResult(self.response, res, 0)
+            g.audit['action_detail'] = "expires: %s " % expiration
+            g.audit['info'] = "%r logged in " % user
 
-        # -------------------------------------------------------------- --
+        Session.commit()
+        return sendResult(self.response, res, 0)
 
-        # if there is no otp in the request, we assume that we
-        # have to poll for the transaction state
+    def _login_with_cookie_challenge_check_status(self, user, transid):
+        """Check status of the login challenge.
 
-        if not state_data:
-            raise Exception('invalid state data')
+        check, if there is no otp in the request, we assume that we have to
+        poll for the transaction state. If a valid tan was recieved we grant
+        access.
 
-        verified = False
-        transid = state_data.get('transactionid')
+        input state: challenge_tiggered
+
+        :param user: the login user
+        :param transid: the transaction id, taken out of the cookie content
+        """
 
         va = ValidationHandler()
-        ok, opt = va.check_status(transid=transid, user=user,
-                                  serial=None, password='passw',
-                                  )
-        if ok and opt and opt.get('transactions', {}).get(transid):
+        ok, opt = va.check_status(transid=transid, user=user, password='')
+
+        verified = False
+        if ok and opt:
             verified = opt.get(
-                'transactions', {}).get(
-                    transid).get(
-                        'valid_tan')
+                'transactions', {}).get(transid,{}).get('valid_tan', False)
 
         if verified:
             (cookie, expires,
              expiration) = create_auth_cookie(user, self.client)
 
-            self.response.set_cookie('user_selfservice', cookie,
-                                secure=secure_cookie,
-                                expires=expires)
+            self.response.set_cookie(
+                'user_selfservice', cookie,
+                secure=secure_cookie, expires=expires)
+
             g.audit['action_detail'] = "expires: %s " % expiration
             g.audit['info'] = "%r logged in " % user
 
         Session.commit()
-        return sendResult(self.response, verified, 0)
+        return sendResult(self.response, verified)
 
     def _login_with_otp(self, user, passw, param):
         """
