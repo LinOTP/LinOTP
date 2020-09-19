@@ -697,4 +697,175 @@ class TestUserserviceLogin(TestUserserviceController):
 
         return
 
+    def test_qr_token_polling_login(self):
+        """Verify the userservice login with an qr token.
+
+        after the setup by
+          * defining the mfa policy and
+          * enrolling the qr token
+
+        we use the qrtoken for the login with following steps
+
+        1. submit the login credentials, getting
+           - the token list in response and
+           - the credential-verified cookie
+
+        2. submit the login with serial and credential-verified cookie
+           to trigger a qr token challenge, getting
+              - the challenge-started cookie and
+              - the challenge response with the qr code data
+
+        3. from the challenge data, we can calculate the tan or signature
+            where we use the
+            - tan as otp value and
+            - the transaction id and
+            - the challenge-started cookie
+
+        4. while the
+            - the login status is polled several times
+            - the token is verified assyncchronously and
+            - the login will succeed after the verification
+
+        5. verification that access is granted is done by accessing the
+           userservice/history endpoint
+        """
+
+        serial='myQrToken'
+
+        # ----------------------------------------------------------------- --
+
+        # do the setup: enroll token and setup mfa policy
+
+        token_info, secret_key, _public_key = self.enroll_qr_token(serial)
+
+        policy = {
+            'name': 'mfa_login',
+            'action': 'mfa_login, history',
+            'user': ' passthru.*.myDefRes:',
+            'realm': '*',
+            'scope': 'selfservice'}
+
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response
+
+        # ----------------------------------------------------------------- --
+
+        # run the first credential verification step
+
+        auth_user = {
+            'login': 'passthru_user1@myDefRealm',
+            'password': 'geheim1'}
+
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=auth_user)
+
+        jresp = response.json
+        tokenlist = jresp['detail']["tokenList"]
+        assert len(tokenlist) == 1
+        assert tokenlist[0]['LinOtp.TokenSerialnumber'] == 'myQrToken'
+
+        # ----------------------------------------------------------------- --
+
+        cookies = self.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+        assert auth_cookie
+
+        # ----------------------------------------------------------------- --
+
+        # next request is to trigger the login challenge
+        # - response should contain the challenge information
+
+        self.set_cookie(self.client, 'user_selfservice', auth_cookie)
+
+        params = {}
+        params['session'] = auth_cookie
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=params)
+
+        jresp = response.json
+        assert jresp['detail']
+        assert 'detail' in jresp
+        detail = jresp.get('detail')
+
+        assert 'transactionid' in detail
+        assert 'message' in detail
+        assert 'transactiondata' in detail
+
+        # ----------------------------------------------------------------- --
+
+        # calculate the challenge response from the returned message
+        # - for verification we can use tan or sig as signature
+
+        message = detail.get('transactiondata')
+        challenge, sig, tan = QR.claculate_challenge_response(
+                                        message, token_info, secret_key)
+
+        # ----------------------------------------------------------------- --
+
+        cookies = self.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+        assert auth_cookie
+
+        # ----------------------------------------------------------------- --
+
+        # query the status - the challenge might be answerd already via
+        # callback
+
+        self.set_cookie(self.client, 'user_selfservice', auth_cookie)
+
+        params = {}
+        params['session'] = auth_cookie
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=params)
+
+        jresp = response.json
+        assert not jresp['result']['value']
+
+        # ----------------------------------------------------------------- --
+        # verify the transaction
+
+        params = {
+            'transactionid': challenge['transaction_id'], 'pass': sig
+            }
+        response = self.client.post(url(controller='validate',
+                                        action='check_t'), data=params)
+
+        jresp = response.json
+        assert jresp['result']['value']['value']
+        # ----------------------------------------------------------------- --
+
+        # query the status - the challenge might be answerd already via
+        # callback
+
+        self.set_cookie(self.client, 'user_selfservice', auth_cookie)
+
+        params = {}
+        params['session'] = auth_cookie
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=params)
+
+        jresp = response.json
+        assert jresp['result']['value']
+
+        # ----------------------------------------------------------------- --
+
+        cookies = self.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+
+        # ----------------------------------------------------------------- --
+
+        # verify that the authentication was successful
+
+        self.set_cookie(self.client, 'user_selfservice', auth_cookie)
+
+        params = {}
+        params['session'] = auth_cookie
+        response = self.client.post(url(controller='userservice',
+                                        action='history'), data=params)
+
+        response.body = response.data.decode("utf-8")
+        assert '"rows": [' in response, response
+
+        return
+
 # eof #
