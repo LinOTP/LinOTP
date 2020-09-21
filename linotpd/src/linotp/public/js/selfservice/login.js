@@ -154,14 +154,14 @@ function ssLoginChallengeCallback(data, status, token) {
 
 
         if (["push", "qr"].indexOf(type) != -1){
-            if(!data.detail || !data.detail.transactionid) {
+            if (!data.detail || !data.detail.transactionId) {
                 alert(i18n.gettext("Error during login"));
                 return;
             }
 
             var polling = $( "#template-otp-polling" ).clone().removeAttr("id")
 
-            $('.transactionid', polling).text(data.detail.transactionid.slice(0,6))
+            $('.transactionid', polling).text(data.detail.transactionId.slice(0, 6))
 
             $('.method', template).append(polling);
             ssLoginPolling();
@@ -200,9 +200,6 @@ function ssLoginOTPCallback(data, status) {
 }
 
 function ssLoginPolling() {
-    var duration = 180; // in seconds
-    var interval = 3; // in seconds
-
     var intervalID = window.setInterval(function() {
         $.ajax({
             url: '/userservice/login',
@@ -211,10 +208,10 @@ function ssLoginPolling() {
                 session: getcookie("user_selfservice"),
             },
             success: function(data) {
-                if(data.result && data.result.value === true) {
+                if (data.detail && (data.detail.accept || data.detail.valid_tan)) {
                     location.reload();
                 }
-                if((duration -= interval) <= 0) {
+                else if (data.detail && data.detail.status !== "open") {
                     ssLoginAbortPolling(intervalID);
                 }
             },
@@ -223,7 +220,7 @@ function ssLoginPolling() {
                 ssLoginErrorCallback();
             }
         });
-    }, interval * 1000);
+    }, 3 * 1000);
 }
 
 function ssLoginAbortPolling(intervalID) {
