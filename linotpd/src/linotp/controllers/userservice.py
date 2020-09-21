@@ -686,9 +686,9 @@ class UserserviceController(BaseController):
 
             reply_mode = ''
 
-            if token_type is 'push':
+            if token_type == 'push':
                 reply_mode =  ['online']
-            elif token_type is 'qr':
+            elif token_type == 'qr':
                 reply_mode =  ['offline', 'online']
             else:
                 reply_mode = ['offline']
@@ -706,7 +706,7 @@ class UserserviceController(BaseController):
 
             # care for the messages as it is done with verify
 
-            if token_type is 'qr':
+            if token_type == 'qr':
                 reply['message'] = _('Please scan the provided qr code')
 
             # ------------------------------------------------------------- --
@@ -1892,7 +1892,7 @@ class UserserviceController(BaseController):
                         raise Exception(
                             'failed to trigger challenge {:r}'.format(reply))
 
-                    if token.type is 'qr':
+                    if token.type == 'qr':
                         transaction_data = reply['message']
                         message = _('Please scan the provided qr code')
 
@@ -1911,9 +1911,9 @@ class UserserviceController(BaseController):
                 # - offline: token supports offline mode where the user needs
                 #   to manually enter an OTP.
 
-                if token.type is 'push':
+                if token.type == 'push':
                     reply_mode =  ['online']
-                elif token.type is 'qr':
+                elif token.type == 'qr':
                     reply_mode =  ['offline', 'online']
                 else:
                     reply_mode = ['offline']
