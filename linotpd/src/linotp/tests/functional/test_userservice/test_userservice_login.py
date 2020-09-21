@@ -380,8 +380,12 @@ class TestUserserviceLogin(TestUserserviceController):
             'detail'][
                 'tokenList'][0]['LinOtp.TokenSerialnumber'] == 'LoginToken'
 
+        # ------------------------------------------------------------------ --
+
         cookies = self.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
+
+        self.client.set_cookie('.localhost', 'user_selfservice', auth_cookie)
 
         # ------------------------------------------------------------------ --
 
@@ -395,42 +399,117 @@ class TestUserserviceLogin(TestUserserviceController):
             'serial': 'LoginToken',
             }
 
-        self.client.set_cookie('.localhost', 'user_selfservice', auth_cookie)
         response = self.client.post('userservice/login', data=auth_data)
-        response.body = response.data.decode("utf-8")
-        jresp = response.json
 
+        jresp = response.json
         assert jresp['result']['status']
         assert not jresp['result']['value']
         assert jresp['detail']['replyMode'] == ["offline"]
 
         transactionid = jresp['detail']['transactionId']
 
-        cookies = self.get_cookies(response)
-        auth_cookie = cookies.get('user_selfservice')
-
-        phone, otp = SMS_MESSAGE_OTP
+        _phone, otp = SMS_MESSAGE_OTP
+        otp.split()[0].strip()
 
         # ------------------------------------------------------------------ --
 
-        # 3. step in authentication:
-        #   provide the recieved otp
+        cookies = self.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+
+        # ------------------------------------------------------------------ --
+
+        # 3.a step in authentication: provide a wrong otp
 
         auth_data = {
             'session': auth_cookie,
             'serial': 'LoginToken',
-            'otp': otp.split()[0].strip(),
+            'otp': otp[::-1],
             'transactionid': transactionid
             }
 
         self.client.set_cookie('.localhost', 'user_selfservice', auth_cookie)
         response = self.client.post('userservice/login', data=auth_data)
-        response.body = response.data.decode("utf-8")
 
-        assert 'false' not in response
+        jresp = response.json
+        assert not jresp['result']['value']
+        assert jresp['result']['status']
+
+        # ------------------------------------------------------------------ --
+
+        self.client.set_cookie('.localhost', 'user_selfservice', auth_cookie)
+
+        # ------------------------------------------------------------------ --
+
+        # 4a. step in authentication: reestablish authentication
+
+        auth_data = {
+            'username': 'passthru_user1',
+            'realm': 'myDefRealm',
+            'password': 'geheim1',
+        }
+        response = self.client.post('userservice/login', data=auth_data)
+
+        jresp = response.json
+        assert not jresp['result']['value']
+        msg = 'additional authentication parameter required'
+        assert msg in jresp['detail']['message']
+
+        # ------------------------------------------------------------------ --
 
         cookies = self.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
+
+        self.client.set_cookie('.localhost', 'user_selfservice', auth_cookie)
+
+        # ------------------------------------------------------------------ --
+
+        # 4b. trigger new challenge
+
+        auth_data = {
+            'session': auth_cookie,
+            'serial': 'LoginToken',
+            }
+
+        response = self.client.post('userservice/login', data=auth_data)
+
+        jresp = response.json
+        assert jresp['result']['status']
+        assert not jresp['result']['value']
+        assert jresp['detail']['replyMode'] == ["offline"]
+
+        transactionid = jresp['detail']['transactionId']
+
+        _phone, otp = SMS_MESSAGE_OTP
+        otp = otp.split()[0].strip()
+
+        # ------------------------------------------------------------------ --
+
+        cookies = self.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+
+        self.client.set_cookie('.localhost', 'user_selfservice', auth_cookie)
+
+        # ------------------------------------------------------------------ --
+
+        # 4c. verify second factor
+
+        auth_data = {
+            'session': auth_cookie,
+            'serial': 'LoginToken',
+            'otp': otp,
+            'transactionid': transactionid,
+            }
+        response = self.client.post('userservice/login', data=auth_data)
+
+        jresp = response.json
+        assert jresp['result']['value']
+
+        # ------------------------------------------------------------------ --
+
+        cookies = self.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+
+        self.client.set_cookie('.localhost', 'user_selfservice', auth_cookie)
 
         # ------------------------------------------------------------------ --
 
