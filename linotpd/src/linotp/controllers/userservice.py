@@ -1013,8 +1013,6 @@ class UserserviceController(BaseController):
 
                 self.response.delete_cookie('user_selfservice')
 
-                raise unauthorized(self.response,_('No valid session'))
-
             # -------------------------------------------------------------- --
 
             # identify the user
