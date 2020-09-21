@@ -118,6 +118,28 @@ class TestUserserviceLogin(TestUserserviceController):
 
         assert 'page' in response
 
+    def test_login_wrong_cookie(self):
+        """verify login with wrong cookie will drop cookie in response."""
+
+        # ------------------------------------------------------------------ --
+
+        # verify that the authentication was successfull by quering history
+
+        wrong_cookie = 'wHzUPEnpEEZDQvSjKitKtPi4bgX9mM5R2M8cJDGf5Sg'
+        self.client.set_cookie('.localhost', 'user_selfservice', wrong_cookie)
+
+        auth_data = {
+            'username': 'passthru_user1@myDefRealm',
+            'password': 'geheim1',
+        }
+
+        response = self.client.post('userservice/login', data=auth_data)
+
+        auth_cookie = self.get_cookies(response).get('user_selfservice')
+        assert not auth_cookie
+
+        jresp = response.json
+        assert jresp['result']['value'] is True
 
     def test_mfa_login_one_step(self):
         """test with one step mfa authentication."""
