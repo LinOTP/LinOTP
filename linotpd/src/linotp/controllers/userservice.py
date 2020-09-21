@@ -53,6 +53,7 @@ import json
 
 
 from flask import g, current_app
+
 from flask_babel import gettext as _
 from werkzeug.exceptions import Unauthorized, Forbidden
 
@@ -76,6 +77,7 @@ from linotp.lib.policy import (checkPolicyPre,
                                )
 
 from linotp.lib.reply import sendResult as sendResponse
+
 from linotp.lib.reply import (sendError,
                               sendQRImageResult,
                               create_img,
@@ -202,6 +204,25 @@ def get_auth_user(request):
 
     return 'unauthenticated', None, None
 
+def unauthorized(response_proxy, exception, status=401):
+    """ extend the standard sendResult to handle cookies """
+
+    response = sendError(_response=None, exception=exception)
+
+    response.status_code = status
+
+    if response_proxy and response_proxy.delete_cookies:
+        for delete_cookie in response_proxy.delete_cookies:
+            response.delete_cookie(key=delete_cookie)
+
+    if response_proxy and response_proxy.cookies:
+        for args, kwargs in response_proxy.cookies:
+            response.set_cookie(*args, **kwargs)
+
+    if response_proxy and response_proxy.mime_type:
+        response.mime_type = response_proxy.mime_type
+
+    return Unauthorized(response=response)
 
 def sendResult(response_proxy, obj, id=1, opt=None, status=True):
     """ extend the standard sendResult to handle cookies """
@@ -301,7 +322,7 @@ class UserserviceController(BaseController):
         if (not identity or
            auth_type not in ["userservice", 'user_selfservice']):
 
-            raise Unauthorized(_('No valid session'))
+            raise unauthorized(self.response, _('No valid session'))
 
         # ------------------------------------------------------------------ --
 
@@ -328,7 +349,7 @@ class UserserviceController(BaseController):
 
         if not check_session(request, self.authUser, self.client):
 
-            raise Unauthorized(_('No valid session'))
+            raise unauthorized(self.response, _('No valid session'))
 
         # ------------------------------------------------------------------ --
 
@@ -344,7 +365,7 @@ class UserserviceController(BaseController):
 
         if auth_state != 'authenticated':
 
-            raise Unauthorized(_('No valid session'))
+            raise unauthorized(self.response,_('No valid session'))
 
         # ------------------------------------------------------------------ --
 
@@ -755,7 +776,7 @@ class UserserviceController(BaseController):
         if not challenges:
             log.info("cannot login as the initial challenge does not exist"
                      " or is expired!")
-            raise Unauthorized(_('no matching challenge found!'))
+            raise unauthorized(self.response, _('no matching challenge found!'))
 
         if 'otp' in params:
             return self._login_with_cookie_challenge_check_otp(
@@ -992,7 +1013,7 @@ class UserserviceController(BaseController):
 
                 self.response.delete_cookie('user_selfservice')
 
-                raise Unauthorized(_("No valid session!"))
+                raise unauthorized(self.response,_('No valid session'))
 
             # -------------------------------------------------------------- --
 
