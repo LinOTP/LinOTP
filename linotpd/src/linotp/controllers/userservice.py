@@ -771,13 +771,6 @@ class UserserviceController(BaseController):
 
         transid = state_data.get('transactionid')
 
-        _exp, challenges = Challenges.get_challenges(transid=transid)
-
-        if not challenges:
-            log.info("cannot login as the initial challenge does not exist"
-                     " or is expired!")
-            raise unauthorized(self.response, _('no matching challenge found!'))
-
         if 'otp' in params:
             return self._login_with_cookie_challenge_check_otp(
                 user, transid, params)
