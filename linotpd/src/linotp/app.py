@@ -73,7 +73,7 @@ from .settings import configs
 from .tokens import reload_classes as reload_token_classes
 from .lib.audit.base import getAudit
 
-from .model import setup_db, meta    # FIXME: With Flask-SQLAlchemy
+from .model import setup_db
 
 log = logging.getLogger(__name__)
 
@@ -333,8 +333,6 @@ class LinOTPApp(Flask):
             log.warning('Failed to identify user due to %r' % exx)
 
     def finalise_request(self, exc):
-        meta.Session.remove()
-
         drop_security_module()
 
         closeResolvers()

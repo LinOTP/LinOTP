@@ -55,22 +55,21 @@ import sys
 
 import sqlalchemy as sa
 
-from sqlalchemy import create_engine, orm
 from sqlalchemy import ForeignKey
-from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import relation
 
-from linotp.model import meta
-from linotp.model.migrate import run_data_model_migration
+from flask_sqlalchemy import SQLAlchemy
+
+# from linotp.model.migrate import run_data_model_migration
 
 from linotp.lib.crypto.utils import geturandom
 from linotp.lib.crypto.utils import hash_digest
 
 from linotp.lib.crypto.utils import get_rand_digit_str
 
-Session = meta.Session
-
 log = logging.getLogger(__name__)
+
+db = SQLAlchemy()
 
 implicit_returning = True
 # TODO: Implicit returning from config
@@ -124,21 +123,10 @@ def setup_db(app):
 
         # Initialise the SQLAlchemy engine
 
-        sql_uri = app.config["SQLALCHEMY_DATABASE_URI"]
+        db.init_app(app)
 
-        # sqlite in-memory databases require special sqlalchemy setup:
-        # https://docs.sqlalchemy.org/en/13/dialects/sqlite.html#using-a-memory-database-in-multiple-threads
-
-        if sql_uri == "sqlite://":
-            engine = create_engine(sql_uri,
-                                   connect_args={'check_same_thread': False},
-                                   poolclass=StaticPool)
-        else:
-            engine = create_engine(sql_uri)
-
-        init_model(engine)
-
-        if 'Config' not in engine.table_names() and cli_cmd != 'init-database':
+        table_names = db.engine.table_names()
+        if 'Config' not in table_names and cli_cmd != 'init-database':
             # Stop the program with a critical error if the database schema
             # isn't initialised, unless you're about to initialise the
             # database schema, in which case it is OK if the database schema
@@ -170,12 +158,12 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
     try:
         if drop_data:
             echo("Dropping tables to erase all data...", v=1)
-            meta.metadata.drop_all(bind=meta.engine)
+            db.drop_all()
 
         echo(f"Creating tables...", v=1)
-        meta.metadata.create_all(bind=meta.engine)
+        db.create_all()
 
-        run_data_model_migration(meta)
+        # run_data_model_migration(meta)     # FIXME
         if add_defaults:
             set_defaults(app)
 
@@ -190,7 +178,7 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
             from .lib.tools.set_password import (
                 SetPasswordHandler, DataBaseContext
             )
-            db_context = DataBaseContext(sql_url=meta.engine.url)
+            db_context = DataBaseContext(sql_url=db.engine.url)
             SetPasswordHandler.create_table(db_context)
             SetPasswordHandler.create_admin_user(
                 db_context,
@@ -198,28 +186,14 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
 
     except Exception as exx:
         echo(f"Exception occured during database setup: {exx!r}")
-        meta.Session.rollback()
+        db.session.rollback()
         raise exx
 
-    meta.Session.commit()
+    db.session.commit()
 
 
 session_column = "%ssession" % COL_PREFIX
 timestamp_column = "%stimestamp" % COL_PREFIX
-
-
-def init_model(engine):
-    """
-    init_model binds the table objects to the class objects
-    - to be called before using any of the tables or classes in the model!!!
-
-    :param engine: the sql engine
-    """
-
-    meta.engine = engine
-    meta.Session.configure(bind=engine)
-
-    return
 
 
 token_table = sa.Table(
