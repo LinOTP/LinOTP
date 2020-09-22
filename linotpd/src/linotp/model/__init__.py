@@ -44,8 +44,6 @@ Common rules
 
 import binascii
 import logging
-import os
-import traceback
 from datetime import datetime
 
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
@@ -195,9 +193,19 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
 session_column = "%ssession" % COL_PREFIX
 timestamp_column = "%stimestamp" % COL_PREFIX
 
+# This table connects a token to several realms
+tokenrealm_table = db.Table(
+    'TokenRealm', db.metadata,
+    db.Column('id', db.Integer(),
+              db.Sequence('tokenrealm_seq_id', optional=True),
+              primary_key=True, nullable=False),
+    db.Column('token_id', db.Integer(), db.ForeignKey('Token.LinOtpTokenId')),
+    db.Column('realm_id', db.Integer(), db.ForeignKey('Realm.id')),
+    implicit_returning=implicit_returning,
+)
 
 token_table = sa.Table(
-    'Token', meta.metadata,
+    'Token', db.metadata,
     sa.Column('LinOtpTokenId', sa.types.Integer(), sa.Sequence(
         'token_seq_id', optional=True), primary_key=True, nullable=False),
     sa.Column(
@@ -268,9 +276,19 @@ TOKEN_ENCODE = ["LinOtpTokenDesc", "LinOtpTokenSerialnumber",
                 "LinOtpIdResolver"]
 
 
-class Token(object):
+class Token(db.Model):
+
+    __table__ = token_table
+
+    realms = db.relationship(
+        'Realm',
+        secondary=tokenrealm_table,
+        lazy='subquery',
+        backref=db.backref('tokens', lazy=True),
+    )
 
     def __init__(self, serial):
+        super().__init__()
 
         # # self.LinOtpTokenId - will be generated DBType serial
         self.LinOtpTokenSerialnumber = '' + serial
@@ -413,13 +431,13 @@ class Token(object):
         # some dbs (eg. DB2) runs in deadlock, if the TokenRealm entry
         # is deleteted via foreign key relation
         # so we delete it explicitly
-        token_realm_entries = Session.query(TokenRealm).filter(
-            TokenRealm.token_id == self.LinOtpTokenId).all()
+        token_realm_entries = TokenRealm.query.filter_by(
+            token_id=self.LinOtpTokenId).all()
 
         for token_realm_entry in token_realm_entries:
-            Session.delete(token_realm_entry)
+            db.session.delete(token_realm_entry)
 
-        Session.delete(self)
+        db.session.delete(self)
         return True
 
     def isPinEncrypted(self, pin=None):
@@ -434,7 +452,7 @@ class Token(object):
         self.LinOtpTokenPinSO = binascii.hexlify(enc_soPin).decode('utf-8')
         self.LinOtpTokenPinSOIV = binascii.hexlify(iv).decode('utf-8')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.LinOtpTokenDesc
 
     def get(self, key=None, fallback=None, save=False):
@@ -515,8 +533,6 @@ class Token(object):
 
         return ret
 
-    __str__ = __unicode__
-
     def __repr__(self):
         '''
         return the token state as text
@@ -558,8 +574,8 @@ class Token(object):
         if self.LinOtpIdResolver is None:
             self.LinOtpIdResolver = ''
 
-        Session.add(self)
-        Session.flush()
+        db.session.add(self)
+        db.session.flush()
 
         return True
 
@@ -614,7 +630,7 @@ def createToken(serial):
 ###############################################################################
 
 
-config_table = sa.Table('Config', meta.metadata,
+config_table = sa.Table('Config', db.metadata,
                         sa.Column(
                             'Key', sa.types.Unicode(255), primary_key=True, nullable=False),
                         sa.Column(
@@ -628,45 +644,30 @@ config_table = sa.Table('Config', meta.metadata,
 CONFIG_ENCODE = ["Key", "Value", "Description"]
 
 
-class Config(object):
+class Config(db.Model):
 
-    def __init__(self, Key, Value, Type='', Description=''):
+    __table__ = config_table
 
-        if (not Key.startswith("linotp.") and not Key.startswith("enclinotp.")):
+    def __init__(self, Key, Value, **kwargs):
+        if not Key.startswith("linotp.") and not Key.startswith("enclinotp."):
             Key = "linotp." + Key
+        super().__init__(Key=Key, Value=Value, **kwargs)
 
-        self.Key = str(Key)
-        self.Value = str(Value)
-        self.Type = str(Type)
-        self.Description = str(Description)
-
-    def __unicode__(self):
+    def __str__(self):
         return self.Description
 
-    __str__ = __unicode__
 
+class TokenRealm(db.Model):
 
-# This table connects a token to several realms
-tokenrealm_table = sa.Table('TokenRealm', meta.metadata,
-                            sa.Column('id', sa.types.Integer(), sa.Sequence(
-                                'tokenrealm_seq_id', optional=True), primary_key=True, nullable=False),
-                            sa.Column(
-                                'token_id', sa.types.Integer(), ForeignKey('Token.LinOtpTokenId')),
-                            # sa.Column('realm_id', sa.types.Integer())
-                            sa.Column(
-                                'realm_id', sa.types.Integer(), ForeignKey('Realm.id')),
-                            implicit_returning=implicit_returning,
-                            )
-
-
-class TokenRealm(object):
+    __table__ = tokenrealm_table  # See above, before `Token`
 
     def __init__(self, realmid):
+        super().__init__()
         self.realm_id = realmid
         self.token_id = 0
 
 
-realm_table = sa.Table('Realm', meta.metadata,
+realm_table = sa.Table('Realm', db.metadata,
                        sa.Column('id', sa.types.Integer(), sa.Sequence(
                            'realm_seq_id', optional=True), primary_key=True, nullable=False),
                        sa.Column(
@@ -679,9 +680,12 @@ realm_table = sa.Table('Realm', meta.metadata,
 REALM_ENCODE = ["name", "option"]
 
 
-class Realm(object):
+class Realm(db.Model):
+
+    __table__ = realm_table
 
     def __init__(self, realm):
+        super().__init__()
         self.name = realm
         if realm is not None:
             self.name = realm.lower()
@@ -692,8 +696,8 @@ class Realm(object):
             self.name = ''
         self.name = self.name.lower()
 
-        Session.add(self)
-        Session.flush()
+        db.session.add(self)
+        db.session.flush()
 
         return True
 
@@ -704,7 +708,7 @@ challenges are stored
 ''' ''' '''
 
 
-challenges_table = sa.Table('challenges', meta.metadata,
+challenges_table = sa.Table('challenges', db.metadata,
                             sa.Column('id', sa.types.Integer(),
                                       sa.Sequence(
                                           'token_seq_id', optional=True),
@@ -743,12 +747,15 @@ challenges_table = sa.Table('challenges', meta.metadata,
 CHALLENGE_ENCODE = ["data", "challenge", 'tokenserial']
 
 
-class Challenge(object):
+class Challenge(db.Model):
     '''
     the generic challange handling
     '''
 
+    __table__ = challenges_table
+
     def __init__(self, transid, tokenserial, challenge='', data='', session=''):
+        super().__init__()
 
         self.transid = '' + transid
 
@@ -974,8 +981,8 @@ class Challenge(object):
         :return: transaction id of the stored challenge
         '''
         try:
-            Session.add(self)
-            Session.flush()
+            db.session.add(self)
+            db.session.flush()  # Better safe than sorry.
 
         except Exception as _exce:
             log.exception('[save]Error during saving challenge')
@@ -1017,14 +1024,13 @@ class Challenge(object):
 
         return descr
 
-    def __unicode__(self):
+    def __str__(self):
         descr = self.get_vars()
         return "%s" % str(descr)
 
-    __str__ = __unicode__
 
+# FIXME: This probably needs to be addressed somehow.
 
-#
 # with the orm.mapper, we can overwrite the
 # implicit mappings to point to a different class members
 
@@ -1040,7 +1046,7 @@ challenge_mapping['odata'] = challenges_table.c.data
 challenge_mapping['challenge'] = challenges_table.c.bchallenge
 challenge_mapping['data'] = challenges_table.c.bdata
 
-orm.mapper(Challenge, challenges_table, properties=challenge_mapping,)
+# orm.mapper(Challenge, challenges_table, properties=challenge_mapping,)
 
 
 #############################################################################
@@ -1048,40 +1054,32 @@ orm.mapper(Challenge, challenges_table, properties=challenge_mapping,)
 Reporting Table:
 """
 
-reporting_table =\
-    sa.Table('REPORTING', meta.metadata,
-             sa.Column('R_ID', sa.types.Integer(),
-                       sa.Sequence('reporting_seq_id', optional=True),
-                       primary_key=True, nullable=False),
-             sa.Column('R_TIMESTAMP', sa.types.DateTime,
-                       default=datetime.now()),
-             sa.Column('R_EVENT', sa.types.Unicode(250), default=''),
-             sa.Column('R_REALM', sa.types.Unicode(250), default=''),
-             sa.Column('R_PARAMETER', sa.types.Unicode(250), default=''),
-             sa.Column('R_VALUE', sa.types.Unicode(250), default=''),
-             sa.Column('R_COUNT', sa.types.Integer(), default=0),
-             sa.Column('R_DETAIL', sa.types.Unicode(2000), default=''),
-             sa.Column('R_SESSION', sa.types.Unicode(250), default=''),
-             sa.Column('R_DESCRIPTION', sa.types.Unicode(2000), default=''),
-             implicit_returning=implicit_returning,)
+class Reporting(db.Model):
 
+    __tablename__ = 'REPORTING'
 
-class Reporting(object):
+    id = db.Column('id', db.Integer,
+                   db.Sequence('reporting_seq_id', optional=True),
+                   primary_key=True, nullable=False)
+    timestamp = db.Column('timestamp', db.DateTime, default=datetime.now())
+    event = db.Column('R_EVENT', db.String(250), default='')
+    realm = db.Column('R_REALM', db.String(250), default='')
+    parameter = db.Column('R_PARAMETER', db.String(250), default='')
+    value = db.Column('R_VALUE', db.String(250), default='')
+    count = db.Column('R_COUNT', db.Integer(), default=0)
+    detail = db.Column('R_DETAIL', db.String(2000), default='')
+    session = db.Column('R_SESSION', db.String(250), default='')
+    description = db.Column('R_DESCRIPTION', db.String(2000), default='')
 
     def __init__(self, event, realm, parameter='', value='', count=0,
                  detail='', session='', description='', timestamp=None):
 
-        self.event = str(event)
-        self.realm = str(realm)
-        self.parameter = str(parameter)
-        self.value = str(value)
-        self.count = count
-        self.detail = str(detail)
-        self.session = str(session)
-        self.description = str(description)
-        self.timestamp = datetime.now()
-        if timestamp:
-            self.timestamp = timestamp
+        super().__init__(
+            event=str(event), realm=str(realm), parameter=str(parameter),
+            value=str(value), count=count, detail=str(detail),
+            session=str(session), description=str(description),
+            timestamp=datetime.now() if timestamp is None else timestamp,
+        )
 
     def get_vars(self):
         ret = {}
@@ -1099,72 +1097,28 @@ class Reporting(object):
         return ret
 
 
-reporting_mapping = {}
-reporting_mapping['id'] = reporting_table.c.R_ID
-reporting_mapping['session'] = reporting_table.c.R_SESSION
-reporting_mapping['timestamp'] = reporting_table.c.R_TIMESTAMP
-reporting_mapping['event'] = reporting_table.c.R_EVENT
-reporting_mapping['realm'] = reporting_table.c.R_REALM
-reporting_mapping['parameter'] = reporting_table.c.R_PARAMETER
-reporting_mapping['value'] = reporting_table.c.R_VALUE
-reporting_mapping['count'] = reporting_table.c.R_COUNT
-reporting_mapping['detail'] = reporting_table.c.R_DETAIL
-reporting_mapping['description'] = reporting_table.c.R_DESCRIPTION
-
-orm.mapper(Reporting,
-           reporting_table,
-           properties=reporting_mapping,
-           )
-
 #############################################################################
 
 # logging configuration
 
 logging_config_table =\
-    sa.Table('logging_config', meta.metadata,
+    sa.Table('logging_config', db.metadata,
              sa.Column('name', sa.types.String(200),
                        primary_key=True, nullable=False),
              sa.Column('level', sa.types.Integer(), default=0),
              implicit_returning=implicit_returning,)
 
 
-class LoggingConfig(object):
+class LoggingConfig(db.Model):
+
+    __table__ = logging_config_table
 
     def __init__(self, name, level):
         self.name = name
         self.level = level
 
 
-logging_config_mapping = {}
-logging_config_mapping['name'] = logging_config_table.c.name
-logging_config_mapping['level'] = logging_config_table.c.level
-
-orm.mapper(LoggingConfig,
-           logging_config_table,
-           properties=logging_config_mapping,
-           )
-
 #############################################################################
-
-# config_table.append_column( sa.Column('IV', sa.types.Unicode(2000), default=u''),)
-# see: http://www.sqlalchemy.org/docs/orm/relationships.html#sqlalchemy.orm.relationship
-#      http://www.sqlalchemy.org/docs/05/reference/orm/mapping.html
-# The realms of a token will be stored in the additional attribute "realms"
-# and the token, to which the realms belong will be stored in the backed "token"
-# orm.mapper(Token, token_table, properties={
-#    #'realms':relation(Realm, secondary=tokenrealm_table)
-#    'realms':relation(TokenRealm, backref=backref('token'))
-#    })
-
-orm.mapper(Token, token_table, properties={
-    'realms': relation(Realm, secondary=tokenrealm_table,
-                       primaryjoin=token_table.c.LinOtpTokenId == tokenrealm_table.c.token_id,
-                       secondaryjoin=tokenrealm_table.c.realm_id == realm_table.c.id)
-})
-orm.mapper(Realm, realm_table)
-orm.mapper(TokenRealm, tokenrealm_table)
-orm.mapper(Config, config_table)
-
 
 # The following used to be in `linotp/defaults.py`, but we want to avoid
 # issues with circular `import` dependencies.
@@ -1180,16 +1134,13 @@ def _set_config(key, value, typ, description=None, update=False):
     :return: nothing
     '''
 
-    count = Session.query(Config).filter(
-        Config.Key == "linotp." + key).count()
-
+    count = Config.query.filter_by(Key="linotp."+key).count()
     if count == 0:
         config_entry = Config(key, value, Type=typ, Description=description)
-        Session.add(config_entry)
+        db.session.add(config_entry)
 
     elif update:
-        config_entry = Session.query(Config).filter(
-            Config.Key == "linotp." + key).first()
+        config_entry = Config.filter_by(Key="linotp."+key).first()
 
         if not key.startswith('linotp.'):
             key = 'linotp.' + key
@@ -1214,9 +1165,7 @@ def _set_config(key, value, typ, description=None, update=False):
 
         config_entry.Description = description
 
-        Session.add(config_entry)
-
-    return
+        db.session.add(config_entry)
 
 
 def set_defaults(app):
@@ -1226,8 +1175,7 @@ def set_defaults(app):
     :return: - nothing -
     '''
 
-    is_upgrade = 0 != Session.query(Config).filter(
-        Config.Key == "Config").count()
+    is_upgrade = Config.query.filter_by(Key="Config").count() != 0
 
     if is_upgrade:
         # if it is an upgrade and no welcome screen was shown before,
