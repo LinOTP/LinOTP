@@ -53,6 +53,7 @@ import json
 
 
 from flask import g, current_app
+
 from flask_babel import gettext as _
 from werkzeug.exceptions import Unauthorized, Forbidden
 
@@ -76,6 +77,7 @@ from linotp.lib.policy import (checkPolicyPre,
                                )
 
 from linotp.lib.reply import sendResult as sendResponse
+
 from linotp.lib.reply import (sendError,
                               sendQRImageResult,
                               create_img,
@@ -125,6 +127,7 @@ from linotp.lib.userservice import (get_userinfo,
                                     create_auth_cookie,
                                     getTokenForUser,
                                     remove_auth_cookie,
+                                    get_transaction_detail,
                                     )
 
 
@@ -201,6 +204,25 @@ def get_auth_user(request):
 
     return 'unauthenticated', None, None
 
+def unauthorized(response_proxy, exception, status=401):
+    """ extend the standard sendResult to handle cookies """
+
+    response = sendError(_response=None, exception=exception)
+
+    response.status_code = status
+
+    if response_proxy and response_proxy.delete_cookies:
+        for delete_cookie in response_proxy.delete_cookies:
+            response.delete_cookie(key=delete_cookie)
+
+    if response_proxy and response_proxy.cookies:
+        for args, kwargs in response_proxy.cookies:
+            response.set_cookie(*args, **kwargs)
+
+    if response_proxy and response_proxy.mime_type:
+        response.mime_type = response_proxy.mime_type
+
+    return Unauthorized(response=response)
 
 def sendResult(response_proxy, obj, id=1, opt=None, status=True):
     """ extend the standard sendResult to handle cookies """
@@ -234,7 +256,6 @@ class LocalResponseProxy():
 
     def delete_cookie(self, key):
         self.delete_cookies.add(key)
-
 
 class UserserviceController(BaseController):
     """
@@ -301,7 +322,7 @@ class UserserviceController(BaseController):
         if (not identity or
            auth_type not in ["userservice", 'user_selfservice']):
 
-            raise Unauthorized(_('No valid session'))
+            raise unauthorized(self.response, _('No valid session'))
 
         # ------------------------------------------------------------------ --
 
@@ -328,7 +349,7 @@ class UserserviceController(BaseController):
 
         if not check_session(request, self.authUser, self.client):
 
-            raise Unauthorized(_('No valid session'))
+            raise unauthorized(self.response, _('No valid session'))
 
         # ------------------------------------------------------------------ --
 
@@ -344,7 +365,7 @@ class UserserviceController(BaseController):
 
         if auth_state != 'authenticated':
 
-            raise Unauthorized(_('No valid session'))
+            raise unauthorized(self.response,_('No valid session'))
 
         # ------------------------------------------------------------------ --
 
@@ -618,6 +639,12 @@ class UserserviceController(BaseController):
         otp = params.get('otp', '')
         serial = params.get('serial')
 
+        # in case of a challenge trigger, provide default qr and push settings
+        if 'data' not in params and 'content_type' not in params:
+            params['data'] = _(
+                f'Selfservice Login Request\nUser: {user.login}')
+            params['content_type'] = 0
+
         vh = ValidationHandler()
 
         if 'serial' in params:
@@ -665,6 +692,53 @@ class UserserviceController(BaseController):
 
             g.audit['success'] = False
 
+            # -------------------------------------------------------------- --
+
+            # determine the tokentype and adjust the offline, online reply
+
+            token_type = reply.get('linotp_tokentype')
+
+            # announce available reply channels via reply_mode
+            # - online: token supports online mode where the user can
+            #   independently answer the challenge via a different channel
+            #   without having to enter an OTP.
+            # - offline: token supports offline mode where the user needs
+            #   to manually enter an OTP.
+
+            reply_mode = ''
+
+            if token_type == 'push':
+                reply_mode =  ['online']
+            elif token_type == 'qr':
+                reply_mode =  ['offline', 'online']
+            else:
+                reply_mode = ['offline']
+
+            reply["replyMode"] = reply_mode
+
+            # ------------------------------------------------------------- --
+
+            # add transaction data wrt to the new spec
+
+            if reply.get('img_src'):
+                reply["transactionData"] = reply['message']
+
+            # ------------------------------------------------------------- --
+
+            # care for the messages as it is done with verify
+
+            if token_type == 'qr':
+                reply['message'] = _('Please scan the provided qr code')
+
+            # ------------------------------------------------------------- --
+
+            # adjust the transactionid to transactionId for api conformance
+
+            if 'transactionid' in reply:
+                transaction_id = reply["transactionid"]
+                del reply["transactionid"]
+                reply["transactionId"] = transaction_id
+
             Session.commit()
             return sendResult(self.response, False, 0, opt=reply)
 
@@ -696,72 +770,80 @@ class UserserviceController(BaseController):
         # the the transaction info from the cookie cached data
 
         transid = state_data.get('transactionid')
-        _exp, challenges = Challenges.get_challenges(
-                                        transid=transid, filter_open=True)
-        if not challenges:
-            log.info("cannot login with challenge as challenges are expired!")
-            raise Unauthorized(_('challenge expired!'))
 
         if 'otp' in params:
+            return self._login_with_cookie_challenge_check_otp(
+                user, transid, params)
 
-            params['transactionid'] = transid
+        return self._login_with_cookie_challenge_check_status(
+            user, transid)
 
-            otp_value = params['otp']
+    def _login_with_cookie_challenge_check_otp(self, user, transid, params):
+        """Verify challenge against the otp.
 
-            vh = ValidationHandler()
-            res, _reply = vh.check_by_transactionid(
-                transid, passw=otp_value, options=params)
+        check if it is a valid otp, we grant access
 
+        state: challenge_tiggered
 
-            g.audit['success'] = res
+        :param user: the login user
+        :param transid: the transaction id, taken from the cookie context
+        :param params: all input parameters
+        """
 
-            if res:
-                (cookie, expires,
-                 expiration) = create_auth_cookie(user, self.client)
+        vh = ValidationHandler()
+        res, _reply = vh.check_by_transactionid(
+            transid, passw=params['otp'], options={'transactionid': transid})
 
-                self.response.set_cookie('user_selfservice', cookie,
-                                    secure=secure_cookie,
-                                    expires=expires)
+        if res:
+            (cookie, expires,
+             expiration) = create_auth_cookie(user, self.client)
 
-                g.audit['action_detail'] = "expires: %s " % expiration
-                g.audit['info'] = "%r logged in " % user
+            self.response.set_cookie(
+                'user_selfservice', cookie,
+                secure=secure_cookie, expires=expires)
 
-            Session.commit()
-            return sendResult(self.response, res, 0)
+            g.audit['action_detail'] = "expires: %s " % expiration
+            g.audit['info'] = "%r logged in " % user
 
-        # -------------------------------------------------------------- --
+        Session.commit()
+        return sendResult(self.response, res, 0)
 
-        # if there is no otp in the request, we assume that we
-        # have to poll for the transaction state
+    def _login_with_cookie_challenge_check_status(self, user, transid):
+        """Check status of the login challenge.
 
-        if not state_data:
-            raise Exception('invalid state data')
+        check, if there is no otp in the request, we assume that we have to
+        poll for the transaction state. If a valid tan was recieved we grant
+        access.
 
-        verified = False
-        transid = state_data.get('transactionid')
+        input state: challenge_tiggered
+
+        :param user: the login user
+        :param transid: the transaction id, taken out of the cookie content
+        """
 
         va = ValidationHandler()
-        ok, opt = va.check_status(transid=transid, user=user,
-                                  serial=None, password='passw',
-                                  )
-        if ok and opt and opt.get('transactions', {}).get(transid):
+        ok, opt = va.check_status(transid=transid, user=user, password='')
+
+        verified = False
+        if ok and opt:
             verified = opt.get(
-                'transactions', {}).get(
-                    transid).get(
-                        'valid_tan')
+                'transactions', {}).get(transid,{}).get('valid_tan', False)
 
         if verified:
             (cookie, expires,
              expiration) = create_auth_cookie(user, self.client)
 
-            self.response.set_cookie('user_selfservice', cookie,
-                                secure=secure_cookie,
-                                expires=expires)
+            self.response.set_cookie(
+                'user_selfservice', cookie,
+                secure=secure_cookie, expires=expires)
+
             g.audit['action_detail'] = "expires: %s " % expiration
             g.audit['info'] = "%r logged in " % user
 
+        detail = get_transaction_detail(transid)
+
         Session.commit()
-        return sendResult(self.response, verified, 0)
+        return sendResult(self.response, verified, opt=detail)
 
     def _login_with_otp(self, user, passw, param):
         """
@@ -831,8 +913,14 @@ class UserserviceController(BaseController):
             secure=secure_cookie(),
             expires=expires)
 
-        reply = {'message': 'credential verified - '
-                 'additional authentication parameter required'}
+        tokenList = getTokenForUser(
+            self.authUser, active=True, exclude_rollout=False)
+
+        reply = {
+            'message': 'credential verified - '
+                        'additional authentication parameter required',
+            'tokenList': tokenList,
+            }
 
         g.audit['action_detail'] = "expires: %s " % expiration
         g.audit['info'] = "%r credentials verified" % user
@@ -888,6 +976,15 @@ class UserserviceController(BaseController):
 
             # -------------------------------------------------------------- --
 
+            # the new selfservice provides the parameter 'username' instead of
+            # 'login'. As all lower llayers expect 'login' we switch the case
+
+            if 'login' not in param and 'username' in param:
+                param['login'] = param['username']
+                del param['username']
+
+            # -------------------------------------------------------------- --
+
             # if this is an pre-authenticated login we continue
             # with the authentication states
 
@@ -908,8 +1005,6 @@ class UserserviceController(BaseController):
             if user_selfservice_cookie and not auth_info[0]:
 
                 self.response.delete_cookie('user_selfservice')
-
-                raise Unauthorized(_("No valid session!"))
 
             # -------------------------------------------------------------- --
 
@@ -1757,25 +1852,11 @@ class UserserviceController(BaseController):
 
             elif action == "query transaction":
 
-                challenge_session = challenge.getSession()
-                if challenge_session:
-                    challenge_session = json.loads(challenge_session)
-                else:
-                    challenge_session = {}
-
-                details = {
-                    'received_count': challenge.received_count,
-                    'received_tan': challenge.received_tan,
-                    'valid_tan': challenge.valid_tan,
-                    'message': challenge.getChallenge(),
-                    'status': challenge.getStatus(),
-                    'accept': challenge_session.get('accept', False),
-                    'reject': challenge_session.get('reject', False),
-                }
+                detail = get_transaction_detail(transaction_id)
 
                 Session.commit()
                 return sendResult(
-                    self.response, details['valid_tan'], opt=details)
+                    self.response, detail.get('valid_tan', False), opt=detail)
 
             # -------------------------------------------------------------- --
 
@@ -1823,7 +1904,7 @@ class UserserviceController(BaseController):
                         raise Exception(
                             'failed to trigger challenge {:r}'.format(reply))
 
-                    if token.type is 'qr':
+                    if token.type == 'qr':
                         transaction_data = reply['message']
                         message = _('Please scan the provided qr code')
 
@@ -1842,9 +1923,9 @@ class UserserviceController(BaseController):
                 # - offline: token supports offline mode where the user needs
                 #   to manually enter an OTP.
 
-                if token.type is 'push':
+                if token.type == 'push':
                     reply_mode =  ['online']
-                elif token.type is 'qr':
+                elif token.type == 'qr':
                     reply_mode =  ['offline', 'online']
                 else:
                     reply_mode = ['offline']
@@ -1855,14 +1936,14 @@ class UserserviceController(BaseController):
 
                 detail_response = {
                     "message": message,  # localized user facing message
-                    "reply_mode": reply_mode
+                    "replyMode": reply_mode
                 }
 
                 if transaction_id:
-                    detail_response['transactionid'] = transaction_id
+                    detail_response['transactionId'] = transaction_id
 
                 if transaction_data:
-                    detail_response['transactiondata'] = transaction_data
+                    detail_response['transactionData'] = transaction_data
 
                 # ---------------------------------------------------------- --
 

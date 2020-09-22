@@ -27,6 +27,7 @@
 
 import binascii
 import os
+import copy
 import datetime
 import hmac
 import hashlib
@@ -59,6 +60,8 @@ from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.token import get_token_owner
 
 from linotp.tokens import tokenclass_registry
+
+from linotp.lib.challenges import Challenges
 
 from linotp.lib.user import (getUserInfo,
                              User,
@@ -171,6 +174,8 @@ def create_auth_cookie(user, client, state='authenticated', state_data=None):
     # ---------------------------------------------------------------------- --
 
     # build the cache data
+    if state_data is not None:
+        state_data = copy.deepcopy(state_data)
 
     data = [user, client, expiration, state, state_data]
     hash_data = ("%r" % data).encode('utf-8')
@@ -485,3 +490,35 @@ def add_dynamic_selfservice_policies(config, actions):
 def add_local_policies():
 
     return
+
+def get_transaction_detail(transactionid):
+    """Provide the information about a transaction.
+
+    :param transactionid: the transaction id
+    :return: dict with detail about challenge status
+    """
+
+    _exp, challenges = Challenges.get_challenges(transid=transactionid)
+
+    if not challenges:
+        return {}
+
+    challenge = challenges[0]
+
+    challenge_session = challenge.getSession()
+    if challenge_session:
+        challenge_session = json.loads(challenge_session)
+    else:
+        challenge_session = {}
+
+    details = {
+        'received_count': challenge.received_count,
+        'received_tan': challenge.received_tan,
+        'valid_tan': challenge.valid_tan,
+        'message': challenge.getChallenge(),
+        'status': challenge.getStatus(),
+        'accept': challenge_session.get('accept', False),
+        'reject': challenge_session.get('reject', False),
+    }
+
+    return details

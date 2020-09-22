@@ -339,6 +339,11 @@ class TestUserserviceAuthController(TestController):
         cookies = TestController.get_cookies(response)
         auth_cookie = cookies.get('user_selfservice')
 
+        jresp = response.json
+        tokenlist = jresp['detail']["tokenList"]
+        assert len(tokenlist) == 1
+        assert tokenlist[0]['LinOtp.TokenSerialnumber'] == 'LoginToken'
+
         # ------------------------------------------------------------------ --
 
         # verify that 'history' could not be called in this status
@@ -474,6 +479,113 @@ class TestUserserviceAuthController(TestController):
         TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
 
         # ------------------------------------------------------------------ --
+
+        params = {}
+        params['session'] = auth_cookie
+        response = self.client.post(url(controller='userservice',
+                                        action='history'), data=params)
+
+        response.body = response.data.decode("utf-8")
+        assert '"rows": [' in response, response
+
+        return
+
+
+    def test_login_with_challenge_response_simple(self):
+        """
+        test authentication with challenge response
+        with a single token
+
+        the authentication is running in multiple steps:
+
+        * calling login with a valid password will return
+            * the token list and
+            * the 'credentials_verified' cookie
+
+        * calling the login with
+            * the 'credentials_verified' cookie and
+            * no otp
+            will trigger a challenge
+            - the serial is not required as the user has only one token
+
+        * calling loggin with
+            * the previous cookie 'challenge_triggered' and
+            * the otp returns the final 'authenticated' cookie
+
+        * the completness of the login is verified by quering the history
+
+        """
+
+        # ------------------------------------------------------------------ --
+
+        # run the credential verification step
+
+        auth_user = {
+            'login': 'passthru_user1@myDefRealm',
+            'password': 'geheim1'}
+
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=auth_user)
+
+        jresp = response.json
+        tokenlist = jresp['detail']["tokenList"]
+        assert len(tokenlist) == 1
+        assert tokenlist[0]['LinOtp.TokenSerialnumber'] == 'LoginToken'
+
+
+        # ------------------------------------------------------------------ --
+
+        cookies = TestController.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+        assert auth_cookie
+
+        # ------------------------------------------------------------------ --
+
+        # next request is to trigger the login challenge response
+        # response should contain the challenge information
+
+        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+
+        params = {}
+        params['session'] = auth_cookie
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=params)
+
+        jresp = response.json
+        assert jresp['detail']
+        assert jresp['detail']['message'] == "Please enter your otp value: "
+
+        # ------------------------------------------------------------------ --
+
+        cookies = TestController.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+
+        # ------------------------------------------------------------------ --
+
+        # replies to the challenge response which finishes the authorisation
+
+        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+
+        params = {}
+        params['session'] = auth_cookie
+        params['otp'] = self.otps.pop()
+
+        response = self.client.post(url(controller='userservice',
+                                        action='login'), data=params)
+
+        response.body = response.data.decode("utf-8")
+        assert '"value": true' in response, response
+
+        # ------------------------------------------------------------------ --
+
+        cookies = TestController.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+
+        # ------------------------------------------------------------------ --
+
+        # verify that the authentication was successful
+
+        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
 
         params = {}
         params['session'] = auth_cookie

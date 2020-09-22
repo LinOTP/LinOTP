@@ -189,8 +189,8 @@ class SelfserviceController(BaseController):
             # -------------------------------------------------------------- --
 
             # in case of user_selfservice, an unauthenticated request should always go to login
-            if auth_user and auth_type is 'user_selfservice' \
-                    and auth_state is not 'authenticated':
+            if auth_user and auth_type == 'user_selfservice' \
+                    and auth_state != 'authenticated':
                 self.redirect = True
                 return redirect(url(controller='selfservice', action='login'))
 
