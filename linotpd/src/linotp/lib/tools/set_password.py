@@ -34,15 +34,10 @@ import logging
 from linotp.lib.tools import ToolsHandler
 from linotp.lib.crypto import utils
 
-from sqlalchemy import schema, types
-from sqlalchemy.engine import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.exc import MultipleResultsFound
 
-Base = declarative_base()
+from linotp.model import db
 
 log = logging.getLogger(__name__)
 
@@ -61,13 +56,7 @@ class DataBaseContext(object):
         :param sql_url: the database url
         :return: - nothing -
         """
-
-        self.engine = create_engine(sql_url, echo=True)
-
-        # setup the session maker, which will create a new session on demand
-
-        self.sessionmaker = sessionmaker()
-        self.sessionmaker.configure(bind=self.engine)
+        pass
 
     def get_session(self):
         """
@@ -75,7 +64,7 @@ class DataBaseContext(object):
 
         :return: a new session, which is closed with a session.close()
         """
-        return self.sessionmaker()
+        return db.session
 
     def get_engine(self):
         """
@@ -83,7 +72,7 @@ class DataBaseContext(object):
 
         :return: the initialized db engine
         """
-        return self.engine
+        return db.engine
 
 
 class SetPasswordHandler(ToolsHandler):
@@ -91,7 +80,7 @@ class SetPasswordHandler(ToolsHandler):
     the handler to change the admin password
     """
 
-    class AdminUser(Base):
+    class AdminUser(db.Model):
         """
         AdminUser - the db user entry
         - we use here the same class defintion as for the user import
@@ -99,36 +88,16 @@ class SetPasswordHandler(ToolsHandler):
         """
         __tablename__ = "admin_users"
 
-        groupid = schema.Column(types.Unicode(100),
-                                primary_key=True,
-                                index=True)
-
-        userid = schema.Column(types.Unicode(100),
-                               primary_key=True,
-                               index=True)
-
-        username = schema.Column(types.Unicode(255),
-                                 default='',
-                                 unique=True,
-                                 index=True)
-
-        phone = schema.Column(types.Unicode(100),
-                              default='')
-
-        mobile = schema.Column(types.Unicode(100),
-                               default='')
-
-        email = schema.Column(types.Unicode(100),
-                              default='')
-
-        surname = schema.Column(types.Unicode(100),
-                                default='')
-
-        givenname = schema.Column(types.Unicode(100),
-                                  default='')
-
-        password = schema.Column(types.Unicode(255),
-                                 default='')
+        groupid = db.Column(db.String(100), primary_key=True, index=True)
+        userid = db.Column(db.String(100), primary_key=True, index=True)
+        username = db.Column(db.String(255), default='', unique=True,
+                             index=True)
+        phone = db.Column(db.String(100), default='')
+        mobile = db.Column(db.String(100), default='')
+        email = db.Column(db.String(100), default='')
+        surname = db.Column(db.String(100), default='')
+        givenname = db.Column(db.String(100), default='')
+        password = db.Column(db.String(255), default='')
 
     @staticmethod
     def create_table(db_context):
@@ -140,9 +109,7 @@ class SetPasswordHandler(ToolsHandler):
         :return: - nothing -
         """
 
-        engine = db_context.get_engine()
-        Base.metadata.create_all(engine,
-                                 checkfirst=True)
+        db.create_all()   # FIXME: This can probably be more targeted.
 
     @staticmethod
     def create_admin_user(db_context, username, crypted_password):
@@ -156,39 +123,25 @@ class SetPasswordHandler(ToolsHandler):
         :return: - nothing -
         """
 
-        session = db_context.get_session()
-
         try:
 
-            admin_users = session.query(
-                SetPasswordHandler.AdminUser).filter(
-                SetPasswordHandler.AdminUser.username == username
-                ).all()
-
+            admin_users = SetPasswordHandler.AdminUser.query.filter_by(
+                username=username).all()
             if len(admin_users) > 0:
                 log.info("admin user %r already exist - user not updated!")
                 return
 
-            admin_user = SetPasswordHandler.AdminUser()
-
-            admin_user.userid = username
-            admin_user.username = username
-            admin_user.groupid = "admin"
-            admin_user.givenname = "created by setPassword"
-
-            admin_user.password = crypted_password
-
-            session.add(admin_user)
-            session.commit()
+            admin_user = SetPasswordHandler.AdminUser(
+                userid=username, username=username, groupid="admin",
+                givenname="created by setPassword", password=crypted_password,
+            )
+            db.session.add(admin_user)
+            db.session.commit()
 
         except Exception as exx:
 
             log.exception(exx)
-            session.rollback()
-
-        finally:
-
-            session.close()
+            db.session.rollback()
 
     # ---------------------------------------------------------------------- --
 
@@ -212,12 +165,10 @@ class SetPasswordHandler(ToolsHandler):
         :return: - nothing -
         """
 
-        session = self.db_context.get_session()
-
         try:
             try:
-                admin_user = session.query(self.AdminUser).filter(
-                                    self.AdminUser.username == username).one()
+                admin_user = SetPasswordHandler.AdminUser.query.filter_by(
+                    username=username).one()
 
             except NoResultFound:
                 log.error("no user %r found!", username)
@@ -234,17 +185,13 @@ class SetPasswordHandler(ToolsHandler):
 
             admin_user.password = utils.crypt_password(new_password)
 
-            session.add(admin_user)
-
-            session.commit()
+            db.session.add(admin_user)
+            db.session.commit()
 
         except Exception as exx:
             log.exception(exx)
-            session.rollback()
+            db.session.rollback()
 
             raise exx
-
-        finally:
-            session.close()
 
 # eof #

@@ -31,10 +31,8 @@ import datetime
 
 from linotp.lib.resolver import parse_resolver_spec
 
-from linotp.model import Token, Realm, TokenRealm
+from linotp.model import db, Token, Realm, TokenRealm
 from linotp.model import Config as config_model
-from linotp.model.meta import Session
-
 
 from linotp.lib.config import LinOtpConfig
 from linotp.lib.config import storeConfig
@@ -84,7 +82,7 @@ class MonitorHandler(object):
             realm = realm.strip()
             if '/:no realm:/' in realm or realm == '':
                 #  get all tokenrealm ids
-                token_id_tuples = Session.query(TokenRealm.token_id).all()
+                token_id_tuples = db.session.query(TokenRealm.token_id).all()
                 token_ids = set()
                 for token_tuple in token_id_tuples:
                     token_ids.add(token_tuple[0])
@@ -105,7 +103,7 @@ class MonitorHandler(object):
 
             # count all tokens in an realm
 
-            token_query = Session.query(TokenRealm, Realm, Token)
+            token_query = db.session.query(TokenRealm, Realm, Token)
             token_query = token_query.filter(r_condition)
             token_query = token_query.distinct(Token.LinOtpTokenId)
 
@@ -116,7 +114,7 @@ class MonitorHandler(object):
             # according to the token users license spec, we count only
             # the distinct users of all assigned and active tokens of an realm
 
-            user_query = Session.query(TokenRealm, Realm, Token)
+            user_query = db.session.query(TokenRealm, Realm, Token)
             user_query = user_query.filter(r_condition)
             user_query = user_query.filter(Token.LinOtpUserid != '')
             user_query = user_query.filter(Token.LinOtpIsactive == True)
@@ -158,7 +156,7 @@ class MonitorHandler(object):
 
             #  create the final condition as AND of all conditions
             condition = and_(*conditions)
-            result[stat] = Session.query(TokenRealm, Realm, Token).\
+            result[stat] = db.session.query(TokenRealm, Realm, Token).\
                 filter(condition).count()
 
         return result
@@ -177,8 +175,7 @@ class MonitorHandler(object):
         linotp_time = linotp_conf.get('linotp.Config')
 
         # get db entry for config
-        entry = Session.query(config_model).filter(
-            config_model.Key == 'linotp.Config').one()
+        entry = config_model.query.filter_by(Key='linotp.Config').one()
         db_time = entry.Value
 
         # if the times are not in syc, LinOTP keeps its status
@@ -206,28 +203,28 @@ class MonitorHandler(object):
         """
         result = {}
         # the number of config entries
-        result['total'] = Session.query(config_model).count()
+        result['total'] = config_model.query.count()
 
         # the number of resolver defintions
-        ldap = Session.query(config_model).filter(
+        ldap = config_model.query.filter(
             config_model.Key.like('linotp.ldapresolver.%')).count()
-        result['ldapresolver'] = ldap / 13
+        result['ldapresolver'] = ldap // 13  # FIXME: This is brittle.
 
-        sql = Session.query(config_model).filter(
+        sql = config_model.query.filter(
             config_model.Key.like('linotp.sqlresolver.%')).count()
-        result['sqlresolver'] = sql / 12
+        result['sqlresolver'] = sql // 12
 
-        passwd = Session.query(config_model).filter(
+        passwd = config_model.query.filter(
             config_model.Key.like('linotp.passwdresolver.%')).count()
         result['passwdresolver'] = passwd
 
         # the number of policy definitions
-        policies = Session.query(config_model).filter(
+        policies = config_model.query.filter(
             config_model.Key.like('linotp.Policy.%')).count()
-        result['policies'] = policies / 7
+        result['policies'] = policies // 7
 
         # the number of realm definition (?)
-        realms = Session.query(config_model).filter(
+        realms = config_model.query.filter(
             config_model.Key.like('linotp.useridresolver.group.%')).count()
         result['realms'] = realms
 
@@ -239,8 +236,7 @@ class MonitorHandler(object):
 
         :return: number of active tokens
         """
-        active = Token.LinOtpIsactive == True
-        token_active = Session.query(Token).filter(active).count()
+        token_active = Token.query.filter_by(LinOtpIsactive=True).count()
         return token_active
 
     def check_encryption(self):
@@ -311,14 +307,14 @@ class MonitorHandler(object):
 
         for resolver_spec in resolver_specs:
             __, config_identifier = parse_resolver_spec(resolver_spec)
-            act_users_per_resolver = Session.query(Token.LinOtpUserid,
-                                                   Token.LinOtpIdResolver,
-                                                   Token.LinOtpIdResClass,
-                                                   Token.LinOtpIsactive)\
+            act_users_per_resolver = db.session.query(Token.LinOtpUserid,
+                                                      Token.LinOtpIdResolver,
+                                                      Token.LinOtpIdResClass,
+                                                      Token.LinOtpIsactive)\
                 .join(TokenRealm)\
                 .join(Realm)\
                 .filter(and_(
-                            Token.LinOtpIsactive == True,
+                            Token.LinOtpIsactive,
                             Token.LinOtpIdResClass == resolver_spec,
                             Realm.name == realm
                 ))\
@@ -344,14 +340,14 @@ class MonitorHandler(object):
         for realm in realmlist:
             realm_cond += (or_(Realm.name == realm),)
 
-        user_and_resolver = Session.query(Token.LinOtpUserid,
-                                          Token.LinOtpIdResolver,
-                                          Token.LinOtpIdResClass,
-                                          Token.LinOtpIsactive)\
+        user_and_resolver = db.session.query(Token.LinOtpUserid,
+                                             Token.LinOtpIdResolver,
+                                             Token.LinOtpIdResClass,
+                                             Token.LinOtpIsactive)\
             .join(TokenRealm)\
             .join(Realm)\
             .filter(or_(*realm_cond),
-                    and_(Token.LinOtpIsactive == True,
+                    and_(Token.LinOtpIsactive,
                          Token.LinOtpIdResolver != ''))\
             .group_by(Token.LinOtpUserid, Token.LinOtpIdResolver,
                       Token.LinOtpIsactive, Token.LinOtpIdResClass)

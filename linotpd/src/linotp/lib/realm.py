@@ -30,8 +30,7 @@ import json
 
 from functools import partial
 
-from linotp.model import Realm, TokenRealm
-from linotp.model.meta import Session
+from linotp.model import db, Realm, TokenRealm
 
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.config import storeConfig
@@ -150,7 +149,8 @@ def getRealmObject(name="", id=0):
 
     name = '' + str(name)
     if (0 == id):
-        realmObjects = Session.query(Realm).filter(func.lower(Realm.name) == name.lower())
+        realmObjects = Realm.query.filter(
+            func.lower(Realm.name) == name.lower())
         if realmObjects.count() > 0:
             realmObj = realmObjects[0]
 
@@ -504,8 +504,8 @@ def deleteRealm(realmname):
 
         if realmId != 0:
             log.debug("Deleting token relations for realm with id %i" % realmId)
-            Session.query(TokenRealm).filter(TokenRealm.realm_id == realmId).delete()
-        Session.delete(r)
+            TokenRealm.query.filter_by(realm_id=realmId).delete()
+        db.session.delete(r)
 
     else:
         log.warning("Realm with name %s was not found." % realmname)

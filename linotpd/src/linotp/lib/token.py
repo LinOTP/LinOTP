@@ -59,8 +59,7 @@ from linotp.lib.realm import realm2Objects
 import linotp
 import linotp.lib.policy
 
-from linotp import model
-from linotp.model import Token, createToken, Realm, TokenRealm
+from linotp.model import db, Token, createToken, Realm, TokenRealm
 
 from linotp.lib.config import getFromConfig
 
@@ -77,10 +76,6 @@ from linotp.lib.policy import createRandomPin
 
 from linotp.provider.notification import notify_user
 from linotp.provider.notification import NotificationException
-
-import linotp.model.meta
-
-Session = linotp.model.meta.Session
 
 log = logging.getLogger(__name__)
 
@@ -366,8 +361,8 @@ class TokenHandler(object):
             # we have to commit our token delete as the rollback
             # on exception does not :-(
 
-            Session.delete(tokenObj.token)
-            Session.commit()
+            db.session.delete(tokenObj.token)
+            db.session.commit()
             raise exx
 
         return (True, reply)
@@ -939,7 +934,7 @@ class TokenHandler(object):
         TODO: rename function to "getTokens"
         '''
         tokenList = []
-        sqlQuery = Session.query(Token)
+        sqlQuery = Token.query
         if typ is not None:
             # filter for type
             sqlQuery = sqlQuery.\
@@ -1003,20 +998,20 @@ class TokenHandler(object):
                 challenges.update(Challenges.lookup_challenges(serial=serial))
 
             for chall in challenges:
-                Session.delete(chall)
+                db.session.delete(chall)
 
             #  due to legacy SQLAlchemy it could happen that the
             #  foreign key relation could not be deleted
             #  so we do this manualy
 
             for t_id in token_ids:
-                Session.query(TokenRealm).filter(
+                TokenRealm.query.filter(
                     TokenRealm.token_id == t_id).delete()
 
-            Session.commit()
+            db.session.commit()
 
             for token in tokens:
-                Session.delete(token)
+                db.session.delete(token)
 
         except Exception as exx:
             raise TokenAdminError("removeToken: Token update failed: %r"
@@ -1034,8 +1029,8 @@ class TokenHandler(object):
         tokenList = getTokens4UserOrSerial(user, serial)
 
         for token in tokenList:
-            token.addToSession(Session)
             token.setCounterWindow(countWindow)
+            token.addToSession()
 
         return len(tokenList)
 
@@ -1048,8 +1043,8 @@ class TokenHandler(object):
         tokenList = getTokens4UserOrSerial(user, serial)
 
         for token in tokenList:
-            token.addToSession(Session)
             token.setDescription(description)
+            token.addToSession()
 
         return len(tokenList)
 
@@ -1063,8 +1058,8 @@ class TokenHandler(object):
         tokenList = getTokens4UserOrSerial(user, serial)
 
         for token in tokenList:
-            token.addToSession(Session)
             token.setHashLib(hashlib)
+            token.addToSession()
 
         return len(tokenList)
 
@@ -1078,8 +1073,8 @@ class TokenHandler(object):
         tokenList = getTokens4UserOrSerial(user, serial)
 
         for token in tokenList:
-            token.addToSession(Session)
             token.setMaxFail(maxFail)
+            token.addToSession()
 
         return len(tokenList)
 
@@ -1092,8 +1087,8 @@ class TokenHandler(object):
         tokenList = getTokens4UserOrSerial(user, serial)
 
         for token in tokenList:
-            token.addToSession(Session)
             token.setSyncWindow(syncWindow)
+            token.addToSession()
 
         return len(tokenList)
 
@@ -1105,8 +1100,8 @@ class TokenHandler(object):
         tokenList = getTokens4UserOrSerial(user, serial)
 
         for token in tokenList:
-            token.addToSession(Session)
             token.setOtpLen(otplen)
+            token.addToSession()
 
         return len(tokenList)
 
@@ -1127,8 +1122,8 @@ class TokenHandler(object):
         tokenList = getTokens4UserOrSerial(user, serial)
 
         for token in tokenList:
-            token.addToSession(Session)
             token.enable(enable)
+            token.addToSession()
 
         return len(tokenList)
 
@@ -1199,8 +1194,8 @@ class TokenHandler(object):
         tokenList = getTokens4UserOrSerial(user, serial)
 
         for token in tokenList:
-            token.addToSession(Session)
             token.addToTokenInfo(info, value)
+            token.addToSession()
 
         return len(tokenList)
 
@@ -1222,10 +1217,10 @@ class TokenHandler(object):
         tokenList = getTokens4UserOrSerial(user, serial)
 
         for token in tokenList:
-            token.addToSession(Session)
             res = token.resync(otp1, otp2, options)
             if res is True:
                 ret = True
+            token.addToSession()
         return ret
 
     def genSerial(self, tokenType=None, prefix=None):
@@ -1247,15 +1242,14 @@ class TokenHandler(object):
                 prefix = token_cls.getClassPrefix().upper()
 
         #  now search the number of ttypes in the token database
-        tokennum = Session.query(Token).filter(
-            Token.LinOtpTokenType == '' + tokenType).count()
+        tokennum = Token.query.filter_by(LinOtpTokenType=''+tokenType).count()
 
         serial = _gen_serial(prefix, tokennum + 1)
 
         #  now test if serial already exists
         while True:
-            numtokens = Session.query(Token).filter(
-                Token.LinOtpTokenSerialnumber == '' + serial).count()
+            numtokens = Token.query.filter_by(
+                LinOtpTokenSerialnumber=''+serial).count()
             if numtokens == 0:
                 #  ok, there is no such token, so we're done
                 break
@@ -1423,17 +1417,15 @@ def getRolloutToken4User(user=None, serial=None, tok_type='ocra2'):
             'useridresolver.', 'useridresolver%.')
 
         ''' coout tokens: 0 1 or more '''
-        tokens = Session.query(
-            Token).filter(
-                Token.LinOtpTokenType == str(tok_type)).filter(
-                    Token.LinOtpIdResClass.like(
-                        str(user_resolver))).filter(
-                            Token.LinOtpUserid == str(user_id))
+        tokens = Token.query.filter(
+            Token.LinOtpTokenType == str(tok_type),
+            Token.LinOtpIdResClass.like(str(user_resolver)),
+            Token.LinOtpUserid == str(user_id))
 
     elif serial is not None:
-        tokens = Session.query(Token).filter(
-            Token.LinOtpTokenType == str(tok_type)).filter(
-                Token.LinOtpTokenSerialnumber == str(serial))
+        tokens = Token.query.filter(
+            Token.LinOtpTokenType == str(tok_type),
+            Token.LinOtpTokenSerialnumber == str(serial))
 
     for token in tokens:
         info = token.LinOtpTokenInfo
@@ -1512,15 +1504,15 @@ def getTokenInRealm(realm, active=True):
     You can either query only active token or also disabled tokens.
     '''
     if active:
-        sqlQuery = Session.query(TokenRealm, Realm, Token).filter(and_(
+        sqlQuery = db.session.query(TokenRealm, Realm, Token).filter(
             TokenRealm.realm_id == Realm.id,
             func.lower(Realm.name) == realm.lower(),
-            Token.LinOtpIsactive == True,
-            TokenRealm.token_id == Token.LinOtpTokenId)).count()
+            Token.LinOtpIsactive,
+            TokenRealm.token_id == Token.LinOtpTokenId).count()
     else:
-        sqlQuery = Session.query(TokenRealm, Realm).filter(and_(
+        sqlQuery = db.session.query(TokenRealm, Realm).filter(
             TokenRealm.realm_id == Realm.id,
-            func.lower(Realm.name) == realm.lower())).count()
+            func.lower(Realm.name) == realm.lower()).count()
     return sqlQuery
 
 
@@ -1548,7 +1540,7 @@ def getNumTokenUsers(resolver=None, active=True, realm=None):
     :return: the number of token users
     '''
 
-    session = Session.query(Token)
+    session = Token.query
     # only count users and not the empty ones
 
     conditions = (and_(Token.LinOtpUserid != ''),)
@@ -1557,7 +1549,7 @@ def getNumTokenUsers(resolver=None, active=True, realm=None):
         conditions += (and_(TokenRealm.realm_id == Realm.id,
                             func.lower(Realm.name) == realm.lower(),
                             TokenRealm.token_id == Token.LinOtpTokenId),)
-        session = Session.query(TokenRealm, Realm, Token)
+        session = db.session.query(TokenRealm, Realm, Token)
 
     elif resolver:
 
@@ -1568,7 +1560,7 @@ def getNumTokenUsers(resolver=None, active=True, realm=None):
 
     if active:
 
-        conditions += (and_(Token.LinOtpIsactive == True),)
+        conditions += (and_(Token.LinOtpIsactive),)
 
     condition = and_(*conditions)
 
@@ -1606,11 +1598,11 @@ def getTokenNumResolver(resolver=None, active=True):
 
     if active:
 
-        conditions += (and_(Token.LinOtpIsactive == True),)
+        conditions += (and_(Token.LinOtpIsactive),)
 
     condition = and_(*conditions)
 
-    return Session.query(Token).filter(condition).count()
+    return Token.query.filter(condition).count()
 
 
 def token_owner_iterator():
@@ -1618,8 +1610,7 @@ def token_owner_iterator():
         iterate all tokens for serial and users
     '''
 
-    sqlQuery = Session.query(Token).filter(
-        model.Token.LinOtpUserid != '').all()
+    sqlQuery = Token.query.filter(Token.LinOtpUserid != '').all()
 
     for token in sqlQuery:
         userInfo = {}
@@ -1673,7 +1664,7 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
         # finally run the query on token serial
         condition = and_(*sconditions)
 
-        sqlQuery = Session.query(Token).filter(condition)
+        sqlQuery = Token.query.filter(condition)
 
         # ------------------------------------------------------------------ --
 
@@ -1714,14 +1705,13 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                                                       'useridresolver%.')
 
                 if isinstance(uid, int):
-                    uconditions += ((model.Token.LinOtpUserid == "%d" % uid),)
+                    uconditions += ((Token.LinOtpUserid == "%d" % uid),)
                 else:
-                    uconditions += ((model.Token.LinOtpUserid == uid),)
+                    uconditions += ((Token.LinOtpUserid == uid),)
 
-                uconditions += ((model.Token.LinOtpIdResClass.like(resolverClass)),)
+                uconditions += ((Token.LinOtpIdResClass.like(resolverClass)),)
 
-                condition = and_(*uconditions)
-                sqlQuery = Session.query(Token).filter(condition)
+                sqlQuery = Token.query.filter(*uconditions)
 
                 # ---------------------------------------------------------- --
 
@@ -2034,8 +2024,8 @@ def setPin(pin, user, serial, param=None):
     tokenList = getTokens4UserOrSerial(user, serial)
 
     for token in tokenList:
-        token.addToSession(Session)
         token.setPin(pin, param)
+        token.addToSession()
 
     return len(tokenList)
 
@@ -2056,8 +2046,8 @@ def setPinUser(userPin, serial):
     tokenList = getTokens4UserOrSerial(user, serial)
 
     for token in tokenList:
-        token.addToSession(Session)
         token.setUserPin(userPin)
+        token.addToSession()
 
     return len(tokenList)
 
@@ -2076,8 +2066,8 @@ def setPinSo(soPin, serial):
     tokenList = getTokens4UserOrSerial(user, serial)
 
     for token in tokenList:
-        token.addToSession(Session)
         token.setSoPin(soPin)
+        token.addToSession()
 
     return len(tokenList)
 
@@ -2092,8 +2082,8 @@ def resetToken(user=None, serial=None):
     tokenList = getTokens4UserOrSerial(user, serial)
 
     for token in tokenList:
-        token.addToSession(Session)
         token.reset()
+        token.addToSession()
 
     return len(tokenList)
 
@@ -2133,15 +2123,14 @@ def genSerial(tokenType=None, prefix=None):
             prefix = token_cls.getClassPrefix().upper()
 
     #  now search the number of ttypes in the token database
-    tokennum = Session.query(Token).filter(
-        Token.LinOtpTokenType == '' + tokenType).count()
+    tokennum = Token.query.filter_by(LinOtpTokenType=''+tokenType).count()
 
     serial = _gen_serial(prefix, tokennum + 1)
 
     #  now test if serial already exists
     while True:
-        numtokens = Session.query(Token).filter(
-            Token.LinOtpTokenSerialnumber == '' + serial).count()
+        numtokens = Token.query.filter_by(LinOtpTokenSerialnumber=''+serial
+                                          ).count()
         if numtokens == 0:
             #  ok, there is no such token, so we're done
             break
@@ -2217,7 +2206,7 @@ def remove_token(token):
     """
     remove a token and all related entries like challenges or realm reference
 
-    :param token: model.Token or TokenClass object
+    :param token: Token or TokenClass object
     """
 
     if issubclass(token.__class__, linotp.tokens.base.TokenClass):
@@ -2226,19 +2215,18 @@ def remove_token(token):
     #  we cleanup the challenges
     serial = token.getSerial()
     for chall in Challenges.lookup_challenges(serial=serial):
-        Session.delete(chall)
+        db.session.delete(chall)
 
     # cleanup of the realm references
     token_id = token.LinOtpTokenId
-    Session.query(TokenRealm).filter(
-        TokenRealm.token_id == token_id).delete()
+    TokenRealm.query.filter_by(token_id=token_id).delete()
 
     # as these references seems not to be marked in the cache, we have to
     # update the cache manaualy
 
-    Session.commit()
+    db.session.commit()
 
     # finally remove the token
-    Session.delete(token)
+    db.session.delete(token)
 
 # eof #########################################################################

@@ -36,6 +36,7 @@ from hashlib import sha256
 from Cryptodome.Cipher import AES
 
 
+from linotp.model import db
 from linotp.model import Token as model_token
 from linotp.model import Config as model_config
 
@@ -44,10 +45,6 @@ from linotp.lib.config.db_api import _storeConfigDB
 
 from linotp.lib.crypto import SecretObj
 from linotp.lib.context import request_context as context
-
-import linotp.model
-Session = linotp.model.Session
-
 
 class DecryptionError(Exception):
     pass
@@ -111,8 +108,7 @@ class MigrationHandler(object):
                  data like: encrypted_data, iv, mac
         """
 
-        config_entries = Session.query(model_config).\
-                         filter(model_config.Type == 'password').all()
+        config_entries = model_config.query.filter_by(Type='password').all()
         for entry in config_entries:
 
             key = 'enc%s' % entry.Key
@@ -151,8 +147,7 @@ class MigrationHandler(object):
         if desc == 'None':
             desc = None
 
-        config_entries = Session.query(model_config).\
-                         filter(model_config.Key == key).all()
+        config_entries = model_config.query.filter_by(Key=key).all()
         entry = config_entries[0]
 
         # decypt the real value
@@ -166,7 +161,7 @@ class MigrationHandler(object):
         """
         get all tokens
         """
-        tokens = Session.query(model_token).all()
+        tokens = model_token.query.all()
 
         for token in tokens:
             token_data = {}
@@ -206,8 +201,8 @@ class MigrationHandler(object):
     def set_token_data(self, token_data):
 
         serial = token_data["Serial"]
-        tokens = Session.query(model_token).\
-            filter(model_token.LinOtpTokenSerialnumber == serial).all()
+        tokens = model_token.query.filter_by(
+            LinOtpTokenSerialnumber=serial).all()
         token = tokens[0]
 
         if 'TokenPin' in token_data:

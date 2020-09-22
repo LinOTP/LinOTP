@@ -43,10 +43,7 @@ from linotp.lib.crypto.encrypted_data import EncryptedData
 
 from linotp.lib.config.util import expand_here
 
-import linotp.model.meta
-
-Session = linotp.model.meta.Session
-
+from linotp.model import db
 
 #
 # MAX_VALUE_LEN defines the max len before we split the config entries into
@@ -140,11 +137,10 @@ def _delete_continous_entry_db(key):
     """
 
     search_key = "%s__[%%:%%]" % (key)
-    continous_entries = Session.query(Config).filter(
-                                      Config.Key.like(search_key))
+    continous_entries = Config.query.filter(Config.Key.like(search_key))
 
     for continous_entry in continous_entries:
-        Session.delete(continous_entry)
+        db.session.delete(continous_entry)
 
 
 def _store_continous_entry_db(chunks, key, val, typ, desc):
@@ -222,7 +218,7 @@ def _storeConfigEntryDB(key, value, typ=None, desc=None):
     lowest level for storing database entries in the config table
     """
 
-    confEntries = Session.query(Config).filter(Config.Key == str(key))
+    confEntries = Config.query.filter_by(Key=str(key))
     theConf = None
 
     # update
@@ -241,7 +237,7 @@ def _storeConfigEntryDB(key, value, typ=None, desc=None):
                         Description=str(desc)
                         )
     if theConf is not None:
-        Session.add(theConf)
+        db.session.add(theConf)
 
     return 101
 
@@ -262,8 +258,7 @@ def _removeConfigDB(key):
     if isinstance(key, str):
         key = '' + key
 
-    confEntries = Session.query(Config).filter(
-                                        Config.Key == str(key)).all()
+    confEntries = Config.query.filter_by(Key= str(key)).all()
 
     if not confEntries:
         return 0
@@ -277,15 +272,14 @@ def _removeConfigDB(key):
     if theConf.Type == 'C' and theConf.Description[:len('0:')] == '0:':
         _start, end = theConf.Description.split(':')
         search_key = "%s__[%%:%s]" % (key, end)
-        cont_entries = Session.query(Config).filter(
-                                     Config.Key.like(search_key)).all()
+        cont_entries = Config.query.filter(Config.Key.like(search_key)).all()
 
         to_be_deleted.extend(cont_entries)
 
     try:
         for entry in to_be_deleted:
             # Session.add(theConf)
-            Session.delete(entry)
+            db.session.delete(entry)
 
     except Exception as e:
         raise ConfigAdminError("remove Config failed for %r: %r"
@@ -307,7 +301,7 @@ def _retrieveConfigDB(Key):
 
     myVal = None
 
-    entries = Session.query(Config).filter(Config.Key == key).all()
+    entries = Config.query.filter_by(Key=key).all()
 
     if not entries:
         return None
@@ -329,8 +323,7 @@ def _retrieveConfigDB(Key):
 
     for i in range(int(end)):
         search_key = "%s__[%d:%d]" % (key, i, int(end))
-        cont_entries = Session.query(Config).filter(
-                                            Config.Key == search_key).all()
+        cont_entries = Config.query.filter_by(Key=search_key).all()
         if cont_entries:
             value = value + cont_entries[0].Value
 
@@ -358,7 +351,7 @@ def _retrieveAllConfigDB():
     desc_dict = {}
     cont_dict = {}
 
-    db_config = Session.query(Config).all()
+    db_config = Config.query.all()
 
     # put all information in the dicts for later processing
 

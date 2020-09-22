@@ -40,10 +40,7 @@ from linotp.lib.resolver import getResolverClassName
 
 from linotp.lib.context import request_context as context
 
-import linotp.model as model
-
-import linotp.model.meta
-Session = linotp.model.meta.Session
+from linotp.model import db, Token
 
 from sqlalchemy import and_
 
@@ -116,7 +113,7 @@ class MigrateResolverHandler(ToolsHandler):
                 token.LinOtpUserid = uid
                 # TODO: adjust
                 token.LinOtpIdResolver = target['type']
-                Session.add(token)
+                db.session.add(token)
 
                 num_migration += 1
                 serials.add(serial)
@@ -143,12 +140,12 @@ class MigrateResolverHandler(ToolsHandler):
                         - if None, all tokens of the resolvers are searched
         """
 
-        rcondition = and_(model.Token.LinOtpIdResClass.like(resolverClass))
+        rcondition = and_(Token.LinOtpIdResClass.like(resolverClass))
         scondition = None
         if serials:
             # filter token serials
             serials = ','.join(serials.split(','))
-            scondition = and_(model.Token.LinOtpTokenSerialnumber.in_(serials))
+            scondition = and_(Token.LinOtpTokenSerialnumber.in_(serials))
 
         #  create the final condition as AND of all conditions
         condTuple = ()
@@ -156,7 +153,6 @@ class MigrateResolverHandler(ToolsHandler):
             if type(conn).__name__ != 'NoneType':
                 condTuple += (conn,)
 
-        conditions = and_(*condTuple)
-        tokens = Session.query(model.Token).filter(conditions).all()
+        tokens = Token.query.filter(*condTuple).all()
 
         return tokens

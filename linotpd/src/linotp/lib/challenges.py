@@ -30,8 +30,7 @@ import datetime
 
 from sqlalchemy import desc, and_
 import linotp
-from linotp.model import Session
-from linotp.model import Challenge
+from linotp.model import db, Challenge
 from linotp.lib.context import request_context as context
 
 log = logging.getLogger(__name__)
@@ -92,10 +91,8 @@ class Challenges(object):
         if filter_open is True:
             conditions += (and_(Challenge.session.like('%"status": "open"%')),)
 
-        # SQLAlchemy requires the conditions in one arg as tuple
-        condition = and_(*conditions)
-        challenges = Session.query(Challenge).\
-            filter(condition).order_by(desc(Challenge.id)).all()
+        challenges = Challenge.query.filter(
+            *conditions).order_by(desc(Challenge.id)).all()
 
         log.debug('lookup_challenges: founnd challenges: %r', challenges)
 
@@ -155,8 +152,8 @@ class Challenges(object):
                 else:
                     transactionid = challenge_id
 
-                num_challenges = Session.query(Challenge). \
-                    filter(Challenge.transid == transactionid).count()
+                num_challenges = Challenge.query.filter_by(
+                    transid=transactionid).count()
 
                 if num_challenges == 0:
                     challenge_obj = Challenge(transid=transactionid,
@@ -226,14 +223,14 @@ class Challenges(object):
             try:
                 log.debug("Deleting challenge from database session, because "
                           "of earlier error")
-                Session.delete(challenge_obj)
-                Session.commit()
+                db.session.delete(challenge_obj)
+                db.session.commit()
             except Exception as exx:
                 log.debug("Deleting challenge from database session failed. "
                           "Retrying with expunge. Exception was: %r", exx)
                 try:
-                    Session.expunge(challenge_obj)
-                    Session.commit()
+                    db.session.expunge(challenge_obj)
+                    db.session.commit()
                 except Exception as exx:
                     log.debug("Expunging challenge from database session "
                               "failed. Exception was: %r", exx)
@@ -299,13 +296,11 @@ class Challenges(object):
 
             conditions += (and_(Challenge.id.in_(challenge_ids)),)
 
-            # SQLAlchemy requires the conditions in one arg as tupple
-            condition = and_(*conditions)
-            del_challes = Session.query(Challenge).filter(condition).all()
+            del_challes = Challenge.query.filter(*conditions).all()
 
             # and delete them via session
             for dell in del_challes:
-                Session.delete(dell)
+                db.session.delete(dell)
 
         return res
 
