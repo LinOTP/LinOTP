@@ -31,7 +31,7 @@ Unit tests for audit base
 import pytest
 
 from linotp.lib.audit.base import getAudit
-from linotp.model import meta
+from linotp.model import db
 
 class TestAuditSetup(object):
     def test_sqlaudit_none(self, app):
@@ -41,4 +41,4 @@ class TestAuditSetup(object):
         audit = getAudit(app.config)
 
         # THEN The engine is shared with the main database
-        assert audit.engine and audit.engine == meta.engine
+        assert audit.engine and audit.engine == db.engine

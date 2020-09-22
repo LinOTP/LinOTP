@@ -33,12 +33,10 @@ import unittest
 
 from mock import patch
 
-from linotp.lib.config.db_api import _store_continous_entry_db, _storeConfigDB,\
-    _retrieveConfigDB
-from linotp.model import init_model
-from linotp.model.meta import metadata, Session
-from linotp.model import Config
-from sqlalchemy.engine import create_engine
+from linotp.lib.config.db_api import (_store_continous_entry_db,
+                                      _storeConfigDB,
+                                      _retrieveConfigDB)
+from linotp.model import db, Config
 
 big_value = """-----BEGIN CERTIFICATE-----
 MIIGlTCCBH2gAwIBAgIED////zANBgkqhkiG9w0BAQsFADBaMQswCQYDVQQGEwJO
@@ -176,8 +174,8 @@ class ContEntries(object):
 @pytest.fixture
 def deleteconfig(app):
     # Clear all config entries before starting each test
-    Session.query(Config).delete(synchronize_session='fetch')
-    Session.commit()
+    Config.query.delete(synchronize_session='fetch')
+    db.session.commit()
 
 @pytest.mark.usefixtures("app")
 class TestChunkConfigCase(unittest.TestCase):
@@ -250,7 +248,7 @@ class TestChunkConfigCase(unittest.TestCase):
         return
 
     @patch('linotp.lib.config.db_api._storeConfigEntryDB', storeConfigEntryDB)
-    @patch('linotp.lib.config.db_api.Session')
+    @patch('linotp.model.db.session')
     def test__storeConfigDB_text(self, mock_session):
         """
         test for storing long text entries
@@ -287,7 +285,7 @@ class TestChunkConfigCase(unittest.TestCase):
 
     @patch('linotp.lib.config.db_api.encryptPassword')
     @patch('linotp.lib.config.db_api._storeConfigEntryDB', storeConfigEntryDB)
-    @patch('linotp.lib.config.db_api.Session')
+    @patch('linotp.model.db.session')
     def test__storeConfigDB_password(self, mock_session, mock_encryptPassword):
         """
         test for storing long crypted password entries
@@ -326,7 +324,7 @@ class TestChunkConfigCase(unittest.TestCase):
         return
 
     @patch('linotp.lib.config.db_api._storeConfigEntryDB', storeConfigEntryDB)
-    @patch('linotp.lib.config.db_api.Session')
+    @patch('linotp.model.db.session')
     def test__storeConfigDB_int(self, mock_session):
         """
         test for storing int values
@@ -384,7 +382,7 @@ class TestConfigStoreCase(unittest.TestCase):
         assert conf['Value'] == stored_value
 
         # Check type, description in database
-        entries = Session.query(Config).all()
+        entries = Config.query.all()
 
         assert(len(entries) == 1)
         stored_conf = entries[0]
@@ -408,12 +406,12 @@ class TestConfigStoreCase(unittest.TestCase):
         description = None
 
         _storeConfigDB(key, longvalue, typ, description)
-        assert Session.query(Config).count() == 2
-        oldentries = Session.query(Config).all()
+        assert Config.query.count() == 2
+        oldentries = Config.query.all()
         assert len(oldentries) == 2
 
         _storeConfigDB(key, value, typ, description)
-        entries = Session.query(Config).all()
+        entries = Config.query.all()
         assert len(entries) == 1
 
         entry = entries[0]

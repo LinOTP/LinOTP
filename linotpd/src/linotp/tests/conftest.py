@@ -37,7 +37,7 @@ import tempfile
 from linotp.app import create_app, init_logging
 from linotp.flap import set_config, tmpl_context as c
 from linotp.cli.init_cmd import create_secret_key, create_audit_keys
-from linotp.model import meta, init_db_tables
+from linotp.model import db, init_db_tables
 from . import TestController
 from flask.testing import FlaskClient
 
@@ -125,6 +125,7 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
             ENV='testing',      # doesn't make a huge difference for us
             TESTING=True,
             SQLALCHEMY_DATABASE_URI=sqlalchemy_uri,
+            SQLALCHEMY_TRACK_MODIFICATIONS=False,
             ROOT_DIR=tmp_path,
             CACHE_DIR=tmp_path / "cache",
             DATA_DIR=tmp_path / "data",
@@ -161,7 +162,8 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
         app = create_app('testing', base_app_config)
 
         # Fake running `linotp init database`
-        init_db_tables(app, drop_data=False, add_defaults=True)
+        with app.app_context():
+            init_db_tables(app, drop_data=False, add_defaults=True)
 
         yield app
 
@@ -180,6 +182,7 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
 
 from linotp import app as app_py
 
+
 @pytest.fixture
 def app(base_app, monkeypatch):
     """
@@ -193,7 +196,6 @@ def app(base_app, monkeypatch):
 
         yield base_app
 
-        meta.Session.remove()
 
 @pytest.fixture
 def adminclient(app, client):

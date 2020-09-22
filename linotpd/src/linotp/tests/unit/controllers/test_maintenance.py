@@ -30,15 +30,13 @@ import flask
 import pytest
 from sqlalchemy.exc import OperationalError
 
-from linotp.controllers.maintenance import MaintenanceController
 from linotp.flap import config, HTTPUnauthorized
-from linotp.model import LoggingConfig
-from linotp.model.meta import Session
+from linotp.model import db, Config, LoggingConfig
 
 @pytest.mark.usefixtures("app")
 class TestMaintenance(object):
 
-    @patch('linotp.controllers.maintenance.Session')
+    @patch('linotp.model.db.session')
     def test_check_status_ok(self, mock_session, client):
         """
         Test that 'check_status' returns the number of config entries
@@ -51,7 +49,7 @@ class TestMaintenance(object):
 
         assert response.json['detail']['config']['entries'] == entries
 
-    @patch('linotp.controllers.maintenance.Session')
+    @patch('linotp.model.db.session')
     def test_000_check_status_error(self, mock_session, client):
         """
         Test that 'check_status' returns an error status code
@@ -70,7 +68,7 @@ class TestMaintenance(object):
 
     def test_set_loglevel(self, app, client):
         name = 'linotp.lib.user'
-        config_entry = Session.query(LoggingConfig).get(name)
+        config_entry = LoggingConfig.query.get(name)
         assert not config_entry
 
         params = dict(
@@ -79,7 +77,7 @@ class TestMaintenance(object):
         )
         client.post('/maintenance/setLogLevel', json=params)
 
-        config_entry = Session.query(LoggingConfig).get(name)
+        config_entry = LoggingConfig.query.get(name)
         assert config_entry.level == 10
 
 
