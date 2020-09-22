@@ -38,13 +38,11 @@ from datetime import datetime
 from flask import current_app
 from sqlalchemy.ext.serializer import loads, dumps
 
-from sqlalchemy import create_engine
+from flask_sqlalchemy import SQLAlchemy
 
 from flask.cli import AppGroup
 
-from linotp.model.meta import Session as session
 from linotp.model import Config, Token, TokenRealm, Realm
-from linotp.model import init_model, meta
 
 from linotp.lib.audit.SQLAudit import AuditTable
 
@@ -129,8 +127,6 @@ def backup_database_tables() -> int:
 
     backup_filename_template = "linotp_backup_%s.sqldb"
 
-    sql_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
-
     # ---------------------------------------------------------------------- --
 
     # if audit is shared, it belongs to the same database, thus we make as
@@ -146,12 +142,10 @@ def backup_database_tables() -> int:
 
     # setup db engine, session and meta from sql uri
 
-    engine = create_engine(sql_uri)
-
-    init_model(engine)
+    db = SQLAlchemy(app)
 
     app.echo("extracting data from: %r:%r" %
-             (engine.url.drivername, engine.url.database), v=1)
+             (db.engine.url.drivername, db.engine.url.database), v=1)
 
     # ---------------------------------------------------------------------- --
 
@@ -184,7 +178,7 @@ def backup_database_tables() -> int:
 
             backup_file.write("--- BEGIN %s\n" % name)
 
-            data_query = session.query(model_class)
+            data_query = model_class.query
 
             pb_file = (None if app.echo.verbosity > 1
                        else open("/dev/null", "w"))  # None => stdout
@@ -349,17 +343,7 @@ def restore_database_tables(
 
     # ---------------------------------------------------------------------- --
 
-    # get the database uri for the linotp database
-
-    sql_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
-
-    # ---------------------------------------------------------------------- --
-
-    # setup db engine, session and meta from sql uri
-
-    engine = create_engine(sql_uri)
-
-    init_model(engine)
+    db = SQLAlchemy(app)
 
     # ---------------------------------------------------------------------- --
 
@@ -384,14 +368,14 @@ def restore_database_tables(
 
                 # use sqlalchemy loads to de-serialize the data objects
 
-                restore_query = loads(data, meta.metadata, session)
+                restore_query = loads(data, db.metadata, db.session)
 
                 # merge the objects into the current session
 
-                session.merge(restore_query)
+                db.session.merge(restore_query)
 
                 app.echo("restoring %r" % name, v=1)
 
     # finally commit all de-serialized objects
 
-    session.commit()
+    db.session.commit()
