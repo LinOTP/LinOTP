@@ -36,7 +36,8 @@ from linotp.flap import (
     tmpl_context as c,
 )
 
-import linotp.model
+from linotp.model import db
+
 from linotp.controllers.base import BaseController
 
 from linotp.lib.util import getParam, check_session
@@ -55,9 +56,6 @@ from linotp.lib.policy import checkPolicyPre, PolicyException
 from linotp.lib.reply import sendResult, sendError
 
 from linotp.lib.context import request_context
-
-Session = linotp.model.Session
-
 
 optional = True
 required = False
@@ -98,8 +96,7 @@ class GettokenController(BaseController):
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r", action, exx)
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             return sendError(response, exx, context='before')
 
     @staticmethod
@@ -166,7 +163,7 @@ class GettokenController(BaseController):
             ret["serial"] = serial
 
             g.audit['success'] = True
-            Session.commit()
+            db.session.commit()
 
             if view:
                 c.ret = ret
@@ -176,17 +173,14 @@ class GettokenController(BaseController):
 
         except PolicyException as pe:
             log.exception("[getotp] gettoken/getotp policy failed: %r", pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[getmultiotp] gettoken/getmultiotp failed: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, "gettoken/getmultiotp failed: %r" % exx,
                              0)
-
-        finally:
-            Session.close()
 
     def getotp(self):
         '''
@@ -291,22 +285,19 @@ class GettokenController(BaseController):
                 ret['pin'] = pin
                 ret['pass'] = passw
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, ret, 0)
 
         except PolicyException as pe:
             log.exception("[getotp] gettoken/getotp policy failed: %r", pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[getotp] gettoken/getotp failed: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, "gettoken/getotp failed: %s" %
                              exx, 0)
-
-        finally:
-            Session.close()
 
 
 #eof###########################################################################

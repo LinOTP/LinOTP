@@ -58,9 +58,8 @@ from linotp.lib.support import InvalidLicenseException, \
 from linotp.lib.monitoring import MonitorHandler
 
 from linotp.lib.context import request_context
-import linotp.model.meta
 
-Session = linotp.model.meta.Session
+from linotp.model import db
 
 log = logging.getLogger(__name__)
 
@@ -98,8 +97,7 @@ class MonitoringController(BaseController):
 
         except Exception as exception:
             log.exception(exception)
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             return sendError(response, exception, context='before')
 
     @staticmethod
@@ -115,16 +113,16 @@ class MonitoringController(BaseController):
             g.audit['administrator'] = getUserFromRequest(request).get('login')
 
             current_app.audit_obj.log(g.audit)
-            Session.commit()
+            db.session.commit()
             return response
 
         except Exception as exception:
             log.exception(exception)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exception, context='after')
 
         finally:
-            Session.close()
+            db.session.close()
 
     def tokens(self):
         """
@@ -190,21 +188,18 @@ class MonitoringController(BaseController):
             result['Summary'] = monit_handler.token_count(realms, status)
             result['Realms'] = realm_info
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, result)
 
         except PolicyException as policy_exception:
             log.exception(policy_exception)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(policy_exception), 1)
 
         except Exception as exc:
             log.exception(exc)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exc)
-
-        finally:
-            Session.close()
 
     def config(self):
         """
@@ -246,9 +241,6 @@ class MonitoringController(BaseController):
             log.exception(exception)
             return sendError(response, exception)
 
-        finally:
-            Session.close()
-
     def storageEncryption(self):
         """
         check if hsm/enckey encrypts value before storing it to config db
@@ -276,9 +268,6 @@ class MonitoringController(BaseController):
         except Exception as exception:
             log.exception(exception)
             return sendError(response, exception)
-
-        finally:
-            Session.close()
 
     def license(self):
         """
@@ -324,9 +313,6 @@ class MonitoringController(BaseController):
         except Exception as exception:
             log.exception(exception)
             return sendError(response, exception)
-
-        finally:
-            Session.close()
 
     def userinfo(self):
         """
@@ -375,21 +361,18 @@ class MonitoringController(BaseController):
 
             result['Realms'] = realm_info
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, result)
 
         except PolicyException as policy_exception:
             log.exception(policy_exception)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(policy_exception), 1)
 
         except Exception as exc:
             log.exception(exc)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exc)
-
-        finally:
-            Session.close()
 
     def activeUsers(self):
         """
@@ -439,13 +422,10 @@ class MonitoringController(BaseController):
 
         except PolicyException as policy_exception:
             log.exception(policy_exception)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(policy_exception), 1)
 
         except Exception as exc:
             log.exception(exc)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exc)
-
-        finally:
-            Session.close()

@@ -89,7 +89,8 @@ from linotp.lib.util import check_session
 from linotp.lib.util import getLowerParams
 from linotp.lib.util import get_client
 
-import linotp.model
+from linotp.model import db
+
 from linotp.tokens import tokenclass_registry
 import logging
 import os
@@ -103,12 +104,6 @@ from linotp.lib.ImportOTP.oath import parseOATHcsv
 from linotp.lib.ImportOTP.safenet import ImportException
 from linotp.lib.ImportOTP.safenet import parseSafeNetXML
 from linotp.lib.ImportOTP.yubico import parseYubicoCSV
-
-
-# for loading XML file
-# this is a hack for the static code analyser, which
-# would otherwise show session.close() as error
-Session = linotp.model.Session
 
 
 log = logging.getLogger(__name__)
@@ -152,8 +147,7 @@ class AdminController(BaseController):
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r", action, exx)
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             return sendError(response, exx, context='before')
 
     @staticmethod
@@ -202,17 +196,14 @@ class AdminController(BaseController):
             # ------------------------------------------------------------- --
 
             current_app.audit_obj.log(g.audit)
-            Session.commit()
+            db.session.commit()
             return response
 
         except Exception as e:
             log.exception(
                 "[__after__] unable to create a session cookie: %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, context='after')
-
-        finally:
-            Session.close()
 
     def logout(self):
         # see
@@ -270,7 +261,7 @@ class AdminController(BaseController):
 
             except Exception as e:
                 log.exception("[getsession] unable to create a session cookie")
-                Session.rollback()
+                db.session.rollback()
                 return sendError(response, e)
 
         return sendResult(None, True)
@@ -307,21 +298,18 @@ class AdminController(BaseController):
 
             g.audit['success'] = len(ret) > 0
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, ret)
 
         except PolicyException as pe:
             log.exception("Error getting token owner. Exception was %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("Error getting token owner. Exception was %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
 
     @staticmethod
     def parse_tokeninfo(tok):
@@ -446,7 +434,7 @@ class AdminController(BaseController):
             result["data"] = lines
             result["resultset"] = toks.getResultSetInfo()
 
-            Session.commit()
+            db.session.commit()
 
             if output_format == "csv":
                 return sendCSVResult(response, result)
@@ -455,17 +443,13 @@ class AdminController(BaseController):
 
         except PolicyException as pe:
             log.exception('[show] policy failed: %r' % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception('[show] failed: %r' % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e)
-
-        finally:
-            Session.close()
-
 
 ########################################################
     def remove(self):
@@ -540,21 +524,18 @@ class AdminController(BaseController):
 
                 opt_result_dict['message'] = msg
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
             log.exception("[remove] policy failed %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[remove] failed! %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e)
-
-        finally:
-            Session.close()
 
 
 ########################################################
@@ -611,22 +592,19 @@ class AdminController(BaseController):
             elif ret == 0 and user and not user.is_empty:
                 opt_result_dict['message'] = "No tokens for this user"
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
             log.exception("[enable] policy failed %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[enable] failed: %r" % e)
-            Session.rollback()
+            db.session.rollback()
             log.error('[enable] error enabling token')
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
 
 
 ########################################################
@@ -691,22 +669,19 @@ class AdminController(BaseController):
             ret['user_login'] = username
             ret['user_resolver'] = resolverClass
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, ret, 1)
 
         except PolicyException as pe:
             log.exception("[disable] policy failed %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             g.audit['success'] = 0
-            Session.rollback()
+            db.session.rollback()
             log.exception('[getSerialByOtp] error: %r' % e)
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
 
 
 ########################################################
@@ -764,21 +739,18 @@ class AdminController(BaseController):
             elif ret == 0 and user and not user.is_empty:
                 opt_result_dict['message'] = "No tokens for this user"
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
             log.exception("[disable] policy failed %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[disable] failed! %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
 
 
 #######################################################
@@ -823,21 +795,18 @@ class AdminController(BaseController):
             g.audit['serial'] = serial
             g.audit['action_detail'] = "%r - %r" % (unique, new_serial)
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, {"unique": unique, "new_serial": new_serial}, 1)
 
         except PolicyException as pe:
             log.exception("[check_serial] policy failed %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[check_serial] failed! %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e)
-
-        finally:
-            Session.close()
 
 
 ########################################################
@@ -995,7 +964,7 @@ class AdminController(BaseController):
             # --------------------------------------------------------------- --
 
             checkPolicyPost('admin', 'init', params, user=user)
-            Session.commit()
+            db.session.commit()
 
             # --------------------------------------------------------------- --
 
@@ -1014,17 +983,13 @@ class AdminController(BaseController):
 
         except PolicyException as pe:
             log.exception("[init] policy failed %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[init] token initialization failed! %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e)
-
-        finally:
-            Session.close()
-
 
 ########################################################
 
@@ -1083,21 +1048,18 @@ class AdminController(BaseController):
             elif ret == 0 and user and not user.is_empty:
                 opt_result_dict['message'] = "No tokens for this user"
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
             log.exception('[unassign] policy failed %r' % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[unassign] failed! %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
 
 
 ########################################################
@@ -1151,22 +1113,18 @@ class AdminController(BaseController):
             if "" == g.audit['realm']:
                 g.audit['realm'] = getTokenRealms(serial)
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
             log.exception('[assign] policy failed %r' % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception('[assign] token assignment failed! %r' % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, 0)
-
-        finally:
-            Session.close()
-
 
 ########################################################
 
@@ -1250,26 +1208,23 @@ class AdminController(BaseController):
                 g.audit['action_detail'] += "sopin, "
 
             if count == 0:
-                Session.rollback()
+                db.session.rollback()
                 return sendError(response, ParameterError("Usage: %s" % description, id=77))
 
             g.audit['success'] = count
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
             log.exception('[setPin] policy failed %r, %r' % (msg, pe))
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception('[setPin] %s :%r' % (msg, e))
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(e), 0)
-
-        finally:
-            Session.close()
 
     def setValidity(self):
         """
@@ -1403,12 +1358,12 @@ class AdminController(BaseController):
 
             g.audit['action_detail'] = ("%r " % serials)[:80]
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, serials, 1)
 
         except PolicyException as pex:
             log.exception('policy failed%r', pex)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pex), 1)
 
         except Exception as exx:
@@ -1416,11 +1371,8 @@ class AdminController(BaseController):
             g.audit['success'] = False
 
             log.exception('%r', exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(exx), 0)
-
-        finally:
-            Session.close()
 
 
 ########################################################
@@ -1709,7 +1661,7 @@ class AdminController(BaseController):
                 g.audit['action_detail'] += "phone=%s, " % str(ca)
 
             if count == 0:
-                Session.rollback()
+                db.session.rollback()
                 return sendError(
                     response, ParameterError("Usage: %s" % description,  id=77))
 
@@ -1720,17 +1672,17 @@ class AdminController(BaseController):
             if g.audit['realm'] == "":
                 g.audit['realm'] = getTokenRealms(serial)
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
             log.exception('[set] policy failed: %s, %r' % (msg, pe))
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception('%s: %r' % (msg, exx))
-            Session.rollback()
+            db.session.rollback()
             # as this message is directly returned into the javascript
             # alert as escaped string we remove here all escaping chars
             error = "%r" % exx
@@ -1741,10 +1693,6 @@ class AdminController(BaseController):
             error = error.replace('<', '[')
             result = "%s: %s" % (msg, error)
             return sendError(response, result)
-
-        finally:
-            Session.close()
-
 
 ########################################################
     def resync(self):
@@ -1809,22 +1757,18 @@ class AdminController(BaseController):
             if "" == g.audit['realm'] and "" != g.audit['user']:
                 g.audit['realm'] = getDefaultRealm()
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
             log.exception('[resync] policy failed %r' % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception('[resync] resyncing token failed %r' % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
-
 
 ########################################################
     def userlist(self):
@@ -1890,7 +1834,7 @@ class AdminController(BaseController):
                          "given search patterns:"}
                 usage["searchfields"] = getSearchFields(user)
                 res = usage
-                Session.commit()
+                db.session.commit()
                 return sendResult(response, res)
 
             list_params = {}
@@ -1914,7 +1858,7 @@ class AdminController(BaseController):
             g.audit['success'] = True
             g.audit['info'] = "realm: %s" % realm
 
-            Session.commit()
+            db.session.commit()
 
             return Response(
                 stream_with_context(
@@ -1927,17 +1871,13 @@ class AdminController(BaseController):
 
         except PolicyException as pe:
             log.exception('[userlist] policy failed %r' % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[userlist] failed %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e)
-
-        finally:
-            Session.close()
-
 
 ########################################################
     def tokenrealm(self):
@@ -1978,22 +1918,18 @@ class AdminController(BaseController):
             g.audit['info'] = realms
             g.audit['realm'] = realmList
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, ret, 1)
 
         except PolicyException as pe:
             log.exception('[tokenrealm] policy failed %r' % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception('[tokenrealm] error setting realms for token %r' % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
-
 
 ########################################################
 
@@ -2046,22 +1982,18 @@ class AdminController(BaseController):
             elif ret == 0 and user and not user.is_empty:
                 opt_result_dict['message'] = "No tokens for this user"
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
             log.exception('[reset] policy failed %r' % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[reset] Error resetting failcounter %r" % exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
-
 
 ########################################################
 
@@ -2122,7 +2054,7 @@ class AdminController(BaseController):
                 g.audit['action_detail'] += ", " + err_string
                 g.audit['success'] = 0
 
-            Session.commit()
+            db.session.commit()
             # Success
             if 1 == ret:
                 return sendResult(response, True)
@@ -2131,17 +2063,13 @@ class AdminController(BaseController):
 
         except PolicyException as pe:
             log.exception("[losttoken] Error doing losttoken %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[copyTokenPin] Error copying token pin")
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e)
-
-        finally:
-            Session.close()
-
 
 ########################################################
 
@@ -2204,7 +2132,7 @@ class AdminController(BaseController):
                 g.audit['action_detail'] += ", " + err_string
                 g.audit['success'] = 0
 
-            Session.commit()
+            db.session.commit()
             # Success
             if 1 == ret:
                 return sendResult(response, True)
@@ -2213,16 +2141,13 @@ class AdminController(BaseController):
 
         except PolicyException as pe:
             log.exception("[copyTokenUser] Policy Exception %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[copyTokenUser] Error copying token user")
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e)
-
-        finally:
-            Session.close()
 
 ########################################################
 
@@ -2268,21 +2193,18 @@ class AdminController(BaseController):
             g.audit['source_realm'] = getTokenRealms(serial)
             g.audit['realm'] = getTokenRealms(g.audit['serial'])
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res)
 
         except PolicyException as pe:
             log.exception("[losttoken] Policy Exception: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[losttoken] Error doing losttoken %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(e))
-
-        finally:
-            Session.close()
 
 
 ########################################################
@@ -2564,21 +2486,18 @@ class AdminController(BaseController):
             g.audit['success'] = ret
             g.audit['realm'] = tokenrealm
 
-            Session.commit()
+            db.session.commit()
             return sendResultMethod(response, res)
 
         except PolicyException as pex:
             log.exception("[loadtokens] Failed checking policy: %r", pex)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, "%r" % pex, 1)
 
         except Exception as exx:
             log.exception("[loadtokens] failed! %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendErrorMethod(response, "%r" % exx)
-
-        finally:
-            Session.close()
 
     def _ldap_parameter_mapping(self, params):
         """
@@ -2724,16 +2643,13 @@ class AdminController(BaseController):
                 'desc': desc
             }
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res)
 
         except Exception as e:
             log.exception("[testresolver] failed: %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(e), 1)
-
-        finally:
-            Session.close()
 
     def totp_lookup(self):
         '''
@@ -2790,23 +2706,20 @@ class AdminController(BaseController):
                 g.audit['info'] = ("no otp %r found in window %r"
                                    % (otp, window))
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, opt=opt)
 
             # -------------------------------------------------------------- --
 
         except PolicyException as pe:
             log.exception("[totp_lookup] policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe))
 
         except Exception as exx:
             log.exception("[totp_lookup] failed: %r" % exx)
-            Session.rollback()
+            db.session.rollback()
             return sendResult(response, str(exx), 0)
-
-        finally:
-            Session.close()
 
     def checkstatus(self):
         """
@@ -2902,21 +2815,18 @@ class AdminController(BaseController):
             res['values'] = status
             g.audit['success'] = res
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
             log.exception("[checkstatus] policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe))
 
         except Exception as exx:
             log.exception("[checkstatus] failed: %r" % exx)
-            Session.rollback()
+            db.session.rollback()
             return sendResult(response, str(exx), 0)
-
-        finally:
-            Session.close()
 
     # ------------------------------------------------------------------------ -
 
@@ -2965,7 +2875,7 @@ class AdminController(BaseController):
             # ---------------------------------------------------------------- -
 
             token.unpair()
-            Session.commit()
+            db.session.commit()
 
             # ---------------------------------------------------------------- -
 
@@ -2976,11 +2886,7 @@ class AdminController(BaseController):
         except Exception as exx:
             log.exception("admin/unpair failed: %r" % exx)
             g.audit['info'] = str(exx)
-            Session.rollback()
+            db.session.rollback()
             return sendResult(response, False, 0, status=False)
-
-        finally:
-            Session.close()
-
 
 # eof ########################################################################

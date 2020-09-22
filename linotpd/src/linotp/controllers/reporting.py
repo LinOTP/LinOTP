@@ -36,7 +36,7 @@ from datetime import datetime
 from flask import Response, stream_with_context, g, current_app
 from werkzeug.datastructures import Headers
 
-from linotp.flap import request, response, config, tmpl_context as c
+from linotp.flap import request, response
 from linotp.controllers.base import BaseController
 from linotp.lib.context import request_context
 
@@ -57,8 +57,7 @@ from linotp.lib.user import (getUserFromRequest, )
 from linotp.lib.util import check_session
 from linotp.lib.util import get_client
 
-import linotp.model.meta
-Session = linotp.model.meta.Session
+from linotp.model import db
 
 log = logging.getLogger(__name__)
 
@@ -94,8 +93,7 @@ class ReportingController(BaseController):
 
         except Exception as exception:
             log.exception(exception)
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             return sendError(response, exception, context='before')
 
 
@@ -112,16 +110,13 @@ class ReportingController(BaseController):
             g.audit['administrator'] = getUserFromRequest(request).get('login')
 
             current_app.audit_obj.log(g.audit)
-            Session.commit()
+            db.session.commit()  # FIXME: may not be needed
             return response
 
         except Exception as exception:
             log.exception(exception)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exception, context='after')
-
-        finally:
-            Session.close()
 
     def maximum(self):
         """
@@ -177,16 +172,13 @@ class ReportingController(BaseController):
 
         except PolicyException as policy_exception:
             log.exception(policy_exception)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(policy_exception), 1)
 
         except Exception as exc:
             log.exception(exc)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exc)
-
-        finally:
-            Session.close()
 
     def delete_all(self):
         """
@@ -234,21 +226,18 @@ class ReportingController(BaseController):
                                'total'])
 
             result = delete(realms=realms, status=status)
-            Session.commit()
+            db.session.commit()
             return sendResult(response, result)
 
         except PolicyException as policy_exception:
             log.exception(policy_exception)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(policy_exception), 1)
 
         except Exception as exc:
             log.exception(exc)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exc)
-
-        finally:
-            Session.close()
 
     def delete_before(self):
         """
@@ -299,26 +288,23 @@ class ReportingController(BaseController):
             realms = match_realms(request_realms, realm_whitelist)
 
             result = delete(date=border_day, realms=realms, status=status)
-            Session.commit()
+            db.session.commit()
             return sendResult(response, result)
 
         except PolicyException as policy_exception:
             log.exception(policy_exception)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(policy_exception), 1)
 
         except ValueError as value_error:
             log.exception(value_error)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(value_error), 1)
 
         except Exception as exc:
             log.exception(exc)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exc)
-
-        finally:
-            Session.close()
 
     def show(self):
         """
@@ -390,7 +376,7 @@ class ReportingController(BaseController):
             info = reports.getResultSetInfo()
 
             g.audit['success'] = True
-            Session.commit()
+            db.session.commit()
 
             if output_format == 'csv':
                 headers = Headers()
@@ -409,18 +395,15 @@ class ReportingController(BaseController):
 
         except PolicyException as policy_exception:
             log.exception(policy_exception)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(policy_exception), 1)
 
         except ValueError as value_error:
             log.exception(value_error)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(value_error), 1)
 
         except Exception as exc:
             log.exception(exc)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exc)
-
-        finally:
-            Session.close()

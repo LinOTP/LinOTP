@@ -141,8 +141,7 @@ from linotp.lib.context import request_context
 from linotp.lib.reporting import token_reporting
 
 
-import linotp.model.meta
-Session = linotp.model.meta.Session
+from linotp.model import db
 
 log = logging.getLogger(__name__)
 
@@ -420,7 +419,7 @@ class UserserviceController(BaseController):
                     g.audit['action_detail'] += get_token_num_info()
 
                 current_app.audit_obj.log(g.audit)
-                Session.commit()
+                db.session.commit()
 
             return response
 
@@ -578,7 +577,7 @@ class UserserviceController(BaseController):
             g.audit['action_detail'] = "expires: %s " % expiration
             g.audit['success'] = True
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, True, 0)
 
         except Exception as exx:
@@ -586,11 +585,8 @@ class UserserviceController(BaseController):
             g.audit['info'] = ("%r" % exx)[:80]
             g.audit['success'] = False
 
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
     def _login_with_cookie(self, cookie, params):
         """
@@ -668,7 +664,7 @@ class UserserviceController(BaseController):
 
             g.audit['info'] = ("User %r authenticated from otp" % user)
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, res, 0)
 
         # -------------------------------------------------------------- --
@@ -739,7 +735,7 @@ class UserserviceController(BaseController):
                 del reply["transactionid"]
                 reply["transactionId"] = transaction_id
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, False, 0, opt=reply)
 
         # -------------------------------------------------------------- --
@@ -748,7 +744,7 @@ class UserserviceController(BaseController):
 
         if not res and not reply:
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, False, 0)
 
     def _login_with_cookie_challenge(self, cookie, params):
@@ -805,7 +801,7 @@ class UserserviceController(BaseController):
             g.audit['action_detail'] = "expires: %s " % expiration
             g.audit['info'] = "%r logged in " % user
 
-        Session.commit()
+        db.session.commit()
         return sendResult(self.response, res, 0)
 
     def _login_with_cookie_challenge_check_status(self, user, transid):
@@ -842,7 +838,7 @@ class UserserviceController(BaseController):
 
         detail = get_transaction_detail(transid)
 
-        Session.commit()
+        db.session.commit()
         return sendResult(self.response, verified, opt=detail)
 
     def _login_with_otp(self, user, passw, param):
@@ -861,7 +857,7 @@ class UserserviceController(BaseController):
                                         % user)
             g.audit['success'] = False
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, False, 0)
 
         # ------------------------------------------------------------------ --
@@ -894,7 +890,7 @@ class UserserviceController(BaseController):
 
             g.audit['success'] = res
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, res, 0, reply)
 
         # ------------------------------------------------------------------ --
@@ -926,7 +922,7 @@ class UserserviceController(BaseController):
         g.audit['info'] = "%r credentials verified" % user
 
         g.audit['success'] = True
-        Session.commit()
+        db.session.commit()
 
         return sendResult(self.response, False, 0, opt=reply)
 
@@ -953,7 +949,7 @@ class UserserviceController(BaseController):
         g.audit['success'] = res
         g.audit['info'] = "%r logged in " % user
 
-        Session.commit()
+        db.session.commit()
 
         return sendResult(self.response, res, 0)
 
@@ -1061,11 +1057,8 @@ class UserserviceController(BaseController):
             g.audit['info'] = ("%r" % exx)[:80]
             g.audit['success'] = False
 
-            Session.rollback()
+            db.session.rollback()
             return sendResult(self.response, False, 0)
-
-        finally:
-            Session.close()
 
     def _default_auth_check(self, user, password, otp=None):
         """
@@ -1149,16 +1142,13 @@ class UserserviceController(BaseController):
             tokenArray = getTokenForUser(self.authUser, active=active,
                                          exclude_rollout=False)
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, tokenArray, 0)
 
         except Exception as exx:
             log.exception("failed with error: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
     def userinfo(self):
         """
@@ -1171,17 +1161,17 @@ class UserserviceController(BaseController):
 
             g.audit['success'] = True
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, uinfo, 0)
 
         except Exception as exx:
-            Session.rollback()
+            db.session.rollback()
             error = ('error (%r) ' % exx)
             log.exception(error)
             return '<pre>%s</pre>' % error
 
         finally:
-            Session.close()
+            db.session.close()
 
     def logout(self):
         """
@@ -1196,17 +1186,16 @@ class UserserviceController(BaseController):
 
             g.audit['success'] = True
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, True, 0)
 
         except Exception as exx:
-            Session.rollback()
+            db.session.rollback()
             error = ('error (%r) ' % exx)
             log.exception(error)
             return '<pre>%s</pre>' % error
 
         finally:
-            Session.close()
             log.debug('done')
 
 
@@ -1227,11 +1216,8 @@ class UserserviceController(BaseController):
 
         except Exception as e:
             log.exception("failed with error: %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e)
-
-        finally:
-            Session.close()
 
     def context(self):
         '''
@@ -1249,11 +1235,8 @@ class UserserviceController(BaseController):
 
         except Exception as e:
             log.exception("[context] failed with error: %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e)
-
-        finally:
-            Session.close()
 
     def load_form(self):
         '''
@@ -1299,7 +1282,7 @@ class UserserviceController(BaseController):
                         res = render(os.path.sep + html)
                         res = remove_empty_lines(res)
 
-            Session.commit()
+            db.session.commit()
             g.audit['success'] = True
             return res
 
@@ -1307,17 +1290,14 @@ class UserserviceController(BaseController):
             log.exception("[load_form] compile error while processing %r.%r:" %
                                                                 (tok, scope))
             log.exception("[load_form] %r" % exx)
-            Session.rollback()
+            db.session.rollback()
             raise exx
 
         except Exception as exx:
-            Session.rollback()
+            db.session.rollback()
             error = ('error (%r) accessing form data for: %r' % exx)
             log.exception(error)
             return '<pre>%s</pre>' % error
-
-        finally:
-            Session.close()
 
 # action hooks for the js methods #############################################
     def enable(self):
@@ -1347,7 +1327,7 @@ class UserserviceController(BaseController):
             checkPolicyPre('selfservice', 'userenable', param,
                            authUser=self.authUser)
             th = TokenHandler()
-            if (True == th.isTokenOwner(serial, self.authUser)):
+            if th.isTokenOwner(serial, self.authUser):
                 log.info("[userenable] user %s@%s is enabling his token with "
                          "serial %s." % (self.authUser.login,
                                          self.authUser.realm, serial))
@@ -1357,21 +1337,18 @@ class UserserviceController(BaseController):
                 g.audit['realm'] = self.authUser.realm
                 g.audit['success'] = ret
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("[enable] policy failed %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[enable] failed: %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
 
 ########################################################
     def disable(self):
@@ -1402,30 +1379,27 @@ class UserserviceController(BaseController):
             checkPolicyPre('selfservice', 'userdisable', param,
                            authUser=self.authUser)
             th = TokenHandler()
-            if (True == th.isTokenOwner(serial, self.authUser)):
+            if th.isTokenOwner(serial, self.authUser):
                 log.info("user %s@%s is disabling his token with serial %s."
-                        % (self.authUser.login, self.authUser.realm, serial))
+                         % (self.authUser.login, self.authUser.realm, serial))
                 ret = th.enableToken(False, None, serial)
                 res["disable token"] = ret
 
                 g.audit['realm'] = self.authUser.realm
                 g.audit['success'] = ret
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("policy failed %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("failed: %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
 
     def delete(self):
         '''
@@ -1446,7 +1420,7 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
-            if (True == th.isTokenOwner(serial, self.authUser)):
+            if th.isTokenOwner(serial, self.authUser):
                 log.info("[userdelete] user %s@%s is deleting his token with "
                          "serial %s." % (self.authUser.login,
                                          self.authUser.realm, serial))
@@ -1456,22 +1430,19 @@ class UserserviceController(BaseController):
                 g.audit['realm'] = self.authUser.realm
                 g.audit['success'] = ret
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("[userdelete] policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[userdelete] deleting token %s of user %s failed! %r"
                       % (serial, c.user, e))
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
 
     def reset(self):
         '''
@@ -1498,22 +1469,19 @@ class UserserviceController(BaseController):
 
                 g.audit['success'] = ret
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("error resetting token with serial %s: %r"
                       % (serial, e))
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
 
     def unassign(self):
         '''
@@ -1546,22 +1514,19 @@ class UserserviceController(BaseController):
                 g.audit['success'] = ret
                 g.audit['realm'] = self.authUser.realm
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("unassigning token %s of user %s failed! %r"
                        % (serial, c.user, e))
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
 
     def setpin(self):
         '''
@@ -1606,21 +1571,18 @@ class UserserviceController(BaseController):
 
                 g.audit['success'] = ret
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pex:
             log.exception("policy failed: %r" % pex)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pex), 1)
 
         except Exception as exx:
             log.exception("Error setting OTP PIN: %r" % exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx, 1)
-
-        finally:
-            Session.close()
 
     def setmpin(self):
         '''
@@ -1648,21 +1610,18 @@ class UserserviceController(BaseController):
 
                 g.audit['success'] = ret
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pex:
             log.exception("policy failed: %r" % pex)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pex), 1)
 
         except Exception as exx:
             log.exception("Error setting the mOTP PIN %r" % exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx, 1)
-
-        finally:
-            Session.close()
 
     def resync(self):
         '''
@@ -1695,22 +1654,19 @@ class UserserviceController(BaseController):
 
                 g.audit['success'] = ret
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("error resyncing token with serial %s:%r"
                        % (serial, e))
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
 
     def verify(self):
         '''
@@ -1845,7 +1801,7 @@ class UserserviceController(BaseController):
                 (res, _opt) = vh.check_by_transactionid(
                     transid=transaction_id, passw=params['otp'], options=params)
 
-                Session.commit()
+                db.session.commit()
                 return sendResult(self.response, res)
 
             # -------------------------------------------------------------- --
@@ -1854,7 +1810,7 @@ class UserserviceController(BaseController):
 
                 detail = get_transaction_detail(transaction_id)
 
-                Session.commit()
+                db.session.commit()
                 return sendResult(
                     self.response, detail.get('valid_tan', False), opt=detail)
 
@@ -1866,7 +1822,7 @@ class UserserviceController(BaseController):
                 (res, _opt) = vh.checkUserPass(
                     self.authUser, passw=params['otp'], options=params)
 
-                Session.commit()
+                db.session.commit()
                 return sendResult(self.response, res)
 
             # -------------------------------------------------------------- --
@@ -1949,24 +1905,21 @@ class UserserviceController(BaseController):
 
                 # close down the session and submit the result
 
-                Session.commit()
+                db.session.commit()
                 return sendResult(
                     self.response, False, opt=detail_response)
 
         except PolicyException as pe:
             log.error("policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, pe)
 
         except Exception as exx:
             g.audit['success'] = False
             log.error("error verifying token with serial %s: %r"
                       % (serial, exx))
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx, 1)
-
-        finally:
-            Session.close()
 
     def assign(self):
         '''
@@ -2032,21 +1985,18 @@ class UserserviceController(BaseController):
 
             checkPolicyPost('selfservice', 'userassign', param, self.authUser)
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("[userassign] policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[userassign] token assignment failed! %r" % exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx, 1)
-
-        finally:
-            Session.close()
 
     def getSerialByOtp(self):
         '''
@@ -2094,21 +2044,18 @@ class UserserviceController(BaseController):
             g.audit['success'] = 1
             g.audit['serial'] = serial
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("token getSerialByOtp failed! %r" % exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx, 1)
-
-        finally:
-            Session.close()
 
     def enroll(self):
         '''
@@ -2184,7 +2131,7 @@ class UserserviceController(BaseController):
 
             checkPolicyPost('selfservice', 'enroll', param, user=self.authUser)
 
-            Session.commit()
+            db.session.commit()
 
             # # finally we render the info as qr image, if the qr parameter
             # # is provided and if the token supports this
@@ -2198,16 +2145,13 @@ class UserserviceController(BaseController):
 
         except PolicyException as pe:
             log.exception("[userinit] policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[userinit] token initialization failed! %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
 
     def webprovision(self):
         '''
@@ -2379,24 +2323,21 @@ class UserserviceController(BaseController):
 
             checkPolicyPost('selfservice', 'enroll', param, user=self.authUser)
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, {'init': ret1,
                                          'setpin': False,
                                          'oathtoken': ret})
 
         except PolicyException as pe:
             log.exception("[userwebprovision] policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[userwebprovision] token initialization failed! %r"
                           % exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx, 1)
-
-        finally:
-            Session.close()
 
     def getmultiotp(self):
         '''
@@ -2454,22 +2395,19 @@ class UserserviceController(BaseController):
             ret["serial"] = serial
             g.audit['success'] = True
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, ret, 0)
 
         except PolicyException as pe:
             log.exception("[usergetmultiotp] policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[usergetmultiotp] gettoken/getmultiotp failed: %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, _("selfservice/usergetmultiotp failed:"
                                          " %r") % e, 0)
-
-        finally:
-            Session.close()
 
     def history(self):
         '''
@@ -2518,22 +2456,19 @@ class UserserviceController(BaseController):
 
             g.audit['success'] = True
 
-            Session.commit()
+            db.session.commit()
             return json.dumps(res, indent=3)
 
         except PolicyException as pe:
             log.exception("[search] policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as exx:
             log.exception("[search] audit/search failed: %r" % exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, _("audit/search failed: %s")
                                                         % str(exx), 0)
-
-        finally:
-            Session.close()
 
     def activateocratoken(self):
         '''
@@ -2618,21 +2553,18 @@ class UserserviceController(BaseController):
             g.audit['success'] = True
             g.audit['realm'] = self.authUser.realm
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, {'activate': True, 'ocratoken': ret})
 
         except PolicyException as pe:
             log.exception("policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("token initialization failed! %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
 
 
     def finishocra2token(self):
@@ -2696,22 +2628,19 @@ class UserserviceController(BaseController):
             g.audit['success'] = ok
             g.audit['realm'] = self.authUser.realm
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, value, opt)
 
         except PolicyException as pe:
             log.exception("[userfinishocra2token] policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             error = "[userfinishocra2token] token initialization failed! %r" % e
             log.exception(error)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, error, 1)
-
-        finally:
-            Session.close()
 
     def token_call(self):
         '''
@@ -2780,22 +2709,19 @@ class UserserviceController(BaseController):
                                     % (typ, method))
                     g.audit['success'] = False
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
             log.exception("[token_call] policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[token_call] calling method %s.%s of user %s failed! %r"
                       % (typ, method, c.user, e))
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
 
     def setdescription(self):
         """
@@ -2845,20 +2771,17 @@ class UserserviceController(BaseController):
             g.audit['realm'] = self.authUser.realm
             g.audit['success'] = ret
 
-            Session.commit()
+            db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pex:
             log.exception("[setdescription] policy failed")
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, pex, 1)
 
         except Exception as exx:
             log.error("failed: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx, 1)
-
-        finally:
-            Session.close()
 
 #eof##########################################################################

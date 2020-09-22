@@ -80,10 +80,7 @@ from linotp.lib.audit.base import get_token_num_info
 
 from linotp.lib.realm import get_realms_from_params
 
-import linotp.model
-Session = linotp.model.Session
-
-
+from linotp.model import db
 
 log = logging.getLogger(__name__)
 
@@ -120,9 +117,7 @@ class HelpdeskController(BaseController):
         except Exception as exx:
             log.exception("[__before__::%r] exception", action)
 
-            Session.rollback()
-            Session.close()
-
+            db.session.rollback()
             return sendError(None, exx, context='before')
 
     @staticmethod
@@ -139,17 +134,14 @@ class HelpdeskController(BaseController):
             g.audit['serial'] = request.params.get('serial')
 
             current_app.audit_obj.log(g.audit)
-            Session.commit()
+            db.session.commit()
             return response
 
         except Exception as e:
             log.exception(
                 "[__after__] unable to create a session cookie: %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, context='after')
-
-        finally:
-            Session.close()
 
     def getsession(self):
         '''
@@ -177,7 +169,7 @@ class HelpdeskController(BaseController):
 
             except Exception as e:
                 log.exception("[getsession] unable to create a session cookie")
-                Session.rollback()
+                db.session.rollback()
                 return sendError(response, e)
 
         return sendResult(None, True)
@@ -288,21 +280,18 @@ class HelpdeskController(BaseController):
             }
 
             g.audit['success'] = True
-            Session.commit()
+            db.session.commit()
             return sendResult(None, res)
 
         except PolicyException as pex:
             log.exception("Error during checking policies")
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, pex, 1)
 
         except Exception as exx:
             log.exception("tokens lookup failed!")
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
     def users(self):
         '''
@@ -431,22 +420,19 @@ class HelpdeskController(BaseController):
 
             g.audit['success'] = True
 
-            Session.commit()
+            db.session.commit()
             return sendResult(None, res)
 
         except PolicyException as pe:
             log.exception(
                 "[userview_flexi] Error during checking policies: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, pe, 1)
 
         except Exception as e:
             log.exception("[userview_flexi] failed: %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e)
-
-        finally:
-            Session.close()
 
     def enroll(self):
         """
@@ -600,12 +586,12 @@ class HelpdeskController(BaseController):
 
         except PolicyException as pex:
             log.exception("Policy Exception while enrolling token")
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, pex, 1)
 
         except Exception as exx:
             log.exception("Exception while enrolling token")
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx, 1)
 
 
@@ -683,18 +669,15 @@ class HelpdeskController(BaseController):
             g.audit['success'] = True
             g.audit['info'] = result
 
-            Session.commit()
+            db.session.commit()
             return sendResult(None, result)
 
         except PolicyException as pex:
             log.exception('[setPin] policy failed %r')
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, pex, 1)
 
         except Exception as exx:
             log.exception('[setPin] error while setting pin')
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx, 0)
-
-        finally:
-            Session.close()

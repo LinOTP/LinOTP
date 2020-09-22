@@ -35,17 +35,11 @@ from flask import current_app, Blueprint, Response
 
 from linotp.flap import request
 
-# this is a hack for the static code analyser, which
-# would otherwise show session.close() as error
-import linotp.model.meta
-
 from linotp.lib.context import request_context
 from linotp.lib.user import getUserFromParam
 from linotp.lib.user import NoResolverFound
 
 log = logging.getLogger(__name__)
-
-Session = linotp.model.meta.Session
 
 
 class ControllerMetaClass(type):

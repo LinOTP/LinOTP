@@ -50,9 +50,7 @@ from linotp.lib.util import get_client
 
 from linotp.lib.context import request_context
 
-import linotp.model
-Session = linotp.model.Session
-
+from linotp.model import db
 
 optional = True
 required = False
@@ -85,8 +83,7 @@ class AuditController(BaseController):
             check_session(request)
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             return sendError(response, exx, context='before')
 
     @staticmethod
@@ -171,22 +168,19 @@ class AuditController(BaseController):
                 )
 
             g.audit['success'] = True
-            Session.commit()
+            db.session.commit()
 
             return streamed_response
 
         except PolicyException as pe:
             log.exception("[getotp] gettoken/getotp policy failed: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[search] audit/search failed: %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, "audit/search failed", 0)
-
-        finally:
-            Session.close()
 
 
 #eof###########################################################################
