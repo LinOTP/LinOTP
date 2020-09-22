@@ -498,4 +498,130 @@ class TestUserserviceAuthController(TestController):
 
         return
 
+    def test_login_with_assync_challenge_response(self):
+        """
+        test authentication with challenge response
+        with a single token
+
+        the authentication is running in multiple steps:
+
+            1. get the credentials_verified step
+
+            2. by calling the login with the 'credentials_verified' cookie
+               and no otp, we trigger a challenge
+
+            3a. reply with the previous cookie 'challenge_triggered'
+               and an wrong otp should increment the token fail count
+
+            3b. reply with the previous cookie 'challenge_triggered'
+               and no otp should increment check the status
+
+            4. validate/check with otp should validate the challenge
+
+            5. login request cookie 'challenge_triggered' should return the
+            final 'authenticated' cookie
+
+        After the 5 step any operation could be made, like history
+
+        """
+
+        # ------------------------------------------------------------------ --
+
+        # run the credential verification step
+
+        auth_user = {
+            'login': 'passthru_user1@myDefRealm',
+            'password': 'geheim1'}
+
+        response = self.app.get(url(controller='userservice',
+                                    action='login'), params=auth_user)
+
+        assert '"value": false' in response, response
+        assert 'additional authentication parameter' in response, response
+
+        # ------------------------------------------------------------------ --
+
+        cookies = TestController.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+
+        # ------------------------------------------------------------------ --
+
+        # next request is to trigger the login challenge response
+
+        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+
+        params = {}
+        params['session'] = auth_cookie
+        response = self.app.get(url(controller='userservice',
+                                    action='login'), params=params)
+
+        assert '"Please enter your otp value: "' in response, response
+
+        # response should contain the challenge information
+
+        jresp = json.loads(response.body)
+        transactionid = jresp['detail']['transactionid']
+
+        # ------------------------------------------------------------------ --
+
+        cookies = TestController.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+
+        # ------------------------------------------------------------------ --
+
+        # next request queries the challeng status
+
+        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+
+        params = {'session': auth_cookie}
+        response = self.app.get(url(controller='userservice',
+                                    action='login'), params=params)
+
+        self.assertTrue('"value": false' in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # make a /validate/check to verify the challenge
+
+        params = {
+            'pass': self.otps.pop(),
+            'transactionid': transactionid,
+            }
+        response = self.app.get(url(controller='validate',
+                                    action='check_t'), params=params)
+
+        self.assertTrue('"value": true' in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # verify that transaction is verified
+
+        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+
+        params = {}
+        params['session'] = auth_cookie
+
+        response = self.app.get(url(controller='userservice',
+                                    action='login'), params=params)
+
+        self.assertTrue('"value": true' in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        cookies = TestController.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+
+        # ------------------------------------------------------------------ --
+
+        params = {}
+        params['session'] = auth_cookie
+        response = self.app.get(url(controller='userservice',
+                                    action='history'), params=params)
+
+        self.assertTrue('"rows": [' in response, response)
+
+
 # eof #
