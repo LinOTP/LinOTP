@@ -303,6 +303,11 @@ _config_schema = ConfigSchema([
                help=("Contains a server-specific encryption key.")),
     ConfigItem("SQLALCHEMY_DATABASE_URI", str, default="sqlite:///{}",
                help=("Contains uri to your database.")),
+    ConfigItem("SQLALCHEMY_TRACK_MODIFICATIONS", bool, convert=to_boolean,
+               default=False,
+               help=("Controls signalling support in the database framework. "
+                     "This requires extra memory and LinOTP doesn't use it, "
+                     "so it's best to leave this setting alone.")),
     ConfigItem("AUDIT_DATABASE_URI", str, default="SHARED",
                help=("Determines the method used for audit logging. Valid "
                      "values are: `OFF` (no audit logs are generated, not "
