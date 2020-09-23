@@ -19,6 +19,7 @@ workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'schedule'           # Execute nightly jobs
     - if: $CI_MERGE_REQUEST_ID                        # Execute jobs in merge request context
+    - if: $CI_COMMIT_TAG                              # Execute jobs on release tag
     - if: '$CI_COMMIT_BRANCH =~ /^(branch-v|master)/' # Execute jobs when a new commit is pushed to stable or master branch
 
 stages:
