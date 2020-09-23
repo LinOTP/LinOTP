@@ -1748,13 +1748,13 @@ def get_tokenissuer(user="", realm="", serial=""):
     '''
     tokenissuer = "LinOTP"
     client = _get_client()
+    action = "tokenissuer"
 
-    pol = has_client_policy(client, scope="enrollment",
+    pol = has_client_policy(client, scope="enrollment", action=action,
                             realm=realm, user=user)
 
     if len(pol) != 0:
-        string_issuer = getPolicyActionValue(pol, "tokenissuer",
-                                             is_string=True)
+        string_issuer = getPolicyActionValue(pol, action, is_string=True)
         if string_issuer:
             string_issuer = re.sub('<u>', user, string_issuer)
             string_issuer = re.sub('<r>', realm, string_issuer)
@@ -1865,8 +1865,9 @@ def get_autoassignment(user):
     '''
     ret = False
     client = _get_client()
+    action = "autoassignment"
 
-    pol = has_client_policy(client, scope='enrollment',
+    pol = has_client_policy(client, scope='enrollment', action=action,
                             realm=user.realm, user=user.login, userObj=user)
 
     if len(pol) > 0:
@@ -1891,14 +1892,15 @@ def get_auto_enrollment(user):
     '''
     ret = False
     token_typ = ''
+    action = "autoenrollment"
 
     client = _get_client()
 
-    pol = has_client_policy(client, scope='enrollment',
+    pol = has_client_policy(client, scope='enrollment', action=action,
                             realm=user.realm, user=user.login, userObj=user)
 
     if len(pol) > 0:
-        t_typ = getPolicyActionValue(pol, "autoenrollment", is_string=True)
+        t_typ = getPolicyActionValue(pol, action, is_string=True)
 
         log.debug("got the token type = %s", t_typ)
 
