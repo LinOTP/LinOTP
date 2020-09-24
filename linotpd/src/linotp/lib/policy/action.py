@@ -79,6 +79,45 @@ def get_selfservice_actions(user, action=None):
 
     return all_actions
 
+def get_action_value(policies:Dict, scope:str, action:str,
+                     subkey:str=None, default:Any=None) -> Any:
+    """Get the value of an action from a set of policies
+
+    :param policies: a dict of policies
+    :param scope: the scope of the policy - required for the typing support
+    :param action: the name of the searched action
+    :param subkey: special feature to support action names with sub keys
+    :param default: the default return if nothing is found
+    :return: the (typed) action value or default
+    """
+
+    if not policies:
+        return default
+
+    pat = PolicyActionTyping()
+
+    if subkey:
+        action = "%s.%s" % (action, subkey)
+
+    all_actions = {}
+    for policy in policies.values():
+        actions = parse_action_value(policy.get('action', {}))
+
+        if action in actions:
+            current = all_actions.setdefault(action, [])
+            current.append(pat.convert(scope, action, actions[action]))
+            all_actions[action] = current
+
+    if action not in all_actions:
+        return default
+
+    if len(set(all_actions[action])) > 1:
+        log.warning('contradicting action values found for action %s:%s: %r',
+                    scope, action, all_actions[action])
+
+    return all_actions[action][0]
+
+
 def getSelfserviceActions(user):
     '''
     This function returns the allowed actions in the self service portal
