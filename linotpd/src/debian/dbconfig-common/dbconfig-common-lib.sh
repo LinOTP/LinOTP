@@ -60,13 +60,19 @@ get_sqlalchemy_uri() {
     scheme="${dbc_dbtype}"
   fi
 
+  if [ "${dbc_dbtype}" = mysql ]; then
+    params="?charset=utf8"
+  else
+    params=""
+  fi
+
   if [ "${dbc_dbport}" != "" ]; then
       dbport=":${dbc_dbport}"
   else
       dbport=""
   fi
 
-  echo "${scheme}://$(escape_login)@${dbc_dbserver}${dbport}/${dbc_dbname}"
+  echo "${scheme}://$(escape_login)@${dbc_dbserver}${dbport}/${dbc_dbname}${params}"
 }
 
 # configure_sql [sqlalchemy url]
