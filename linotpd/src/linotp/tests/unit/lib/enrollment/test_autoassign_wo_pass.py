@@ -100,11 +100,13 @@ class TestAutoEnroll(unittest.TestCase):
 
         return
 
+    @patch('linotp.lib.policy.action.get_policy_definitions')
     @patch('linotp.lib.policy._get_client')
     @patch('linotp.lib.policy.get_client_policy')
     def test_get_autoassignment_without_pass(self,
                                      mocked_get_client_policy,
                                      mocked_get_client,
+                                     mocked_get_policy_definitions,
                                      ):
 
         user = User('Hugo', realm='Home_realm')
@@ -120,6 +122,12 @@ class TestAutoEnroll(unittest.TestCase):
                 'scope': 'enrollment'}}
         mocked_get_client.return_value = '127.0.0.1'
 
+        mocked_get_policy_definitions.return_value = {
+            'enrollment': {
+                'autoassignment_without_password': {'type': 'bool'}
+                }
+            }
+
         res = get_autoassignment_without_pass(user=user)
         assert res
 
@@ -132,6 +140,7 @@ class TestAutoEnroll(unittest.TestCase):
                 'time': '*',
                 'action': 'autoassignment_without_password',
                 'scope': 'enrollment'}}
+
 
         res = get_autoassignment_without_pass(user=user)
         assert res
@@ -162,11 +171,13 @@ class TestAutoEnroll(unittest.TestCase):
         res = get_autoassignment_without_pass(user=user)
         assert not res
 
+    @patch('linotp.lib.policy.action.get_policy_definitions')
     @patch('linotp.lib.policy._get_client')
     @patch('linotp.lib.policy.get_client_policy')
     def test_get_autoassignment_from_realm(self,
                                            mocked_get_client_policy,
                                            mocked_get_client,
+                                           mocked_get_policy_definitions,
                                            ):
 
         user = User('Hugo', realm='Home_realm')
@@ -182,6 +193,12 @@ class TestAutoEnroll(unittest.TestCase):
                 'time': '*',
                 'action': 'autoassignment_from_realm=%s' % src_realm,
                 'scope': 'enrollment'}}
+
+        mocked_get_policy_definitions.return_value = {
+            'enrollment': {
+                'autoassignment_from_realm': {'type': 'str'}
+                }
+            }
 
         realm = get_autoassignment_from_realm(user)
         assert src_realm.strip() == realm

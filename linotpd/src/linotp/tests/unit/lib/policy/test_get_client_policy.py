@@ -73,8 +73,9 @@ class TestGetClientPolicy(unittest.TestCase):
     """
     Policy test
     """
-
-    def test_get_single_auth_policy_pe(self):
+    @patch('linotp.lib.policy.action.get_policy_definitions')
+    def test_get_single_auth_policy_pe(self,
+                                       mock_get_policy_definitions):
         """
         verify that (more specific) policy which refers to a client is selected
 
@@ -86,6 +87,12 @@ class TestGetClientPolicy(unittest.TestCase):
 
         """
 
+        mock_get_policy_definitions.return_value = {
+            'authentication': {
+                'qrtoken_pairing_callback_url' : {
+                    'type': 'str'}
+                }
+            }
         with patch.object(
             linotp.lib.policy, '_get_client', autospec=True) \
             as mock_get_client:
