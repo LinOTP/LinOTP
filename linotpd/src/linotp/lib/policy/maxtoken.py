@@ -116,13 +116,14 @@ def check_maxtoken_for_user(user):
     # ----------------------------------------------------------------------- --
 
     # check the maxtoken policy
-
+    action = "maxtoken"
     tokens = linotp.lib.token.getTokens4UserOrSerial(user, "")
 
     for user_realm in user_realms:
 
         policies = get_client_policy(client,
                                      scope='enrollment',
+                                     action=action,
                                      realm=user_realm,
                                      user=user.login,
                                      userObj=user)
@@ -130,7 +131,9 @@ def check_maxtoken_for_user(user):
         if not policies:
             continue
 
-        total_maxtoken = getPolicyActionValue(policies, "maxtoken")
+        log.debug('identified maxtoken policies: %r', list(policies.keys()))
+
+        total_maxtoken = getPolicyActionValue(policies, action)
 
         if total_maxtoken == -1 or isinstance(total_maxtoken, bool):
             continue
@@ -175,10 +178,12 @@ def check_maxtoken_for_user_by_type(user, type_of_token):
     typed_tokens = linotp.lib.token.getTokens4UserOrSerial(
                         user, token_type=type_of_token)
 
+    action = "maxtoken%s" % type_of_token.upper()
     for user_realm in user_realms:
 
         policies = get_client_policy(client,
                                      scope='enrollment',
+                                     action=action,
                                      realm=user_realm,
                                      user=user.login,
                                      userObj=user)
@@ -186,10 +191,11 @@ def check_maxtoken_for_user_by_type(user, type_of_token):
         if not policies:
             continue
 
+        log.debug('identified maxtoken policies: %r', list(policies.keys()))
+
         # compare the tokens of the user with the max numbers of the policy
 
-        total_maxtoken = getPolicyActionValue(
-                            policies,"maxtoken%s" % type_of_token.upper())
+        total_maxtoken = getPolicyActionValue(policies, action)
 
         if total_maxtoken == -1 or isinstance(total_maxtoken, bool):
             continue
