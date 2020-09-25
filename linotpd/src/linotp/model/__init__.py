@@ -800,7 +800,8 @@ class Challenge(db.Model):
 
     def getData(self):
         data = {}
-        saved_data = self.data.decode('utf-8')
+        saved_data = (self.data if isinstance(self.data, str)
+                      else self.data.decode('utf-8'))
         try:
             data = json.loads(saved_data)
         except:
