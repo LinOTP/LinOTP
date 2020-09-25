@@ -58,37 +58,7 @@ SYSTEM_ACTIONS = {
     'testProvider': 'read',
     'getProvider': 'read', }
 
-def get_policy_definitions(scope: str=None) ->Dict:
-    """cache the policy definitions access in the local request context.
-
-    as the evaluation of the policy definition is resource intensive we cache
-    the outcome on a per request base.
-
-    :param scope: select only a scope of the definitions
-    :return: the policy definition dict
-
-    :sideeffect: the local request context is extendend by the dict of the
-                 policy definitions. As they are pretty stable, there is no
-                 interference expected
-    """
-
-    if not request_context['PolicyDefinitions']:
-        request_context['PolicyDefinitions'] = _get_policy_definitions()
-
-    if scope:
-        return request_context['PolicyDefinitions'].get(scope, {})
-
-    return request_context['PolicyDefinitions']
-
-def _get_policy_definitions(scope=""):
-    '''
-        returns the policy definitions of
-          - allowed scopes
-          - allowed actions in scopes
-          - type of actions
-    '''
-
-    pol = {
+POLICY_DEFINTIONS = {
         'admin': {
             'enable': {'type': 'bool'},
             'disable': {'type': 'bool'},
@@ -464,6 +434,40 @@ def _get_policy_definitions(scope=""):
             'show': {'type': 'bool'},
         },
     }
+
+def get_policy_definitions(scope: str=None) ->Dict:
+    """cache the policy definitions access in the local request context.
+
+    as the evaluation of the policy definition is resource intensive we cache
+    the outcome on a per request base.
+
+    :param scope: select only a scope of the definitions
+    :return: the policy definition dict
+
+    :sideeffect: the local request context is extendend by the dict of the
+                 policy definitions. As they are pretty stable, there is no
+                 interference expected
+    """
+
+    if not request_context['PolicyDefinitions']:
+        request_context['PolicyDefinitions'] = _get_policy_definitions()
+
+    if scope:
+        return request_context['PolicyDefinitions'].get(scope, {})
+
+    return request_context['PolicyDefinitions']
+
+def _get_policy_definitions():
+    '''
+    internal worker, which gathers all policy information in addition to the
+    static ones
+
+    :return: the policy definitions of all scopes with the available actions
+             in scopes and their action types
+    '''
+
+    pol = {}
+    pol.update(POLICY_DEFINTIONS)
 
     linotp_config = request_context['Config']
     oath_support = (str(linotp_config.get('linotp.OATHTokenSupport', 'False'))
