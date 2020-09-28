@@ -1,3 +1,15 @@
+linotp (2.12.1~rc0-1) buster; urgency=low
+
+  Fix:
+  * Policies: Consistent evaluation of policies is ensured in the "enrollment"
+    scope. Evaluation is adjusted to match all actions for a given user if some
+    of the actions are less explicitly defined regarding user and realm fields
+  * Selfservice: MFA login with Push Token and QR Token is correctly processed
+  * Incorrect max token count evaluation is fixed if a different, more specific
+    (not user:*) policy with other actions is defined.
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 28 Sep 2020 11:44:31 +0200
+
 linotp (2.12-1) buster; urgency=low
 
   Feature:
