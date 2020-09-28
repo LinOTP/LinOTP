@@ -1,3 +1,9 @@
+linotp-adminclient-cli (2.12.1~rc0-1) buster; urgency=low
+
+  * Set new version 2.12.1~rc0-1
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 28 Sep 2020 11:44:31 +0200
+
 linotp-adminclient-cli (2.12-1) buster; urgency=low
 
   * Set new version 2.12
