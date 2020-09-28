@@ -139,7 +139,7 @@ RUN apt-get install \
         python3-ldap python3-mako python3-mysqldb python3-netaddr \
         python3-pycryptodome \
         python3-pyrad python3-qrcode python3-routes \
-        python3-sqlalchemy \
+        python3-sqlalchemy python3-flask-sqlalchemy \
         apache2 libapache2-mod-wsgi-py3 \
         python3-pysodium python3-requests \
         python3-setuptools python3-usb \
