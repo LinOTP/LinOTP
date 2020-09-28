@@ -312,11 +312,6 @@ class LinOTPApp(Flask):
                 else:
                     log.info("license successfully loaded")
 
-    def load_providers(self):
-        config_file = self.config.get('provider.config_file')
-        if config_file:
-            from linotp.provider import load_provider_ini
-            load_provider_ini(config_file)
 
     def start_session(self):
 
@@ -814,7 +809,6 @@ def create_app(config_name='default', config_extra=None):
 
         reload_token_classes()
         app.check_license()
-        app.load_providers()
 
     @app.before_request
     def setup_env():
