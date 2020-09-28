@@ -23,8 +23,8 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-
 """ policy evaluation """
+from typing import Dict
 
 from datetime import datetime
 
@@ -157,7 +157,7 @@ class PolicyEvaluator(object):
             return all_policies
 
         # preserve a dict with which policy matched best wrt the user
-        user_match = {}
+        matches = {}
 
         for p_name, p_dict in all_policies.items():
 
@@ -175,7 +175,7 @@ class PolicyEvaluator(object):
             # evaluate each filter against the policy. if one filter fails
             # we can skip the evaluation the given policy
 
-            user_match_type = None
+            match_type = {}
 
             for (f_key, f_value, f_compare) in self.filters:
                 policy_condition = p_dict.get(f_key)
@@ -188,11 +188,7 @@ class PolicyEvaluator(object):
                 # only be evaluated within the user_list_compare
                 # function
 
-                if f_key == 'user':
-                    user_match_type, matching = f_compare(
-                        policy_condition, f_value)
-                else:
-                    matching = f_compare(policy_condition, f_value)
+                match_type[f_key], matching = f_compare(policy_condition, f_value)
 
                 if not matching:
                     break
@@ -205,28 +201,115 @@ class PolicyEvaluator(object):
                 continue
 
             matching_policies[p_name] = p_dict
+            self.add_match_type(matches, match_type, p_name)
 
-            if user_match_type:
-                if user_match_type not in user_match:
-                    user_match[user_match_type] = {}
-
-                user_match[user_match_type][p_name] = all_policies[p_name]
+        if not matching_policies:
+            return {}
 
         # ----------------------------------------------------------------- --
 
-        # all policies are evaluated:
-        # identify the most relvant policies wrt. to the user matching:
-        #  user name  >> ( *@realm | *.resolver: ) >> *
-        # if there is no exact or regex user match, we return all identified
-        # policies
+        # to get the best machtes, we intersect the matching policies
+        # for example:
+        #
+        # matchin all: p1, p2, p3, p4, p5
+        # user exact: p1, p2, p3
+        # user wild: p4, p5
+        # => 1 selection: (p1, p2, p3, p4,) & (p1, p2, p3) = (p1, p2, p3)
+        #
+        # intersect result with realm:
+        # realm match exact: p1, p2, p4
+        # => 2. selection: (p1, p2, p3) & (p1, p2, p4) = (p1, p2)
+        #
+        # intersect result with client:
+        # client match exact: p3
+        # client match wildcard: p1
+        # => 3. selecttion: (p1, p2) & (p1) = p1
 
-        if 'exact:match' in user_match:
-            return user_match['exact:match']
+        selection = set(matching_policies.keys())
 
-        elif 'regex:match' in user_match:
-            return user_match['regex:match']
+        user_matches = matches.get('user', {})
+        if user_matches:
+            selection = self.select(
+                selection,
+                user_matches.get(EXACT_MATCH, set()),
+                user_matches.get(REGEX_MATCH, set()),
+                user_matches.get(WILDCARD_MATCH, set()),
+                )
 
-        return matching_policies
+        realm_matches = matches.get('realm', {})
+        if realm_matches:
+            selection = self.select(
+                selection,
+                realm_matches.get(EXACT_MATCH, set()),
+                realm_matches.get(WILDCARD_MATCH, set()),
+                )
+
+        client_matches = matches.get('client', {})
+        if client_matches:
+            selection = self.select(
+                selection,
+                client_matches.get(EXACT_MATCH, set()),
+                client_matches.get(WILDCARD_MATCH, set())
+                )
+
+        result = {}
+        for entry in selection:
+            result[entry]=all_policies[entry]
+
+        return result
+
+
+    def add_match_type(self, matches: Dict, matches_dict: Dict, policy: str):
+        """ helper to add the matches into a common dict.
+
+        the dict will contain
+            {match_key: {match_type: set(of policy_names)}}
+
+        for example:
+            {
+            'user': {
+                'exact:match':set(p1,p2,p3),
+                'regex:match':set(p4),
+                'wildcard:match':set(p6)
+                },
+            'realm': {. . .}
+            }
+
+        :param matches: target dict for gathering all matches
+        :param matches_dict: the per policy match evaluation
+        :param policy: the name of the policy
+        """
+        for key, match_type in matches_dict.items():
+
+            if key not in matches:
+                matches[key] = {}
+
+            if match_type not in matches[key]:
+                matches[key][match_type] = set()
+
+            matches[key][match_type].add(policy)
+
+
+    def select(self, all_matches, *args):
+        """helper to intersect the identified sets of matches.
+
+        if no match could be made with one set, try the next one.
+        if no intersection with any set, we return the initial one
+
+        :param all_matches: set of initial entries
+        :param *args: list of sets, whereby the ordering defines the
+                      matching precission e.g.:
+                          set(exact), set(regex), set(wildcard)
+        :return: set of matches
+        """
+
+        for match_set in args:
+
+            if all_matches & match_set:
+                return all_matches & match_set
+
+        return all_matches
+
 
     def set_filters(self, params):
         """
