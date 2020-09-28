@@ -32,7 +32,8 @@ import json
 from linotp.flap import response
 from linotp.controllers.base import BaseController
 from linotp.lib.realm import getDefaultRealm
-from linotp.lib.policy import getPolicy, getPolicyActionValue
+from linotp.lib.policy.action import get_action_value
+from linotp.lib.policy import getPolicy
 
 from linotp.lib.config import getLinotpConfig
 
@@ -64,10 +65,11 @@ class U2FController(BaseController):
             'scope': 'enrollment',
             'realm': realm
             }
-        valid_facets_action_value = getPolicyActionValue(
+        valid_facets_action_value = get_action_value(
                                         getPolicy(get_policy_params),
-                                        'u2f_valid_facets',
-                                        is_string=True)
+                                        scope='enrollment',
+                                        action='u2f_valid_facets',
+                                        default='')
         # the action value contains the semicolon-separated list of valid facets
         valid_facets = valid_facets_action_value.split(';')
 

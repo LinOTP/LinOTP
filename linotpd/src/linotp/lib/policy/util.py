@@ -119,69 +119,6 @@ def are_the_same(dict1, dict2):
     return True
 
 
-def getPolicyActionValue(policies, action, max=True,
-                         is_string=False, subkey=None):
-    """
-    This function retrieves the int value of an action from a list of policies
-    input
-
-    :param policies: list of policies as returned from config.getPolicy
-        This is a list of dictionaries
-    :param action: an action, to be searched
-    :param max: if True, it will return the highest value, if there are
-        multiple policies if False, it will return the lowest value, if there
-        are multiple policies
-    :param is_string: if True, the value is a string and not an integer
-
-    Example policy::
-
-        pol10: {
-            action: "maxtoken = 10",
-            scope: "enrollment",
-            realm: "realm1",
-            user: "",
-            time: ""
-           }
-    """
-    results = {}
-
-    for _polname, pol in sorted(list(policies.items())):
-        action_key = action
-        action_value = pol['action'].strip()
-
-        values = parse_action_value(action_value)
-
-        if subkey:
-            action_key = "%s.%s" % (action, subkey)
-
-        ret = values.get(action_key, None)
-
-        # the parameter String=False enforces a conversion into an int
-        if isinstance(ret, str) and is_string is False:
-            try:
-                ret = int(ret)
-            except ValueError:
-                pass
-
-        if ret:
-            results[_polname] = ret
-
-    if len(results) > 1:
-        for val in list(results.values()):
-            if val != list(results.values())[0]:
-                LOG. error("multiple different action value matches exists %r"
-                           % results)
-
-    ret = -1
-    if is_string:
-        ret = ""
-
-    if results:
-        ret = list(results.values())[0]
-
-    return ret
-
-
 def _tokenise_action(action_value, separators=None, escapes=None):
     """
     iterate through the action value and yield

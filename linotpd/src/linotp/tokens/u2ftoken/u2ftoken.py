@@ -47,7 +47,8 @@ from linotp.lib.auth.validate import check_pin
 from linotp.tokens.base import TokenClass
 from linotp.lib.challenges import Challenges
 
-from linotp.lib.policy import getPolicy, getPolicyActionValue
+from linotp.lib.policy import getPolicy
+from linotp.lib.policy.action import get_action_value
 
 from linotp.lib.error import TokenTypeNotSupportedError
 from linotp.lib.error import ParameterError
@@ -297,10 +298,9 @@ class U2FTokenClass(TokenClass):
                 'realm': realms[0]
                 }
             policies = getPolicy(get_policy_params)
-            valid_facets_action_value = getPolicyActionValue(policies,
-                                                             'u2f_valid_facets',
-                                                             is_string=True
-                                                             )
+            valid_facets_action_value = get_action_value(
+                policies, scope='enrollment', action='u2f_valid_facets',
+                default='')
 
         if valid_facets_action_value != '':
             # 'u2f_valid_facets' policy is set - check if origin is in valid facets list
@@ -883,10 +883,10 @@ class U2FTokenClass(TokenClass):
                         'realm': realm
                         }
                     policies = getPolicy(get_policy_params)
-                    policy_value = getPolicyActionValue(policies,
-                                                        'u2f_app_id',
-                                                        is_string=True
-                                                        )
+                    policy_value = get_action_value(
+                        policies, scope='enrollment', action='u2f_app_id',
+                        default='')
+
                     # Check for appId conflicts
                     if appId and policy_value:
                         if appId != policy_value:

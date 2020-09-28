@@ -41,7 +41,7 @@ from linotp.lib.config.parsing import ConfigTree
 from linotp.lib.config.parsing import ConfigNotRecognized
 
 from linotp.lib.policy import getPolicy, get_client_policy
-from linotp.lib.policy import getPolicyActionValue
+from linotp.lib.policy.action import get_action_value
 from linotp.lib.context import request_context
 
 from linotp.lib.registry import ClassRegistry
@@ -686,10 +686,10 @@ def loadProviderFromPolicy(provider_type, realm=None, user=None):
                                  action=provider_action_name, realm=realm,
                                  user=user.login)
 
-    if policies:
-        provider_name = getPolicyActionValue(policies,
-                                             provider_action_name,
-                                             is_string=True)
+
+    provider_name = get_action_value(
+            policies, scope='authentication', action=provider_action_name,
+            default='')
 
     return loadProvider(provider_type, provider_name)
 
@@ -737,7 +737,8 @@ def get_provider_from_policy(provider_type, realm=None, user=None,
 
         return []
 
-    provider_names = getPolicyActionValue(policies, action, is_string=True)
+    provider_names = get_action_value(
+        policies, scope=scope, action=action, default='')
 
     providers = []
 
@@ -768,9 +769,11 @@ def _lookup_provider_policies(provider_type):
                           "action": provider_action_name, })
 
     for policy in policies:
-        provider_name = getPolicyActionValue(policies,
-                                             provider_action_name,
-                                             is_string=True)
+
+        provider_name = get_action_value(
+            policy, scope='authentication', action=provider_action_name,
+            default='')
+
         if provider_name not in provider_policies:
             provider_policies[provider_name] = []
 

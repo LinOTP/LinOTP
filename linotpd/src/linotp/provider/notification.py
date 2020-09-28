@@ -31,7 +31,7 @@ import logging
 from linotp.lib.context import request_context
 
 from linotp.lib.policy import get_client_policy
-from linotp.lib.policy import getPolicyActionValue
+from linotp.lib.policy.action import get_action_value
 
 log = logging.getLogger(__name__)
 
@@ -57,7 +57,9 @@ def notify_user(user, action, info, required=False):
         request_context['Client'], scope='notification',
         action=action, realm=user.realm, user=user.login)
 
-    provider_specs = getPolicyActionValue(policies, action, is_string=True)
+    provider_specs = get_action_value(
+        policies, scope='notification', action=action, default='')
+
     if not isinstance(provider_specs, list):
         provider_specs=[provider_specs]
 

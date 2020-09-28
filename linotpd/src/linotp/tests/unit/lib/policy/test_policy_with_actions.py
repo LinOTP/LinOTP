@@ -90,7 +90,7 @@ class PolicyActionTest(unittest.TestCase):
     """Verify that policy actions are correctly identified for a given user and in general.
 
     the policy action has to be part of the policy selection step and not only
-    during the getPolicyActionValue processing. Otherwise there will only
+    during the get_action_value processing. Otherwise there will only
     policies be found for a user where the action might not be part of and the
     general policies with "user:'*'" which might contain the action wont be
     selected.

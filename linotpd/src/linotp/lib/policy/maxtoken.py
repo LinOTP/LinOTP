@@ -33,7 +33,7 @@ from linotp.lib.context import request_context as context
 
 from linotp.lib.policy.util import _get_client
 from linotp.lib.policy.util import _getUserRealms
-from linotp.lib.policy.util import getPolicyActionValue
+from linotp.lib.policy.action import get_action_value
 
 from linotp.lib.policy.processing import get_client_policy
 
@@ -131,7 +131,8 @@ def check_maxtoken_for_user(user):
         if not policies:
             continue
 
-        total_maxtoken = getPolicyActionValue(policies, "maxtoken")
+        total_maxtoken = get_action_value(
+            policies, scope='enrollment', action="maxtoken", default=-1)
 
         if total_maxtoken == -1 or isinstance(total_maxtoken, bool):
             continue
@@ -190,8 +191,9 @@ def check_maxtoken_for_user_by_type(user, type_of_token):
 
         # compare the tokens of the user with the max numbers of the policy
 
-        total_maxtoken = getPolicyActionValue(
-                            policies,"maxtoken%s" % type_of_token.upper())
+        total_maxtoken = get_action_value(
+            policies, scope='enrollment', 
+            action="maxtoken%s" % type_of_token.upper(), default=-1)
 
         if total_maxtoken == -1 or isinstance(total_maxtoken, bool):
             continue
