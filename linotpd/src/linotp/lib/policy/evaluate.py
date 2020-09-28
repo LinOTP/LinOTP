@@ -31,10 +31,12 @@ from datetime import datetime
 from netaddr import IPAddress
 from netaddr import IPNetwork
 
-from linotp.lib.policy.filter import UserDomainCompare
-from linotp.lib.policy.filter import AttributeCompare
 from linotp.lib.user import User
 from linotp.lib.realm import getRealms
+
+from .filter import UserDomainCompare
+from .filter import AttributeCompare
+from .util import parse_action_value
 
 WILDCARD_MATCH = 'wildcard:match'
 EXACT_MATCH = 'exact:match'
@@ -392,7 +394,7 @@ class PolicyEvaluator(object):
         """
 
         if action is not None:
-            self.add_filter('action', action, value_list_compare)
+            self.add_filter('action', action, action_compare)
 
     def filter_for_name(self, name):
         """
@@ -442,6 +444,36 @@ class PolicyEvaluator(object):
 # unit tests in tests/unit/policy/test_condition_comparison.py
 #
 
+def action_compare(policy_actions, action):
+    """
+    check if given action is in the policy_actions
+
+    remarks: we only do the policy detection, the action evaluation is done
+             by using the get_action_value
+
+    :param policy_actions: the condition described in the policy
+    :param action: the name of the action, which could be a key=val
+    :return: booleans
+    """
+
+    p_actions = parse_action_value(policy_actions)
+
+    if '*' in p_actions:
+        return WILDCARD_MATCH, True
+
+    if '=' not in action:
+        if action in p_actions:
+            return EXACT_MATCH, True
+        return NOT_MATCH, False
+
+    # we only check if the action name is in the policy actions, the value
+    # evaluation is done by using the get_action_value() function
+
+    for a_name in parse_action_value(action).keys():
+        if a_name in p_actions:
+            return EXACT_MATCH, True
+
+    return NOT_MATCH, False
 
 def value_list_compare(policy_conditions, action_name):
     """
