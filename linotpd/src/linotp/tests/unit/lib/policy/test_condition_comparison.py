@@ -51,27 +51,27 @@ class TestCompare(unittest.TestCase):
         """
 
         value_condition = ", , ,, "
-        res = value_list_compare(value_condition, "d")
+        _mtype, res = value_list_compare(value_condition, "d")
         assert res == False
 
         value_condition = ", a , b ,,, c"
-        res = value_list_compare(value_condition, "d")
+        _mtype, res = value_list_compare(value_condition, "d")
         assert res == False
 
         value_condition = ", a , b ,,, c"
-        res = value_list_compare(value_condition, "b")
+        _mtype, res = value_list_compare(value_condition, "b")
         assert res == True
 
         value_condition = ", a , b=x ,,, c"
-        res = value_list_compare(value_condition, "b")
+        _mtype, res = value_list_compare(value_condition, "b")
         assert res == True
 
         value_condition = ", a , b=x ,,, c=x"
-        res = value_list_compare(value_condition, "b=a")
+        _mtype, res = value_list_compare(value_condition, "b=a")
         assert res == False
 
         value_condition = ", a , b ,,, c=x, ,"
-        res = value_list_compare(value_condition, "b=a")
+        _mtype, res = value_list_compare(value_condition, "b=a")
         assert res == False
 
     def test_wildcard_list_compare(self):
@@ -80,19 +80,19 @@ class TestCompare(unittest.TestCase):
         """
 
         value_condition = "read, write, execute, "
-        res = wildcard_list_compare(value_condition, "write")
+        _mtype, res = wildcard_list_compare(value_condition, "write")
         assert res == True
 
         value_condition = " , ,,,,, , ,,     ,,  ,"
-        res = wildcard_list_compare(value_condition, "write")
+        _mtype, res = wildcard_list_compare(value_condition, "write")
         assert res == False
 
         value_condition = ""
-        res = wildcard_list_compare(value_condition, "write")
+        _mtype, res = wildcard_list_compare(value_condition, "write")
         assert res == False
 
         value_condition = "* , write"
-        res = wildcard_list_compare(value_condition, "write")
+        _mtype, res = wildcard_list_compare(value_condition, "write")
         assert res == True
 
     def test_time_compare(self):
@@ -120,14 +120,18 @@ class TestCompare(unittest.TestCase):
             # datetime args
             # datetime(year, month, day[, hour[, minute[, second[, micro ..
 
-            assert time_list_compare(time_conditions,
+            _match_type, match = time_list_compare(time_conditions,
                                   datetime(2016, 12, 14, 15, 30))  # 15:30
+            assert match
 
-            assert not time_list_compare(time_conditions,
+            _match_type, match = time_list_compare(time_conditions,
                                   datetime(2016, 12, 14, 18, 0))  # 18:00
+            assert not match
 
-            assert not time_list_compare(time_conditions,
+
+            _match_type, match = time_list_compare(time_conditions,
                                   datetime(2016, 12, 14, 6, 0))  # 6:00
+            assert not match
 
         return
 
@@ -144,13 +148,17 @@ class TestCompare(unittest.TestCase):
             # and subnet is not allowed too
             '!192.168.16.0/24')
 
-        assert not ip_list_compare(ip_conditions, '127.0.0.1')
+        _match_type, match = ip_list_compare(ip_conditions, '127.0.0.1')
+        assert not match
 
-        assert ip_list_compare(ip_conditions, '192.168.12.13')
+        _match_type, match = ip_list_compare(ip_conditions, '192.168.12.13')
+        assert match
 
-        assert not ip_list_compare(ip_conditions, '192.168.17.15')
+        _match_type, match = ip_list_compare(ip_conditions, '192.168.17.15')
+        assert not match
 
-        assert not ip_list_compare(ip_conditions, '192.168.16.152')
+        _match_type, match = ip_list_compare(ip_conditions, '192.168.16.152')
+        assert not match
 
     def test_user_compare(self):
         """
