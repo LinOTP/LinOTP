@@ -23,8 +23,8 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-
 """ policy evaluation """
+from typing import Dict
 
 from datetime import datetime
 
@@ -35,6 +35,11 @@ from linotp.lib.policy.filter import UserDomainCompare
 from linotp.lib.policy.filter import AttributeCompare
 from linotp.lib.user import User
 from linotp.lib.realm import getRealms
+
+WILDCARD_MATCH = 'wildcard:match'
+EXACT_MATCH = 'exact:match'
+REGEX_MATCH = 'regex:match'
+NOT_MATCH = 'not:match'
 
 
 class PolicyEvaluator(object):
@@ -152,7 +157,7 @@ class PolicyEvaluator(object):
             return all_policies
 
         # preserve a dict with which policy matched best wrt the user
-        user_match = {}
+        matches = {}
 
         for p_name, p_dict in all_policies.items():
 
@@ -170,7 +175,7 @@ class PolicyEvaluator(object):
             # evaluate each filter against the policy. if one filter fails
             # we can skip the evaluation the given policy
 
-            user_match_type = None
+            match_type = {}
 
             for (f_key, f_value, f_compare) in self.filters:
                 policy_condition = p_dict.get(f_key)
@@ -183,11 +188,7 @@ class PolicyEvaluator(object):
                 # only be evaluated within the user_list_compare
                 # function
 
-                if f_key == 'user':
-                    user_match_type, matching = f_compare(
-                        policy_condition, f_value)
-                else:
-                    matching = f_compare(policy_condition, f_value)
+                match_type[f_key], matching = f_compare(policy_condition, f_value)
 
                 if not matching:
                     break
@@ -200,28 +201,115 @@ class PolicyEvaluator(object):
                 continue
 
             matching_policies[p_name] = p_dict
+            self.add_match_type(matches, match_type, p_name)
 
-            if user_match_type:
-                if user_match_type not in user_match:
-                    user_match[user_match_type] = {}
-
-                user_match[user_match_type][p_name] = all_policies[p_name]
+        if not matching_policies:
+            return {}
 
         # ----------------------------------------------------------------- --
 
-        # all policies are evaluated:
-        # identify the most relvant policies wrt. to the user matching:
-        #  user name  >> ( *@realm | *.resolver: ) >> *
-        # if there is no exact or regex user match, we return all identified
-        # policies
+        # to get the best machtes, we intersect the matching policies
+        # for example:
+        #
+        # matchin all: p1, p2, p3, p4, p5
+        # user exact: p1, p2, p3
+        # user wild: p4, p5
+        # => 1 selection: (p1, p2, p3, p4,) & (p1, p2, p3) = (p1, p2, p3)
+        #
+        # intersect result with realm:
+        # realm match exact: p1, p2, p4
+        # => 2. selection: (p1, p2, p3) & (p1, p2, p4) = (p1, p2)
+        #
+        # intersect result with client:
+        # client match exact: p3
+        # client match wildcard: p1
+        # => 3. selecttion: (p1, p2) & (p1) = p1
 
-        if 'exact:match' in user_match:
-            return user_match['exact:match']
+        selection = set(matching_policies.keys())
 
-        elif 'regex:match' in user_match:
-            return user_match['regex:match']
+        user_matches = matches.get('user', {})
+        if user_matches:
+            selection = self.select(
+                selection,
+                user_matches.get(EXACT_MATCH, set()),
+                user_matches.get(REGEX_MATCH, set()),
+                user_matches.get(WILDCARD_MATCH, set()),
+                )
 
-        return matching_policies
+        realm_matches = matches.get('realm', {})
+        if realm_matches:
+            selection = self.select(
+                selection,
+                realm_matches.get(EXACT_MATCH, set()),
+                realm_matches.get(WILDCARD_MATCH, set()),
+                )
+
+        client_matches = matches.get('client', {})
+        if client_matches:
+            selection = self.select(
+                selection,
+                client_matches.get(EXACT_MATCH, set()),
+                client_matches.get(WILDCARD_MATCH, set())
+                )
+
+        result = {}
+        for entry in selection:
+            result[entry]=all_policies[entry]
+
+        return result
+
+
+    def add_match_type(self, matches: Dict, matches_dict: Dict, policy: str):
+        """ helper to add the matches into a common dict.
+
+        the dict will contain
+            {match_key: {match_type: set(of policy_names)}}
+
+        for example:
+            {
+            'user': {
+                'exact:match':set(p1,p2,p3),
+                'regex:match':set(p4),
+                'wildcard:match':set(p6)
+                },
+            'realm': {. . .}
+            }
+
+        :param matches: target dict for gathering all matches
+        :param matches_dict: the per policy match evaluation
+        :param policy: the name of the policy
+        """
+        for key, match_type in matches_dict.items():
+
+            if key not in matches:
+                matches[key] = {}
+
+            if match_type not in matches[key]:
+                matches[key][match_type] = set()
+
+            matches[key][match_type].add(policy)
+
+
+    def select(self, all_matches, *args):
+        """helper to intersect the identified sets of matches.
+
+        if no match could be made with one set, try the next one.
+        if no intersection with any set, we return the initial one
+
+        :param all_matches: set of initial entries
+        :param *args: list of sets, whereby the ordering defines the
+                      matching precission e.g.:
+                          set(exact), set(regex), set(wildcard)
+        :return: set of matches
+        """
+
+        for match_set in args:
+
+            if all_matches & match_set:
+                return all_matches & match_set
+
+        return all_matches
+
 
     def set_filters(self, params):
         """
@@ -367,20 +455,20 @@ def value_list_compare(policy_conditions, action_name):
     conditions = [x.strip() for x in policy_conditions.split(',')]
 
     if '*' in conditions:
-        return True
+        return WILDCARD_MATCH, True
 
     # exact action match
     if action_name in conditions:
-        return True
+        return EXACT_MATCH, True
 
     # extract action name from action_name=value
     for condition in conditions:
 
         cond_name, _sep, _cond_value = condition.partition('=')
         if cond_name.strip() == action_name:
-            return True
+            return EXACT_MATCH, True
 
-    return False
+    return NOT_MATCH, False
 
 def wildcard_list_compare(policy_conditions, value):
     """
@@ -409,9 +497,10 @@ def wildcard_icase_list_compare(policy_conditions, value, ignore_case=True):
     conditions = [x.strip() for x in policy_conditions.split(',')]
 
     if '*' in conditions:
-        return True
+        return WILDCARD_MATCH, True
 
     matched = False
+    match_type = NOT_MATCH
 
     for condition in conditions:
 
@@ -436,11 +525,12 @@ def wildcard_icase_list_compare(policy_conditions, value, ignore_case=True):
 
         if cmp_value == cmp_condition:
             if its_a_not_condition:
-                return False
+                return NOT_MATCH, False
             else:
                 matched = True
+                match_type = EXACT_MATCH
 
-    return matched
+    return match_type, matched
 
 def string_compare(policy_condition, value):
     """
@@ -451,9 +541,9 @@ def string_compare(policy_condition, value):
     :return: booleans
     """
     if policy_condition == value:
-        return True
+        return EXACT_MATCH, True
 
-    return False
+    return EXACT_MATCH, False
 
 
 def bool_compare(policy_condition, value):
@@ -468,9 +558,9 @@ def bool_compare(policy_condition, value):
     boolean_condition = str(policy_condition).lower() == 'true'
 
     if boolean_condition == value:
-        return True
+        return EXACT_MATCH, True
 
-    return False
+    return EXACT_MATCH, False
 
 
 def ip_list_compare(policy_conditions, client):
@@ -485,9 +575,10 @@ def ip_list_compare(policy_conditions, client):
     conditions = [x.strip() for x in policy_conditions.split(',')]
 
     if '*' in conditions:
-        return True
+        return WILDCARD_MATCH, True
 
     allowed = False
+    match_type = NOT_MATCH
 
     for condition in conditions:
         identified = False
@@ -502,16 +593,19 @@ def ip_list_compare(policy_conditions, client):
 
         if condition == '*':
             identified = True
+            if match_type == '':
+                match_type = WILDCARD_MATCH
 
         elif IPAddress(client) in IPNetwork(condition):
             identified = True
+            match_type = EXACT_MATCH
 
         if identified:
             if its_a_not_condition:
-                return False
+                return NOT_MATCH, False
             allowed = True
 
-    return allowed
+    return match_type, allowed
 
 
 def user_list_compare(policy_conditions, login):
@@ -538,7 +632,7 @@ def user_list_compare(policy_conditions, login):
     full_qualified_names = user.get_full_qalified_names()
 
     matched = False
-    match_type = ''
+    match_type = NOT_MATCH
 
     domain_comp = UserDomainCompare()
     attr_comp = AttributeCompare()
@@ -619,7 +713,7 @@ def user_list_compare(policy_conditions, login):
         # early exit on a not condition: !user1
 
         if its_a_not_condition:
-            return 'not:match', False
+            return NOT_MATCH, False
 
         # if we came here, we got a least one match
         matched = True
@@ -627,15 +721,15 @@ def user_list_compare(policy_conditions, login):
         # evaluate the precission of the user match
 
         if condition in full_qualified_names:
-            match_type = 'exact:match'
+            match_type = EXACT_MATCH
 
         if condition == '*':
             if not match_type:
-                match_type = 'wildcard:match'
+                match_type = WILDCARD_MATCH
 
         else:
-            if match_type != 'exact:match':
-                match_type = 'regex:match'
+            if match_type != EXACT_MATCH:
+                match_type = REGEX_MATCH
 
     return match_type, matched
 
@@ -769,6 +863,7 @@ def time_list_compare(policy_conditions, now):
     conditions = [x.strip() for x in policy_conditions.split(';')]
 
     matched = False
+    match_type = NOT_MATCH
 
     if now is None:
         now = datetime.now()
@@ -784,7 +879,7 @@ def time_list_compare(policy_conditions, now):
         # if in the conditions one is with wildcard we grant access
 
         if condition == '*':
-            return True
+            return WILDCARD_MATCH, True
 
         #
         # support excluding conditions which start with [-,!]
@@ -800,10 +895,11 @@ def time_list_compare(policy_conditions, now):
 
         if cron_compare(condition, now):
             if its_a_not_condition:
-                return False
+                return NOT_MATCH, False
             else:
                 matched = True
+                match_type = EXACT_MATCH
 
-    return matched
+    return match_type, matched
 
 # eof
