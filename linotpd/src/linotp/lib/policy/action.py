@@ -117,39 +117,6 @@ def get_action_value(policies:Dict, scope:str, action:str,
 
     return all_actions[action][0]
 
-
-def getSelfserviceActions(user):
-    '''
-    This function returns the allowed actions in the self service portal
-    for the given user
-    '''
-    login = user.login
-    realm = user.realm
-    client = _get_client()
-
-    log.debug("checking actions for scope=selfservice, realm=%r", realm)
-
-    policies = get_client_policy(client, scope="selfservice", realm=realm,
-                                 user=login, userObj=user)
-
-    # Now we got a dictionary of all policies within the scope selfservice for
-    # this realm. as there can be more than one policy, we concatenate all
-    # their actions to a list later we might want to change this
-
-    all_actions = []
-    for pol in policies:
-        # remove whitespaces and split at the comma
-        actions = policies[pol].get('action', '')
-        action_list = actions.split(',')
-        all_actions.extend(action_list)
-
-    acts = set()
-    for act in all_actions:
-        acts.add(act.strip())
-
-    # return the list with all actions
-    return list(acts)
-
 class PolicyActionTyping():
     """Convert the action value according to the policy definition.
     """
