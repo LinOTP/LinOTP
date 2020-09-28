@@ -35,6 +35,8 @@ from linotp.lib.policy.evaluate import user_list_compare
 from linotp.lib.policy.evaluate import ip_list_compare
 from linotp.lib.policy.evaluate import value_list_compare
 from linotp.lib.policy.evaluate import wildcard_list_compare
+from linotp.lib.policy.evaluate import action_compare
+
 
 from linotp.lib.user import User
 
@@ -204,3 +206,19 @@ class TestCompare(unittest.TestCase):
         assert match_type == 'regex:match'
 
         return
+
+    def test_action_compare(self):
+
+        match_type, res = action_compare(
+            'voice_message = "Sir, your otp={otp}" ,'
+            " voice_language = ' Sir, your otp is {otp}' , ",
+            'voice_message')
+        assert res
+        assert match_type == 'exact:match'
+
+        match_type, res = action_compare(
+            'voice_message = "Sir, your otp={otp}" ,'
+            " voice_language = ' Sir, your otp is {otp}' , ",
+            ' your otp')
+        assert not res
+        assert match_type == 'not:match'
