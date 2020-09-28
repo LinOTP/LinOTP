@@ -1,3 +1,12 @@
+linotp (3.0~b1-1) UNRELEASED; urgency=medium
+
+  * Set new version 3.0 Beta 2
+
+  Fixes:
+  * Server: Database was not correctly configured on new package installs
+
+ -- KeyIdentity GmbH <linotp@keyidentity.com>  Fri, 25 Sep 2020 15:21:20 +0200
+
 linotp (3.0~b0-1) buster-dev; urgency=low
 
   * Set new version 3.0 Beta

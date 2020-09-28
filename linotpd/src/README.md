@@ -127,7 +127,7 @@ and start creating the UserIdResolver, a Realm and enroll tokens.
 You can adapt the `/etc/linotp/linotp.cfg` file. There you need to
 configure the database connection with an existing database and user:
 
-    SQLALCHEMY_DATABASE_URI = mysql://user:password@localhost/LinOTP
+    SQLALCHEMY_DATABASE_URI = mysql://user:password@localhost/LinOTP?charset=utf8
 
 Once you have ensured that your database server knows about the
 database and it is accessible using the given user name and password,
