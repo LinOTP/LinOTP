@@ -56,7 +56,7 @@ from linotp.lib.policy.processing import has_client_policy
 
 from linotp.lib.policy.util import get_realm_from_policies
 from linotp.lib.policy.util import get_resolvers_for_realms
-from linotp.lib.policy.util import getPolicyActionValue
+from linotp.lib.policy.action import get_action_value
 from linotp.lib.policy.util import _getAuthenticatedUser
 from linotp.lib.policy.util import _get_client
 from linotp.lib.policy.util import _get_pin_values
@@ -982,7 +982,8 @@ def _checkGetTokenPolicyPre(method, param=None, authUser=None, user=None):
 
             policies.update(pol)
 
-        value = getPolicyActionValue(policies, pol_action)
+        value = get_action_value(
+            policies, scope='gettoken', action=pol_action, default={})
 
         log.debug("got all policies: %r: %r", policies, value)
 
@@ -1092,7 +1093,10 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
                                     "max_count defined for the tokentype "
                                     "%s in realm %s.") % (ttype, urealm))
 
-        value = getPolicyActionValue(policies, pol_action)
+        value = get_action_value(policies,
+                                     scope='selfservice',
+                                     action=pol_action,
+                                     default=-1)
 
         log.debug("[max_count] got all policies: %r: %r", policies, value)
 
@@ -1544,11 +1548,9 @@ def _check_token_count(user=None, realm=None, post_check=False):
 
         policy_def['realm'] = lookup_realm
         policy = getPolicy(policy_def)
-        if not policy:
-            continue
-
-        policy_token_count = getPolicyActionValue(
-                                policy, token_count, is_string=False)
+        policy_token_count = get_action_value(
+                                policy, scope='enrollment',
+                                action=token_count, default=-1)
 
         if policy_token_count < 0:
             log.debug("there is no scope=enrollment, action=tokencount policy "
@@ -1595,7 +1597,9 @@ def get_tokenissuer(user="", realm="", serial=""):
         client, scope="enrollment", action=action, realm=realm, user=user)
 
     if len(pol) != 0:
-        string_issuer = getPolicyActionValue(pol, action, is_string=True)
+        string_issuer = get_action_value(
+            pol, scope="enrollment", action=action, default='')
+
         if string_issuer:
             string_issuer = re.sub('<u>', user, string_issuer)
             string_issuer = re.sub('<r>', realm, string_issuer)
@@ -1627,21 +1631,17 @@ def get_tokenlabel(user="", realm="", serial=""):
     pol = has_client_policy(
         client, scope="enrollment", action=action, realm=realm, user=user)
 
-    if len(pol) == 0:
-        # No policy, so we use the serial number as label
-        log.debug("there is no scope=enrollment policy for realm %r", realm)
-        tokenlabel = serial
+    string_label = get_action_value(
+        pol, scope='enrollment', action=action, default='')
 
-    else:
-        string_label = getPolicyActionValue(pol, action, is_string=True)
-        if string_label == "":
-            # empty label, so we use the serial
-            tokenlabel = serial
-        else:
-            string_label = re.sub('<u>', user, string_label)
-            string_label = re.sub('<r>', realm, string_label)
-            string_label = re.sub('<s>', serial, string_label)
-            tokenlabel = string_label
+    if not string_label:
+        # empty label, so we use the serial
+        return serial
+
+    string_label = re.sub('<u>', user, string_label)
+    string_label = re.sub('<r>', realm, string_label)
+    string_label = re.sub('<s>', serial, string_label)
+    tokenlabel = string_label
 
     return tokenlabel
 
@@ -1661,14 +1661,11 @@ def get_autoassignment_from_realm(user):
         client=client, scope='enrollment', action=token_src_realm_action,
         realm=user.realm, user=user.login, userObj=user)
 
-    if len(pol) > 0:
-        realm = getPolicyActionValue(pol,
-                                     token_src_realm_action,
-                                     is_string=True).strip()
-        log.debug("got the %s: %r", token_src_realm_action, realm)
-        return realm
+    realm = get_action_value(
+        pol,scope='enrollment',action=token_src_realm_action, default='')
 
-    return None
+    log.debug("got the %s: %r", token_src_realm_action, realm)
+    return realm.strip()
 
 
 def get_autoassignment_without_pass(user):
@@ -1685,16 +1682,11 @@ def get_autoassignment_without_pass(user):
         client=client, scope='enrollment', action=action_name,
         realm=user.realm, user=user.login, userObj=user)
 
-    if len(pol) > 0:
-        val = getPolicyActionValue(pol, action_name)
+    if not pol:
+        return False
 
-        if val in [True, False]:
-            return val
-        if val.lower().strip() == 'true':
-            return True
-
-    return False
-
+    return get_action_value(
+         pol, scope='enrollment', action=action_name, default=False)
 
 def get_autoassignment(user):
     '''
@@ -1702,22 +1694,15 @@ def get_autoassignment(user):
     This is a boolean policy.
     The function returns true, if autoassignment is defined.
     '''
-    ret = False
+
     client = _get_client()
 
     pol = has_client_policy(
         client, scope='enrollment', action="autoassignment",
         realm=user.realm, user=user.login, userObj=user)
 
-    if len(pol) > 0:
-        val = getPolicyActionValue(pol, "autoassignment")
-        # with  LinOTP 2.7 the autassign policy is treated as boolean
-        if val is True:
-            ret = True
-        # for backwar compatibility, we accept any values
-        # other than -1, which indicates an error
-        elif val != -1:
-            ret = True
+    ret = get_action_value(
+            pol, scope='enrollment', action="autoassignment", default=False)
 
     log.debug("got the autoassignement %r", ret)
     return ret
@@ -1729,24 +1714,16 @@ def get_auto_enrollment(user):
     This policy policy returns the tokentyp: sms or email
     The function returns true, if autoenrollment is defined.
     '''
-    ret = False
-    token_typ = ''
-    action = "autoenrollment"
 
+    action = "autoenrollment"
     client = _get_client()
 
     pol = has_client_policy(
         client, scope='enrollment', action=action,
         realm=user.realm, user=user.login, userObj=user)
 
-    if len(pol) == 0:
-        return False, ''
-
-    t_typ = getPolicyActionValue(pol, action, is_string=True)
-
-    if not isinstance(t_typ, str):
-        log.info("unsupported token type for auto enrollment %r", t_typ)
-        return False, ''
+    t_typ = get_action_value(
+        pol, scope='enrollment', action=action, default='')
 
     token_types = [x.strip() for x in t_typ.lower().split()]
 
@@ -1763,17 +1740,16 @@ def autoassignment_forward(user):
     This is a boolean policy.
     The function returns true, if autoassignment is defined.
     '''
-    ret = False
+
     client = _get_client()
 
-    pol = has_client_policy(
+    pol = get_client_policy(
         client, scope='enrollment', action="autoassignment_forward",
         realm=user.realm, user=user.login, userObj=user)
 
-    if len(pol) > 0:
-        ret = True
-
-    return ret
+    return get_action_value(
+        pol, scope='enrollment', action="autoassignment_forward",
+        default=False)
 
 def purge_enrollment_token(user, realm=None):
     '''
@@ -1785,14 +1761,13 @@ def purge_enrollment_token(user, realm=None):
     '''
     client = _get_client()
 
-    policies = has_client_policy(
+    policies = get_client_policy(
         client=client, scope='enrollment', action="purge_rollout_token",
         realm=realm, userObj=user)
 
-    if policies:
-        return True
-
-    return False
+    return get_action_value(
+        policies, scope='enrollment', action="purge_rollout_token",
+        default=False)
 
 
 def ignore_autoassignment_pin(user):
@@ -1803,67 +1778,59 @@ def ignore_autoassignment_pin(user):
     The function returns true, if the password used in the autoassignment
     should not be set as token pin.
     '''
-    ret = False
     client = _get_client()
 
-    pol = has_client_policy(
+    policies = get_client_policy(
         client, scope='enrollment', action="ignore_autoassignment_pin",
         realm=user.realm, user=user.login, userObj=user)
 
-    if len(pol) > 0:
-        ret = True
-
-    return ret
-
+    return get_action_value(
+        policies, scope='enrollment', action="ignore_autoassignment_pin",
+        default=False)
 
 def _getRandomOTPPINLength(user):
     '''
     This internal function returns the length of the random otp pin that is
     define in policy scope = enrollment, action = otp_pin_random = 111
     '''
-    maxOTPPINLength = -1
-    Realms = _getUserRealms(user)
+
+    all_pin_length = []
     client = _get_client()
 
-    for R in Realms:
-        pol = has_client_policy(
+    for R in _getUserRealms(user):
+
+        policies = get_client_policy(
             client, scope='enrollment', action='otp_pin_random',
             realm=R, user=user.login, userObj=user)
 
-        if len(pol) == 0:
-            log.debug("there is no scope=enrollment policy for Realm %r", R)
-            return -1
+        pin_length = get_action_value(
+            policies, scope='enrollment', action='otp_pin_random', default=-1)
 
-        OTPPINLength = getPolicyActionValue(pol, 'otp_pin_random')
+        all_pin_length.append(pin_length)
 
-        # If there is a policy, with a higher random pin length
-        log.debug("found policy with otp_pin_random = %r", OTPPINLength)
+        log.debug("found policy with otp_pin_random = %r", pin_length)
 
-        if int(OTPPINLength) > int(maxOTPPINLength):
-            maxOTPPINLength = OTPPINLength
-
-    return maxOTPPINLength
+    return max(all_pin_length)
 
 def _getRandomOTPPINContent(user):
     '''
     This internal function returns the length of the random otp pin that is
-    define in policy scope = enrollment, action = otp_pin_random = 111
+    defined in policy scope = enrollment, action = otp_pin_random = 111
     '''
-
-    Realms = _getUserRealms(user)
     client = _get_client()
 
-    for R in Realms:
+    for R in _getUserRealms(user):
 
-        pol = has_client_policy(
+        policies = has_client_policy(
             client, scope='enrollment', action='otp_pin_random_content',
             realm=R, user=user.login, userObj=user)
 
-        if len(pol) == 0:
-            log.debug("there is no scope=enrollment policy for Realm %r", R)
-            return ''
+        otp_pin_random_content = get_action_value(
+            policies, scope='enrollment', action='otp_pin_random_content',
+            default='')
 
-        return getPolicyActionValue(pol, "otp_pin_random_content")
+        if otp_pin_random_content:
+            return otp_pin_random_content
 
     return ''
 
@@ -1872,7 +1839,7 @@ def getOTPPINEncrypt(serial=None, user=None):
     This function returns, if the otppin should be stored as
     an encrpyted value
     '''
-    encrypt_pin = 0
+
     client = _get_client()
 
     Realms = []
@@ -1885,16 +1852,17 @@ def getOTPPINEncrypt(serial=None, user=None):
 
     for realm in Realms:
 
-        pol = get_client_policy(
+        policies = get_client_policy(
             client=client, scope='enrollment', action='otp_pin_encrypt',
             realm=realm, user=user)
 
-        log.debug("realm: %r, pol: %r", realm, pol)
+        log.debug("realm: %r, pol: %r", realm, policies)
 
-        if 1 == getPolicyActionValue(pol, 'otp_pin_encrypt'):
-            encrypt_pin = 1
+        if  get_action_value(
+            policies, scope='enrollment', action='otp_pin_encrypt', default=0):
+            return 1
 
-    return encrypt_pin
+    return 0
 
 
 def _getOTPPINPolicies(user, scope="selfservice"):
@@ -1915,27 +1883,28 @@ def _getOTPPINPolicies(user, scope="selfservice"):
     log.debug("[getOTPPINPolicies]")
     client = _get_client()
 
-    Realms = _getUserRealms(user)
     ret = {'min':-1, 'max':-1, 'contents': ""}
 
     log.debug("searching for OTP PIN policies in scope=%r policies.", scope)
-    for R in Realms:
+    for R in  _getUserRealms(user):
 
         pol = get_client_policy(
             client, scope=scope, action="otp_pin_maxlength",
             realm=R, user=user.login, userObj=user)
-        n_max = getPolicyActionValue(pol, "otp_pin_maxlength")
+        n_max = get_action_value(
+            pol, scope=scope, action="otp_pin_maxlength", default=-1)
 
         pol = get_client_policy(
             client, scope=scope, action="otp_pin_minlength",
             realm=R, user=user.login, userObj=user)
-        n_min = getPolicyActionValue(pol, "otp_pin_minlength", max=False)
+        n_min = get_action_value(
+            pol, scope=scope, action="otp_pin_minlength", default=-1)
 
         pol = get_client_policy(
             client, scope=scope, action="otp_pin_contents",
             realm=R, user=user.login, userObj=user)
-        n_contents = getPolicyActionValue(pol, "otp_pin_contents",
-                                          is_string=True)
+        n_contents = get_action_value(
+            pol, scope=scope, action="otp_pin_contents", default="")
 
         # find the maximum length
         log.debug("find the maximum length for OTP PINs.")
@@ -2253,11 +2222,11 @@ def set_realm(login, realm, exception=False):
         client, scope="authorization", action="setrealm",
         realm=realm, user=login, find_resolver=False)
 
-    if len(policies):
-        realm = getPolicyActionValue(policies, "setrealm", is_string=True)
+    new_realm = get_action_value(
+        policies, scope="authorization", action="setrealm", default=realm)
 
-    log.debug("users %s new realm is %s", login, realm)
-    return realm
+    log.debug("users %s new realm is %s", login, new_realm)
+    return new_realm
 
 
 def check_user_authorization(login, realm, exception=False):
@@ -2311,7 +2280,7 @@ def get_auth_passthru(user):
     ret = False
     client = _get_client()
 
-    pol = has_client_policy(
+    pol = get_client_policy(
         client, scope="authentication", action="passthru",
         realm=user.realm, user=user.login, userObj=user)
 
@@ -2326,16 +2295,13 @@ def get_auth_forward(user):
     '''
     client = _get_client()
 
-    pol = get_client_policy(
+    policies = get_client_policy(
         client, scope="authentication", action="forward_server",
         realm=user.realm, user=user.login, userObj=user)
 
-    if not pol:
-        return None
-
-    servers = getPolicyActionValue(pol, "forward_server", is_string=True)
-
-    return servers
+    return get_action_value(
+        policies, scope="authentication", action="forward_server",
+        default=None)
 
 def get_auth_forward_on_no_token(user):
     '''
@@ -2344,14 +2310,13 @@ def get_auth_forward_on_no_token(user):
     '''
     client = _get_client()
 
-    pol = has_client_policy(
+    policies = get_client_policy(
         client, scope="authentication", action="forward_on_no_token",
         realm=user.realm, user=user.login, userObj=user)
 
-    if len(pol) > 0:
-        return True
-
-    return False
+    return get_action_value(
+        policies, scope="authentication", action="forward_on_no_token",
+        default=False)
 
 
 def get_auth_passOnNoToken(user):
@@ -2359,40 +2324,41 @@ def get_auth_passOnNoToken(user):
     returns True, if the user in this realm should be always authenticated
     in case the user has no tokens assigned.
     '''
-    ret = False
+
     client = _get_client()
 
-    pol = has_client_policy(
+    policies = has_client_policy(
         client, scope="authentication", action="passOnNoToken",
         realm=user.realm, user=user.login, userObj=user)
 
-    if len(pol) > 0:
-        ret = True
-    return ret
+    return get_action_value(
+        policies, scope="authentication", action="passOnNoToken",
+        default=False)
 
 
 def disable_on_authentication_exceed(user, realms=None):
     '''
     returns True if the token should be disable, if max auth count is reached
     '''
-    ret = False
+    ppargs = {}
     action = "disable_on_authentication_exceed"
     client = _get_client()
 
+    if not realms:
+        realms = [user.realm]
+
     if user.login:
-        pol = get_client_policy(
+        ppargs['user'] = user.login
+        ppargs['userObj'] = user
+
+    for realm in realms:
+        policies = get_client_policy(
             client, scope="authentication", action=action,
-            realm=user.realm, user=user.login, userObj=user)
+            realm=realm, **ppargs)
 
-        if len(pol) > 0:
+        if get_action_value(
+            policies,  scope="authentication", action=action, default=False):
             return True
-    else:
-        for realm in realms:
-            pol = get_client_policy(
-                client, scope="authentication", action=action, realm=realm)
-
-            if len(pol) > 0:
-                return True
 
     return False
 
@@ -2401,28 +2367,27 @@ def delete_on_authentication_exceed(user, realms=None):
     '''
     returns True if the token should be disable, if max auth count is reached
     '''
-
+    ppargs = {}
     action="delete_on_authentication_exceed"
     client = _get_client()
 
-    if user.login:
-        pol = get_client_policy(
-            client, scope="authentication", action=action,
-            realm=user.realm, user=user.login, userObj=user)
+    if not realms:
+        realms = [user.realm]
 
-        if len(pol) > 0:
+    if user.login:
+        ppargs['user'] = user.login
+        ppargs['userObj'] = user
+
+    for realm in realms:
+        policies = get_client_policy(
+            client, scope="authentication", action=action,
+            realm=realm, **ppargs)
+
+        if get_action_value(
+            policies,  scope="authentication", action=action, default=False):
             return True
 
-    else:
-        for realm in realms:
-            pol = get_client_policy(
-                client, scope="authentication", action=action, realm=realm)
-
-            if len(pol) > 0:
-                return True
-
     return False
-
 
 
 def trigger_sms(realms=None):
@@ -2538,7 +2503,8 @@ def get_auth_challenge_response(user, ttype):
     log.debug("got policy %r for user %r@%r from client %r",
               pol, p_user, p_realm, client)
 
-    Token_Types = getPolicyActionValue(pol, action, is_string=True)
+    Token_Types = get_action_value(
+        pol, scope="authentication", action=action, default='')
 
     token_types = [t.lower() for t in Token_Types.split()]
 
@@ -2597,10 +2563,8 @@ def _get_auth_PinPolicy(realm=None, user=None):
         client, scope="authentication", action="otppin",
         realm=realm, user=login, userObj=user)
 
-    log.debug("got policy %s for user %s@%s  client %s",
-              pol, login, realm, client)
-
-    pin_check = getPolicyActionValue(pol, "otppin", max=False)
+    pin_check = get_action_value(
+        pol, scope="authentication", action="otppin", default="token_pin")
 
     # we map the named values back, to provide interface compatibility
     if pin_check in pin_policy_lookup:
@@ -2646,7 +2610,9 @@ def check_auth_tokentype(serial, exception=False, user=None):
     log.debug("got policy %s for user %s@%s  client %s",
               pol, login, realm, client)
 
-    t_type = getPolicyActionValue(pol, "tokentype", max=False, is_string=True)
+    t_type = get_action_value(
+        pol, scope="authorization", action="tokentype", default='')
+
     if len(t_type) > 0:
         tokentypes = [t.strip() for t in t_type.lower().split(" ")]
 
@@ -2733,8 +2699,8 @@ def check_auth_serial(serial, exception=False, user=None):
               pol, login, realm, client)
 
     # extract the value from the policy
-    serial_regexp = getPolicyActionValue(pol, "serial",
-                                         max=False, is_string=True)
+    serial_regexp = get_action_value(
+        pol, scope="authorization", action="serial", default='')
 
     log.debug("found this regexp /%r/ for the serial %r",
               serial_regexp, serial)
@@ -2880,8 +2846,9 @@ def supports_offline(realms, token):
             client=client, scope='authentication', action='support_offline',
             realm=realm)
 
-        action_value = getPolicyActionValue(
-            policy, 'support_offline', is_string=True)
+        action_value = get_action_value(
+            policy, scope='authentication', action='support_offline',
+            default='')
 
         if action_value:
             token_types = action_value.split()
@@ -2895,36 +2862,34 @@ def get_partition(realms, user):
     """
     returns the partition (key pair identifier) that should be used
     """
-    action_values = []
+
     login = None
-    ret = 0
+    action_values = set()
 
     client = _get_client()
 
     if realms is None or len(realms) == 0:
         realms = ['/:no realm:/']
 
-
     for realm in realms:
         policy = get_client_policy(
             client=client, scope='enrollment', action='partition',
             realm=realm, user=login)
 
-        action_value = getPolicyActionValue(
-            policy, 'partition', is_string=True)
+        action_value = get_action_value(
+            policy, scope='enrollment', action='partition', default=0)
 
         if action_value:
-            action_values.append(action_value)
+            action_values.add(action_value)
+
+    if not action_values:
+        return 0
 
     if len(action_values) > 1:
-        for value in action_values:
-            if value != action_values[0]:
-                raise Exception('conflicting policy values %r found for '
-                                'realm set: %r' % (action_values, realms))
-    if action_values:
-        ret = int(action_values[0])
+        raise Exception('conflicting policy values %r found for '
+                        'realm set: %r' % (action_values, realms))
 
-    return ret
+    return action_values.pop()
 
 
 def get_single_auth_policy(policy_name, user=None, realms=None):
@@ -2941,9 +2906,8 @@ def get_single_auth_policy(policy_name, user=None, realms=None):
     :param realms: the realms that his policy should be effective in
     """
 
-    action_values = []
     login = None
-    ret = None
+    action_values = set()
     client = _get_client()
 
     if user and user.login and user.realm:
@@ -2959,19 +2923,19 @@ def get_single_auth_policy(policy_name, user=None, realms=None):
             client=client, scope="authentication", action=policy_name,
             realm=realm, user=login, userObj=user)
 
-        action_value = getPolicyActionValue(
-            policy, policy_name, is_string=True)
+        action_value = get_action_value(
+            policy,  scope="authentication", action=policy_name, default='')
 
         if action_value:
-            action_values.append(action_value)
+            action_values.add(action_value)
+
+    if not action_values:
+        return None
 
     if len(action_values) > 1:
-        for value in action_values:
-            if value != action_values[0]:
-                raise Exception('conflicting policy values %r found for '
-                                'realm set: %r' % (action_values, realms))
-    if action_values:
-        ret = action_values[0]
+        raise Exception('conflicting policy values %r found for '
+                        'realm set: %r' % (action_values, realms))
 
-    return ret
+    return action_values.pop()
+
 # eof ##########################################################################

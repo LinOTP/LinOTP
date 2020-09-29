@@ -115,7 +115,7 @@ from linotp.lib.crypto.utils import kdf2
 from linotp.lib.crypto import SecretObj
 
 from linotp.lib.policy import getPolicy
-from linotp.lib.policy import getPolicyActionValue
+from linotp.lib.policy.action import get_action_value
 
 from linotp.lib.auth.validate import check_pin
 
@@ -208,8 +208,10 @@ def get_qrtan_url(qrtan_policy_name, realms, callback_id=None):
 
     for realm in realms:
         pol = getPolicy({"scope": "authentication", 'realm': realm})
-        url = getPolicyActionValue(pol, qrtan_policy_name, is_string=True,
-                                   subkey=callback_id)
+        url = get_action_value(
+            pol, scope="authentication", action=qrtan_policy_name,
+            subkey=callback_id, default='')
+
         if url:
             urls.append(url)
 

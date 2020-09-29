@@ -70,7 +70,7 @@ from linotp.lib.realm import getRealms
 from linotp.lib.policy import checkPolicyPre
 from linotp.lib.policy import PolicyException
 from linotp.lib.policy import getAdminPolicies
-from linotp.lib.policy.definitions import getPolicyDefinitions
+from linotp.lib.policy.definitions import get_policy_definitions
 
 from linotp.lib.context import request_context
 
@@ -109,7 +109,7 @@ class ManageController(BaseController):
             c.version_ref = base64.encodebytes(c.version.encode())[:6]
 
             c.licenseinfo = get_copyright_info()
-            c.polDefs = getPolicyDefinitions()
+            c.polDefs = get_policy_definitions()
 
             c.display_provider = boolean(
                     request_context['Config'].get('display_provider', True))

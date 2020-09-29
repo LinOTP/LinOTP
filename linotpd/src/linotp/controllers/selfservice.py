@@ -54,7 +54,7 @@ from linotp.lib.error import ParameterError
 from linotp.lib.token import getTokenType
 from linotp.lib.token import getTokens4UserOrSerial
 
-from linotp.lib.policy.action import getSelfserviceActions
+from linotp.lib.policy.action import get_selfservice_actions
 from linotp.lib.policy import _get_auth_PinPolicy
 
 from linotp.lib.util import remove_empty_lines
@@ -235,22 +235,14 @@ class SelfserviceController(BaseController):
             # only the defined actions should be displayed
             # - remark: the generic actions like enrollTT are allready approved
             #   to have a rendering section and included
-            actions = getSelfserviceActions(self.authUser)
+            actions = get_selfservice_actions(self.authUser)
             c.actions = actions
-            for policy in actions:
-                if policy:
-                    if "=" not in policy:
-                        c.__setattr__(policy, -1)
-                    else:
-                        (name, val) = policy.split('=')
-                        val = val.strip()
-                        # try if val is a simple numeric -
-                        # w.r.t. javascript evaluation
-                        try:
-                            nval = int(val)
-                        except ValueError:
-                            nval = val
-                        c.__setattr__(name.strip(), nval)
+
+            for action_name, action_value in actions.items():
+                if action_value is True:
+                    c.__setattr__(action_name, -1)
+                    continue
+                c.__setattr__(action_name, action_value)
 
             c.dynamic_actions = add_dynamic_selfservice_enrollment(config,
                                                                    c.actions)
@@ -558,7 +550,7 @@ class SelfserviceController(BaseController):
         This is the form for an google token to do web provisioning.
         '''
         try:
-            c.actions = getSelfserviceActions(self.authUser)
+            c.actions = get_selfservice_actions(self.authUser)
             return render('/selfservice/webprovisiongoogle.mako')
 
         except Exception as exx:

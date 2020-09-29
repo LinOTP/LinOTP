@@ -117,7 +117,7 @@ from linotp.lib.auth.validate import split_pin_otp
 from linotp.lib.config import getFromConfig
 from linotp.lib.token import get_token_owner
 
-from linotp.lib.policy import getPolicyActionValue
+from linotp.lib.policy.action import get_action_value
 from linotp.lib.policy import getPolicy, get_client_policy
 from linotp.lib.policy import get_auth_AutoSMSPolicy
 from linotp.lib.policy import trigger_sms
@@ -162,19 +162,15 @@ def get_auth_smstext(user="", realm=""):
         bool: If a policy is defined
         string: the string to use
     '''
-    # the default string is the OTP value
-    ret = False
-    smstext = "<otp>"
-
     pol = get_client_policy(context['Client'], scope="authentication",
                             realm=realm, user=user, action="smstext")
 
-    if len(pol) > 0:
-        smstext = getPolicyActionValue(pol, "smstext", is_string=True)
-        log.debug("[get_auth_smstext] got the smstext = %s" % smstext)
-        ret = True
+    smstext = get_action_value(
+        pol, scope='authentication', action="smstext", default="<otp>")
 
-    return ret, smstext
+    log.debug("[get_auth_smstext] got the smstext = %s" % smstext)
+
+    return (smstext != "<otp>"), smstext
 
 
 def enforce_smstext(user="", realm=""):
@@ -190,12 +186,11 @@ def enforce_smstext(user="", realm=""):
     pol = get_client_policy(context['Client'], scope="authentication",
                             realm=realm, user=user, action="enforce_smstext")
 
-    if len(pol) > 0:
-        enforce_smstext = getPolicyActionValue(pol, "enforce_smstext")
-        log.debug("got enforce_smstext = %r" % enforce_smstext)
-        return enforce_smstext or False
+    enforce_smstext = get_action_value(
+        pol, scope='authentication', action="enforce_smstext", default=False)
+    log.debug("got enforce_smstext = %r" % enforce_smstext)
 
-    return False
+    return enforce_smstext
 
 
 def is_phone_editable(user=""):
@@ -212,12 +207,14 @@ def is_phone_editable(user=""):
                           'realm': realm,
                           "action": "edit_sms",
                           "user": login})
-    if policies:
-        edit_sms = getPolicyActionValue(policies, "edit_sms")
-        if edit_sms == 0:
-            ret = False
 
-    return ret
+    edit_sms = get_action_value(
+        policies, scope='selfservice', action="edit_sms", default=1)
+
+    if edit_sms == 0:
+        return False
+
+    return True
 
 @tokenclass_registry.class_entry('sms')
 @tokenclass_registry.class_entry('linotp.tokens.smstoken.SmsTokenClass')
@@ -774,11 +771,9 @@ class SmsTokenClass(HmacTokenClass):
                                 user=user,
                                 action="sms_dynamic_mobile_number")
 
-        if not pol:
-            return self._getPhone()
-
-        get_dynamic = getPolicyActionValue(pol, "sms_dynamic_mobile_number",
-                                            is_string=True)
+        get_dynamic = get_action_value(
+            pol, scope='authentication', action="sms_dynamic_mobile_number",
+            default=False)
 
         if not get_dynamic:
             return self._getPhone()

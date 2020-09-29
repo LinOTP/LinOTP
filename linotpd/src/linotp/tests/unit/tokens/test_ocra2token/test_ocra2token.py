@@ -7,8 +7,9 @@ from linotp.tokens.ocra2token.ocra2token import get_qrtan_url
 class Ocra2PolicyTest(unittest.TestCase):
 
 
+    @patch('linotp.lib.policy.action.get_policy_definitions')
     @patch('linotp.tokens.ocra2token.ocra2token.getPolicy')
-    def test_802_getqrtanurl(self, mock_getPolicy):
+    def test_802_getqrtanurl(self, mock_getPolicy, mock_get_policy_definitions):
         '''
         Policy 802: Testing Authentication Scope: the QR-TAN Url with a single realm
         '''
@@ -23,6 +24,11 @@ class Ocra2PolicyTest(unittest.TestCase):
                 }
 
         mock_getPolicy.return_value = policie_list
+        mock_get_policy_definitions.return_value = {
+            'authentication': {
+                'qrtanurl_init': {'type': 'str'}
+                }
+            }
 
         url = get_qrtan_url(
             qrtan_policy_name='qrtanurl_init', realms=["testrealm"])
@@ -31,9 +37,9 @@ class Ocra2PolicyTest(unittest.TestCase):
 
         return
 
-
+    @patch('linotp.lib.policy.action.get_policy_definitions')
     @patch('linotp.tokens.ocra2token.ocra2token.getPolicy')
-    def test_803_getqrtanurl(self, mock_getPolicy):
+    def test_803_getqrtanurl(self, mock_getPolicy, mock_get_policy_definitions):
         '''
         Policy 803: Testing Authentication Scope: the QR-TAN Url with 3 realms
         '''
@@ -47,6 +53,12 @@ class Ocra2PolicyTest(unittest.TestCase):
                     'action': 'qrtanurl=%s' % URL,
                     }
                 }
+
+        mock_get_policy_definitions.return_value = {
+            'authentication': {
+                'qrtanurl': {'type': 'str'}
+                }
+            }
 
         mock_getPolicy.return_value = policie_list
 

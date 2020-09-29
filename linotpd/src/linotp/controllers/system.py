@@ -97,7 +97,7 @@ from linotp.lib.policy import search_policy
 from linotp.lib.policy.manage import setPolicy
 from linotp.lib.policy.manage import deletePolicy
 from linotp.lib.policy.manage import import_policies
-from linotp.lib.policy.definitions import getPolicyDefinitions
+from linotp.lib.policy.definitions import get_policy_definitions
 
 from linotp.lib.policy.manage import create_policy_export_file
 from linotp.lib.policy import get_client_policy
@@ -1424,7 +1424,7 @@ class SystemController(BaseController):
             log.debug("[getPolicy] getting policy definitions: %r", param)
 
             scope = param.get("scope")
-            pol = getPolicyDefinitions(scope)
+            pol = get_policy_definitions(scope)
             dynpol = self._add_dynamic_tokens(scope)
             pol.update(dynpol)
 

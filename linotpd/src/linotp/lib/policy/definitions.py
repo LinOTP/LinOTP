@@ -26,7 +26,9 @@
 """ static policy definitions """
 
 
+from typing import Dict
 from linotp.lib.context import request_context
+
 
 SYSTEM_ACTIONS = {
     'setDefault': 'write',
@@ -56,16 +58,7 @@ SYSTEM_ACTIONS = {
     'testProvider': 'read',
     'getProvider': 'read', }
 
-
-def getPolicyDefinitions(scope=""):
-    '''
-        returns the policy definitions of
-          - allowed scopes
-          - allowed actions in scopes
-          - type of actions
-    '''
-
-    pol = {
+POLICY_DEFINTIONS = {
         'admin': {
             'enable': {'type': 'bool'},
             'disable': {'type': 'bool'},
@@ -442,6 +435,40 @@ def getPolicyDefinitions(scope=""):
         },
     }
 
+def get_policy_definitions(scope: str=None) ->Dict:
+    """cache the policy definitions access in the local request context.
+
+    as the evaluation of the policy definition is resource intensive we cache
+    the outcome on a per request base.
+
+    :param scope: select only a scope of the definitions
+    :return: the policy definition dict
+
+    :sideeffect: the local request context is extendend by the dict of the
+                 policy definitions. As they are pretty stable, there is no
+                 interference expected
+    """
+
+    if not request_context['PolicyDefinitions']:
+        request_context['PolicyDefinitions'] = _get_policy_definitions()
+
+    if scope:
+        return request_context['PolicyDefinitions'].get(scope, {})
+
+    return request_context['PolicyDefinitions']
+
+def _get_policy_definitions():
+    '''
+    internal worker, which gathers all policy information in addition to the
+    static ones
+
+    :return: the policy definitions of all scopes with the available actions
+             in scopes and their action types
+    '''
+
+    pol = {}
+    pol.update(POLICY_DEFINTIONS)
+
     linotp_config = request_context['Config']
     oath_support = (str(linotp_config.get('linotp.OATHTokenSupport', 'False'))
                     .lower() == 'True')
@@ -449,9 +476,12 @@ def getPolicyDefinitions(scope=""):
     if oath_support:
         pol['webprovisionOATH'] = {'type': 'bool'}
 
+    # --------------------------------------------------------------------- --
+
     # now add generic policies, which every token should provide:
     # - init<TT>
     # - enroll<TT>, but only, if there is a rendering section
+
     import linotp.lib.token
     token_type_list = linotp.lib.token.get_token_type_list()
 
@@ -461,15 +491,10 @@ def getPolicyDefinitions(scope=""):
 
         pol['admin']["init%s" % ttype.upper()] = {'type': 'bool'}
 
-        # TODO: action=initETNG
-        # Haben wir auch noch den die policy
-        #
-        # scope=admin, action=initETNG?
-        #
-        # Das ist nämlich eine spezialPolicy, die der HMAC-Token mitbringen
-        # muss.
+        # ----------------------------------------------------------------- --
 
-        # todo: if all tokens are dynamic, the token init must be only shown
+        # todo:
+        # if all tokens are dynamic, the token init must be only shown
         # if there is a rendering section for:
         # conf = linotp.lib.token.getTokenConfig(ttype, section='init')
         # if len(conf) > 0:
@@ -481,32 +506,34 @@ def getPolicyDefinitions(scope=""):
                 'type': 'bool',
                 'desc': "The user is allowed to enroll a %s token." % ttype}
 
-        ## now merge the dynamic Token policy definition
-        ## into the global definitions
+        # ----------------------------------------------------------------- --
+
+        # now merge the dynamic Token policy definition
+        # into the global definitions
+
         policy = linotp.lib.token.getTokenConfig(ttype, section='policy')
 
-        ## get all policy sections like: admin, selfservice . . '''
+        # get all policy sections like: admin, selfservice . . '''
+
         pol_keys = list(pol.keys())
 
         for pol_section in list(policy.keys()):
+
             # if we have a dyn token definition of this section type
             # add this to this section - and make sure, that it is
             # then token type prefixed
+
             if pol_section in pol_keys:
                 pol_entry = policy.get(pol_section)
                 for pol_def in pol_entry:
                     set_def = pol_def
+
                     # check if the token type is already part of
                     # the policy name
+
                     if ttype.lower() not in set_def.lower():
                         set_def = '%s_%s' % (ttype, pol_def)
 
                     pol[pol_section][set_def] = pol_entry.get(pol_def)
 
-    ##return sub section, if scope is defined
-    ##  make sure that scope is in the policy key
-    ##  e.g. scope='_' is undefined and would break
-    if scope and scope in pol:
-        pol = pol[scope]
-
-    return pol# -*- coding: utf-8 -*-
+    return pol

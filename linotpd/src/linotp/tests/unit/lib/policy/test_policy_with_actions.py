@@ -90,7 +90,7 @@ class PolicyActionTest(unittest.TestCase):
     """Verify that policy actions are correctly identified for a given user and in general.
 
     the policy action has to be part of the policy selection step and not only
-    during the getPolicyActionValue processing. Otherwise there will only
+    during the get_action_value processing. Otherwise there will only
     policies be found for a user where the action might not be part of and the
     general policies with "user:'*'" which might contain the action wont be
     selected.
@@ -110,6 +110,7 @@ class PolicyActionTest(unittest.TestCase):
 
     @patch('linotp.lib.policy.util.context', new=fake_context)
     @patch('linotp.lib.policy.maxtoken.context', new=fake_context)
+    @patch('linotp.lib.policy.action.get_policy_definitions')
     @patch('linotp.lib.policy.processing.get_policies')
     @patch('linotp.lib.policy.maxtoken._getUserRealms')
     @patch('linotp.lib.policy.maxtoken._get_client')
@@ -118,7 +119,8 @@ class PolicyActionTest(unittest.TestCase):
                                  mocked_getTokens4UserOrSerial,
                                  mocked__get_client,
                                  mocked__getUserRealms,
-                                 mocked__get_policies
+                                 mocked__get_policies,
+                                 mocked_get_policy_definitions
                                  ):
         """check if maxtoken policy works correctly."""
 
@@ -127,6 +129,13 @@ class PolicyActionTest(unittest.TestCase):
         mocked_getTokens4UserOrSerial.return_value = [Token('hmac')]
         mocked__get_client.return_value = '127.0.0.1'
         mocked__getUserRealms.return_value = ['defaultrealm', 'otherrealm']
+
+        mocked_get_policy_definitions.return_value = {
+            'enrollment': {
+                'maxtoken': {'type': 'int'}
+                }
+            }
+
 
         policy_set = copy.deepcopy(PolicySet)
 
@@ -158,6 +167,7 @@ class PolicyActionTest(unittest.TestCase):
 
     @patch('linotp.lib.policy.util.context', new=fake_context)
     @patch('linotp.lib.policy.maxtoken.context', new=fake_context)
+    @patch('linotp.lib.policy.action.get_policy_definitions')
     @patch('linotp.lib.policy.processing.get_policies')
     @patch('linotp.lib.policy.maxtoken._getUserRealms')
     @patch('linotp.lib.policy.maxtoken._get_client')
@@ -166,7 +176,8 @@ class PolicyActionTest(unittest.TestCase):
                                        mocked_getTokens4UserOrSerial,
                                        mocked__get_client,
                                        mocked__getUserRealms,
-                                       mocked__get_policies
+                                       mocked__get_policies,
+                                       mocked_get_policy_definitions
                                        ):
         """Check if maxtoken type policy works correctly."""
 
@@ -175,7 +186,14 @@ class PolicyActionTest(unittest.TestCase):
         mocked_getTokens4UserOrSerial.return_value = [Token('hmac')]
         mocked__get_client.return_value = '127.0.0.1'
         mocked__getUserRealms.return_value = ['defaultrealm', 'otherrealm']
-
+        mocked_get_policy_definitions.return_value = {
+            'enrollment': {
+                'maxtoken': {'type': 'int'},
+                'maxtokenHMAC': {'type': 'int'},
+                'maxtokenPUSH': {'type': 'int'},
+            }
+        }
+        
         policy_set = copy.deepcopy(PolicySet)
 
         # ----------------------------------------------------------------- --
@@ -205,12 +223,21 @@ class PolicyActionTest(unittest.TestCase):
                 'token count was not in boundaries'
 
     @patch('linotp.lib.policy.util.context', new=fake_context)
+    @patch('linotp.lib.policy.action.get_policy_definitions')
     @patch('linotp.lib.policy.processing.get_policies')
     @patch('linotp.lib.policy._get_client')
-    def test_tokenissuer(self, mocked__get_client, mocked__get_policies):
+    def test_tokenissuer(self, mocked__get_client, mocked__get_policies,
+                         mocked_get_policy_definitions):
         """Verify that the tokenissuer is evaluated from general."""
 
         mocked__get_client.return_value = '127.0.0.1'
+        mocked_get_policy_definitions.return_value = {
+            'enrollment': {
+                'tokenissuer': {
+                     'type': 'str',
+                     'desc': 'the issuer label for the google authenticator.'},
+                }
+            }
 
         policy_set = copy.deepcopy(PolicySet)
 
@@ -237,10 +264,12 @@ class PolicyActionTest(unittest.TestCase):
         assert issuer == 'fake_user@defaultrealm'
 
     @patch('linotp.lib.policy.util.context', new=fake_context)
+    @patch('linotp.lib.policy.action.get_policy_definitions')
     @patch('linotp.lib.policy.processing.get_policies')
     @patch('linotp.lib.policy._get_client')
     def test_autoassignment(
-            self, mocked__get_client, mocked__get_policies):
+            self, mocked__get_client, mocked__get_policies,
+            mocked_get_policy_definitions):
         """Verify that the autoassignment is evaluated from general."""
 
         mocked__get_client.return_value = '127.0.0.1'
@@ -253,6 +282,13 @@ class PolicyActionTest(unittest.TestCase):
 
         policy_set['general']['action'] = 'autoassignment'
         mocked__get_policies.return_value = policy_set
+        mocked_get_policy_definitions.return_value = {
+            'enrollment' : {
+            'autoassignment': {
+                'type': 'bool',
+                'desc': 'users can assign a token just by using the '
+                            'unassigned token to authenticate.'},
+            }}
 
         fake_user = LinotpUser(login='fake_user', realm='defaultrealm')
         assert get_autoassignment(fake_user), 'autoassigment should be set!'
@@ -269,15 +305,25 @@ class PolicyActionTest(unittest.TestCase):
         assert issuer == 'fake_user'
 
     @patch('linotp.lib.policy.util.context', new=fake_context)
+    @patch('linotp.lib.policy.action.get_policy_definitions')
     @patch('linotp.lib.policy.processing.get_policies')
     @patch('linotp.lib.policy._get_client')
-    def test_autoenrollment(self, mocked__get_client, mocked__get_policies):
+    def test_autoenrollment(self, mocked__get_client, mocked__get_policies,
+                            mocked_get_policy_definitions):
         """Verify that the autoenrollment is evaluated from general."""
 
         mocked__get_client.return_value = '127.0.0.1'
 
         policy_set = copy.deepcopy(PolicySet)
 
+        mocked_get_policy_definitions.return_value = {
+            'enrollment' : {
+            'autoenrollment': {
+                'type': 'str',
+                'desc': 'users can enroll a token just by using the '
+                        'pin to authenticate and will an otp for authentication'},
+
+            }}
         # ----------------------------------------------------------------- --
 
         # verify that general policy is honored
@@ -304,11 +350,14 @@ class PolicyActionTest(unittest.TestCase):
         assert is_enabled, 'autoenrollment should be defined!'
         assert token_type == ['sms']
 
+
     @patch('linotp.lib.token.context', new=fake_context)
+    @patch('linotp.lib.policy.action.get_policy_definitions')
     @patch('linotp.lib.policy.processing.get_policies')
     @patch('linotp.lib.token.TokenHandler.getTokenOwner')
     def test_losttoken(
-            self, mocked_getTokenOwner, mocked__get_policies):
+            self, mocked_getTokenOwner, mocked__get_policies,
+            mocked_get_policy_definitions):
         """Verify the policy evaluation in losttoken honores general actions."""
 
         fake_user = LinotpUser(login='fake_user', realm='defaultrealm')
@@ -316,6 +365,24 @@ class PolicyActionTest(unittest.TestCase):
 
         policy_set = copy.deepcopy(PolicySet)
 
+        mocked_get_policy_definitions.return_value = {
+            'enrollment' : {
+                'lostTokenPWLen': {
+                    'type': 'int',
+                    'desc': 'The length of the password in case of '
+                            'temporary token.'},
+                'lostTokenPWContents': {
+                    'type': 'str',
+                    'desc': 'The contents of the temporary password, '
+                            'described by the characters C, c, n, s.'},
+                'lostTokenValid': {
+                    'type': 'set',
+                    'value': ['int', 'duration'],
+                    'desc': 'The length of the validity for the temporary '
+                            'token as days or duration with "d"-days, "h"-hours,'
+                            ' "m"-minutes, "s"-seconds.'},
+                }
+            }
         # ----------------------------------------------------------------- --
 
         # verify that general policy is honored

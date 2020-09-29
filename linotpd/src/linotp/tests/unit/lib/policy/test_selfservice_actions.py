@@ -82,10 +82,12 @@ class SelfserviceActionTest(unittest.TestCase):
     """
 
     @patch('linotp.lib.token.context', new=fake_context)
+    @patch('linotp.lib.policy.action.get_policy_definitions')
     @patch('linotp.lib.policy.processing.get_policies')
     @patch('linotp.lib.policy.action._get_client')
     def test_get_selfservice_actions(
-            self, mocked__get_client, mocked__get_policies):
+            self, mocked__get_client, mocked__get_policies,
+            mocked_get_policy_definitions):
         """Verify the policy evaluation via helper get_selfservice_actions"""
 
         mocked__get_client.return_value = '127.0.0.1'
@@ -94,6 +96,14 @@ class SelfserviceActionTest(unittest.TestCase):
         anonym_user = LinotpUser(login='anonym_user', realm='defaultrealm')
 
         policy_set = copy.deepcopy(PolicySet)
+
+        mocked_get_policy_definitions.return_value = {
+            'selfservice': {
+                'setDescription': {'type': 'bool'},
+                'enrollHMAC': {'type': 'bool'},
+                'reset': {'type': 'bool'},
+                }
+        }
 
         # ----------------------------------------------------------------- --
 
@@ -134,10 +144,12 @@ class SelfserviceActionTest(unittest.TestCase):
         assert 'reset' not in res
 
     @patch('linotp.lib.token.context', new=fake_context)
+    @patch('linotp.lib.policy.action.get_policy_definitions')
     @patch('linotp.lib.policy.processing.get_policies')
     @patch('linotp.lib.policy.action._get_client')
     def test_get_selfservice_actions2(
-            self, mocked__get_client, mocked__get_policies):
+            self, mocked__get_client, mocked__get_policies,
+            mocked_get_policy_definitions):
         """Verify the policy evaluation via helper get_selfservice_actions"""
 
         mocked__get_client.return_value = '127.0.0.1'
@@ -148,7 +160,13 @@ class SelfserviceActionTest(unittest.TestCase):
         policy_set = copy.deepcopy(PolicySet)
 
         # ----------------------------------------------------------------- --
-
+        mocked_get_policy_definitions.return_value = {
+            'selfservice': {
+                'otp_pin_maxlength': {'type': 'int'},
+                'enrollHMAC': {'type': 'bool'},
+                'reset': {'type': 'bool'},
+                }
+        }
         # verify that general policy is honored
 
         policy_set['general']['action'] = (
@@ -159,7 +177,7 @@ class SelfserviceActionTest(unittest.TestCase):
         res = get_selfservice_actions(simple_user, 'otp_pin_maxlength')
 
         assert 'otp_pin_maxlength' in res
-        assert res['otp_pin_maxlength'] == '4'
+        assert res['otp_pin_maxlength'] == 4
 
         # ----------------------------------------------------------------- --
 
@@ -173,7 +191,7 @@ class SelfserviceActionTest(unittest.TestCase):
         res = get_selfservice_actions(simple_user, 'otp_pin_maxlength')
 
         assert 'otp_pin_maxlength' in res
-        assert res['otp_pin_maxlength'] == '6'
+        assert res['otp_pin_maxlength'] == 6
 
         # ----------------------------------------------------------------- --
 
@@ -182,4 +200,4 @@ class SelfserviceActionTest(unittest.TestCase):
         res = get_selfservice_actions(anonym_user, 'otp_pin_maxlength')
 
         assert 'otp_pin_maxlength' in res
-        assert res['otp_pin_maxlength'] == '4'
+        assert res['otp_pin_maxlength'] == 4

@@ -42,8 +42,8 @@ from linotp.lib.auth.validate import check_pin
 from linotp.lib.HMAC import HmacOtp
 from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
-from linotp.lib.policy import getPolicy, get_client_policy
-from linotp.lib.policy import getPolicyActionValue
+from linotp.lib.policy import get_client_policy
+from linotp.lib.policy.action import get_action_value
 
 from linotp.tokens.hmactoken import HmacTokenClass
 from linotp.lib.user import getUserDetail
@@ -61,21 +61,21 @@ def is_email_editable(user=""):
     this function checks the policy scope=selfservice, action=edit_email
     This is a int policy, while the '0' is a deny
     '''
-    ret = True
+
     realm = user.realm
     login = user.login
 
-    policies = getPolicy({'scope': 'selfservice',
-                          'realm': realm,
-                          "action": "edit_email",
-                          "user": login},)
+    policies = get_client_policy(
+        client=context['Client'], scope='selfservice', action= "edit_email",
+        realm=realm, user=login)
 
-    if policies:
-        edit_email = getPolicyActionValue(policies, "edit_email")
-        if edit_email == 0:
-            ret = False
+    edit_email = get_action_value(
+        policies, scope='selfservice', action='edit_email', default=1)
 
-    return ret
+    if edit_email == 0:
+        return False
+
+    return True
 
 
 @tokenclass_registry.class_entry('email')
@@ -377,8 +377,9 @@ class EmailTokenClass(HmacTokenClass):
         if not pol:
             return self._email_address
 
-        get_dynamic = getPolicyActionValue(
-            pol, "dynamic_email_address", is_string=True)
+        get_dynamic = get_action_value(
+            pol, scope="authentication", action="dynamic_email_address",
+            default='')
 
         if not get_dynamic:
             return self._email_address
@@ -408,8 +409,9 @@ class EmailTokenClass(HmacTokenClass):
                                      realm=realm, user=login,
                                      action="emailtext")
 
-        if policies:
-            message = getPolicyActionValue(policies, "emailtext", is_string=True)
+        message = get_action_value(
+            policies, scope="authentication", action="emailtext",
+            default=message)
 
         return message
 
@@ -434,9 +436,9 @@ class EmailTokenClass(HmacTokenClass):
                                      realm=realm, user=login,
                                      action="emailsubject")
 
-        if policies:
-            subject = getPolicyActionValue(policies, "emailsubject",
-                                           is_string=True)
+        subject = get_action_value(
+            policies, scope="authentication", action="emailsubject",
+            default=subject)
 
         return subject
 

@@ -41,7 +41,7 @@ from linotp.flap import (
 )
 
 from linotp.lib.policy.processing import get_client_policy
-from linotp.lib.policy.action import getSelfserviceActions
+from linotp.lib.policy.action import get_selfservice_actions
 
 
 from linotp.lib.util import (get_version,
@@ -371,20 +371,11 @@ def get_context(config, user, client):
     context["tokenArray"] = getTokenForUser(user)
 
     context["actions"] = list()
-    for policy in getSelfserviceActions(user):
-        if "=" not in policy:
-            context["actions"].append(policy.strip())
+    for action_name, action_value in get_selfservice_actions(user).items():
+        if action_value is True:
+            context["actions"].append(action_name)
         else:
-            (name, val) = policy.split('=')
-            name = name.strip()
-            val = val.strip()
-            # try if settings value is a simple numeric
-            try:
-                val = int(val)
-            except ValueError:
-                pass
-
-            context["settings"][name] = val
+            context["settings"][action_name] = action_value
 
     return context
 

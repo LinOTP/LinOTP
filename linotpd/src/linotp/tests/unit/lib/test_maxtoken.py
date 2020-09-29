@@ -66,13 +66,15 @@ class MaxTokenPolicyTest(unittest.TestCase):
     @patch('linotp.lib.policy.util.context', new=fake_context)
     @patch('linotp.lib.policy.maxtoken.context', new=fake_context)
     @patch('linotp.lib.policy.maxtoken.get_client_policy', new=fake_get_client_policy)
+    @patch('linotp.lib.policy.maxtoken.get_action_value')
     @patch('linotp.lib.policy.maxtoken._getUserRealms')
     @patch('linotp.lib.policy.maxtoken._get_client')
     @patch('linotp.lib.token.getTokens4UserOrSerial')
     def test_no_tokens(self,
                        mocked_getTokens4UserOrSerial,
                        mocked__get_client,
-                       mocked__getUserRealms):
+                       mocked__getUserRealms,
+                       mocked_get_action_value):
         """
         checking if _checkTokenAssigned passes with empty token list
         """
@@ -81,6 +83,7 @@ class MaxTokenPolicyTest(unittest.TestCase):
         mocked_getTokens4UserOrSerial.return_value = []
         mocked__get_client.return_value = '127.0.0.1'
         mocked__getUserRealms.return_value = ['defaultrealm', 'otherrealm']
+        mocked_get_action_value.return_value = 2
 
         try:
             check_maxtoken_for_user(fake_user)
@@ -92,18 +95,21 @@ class MaxTokenPolicyTest(unittest.TestCase):
     @patch('linotp.lib.policy.util.context', new=fake_context)
     @patch('linotp.lib.policy.maxtoken.context', new=fake_context)
     @patch('linotp.lib.policy.maxtoken.get_client_policy', new=fake_get_client_policy)
+    @patch('linotp.lib.policy.maxtoken.get_action_value')
     @patch('linotp.lib.policy.maxtoken._getUserRealms')
     @patch('linotp.lib.policy.maxtoken._get_client')
     @patch('linotp.lib.token.getTokens4UserOrSerial')
     def test_maxtoken_all(self,
                           mocked_getTokens4UserOrSerial,
                           mocked__get_client,
-                          mocked__getUserRealms):
+                          mocked__getUserRealms,
+                          mocked_get_action_value):
 
         """
         checking if maxtoken policy works correctly
         """
 
+        mocked_get_action_value.return_value = 2
         fake_user = User('fake_user')
 
         token1 = Token('hmac')
@@ -137,6 +143,7 @@ class MaxTokenPolicyTest(unittest.TestCase):
         # second push token exceeds maxtokenPUSH in fake_get_client_policy
 
         mocked_getTokens4UserOrSerial.return_value = [token2]
+        mocked_get_action_value.return_value = 1
 
         exception_raised = False
         try:

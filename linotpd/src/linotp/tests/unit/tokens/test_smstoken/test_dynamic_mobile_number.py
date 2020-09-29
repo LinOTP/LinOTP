@@ -62,7 +62,7 @@ class TestSMSToken(unittest.TestCase):
 
     @patch('linotp.tokens.smstoken.context', new=fake_context)
     @patch('linotp.tokens.smstoken.getUserDetail')
-    @patch('linotp.tokens.smstoken.getPolicyActionValue')
+    @patch('linotp.tokens.smstoken.get_action_value')
     @patch('linotp.tokens.smstoken.get_client_policy')
     @patch('linotp.tokens.smstoken.SmsTokenClass._getPhone')
     @patch('linotp.tokens.smstoken.SmsTokenClass.__init__')
@@ -71,7 +71,7 @@ class TestSMSToken(unittest.TestCase):
             mock__init__,
             mock_getPhone,
             mock_get_client_policy,
-            mock_getPolicyActionValue,
+            mock_get_action_value,
             mock_getUserDetail):
         """
         test the ability to get the mobile number dynamicaly from the user
@@ -99,7 +99,7 @@ class TestSMSToken(unittest.TestCase):
 
         # test 1: policy exist and matches for user
 
-        mock_getPolicyActionValue.return_value = True
+        mock_get_action_value.return_value = True
         mock_get_client_policy.return_value = dynamic_mobile_policy
 
 
@@ -111,7 +111,7 @@ class TestSMSToken(unittest.TestCase):
 
         # test 2: policy exist but does not matches for user
 
-        mock_getPolicyActionValue.return_value = False
+        mock_get_action_value.return_value = False
         mock_get_client_policy.return_value = dynamic_mobile_policy
 
         mobile = sms_token.get_mobile_number(fake_user)

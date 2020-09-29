@@ -39,7 +39,7 @@ from linotp.lib.config import getFromConfig
 
 from linotp.lib.token import get_token_owner
 
-from linotp.lib.policy import getPolicyActionValue
+from linotp.lib.policy.action import get_action_value
 from linotp.lib.policy import getPolicy, get_client_policy
 from linotp.lib.policy import trigger_phone_call_on_empty_pin
 from linotp.provider import loadProviderFromPolicy
@@ -75,9 +75,8 @@ def get_voice_message(user="", realm=""):
                             action="voice_message")
 
     if len(pol) > 0:
-        voice_text = getPolicyActionValue(pol,
-                                          "voice_message",
-                                          is_string=True)
+        voice_text = get_action_value(
+            pol, scope='authentication', action="voice_message", default='')
 
         log.debug("[get_voice_message] got the voice_message = %s", voice_text)
 
@@ -103,13 +102,11 @@ def get_voice_language(user="", realm=""):
                             user=user,
                             action="voice_language")
 
-    if len(pol) > 0:
-        voice_language = getPolicyActionValue(pol,
-                                              "voice_language",
-                                              is_string=True)
+    voice_language = get_action_value(
+            pol, scope='authentication', action="voice_language", default='')
 
-        log.debug("[get_voice_language] got the voice_language = %s",
-                  voice_language)
+    log.debug("[get_voice_language] got the voice_language = %s",
+              voice_language)
 
     return voice_language
 
@@ -481,8 +478,9 @@ class VoiceTokenClass(HmacTokenClass):
         if not pol:
             return self.get_phone()
 
-        get_dynamic = getPolicyActionValue(pol, "voice_dynamic_mobile_number",
-                                            is_string=True)
+        get_dynamic = get_action_value(
+            pol, scope='authentication', action="voice_dynamic_mobile_number",
+            default=False)
 
         if not get_dynamic:
             return self.get_phone()

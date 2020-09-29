@@ -367,6 +367,8 @@ class LinOTPApp(Flask):
 
         request_context['Config'] = linotp_config
         request_context['Policies'] = parse_policies(linotp_config)
+        request_context['PolicyDefinitions'] = {}
+
         request_context['translate'] = gettext
 
         request_context['CacheManager'] = self.cache

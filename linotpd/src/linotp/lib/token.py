@@ -440,18 +440,16 @@ class TokenHandler(object):
                 client, scope="enrollment", action="lostTokenPWLen",
                 realm=owner.realm, user=owner.login, userObj=owner)
 
-            pw_len = linotp.lib.policy.getPolicyActionValue(
-                pol, "lostTokenPWLen")
-
-            if pw_len == -1:
-                pw_len = 10
+            pw_len = linotp.lib.policy.action.get_action_value(
+                pol, scope="enrollment", action="lostTokenPWLen", default=10)
 
             pol = linotp.lib.policy.get_client_policy(
                 client, scope="enrollment", action="lostTokenPWContents",
                 realm=owner.realm, user=owner.login, userObj=owner)
 
-            contents = linotp.lib.policy.getPolicyActionValue(
-                pol, "lostTokenPWContents", is_string=True)
+            contents = linotp.lib.policy.action.get_action_value(
+                pol, scope="enrollment", action="lostTokenPWContents",
+                default='')
 
             character_pool = "%s%s%s" % (string.ascii_lowercase,
                                          string.ascii_uppercase, string.digits)
@@ -493,8 +491,8 @@ class TokenHandler(object):
                 client, scope="enrollment", action="lostTokenValid",
                 realm=owner.realm, user=owner.login, userObj=owner)
 
-            validity = linotp.lib.policy.getPolicyActionValue(
-                pol, "lostTokenValid", max=False)
+            validity = linotp.lib.policy.action.get_action_value(
+                pol, scope="enrollment", action="lostTokenValid", default=-1)
 
             end_date = _calculate_validity_end(validity)
 

@@ -56,8 +56,10 @@ class TestProviderFromPolicy(unittest.TestCase):
                 assert provider == ['default']
 
 
+    @patch('linotp.lib.policy.action.get_policy_definitions')
     @patch('linotp.provider.request_context', new=mocked_context)
-    def test_get_policy_provider(self):
+    def test_get_policy_provider(self,
+                                 mocked_get_policy_definitions):
         """
         get the providers from the policy
         """
@@ -74,6 +76,11 @@ class TestProviderFromPolicy(unittest.TestCase):
                     'user': '*'
                     }
                 }
+            mocked_get_policy_definitions.return_value = {
+                'authentication': {
+                    'sms_provider': {'type': 'str'},
+                     }
+            }
 
             provider = get_provider_from_policy(
                 'sms', user=User('login', 'realm'))
