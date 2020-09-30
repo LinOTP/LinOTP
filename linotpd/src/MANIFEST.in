@@ -33,6 +33,5 @@ recursive-include tools *
 recursive-include examples *
 recursive-include linotp/tokens *.mako
 exclude linotp/controllers/testing.py
-include DESCRIPTION
 include tools/README-migrate.txt
 include README.rst
