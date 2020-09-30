@@ -1,9 +1,9 @@
 LinOTP
 =======
 LinOTP is an open solution for strong two-factor authentication with One Time Passwords.
-LinOTP 2 is also open as far as its modular architecture is concerned. 
-LinOTP 2 aims to not bind you to any  decision of the authentication protocol or 
-it does not dictate you where your user information should be stored. 
+LinOTP 2 is also open as far as its modular architecture is concerned.
+LinOTP 2 aims to not bind you to any decision of the authentication protocol or
+it does not dictate you where your user information should be stored.
 This is achieved by its new, totally modular architecture.
 
 This package contains the LinOTP Server Core.
@@ -14,39 +14,49 @@ Installation
 Installing LinOTP can be performed easily by issuing the commands::
 
     $ pip install linotp
-    $ pip install linotpuseridresolver
-    
-You can start directly by creating the database::
 
-    $ paster setup-app etc/linotp2/linotp.ini.paster
+You might require additional system packages for a successful install. For Debian
+you need to install at least the following packages::
 
-In the config file linotp.ini.paster the already shipped encryption key "dummy-encKey" is referenced.
-Of course, you need to create an encryption key and change in in the linotp.ini.paster:
+    $ apt-get install python-dev gcc libldap2-dev libsasl2-dev libsodium-dev
 
-    $ dd if=/dev/random of=etc/linotp2/encKey bs=1 count=96
+LinOTP makes use of a configuration file. You can find a sample configuration
+file in the installed package (e.g. /usr/local/etc/linotp2/linotp.ini.paster for
+a systemwide pip install). Make a copy of the sample file and configure it to
+your needs. For the sake of simplicity, we will reference the file as linotp.ini
+in the current working directory.
+
+In the configuration, the also package-included encryption key "dummy-encKey" is
+referenced. Of course, you need to create your own encryption key and set the
+path in linotp.ini::
+
+    $ dd if=/dev/random of=encKey bs=1 count=96
+
+You can now setup LinOTP and the configured database::
+
+    $ paster setup-app linotp.ini
 
 Then start the webserver by issuing::
 
-    $ paster serve etc/linotp2/linotp.ini.example
+    $ paster serve linotp.ini
 
-Now you could go the the web interface http://localhost:5001/manage and start creating the UserIdResolver, a Realm and
-enroll tokens.
+Next, access the web interface at http://localhost:5001/manage and start creating
+a UserIdResolver with a realm and enroll your first tokens.
 
 Options
 -------
 
-You can adapt the file **etc/linotp2/linotp.ini.paster**. There you need to configure the database connection
-with an existing database and user:
+Edit the config file **linotp.ini** and define a database connection with an
+existing database and user::
 
     sqlalchemy.url = mysql://user:password@localhost/LinOTP2
 
-Then  you can create the database like above:
+Re-run setup-app to initialize the database schema.
 
-    $ paster setup-app etc/linotp2/linotp.ini.paster
+You can also change the directory where log files are placed. Make sure the path
+exists::
 
-You can change the location of your log file:
-
-    $ mkdir /var/log/linotp
+    $ mkdir -p /var/log/linotp
 
 Apache and Authentication
 -------------------------
@@ -54,8 +64,8 @@ Apache and Authentication
 ``Please note`` that running with paster has no authentication to the management interface!
 Therefor you should run LinOTP with the Apache webserver.
 
-A sample config file is available at **etc/apache2/sites-available/linotp2**.
+A sample config file is available in the installed package (e.g.
+/usr/local/etc/apache2/sites-available/linotp2.conf for a systemwide pip install).
 
 If you want to run LinOTP within the apache webserver and use SSL encryption and authentication take a look at
-https://linotp.org/index.php/howtos/5/38-install-linotp-using-pypi
-
+https://linotp.org/doc/latest/part-installation/server-installation/pip_install.html#linotp-and-the-apache-webserver
