@@ -31,8 +31,6 @@ PROJECT=LinOTP
 LINOTP_SRC_VERSION=$(shell python setup.py --version)
 DEB_BUILDDIR:=$(BUILDDIR)/linotp
 
-COPYSTUFF = tools setup.* linotp config debian Makefile DESCRIPTION MANIFEST.in README.txt
-
 I18N_LANGUAGES = de fr it es zh
 I18N_SRC := $(CURDIR)/linotp/i18n
 I18N_JSON_DEST := $(CURDIR)/linotp/public/i18n
