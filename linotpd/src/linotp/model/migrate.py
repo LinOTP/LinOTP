@@ -35,12 +35,9 @@ from sqlalchemy.exc import OperationalError
 
 from sqlalchemy import inspect
 
-import linotp.model
+from linotp.model import db, Config
 
 import logging
-
-
-
 log = logging.getLogger(__name__)
 
 
@@ -213,13 +210,7 @@ class Migration():
         self.current_version = None
 
     def _query_version(self):
-
-        config_query= self.meta.Session.query(linotp.model.Config)
-        config_query = config_query.filter(
-                            linotp.model.Config.Key == self.db_model_key)
-
-        return config_query.first()
-
+        return Config.query.filter_by(Key=self.db_model_key).first()
 
     def get_current_version(self):
         """
@@ -257,14 +248,10 @@ class Migration():
 
         if config_entry:
             config_entry.Value = version
-
         else:
-            config_entry = linotp.model.Config(
-                                        Key=self.db_model_key,
-                                        Value=version)
+            config_entry = Config(Key=self.db_model_key, Value=version)
 
-        self.meta.Session.add(config_entry)
-
+        db.session.add(config_entry)
 
     def migrate(self, from_version, to_version):
         """
@@ -302,7 +289,7 @@ class Migration():
 
                 except Exception as exx:
                     log.exception('Failed to upgrade database! %r', exx)
-                    self.meta.Session.rollback()
+                    db.session.rollback()
                     raise exx
 
             if next_version == from_version:

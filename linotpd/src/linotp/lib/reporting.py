@@ -26,8 +26,7 @@
 import json
 import logging
 
-from linotp.model import Reporting
-from linotp.model.meta import Session
+from linotp.model import db, Reporting
 
 from linotp.lib.context import request_context
 from linotp.lib.monitoring import MonitorHandler
@@ -61,7 +60,7 @@ def token_reporting(event, tokenrealms):
             report = Reporting(
                 event=event, realm=realm, parameter=key, count=val)
             try:
-                Session.add(report)
+                db.session.add(report)
             except Exception as exce:
                 log.exception('Error during saving report. Exception was: '
                               '%r' % exce)
@@ -79,11 +78,8 @@ def get_max(realm, status='active'):
     :return: maximum number of reported tokens with given status in realm
     """
 
-    max = Session.query(
-        func.max(Reporting.count))\
-        .filter(and_(Reporting.parameter == status, Reporting.realm == realm))
-
-    result = max.first()[0]
+    result = (db.session.query(func.max(Reporting.count))
+              .filter_by(parameter=status, realm=realm).scalar())
 
     return result
 
@@ -118,11 +114,11 @@ def delete(realms, status, date=None):
 
     conds = (and_(*date_cond), or_(*realm_cond), or_(*status_cond),)
 
-    rows = Session.query(Reporting).filter(*conds)
+    rows = Reporting.query.filter(*conds)
     row_num = rows.count()
 
     for row in rows:
-        Session.delete(row)
+        db.session.delete(row)
     return row_num
 
 
@@ -203,7 +199,7 @@ class ReportingIterator(object):
             order = order.asc()
 
         # query database for all reports
-        self.reports = Session.query(Reporting).filter(*conds).order_by(
+        self.reports = Reporting.query.filter(*conds).order_by(
             order).distinct()
         self.report_num = self.reports.count()
         self.pagesize = self.report_num

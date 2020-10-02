@@ -80,8 +80,7 @@ from linotp.lib.user import User
 
 from linotp.model import Token
 
-import linotp.model.meta
-Session = linotp.model.meta.Session
+from linotp.model import db
 
 required = False
 
@@ -877,8 +876,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
 
     def flush(self):
         self.token.storeToken()
-        Session.flush()
-        Session.commit()
+        db.session.commit()
         return
 
     def update(self, param, reset_failcount=True):
@@ -1048,8 +1046,8 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         """
         self.token.LinOtpFailCount = 0
 
-    def addToSession(self, Session):
-        Session.add(self.token)
+    def addToSession(self):
+        db.session.add(self.token)
 
     def deleteToken(self):
         self.token.deleteToken()

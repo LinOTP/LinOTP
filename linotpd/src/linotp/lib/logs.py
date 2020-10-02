@@ -2,8 +2,7 @@ import functools
 import logging
 
 from datetime import datetime
-from linotp.model.meta import Session
-from linotp.model import LoggingConfig
+from linotp.model import db, LoggingConfig
 
 from linotp.flap import request
 
@@ -90,7 +89,7 @@ def init_logging_config():
     Should be called ONCE at the start of the server
     """
 
-    config_entries = Session.query(LoggingConfig).all()
+    config_entries = LoggingConfig.query.all()
 
     for config_entry in config_entries:
         logger = logging.getLogger(config_entry.name)
@@ -251,11 +250,11 @@ def set_logging_level(name, level):
 
     # --------------------------------------------------------------------------
 
-    config_entry = Session.query(LoggingConfig).get(name)
+    config_entry = LoggingConfig.query.get(name)
 
     if config_entry is None:
         new_config_entry = LoggingConfig(name, level)
-        Session.add(new_config_entry)
+        db.session.add(new_config_entry)
         return
 
     config_entry.level = level

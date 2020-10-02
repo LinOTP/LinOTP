@@ -32,16 +32,14 @@ Testing the set password ability
 
 import logging
 
-from sqlalchemy.engine import create_engine
-from sqlalchemy.orm import sessionmaker
-
 from sqlalchemy.exc import ProgrammingError
 
 from linotp.lib.crypto import utils
 from linotp.lib.tools.set_password import SetPasswordHandler
-from linotp.lib.tools.set_password import DataBaseContext
 
 from linotp.tests import TestController
+
+from linotp.model import db
 
 log = logging.getLogger(__name__)
 
@@ -53,40 +51,21 @@ class TestSetAdminPassword(TestController):
         for the tests, we will drop the imported user table
         """
 
-        sqlconnect = self.app.config.get('SQLALCHEMY_DATABASE_URI')
-        engine = create_engine(sqlconnect)
-
-        # create the session for the db operation
-
-        Sessionmaker = sessionmaker()
-        Sessionmaker.configure(bind=engine)
-        session = Sessionmaker()
-
         # we try to delete the table if it exists
 
         try:
-
-            SetPasswordHandler.AdminUser.__table__.drop(engine)
-            session.commit()
-
+            SetPasswordHandler.AdminUser.__table__.drop(db.engine)
+            db.session.commit()
         except (ProgrammingError, Exception) as exx:
-
             log.info("Drop Table failed %r", exx)
-            session.rollback()
-
-        finally:
-
-            session.close()
+            db.session.rollback()
 
     def create_admin_user(self):
         """
         for testing we require the admin user to exist
         """
 
-        sqlconnect = self.app.config.get('SQLALCHEMY_DATABASE_URI')
-        engine = create_engine(sqlconnect)
-
-        db_context = DataBaseContext(engine.url)
+        db_context = None       # not required
 
         SetPasswordHandler.create_table(db_context)
         SetPasswordHandler.create_admin_user(

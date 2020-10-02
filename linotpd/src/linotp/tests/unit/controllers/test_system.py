@@ -32,7 +32,7 @@ from mock import patch
 from linotp.controllers.system import SystemController
 from linotp.flap import tmpl_context as context
 from linotp.lib.security.provider import SecurityProvider
-from linotp.model.meta import Session
+from linotp.model import db
 
 
 @pytest.mark.usefixtures("app")
@@ -44,7 +44,7 @@ class TestSetResolver(unittest.TestCase):
         self.system = SystemController()
 
     def tearDown(self):
-        Session.remove()
+        db.session.remove()
 
     @patch('linotp.controllers.system.getResolverList', return_value=[])
     @patch('linotp.controllers.system.request')

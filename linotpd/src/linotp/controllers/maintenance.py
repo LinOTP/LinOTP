@@ -38,10 +38,7 @@ from linotp.lib.reply import sendError
 from linotp.controllers.base import BaseController
 from linotp.lib.logs import set_logging_level
 
-from linotp.model import Config
-import linotp.model.meta
-
-Session = linotp.model.meta.Session
+from linotp.model import db, Config
 
 log = logging.getLogger(__name__)
 
@@ -111,16 +108,13 @@ class MaintenanceController(BaseController):
             # ----------------------------------------------------------------------
 
             set_logging_level(name, level)
-            Session.commit()
+            db.session.commit()
             return sendResult(response, True)
 
         except Exception as exx:
-            Session.rollback()
+            db.session.rollback()
             log.exception(exx)
             return sendError(response, exx, 1)
-
-        finally:
-            Session.close()
 
     def check_status(self):
         """
@@ -132,17 +126,15 @@ class MaintenanceController(BaseController):
         try:
             opt = {}
 
-            config_count = Session.query(Config).count()
+            # Using the session makes this easier to mock in tests.
+            config_count = db.session.query(Config).count()
             opt['config'] = {'entries': config_count}
 
             return sendResult(response, True, 0, opt=opt)
 
         except Exception as exx:
-            Session.rollback()
+            db.session.rollback()  # why?
             log.exception(exx)
             raise InternalServerError(str(exx))
-
-        finally:
-            Session.close()
 
 # eof #

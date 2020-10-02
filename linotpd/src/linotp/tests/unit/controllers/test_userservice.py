@@ -34,7 +34,6 @@ from mock import patch
 
 import flask
 
-from linotp.model.meta import Session
 from linotp.lib.user import User
 from linotp.controllers.userservice import UserserviceController
 

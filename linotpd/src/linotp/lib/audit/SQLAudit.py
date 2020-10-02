@@ -45,7 +45,7 @@ from binascii import unhexlify
 from sqlalchemy import create_engine
 from linotp.flap import config
 from linotp.lib.audit.base import AuditBase
-from linotp.model import meta
+from linotp.model import db
 
 from linotp.lib.crypto.rsa import RSA_Signature
 
@@ -58,8 +58,6 @@ from linotp.lib.text_utils import utf8_slice
 
 log = logging.getLogger(__name__)
 
-metadata = schema.MetaData()
-
 def now():
     u_now = "%s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
     return u_now
@@ -69,7 +67,7 @@ table_prefix = ""
 
 audit_table_name = '%saudit' % table_prefix
 
-audit_table = schema.Table(audit_table_name, metadata,
+audit_table = schema.Table(audit_table_name, db.metadata,
     schema.Column('id', types.Integer, schema.Sequence('audit_seq_id',
                                                        optional=True),
                   primary_key=True),
@@ -95,7 +93,9 @@ AUDIT_ENCODE = ["action", "serial", "success", "user", "realm", "tokentype",
                 "administrator", "action_detail", "info", "linotp_server",
                 "client", "log_level"]
 
-class AuditTable(object):
+class AuditTable(db.Model):
+
+    __table__ = audit_table
 
     def __init__(self, serial="", action="", success="False",
                  tokentype="", user="",
@@ -143,6 +143,8 @@ class AuditTable(object):
 
         log.debug("[__init__] creating AuditTable object, action = %s"
                   % action)
+
+        super().__init__()
 
         if config_param:
             self.config = config_param
@@ -232,7 +234,7 @@ class AuditTable(object):
 
         return value
 
-orm.mapper(AuditTable, audit_table)
+# orm.mapper(AuditTable, audit_table)
 
 
 # replace sqlalchemy-migrate by the ability to ad a column
@@ -349,8 +351,9 @@ class Audit(AuditBase):
         """
         Create database tables
         """
-        metadata.bind = self.engine
-        metadata.create_all()
+        # metadata.bind = self.engine
+        # metadata.create_all()
+        db.create_all()
 
 
     def _attr_to_dict(self, audit_line):
@@ -710,15 +713,16 @@ class AuditLinOTPDB(Audit):
         """
         Initialise engine using LinOTP DB
         """
-        self.engine = meta.engine
+        self.engine = db.engine
 
     def _init_sessionmaker(self):
         """
         Set up session maker in `self.session`
         """
-        self.session = meta.Session
+        self.session = db.session
 
     def log_entry(self, param):
         super().log_entry(param)
         self.session.commit()
+
 ###eof#########################################################################

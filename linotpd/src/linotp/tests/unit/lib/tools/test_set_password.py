@@ -24,147 +24,132 @@
 #    Support: www.keyidentity.com
 #
 
-import unittest
-
-from linotp.lib.crypto import utils
-from linotp.lib.tools.set_password import SetPasswordHandler
-from linotp.lib.tools.set_password import DataBaseContext
 import pytest
 
+from linotp.lib.crypto import utils
+from linotp.lib.tools.set_password import DataBaseContext, SetPasswordHandler
 
-class TestSetPasswordTool(unittest.TestCase):
 
-    def setUp(self):
+@pytest.fixture
+def db_context(app):
+    return DataBaseContext("")  # no URI needed
 
-        unittest.TestCase.setUp(self)
 
-        self.db_context = DataBaseContext('sqlite://')
+def check_for_exception(pw_handler,
+                        username, old_password, new_password,
+                        exception, message):
+    """
+    check that an exception with the message will be raised
+    """
+    with pytest.raises(exception) as exx:
+        pw_handler.set_password(username,
+                                old_password,
+                                new_password)
 
-    def check_for_exeption(self, pw_handler,
-                           username, old_password, new_password,
-                           exception, message):
-        """
-        check that an exception with the message will be raised
-        """
-        with pytest.raises(exception) as exx:
-            pw_handler.set_password(username,
-                                    old_password,
-                                    new_password)
+    assert message in str(exx.value)
 
-        exx.match(message)
 
-    def test_set_password(self):
+def test_set_password(app, db_context):
 
-        # first create the user table
-        SetPasswordHandler.create_table(self.db_context)
+    # first create the user table
+    SetPasswordHandler.create_table(db_context)
 
-        admin_user = 'admin'
+    admin_user = 'admin'
 
-        admin_pw = utils.crypt_password('admin_password')
-        # setup the inital user and it's password
+    admin_pw = utils.crypt_password('admin_password')
+    # setup the inital user and it's password
 
-        SetPasswordHandler.create_admin_user(self.db_context,
-                                             username=admin_user,
-                                             crypted_password=admin_pw)
+    SetPasswordHandler.create_admin_user(db_context,
+                                         username=admin_user,
+                                         crypted_password=admin_pw)
 
-        # run a valid change of the admin password
+    # run a valid change of the admin password
 
-        pw_handler = SetPasswordHandler(self.db_context)
-        pw_handler.set_password(admin_user,
-                                'admin_password',
-                                'new_password')
+    pw_handler = SetPasswordHandler(db_context)
+    pw_handler.set_password(admin_user,
+                            'admin_password',
+                            'new_password')
 
-        # test for non existing user
 
-        msg = "no user 'username' found!"
-        self.check_for_exeption(pw_handler,
-                                'username', 'old_password', 'new_password',
-                                Exception, message=msg)
+@pytest.mark.parametrize("user,oldpw,newpw,exception,message", [
+    ("username", "old_password", "new_password", Exception,
+     "no user 'username' found!"),
+    ("admin", "foobar", "new_password", Exception,
+     "old password missmatch!"),
+    ("admin", "old_password", None, Exception,
+     "must be unicode or bytes, not None"),
+    ("admin", "old_password", 123456, Exception,
+     "must be unicode or bytes, not int"),
+    ("admin", "old_password", 1234.56, Exception,
+     "must be unicode or bytes, not float"),
+    ("admin", "old_password", db_context, Exception,
+     "must be unicode or bytes, not function"),
+])
+def test_set_password_various(app, db_context, user, oldpw, newpw,
+                              exception, message):
 
-        # test for old password mismatch
+    SetPasswordHandler.create_table(db_context)
+    pw_handler = SetPasswordHandler(db_context)
+    admin_user = 'admin'
+    admin_pw = utils.crypt_password('old_password')
+    SetPasswordHandler.create_admin_user(
+        db_context, username=admin_user, crypted_password=admin_pw)
 
-        msg = "old password missmatch!"
-        self.check_for_exeption(pw_handler,
-                                'admin', 'old_password', 'new_password',
-                                Exception, message=msg)
+    check_for_exception(pw_handler, user, oldpw, newpw, exception, message)
 
-        # test for invalid new password using different data types
-        msg = "must be unicode or bytes, not None"
-        self.check_for_exeption(pw_handler,
-                                'admin', 'new_password', None,
-                                Exception, message=msg)
+    # make sure that the password did not change in between and the
+    # password could be set correctly
 
-        msg = "must be unicode or bytes, not int"
-        self.check_for_exeption(pw_handler,
-                                'admin', 'new_password', 123456,
-                                Exception, message=msg)
+    pw_handler.set_password("admin",
+                            'old_password',
+                            'admin_password')
 
-        msg = "must be unicode or bytes, not float"
-        self.check_for_exeption(pw_handler,
-                                'admin', 'new_password', 1234.56,
-                                Exception, message=msg)
 
-        msg = "must be unicode or bytes, not linotp.lib."
-        self.check_for_exeption(pw_handler,
-                                'admin', 'new_password', self.db_context,
-                                Exception, message=msg)
+def test_set_password_with_no_table(app, db_context):
+    """
+        try to set password though no table exists
+    """
 
-        # make sure that the password did not change in between and the
-        # password could be set correctly
+    pw_handler = SetPasswordHandler(db_context)
+    SetPasswordHandler.AdminUser.__table__.drop(db_context.get_engine())
 
-        pw_handler.set_password(admin_user,
-                                'new_password',
-                                'admin_password')
+    msg = "no such table: admin_users"
+    check_for_exception(pw_handler,
+                        'admin', 'admin_password', 'new_password',
+                        Exception, message=msg)
 
-        return
 
-    def test_set_password_with_no_table(self):
-        """
-            try to set password though no table exists
-        """
+def test_set_inital_admin_twice(app, db_context):
 
-        pw_handler = SetPasswordHandler(self.db_context)
+    # first create the user table
+    SetPasswordHandler.create_table(db_context)
 
-        msg = "no such table: admin_users"
-        self.check_for_exeption(pw_handler,
-                                'admin', 'admin_password', 'new_password',
-                                Exception, message=msg)
+    admin_user = 'admin'
+    admin_pw = utils.crypt_password('admin_password')
 
-        return
+    # setup the inital user and it's password
 
-    def test_set_inital_admin_twice(self):
+    SetPasswordHandler.create_admin_user(db_context,
+                                         username=admin_user,
+                                         crypted_password=admin_pw)
 
-        # first create the user table
-        SetPasswordHandler.create_table(self.db_context)
+    admin_user = 'admin'
+    admin_pw = utils.crypt_password('password_of_admin')
 
-        admin_user = 'admin'
-        admin_pw = utils.crypt_password('admin_password')
+    # setup the inital user and try to set it's password a second time
+    # - this will fail as the user could only be set once
 
-        # setup the inital user and it's password
+    SetPasswordHandler.create_admin_user(db_context,
+                                         username=admin_user,
+                                         crypted_password=admin_pw)
 
-        SetPasswordHandler.create_admin_user(self.db_context,
-                                             username=admin_user,
-                                             crypted_password=admin_pw)
+    pw_handler = SetPasswordHandler(db_context)
 
-        admin_user = 'admin'
-        admin_pw = utils.crypt_password('password_of_admin')
+    msg = "old password missmatch!"
+    check_for_exception(pw_handler,
+                        'admin', 'password_of_admin', 'new_password',
+                        Exception, message=msg)
 
-        # setup the inital user and try to set it's password a second time
-        # - this will fail as the user could only be set once
-
-        SetPasswordHandler.create_admin_user(self.db_context,
-                                             username=admin_user,
-                                             crypted_password=admin_pw)
-
-        pw_handler = SetPasswordHandler(self.db_context)
-
-        msg = "old password missmatch!"
-        self.check_for_exeption(pw_handler,
-                                'admin', 'password_of_admin', 'new_password',
-                                Exception, message=msg)
-
-        pw_handler.set_password('admin', 'admin_password', 'new_password')
-
-        return
+    pw_handler.set_password('admin', 'admin_password', 'new_password')
 
 # eof #

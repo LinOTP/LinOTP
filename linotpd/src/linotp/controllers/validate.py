@@ -68,10 +68,7 @@ from linotp.lib.context import request_context
 from linotp.lib.error import ValidateError
 from linotp.lib.pairing import decrypt_pairing_response
 
-import linotp.model
-
-
-Session = linotp.model.Session
+from linotp.model import db
 
 CONTENT_TYPE_PAIRING = 1
 
@@ -107,8 +104,7 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             return sendError(response, exx, context='before')
 
 
@@ -249,7 +245,7 @@ class ValidateController(BaseController):
                         opt = {}
                     opt['error'] = g.audit.get('info')
 
-            Session.commit()
+            db.session.commit()
 
             qr = param.get('qr', None)
             if qr and opt and 'message' in opt:
@@ -269,11 +265,11 @@ class ValidateController(BaseController):
             log.exception("[check] validate/check failed: %r" % exx)
             # If an internal error occurs or the SMS gateway did not send the SMS, we write this to the detail info.
             g.audit['info'] = "%r" % exx
-            Session.rollback()
+            db.session.rollback()
             return sendResult(response, False, 0)
 
         finally:
-            Session.close()
+            db.session.close()
 
     def check_status(self):
         """
@@ -315,18 +311,14 @@ class ValidateController(BaseController):
             g.audit['success'] = ok
             g.audit['info'] = str(opt)
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, ok, 0, opt=opt)
 
         except Exception as exx:
             log.exception("check_status failed: %r" % exx)
             g.audit['info'] = str(exx)
-            Session.rollback()
+            db.session.rollback()
             return sendResult(response, False, 0)
-
-        finally:
-            Session.close()
-
 
     def check_yubikey(self):
         '''
@@ -378,17 +370,14 @@ class ValidateController(BaseController):
                 g.audit['info'] = str(exx)
                 ok = False
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, ok, 0, opt=opt)
 
         except Exception as exx:
             log.exception("[check_yubikey] validate/check_yubikey failed: %r" % exx)
             g.audit['info'] = str(exx)
-            Session.rollback()
+            db.session.rollback()
             return sendResult(response, False, 0)
-
-        finally:
-            Session.close()
 
     def check_url(self):
         '''
@@ -405,7 +394,7 @@ class ValidateController(BaseController):
                 g.audit['action_detail'] = str(acc)
                 ok = False
 
-            Session.commit()
+            db.session.commit()
             response.headers['blablafoo'] = 'application/json'
 
             ## TODO: this code seems not to be finished
@@ -417,17 +406,13 @@ class ValidateController(BaseController):
         except flap.HTTPUnauthorized as acc:
             ## the exception, when an abort() is called if forwarded
             log.exception("[__before__::%r] webob.exception %r" % acc)
-            Session.rollback()
+            db.session.rollback()
             raise acc
 
         except Exception as exx:
             log.exception("[check_url] validate/check_url failed: %r" % exx)
-            Session.rollback()
+            db.session.rollback()
             return sendResult(response, False, 0)
-
-        finally:
-            Session.close()
-
 
     def samlcheck(self):
         '''
@@ -478,16 +463,13 @@ class ValidateController(BaseController):
                         if key in res:
                             attributes[key] = res[key]
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, { 'auth': ok, 'attributes' : attributes } , 0, opt)
 
         except Exception as exx:
             log.exception("[samlcheck] validate/check failed: %r" % exx)
-            Session.rollback()
+            db.session.rollback()
             return sendResult(response, False, 0)
-
-        finally:
-            Session.close()
 
     def check_t(self):
 
@@ -522,7 +504,7 @@ class ValidateController(BaseController):
             value['failcount'] = int(opt.get('failcount', 0))
 
             g.audit['success'] = ok
-            Session.commit()
+            db.session.commit()
 
             qr = param.get('qr', None)
             if qr and opt and 'message' in opt:
@@ -541,11 +523,8 @@ class ValidateController(BaseController):
         except Exception as exx:
             log.exception("[check_t] validate/check_t failed: %r" % exx)
             g.audit['info'] = str(exx)
-            Session.rollback()
+            db.session.rollback()
             return sendResult(response, False, 0)
-
-        finally:
-            Session.close()
 
     # ------------------------------------------------------------------------ -
 
@@ -599,7 +578,7 @@ class ValidateController(BaseController):
             g.audit['info'] = 'accept transaction: %r' % ok
 
             g.audit['success'] = ok
-            Session.commit()
+            db.session.commit()
 
             return sendResult(response, ok)
 
@@ -607,12 +586,9 @@ class ValidateController(BaseController):
 
             log.exception("validate/accept_transaction failed: %r" % exx)
             g.audit['info'] = "%r" % exx
-            Session.rollback()
+            db.session.rollback()
 
             return sendResult(response, False, 0)
-
-        finally:
-            Session.close()
 
     # ------------------------------------------------------------------------ -
 
@@ -666,7 +642,7 @@ class ValidateController(BaseController):
             g.audit['info'] = 'reject transaction: %r' % ok
 
             g.audit['success'] = ok
-            Session.commit()
+            db.session.commit()
 
             return sendResult(response, ok)
 
@@ -674,12 +650,9 @@ class ValidateController(BaseController):
 
             log.exception("validate/reject_transaction failed: %r" % exx)
             g.audit['info'] = "%r" % exx
-            Session.rollback()
+            db.session.rollback()
 
             return sendResult(response, False, 0)
-
-        finally:
-            Session.close()
 
     def check_s(self):
         '''
@@ -739,7 +712,7 @@ class ValidateController(BaseController):
             vh = ValidationHandler()
             (ok, opt) = vh.checkSerialPass(serial, passw, options=options)
             g.audit['success'] = ok
-            Session.commit()
+            db.session.commit()
 
             qr = param.get('qr', None)
             if qr and opt and 'message' in opt:
@@ -758,13 +731,8 @@ class ValidateController(BaseController):
         except Exception as exx:
             log.exception("[check_s] validate/check_s failed: %r" % exx)
             g.audit['info'] = str(exx)
-            Session.rollback()
+            db.session.rollback()
             return sendResult(response, False, id=0, status=False)
-
-        finally:
-            Session.close()
-
-
 
     def simplecheck(self):
         '''
@@ -802,7 +770,7 @@ class ValidateController(BaseController):
                 g.audit['action_detail'] = str(e)
                 ok = False
 
-            Session.commit()
+            db.session.commit()
 
             if ok is True:
                 ret = ":-)"
@@ -825,12 +793,8 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.exception("[simplecheck] failed: %r" % exx)
-            Session.rollback()
+            db.session.rollback()
             return ":-("
-
-        finally:
-            Session.close()
-
 
     def ok(self):
         return sendResult(response, True, 0)
@@ -889,7 +853,7 @@ class ValidateController(BaseController):
             else:
                 raise Exception(message)
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, ret, opt)
 
         except Exception as exx:
@@ -897,11 +861,8 @@ class ValidateController(BaseController):
             # If an internal error occurs or the SMS gateway did not send
             # the SMS, we write this to the detail info.
             g.audit['info'] = str(exx)
-            Session.rollback()
+            db.session.rollback()
             return sendResult(response, False, 0)
-
-        finally:
-            Session.close()
 
     def pair(self):
         """
@@ -965,7 +926,7 @@ class ValidateController(BaseController):
             g.audit['success'] = 1
             g.audit['serial'] = token.getSerial()
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, False)
 
         # ------------------------------------------------------------------- --
@@ -973,10 +934,7 @@ class ValidateController(BaseController):
         except Exception as exx:
             log.exception("validate/pair failed: %r" % exx)
             g.audit['info'] = str(exx)
-            Session.rollback()
+            db.session.rollback()
             return sendResult(response, False, 0, status=False)
-
-        finally:
-            Session.close()
 
 # eof #########################################################################

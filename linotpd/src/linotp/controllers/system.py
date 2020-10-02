@@ -124,9 +124,7 @@ from html import escape
 from linotp.lib.context import request_context
 
 import logging
-import linotp.model.meta
-
-Session = linotp.model.meta.Session
+from linotp.model import db
 
 log = logging.getLogger(__name__)
 
@@ -178,21 +176,18 @@ class SystemController(BaseController):
 
         except PolicyException as pex:
             log.exception("[__before__::%r] policy exception %r", action, pex)
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             return sendError(response, pex, context='before')
 
         except flap.HTTPUnauthorized as acc:
             # the exception, when an abort() is called if forwarded
             log.exception("[__before__::%r] webob.exception %r", action, acc)
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             raise acc
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r", action, exx)
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             return sendError(response, exx, context='before')
 
 
@@ -214,8 +209,7 @@ class SystemController(BaseController):
 
         except Exception as exx:
             log.exception("[__after__] exception %r", exx)
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             return sendError(response, exx, context='after')
 
 
@@ -287,17 +281,13 @@ class SystemController(BaseController):
                             "find any known parameter. %s", description)
                 raise ParameterError("Usage: %s" % description, id=77)
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res)
 
         except Exception as exx:
             log.exception('[setDefault] commit failed: %r', exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
-
 
 ########################################################
     def setConfig(self):
@@ -388,21 +378,18 @@ class SystemController(BaseController):
                 # --------------------------------------------------------- --
 
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except ValueError as exx:
             log.exception("[setConfig] error saving config: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
 
         except Exception as exx:
             log.exception("[setConfig] error saving config: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
 # config callback helper
 
@@ -464,17 +451,13 @@ class SystemController(BaseController):
             g.audit['success'] = ret
             g.audit['info'] = key
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
             log.exception("[delConfig] error deleting config: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
-
 
 ########################################################
 ########################################################
@@ -553,16 +536,13 @@ class SystemController(BaseController):
                 g.audit['success'] = ret
                 g.audit['info'] = "config key %s" % key
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
             log.exception("[getConfig] error getting config: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
 ########################################################
     def getRealms(self):
@@ -606,22 +586,18 @@ class SystemController(BaseController):
                                       {'realms': all_realms})
             res = polPost['realms']
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except PolicyException as pex:
             log.exception("[getRealms] policy exception: %r", pex)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, pex)
 
         except Exception as exx:
             log.exception("[getRealms] error getting realms: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
-
 
 ########################################################
     def setResolver(self):
@@ -796,22 +772,19 @@ class SystemController(BaseController):
                 # finally delete the previous resolver definition
                 deleteResolver(previous_name)
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, True, 1)
 
         except ResolverLoadConfigError as exx:
             log.exception("Failed to load resolver definition %r \n %r",
                           exx, list(param.keys()))
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, msg % new_resolver_name)
 
         except Exception as exx:
             log.exception("[setResolver] error saving config: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
 ########################################################
     def getResolvers(self):
@@ -837,16 +810,13 @@ class SystemController(BaseController):
             res = getResolverList()
 
             g.audit['success'] = True
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
             log.exception("[getResolvers] error getting resolvers: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
 ########################################################
     def delResolver(self):
@@ -904,16 +874,13 @@ class SystemController(BaseController):
             g.audit['success'] = res
             g.audit['info'] = resolver
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
             log.exception("[delResolver] error deleting resolver: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
 ########################################################
 
@@ -954,16 +921,15 @@ class SystemController(BaseController):
             g.audit['success'] = True
             g.audit['info'] = resolver
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
             log.exception("[getResolver] error getting resolver: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
 
         finally:
-            Session.close()
             log.debug('[getResolver] done')
 
 ########################################################
@@ -1001,17 +967,14 @@ class SystemController(BaseController):
             g.audit['success'] = True
             g.audit['info'] = defRealm
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
             log.exception("[setDefaultRealm] setting default realm failed: %r",
                           exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
 ########################################################
     def getDefaultRealm(self):
@@ -1040,17 +1003,14 @@ class SystemController(BaseController):
             g.audit['success'] = True
             g.audit['info'] = defRealm
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
             log.exception("[getDefaultRealm] return default realm failed: %r",
                           exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
 ########################################################
     def setRealm(self):
@@ -1109,17 +1069,14 @@ class SystemController(BaseController):
             g.audit['info'] = 'realm: %r, resolvers: %r' % \
                               (realm, valid_resolver_specs_str)
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
             err = ("Failed to set realm with %r " % param)
             log.exception("[setRealm] %r %r", err, exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
 ########################################################
     def delRealm(self):
@@ -1185,17 +1142,13 @@ class SystemController(BaseController):
             g.audit['success'] = ret
             g.audit['info'] = realm
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
             log.exception("[delRealm] error deleting realm: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
-
 
 ########################################################
 
@@ -1287,7 +1240,7 @@ class SystemController(BaseController):
 
                 g.audit['success'] = True
 
-                Session.commit()
+                db.session.commit()
             else:
                 log.error("[setPolicy] failed: policy with empty name"
                           " or action %r", p_param)
@@ -1301,11 +1254,8 @@ class SystemController(BaseController):
 
         except Exception as exx:
             log.exception("[setPolicy] error saving policy: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
 ########################################################
     def policies_flexi(self):
@@ -1383,16 +1333,13 @@ class SystemController(BaseController):
             g.audit['success'] = True
             g.audit['info'] = ("name = %s, realm = %s, scope = %s" %
                                (name, realm, scope))
-            Session.commit()
+            db.session.commit()
             return json.dumps(res, indent=3)
 
         except Exception as exx:
             log.exception("[policies_flexi] error in policy flexi: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
 ########################################################
     def getPolicyDef(self):
@@ -1431,17 +1378,14 @@ class SystemController(BaseController):
             g.audit['success'] = True
             g.audit['info'] = scope
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, pol, 1)
 
         except Exception as exx:
             log.exception("[getPolicyDef] error getting policy "
                           "definitions: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
 #########################################################
     def _add_dynamic_tokens(self, scope):
@@ -1538,17 +1482,14 @@ class SystemController(BaseController):
             g.audit['info'] = "Policies imported from file %s" % policy_file
             g.audit['success'] = 1
 
-            Session.commit()
+            db.session.commit()
 
             return sendResultMethod(response, res)
 
         except Exception as exx:
             log.exception("[importPolicy] failed! %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendErrorMethod(response, exx)
-
-        finally:
-            Session.close()
 
 ############################################################
     def checkPolicy(self):
@@ -1635,16 +1576,13 @@ class SystemController(BaseController):
                                         % (action, realm, scope))
             g.audit['success'] = True
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
             log.exception("[checkPolicy] error checking policy: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
 ##########################################################################
     def getPolicy(self, id=None):
@@ -1749,7 +1687,7 @@ class SystemController(BaseController):
             g.audit['info'] = ("name = %s, realm = %s, scope = %s"
                                % (name, realm, scope))
 
-            Session.commit()
+            db.session.commit()
 
             # The export filename is hard-coded to "policy.cfg".
             # It used to be possible to pass this as the final part of
@@ -1767,11 +1705,8 @@ class SystemController(BaseController):
 
         except Exception as exx:
             log.exception("[getPolicy] error getting policy: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
 ########################################################
     def delPolicy(self):
@@ -1815,16 +1750,16 @@ class SystemController(BaseController):
             g.audit['success'] = ret
             g.audit['info'] = name
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
             log.exception("[delPolicy] error deleting policy: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
 
         finally:
-            Session.close()
+            db.session.close()
 
 ########################################################
 
@@ -1869,16 +1804,13 @@ class SystemController(BaseController):
                                               'result': ret}
 
             g.audit['success'] = ret
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
             log.exception("[setupSecurityModule] : setup failed: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
 ########################################################
 
@@ -1900,11 +1832,8 @@ class SystemController(BaseController):
         except Exception as exx:
             log.exception("[getSupportInfo] : failed to access support info:"
                           " %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
     def isSupportValid(self):
         """
@@ -1952,7 +1881,7 @@ class SystemController(BaseController):
 
             if not licString and running_on_appliance():
                 res, msg = setDemoSupportLicense()
-                Session.flush()
+                db.session.flush()
                 license_txt = getFromConfig('license', '')
                 licString = binascii.unhexlify(license_txt).decode()
 
@@ -1968,7 +1897,7 @@ class SystemController(BaseController):
             g.audit['action_detail'] = msg
             g.audit['success'] = res
 
-            Session.commit()
+            db.session.commit()
 
             return sendResult(response, res, 1, opt=info)
 
@@ -1976,11 +1905,8 @@ class SystemController(BaseController):
             log.exception("[isSupportValid] failed verify support info: %r",
                           exx)
 
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
     def setSupport(self):
         """
@@ -2026,17 +1952,14 @@ class SystemController(BaseController):
             if res is False:
                 raise Exception('Failed to set License: %r' % msg)
 
-            Session.commit()
+            db.session.commit()
             return sendResultMethod(response, res, 1, opt=message)
 
         except Exception as exx:
             log.exception("[setSupport] failed to set support license: %r",
                           exx)
-            Session.rollback()
+            db.session.rollback()
             return sendErrorMethod(response, exx)
-
-        finally:
-            Session.close()
 
     def setProvider(self):
         """
@@ -2105,16 +2028,13 @@ class SystemController(BaseController):
             g.audit['success'] = res
             g.audit['info'] = name
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1, opt=reply)
 
         except Exception as exx:
             log.exception("error saving config: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
     def getProvider(self):
         """
@@ -2154,16 +2074,13 @@ class SystemController(BaseController):
             if provider_name:
                 g.audit['info'] = provider_name
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
             log.exception("error getting config: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
     def testProvider(self):
         """
@@ -2198,17 +2115,13 @@ class SystemController(BaseController):
             g.audit['success'] = status
             g.audit['info'] = provider_name
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, status, 1)
 
         except Exception as exx:
             log.exception("error getting config: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
-
 
     def delProvider(self):
         """
@@ -2256,16 +2169,13 @@ class SystemController(BaseController):
             g.audit['success'] = res > 0
             g.audit['info'] = provider_name
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res > 0, 1, opt=reply)
 
         except Exception as exx:
             log.exception("error saving config: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
     def setDefaultProvider(self):
         """
@@ -2297,16 +2207,13 @@ class SystemController(BaseController):
             g.audit['success'] = res
             g.audit['info'] = provider_name
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1, opt=reply)
 
         except Exception as exx:
             log.exception("error saving config: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
     def getProviderDef(self):
         """
@@ -2336,16 +2243,12 @@ class SystemController(BaseController):
             # TODO:  to be implemented
             res = {}
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
             log.exception("error saving config: %r", exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
-
 
 # eof #########################################################################

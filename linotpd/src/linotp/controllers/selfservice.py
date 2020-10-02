@@ -47,7 +47,8 @@ from linotp.flap import (
 
 from mako.exceptions import CompileException
 
-import linotp.model
+from linotp.model import db
+
 from linotp.controllers.base import BaseController
 from linotp.lib.error import ParameterError
 
@@ -86,8 +87,6 @@ from linotp.tokens import tokenclass_registry
 from linotp.lib.context import request_context
 
 import logging
-
-Session = linotp.model.Session
 
 ENCODING = "utf-8"
 log = logging.getLogger(__name__)
@@ -262,14 +261,12 @@ class SelfserviceController(BaseController):
         except (flap.HTTPUnauthorized, flap.HTTPForbidden) as acc:
             # the exception, when an abort() is called if forwarded
             log.info("[__before__::%r] webob.exception %r" % (action, acc))
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             raise acc
 
         except Exception as e:
             log.exception("[__before__] failed with error: %r" % e)
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             return sendError(response, e, context='before')
 
     @staticmethod
@@ -308,15 +305,13 @@ class SelfserviceController(BaseController):
         except flap.HTTPUnauthorized as acc:
             # the exception, when an abort() is called if forwarded
             log.exception("[__after__::%r] webob.exception %r" % (action, acc))
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             # FIXME: verify that this really works
             raise acc
 
         except Exception as e:
             log.exception("[__after__] failed with error: %r" % e)
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             return sendError(response, e, context='after')
 
     def index(self):
@@ -428,24 +423,21 @@ class SelfserviceController(BaseController):
                         res = render(os.path.sep + html).decode()
                         res = remove_empty_lines(res)
 
-            Session.commit()
+            db.session.commit()
             return res
 
         except CompileException as exx:
             log.exception("[load_form] compile error while processing %r.%r:"
                           "Exeption was %r" % (tok, scope, exx))
-            Session.rollback()
+            db.session.rollback()
             raise exx
 
         except Exception as exx:
-            Session.rollback()
+            db.session.rollback()
             error = ('error (%r) accessing form data for: tok:%r, scope:%r'
                      ', section:%r' % (exx, tok, scope, section))
             log.exception(error)
             return '<pre>%s</pre>' % error
-
-        finally:
-            Session.close()
 
     def custom_style(self):
         '''

@@ -40,9 +40,7 @@ from linotp.lib.policy import get_auth_AutoSMSPolicy
 
 import secrets
 
-import linotp.model
-
-Session = linotp.model.Session
+from linotp.model import db
 
 
 CLICKATEL_ID_MAX = 1000
@@ -196,16 +194,13 @@ class TestingController(BaseController):
                 else:
                     return twilio_fail
 
-            Session.commit()
+            db.session.commit()
             return "Missing account info."
 
         except Exception as e:
             log.exception('[http2sms] %r' % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(e), 0)
-
-        finally:
-            Session.close()
 
 
 # eof #

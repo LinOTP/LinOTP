@@ -60,9 +60,8 @@ from linotp.lib.resolver import getResolverList
 from linotp.lib.type_utils import boolean
 
 import logging
-import linotp.model
 
-Session = linotp.model.Session
+from linotp.model import db
 
 log = logging.getLogger(__name__)
 
@@ -91,14 +90,12 @@ class ToolsController(BaseController):
 
         except PolicyException as exx:
             log.exception("policy failed %r" % exx)
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             return sendError(response, exx, context='before')
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             return sendError(response, exx, context='before')
 
     @staticmethod
@@ -113,16 +110,13 @@ class ToolsController(BaseController):
         try:
             # finally create the audit entry
             current_app.audit_obj.log(g.audit)
-            Session.commit()
+            db.session.commit()
             return response
 
         except Exception as exx:
             log.exception(exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx, context='after')
-
-        finally:
-            Session.close()
 
     def setPassword(self):
         """
@@ -137,7 +131,7 @@ class ToolsController(BaseController):
             if not username:
                 raise Exception("Missing authenticated user!")
 
-            sql_url = linotp.model.meta.engine.url
+            sql_url = db.engine.url
 
             # -------------------------------------------------------------- --
 
@@ -166,11 +160,8 @@ class ToolsController(BaseController):
             g.audit['success'] = False
 
             log.exception(exx)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, exx)
-
-        finally:
-            Session.close()
 
     def migrate_resolver(self):
 
@@ -195,16 +186,13 @@ class ToolsController(BaseController):
             ret = mg.migrate_resolver(src=src_resolver,
                                       target=target_resolver)
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, ret)
 
         except Exception as e:
             log.exception("failed: %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e, 1)
-
-        finally:
-            Session.close()
 
     def import_users(self):
         """
@@ -318,8 +306,8 @@ class ToolsController(BaseController):
             # use a LinOTP Database context for Sessions and Engine
 
             db_context = LinOTP_DatabaseContext(
-                                        SqlSession=Session,
-                                        SqlEngine=linotp.model.meta.engine)
+                                        SqlSession=db.session,
+                                        SqlEngine=db.engine)
 
             # define the import into an SQL database + resolver
 
@@ -353,7 +341,7 @@ class ToolsController(BaseController):
 
             resolver_spec = import_handler.get_resolver_spec()
 
-            Session.commit()
+            db.session.commit()
 
             return sendResult(response, result)
 
@@ -361,7 +349,7 @@ class ToolsController(BaseController):
 
             log.exception("Error during user import: %r", pexx)
 
-            Session.rollback()
+            db.session.rollback()
 
             return sendError(response, "%r" % pexx, 1)
 
@@ -369,12 +357,11 @@ class ToolsController(BaseController):
 
             log.exception("Error during user import: %r" % exx)
 
-            Session.rollback()
+            db.session.rollback()
 
             return sendError(response, "%r" % exx)
 
         finally:
-            Session.close()
             log.debug('done')
 
 # eof #########################################################################

@@ -77,8 +77,7 @@ from linotp.lib.context import request_context
 from linotp.lib.ImportOTP import getKnownTypes, getImportText
 import linotp
 
-import linotp.model.meta
-Session = linotp.model.meta.Session
+from linotp.model import db
 
 log = logging.getLogger(__name__)
 
@@ -143,8 +142,7 @@ class ManageController(BaseController):
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             return sendError(response, exx, context='before')
 
         finally:
@@ -256,22 +254,19 @@ class ManageController(BaseController):
             url_scheme = request.environ.get("wsgi.url_scheme")
             c.logout_url = "%s://log-me-out:fake@%s/manage/logout" % (url_scheme, http_host)
 
-            Session.commit()
+            db.session.commit()
             ren = render('/manage/manage-base.mako')
             return ren
 
         except PolicyException as pe:
             log.exception("[index] Error during checking policies: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as ex:
             log.exception("[index] failed! %r" % ex)
-            Session.rollback()
+            db.session.rollback()
             raise
-
-        finally:
-            Session.close()
 
 
     def tokentype(self):
@@ -450,22 +445,19 @@ class ManageController(BaseController):
 
             g.audit['success'] = True
 
-            Session.commit()
+            db.session.commit()
             # The flexi handler should support std LinOTP output
             return sendResult(response, res)
 
         except PolicyException as pe:
             log.exception("[tokenview_flexi] Error during checking policies: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[tokenview_flexi] failed: %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e)
-
-        finally:
-            Session.close()
 
     def userview_flexi(self):
         '''
@@ -559,21 +551,18 @@ class ManageController(BaseController):
 
             g.audit['success'] = True
 
-            Session.commit()
+            db.session.commit()
             return sendResult(response, res)
 
         except PolicyException as pe:
             log.exception("[userview_flexi] Error during checking policies: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[userview_flexi] failed: %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e)
-
-        finally:
-            Session.close()
 
     def tokeninfo(self):
         '''
@@ -626,16 +615,13 @@ class ManageController(BaseController):
 
         except PolicyException as pe:
             log.exception("[tokeninfo] Error during checking policies: %r" % pe)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             log.exception("[tokeninfo] failed! %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e)
-
-        finally:
-            Session.close()
 
 
     def logout(self):
@@ -677,16 +663,13 @@ class ManageController(BaseController):
             r = flask.send_file("%s/%s" % (directory, id), mimetype=mimetype,
                                 as_attachment=True,
                                 attachment_filename=default_filename)
-            Session.commit()
+            db.session.commit()
             return r
 
         except Exception as e:
             log.exception("[help] Error loading helpfile: %r" % e)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, e)
-
-        finally:
-            Session.close()
 
 # ###########################################################
 

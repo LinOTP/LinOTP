@@ -44,7 +44,7 @@ def runner(app):
     """Set common configuration """
 
     env = {
-        'LINOTP_AUDIT_DATABASE_URI': 'SHARED',
+        'LINOTP_AUDIT_DATABASE_URI': 'OFF',  # FIXME: 'SHARED',
     }
     return app.test_cli_runner(env=env, mix_stderr=False, echo_stdin=True)
 
@@ -61,7 +61,6 @@ def test_database(app, runner, freezer):
     str_now = datetime.now().strftime(app.config["BACKUP_FILE_TIME_FORMAT"])
 
     # Create a database backup
-    print("Invoke 'backup create'")
     result = runner.invoke(cli_main, ['-v', 'backup', 'create'])
     assert result.exit_code == 0
 

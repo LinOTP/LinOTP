@@ -39,9 +39,9 @@ import logging
 
 from linotp.flap import response
 
-import linotp.model.meta
-
 from linotp.controllers.base import BaseController
+
+from linotp.model import db
 
 from linotp.lib.reply import sendResult
 from linotp.lib.reply import sendError
@@ -53,8 +53,6 @@ from linotp.lib.migrate import DecryptionError
 
 
 log = logging.getLogger(__name__)
-
-Session = linotp.model.meta.Session
 
 
 class MigrateController(BaseController):
@@ -146,12 +144,12 @@ class MigrateController(BaseController):
             return sendResult(response, result)
 
         except PolicyException as pe:
-            Session.rollback()
+            db.session.rollback()
             log.exception('[backup] policy failed: %r' % pe)
             return sendError(response, str(pe), 1)
 
         except Exception as e:
-            Session.rollback()
+            db.session.rollback()
             log.exception('[backup] failed: %r' % e)
             return sendError(response, e)
 
@@ -256,7 +254,7 @@ class MigrateController(BaseController):
             if not counter_check_done:
                 raise Exception('incomplete migration file!')
 
-            Session.commit()
+            db.session.commit()
             log.debug("[restore] success")
             return sendResult(response, counters)
 
@@ -267,12 +265,12 @@ class MigrateController(BaseController):
         except DecryptionError as err:
             decryption_error = True
             log.exception('Error - failed with %r' % err)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, err)
 
         except Exception as err:
             log.exception('Error - failed with %r' % err)
-            Session.rollback()
+            db.session.rollback()
             return sendError(response, err)
 
         finally:
@@ -282,6 +280,5 @@ class MigrateController(BaseController):
                     os.remove(backup_file)
                     log.debug("removed backup file %r", backup_file)
 
-            Session.close()
 
 # eof #########################################################################

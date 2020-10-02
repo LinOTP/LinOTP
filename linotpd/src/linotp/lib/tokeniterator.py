@@ -48,9 +48,7 @@ from linotp.lib.realm import getRealms
 
 from linotp.lib.user import NoResolverFound
 
-from linotp.model import Token
-from linotp.model import Realm, TokenRealm
-from linotp.model.meta import Session
+from linotp.model import db, Token, Realm, TokenRealm
 
 from linotp.lib.config  import getFromConfig
 
@@ -313,7 +311,7 @@ class TokenIterator(object):
                       " in no realm")
 
             # get all tokenrealm ids
-            token_id_tuples = Session.query(TokenRealm.token_id).all()
+            token_id_tuples = db.session.query(TokenRealm.token_id).all()
             token_ids = set()
             for token_tuple in token_id_tuples:
                 token_ids.add(token_tuple[0])
@@ -343,13 +341,13 @@ class TokenIterator(object):
 
     def _get_tokens_in_realm(self, valid_realms):
         ## get all matching realms
-        realm_id_tuples = Session.query(Realm.id).\
+        realm_id_tuples = db.session.query(Realm.id).\
                             filter(Realm.name.in_(valid_realms)).all()
         realm_ids = set()
         for realm_tuple in realm_id_tuples:
             realm_ids.add(realm_tuple[0])
         ## get all tokenrealm ids
-        token_id_tuples = Session.query(TokenRealm.token_id).\
+        token_id_tuples = db.session.query(TokenRealm.token_id).\
                     filter(TokenRealm.realm_id.in_(realm_ids)).all()
         token_ids = set()
         for token_tuple in token_id_tuples:
@@ -499,7 +497,8 @@ class TokenIterator(object):
 
         #  care for the result pageing
         if page is None:
-            self.toks = Session.query(Token).filter(condition).order_by(order).distinct()
+            self.toks = Token.query.filter(
+                condition).order_by(order).distinct()
             self.tokens = self.toks.count()
 
             log.debug("[TokenIterator] DB-Query returned # of objects: %i" % self.tokens)
@@ -525,7 +524,7 @@ class TokenIterator(object):
         start = thePage * pagesize
         stop = (thePage + 1) * pagesize
 
-        self.toks = Session.query(Token).filter(condition).order_by(order).distinct()
+        self.toks = Token.query.filter(condition).order_by(order).distinct()
         self.tokens = self.toks.count()
         log.debug("[TokenIterator::init] DB-Query returned # of objects: %i" % self.tokens)
         self.page = thePage + 1

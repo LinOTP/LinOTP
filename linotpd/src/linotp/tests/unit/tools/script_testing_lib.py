@@ -31,9 +31,9 @@ import unittest
 from mock import patch
 from sqlalchemy.engine import create_engine
 
-from linotp.lib.audit.SQLAudit import metadata as audit_metadata
-from linotp.model import init_model
-from linotp.model.meta import metadata
+# from linotp.lib.audit.SQLAudit import metadata as audit_metadata
+from linotp.model import db
+
 
 # -------------------------------------------------------------------------- --
 
@@ -95,9 +95,6 @@ class ScriptTester(unittest.TestCase):
         engine = create_engine('sqlite://')
 
         # Create blank databases
-        metadata.create_all(engine)
-        audit_metadata.create_all(engine)
-        init_model(engine)
+        db.create_all(engine)
 
         return engine
-

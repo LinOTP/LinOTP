@@ -40,7 +40,7 @@ from linotp.cli import main, Echo, get_backup_filename
 import linotp.cli.init_cmd as c
 
 from sqlalchemy import create_engine
-from linotp.model import Config, meta, setup_db, init_db_tables
+from linotp.model import db, Config, setup_db, init_db_tables
 
 
 @pytest.fixture
@@ -241,15 +241,16 @@ def test_setup_db_erase_all(app, engine, capsys, erase):
     app.echo = Echo(verbosity=1)
 
     # GIVEN a database with records
+    app.cli_cmd = "init-database"
     setup_db(app)
     init_db_tables(app, drop_data=True, add_defaults=True)
 
     KEY = "linotp.foobar"
     item = Config(Key=KEY, Value="123", Type="int", Description="test item")
-    meta.Session.add(item)
-    meta.Session.commit()
-    assert meta.Session.query(Config).filter_by(Key=KEY).count() == 1
-    meta.Session.remove()
+    db.session.add(item)
+    db.session.commit()
+    assert db.session.query(Config).filter_by(Key=KEY).count() == 1
+    db.session.remove()
 
     # WHEN I invoke `setup_db`
     setup_db(app)
@@ -257,14 +258,14 @@ def test_setup_db_erase_all(app, engine, capsys, erase):
 
     if erase:
         # Additional record should have disappeared
-        assert meta.Session.query(Config).filter_by(Key=KEY).count() == 0
+        assert db.session.query(Config).filter_by(Key=KEY).count() == 0
     else:
         # Additional record should still be there
-        assert meta.Session.query(Config).filter_by(Key=KEY).count() == 1
+        assert db.session.query(Config).filter_by(Key=KEY).count() == 1
 
-        item = meta.Session.query(Config).filter_by(Key=KEY).first()
-        meta.Session.delete(item)
-        meta.Session.commit()
+        item = db.session.query(Config).filter_by(Key=KEY).first()
+        db.session.delete(item)
+        db.session.commit()
 
 
 # ----------------------------------------------------------------------

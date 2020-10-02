@@ -41,8 +41,7 @@ from linotp.lib.reply import sendError
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.context import request_context
 
-import linotp.model.meta
-Session = linotp.model.meta.Session
+from linotp.model import db
 
 log = logging.getLogger(__name__)
 
@@ -76,8 +75,7 @@ class AuthController(BaseController):
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
-            Session.rollback()
-            Session.close()
+            db.session.rollback()
             return sendError(response, exx, context='before')
 
     def index(self):
