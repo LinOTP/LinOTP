@@ -1,6 +1,8 @@
 # Unit tests for the LinOTP 3 configuration mechanism
 
 import os
+from pathlib import PosixPath
+import re
 
 import pytest                   # noqa: F401
 
@@ -340,9 +342,18 @@ def app_(monkeypatch, schema):
     ("/foo/linotp.cfg", ["/foo/linotp.cfg"]),
     ("linotp.cfg:/foo/linotp.cfg",
      ["/ROOT_PATH/linotp.cfg", "/foo/linotp.cfg"]),
+    ("/foo/*.cfg", ["/foo/linotp.cfg", "/foo/quux.cfg"]),
+    ("/foo", ["/foo/linotp.cfg", "/foo/quux.cfg"]),
 ])
 def test_configure_app_linotp_cfg_path(monkeypatch, app_, path, expected_seen):
     monkeypatch.setenv("LINOTP_CFG", path)
+
+    def mocked_glob(self, g):
+        if g == 'foo':
+            return [self / "foo" / "linotp.cfg", self / "foo" / "quux.cfg"]
+        elif g == '*.cfg':
+            return [self / "linotp.cfg", self / "quux.cfg"]
+        return [self / g]
 
     # We don't need to test `ExtFlaskConfig.from_pyfile()` because the Flask
     # people have presumably done this for us (we just inherit the method
@@ -350,10 +361,28 @@ def test_configure_app_linotp_cfg_path(monkeypatch, app_, path, expected_seen):
     # ensuring that the correct files are being read.
 
     files_seen = []
+    monkeypatch.setattr(PosixPath, "glob", mocked_glob)
     monkeypatch.setattr(ExtFlaskConfig, "from_pyfile",
-                        lambda self, fn, **kwargs: files_seen.append(fn))
+                        lambda self, fn, **kwargs: files_seen.append(str(fn)))
     _configure_app(app_)
     assert files_seen == expected_seen
+
+
+@pytest.mark.parametrize("path,silent", [
+    ("/foo/linotp.cfg", False),
+    ("-/foo/linotp.cfg", True),
+])
+def test_configure_app_linotp_cfg_silent(monkeypatch, capsys, app_,
+                                         path, silent):
+    monkeypatch.setenv("LINOTP_CFG", path)
+    monkeypatch.setattr(ExtFlaskConfig, "from_pyfile",
+                        lambda self, fn, **kwargs: False)
+    _configure_app(app_)
+    captured = capsys.readouterr()
+    if silent:
+        assert not captured.err
+    else:
+        assert re.match("Configuration from .*? failed", captured.err)
 
 
 def test_configure_app_from_env_variables(monkeypatch, app_):
