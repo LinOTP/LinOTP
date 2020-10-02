@@ -29,6 +29,9 @@ if [ "$1" = "purge" -a -e /usr/share/debconf/confmodule ]; then
     echo "Deleting log directory."
     rm -fr /var/log/linotp
 
+	echo "Deleting runtime directory."
+	rm -fr /run/linotp
+
     # Where I come from, “purge” means purge.
     rm -rf /etc/linotp/*
 fi
