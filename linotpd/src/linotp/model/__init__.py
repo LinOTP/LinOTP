@@ -708,42 +708,6 @@ challenges are stored
 ''' ''' '''
 
 
-challenges_table = sa.Table('challenges', db.metadata,
-                            sa.Column('id', sa.types.Integer(),
-                                      sa.Sequence(
-                                          'token_seq_id', optional=True),
-                                      primary_key=True, nullable=False),
-                            sa.Column('transid', sa.types.Unicode(64),
-                                      unique=True, nullable=False,
-                                      index=True),
-                            sa.Column('ptransid', sa.types.Unicode(64),
-                                      index=True),
-                            sa.Column('data',
-                                      sa.types.Unicode(512), default=''),
-                            sa.Column('bdata',
-                                      sa.types.LargeBinary, default=None),
-                            sa.Column('challenge',
-                                      sa.types.Unicode(512), default=''),
-                            sa.Column('lchallenge',
-                                      sa.types.Unicode(2000), default=''),
-                            sa.Column('bchallenge',
-                                      sa.types.LargeBinary, default=None),
-                            sa.Column(session_column,
-                                      sa.types.Unicode(512), default=''),
-                            sa.Column('tokenserial',
-                                      sa.types.Unicode(64), default='',
-                                      index=True),
-                            sa.Column(timestamp_column, sa.types.DateTime,
-                                      default=datetime.now()),
-                            sa.Column('received_count',
-                                      sa.types.Integer(), default=0),
-                            sa.Column('received_tan',
-                                      sa.types.Boolean, default=False),
-                            sa.Column('valid_tan',
-                                      sa.types.Boolean, default=False),
-                            implicit_returning=implicit_returning,
-                            )
-
 CHALLENGE_ENCODE = ["data", "challenge", 'tokenserial']
 
 
@@ -752,7 +716,33 @@ class Challenge(db.Model):
     the generic challange handling
     '''
 
-    __table__ = challenges_table
+    __tablename__ = "challenges"
+
+    # Use declarative mapping rather than classical mapping for the
+    # challenge table. We're getting a bit creative with column names
+    # in order to take into account the explicit reshuffling that used
+    # to be done with ORM properties.
+
+    id = db.Column('id', db.Integer(),
+                   db.Sequence('token_seq_id', optional=True),
+                   primary_key=True, nullable=False)
+    transid = db.Column('transid', db.String(64),
+                        unique=True, nullable=False,
+                        index=True)
+    ptransid = db.Column('ptransid', db.String(64), index=True)
+    odata = db.Column('data', db.String(512), default='')
+    data = db.Column('bdata', db.LargeBinary, default=None)
+    oochallenge = db.Column('challenge', db.String(512), default='')
+    ochallenge = db.Column('lchallenge', db.String(2000), default='')
+    challenge = db.Column('bchallenge', db.LargeBinary, default=None)
+    session = db.Column(session_column, db.String(512), default='')
+    tokenserial = db.Column('tokenserial', db.String(64), default='',
+                            index=True)
+    timestamp = db.Column(timestamp_column, db.DateTime,
+                          default=datetime.now())
+    received_count = db.Column('received_count', db.Integer, default=False)
+    received_tan = db.Column('received_tan', db.Boolean, default=False)
+    valid_tan = db.Column('valid_tan', db.Boolean, default=False)
 
     def __init__(self, transid, tokenserial, challenge='', data='', session=''):
         super().__init__()
@@ -1028,26 +1018,6 @@ class Challenge(db.Model):
     def __str__(self):
         descr = self.get_vars()
         return "%s" % str(descr)
-
-
-# FIXME: This probably needs to be addressed somehow.
-
-# with the orm.mapper, we can overwrite the
-# implicit mappings to point to a different class members
-
-challenge_mapping = {}
-challenge_mapping['ptransid'] = challenges_table.c.ptransid
-
-# old challenge / data column maps to ochallenge / odata member
-challenge_mapping['oochallenge'] = challenges_table.c.challenge
-challenge_mapping['ochallenge'] = challenges_table.c.lchallenge
-challenge_mapping['odata'] = challenges_table.c.data
-
-# new challenge / data column point now to the bchallenge / bdata member
-challenge_mapping['challenge'] = challenges_table.c.bchallenge
-challenge_mapping['data'] = challenges_table.c.bdata
-
-# orm.mapper(Challenge, challenges_table, properties=challenge_mapping,)
 
 
 #############################################################################
