@@ -746,7 +746,22 @@ def _configure_app(app, config_name='default', config_extra=None):
     app.config.from_object(configs[config_name])
     configs[config_name].init_app(app)
 
+    # Take list of configuration files from `LINOTP_CFG` if defined,
+    # otherwise from `linotp-cfg-default` in the application root
+    # path if that exists, otherwise assume `LINOTP_CFG_DEFAULT`.
+
     root_path = Path(app.config.root_path)
+
+    linotp_cfg_files = os.environ.get("LINOTP_CFG", None)
+    linotp_cfg_default = root_path / "linotp-cfg-default"
+    if linotp_cfg_files is None:
+        if linotp_cfg_default.exists():
+            try:
+                linotp_cfg_files = linotp_cfg_default.read_text().strip()
+            except OSError as ex:
+                print(f"Error reading {linotp_cfg_default}: {ex!r}")
+        else:
+            linotp_cfg_files = LINOTP_CFG_DEFAULT
 
     # Read the configuration files.
     #
@@ -754,7 +769,6 @@ def _configure_app(app, config_name='default', config_extra=None):
     # part of the actual file name) suppresses the warning if the file
     # could not be read.
 
-    linotp_cfg_files = os.environ.get("LINOTP_CFG", LINOTP_CFG_DEFAULT)
     if linotp_cfg_files:
         for fn in linotp_cfg_files.split(':'):
             warn_on_error = True
