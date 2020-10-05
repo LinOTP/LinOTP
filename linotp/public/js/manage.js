@@ -3898,6 +3898,12 @@ function tokenbuttons(){
 // =================================================================
 
 $(document).ready(function(){
+    // initialize the logout button first to prevent a deadlock
+    // where the user can no longer logout
+    $('#login-status-logout').click(function () {
+        Logout($('#login-status-logout').attr("data-logout-url"));
+    });
+
     // right after document loading we need to get the session
     getsession();
 
@@ -5817,10 +5823,6 @@ $(document).ready(function(){
     // Log Div
     $("#logAccordion").accordion({
         fillSpace: true
-    });
-
-    $('#login-status-logout').click(function(){
-        Logout($('#login-status-logout').attr("data-logout-url"));
     });
 
     $('#login-status-password, #menu_tools_changepassword').click(function(){
