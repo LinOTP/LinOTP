@@ -44,7 +44,6 @@ override_dh_installdeb:
 		sed -i -e 's/@@@DEB_VERSION@@@/$(DEB_VERSION)/' debian/$$pkg/DEBIAN/*; \
 	done
 
-	find debian/linotp/usr -ls | grep public
 	# Add a symlink to the custom style directory for apache to follow
 	find debian/linotp/usr -type d -name public -ls \
 		-execdir ln -s /etc/linotp/custom-style {}/custom \;
