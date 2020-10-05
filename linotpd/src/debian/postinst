@@ -92,7 +92,7 @@ create_dir() {
     mkdir -p "$dirname"
     chown -R "$LINOTP_USER" "$dirname"
     echo_log "Created $dirmsg directory: $dirname"
-    else
+  else
     echo_log "Using existing $dirmsg directory: $dirname"
     if [ "$3" == "clear" ]; then
       echo_log "Clearing $dirname"
@@ -178,15 +178,15 @@ evaluate_answers() {
 # be DRY.
 
 create_tmpfiles() {
-    while read -a f; do
-	case "${f[0]}" in
-	    d) mkdir -p -m "${f[2]}" "${f[1]}"
-	       chown "${f[3]}:${f[4]}" "${f[1]}"
-	       ;;
-	    *) echo >&2 "$0: unsupported entry type '${f[0]}', ignoring"
-	       ;;
-	esac
-    done </usr/lib/tmpfiles.d/$1
+  while read -a f; do
+    case "${f[0]}" in
+      d) mkdir -p -m "${f[2]}" "${f[1]}"
+        chown "${f[3]}:${f[4]}" "${f[1]}"
+        ;;
+      *) echo >&2 "$0: unsupported entry type '${f[0]}', ignoring"
+        ;;
+    esac
+  done </usr/lib/tmpfiles.d/$1
 }
 
 # Here's where the actual execution of the postinst file starts.
