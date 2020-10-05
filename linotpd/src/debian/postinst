@@ -199,8 +199,7 @@ if [ "$1" = configure ]; then
   create_dir "lib" "$LIBDIR"
   create_dir "cache" "$CACHEDIR"
   create_dir "template" "$TEMPLATEDIR"
-  # On a system with systemd, use systemd-tmpfiles later (courtesy of dh).
-  [ -d /run/systemd/system ] || create_tmpfiles linotp.conf  # for DATA_DIR
+  create_tmpfiles linotp.conf  # for DATA_DIR
 
   create_cfg_file
 
