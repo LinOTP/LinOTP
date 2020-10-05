@@ -260,6 +260,7 @@ function getTokenAction(type) {
             return i18n.gettext("Send OTP by e-mail");
         case "sms":
             return i18n.gettext("Send OTP by SMS");
+        case "yubikey":
         case "yubico":
             return i18n.gettext("Use Yubikey");
         case "voice":
