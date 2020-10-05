@@ -262,25 +262,17 @@ def check_license_restrictions():
 
     licString = binascii.unhexlify(license_str).decode()
     lic_dict, lic_sign = parseSupportLicense(licString)
-    res, reason = verifyLicenseInfo(lic_dict, lic_sign,
-                                    raiseException=False)
+    res, reason = verifyLicenseInfo(
+        lic_dict, lic_sign, checkVolume=False, raiseException=False)
 
     if not res:
         log.info("license check: %r", reason)
+        return True
 
-    import linotp.lib.token
-    installed_tokens = int(linotp.lib.token.getTokenNumResolver())
-    allowed_tokens = lic_dict.get('token-num', 'unlimited')
-    try:
-        allowed_tokens = int(allowed_tokens.strip())
-        if installed_tokens >= allowed_tokens:
-            log.info("License check: Too many tokens enrolled %r",
-                     allowed_tokens)
-            return True
-    except ValueError as _val_err:
-        # in case of no int we ignore this restriction as it could
-        # be a string representation like 'unlimited'
-        pass
+    res, msg = verify_volume(lic_dict)
+    if not res:
+        log.info("License check: Too many tokens enrolled %r", msg)
+        return True
 
     res, _msg = verify_expiration(lic_dict)
     if res is False:
