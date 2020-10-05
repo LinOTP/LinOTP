@@ -149,7 +149,6 @@ create_cfg_file() {
 evaluate_answers() {
   db_get linotp/apache/activate
   APACHE=$RET
-  echo_log "I got this key: $APACHE"
 
   if [ "$APACHE" == "true" ]; then
     db_get linotp/apache/admin_password
