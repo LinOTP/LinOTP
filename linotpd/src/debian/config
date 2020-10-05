@@ -1,5 +1,64 @@
 #!/bin/bash -e
+
 . /usr/share/debconf/confmodule
+
+temp_conffile=
+
+mk_configfile_from_linotp_ini() {
+	# Support for importing configuration from previous package version
+	#
+	# From version 3, we use the database configuration support provided
+	# by the dbconfig-common (dbc) package. When upgrading from version 2, we
+	# need to provide the configuration into the dbc scripts.
+	# This is not completely trivial, because:
+	#  - linotp's ini format cannot be directly read by the dbc import mechanism
+	#  - we cannot preseed the configuration because the questions are not yet
+	#    imported
+	#  - the various dbc_* variables are only checked if the package is a fresh
+	#    install.
+	#
+	# So here we parse the configuration using regex and generate a configuration
+	# in shell format, which can be read directly by the dbc scripts.
+	#
+	# If parsing was successful, we place the filename in the variable
+	# temp_conffile
+
+	local uri="$1"
+	if [ -n "$uri" ]; then
+
+		local regex='^[[:space:]]*([^: ]+)://([^:/]+):([^/@]+)@([^/:]+)(:([0-9]+))?/(.*)'
+		#                          ^ scheme
+		#                                     ^ user : ^password
+		#                                                       ^ host  : ^ port
+		#                                                                            ^ database
+
+		if [[ "$uri" =~ $regex ]]; then
+			echo "Generating dbconfig-common config using settings from linotp.ini"
+
+			temp_conffile="$(mktemp --tmpdir linotp_config.XXXXXX)"
+			if [ -z "$temp_conffile" ]; then
+				echo fatal error: could not create temporary file for configuration
+				exit -1
+			fi
+
+			dbc_upgrade="true"
+cat > $temp_conffile <<- EOF
+			dbtype="${BASH_REMATCH[1]}"
+			dbserver="${BASH_REMATCH[4]}"
+			dbname="${BASH_REMATCH[7]}"
+			dbport="${BASH_REMATCH[6]}"
+			dbuser="${BASH_REMATCH[2]}"
+			dbpass="${BASH_REMATCH[3]}"
+EOF
+
+			# File was written
+			return
+		fi
+	fi
+
+	# File was not written
+	false
+}
 
 db_input high linotp/apache/activate || true
 db_go
@@ -8,29 +67,38 @@ APACHE=$RET
 
 dbc_dbtypes="mysql, pgsql"
 if [ "$APACHE" = "true" ]; then
-  db_input high linotp/apache/admin_password || true
-  db_go
+	db_input high linotp/apache/admin_password || true
+	db_go
 
-  db_input high linotp/apache/ssl_create || true
-  db_go
+	db_input high linotp/apache/ssl_create || true
+	db_go
 else
-  # If not using apache, you can also choose SQLlite
-  dbc_dbtypes="$dbc_dbtypes, sqlite"
+	# If not using apache, you can also choose SQLlite
+	dbc_dbtypes="$dbc_dbtypes, sqlite"
 fi
 
-# Database configuration using dbconfig-common
+
 if [ -f /usr/share/dbconfig-common/dpkg/config ]; then
-  # Load library
-  . /usr/share/dbconfig-common/dpkg/config
+	# Load dbconfig-common functions
+	. /usr/share/dbconfig-common/dpkg/config
 
-  # Define default values for database
-  #dbc_authmethod_user="password"
+	dbc_first_version="3.0~a1"
+	if dpkg --compare-versions "$2" lt "$dbc_first_version"; then
+		INIFILE=/etc/linotp2/linotp.ini
+		if [ -f $INIFILE ]; then
+			uri="$(grep "^sqlalchemy.url *=" $INIFILE | cut -f2 -d'=')"
+			if mk_configfile_from_linotp_ini "$uri"; then
+				# Tell dbc to load the configuration from the generated temporary file
+				dbc_load_include="sh:${temp_conffile}"
+			fi
+		fi
+	fi
 
-  # Script to import intial settings from previous packaging
-  dbc_load_include=exec:/usr/share/dbconfig-common/scripts/linotp/dbconfig-vars
-  dbc_first_version="3.0~a1"
+	# Configure dbconfig-common and ask user questions
+	dbc_go linotp "$@"
 
-
-  # Ask questions
-  dbc_go linotp "$@"
+	if [ -f "$temp_conffile" ]; then
+		# Remove temporary file created by mk_configfile_from_linotp_ini
+		rm "$temp_conffile"
+	fi
 fi
