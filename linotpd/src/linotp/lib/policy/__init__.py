@@ -36,6 +36,9 @@ from flask import g
 
 import linotp
 
+import linotp.lib.support
+import linotp.lib.token
+
 from linotp.lib.user import User
 from linotp.lib.user import getResolversOfUser
 
@@ -184,8 +187,6 @@ def _checkAdminPolicyPost(method, param=None, user=None):
 
     if method in ['init', 'assign', 'setPin']:
 
-        import linotp.lib.token
-
         randomPINLength = _getRandomOTPPINLength(user)
         if randomPINLength > 0:
 
@@ -260,7 +261,6 @@ def _checkAdminPolicyPost(method, param=None, user=None):
 
     if method in ['assign', 'init', 'enable', 'loadtokens']:
 
-        import linotp.lib.support
         if linotp.lib.support.check_license_restrictions():
 
             log.warning("The maximum allowed number of tokens "
@@ -348,6 +348,7 @@ def _checkSelfservicePolicyPost(method, param=None, user=None):
                       "%s and user: %s", serial, user)
 
             linotp.lib.token.setPin(new_pin, None, serial)
+
             log.debug("[init] pin set")
             # TODO: This random PIN could be processed and
             # printed in a PIN letter
@@ -357,6 +358,9 @@ def _checkSelfservicePolicyPost(method, param=None, user=None):
 
 
 def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
+
+    # we have to declare the imports localy to prevent cyclic imports
+
     ret = {}
     _ = context['translate']
 
@@ -467,7 +471,6 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                                     "right to enable token %s. Check the "
                                     "policies.") % serial)
 
-        import linotp.lib.support
         if linotp.lib.support.check_license_restrictions():
             raise PolicyException(_("Due to license restrictions no more"
                                     " tokens could be enabled!"))
@@ -479,7 +482,6 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                                     "reached!"))
 
         # We need to check which realm the token will be in.
-        import linotp.lib.token
         realmList = linotp.lib.token.getTokenRealms(serial)
         for r in realmList:
             if not _check_token_count(realm=r):
@@ -585,7 +587,6 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         # default: we got HMAC / ETNG
         log.debug("[checkPolicyPre] checking init action")
 
-        import linotp.lib.support
         if linotp.lib.support.check_license_restrictions():
             raise PolicyException(_("Due to license restrictions no more"
                                     " tokens could be enrolled!"))
@@ -703,7 +704,6 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                                     "right to assign token %s. "
                                     "Check the policies.") % (serial))
 
-        import linotp.lib.support
         if linotp.lib.support.check_license_restrictions():
             raise PolicyException(_("Due to license restrictions no more"
                                     " tokens could be assigned!"))
@@ -875,6 +875,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         # List of the new realms
         realmNewList = realms.split(',')
         # List of existing realms
+
         realmExistList = linotp.lib.token.getTokenRealms(serial)
 
         for r in realmExistList:
@@ -967,7 +968,6 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                                         "right to import token files to realm %s"
                                         ". Check the policies.") % tokenrealm)
 
-        import linotp.lib.support
         if linotp.lib.support.check_license_restrictions():
             raise PolicyException(_("Due to license restrictions no more"
                                     " tokens could be loaded!"))
@@ -1466,6 +1466,7 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
         True: if admin is allowed
         False: if admin is not allowed
     """
+
     log.info("policies: %r", policies)
 
     # in case there are absolutely no policies

@@ -70,10 +70,6 @@ from linotp.lib.type_utils import parse_duration
 from linotp.lib.context import request_context as context
 from linotp.tokens import tokenclass_registry
 
-from linotp.lib.policy import get_autoassignment_from_realm
-from linotp.lib.policy import get_autoassignment_without_pass
-from linotp.lib.policy import createRandomPin
-
 from linotp.provider.notification import notify_user
 from linotp.provider.notification import NotificationException
 
@@ -316,7 +312,7 @@ class TokenHandler(object):
 
         try:
 
-            new_pin = createRandomPin(user, min_pin_length=6)
+            new_pin = linotp.lib.policy.createRandomPin(user, min_pin_length=6)
 
             message = ("A new ${tokentype} token (${serial}) "
                        "with pin '${Pin}' "
@@ -638,7 +634,7 @@ class TokenHandler(object):
         if options is None:
             options = {}
 
-        auto = get_autoassignment_without_pass(user)
+        auto = linotp.lib.policy.get_autoassignment_without_pass(user)
         if not auto:
             log.debug("no autoassigment configured")
             return False
@@ -651,7 +647,7 @@ class TokenHandler(object):
                       " some tokens.", user.login, user.realm)
             return False
 
-        token_src_realm = get_autoassignment_from_realm(user)
+        token_src_realm = linotp.lib.policy.get_autoassignment_from_realm(user)
 
         if not token_src_realm:
             token_src_realm = user.realm

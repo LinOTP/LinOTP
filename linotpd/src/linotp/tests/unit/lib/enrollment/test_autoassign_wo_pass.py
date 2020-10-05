@@ -45,8 +45,8 @@ class TestAutoEnroll(unittest.TestCase):
     @patch('linotp.lib.token.TokenHandler.assignToken')
     @patch('linotp.lib.token.TokenHandler.getTokensOfType')
     @patch('linotp.lib.token.getTokens4UserOrSerial')
-    @patch('linotp.lib.token.get_autoassignment_without_pass')
-    @patch('linotp.lib.token.get_autoassignment_from_realm')
+    @patch('linotp.lib.policy.get_autoassignment_without_pass')
+    @patch('linotp.lib.policy.get_autoassignment_from_realm')
     def test_autenroll_wo_pass(self,
                                mocked_policy_src_realm,
                                mocked_policy_autosignment_wo,

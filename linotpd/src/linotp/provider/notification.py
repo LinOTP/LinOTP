@@ -28,9 +28,9 @@ provider notification handling
 """
 import logging
 
-from linotp.lib.context import request_context
+import linotp.lib.policy
 
-from linotp.lib.policy import get_client_policy
+from linotp.lib.context import request_context
 from linotp.lib.policy.action import get_action_value
 
 log = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ def notify_user(user, action, info, required=False):
     :return: boolean - true if notification is enabled
     """
 
-    policies = get_client_policy(
+    policies = linotp.lib.policy.get_client_policy(
         request_context['Client'], scope='notification',
         action=action, realm=user.realm, user=user.login)
 
