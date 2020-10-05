@@ -3,7 +3,6 @@
 set -e
 
 mkdir -p /etc/linotp
-
 if [ "$1" = "upgrade" ]; then
 	# If there is an /etc/linotp2 directory and the /etc/linotp directory
 	# is empty, then move /etc/linotp2 to /etc/linotp.
@@ -59,6 +58,19 @@ if [ "$1" = "upgrade" ]; then
 			# the public key matches the private key.
 			openssl rsa -in "$PRIVKEY" -pubout -out "$PUBKEY"
 		fi
+
+		available=/etc/apache2/sites-available
+		enabled=/etc/apache2/sites-enabled
+		if [ -f $available/linotp2 ] \
+			&& [ ! -f $available/linotp ]
+		  then
+			echo "Moving apache site linotp2->linotp"
+			mv $available/linotp2 $available/linotp
+			if [ -l $enabled/linotp2 ]; then
+				rm -f $enabled/linotp2
+				ln -s ../sites-available/linotp $enabled/linotp
+			fi
+		fi # -f $available/linotp2
 	fi # dpkg --compare-versions "$2" lt "3.0~"
 fi # "$1" = "upgrade"
 
