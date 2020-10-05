@@ -150,6 +150,8 @@ def checkAuthorisation(scope, method):
 
 
 def _checkAdminPolicyPost(method, param=None, user=None):
+    """ Check policies after the execution of an admin action."""
+
     ret = {}
     controller = 'admin'
     _ = context['translate']
@@ -165,7 +167,7 @@ def _checkAdminPolicyPost(method, param=None, user=None):
 
     # ------------------------------------------------------------------ --
 
-    # check for supported methods
+    # check for supported methods - should become obsolete
 
     if method not in [
         'init', 'assign', 'enable', 'setPin', 'loadtokens', 'getserial']:
@@ -200,9 +202,9 @@ def _checkAdminPolicyPost(method, param=None, user=None):
 
     # ------------------------------------------------------------------ --
 
-    # enforce the enrollment.tokencount policy
+    # check the enrollment.tokencount policy compliance
 
-    if method == 'assign':
+    if method in ['assign', 'init', 'enable']:
 
         if not _check_token_count(realm=user.realm, post_check=True):
             admin = context['AuthUser']
@@ -216,9 +218,10 @@ def _checkAdminPolicyPost(method, param=None, user=None):
                                     "policies scope=enrollment, "
                                     "action=tokencount.") % user.realm)
 
+
     # ---------------------------------------------------------------------- --
 
-    # with loadtokens, we have to check if the tokens limit exceeded
+    # check the enrollment.tokencount policy compliance
 
     if method == 'loadtokens':
 
@@ -236,8 +239,7 @@ def _checkAdminPolicyPost(method, param=None, user=None):
 
     # ---------------------------------------------------------------------- --
 
-    # check if the serial/token, that was returned is in
-    # the realms of the admin!
+    # check if the that returned serial/token is in the realms of the admin!
 
     if method == 'getserial':
 
@@ -251,6 +253,22 @@ def _checkAdminPolicyPost(method, param=None, user=None):
 
             raise PolicyException(_("You do not have the administrative "
                                     "right to get serials from this realm!"))
+
+    # ---------------------------------------------------------------------- --
+
+    # enforce license restrictions
+
+    if method in ['assign', 'init', 'enable', 'loadtokens']:
+
+        import linotp.lib.support
+        if linotp.lib.support.check_license_restrictions():
+
+            log.warning("The maximum allowed number of tokens "
+                        "for your license is reached")
+            linotp.lib.support.check_license_restrictions()
+
+            raise PolicyException(_("Due to license restrictions no more "
+                                    "tokens could be enrolled!"))
 
     return ret
 
@@ -449,6 +467,11 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                                     "right to enable token %s. Check the "
                                     "policies.") % serial)
 
+        import linotp.lib.support
+        if linotp.lib.support.check_license_restrictions():
+            raise PolicyException(_("Due to license restrictions no more"
+                                    " tokens could be enabled!"))
+
         if not _check_token_count():
             log.error("The maximum token number is reached!")
             raise PolicyException(_("You may not enable any more tokens. "
@@ -456,6 +479,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                                     "reached!"))
 
         # We need to check which realm the token will be in.
+        import linotp.lib.token
         realmList = linotp.lib.token.getTokenRealms(serial)
         for r in realmList:
             if not _check_token_count(realm=r):
@@ -561,7 +585,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         # default: we got HMAC / ETNG
         log.debug("[checkPolicyPre] checking init action")
 
-        from linotp.lib.support import check_license_restrictions
+        import linotp.lib.support
         if linotp.lib.support.check_license_restrictions():
             raise PolicyException(_("Due to license restrictions no more"
                                     " tokens could be enrolled!"))
@@ -678,6 +702,11 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             raise PolicyException(_("You do not have the administrative "
                                     "right to assign token %s. "
                                     "Check the policies.") % (serial))
+
+        import linotp.lib.support
+        if linotp.lib.support.check_license_restrictions():
+            raise PolicyException(_("Due to license restrictions no more"
+                                    " tokens could be assigned!"))
 
         # The user, the token should be assigned to,
         # is not in the admins realm
@@ -937,6 +966,11 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                 raise PolicyException(_("You do not have the administrative "
                                         "right to import token files to realm %s"
                                         ". Check the policies.") % tokenrealm)
+
+        import linotp.lib.support
+        if linotp.lib.support.check_license_restrictions():
+            raise PolicyException(_("Due to license restrictions no more"
+                                    " tokens could be loaded!"))
 
         if not _check_token_count(realm=tokenrealm):
 
