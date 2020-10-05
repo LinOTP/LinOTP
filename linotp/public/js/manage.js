@@ -589,7 +589,7 @@ function init_$tokentypes(){
  *
  */
 function get_server_config(search_key) {
-    if ((search_key === undefined) === false) {
+    if (search_key) {
         var params = {'key': search_key};
     } else {
         var params = {};
@@ -597,24 +597,19 @@ function get_server_config(search_key) {
 
     var $systemConfig = {};
     var resp = clientUrlFetchSync('/system/getConfig', params);
-    try {
-        var data = jQuery.parseJSON(resp);
-        if (data.result.status == false) {
-            throw("" + data.result.error.message);
-        }else {
-            if ((search_key === undefined) === false) {
-                var config_dict = data.result.value;
-                for (var key in config_dict) {
-                    key_replace = key.replace('getConfig ','');
-                    $systemConfig[key_replace] = config_dict[key];
-                }
-            } else {
-                $systemConfig = data.result.value;
+    var data = jQuery.parseJSON(resp);
+    if (!data.result.status) {
+        throw (data.result.error.message);
+    } else {
+        if (search_key) {
+            var config_dict = data.result.value;
+            for (var key in config_dict) {
+                key_replace = key.replace('getConfig ','');
+                $systemConfig[key_replace] = config_dict[key];
             }
+        } else {
+            $systemConfig = data.result.value;
         }
-    }
-    catch (e) {
-        throw(e);
     }
     return $systemConfig;
 }
