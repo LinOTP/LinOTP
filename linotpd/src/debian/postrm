@@ -27,6 +27,9 @@ if [ "$1" = "purge" -a -e /usr/share/debconf/confmodule ]; then
 		deluser linotp
 	fi
 
+	echo "Removing apache site file"
+	rm -f /etc/apache2/sites-available/linotp.conf
+
 	echo "Deleting log directory."
 	rm -fr /var/log/linotp
 
