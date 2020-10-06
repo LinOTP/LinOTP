@@ -26,6 +26,11 @@ Depends: adduser,
          pwgen,
          ${misc:Depends},
          ${python3:Depends}
+Recommends: dbconfig-mysql,
+            dbconfig-pgsql,
+            libapache2-mod-wsgi-py3,
+            python3-mysqldb,
+            python3-psycopg2
 Suggests: systemd
 Replaces: linotp-ee (<< 2.7-1~),
           linotp-smsprovider (<< 2.10),
@@ -34,9 +39,20 @@ Breaks: linotp-ee (<< 2.7-1~),
         linotp-smsprovider (<< 2.10),
         linotp-useridresolver (<< 2.10)
 Description: Server Core of the LinOTP authentication solution
- LinOTP is an open solution for strong two-factor authentication with One Time
- Passwords.
- LinOTP is also open as far as its modular architecture is concerned.
+ LinOTP is an open solution for strong two-factor authentication.
+ .
+ LinOTP is open as far as its modular architecture is concerned.
  LinOTP aims not to bind you to any decision of the authentication protocol
  and it does not dictate you where your user information should be stored.
  This is achieved by its new, totally modular architecture.
+ .
+ Some of the provided features need additional packages to be used. You
+ should ensure the listed packages are installed if you wish to use the
+ feature:
+ .
+ * Integration with the Apache web server (libapache2-mod-wsgi-py3)
+ .
+ Database drivers are required for the linotp database and any additional
+ user databases (SQL UserResolvers):
+ * Mariadb or Mysql (python3-mysqldb, dbconfig-mysql for main database)
+ * Postgres (python3-psycopg2, dbconfig-pgsql for main database)
