@@ -2471,7 +2471,7 @@ class AdminController(BaseController):
                     tokenrealm=tokenrealm)
 
                 # check policy to set token pin random
-                checkPolicyPost('admin', 'init',
+                checkPolicyPost('admin', 'setPin',
                                 {'serial': serial})
 
             # check the max tokens per realm
