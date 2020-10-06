@@ -24,6 +24,7 @@ from logging.config import dictConfig as logging_dictConfig
 import stat
 import sys
 import os
+from pathlib import Path
 import time
 from typing import List
 
@@ -745,18 +746,50 @@ def _configure_app(app, config_name='default', config_extra=None):
     app.config.from_object(configs[config_name])
     configs[config_name].init_app(app)
 
-    # Read the configuration files
+    # Take list of configuration files from `LINOTP_CFG` if defined,
+    # otherwise from `linotp-cfg-default` in the application root
+    # path if that exists, otherwise assume `LINOTP_CFG_DEFAULT`.
 
-    linotp_cfg_files = os.environ.get("LINOTP_CFG", LINOTP_CFG_DEFAULT)
+    root_path = Path(app.config.root_path)
+
+    linotp_cfg_files = os.environ.get("LINOTP_CFG", None)
+    linotp_cfg_default = root_path / "linotp-cfg-default"
+    if linotp_cfg_files is None:
+        if linotp_cfg_default.exists():
+            try:
+                linotp_cfg_files = linotp_cfg_default.read_text().strip()
+            except OSError as ex:
+                print(f"Error reading {linotp_cfg_default}: {ex!r}")
+        else:
+            linotp_cfg_files = LINOTP_CFG_DEFAULT
+
+    # Read the configuration files.
+    #
+    # A `-` at the start of a file name (which will not be considered
+    # part of the actual file name) suppresses the warning if the file
+    # could not be read.
+
     if linotp_cfg_files:
         for fn in linotp_cfg_files.split(':'):
-            fn = os.path.join(app.config.root_path, fn)  # better message
-            if app.config.from_pyfile(fn, silent=True):
-                print(f"Configuration loaded from {fn}", file=sys.stderr)
-            else:
-                print(f"Configuration from {fn} failed"
-                      " (check location and permissions)",
-                      file=sys.stderr)
+            warn_on_error = True
+            if fn and fn[0] == '-':
+                warn_on_error = False
+                fn = fn[1:]
+            fn = root_path / fn  # better message
+            if fn.is_dir():
+                fn /= '*.cfg'
+            # Check `fn` itself if glob doesn't yield results
+            # (e.g., when checking `/foo/linotp.cfg` but `/foo` doesn't
+            # exist).
+            for fn0 in sorted(list(fn.resolve().parent.glob(fn.name))
+                              or [str(fn)]):
+                if app.config.from_pyfile(fn0, silent=True):
+                    print(f"Configuration loaded from {fn0!s}",
+                          file=sys.stderr)
+                elif warn_on_error:
+                    print(f"Configuration from {fn0!s} failed"
+                          " (check location and permissions)",
+                          file=sys.stderr)
 
     if config_extra is not None:
         app.config.update(config_extra)
