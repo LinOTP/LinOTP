@@ -163,41 +163,64 @@ def _checkAdminPolicyPost(method, param=None, user=None):
     if user is None:
         user = _getUserFromParam()
 
-    if method in ['init', 'assign', 'setPin']:
-        # check if we are supposed to genereate a random OTP PIN
-        randomPINLength = _getRandomOTPPINLength(user)
+    # ------------------------------------------------------------------ --
 
+    # check for supported methods
+
+    if method not in [
+        'init', 'assign', 'enable', 'setPin', 'loadtokens', 'getserial']:
+
+        # unknown method
+        log.error("an unknown method <<%s>> was passed.", method)
+
+        raise PolicyException(_("Failed to run getPolicyPost. "
+                                "Unknown method: %s") % method)
+
+    # ------------------------------------------------------------------ --
+
+    # set random pin, if policy is given
+
+    if method in ['init', 'assign', 'setPin']:
+
+        import linotp.lib.token
+
+        randomPINLength = _getRandomOTPPINLength(user)
         if randomPINLength > 0:
+
             new_pin = createRandomPin(user, min_pin_length=randomPINLength)
 
             log.debug("setting random pin for token with serial %s and user: "
                       "%s", serial, user)
 
             linotp.lib.token.setPin(new_pin, None, serial)
+
             log.debug("pin set")
 
             ret['new_pin'] = new_pin
 
-        # ------------------------------------------------------------------ --
+    # ------------------------------------------------------------------ --
 
-        if method == 'assign':
-            if not _check_token_count(realm=user.realm, post_check=True):
-                admin = context['AuthUser']
+    # enforce the enrollment.tokencount policy
 
-                log.warning("the admin >%s< is not allowed to enroll any more "
-                            "tokens for the realm %s", admin, user.realm)
+    if method == 'assign':
 
-                raise PolicyException(_("The maximum allowed number of tokens "
-                                        "for the realm %s was reached. You can"
-                                        " not init any more tokens. Check the "
-                                        "policies scope=enrollment, "
-                                        "action=tokencount.") % user.realm)
+        if not _check_token_count(realm=user.realm, post_check=True):
+            admin = context['AuthUser']
+
+            log.warning("the admin >%s< is not allowed to enroll any more "
+                        "tokens for the realm %s", admin, user.realm)
+
+            raise PolicyException(_("The maximum allowed number of tokens "
+                                    "for the realm %s was reached. You can"
+                                    " not init any more tokens. Check the "
+                                    "policies scope=enrollment, "
+                                    "action=tokencount.") % user.realm)
 
     # ---------------------------------------------------------------------- --
 
     # with loadtokens, we have to check if the tokens limit exceeded
 
-    elif method == 'loadtokens':
+    if method == 'loadtokens':
 
         tokenrealm = param.get('tokenrealm', user.realm)
 
@@ -213,9 +236,11 @@ def _checkAdminPolicyPost(method, param=None, user=None):
 
     # ---------------------------------------------------------------------- --
 
-    elif method == 'getserial':
-        # check if the serial/token, that was returned is in
-        # the realms of the admin!
+    # check if the serial/token, that was returned is in
+    # the realms of the admin!
+
+    if method == 'getserial':
+
         policies = getAdminPolicies("getserial")
         if (policies['active'] and not
                 checkAdminAuthorization(policies, serial,
@@ -226,12 +251,7 @@ def _checkAdminPolicyPost(method, param=None, user=None):
 
             raise PolicyException(_("You do not have the administrative "
                                     "right to get serials from this realm!"))
-    else:
-        # unknown method
-        log.error("an unknown method <<%s>> was passed.", method)
 
-        raise PolicyException(_("Failed to run getPolicyPost. "
-                                "Unknown method: %s") % method)
     return ret
 
 
