@@ -28,8 +28,6 @@
 import pytest
 from linotp_selenium_helper import TestCase, Policy, SelfService
 
-import integration_data as data
-
 
 class TestSelfservice(TestCase):
     """TestCase class that tests the selfservice by first creating a policy
@@ -39,21 +37,18 @@ class TestSelfservice(TestCase):
 
     @pytest.fixture(autouse=True)
     def setUp(self):
-        self.realm_name = "SE_realm_selfservice"
-        self.reset_resolvers_and_realms(
-            data.musicians_ldap_resolver, self.realm_name)
         self.selfservice = SelfService(self.driver, self.base_url, self.ui_wait_time)
 
-    def test_selfservice(self):
+    def test_selfservice(self, musicians_realm):
         """Creates User-Id-Resolvers"""
         self.manage_ui.policy_view.clear_policies_via_api()
         Policy(self.manage_ui, "SE_policy_selfservice",
-               "selfservice", "setOTPPIN, ", self.realm_name.lower())
+               "selfservice", "setOTPPIN, ", musicians_realm)
 
         login_user = "郎"
         login_password = "Test123!"
 
         self.selfservice.login(
-            login_user, login_password, self.realm_name.lower())
+            login_user, login_password, musicians_realm)
 
         self.selfservice.select_tab(self.selfservice.tab_set_pin)
