@@ -309,7 +309,7 @@ class ManageUi(object):
         because it will be added automatically to your params.
         :param call Something like 'system/delPolicy'
         :param params Something like {'name': 'policy1'}
-        :return Return json structure with API result
+        :return Return json structure containing result.value
         :raise BackendException if the response contains an error
         """
 
@@ -340,6 +340,7 @@ class ManageUi(object):
         if not response.ok or response.json()["result"]["status"] == False:
             raise BackendException(response, url=url)
 
+        return json["result"]["value"]
 
 
 class MsgType(object):

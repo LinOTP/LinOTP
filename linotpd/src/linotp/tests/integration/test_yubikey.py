@@ -85,10 +85,7 @@ class TestYubikey(TestCase):
                 "description": description,
             },
         )
-        assert inittoken_response["result"]["status"], \
-            f"Error enrolling Yubikey: {inittoken_response}"
-        assert inittoken_response["result"]["value"], \
-            f"Error enrolling Yubikey: {inittoken_response}"
+        assert inittoken_response, "Error enrolling Yubikey"
 
         self.user_view.select_user(self.user_name)
         pin = "asdf1234"

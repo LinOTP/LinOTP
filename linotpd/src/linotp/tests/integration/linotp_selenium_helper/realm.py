@@ -232,8 +232,8 @@ class RealmManager(ManageDialog):
         # Get the realms in json format
         json_response = self.manage.admin_api_call("system/getRealms")
 
-        realms = json_response["result"]["value"]
-        if(realms):
+        realms = self.get_realms_via_api()
+        if realms:
             for curr_realm in realms:
                 self.manage.admin_api_call("system/delRealm",
                                            {'realm': realms[curr_realm]['realmname']})

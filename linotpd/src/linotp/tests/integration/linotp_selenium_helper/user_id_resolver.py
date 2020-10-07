@@ -250,9 +250,7 @@ class UserIdResolverManager(ManageDialog):
             if name_map.get(k, k) is not None
         }
 
-        # Get the resolvers in json format
-        json = self.manage.admin_api_call("system/setResolver", params)
-        assert json['result']['status'] == True
+        self.manage.admin_api_call("system/setResolver", params)
 
     def get_resolver_params_via_api(self, resolver_name: str) -> dict:
         """
@@ -260,10 +258,8 @@ class UserIdResolverManager(ManageDialog):
 
         Checks that the status was ok and returns the resulting data
         """
-        json = self.manage.admin_api_call(
+        return self.manage.admin_api_call(
             "system/getResolver", dict(resolver=resolver_name))
-        assert json['result']['status'] == True, json
-        return json['result']['value']
 
     def close(self):
         super(UserIdResolverManager, self).close()
@@ -340,9 +336,7 @@ class UserIdResolverManager(ManageDialog):
         """
 
         # Get the resolvers in json format
-        json_response = self.manage.admin_api_call("system/getResolvers")
-
-        resolvers = json_response["result"]["value"]
+        resolvers = self.manage.admin_api_call("system/getResolvers")
         if(resolvers):
             for curr_resolver in resolvers:
                 self.manage.admin_api_call("system/delResolver",
