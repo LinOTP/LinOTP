@@ -229,3 +229,26 @@ def close_alert_and_get_its_text(driver, accept=True):
     else:
         alert.dismiss()
     return alert_text
+
+class BackendException(Exception):
+    """
+    Representation of a backend error
+    """
+
+    def __init__(self, response, url=None):
+        super().__init__()
+        code: int = response.status_code
+        if code != 200:
+            self.code: int = response.status_code
+            self.description: str = response.reason
+        else:
+            error = response.json()["result"]["error"]
+            self.code: int = error["code"]
+            self.description: str = error["message"]
+        if url:
+            self.url: str = url
+        else:
+            self.url: str = response.url
+
+    def __str__(self) -> str:
+        return f"{super().__str__()} {self.url} {self.code} - {self.description}"
