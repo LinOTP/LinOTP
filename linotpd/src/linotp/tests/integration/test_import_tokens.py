@@ -38,6 +38,9 @@ from linotp_selenium_helper.manage_ui import ManageUi
 from linotp_selenium_helper.token_import import TokenImportAladdin, TokenImportError
 from linotp_selenium_helper.token_view import TokenView
 
+# All the tests in this file make use of the musicians realm as default
+pytestmark = pytest.mark.usefixtures("musicians_realm")
+
 @pytest.fixture
 def aladdin(manage_ui):
     return TokenImportAladdin(manage_ui)
