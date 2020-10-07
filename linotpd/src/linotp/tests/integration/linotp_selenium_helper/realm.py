@@ -317,3 +317,19 @@ class RealmManager(ManageDialog):
             LOGGER.warn("Realm was not sucessfully created. Previous realms:%s, New realms:%s" % (
                 [r.name for r in old_realms], [r.name for r in new_realm_list]))
             assert False, "Realm was not sucessfully created"
+
+    def create_via_api(self, name: str, resolvers: Union[List[str], str]) -> None:
+        """
+        Create a new realm
+
+        @param name - The name of the new realm to create
+        @param resolvers - The resolver(s) to place in the realm (type.name)
+        """
+        if isinstance(resolvers, list):
+            resolvers = ",".join(resolvers)
+
+        params = dict(
+            realm=name,
+            resolvers=resolvers
+        )
+        self.manage.admin_api_call("system/setRealm", params)
