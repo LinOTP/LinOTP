@@ -32,14 +32,13 @@ Pytest fixtures for linotp integration tests
 from typing import Dict
 import pytest
 
-from linotp_selenium_helper.test_case import TestCase
+import integration_data as data
 from linotp_selenium_helper.manage_ui import ManageUi
+from linotp_selenium_helper.test_case import TestCase
 
 @pytest.fixture(scope='module')
 def testcase():
-    """
-    Testcase, which manages the driver and test configuration
-    """
+    """Testcase, which manages the driver and test configuration."""
 
     # TestCase is a unittest based class. We simulate the unittest
     # setup and teardown here so we can use it as a fixture
@@ -50,7 +49,70 @@ def testcase():
 
 @pytest.fixture(scope='module')
 def manage_ui(testcase) -> ManageUi:
-    """
-    Manage interface
-    """
+    """Manage interface."""
     return ManageUi(testcase)
+
+@pytest.fixture
+def musicians_resolver(testcase: TestCase) -> Dict[str, str]:
+    """Create the musicians LDAP resolver and remove it after test.
+
+    manage a resolver for a test:
+    - create it, if needed
+    - yield to the test
+    - remove it, if it was created
+
+    Returns a dict containing
+        name: visible name
+        type: type of resolver
+        fullname: type.name
+    """
+
+    music_resolver = data.musicians_ldap_resolver
+
+    useridresolver_manager = testcase.useridresolver_manager
+
+    resolver = useridresolver_manager.get_resolver_params_via_api(
+        music_resolver['name']
+        )
+
+    existing = resolver and resolver['type']
+
+    if not existing:
+        useridresolver_manager.create_resolver_via_api(
+            data.musicians_ldap_resolver)
+
+    yield dict(
+        name=music_resolver["name"],
+        type=music_resolver["type"],
+        fullname=music_resolver["type"] + "." + music_resolver["name"],
+    )
+
+    if not existing:
+        useridresolver_manager.delete_resolver_via_api(music_resolver["name"])
+
+@pytest.fixture
+def musicians_realm(
+        manage_ui: ManageUi, musicians_resolver: Dict[str, str]) -> str:
+    """Create the musician realm and remove it after the test.
+
+    manage a realm for a test:
+    - create it, if needed
+    - yield to the test
+    - remove it, if it was created
+
+    """
+    realm_name = "SE_realm_musicians"
+    realm_manager = manage_ui.realm_manager
+
+    realms = realm_manager.get_realms_via_api()
+
+    existing = realm_name.lower() in realms
+
+    if not existing:
+        realm_manager.create_via_api(
+            realm_name, musicians_resolver["fullname"])
+
+    yield realm_name
+
+    if not existing:
+        realm_manager.delete_realm_via_api(realm_name)
