@@ -1540,7 +1540,8 @@ def getNumTokenUsers(resolver=None, active=True, realm=None):
     :return: the number of token users
     '''
 
-    session = Token.query
+    session = db.session.query(Token.LinOtpUserid, Token.LinOtpIdResClass)
+
     # only count users and not the empty ones
 
     conditions = (and_(Token.LinOtpUserid != ''),)
@@ -1564,10 +1565,7 @@ def getNumTokenUsers(resolver=None, active=True, realm=None):
 
     condition = and_(*conditions)
 
-    token_users = session.filter(condition).distinct(
-        Token.LinOtpUserid, Token.LinOtpIdResClass).count()
-
-    return token_users
+    return session.filter(condition).distinct().count()
 
 
 def getTokenNumResolver(resolver=None, active=True):
