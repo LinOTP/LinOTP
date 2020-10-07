@@ -184,7 +184,7 @@ class RealmManager(ManageDialog):
 
     def get_realms_list(self) -> List[str]:
         """
-        Get a list of realm names defined
+        Get a list of realm names defined using Selenium
 
         If the dialog is not currently opened, it will be opened
         beforehand
@@ -194,6 +194,15 @@ class RealmManager(ManageDialog):
         self.open()
 
         return self.realm_names
+
+    def get_realms_via_api(self) -> List[str]:
+        """
+        Get all realms via API call
+        """
+
+        # Get the realms in json format
+        realms: List[str] = self.manage.admin_api_call("system/getRealms")
+        return realms
 
     def delete_realm(self, name):
         """Click on realm in list and delete it"""
@@ -225,12 +234,11 @@ class RealmManager(ManageDialog):
 
     def clear_realms_via_api(self) -> None:
         """
-        Get all realms via API call
-        and delete all by realm name.
-        """
+        Delete all realms using the API
 
-        # Get the realms in json format
-        json_response = self.manage.admin_api_call("system/getRealms")
+        The list of realms is retrieved using the API, and then
+        each realm is deleted by realm name.
+        """
 
         realms = self.get_realms_via_api()
         if realms:
