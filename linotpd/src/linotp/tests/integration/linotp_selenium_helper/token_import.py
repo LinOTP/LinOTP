@@ -26,7 +26,7 @@
 """Contains TokenImport class"""
 
 from .manage_ui import ManageDialog
-from linotp_selenium_helper.manage_ui import MsgType
+from linotp_selenium_helper.manage_ui import ManageUi, MsgType
 from selenium.webdriver.remote.file_detector import LocalFileDetector
 
 import tempfile
@@ -41,7 +41,7 @@ class TokenImport(ManageDialog):
     TokenImport imports files as Tokens in the LinOTP WebUI
     """
 
-    def __init__(self, manage_ui):
+    def __init__(self, manage_ui: ManageUi):
         """
         Base class for all token imports. Derive from this class
         and implement its special behavior. You have to overwrite

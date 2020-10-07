@@ -28,6 +28,7 @@
 import logging
 import time
 import re
+from typing import List, Union
 
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
@@ -181,7 +182,7 @@ class RealmManager(ManageDialog):
     def realm_names(self):
         return [r.name for r in self.realms]
 
-    def get_realms_list(self):
+    def get_realms_list(self) -> List[str]:
         """
         Get a list of realm names defined
 
@@ -222,7 +223,7 @@ class RealmManager(ManageDialog):
             % (realm_count, len(self.realms))
         )
 
-    def clear_realms_via_api(self):
+    def clear_realms_via_api(self) -> None:
         """
         Get all realms via API call
         and delete all by realm name.

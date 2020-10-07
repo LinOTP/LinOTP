@@ -29,6 +29,7 @@ Pytest fixtures for linotp integration tests
 
 # pylint: disable=redefined-outer-name
 
+from typing import Dict
 import pytest
 
 from linotp_selenium_helper.test_case import TestCase
@@ -48,7 +49,7 @@ def testcase():
     t.teardown_class()
 
 @pytest.fixture(scope='module')
-def manage_ui(testcase):
+def manage_ui(testcase) -> ManageUi:
     """
     Manage interface
     """
