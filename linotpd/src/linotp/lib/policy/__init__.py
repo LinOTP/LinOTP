@@ -36,6 +36,8 @@ from flask import g
 
 import linotp
 
+from typing import Dict
+
 import linotp.lib.support
 import linotp.lib.token
 
@@ -151,9 +153,15 @@ def checkAuthorisation(scope, method):
 
         raise PolicyException(ret)
 
+def _checkAdminPolicyPost(
+        method:str, param:Dict[str, str]= None, user:User=None) -> Dict:
+    """ Check post conditions for admin operations.
 
-def _checkAdminPolicyPost(method, param=None, user=None):
-    """ Check policies after the execution of an admin action."""
+    :param method: the scope of the calling
+    :param param: the parameters given to this method
+    :param user: the user for whom the operations should be made
+    :return: dict with some setting
+    """
 
     ret = {}
     controller = 'admin'
@@ -161,7 +169,10 @@ def _checkAdminPolicyPost(method, param=None, user=None):
 
     log.debug("entering controller %s", controller)
     log.debug("entering method %s", method)
-    log.debug("using params %s", param)
+    log.debug("using params %r", param)
+
+    if not param:
+        param = {}
 
     serial = param.get("serial")
 
@@ -175,7 +186,6 @@ def _checkAdminPolicyPost(method, param=None, user=None):
     if method not in [
         'init', 'assign', 'enable', 'setPin', 'loadtokens', 'getserial']:
 
-        # unknown method
         log.error("an unknown method <<%s>> was passed.", method)
 
         raise PolicyException(_("Failed to run getPolicyPost. "
