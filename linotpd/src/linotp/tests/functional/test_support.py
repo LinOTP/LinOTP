@@ -235,7 +235,7 @@ class TestSupport(TestController):
             assert '"status": true' in response
             assert '"value": true' in response
 
-            for i in range(1, 6):
+            for i in range(1, 6+2):
                 params = {
                     'type': 'hmac',
                     'genkey': 1,
@@ -285,9 +285,10 @@ class TestSupport(TestController):
             # ------------------------------------------------------------- --
 
             # enrollment of two tokens per user
+            # + 2 additional one for beeing nice to the customers :)
             # - tokens per user are not limited
 
-            for user in ['hans', 'rollo', 'susi', 'horst']:
+            for user in ['hans', 'rollo', 'susi', 'horst', 'user1', 'user2']:
 
                 for i in range(0,2):
                     params = {
@@ -382,7 +383,7 @@ class TestSupport(TestController):
             'realm': 'mydefrealm',
             'user': '*',
             'active': True,
-            'action': 'tokencount=4',
+            'action': 'tokencount=6',
         }
 
         response = self.make_system_request('setPolicy', params=params)
@@ -412,7 +413,7 @@ class TestSupport(TestController):
 
             assert user_num == "4"
 
-            for user in ['hans', 'rollo', 'susi', 'horst']:
+            for user in ['hans', 'rollo', 'susi', 'horst', 'user1', 'user2']:
 
                 params = {
                     'type': 'pw',

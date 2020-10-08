@@ -780,7 +780,7 @@ def verify_user_volume(lic_dict):
                       "Exception was:%r " % (lic_dict.get('user-num'), err))
         return False, "max %d" % user_volume
 
-    if num > user_volume:
+    if num > user_volume + 2:
         log.error("Licensed token user volume exceeded. Currently %r users "
                   "present, but only %r allowed." % (num, user_volume))
         used = _("token user used")
@@ -805,7 +805,7 @@ def verify_token_volume(lic_dict):
                       "Exception was:%r " % (lic_dict.get('token-num'), err))
         return False, "max %d" % token_volume
 
-    if num > token_volume:
+    if num > token_volume + 2:
         log.error("Licensed token volume exceeded. Currently %r tokens "
                   "present, but only %r allowed." % (num, token_volume))
         used = _("tokens used")
