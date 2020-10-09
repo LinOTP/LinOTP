@@ -31,6 +31,8 @@ import logging
 from .helper import find_by_css, find_by_id, fill_element_from_dict
 from .manage_elements import ManageDialog
 
+class UserIdResolverException(Exception):
+    pass
 
 class NewResolverDialog(ManageDialog):
     "New resolver dialog"
@@ -328,6 +330,18 @@ class UserIdResolverManager(ManageDialog):
             'The number of resolvers shown should decrease after deletion. Before: %s, after:%s'
             % (resolver_count, len(self.resolvers))
         )
+
+    def delete_resolver_via_api(self, resolver_name:str):
+        """Delete resolver by resolver name via api call."""
+
+        resolvers = self.manage.admin_api_call("system/getResolvers")
+
+        if resolver_name not in resolvers:
+            raise UserIdResolverException(
+                'resolver %r does not found!' % resolver_name)
+
+        self.manage.admin_api_call(
+            "system/delResolver", {'resolver': resolver_name})
 
     def clear_resolvers_via_api(self):
         """

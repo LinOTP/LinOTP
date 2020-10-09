@@ -40,6 +40,9 @@ from .helper import find_by_css, fill_form_element
 from .manage_elements import ManageDialog
 from .user_id_resolver import UserIdResolverManager
 
+class RealmException(Exception):
+    pass
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -232,9 +235,23 @@ class RealmManager(ManageDialog):
             % (realm_count, len(self.realms))
         )
 
-    def clear_realms_via_api(self) -> None:
+    def delete_realm_via_api(self, realm_name:str) -> None:
+        """Delete a realms by realm name using the API.
+
+        The list of realms is retrieved using the API, and then
+        the realm is deleted by realm name.
         """
-        Delete all realms using the API
+
+        realms = self.get_realms_via_api()
+        if realm_name.lower() not in realms:
+            raise RealmException('realm does not exist')
+
+        self.manage.admin_api_call(
+            "system/delRealm", {'realm': realm_name})
+
+
+    def clear_realms_via_api(self) -> None:
+        """Delete all realms using the API.
 
         The list of realms is retrieved using the API, and then
         each realm is deleted by realm name.
