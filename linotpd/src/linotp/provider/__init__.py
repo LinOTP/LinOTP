@@ -34,13 +34,14 @@ from configparser import ConfigParser
 
 from flask_babel import gettext as _
 
+import linotp.lib.policy
+
 from linotp.lib.config import storeConfig
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.config import removeFromConfig
 from linotp.lib.config.parsing import ConfigTree
 from linotp.lib.config.parsing import ConfigNotRecognized
 
-from linotp.lib.policy import getPolicy, get_client_policy
 from linotp.lib.policy.action import get_action_value
 from linotp.lib.context import request_context
 
@@ -681,7 +682,7 @@ def loadProviderFromPolicy(provider_type, realm=None, user=None):
     if user and user.login:
         realm = user.realm
 
-    policies = get_client_policy(request_context['Client'],
+    policies = linotp.lib.policy.get_client_policy(request_context['Client'],
                                  scope='authentication',
                                  action=provider_action_name, realm=realm,
                                  user=user.login)
@@ -723,7 +724,7 @@ def get_provider_from_policy(provider_type, realm=None, user=None,
     if not action:
         action = provider_action_name
 
-    policies = get_client_policy(request_context['Client'],
+    policies = linotp.lib.policy.get_client_policy(request_context['Client'],
                                  scope=scope,
                                  action=action, realm=realm,
                                  user=user.login)
@@ -765,7 +766,7 @@ def _lookup_provider_policies(provider_type):
                         % provider_type)
 
     # now have a look at all authentication policies
-    policies = getPolicy({'scope': 'authentication',
+    policies = linotp.lib.policy.getPolicy({'scope': 'authentication',
                           "action": provider_action_name, })
 
     for policy in policies:

@@ -69,6 +69,10 @@ class TestSupport(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
 
+        # remove the license, if installed
+
+        self.make_system_request('delConfig', params={'key': 'license'})
+
         return TestController.tearDown(self)
 
     def install_license(self, license_filename="demo-lic.pem"):
@@ -218,7 +222,7 @@ class TestSupport(TestController):
 
     def test_license_restrictions(self):
         """
-        if license is installed, no more tokens could be enrolled
+        if license is installed, no more than 5 tokens could be enrolled
 
         using the expired license with the expirtion date 2017-12-12
         """
@@ -231,7 +235,7 @@ class TestSupport(TestController):
             assert '"status": true' in response
             assert '"value": true' in response
 
-            for i in range(1, 6):
+            for i in range(1, 6+2):
                 params = {
                     'type': 'hmac',
                     'genkey': 1,
@@ -241,6 +245,8 @@ class TestSupport(TestController):
                 assert '"status": true' in response
                 assert '"value": true' in response
 
+
+            params['serial'] ='HMAC_DEMO-XXX'
             response = self.make_admin_request('init', params)
             assert '"status": false' in response, response
             msg = ("Due to license restrictions no more "
@@ -276,19 +282,30 @@ class TestSupport(TestController):
 
             assert user_num == "4"
 
-            for user in ['hans', 'rollo', 'susi', 'horst']:
+            # ------------------------------------------------------------- --
 
-                params = {
-                    'type': 'pw',
-                    'user': user + "@myDefRealm",
-                    'otpkey': 'geheim'
-                }
+            # enrollment of two tokens per user
+            # + 2 additional one for beeing nice to the customers :)
+            # - tokens per user are not limited
 
-                response = self.make_admin_request('init', params)
-                assert '"value": true' in response
+            for user in ['hans', 'rollo', 'susi', 'horst', 'user1', 'user2']:
+
+                for i in range(0,2):
+                    params = {
+                        'type': 'pw',
+                        'user': user + "@myDefRealm",
+                        'otpkey': 'geheim',
+                        'serial': '%s.%d' % (user, i),
+                    }
+                    response = self.make_admin_request('init', params)
+                    assert '"value": true' in response, response
 
             response = self.make_system_request("isSupportValid")
             assert '"value": true' in response, response
+
+            # ------------------------------------------------------------- --
+
+            # enrollment to one more owner is not allowed
 
             params = {
                 'type': 'pw',
@@ -297,13 +314,63 @@ class TestSupport(TestController):
             }
 
             response = self.make_admin_request('init', params)
-            assert '"value": true' in response
-
-            response = self.make_system_request("isSupportValid")
-            assert '"value": false' in response, response
-
-            msg = "token user used: 5 > token users supported: 4"
+            assert '"status": false' in response
+            msg = ("Due to license restrictions no more "
+                   "tokens could be enrolled!")
             assert msg in response
+
+            # ------------------------------------------------------------- --
+
+            # disable one of the users tokens and now we can enroll more users
+
+            for i in range(0,2):
+                params = {
+                    'serial': 'hans.%d' % i,
+                }
+                response = self.make_admin_request('disable', params)
+                assert '"value": 1' in response
+
+            for i in range(0,2):
+                params = {
+                    'type': 'pw',
+                    'user': "root@myDefRealm",
+                    'otpkey': 'geheim',
+                    'serial': 'root.%d' % i
+                }
+
+                response = self.make_admin_request('init', params)
+                assert '"value": true' in response
+
+            # ------------------------------------------------------------- --
+
+            # enable check - would create one more active token user, which
+            # is not allowed
+
+            params = {
+                'serial': 'hans.1',
+            }
+
+            response = self.make_admin_request('enable', params)
+            assert '"status": false' in response
+            msg = ("Due to license restrictions no more "
+                   "tokens could be enrolled!")
+            assert msg in response
+            # ------------------------------------------------------------- --
+
+            # assignment check - would create one more active token user,
+            # which is not allowed
+
+            params = {
+                'serial': 'root.1',
+                'user': "hans@myDefRealm",
+            }
+
+            response = self.make_admin_request('assign', params)
+            assert '"status": false' in response
+            msg = ("Due to license restrictions no more "
+                   "tokens could be enrolled!")
+            assert msg in response
+
 
     def test_tokencount_user_license(self):
         """
@@ -316,7 +383,7 @@ class TestSupport(TestController):
             'realm': 'mydefrealm',
             'user': '*',
             'active': True,
-            'action': 'tokencount=4',
+            'action': 'tokencount=6',
         }
 
         response = self.make_system_request('setPolicy', params=params)
@@ -346,7 +413,7 @@ class TestSupport(TestController):
 
             assert user_num == "4"
 
-            for user in ['hans', 'rollo', 'susi', 'horst']:
+            for user in ['hans', 'rollo', 'susi', 'horst', 'user1', 'user2']:
 
                 params = {
                     'type': 'pw',

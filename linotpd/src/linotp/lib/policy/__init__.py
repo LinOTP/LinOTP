@@ -36,6 +36,11 @@ from flask import g
 
 import linotp
 
+from typing import Dict
+
+import linotp.lib.support
+import linotp.lib.token
+
 from linotp.lib.user import User
 from linotp.lib.user import getResolversOfUser
 
@@ -148,56 +153,88 @@ def checkAuthorisation(scope, method):
 
         raise PolicyException(ret)
 
+def _checkAdminPolicyPost(
+        method:str, param:Dict[str, str]= None, user:User=None) -> Dict:
+    """ Check post conditions for admin operations.
 
-def _checkAdminPolicyPost(method, param=None, user=None):
+    :param method: the scope of the calling
+    :param param: the parameters given to this method
+    :param user: the user for whom the operations should be made
+    :return: dict with some setting
+    """
+
     ret = {}
     controller = 'admin'
     _ = context['translate']
 
     log.debug("entering controller %s", controller)
     log.debug("entering method %s", method)
-    log.debug("using params %s", param)
+    log.debug("using params %r", param)
+
+    if not param:
+        param = {}
 
     serial = param.get("serial")
 
     if user is None:
         user = _getUserFromParam()
 
-    if method in ['init', 'assign', 'setPin']:
-        # check if we are supposed to genereate a random OTP PIN
-        randomPINLength = _getRandomOTPPINLength(user)
+    # ------------------------------------------------------------------ --
 
+    # check for supported methods - should become obsolete
+
+    if method not in [
+        'init', 'assign', 'enable', 'setPin', 'loadtokens', 'getserial']:
+
+        log.error("an unknown method <<%s>> was passed.", method)
+
+        raise PolicyException(_("Failed to run getPolicyPost. "
+                                "Unknown method: %s") % method)
+
+    # ------------------------------------------------------------------ --
+
+    # set random pin, if policy is given
+
+    if method in ['init', 'assign', 'setPin']:
+
+        randomPINLength = _getRandomOTPPINLength(user)
         if randomPINLength > 0:
+
             new_pin = createRandomPin(user, min_pin_length=randomPINLength)
 
             log.debug("setting random pin for token with serial %s and user: "
                       "%s", serial, user)
 
             linotp.lib.token.setPin(new_pin, None, serial)
+
             log.debug("pin set")
 
             ret['new_pin'] = new_pin
 
-        # ------------------------------------------------------------------ --
+    # ------------------------------------------------------------------ --
 
-        if method == 'assign':
-            if not _check_token_count(realm=user.realm, post_check=True):
-                admin = context['AuthUser']
+    # check the enrollment.tokencount policy compliance
 
-                log.warning("the admin >%s< is not allowed to enroll any more "
-                            "tokens for the realm %s", admin, user.realm)
+    if method in ['assign', 'init', 'enable']:
 
-                raise PolicyException(_("The maximum allowed number of tokens "
-                                        "for the realm %s was reached. You can"
-                                        " not init any more tokens. Check the "
-                                        "policies scope=enrollment, "
-                                        "action=tokencount.") % user.realm)
+        if not _check_token_count(realm=user.realm, post_check=True):
+            admin = context['AuthUser']
+
+            log.warning("the admin >%s< is not allowed to enroll any more "
+                        "tokens for the realm %s", admin, user.realm)
+
+            raise PolicyException(_("The maximum allowed number of tokens "
+                                    "for the realm %s was reached. You can"
+                                    " not init any more tokens. Check the "
+                                    "policies scope=enrollment, "
+                                    "action=tokencount.") % user.realm)
+
 
     # ---------------------------------------------------------------------- --
 
-    # with loadtokens, we have to check if the tokens limit exceeded
+    # check the enrollment.tokencount policy compliance
 
-    elif method == 'loadtokens':
+    if method == 'loadtokens':
 
         tokenrealm = param.get('tokenrealm', user.realm)
 
@@ -213,9 +250,10 @@ def _checkAdminPolicyPost(method, param=None, user=None):
 
     # ---------------------------------------------------------------------- --
 
-    elif method == 'getserial':
-        # check if the serial/token, that was returned is in
-        # the realms of the admin!
+    # check if the that returned serial/token is in the realms of the admin!
+
+    if method == 'getserial':
+
         policies = getAdminPolicies("getserial")
         if (policies['active'] and not
                 checkAdminAuthorization(policies, serial,
@@ -226,12 +264,22 @@ def _checkAdminPolicyPost(method, param=None, user=None):
 
             raise PolicyException(_("You do not have the administrative "
                                     "right to get serials from this realm!"))
-    else:
-        # unknown method
-        log.error("an unknown method <<%s>> was passed.", method)
 
-        raise PolicyException(_("Failed to run getPolicyPost. "
-                                "Unknown method: %s") % method)
+    # ---------------------------------------------------------------------- --
+
+    # enforce license restrictions
+
+    if method in ['assign', 'init', 'enable', 'loadtokens']:
+
+        if linotp.lib.support.check_license_restrictions():
+
+            log.warning("The maximum allowed number of tokens "
+                        "for your license is reached")
+            linotp.lib.support.check_license_restrictions()
+
+            raise PolicyException(_("Due to license restrictions no more "
+                                    "tokens could be enrolled!"))
+
     return ret
 
 
@@ -310,6 +358,7 @@ def _checkSelfservicePolicyPost(method, param=None, user=None):
                       "%s and user: %s", serial, user)
 
             linotp.lib.token.setPin(new_pin, None, serial)
+
             log.debug("[init] pin set")
             # TODO: This random PIN could be processed and
             # printed in a PIN letter
@@ -319,6 +368,9 @@ def _checkSelfservicePolicyPost(method, param=None, user=None):
 
 
 def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
+
+    # we have to declare the imports localy to prevent cyclic imports
+
     ret = {}
     _ = context['translate']
 
@@ -428,6 +480,10 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             raise PolicyException(_("You do not have the administrative "
                                     "right to enable token %s. Check the "
                                     "policies.") % serial)
+
+        if linotp.lib.support.check_license_restrictions():
+            raise PolicyException(_("Due to license restrictions no more"
+                                    " tokens could be enabled!"))
 
         if not _check_token_count():
             log.error("The maximum token number is reached!")
@@ -541,7 +597,6 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         # default: we got HMAC / ETNG
         log.debug("[checkPolicyPre] checking init action")
 
-        from linotp.lib.support import check_license_restrictions
         if linotp.lib.support.check_license_restrictions():
             raise PolicyException(_("Due to license restrictions no more"
                                     " tokens could be enrolled!"))
@@ -658,6 +713,10 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             raise PolicyException(_("You do not have the administrative "
                                     "right to assign token %s. "
                                     "Check the policies.") % (serial))
+
+        if linotp.lib.support.check_license_restrictions():
+            raise PolicyException(_("Due to license restrictions no more"
+                                    " tokens could be assigned!"))
 
         # The user, the token should be assigned to,
         # is not in the admins realm
@@ -826,6 +885,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         # List of the new realms
         realmNewList = realms.split(',')
         # List of existing realms
+
         realmExistList = linotp.lib.token.getTokenRealms(serial)
 
         for r in realmExistList:
@@ -917,6 +977,10 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                 raise PolicyException(_("You do not have the administrative "
                                         "right to import token files to realm %s"
                                         ". Check the policies.") % tokenrealm)
+
+        if linotp.lib.support.check_license_restrictions():
+            raise PolicyException(_("Due to license restrictions no more"
+                                    " tokens could be loaded!"))
 
         if not _check_token_count(realm=tokenrealm):
 
@@ -1412,6 +1476,7 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
         True: if admin is allowed
         False: if admin is not allowed
     """
+
     log.info("policies: %r", policies)
 
     # in case there are absolutely no policies

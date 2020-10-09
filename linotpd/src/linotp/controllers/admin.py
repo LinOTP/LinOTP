@@ -592,6 +592,8 @@ class AdminController(BaseController):
             elif ret == 0 and user and not user.is_empty:
                 opt_result_dict['message'] = "No tokens for this user"
 
+            checkPolicyPost('admin', 'enable', param, user=user)
+
             db.session.commit()
             return sendResult(response, ret, opt=opt_result_dict)
 
@@ -2469,7 +2471,7 @@ class AdminController(BaseController):
                     tokenrealm=tokenrealm)
 
                 # check policy to set token pin random
-                checkPolicyPost('admin', 'init',
+                checkPolicyPost('admin', 'setPin',
                                 {'serial': serial})
 
             # check the max tokens per realm
