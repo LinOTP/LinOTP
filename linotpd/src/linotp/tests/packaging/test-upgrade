@@ -158,6 +158,19 @@ WARNING: this will DELETE any existing linotp configuration!
         sudo rm -rf /usr/lib/python3/dist-packages/linotp
     fi
 
+    for file_to_check in \
+        /etc/apache2/sites-available/linotp.conf \
+        /etc/apache2/sites-available/linotp2.conf \
+        /etc/apache2/sites-enabled/linotp.conf \
+        /etc/apache2/sites-enabled/linotp2.conf
+    do
+        if [ -f $file_to_check ]; then
+            error "File still present after purge: $file_to_check (removing)"
+            # Remove it so that further tests can be run
+            $sudo rm "$file_to_check"
+        fi
+    done
+
 }
 
 preseed_2() {
