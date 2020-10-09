@@ -28,7 +28,7 @@
 #
 # Create the htdigest entries for LinOTP manage page with static user authentication
 #
-REALM="LinOTP admin area"
+REALM="LinOTP2 admin area"
 DIGESTFILE=/etc/linotp/admins
 
 if [ $# -ne 2 ];
