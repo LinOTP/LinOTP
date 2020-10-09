@@ -46,8 +46,7 @@ def aladdin(manage_ui):
     return TokenImportAladdin(manage_ui)
 
 def check_menu_is_closed(manage_ui):
-    """
-    Check that import menu is closed
+    """Check that import menu is closed.
 
     By checking that the aladdin menu entry is not visible
     """
@@ -55,16 +54,17 @@ def check_menu_is_closed(manage_ui):
     menu_element = manage_ui.driver.find_element_by_id('menu_load_aladdin_xml_tokenfile')
     assert not menu_element.is_displayed(), menu_element
 
-def test_token_import_aladdin_xml(manage_ui: ManageUi, aladdin: TokenImportAladdin):
-    """
-    Test import of valid aladdin tokens
-    """
+def test_token_import_aladdin_xml(
+        manage_ui: ManageUi, aladdin: TokenImportAladdin):
+    """Test import of valid aladdin tokens."""
+
     aladdin_xml_path = os.path.join(manage_ui.test_data_dir, 'aladdin.xml')
     aladdin.do_import(file_path=aladdin_xml_path)
 
     tokenview = manage_ui.token_view
 
-    token_serials = ('00040008CFA5', '00040008CFA52', 'oath137332', 'oath12482B')
+    token_serials = (
+        '00040008CFA5', '00040008CFA52', 'oath137332', 'oath12482B')
 
     # Check the grid lines for the imported tokens
     grid = tokenview.get_grid_contents()
@@ -84,7 +84,9 @@ def test_token_import_aladdin_xml(manage_ui: ManageUi, aladdin: TokenImportAladd
 
     check_menu_is_closed(manage_ui)
 
-def test_token_import_aladdin_invalid_xml(manage_ui: ManageUi, aladdin: TokenImportAladdin):
+def test_token_import_aladdin_invalid_xml(
+        manage_ui: ManageUi, aladdin: TokenImportAladdin):
+    """Test import of invalid xml."""
 
     with pytest.raises(TokenImportError):
         aladdin.do_import(
