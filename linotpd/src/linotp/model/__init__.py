@@ -50,6 +50,7 @@ from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
 
 import json
 import sys
+from linotp.model.migrate import run_data_model_migration
 
 import sqlalchemy as sa
 
@@ -161,7 +162,7 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
         echo(f"Creating tables...", v=1)
         db.create_all()
 
-        # run_data_model_migration(meta)     # FIXME
+        run_data_model_migration(db.engine)
         if add_defaults:
             set_defaults(app)
 

@@ -35,17 +35,17 @@ from sqlalchemy.exc import OperationalError
 
 from sqlalchemy import inspect
 
-from linotp.model import db, Config
+from linotp import model
 
 import logging
 log = logging.getLogger(__name__)
 
 
-def has_column(meta, table_name, column):
+def has_column(engine, table_name, column):
     """
     check the column is already in the table
 
-    :param meta: the meta context with engine++
+    :param engine: database engine
     :param table_name: the name of the table with the column
     :param column: the instantiated column defintion
 
@@ -53,7 +53,7 @@ def has_column(meta, table_name, column):
 
     """
 
-    insp = inspect(meta.engine)
+    insp = inspect(engine)
     tables = insp.get_table_names()
     if table_name not in tables:
         return False
@@ -156,7 +156,7 @@ def drop_column(engine, table_name, column):
                    (c_table_name, c_column_name))
 
 
-def run_data_model_migration(meta):
+def run_data_model_migration(engine):
     """
     hook for database schema upgrade
      - called during database initialisation
@@ -165,7 +165,7 @@ def run_data_model_migration(meta):
     # define the most recent target version
     target_version = "2.12.0.0"
 
-    migration = Migration(meta)
+    migration = Migration(engine)
 
     # start with the current version, which is retrieved from the db
     current_version = migration.get_current_version()
@@ -201,16 +201,16 @@ class Migration():
         "2.12.0.0",
         ]
 
-    def __init__(self, meta):
+    def __init__(self, engine):
         """
         class init
         - preserve the database handle
         """
-        self.meta = meta
+        self.engine = engine
         self.current_version = None
 
     def _query_version(self):
-        return Config.query.filter_by(Key=self.db_model_key).first()
+        return model.Config.query.filter_by(Key=self.db_model_key).first()
 
     def get_current_version(self):
         """
@@ -249,9 +249,9 @@ class Migration():
         if config_entry:
             config_entry.Value = version
         else:
-            config_entry = Config(Key=self.db_model_key, Value=version)
+            config_entry = model.Config(Key=self.db_model_key, Value=version)
 
-        db.session.add(config_entry)
+        model.db.session.add(config_entry)
 
     def migrate(self, from_version, to_version):
         """
@@ -289,7 +289,7 @@ class Migration():
 
                 except Exception as exx:
                     log.exception('Failed to upgrade database! %r', exx)
-                    db.session.rollback()
+                    model.db.session.rollback()
                     raise exx
 
             if next_version == from_version:
@@ -313,15 +313,15 @@ class Migration():
         # add new bigger challenge column
         column = sa.Column('lchallenge', sa.types.Unicode(2000))
 
-        if not has_column(self.meta, challenge_table, column):
-            add_column(self.meta.engine, challenge_table, column)
+        if not has_column(self.engine, challenge_table, column):
+            add_column(self.engine, challenge_table, column)
 
         # add column to refer to the parent transaction
         column = sa.Column('ptransid', sa.types.Unicode(64), index=True)
 
-        if not has_column(self.meta, challenge_table, column):
-            add_column(self.meta.engine, challenge_table, column)
-            add_index(self.meta.engine, challenge_table, 'ptransid', column)
+        if not has_column(self.engine, challenge_table, column):
+            add_column(self.engine, challenge_table, column)
+            add_index(self.engine, challenge_table, 'ptransid', column)
 
     # --------------------------------------------------------------------- --
 
@@ -337,14 +337,14 @@ class Migration():
         # add new blob challenge column
         bchallenges = sa.Column('bchallenge', sa.types.LargeBinary())
 
-        if not has_column(self.meta, challenge_table, bchallenges):
-            add_column(self.meta.engine, challenge_table, bchallenges)
+        if not has_column(self.engine, challenge_table, bchallenges):
+            add_column(self.engine, challenge_table, bchallenges)
 
         # add new blob data column
         bdata = sa.Column('bdata', sa.types.LargeBinary())
 
-        if not has_column(self.meta, challenge_table, bdata):
-            add_column(self.meta.engine, challenge_table, bdata)
+        if not has_column(self.engine, challenge_table, bdata):
+            add_column(self.engine, challenge_table, bdata)
 
     # migration towards 2.12.
 
@@ -359,22 +359,22 @@ class Migration():
         # add created column to tokens
         created = sa.Column('LinOtpCreationDate', sa.types.DateTime, index=True)
 
-        if not has_column(self.meta, token_table, created):
-            add_column(self.meta.engine, token_table, created)
-            add_index(self.meta.engine, token_table, 'LinOtpCreationDate', created)
+        if not has_column(self.engine, token_table, created):
+            add_column(self.engine, token_table, created)
+            add_index(self.engine, token_table, 'LinOtpCreationDate', created)
 
         # add verified column to tokens
         verified = sa.Column('LinOtpLastAuthSuccess', sa.types.DateTime, index=True)
 
-        if not has_column(self.meta, token_table, verified):
-            add_column(self.meta.engine, token_table, verified)
-            add_index(self.meta.engine, token_table, 'LinOtpLastAuthSuccess', verified)
+        if not has_column(self.engine, token_table, verified):
+            add_column(self.engine, token_table, verified)
+            add_index(self.engine, token_table, 'LinOtpLastAuthSuccess', verified)
 
         # add accessed column to tokens
         accessed = sa.Column('LinOtpLastAuthMatch', sa.types.DateTime, index=True)
 
-        if not has_column(self.meta, token_table, accessed):
-            add_column(self.meta.engine, token_table, accessed)
-            add_index(self.meta.engine, token_table, 'LinOtpLastAuthMatch', accessed)
+        if not has_column(self.engine, token_table, accessed):
+            add_column(self.engine, token_table, accessed)
+            add_index(self.engine, token_table, 'LinOtpLastAuthMatch', accessed)
 
 # eof
