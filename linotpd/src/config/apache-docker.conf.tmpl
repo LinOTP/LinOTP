@@ -68,7 +68,7 @@ Listen 81
 
     <LocationMatch /ocra/(request|checkstatus|getActivationCode|calculateOtp)>
         AuthType Digest
-        AuthName "LinOTP admin area"
+        AuthName "LinOTP2 admin area"
         AuthDigestProvider file
         AuthUserFile /etc/linotp/admins
         Require valid-user
@@ -76,7 +76,7 @@ Listen 81
 
     <LocationMatch /(audit|manage|system|license|admin)>
         AuthType Digest
-        AuthName "LinOTP admin area"
+        AuthName "LinOTP2 admin area"
         AuthDigestProvider file
         AuthUserFile /etc/linotp/admins
         Require valid-user
