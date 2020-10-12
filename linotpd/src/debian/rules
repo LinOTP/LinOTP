@@ -18,7 +18,6 @@ override_dh_install:
 	# Install dbconfig-common scripts in debian/dbconfig-common
 	mkdir -p -m755 ${DBSCRIPTS_DEST}/install
 	install -m644 debian/dbconfig-common/dbconfig-common-lib.sh ${DBSCRIPTS_DEST}/lib.sh
-	install -m755 debian/dbconfig-common/dbconfig-vars ${DBSCRIPTS_DEST}/dbconfig-vars
 	for DB in mysql pgsql; do \
 		# first time installation uses dbconfig-common/scripts/linotp/DB \
 		install -m755 debian/dbconfig-common/db-install ${DBSCRIPTS_DEST}/install/$${DB} ;\
@@ -45,7 +44,6 @@ override_dh_installdeb:
 		sed -i -e 's/@@@DEB_VERSION@@@/$(DEB_VERSION)/' debian/$$pkg/DEBIAN/*; \
 	done
 
-	find debian/linotp/usr -ls | grep public
 	# Add a symlink to the custom style directory for apache to follow
 	find debian/linotp/usr -type d -name public -ls \
 		-execdir ln -s /etc/linotp/custom-style {}/custom \;

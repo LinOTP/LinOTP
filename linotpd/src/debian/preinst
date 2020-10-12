@@ -3,7 +3,6 @@
 set -e
 
 mkdir -p /etc/linotp
-
 if [ "$1" = "upgrade" ]; then
 	# If there is an /etc/linotp2 directory and the /etc/linotp directory
 	# is empty, then move /etc/linotp2 to /etc/linotp.
@@ -39,25 +38,40 @@ if [ "$1" = "upgrade" ]; then
 			done
 		done
 	fi
-fi
 
-# Migrate Audit key
-CONFIG_DIR=/etc/linotp
-OLD_PRIVKEY="$CONFIG_DIR"/private.pem
-OLD_PUBKEY="$CONFIG_DIR"/public.pem
-PRIVKEY="$CONFIG_DIR"/audit-private.pem
-PUBKEY="$CONFIG_DIR"/audit-public.pem
-if [ -f "$OLD_PRIVKEY" -a ! -f "$PRIVKEY" ]; then
-  # We have an old key pair that should be moved, lest people
-  # lose access to their existing audit log.
-  echo "Moving $OLD_PRIVKEY to $PRIVKEY"
-  mv "$OLD_PRIVKEY" "$PRIVKEY"
-  rm -f "$OLD_PUBKEY"	# no longer required
+	if dpkg --compare-versions "$2" lt "3.0~"; then
+		# Migrate Audit key
+		CONFIG_DIR=/etc/linotp
+		OLD_PRIVKEY="$CONFIG_DIR"/private.pem
+		OLD_PUBKEY="$CONFIG_DIR"/public.pem
+		PRIVKEY="$CONFIG_DIR"/audit-private.pem
+		PUBKEY="$CONFIG_DIR"/audit-public.pem
+		if [ -f "$OLD_PRIVKEY" -a ! -f "$PRIVKEY" ]; then
+			# We have an old key pair that should be moved, lest people
+			# lose access to their existing audit log.
+			echo "Moving $OLD_PRIVKEY to $PRIVKEY"
+			mv "$OLD_PRIVKEY" "$PRIVKEY"
+			rm -f "$OLD_PUBKEY"	# no longer required
 
-  # Extract the public key from the private key. We do this even
-  # when we have copied an old private key, to be very sure that
-  # the public key matches the private key.
-  openssl rsa -in "$PRIVKEY" -pubout -out "$PUBKEY"
-fi
+			# Extract the public key from the private key. We do this even
+			# when we have copied an old private key, to be very sure that
+			# the public key matches the private key.
+			openssl rsa -in "$PRIVKEY" -pubout -out "$PUBKEY"
+		fi
+
+		available=/etc/apache2/sites-available
+		enabled=/etc/apache2/sites-enabled
+		if [ -f $available/linotp2 ] \
+			&& [ ! -f $available/linotp ]
+		  then
+			echo "Moving apache site linotp2->linotp"
+			mv $available/linotp2 $available/linotp
+			if [ -l $enabled/linotp2 ]; then
+				rm -f $enabled/linotp2
+				ln -s ../sites-available/linotp $enabled/linotp
+			fi
+		fi # -f $available/linotp2
+	fi # dpkg --compare-versions "$2" lt "3.0~"
+fi # "$1" = "upgrade"
 
 #DEBHELPER#

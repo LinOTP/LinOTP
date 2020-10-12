@@ -13,24 +13,31 @@ print_timestamp() {
 }
 
 if [ "$1" = "purge" -a -e /usr/share/debconf/confmodule ]; then
-    # Source debconf library.
-    . /usr/share/debconf/confmodule
-    # Remove my changes to the db.
-    db_purge
-    if getent passwd linotp > /dev/null; then
-	if ! a2dissite linotp; then
-	    echo `print_timestamp` "WARNING [linotp postrm] Could not disable Apache linotp host (possibly it doesn't exist)" >&2
-	elif ! invoke-rc.d apache2 reload 2>/dev/null; then
-	    echo `print_timestamp` "WARNING [linotp postrm] Could not reload Apache (may not be a problem)"
+	# Source debconf library.
+	. /usr/share/debconf/confmodule
+	# Remove my changes to the db.
+	db_purge
+	if getent passwd linotp > /dev/null; then
+		if ! a2dissite linotp; then
+			echo `print_timestamp` "WARNING [linotp postrm] Could not disable Apache linotp host (possibly it doesn't exist)" >&2
+		elif ! invoke-rc.d apache2 reload 2>/dev/null; then
+			echo `print_timestamp` "WARNING [linotp postrm] Could not reload Apache (may not be a problem)"
+		fi
+		echo "Deleting user >>linotp<<"
+		deluser linotp
 	fi
-	echo "Deleting user >>linotp<<"
-	deluser linotp
-    fi
-    echo "Deleting log directory."
-    rm -fr /var/log/linotp
 
-    # Where I come from, “purge” means purge.
-    rm -rf /etc/linotp/*
+	echo "Removing apache site file"
+	rm -f /etc/apache2/sites-available/linotp.conf
+
+	echo "Deleting log directory."
+	rm -fr /var/log/linotp
+
+	echo "Deleting runtime directory."
+	rm -fr /run/linotp
+
+	# Where I come from, “purge” means purge.
+	rm -rf /etc/linotp/*
 fi
 
 #DEBHELPER#
