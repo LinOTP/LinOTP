@@ -122,11 +122,11 @@ class SmtpMessageServer(object):
             target=get_otp_mail, args=(self.smtp_process_queue, self.timeout))
         self.smtp_process.start()
         self.port = self.smtp_process_queue.get(True, 5)
-        self._do_lintop_config()
+        self._do_linotp_config()
 
         return self
 
-    def _do_lintop_config(self):
+    def _do_linotp_config(self):
         parameters = self.get_config_parameters()
 
         logger.debug("Configuration parameters: %s", parameters)

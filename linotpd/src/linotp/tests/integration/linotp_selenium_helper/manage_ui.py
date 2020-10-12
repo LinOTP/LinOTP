@@ -40,6 +40,8 @@ from selenium.webdriver.remote.webdriver import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+from linotp_selenium_helper.helper import BackendException
+
 from . import helper
 from .manage_elements import ManageDialog
 from .policy import Policy, PolicyManager
@@ -307,7 +309,8 @@ class ManageUi(object):
         because it will be added automatically to your params.
         :param call Something like 'system/delPolicy'
         :param params Something like {'name': 'policy1'}
-        :return Return json structure with API result
+        :return Return json structure containing result.value
+        :raise BackendException if the response contains an error
         """
 
         if(params is None):
@@ -332,8 +335,12 @@ class ManageUi(object):
                                  verify=False)
 
         response.raise_for_status()
+        json = response.json()
 
-        return response.json()
+        if not response.ok or response.json()["result"]["status"] == False:
+            raise BackendException(response, url=url)
+
+        return json["result"]["value"]
 
 
 class MsgType(object):

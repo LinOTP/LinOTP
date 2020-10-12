@@ -151,7 +151,7 @@ class TokenView(ManageTab):
         # Get the tokens in json format
         json_response = self.manage.admin_api_call("admin/show")
 
-        tokens = json_response["result"]["value"]["data"]
+        tokens = json_response["data"]
         if(tokens):
             for curr_token in tokens:
                 self.manage.admin_api_call("admin/remove",

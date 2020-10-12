@@ -29,7 +29,10 @@ This file contains sample data for the integration tests
 
 # LDAP resolvers
 
-musicians_ldap_resolver = {
+from typing import Dict, List, Union
+
+
+musicians_ldap_resolver : Dict[str, Union[str, int, bool, List]] = {
     'name': "SE_musicians",
     'title': "Musicians LDAP (Blackdog)",
     'type': 'ldapresolver',

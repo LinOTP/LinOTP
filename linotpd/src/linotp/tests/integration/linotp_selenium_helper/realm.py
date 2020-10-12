@@ -28,6 +28,7 @@
 import logging
 import time
 import re
+from typing import List, Union
 
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
@@ -39,11 +40,14 @@ from .helper import find_by_css, fill_form_element
 from .manage_elements import ManageDialog
 from .user_id_resolver import UserIdResolverManager
 
+class RealmException(Exception):
+    pass
+
 LOGGER = logging.getLogger(__name__)
 
 
 class EditRealmDialog(ManageDialog):
-    "Realm create / edit dialog"
+    """Realm create / edit dialog."""
 
     edit_save_button_id = 'button_editrealms_save'
 
@@ -55,22 +59,20 @@ class EditRealmDialog(ManageDialog):
     def realm_dialog(self):
         return self.manage.realm_manager
 
-    def fill_and_save(self, realm_name, resolvers):
-        """
-        Fill in realm name, resolvers and save dialog
-        """
+    def fill_and_save(self, realm_name:str, resolvers:str):
+        """Fill in realm name, resolvers and save dialog."""
+
         self.set_realm_name(realm_name)
         self.set_resolvers(resolvers)
         self.save()
 
-    def set_realm_name(self, name):
+    def set_realm_name(self, name:str):
         fill_form_element(self.driver, "realm_name", name)
 
     def get_resolvers(self):
-        """
-        Parse resolvers section of dialog
+        """Parse resolvers section of dialog.
 
-        @return: A list of UserIdResolverManager.ResolverElement
+        :return: A list of UserIdResolverManager.ResolverElement
         """
         resolvers = []
 
@@ -115,9 +117,7 @@ class EditRealmDialog(ManageDialog):
                 element).key_up(Keys.CONTROL).perform()
 
     def save(self):
-        """
-        Wait for save button to be clickable, then click save
-        """
+        """Wait for save button to be clickable, then click save."""
         button_id = self.edit_save_button_id
         WebDriverWait(self.driver, self.testcase.backend_wait_time).until(
             EC.element_to_be_clickable(
@@ -145,21 +145,21 @@ class RealmManager(ManageDialog):
         self.alert_box_handler = self.manage.alert_box_handler
 
     def parse_contents(self):
-        """
-        Read list of realms from dialog. Called from open dialog hook
-        """
+        """Read list of realms from dialog. Called from open dialog hook."""
         class RealmListEntry:
 
             def __init__(self, name, element=None):
                 self.name = name
                 self.element = element
 
-        elements = self.driver.find_elements_by_xpath("//div[@id='realm_list'] | //ol[@id='realms_select']/*")
+        element_path ="//div[@id='realm_list'] | //ol[@id='realms_select']/*"
+
+        elements = self.driver.find_elements_by_xpath(element_path)
         self.realms = [RealmListEntry(e.text, e) for e in elements if e.tag_name == 'li']
 
-    def _get_realm_by_name(self, name):
-        """
-        Get realm given the name
+    def _get_realm_by_name(self, name:str):
+        """Get realm given the name.
+
         Return tuple:
          realm name
          type
@@ -181,12 +181,10 @@ class RealmManager(ManageDialog):
     def realm_names(self):
         return [r.name for r in self.realms]
 
-    def get_realms_list(self):
-        """
-        Get a list of realm names defined
+    def get_realms_list(self) -> List[str]:
+        """Get a list of realm names defined using Selenium.
 
-        If the dialog is not currently opened, it will be opened
-        beforehand
+        If the dialog is not currently opened, it will be opened beforehand
         """
 
         # Open the dialog and reparse
@@ -194,17 +192,25 @@ class RealmManager(ManageDialog):
 
         return self.realm_names
 
-    def delete_realm(self, name):
-        """Click on realm in list and delete it"""
+    def get_realms_via_api(self) -> List[str]:
+        """Get all realms via API call."""
+
+        # Get the realms in json format
+        realms: List[str] = self.manage.admin_api_call("system/getRealms")
+        return realms
+
+    def delete_realm(self, name:str):
+        """Click on realm in list and delete it."""
         driver = self.driver
-        delete_confirm_dialog_css = "div[aria-describedby='dialog_realm_ask_delete'] span.ui-dialog-title"
+        dialog_css = ("div[aria-describedby='dialog_realm_ask_delete'] "
+                      "span.ui-dialog-title")
 
         realm_count = len(self.realms)
 
         self.select_realm(name)
         self.find_by_id(self.delete_button_id).click()
         self.manage.wait_for_waiting_finished()
-        assert self.find_by_css(delete_confirm_dialog_css).text == "Deleting realm"
+        assert self.find_by_css(dialog_css).text == "Deleting realm"
 
         t = find_by_css(driver, "#dialog_realm_ask_delete").text
         assert t.startswith(r"Do you want to delete the realm")
@@ -222,24 +228,37 @@ class RealmManager(ManageDialog):
             % (realm_count, len(self.realms))
         )
 
-    def clear_realms_via_api(self):
-        """
-        Get all realms via API call
-        and delete all by realm name.
+    def delete_realm_via_api(self, realm_name:str) -> None:
+        """Delete a realms by realm name using the API.
+
+        The list of realms is retrieved using the API, and then
+        the realm is deleted by realm name.
         """
 
-        # Get the realms in json format
-        json_response = self.manage.admin_api_call("system/getRealms")
+        realms = self.get_realms_via_api()
+        if realm_name.lower() not in realms:
+            raise RealmException('realm does not exist')
 
-        realms = json_response["result"]["value"]
-        if(realms):
+        self.manage.admin_api_call(
+            "system/delRealm", {'realm': realm_name})
+
+
+    def clear_realms_via_api(self) -> None:
+        """Delete all realms using the API.
+
+        The list of realms is retrieved using the API, and then
+        each realm is deleted by realm name.
+        """
+
+        realms = self.get_realms_via_api()
+        if realms:
             for curr_realm in realms:
-                self.manage.admin_api_call("system/delRealm",
-                                           {'realm': realms[curr_realm]['realmname']})
+                self.manage.admin_api_call(
+                    "system/delRealm",
+                    {'realm': realms[curr_realm]['realmname']})
 
     def clear_realms(self):
-        """
-        Clear all existing realms.
+        """Clear all existing realms.
 
         The clean up will be done via
         the following steps.
@@ -276,8 +295,9 @@ class RealmManager(ManageDialog):
 
         self.close()
 
-    def click_new_realm(self, check_for_no_resolver_alert=False):
-        """With the realms dialog open, click the new button"""
+    def click_new_realm(self, check_for_no_resolver_alert:bool=False):
+        """With the realms dialog open, click the new button."""
+
         self.find_by_id("button_realms_new").click()
 
         if check_for_no_resolver_alert:
@@ -289,7 +309,7 @@ class RealmManager(ManageDialog):
         return self.edit_realm_dialog
 
     def create(self, name, resolvers=None):
-        """Create a new realm linked to the given resolver names"""
+        """Create a new realm linked to the given resolver names."""
 
         self.open()
         self.reparse()
@@ -308,3 +328,18 @@ class RealmManager(ManageDialog):
             LOGGER.warn("Realm was not sucessfully created. Previous realms:%s, New realms:%s" % (
                 [r.name for r in old_realms], [r.name for r in new_realm_list]))
             assert False, "Realm was not sucessfully created"
+
+    def create_via_api(self, name: str, resolvers: Union[List[str], str]) -> None:
+        """Create a new realm.
+
+        :param name: - The name of the new realm to create
+        :param resolvers: - The resolver(s) to place in the realm (type.name)
+        """
+        if isinstance(resolvers, list):
+            resolvers = ",".join(resolvers)
+
+        params = dict(
+            realm=name,
+            resolvers=resolvers
+        )
+        self.manage.admin_api_call("system/setRealm", params)

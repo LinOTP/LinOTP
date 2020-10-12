@@ -26,12 +26,11 @@
 """Contains TokenImport class"""
 
 from .manage_ui import ManageDialog
-from linotp_selenium_helper.manage_ui import MsgType
+from linotp_selenium_helper.manage_ui import ManageUi, MsgType
 from selenium.webdriver.remote.file_detector import LocalFileDetector
 
 import tempfile
 import os
-import subprocess
 
 class TokenImportError(RuntimeError):
     pass
@@ -41,7 +40,7 @@ class TokenImport(ManageDialog):
     TokenImport imports files as Tokens in the LinOTP WebUI
     """
 
-    def __init__(self, manage_ui):
+    def __init__(self, manage_ui: ManageUi):
         """
         Base class for all token imports. Derive from this class
         and implement its special behavior. You have to overwrite
@@ -78,6 +77,10 @@ class TokenImport(ManageDialog):
                             needs file_content or file_path!
                             """)
 
+        if not self.manage.realm_manager.get_realms_via_api():
+            raise Exception("Test problem: TokenImport requires a realm, but no"
+                            "realms are available")
+
         if file_content:
             # Create the temp xml file with the given file_content.
             tf = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix=".xml")
@@ -88,20 +91,20 @@ class TokenImport(ManageDialog):
             # Use the provided xml token file.
             self.file_path = file_path
 
-        # We need to make the file available in the selenium
-        # docker container (Where the browser interaction is done).
-        self.driver.file_detector = LocalFileDetector()
+        filepath_input = self.driver.find_element_by_xpath(
+            self.file_name_lineedit)
 
         # On firefox the lineedit is not cleared after dialog re-open
         # So we have to do this explicitly
         # Otherwise the token file to load will be added and
         # LinOTP ends up in an undefined state.
-        self.driver.find_element_by_xpath(
-            self.file_name_lineedit).clear()
+        filepath_input.clear()
 
-        # Send the filename to the token file lineedit in the dialog.
-        self.driver.find_element_by_xpath(
-            self.file_name_lineedit).send_keys(self.file_path)
+        # Make the file available, even if using a remote
+        # Selenium instance
+        with self.driver.file_detector_context(LocalFileDetector):
+            # Send the filename to the token file lineedit in the dialog.
+            filepath_input.send_keys(self.file_path)
 
         self.driver.find_element_by_id(self.load_button_id).click()
         self.manage.wait_for_waiting_finished()

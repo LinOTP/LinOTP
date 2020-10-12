@@ -28,9 +28,13 @@
 import re
 import logging
 
+from typing import List, Dict
+
 from .helper import find_by_css, find_by_id, fill_element_from_dict
 from .manage_elements import ManageDialog
 
+class UserIdResolverException(Exception):
+    pass
 
 class NewResolverDialog(ManageDialog):
     "New resolver dialog"
@@ -122,23 +126,22 @@ class UserIdResolverManager(ManageDialog):
             for line in lines:
                 self.resolvers.append(self.parse_resolver_element(line))
 
-    def _get_resolver_by_name(self, name):
-        """
-        Get resolver given the name
+    def _get_resolver_by_name(self, name:str) -> Dict:
+        """Get resolver given the name.
+
         Return tuple:
          resolver name
          type
          name in dialog
         """
         r = [r for r in self.resolvers if r.name == name]
-        assert len(
-            r) == 1, "Resolver name %s not found in current resolver list" % (name,)
+        assert len(r) == 1, ("Resolver name %r not found "
+                             "in current resolver list" % name)
         resolver = r[0]
         return resolver
 
-    def get_defined_resolvers(self):
-        """
-        Return a list of currently defined resolver names
+    def get_defined_resolvers(self) -> List[str]:
+        """Return a list of currently defined resolver names.
         """
         self.raise_if_closed()
         return [r.name for r in self.resolvers]
@@ -183,9 +186,8 @@ class UserIdResolverManager(ManageDialog):
 
         return data['name']
 
-    def create_resolver_via_api(self, data):
-        """
-        Create resolver using API call
+    def create_resolver_via_api(self, data:Dict) -> Dict:
+        """Create resolver using API call.
 
         :param data: dictionary of parameters as used in create_resolver
         """
@@ -250,20 +252,15 @@ class UserIdResolverManager(ManageDialog):
             if name_map.get(k, k) is not None
         }
 
-        # Get the resolvers in json format
-        json = self.manage.admin_api_call("system/setResolver", params)
-        assert json['result']['status'] == True
+        self.manage.admin_api_call("system/setResolver", params)
 
     def get_resolver_params_via_api(self, resolver_name: str) -> dict:
-        """
-        Request resolver configuration via API
+        """Request resolver configuration via API.
 
         Checks that the status was ok and returns the resulting data
         """
-        json = self.manage.admin_api_call(
+        return self.manage.admin_api_call(
             "system/getResolver", dict(resolver=resolver_name))
-        assert json['result']['status'] == True, json
-        return json['result']['value']
 
     def close(self):
         super(UserIdResolverManager, self).close()
@@ -289,18 +286,17 @@ class UserIdResolverManager(ManageDialog):
         resolver.element.click()
         return resolver
 
-    def edit_resolver(self, name):
-        """
-        return resolver, given open dialog
-        """
+    def edit_resolver(self, name:str):
+        """return resolver, given open dialog."""
+
         self.raise_if_closed()
         resolver = self.select_resolver(name)
         self.find_by_id("button_resolver_edit").click()
         self.wait_for_waiting_finished()
         return resolver
 
-    def delete_resolver(self, name):
-        """Click on resolver in list and delete it"""
+    def delete_resolver(self, name:str):
+        """Click on resolver in list and delete it."""
         driver = self.driver
 
         resolver_count = len(self.resolvers)
@@ -333,24 +329,31 @@ class UserIdResolverManager(ManageDialog):
             % (resolver_count, len(self.resolvers))
         )
 
+    def delete_resolver_via_api(self, resolver_name:str):
+        """Delete resolver by resolver name via api call."""
+
+        resolvers = self.manage.admin_api_call("system/getResolvers")
+
+        if resolver_name not in resolvers:
+            raise UserIdResolverException(
+                'resolver %r does not found!' % resolver_name)
+
+        self.manage.admin_api_call(
+            "system/delResolver", {'resolver': resolver_name})
+
     def clear_resolvers_via_api(self):
-        """
-        Get all resolvers via API call
-        and delete all by resolver name.
-        """
+        """Get all resolvers via API call and delete all by resolver name."""
 
         # Get the resolvers in json format
-        json_response = self.manage.admin_api_call("system/getResolvers")
-
-        resolvers = json_response["result"]["value"]
+        resolvers = self.manage.admin_api_call("system/getResolvers")
         if(resolvers):
             for curr_resolver in resolvers:
-                self.manage.admin_api_call("system/delResolver",
-                                           {'resolver': resolvers[curr_resolver]['resolvername']})
+                self.manage.admin_api_call(
+                    "system/delResolver",
+                    {'resolver': resolvers[curr_resolver]['resolvername']})
 
     def clear_resolvers(self):
-        """
-        Clear all existing resolvers.
+        """Clear all existing resolvers.
 
         The clean up will be done via
         the following steps.
@@ -393,6 +396,7 @@ class UserIdResolverManager(ManageDialog):
 
     def test_connection(self, name, expected_users=None):
         """Test the connection with the corresponding button in the UI.
+
         Return the number of found users.
         """
         self.open()
@@ -435,9 +439,7 @@ class UserIdResolverManager(ManageDialog):
 
 
 class UserIdResolver:
-    """
-    Base-Class for creation of UserIdResolvers
-    """
+    """Base-Class for creation of UserIdResolvers."""
 
     # Ids of various buttons in the UI - will be set during object init
     # The button to click to select the correct resolver type
@@ -451,7 +453,7 @@ class UserIdResolver:
 
 
 class LdapUserIdResolver(UserIdResolver):
-    """Creates a LDAP User-Id-Resolver in the LinOTP WebUI"""
+    """Creates a LDAP User-Id-Resolver in the LinOTP WebUI."""
 
     resolvertype = 'ldap'
     newbutton_id = 'button_new_resolver_type_ldap'
@@ -504,7 +506,7 @@ class LdapUserIdResolver(UserIdResolver):
 
 
 class SqlUserIdResolver(UserIdResolver):
-    """Creates a Sql User-Id-Resolver in the LinOTP WebUI"""
+    """Creates a Sql User-Id-Resolver in the LinOTP WebUI."""
 
     resolvertype = 'sql'
     newbutton_id = 'button_new_resolver_type_sql'
@@ -531,7 +533,7 @@ class SqlUserIdResolver(UserIdResolver):
 
 
 class PasswdUserIdResolver(UserIdResolver):
-    """Creates a file(Passwd) User-Id-Resolver in the LinOTP WebUI"""
+    """Creates a file(Passwd) User-Id-Resolver in the LinOTP WebUI."""
 
     resolvertype = 'passwd'
     newbutton_id = 'button_new_resolver_type_file'

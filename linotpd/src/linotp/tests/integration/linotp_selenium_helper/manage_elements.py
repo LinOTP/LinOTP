@@ -42,15 +42,14 @@ class ManageElement(object):
     Base class for elements (tabs, dialogs) within the manage UI page.
 
     """
-    manage = None
-    "The manage page that we are attached to"
 
     def __init__(self, manage_ui):
         """
         The manage element can be initialised with an existing manage object, or a testcase.
         If the testcase is supplied, it will be used to determine the manage ui instance.
         """
-        self.manage: 'ManageUI' = manage_ui
+        self.manage = manage_ui
+        "The manage page that we are attached to"
 
     @property
     def driver(self):
@@ -224,7 +223,7 @@ class ManageDialog(ManageElement):
     menu_item_id = None
     "ID of the menu entry, if applicable (e.g. useridresolver, realms dialog)"
 
-    def __init__(self, manage_ui, dialog_body_id=None,
+    def __init__(self, manage_ui: 'ManageUi', dialog_body_id=None,
                  close_button_id=None, menu_item_id=None, menu_css=None):
         """
         Initialise the dialog box
@@ -235,7 +234,7 @@ class ManageDialog(ManageElement):
         :param menu_item_id: The ID of the menu item to open the dialog
         :param menu_css: Default is CSS selector for the LinOTP config menu
         """
-        self.manage = manage_ui
+        self.manage: 'ManageUi' = manage_ui
 
         # Configure class. These are only set if not None, so alternatively,
         # derived classes can set these in their class definition

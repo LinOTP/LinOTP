@@ -46,9 +46,8 @@ class PolicyManager(ManageTab):
         """
 
         # Get the policies in json format
-        json_response = self.manage.admin_api_call("system/getPolicy")
+        policies = self.manage.admin_api_call("system/getPolicy")
 
-        policies = json_response["result"]["value"]
         if(policies):
             for curr_policy in policies:
                 self.manage.admin_api_call("system/delPolicy",
