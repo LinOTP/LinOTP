@@ -21,6 +21,8 @@ show_help() {
     echo
     echo " selenium_check Selenium test currently installed package"
     echo " mysql_password Check v3 install with password containing spaces"
+    echo " htpasswd       Check admin password can be changed"
+    echo " noapache       Install / reconfigure with apache disabled"
     echo
     echo " alltests       Run all available tests"
     echo " help           Show this help message"
@@ -261,9 +263,11 @@ check_3() {
 
 check_service() {
     # Check we can retrieve manage interface. This gives us an early indication if the install
-    # did not work
+    # did not work.
+    # Param 1 is password (default: admin)
+    local password=${1:-admin}
     echo "Retrieving manage interface page"
-    if ! wget -nv --user=admin --password=admin -O /dev/null --no-check-certificate https://localhost/manage; then
+    if ! wget -nv --user=admin --password="$password" -O /dev/null --no-check-certificate https://localhost/manage; then
         echo "Apache error.log:"
         $sudo tail -n 10 /var/log/apache2/error.log
         fatal "Service is not working - cannot retrieve manage interface page"
@@ -356,6 +360,76 @@ install3psql() {
     check_3
 }
 
+dpkg_reconfigure() {
+    # Reconfigure package using dpkg-reconfigure
+
+    # Prerequestite: The relevant debconf questions
+    # are already set
+
+    cmd="dpkg-reconfigure -u linotp"
+    echo "Executing $cmd"
+    $sudo $cmd
+}
+
+htpasswd() {
+    # Change login password using debconf interface
+
+    purge
+    logtest "Reconfigure testing"
+    preseed_3
+    install_3
+    check_3
+    logtest "Changing htpassword using debconf"
+    (
+        echo "linotp linotp/apache/activate boolean true"
+        echo "linotp linotp/apache/admin_password password newpassword"
+        echo "linotp  linotp/dbconfig-reinstall boolean false"
+    ) | $sudo debconf-set-selections
+    dpkg_reconfigure
+    check_service "newpassword"
+
+    echo "Test passed, resetting password back to admin"
+    (
+        echo "linotp linotp/apache/admin_password password admin"
+    ) | $sudo debconf-set-selections
+    dpkg_reconfigure
+    check_service
+}
+
+noapache() {
+    # Check package can be installed without apache, and
+    # can be reconfigured to disable apache
+
+    purge
+    logtest "Install without apache"
+    preseed_3
+    (
+        echo "linotp linotp/apache/activate boolean false"
+    ) | $sudo debconf-set-selections
+    install_3
+    if ! wget -nv --user=admin --password=admin -O /dev/null --no-check-certificate https://localhost/manage; then
+      echo "manage interface is unavailable as expected"
+    else
+      fatal "Fail: Apache should not be configured"
+    fi
+
+    logtest "Install with Apache and then disable"
+    install3
+    echo "Disabling apache via dpkg-reconfigure"
+    (
+        echo "linotp linotp/apache/activate boolean false"
+        echo "linotp  linotp/dbconfig-reinstall boolean false"
+    ) | $sudo debconf-set-selections
+    dpkg_reconfigure
+    $sudo service apache2 reload
+    if ! wget -nv --user=admin --password=admin -O /dev/null --no-check-certificate https://localhost/manage; then
+      echo "manage interface is unavailable as expected"
+    else
+      fatal "Fail: Apache should not be configured"
+    fi
+}
+
+
 if [ ! -d "$linotpsrc" ]; then
     error "Linotp source directory not found: $linotpsrc"
     exit 1
@@ -364,8 +438,9 @@ fi
 # Main command processing
 if [ "$#" = 0 ]; then
     show_help
-elif [ "$1" = "upgrade2to3" -o "$1" = "install3" -o "$1" = "mysql_password" \
-    -o "$1" = "install3psql" -o "$1" = "selenium_check" ]; then
+elif "$1" =~ "upgrade2to3|install3|mysql_password|install3psql|selenium_check|htpasswd|noapache"
+  then
+    # Run the function with the same name as the command line argument
     eval $1
 elif [ "$1" = "3upgrade" ]; then
     logtest "Upgrading to LinOTP 3"
@@ -389,6 +464,8 @@ elif [ "$1" = "alltests" ]; then
     mysql_password
     install3psql
     selenium_check
+    htpasswd
+    noapache
 fi
 
 if [ -n "$have_errors" ]; then
