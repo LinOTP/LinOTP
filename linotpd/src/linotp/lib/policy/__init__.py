@@ -98,8 +98,26 @@ MAP_TYPE_GETOTP_ACTION = {"dpw": "max_count_dpw",
 
 
 class PolicyException(LinotpError):
+    """ Generic exception class for unspecified policy violations """
+    error_code = 410
+
     def __init__(self, description="unspecified error!"):
-        LinotpError.__init__(self, description=description, id=410)
+        LinotpError.__init__(self, description=description, id=self.error_code)
+
+
+class MaxTokenUserPolicyException(PolicyException):
+    """Token count policy violation of a user across all token types"""
+    error_code = 411
+
+
+class MaxTokenTypeUserPolicyException(PolicyException):
+    """Token count policy violation of a user for a single token type"""
+    error_code = 412
+
+
+class MaxTokenRealmPolicyException(PolicyException):
+    """Token count policy violation in a realm"""
+    error_code = 413
 
 
 class AuthorizeException(LinotpError):
@@ -244,9 +262,9 @@ def _checkAdminPolicyPost(
             log.warning("the maximum tokens for the realm "
                         "%s is exceeded.", tokenrealm)
 
-            raise PolicyException(_("The maximum number of allowed tokens "
-                                    "in realm %s is exceeded. Check policy "
-                                    "tokencount!") % tokenrealm)
+            raise MaxTokenRealmPolicyException(_(
+                "The maximum number of allowed tokens in realm %s is exceeded."
+                " Check policy tokencount!") % tokenrealm)
 
     # ---------------------------------------------------------------------- --
 
@@ -987,9 +1005,9 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             log.warning("the maximum tokens for the realm "
                         "%s is exceeded.", tokenrealm)
 
-            raise PolicyException(_("The maximum number of allowed tokens "
-                                    "in realm %s is exceeded. Check policy "
-                                    "tokencount!") % tokenrealm)
+            raise MaxTokenRealmPolicyException(_(
+                "The maximum number of allowed tokens in realm %s is exceeded."
+                " Check policy tokencount!") % tokenrealm)
 
     elif method == 'unpair':
 
