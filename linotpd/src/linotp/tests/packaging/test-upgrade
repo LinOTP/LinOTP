@@ -16,7 +16,8 @@ show_help() {
     echo " upgrade2to3    Purge, install v2, upgrade to v3"
     echo " install3psql   Purge, install using postgres database"
     echo
-    echo " upgrade3from2  Upgrade installed v2 to v3"
+    echo " upgrade3       Upgrade currently installed package to v3"
+    echo " 3reinstall     Install v3 then reinstall v3"
     echo " remove         Remove installed package"
     echo
     echo " selenium_check Selenium test currently installed package"
@@ -343,6 +344,22 @@ install3() {
     check_3
 }
 
+upgrade3() {
+    # Upgrade existing package to 3 without a fresh install first
+    echo Lintop version to upgrade:
+    dpkg-query --no-pager -l linotp | tail -1
+    echo "-- LinOTP 3 upgrade --"
+    preseed_3_for_upgrade
+    install_3
+    check_3
+}
+
+3reinstall() {
+    logtest 3reinstall: Install fresh v3 instance and then reinstall it again
+    install3
+    upgrade3
+}
+
 mysql_password() {
     logtest "Install linotp3 from scratch"
     password="T.e.s.t.#123!"
@@ -443,10 +460,12 @@ fi
 # Main command processing
 if [ "$#" = 0 ]; then
     show_help
-elif "$1" =~ "upgrade2to3|install3|mysql_password|install3psql|selenium_check|htpasswd|noapache"
+elif [ "$1" == "--help" ]; then
+    show_help
+elif [[ "$1" =~ ^(upgrade2to3|install3|upgrade3|mysql_password|install3psql|selenium_check|htpasswd|noapache|3reinstall)$ ]]
   then
     # Run the function with the same name as the command line argument
-    eval $1
+    $1
 elif [ "$1" = "3upgrade" ]; then
     logtest "Upgrading to LinOTP 3"
     preseed_3
@@ -471,6 +490,9 @@ elif [ "$1" = "alltests" ]; then
     selenium_check
     htpasswd
     noapache
+    3reinstall
+else
+    show_help
 fi
 
 if [ -n "$have_errors" ]; then
