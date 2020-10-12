@@ -238,13 +238,13 @@ install_3() {
 }
 
 check_2() {
-    # Basic test to check we have a working linotp 2 install
+    echo "Testing to check we have a working linotp 2 install"
     check_service
     check_data_model_version "2.10.1.0"
 }
 
 check_3() {
-    # Tests to see if all is okay and there are no known configuration problems
+    echo "Testing to see if all is okay and there are no known configuration problems"
     if $sudo grep -q "unconfigured" /etc/linotp/linotp.cfg; then
         cfgfail "SQLalchemy is not configured"
     fi
@@ -266,7 +266,7 @@ check_service() {
     if ! wget -nv --user=admin --password=admin -O /dev/null --no-check-certificate https://localhost/manage; then
         echo "Apache error.log:"
         $sudo tail -n 10 /var/log/apache2/error.log
-        fatal "Service is not working"
+        fatal "Service is not working - cannot retrieve manage interface page"
     fi
 }
 
