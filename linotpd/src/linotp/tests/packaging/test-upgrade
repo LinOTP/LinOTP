@@ -457,7 +457,7 @@ elif [ "$1" = "install2" ]; then
     check_2
     selenium_check
 elif [ "$1" = "alltests" ]; then
-    fresh3
+    install3
     selenium_check
     upgrade2to3
     selenium_check
