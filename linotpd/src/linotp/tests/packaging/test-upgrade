@@ -138,13 +138,18 @@ WARNING: this will DELETE any existing linotp configuration!
         fatal "Confirmation of purge required"
     fi
 
+    error="error"
+
     if [ -f /var/lib/dpkg/info/linotp.list ]; then
 
         # Preseed database removal on linotp3
-        if dpkg --compare-versions `dpkg-query -Wf '${Version}' linotp` ge "2.80"; then
+        if [ "$(installed_linotp_ver)" = 3 ]; then
             echo "Preseeding dbconfig-common removal"
             echo "linotp linotp/dbconfig-remove boolean true" | $sudo debconf-set-selections || true
             echo "linotp linotp/purge boolean true" | $sudo debconf-set-selections || true
+        else
+            # LinOTP 2 problems are not errors for v3 testing
+            error="echo"
         fi
         echo "Purging linotp"
         sudo apt --yes purge linotp
@@ -155,7 +160,7 @@ WARNING: this will DELETE any existing linotp configuration!
 
     # Check if all files are removed
     if [ -d /usr/lib/python3/dist-packages/linotp ];then
-        error "dist-packages/linotp not removed"
+        $error "dist-packages/linotp not removed"
         find /usr/lib/python3/dist-packages/linotp -ls
         sudo rm -rf /usr/lib/python3/dist-packages/linotp
     fi
@@ -167,7 +172,7 @@ WARNING: this will DELETE any existing linotp configuration!
         /etc/apache2/sites-enabled/linotp2.conf
     do
         if [ -f $file_to_check ]; then
-            error "File still present after purge: $file_to_check (removing)"
+            $error "File still present after purge: $file_to_check (removing)"
             # Remove it so that further tests can be run
             $sudo rm "$file_to_check"
         fi
