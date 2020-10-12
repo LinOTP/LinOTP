@@ -146,7 +146,12 @@ class ManageUi(object):
         assert self.is_url_open(), \
             'URL %s should end with %s - page not loaded?' % \
             (self.driver.current_url, self.URL)
-        assert self.driver.title == 'Management - LinOTP'
+        if self.testcase.major_version == 2:
+            title = 'LinOTP 2 Management'
+        else:
+            # LinOTP 3
+            title = 'Management - LinOTP'
+        assert self.driver.title == title
 
     def find_by_css(self, css_value) -> WebElement:
         """

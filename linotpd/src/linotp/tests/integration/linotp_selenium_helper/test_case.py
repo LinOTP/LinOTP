@@ -285,6 +285,16 @@ class TestCase(object):
             self._linotp_version = self.validate.version()
         return self._linotp_version
 
+    @property
+    def major_version(self) -> int:
+        "LinOTP server major version number"
+        return int(self.linotp_version.split('.')[0])
+
+    @property
+    def minor_version(self) -> int:
+        "LinOTP server minor version number"
+        return int(self.linotp_version.split('.')[1])
+
     def need_linotp_version(self, version_minimum):
         """
         Raise a unittest skip exception if the server version is too old

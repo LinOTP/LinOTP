@@ -57,9 +57,6 @@ class TestPolicies(TestCase):
 
     two_resolvers_realm_name = None
 
-    # validate/check instance
-    validate = None
-
     @pytest.fixture(autouse=True)
     def setUp(self):
         """ Some test set up steps """
@@ -102,13 +99,6 @@ class TestPolicies(TestCase):
 
         # Import some test tokens
         self.import_tokens()
-
-        # Create validate/check instance
-        self.validate = Validate(self.http_protocol,
-                                 self.http_host,
-                                 self.http_port,
-                                 self.http_username,
-                                 self.http_password)
 
     def test_otppin_3(self):
         """

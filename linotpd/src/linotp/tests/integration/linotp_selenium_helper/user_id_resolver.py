@@ -168,8 +168,20 @@ class UserIdResolverManager(ManageDialog):
             resolver.newbutton_id)
         self.manage.wait_for_waiting_finished()
 
+        formdata = dict(data)
+        if self.testcase.major_version == 2:
+            try:
+                del formdata['only_trusted_certs']
+            except KeyError:
+                pass
+        else:
+            try:
+                del formdata['certificate']
+            except KeyError:
+                pass
+
         # Fill in new resolver form
-        resolver.fill_form(data)
+        resolver.fill_form(formdata)
 
         self.find_by_id(resolver.savebutton_id).click()
         self.manage.wait_for_waiting_finished()
