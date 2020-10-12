@@ -98,7 +98,7 @@ MAP_TYPE_GETOTP_ACTION = {"dpw": "max_count_dpw",
 
 
 class PolicyException(LinotpError):
-    """ Generic exception class for unspecified policy violations """
+    """Generic exception class for unspecified policy violations."""
     error_code = 410
 
     def __init__(self, description="unspecified error!"):
@@ -106,17 +106,17 @@ class PolicyException(LinotpError):
 
 
 class MaxTokenUserPolicyException(PolicyException):
-    """Token count policy violation of a user across all token types"""
+    """Token count policy violation of a user across all token types."""
     error_code = 411
 
 
 class MaxTokenTypeUserPolicyException(PolicyException):
-    """Token count policy violation of a user for a single token type"""
+    """Token count policy violation of a user for a single token type."""
     error_code = 412
 
 
 class MaxTokenRealmPolicyException(PolicyException):
-    """Token count policy violation in a realm"""
+    """Token count policy violation in a realm."""
     error_code = 413
 
 
@@ -131,8 +131,7 @@ class AuthorizeException(LinotpError):
 # ConfigTree class
 
 def parse_policy(composite_key, value):
-
-    """ Parses policy data from a config entry """
+    """Parses policy data from a config entry"""
 
     if not composite_key.startswith('linotp.Policy'):
         raise ConfigNotRecognized(composite_key)
@@ -153,8 +152,8 @@ ConfigTree.add_parser('policies', parse_policy)
 
 
 def checkAuthorisation(scope, method):
-    """
-    check if the authenticated user has the right to do the given action
+    """Check if the authenticated user has the right to do the given action.
+
     :param scope: scope of the policy to be checked
     :param method: the requested action
     :return: nothing if authorized, else raise PolicyException
@@ -173,7 +172,7 @@ def checkAuthorisation(scope, method):
 
 def _checkAdminPolicyPost(
         method:str, param:Dict[str, str]= None, user:User=None) -> Dict:
-    """ Check post conditions for admin operations.
+    """Check post conditions for admin operations.
 
     :param method: the scope of the calling
     :param param: the parameters given to this method
@@ -1549,9 +1548,7 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
 
 
 def _check_token_count(user=None, realm=None, post_check=False):
-    '''
-    This internal function checks if the number of the tokens is valid
-    for a certain realm
+    """Internal function: checks the number of tokens for a certain realm.
 
     Therefore it checks the policy
         "scope = enrollment", action = "tokencount = <number>"
@@ -1566,7 +1563,7 @@ def _check_token_count(user=None, realm=None, post_check=False):
     :param user: the user in the realm
     :param realm: the relevant realm
     :return: boolean - False if token count is violated
-    '''
+    """
 
     # ---------------------------------------------------------------------- --
 
@@ -1662,7 +1659,8 @@ def _check_token_count(user=None, realm=None, post_check=False):
 
 
 def get_tokenissuer(user="", realm="", serial=""):
-    '''
+    """Get the token issuer.
+
     This internal function returns the issuer of the token as defined in policy
     scope = enrollment, action = tokenissuer = <string>
     The string can have the following variables:
@@ -1671,7 +1669,7 @@ def get_tokenissuer(user="", realm="", serial=""):
         <s>: token serial
 
     This function is used to create 'otpauth' tokens
-    '''
+    """
     tokenissuer = "LinOTP"
     action = "tokenissuer"
     client = _get_client()
@@ -1694,7 +1692,8 @@ def get_tokenissuer(user="", realm="", serial=""):
 
 
 def get_tokenlabel(user="", realm="", serial=""):
-    '''
+    """Get the label for a token.
+
     This internal function returns the naming of the token as defined in policy
     scope = enrollment, action = tokenname = <string>
     The string can have the following variables:
@@ -1704,7 +1703,7 @@ def get_tokenlabel(user="", realm="", serial=""):
     - <s>: token serial
 
     This function is used by the creation of googleauthenticator url
-    '''
+    """
     tokenlabel = ""
     action = "tokenlabel"
     client = _get_client()
@@ -1730,12 +1729,12 @@ def get_tokenlabel(user="", realm="", serial=""):
 
 
 def get_autoassignment_from_realm(user):
-    '''
+    """
     this function checks the policy scope=enrollment,
                                     action=autoassignment_from_realm
 
     :return: the realm where the tokens should be taken from
-    '''
+    """
 
     token_src_realm_action = 'autoassignment_from_realm'
     client = _get_client()
@@ -1752,8 +1751,7 @@ def get_autoassignment_from_realm(user):
 
 
 def get_autoassignment_without_pass(user):
-    """
-    check if autoassigment without password for the user is allowed
+    """Check if autoassigment without password for the user is allowed.
 
     :return: boolean
     """
@@ -1772,11 +1770,11 @@ def get_autoassignment_without_pass(user):
          pol, scope='enrollment', action=action_name, default=False)
 
 def get_autoassignment(user):
-    '''
+    """
     this function checks the policy scope=enrollment, action=autoassignment
     This is a boolean policy.
     The function returns true, if autoassignment is defined.
-    '''
+    """
 
     client = _get_client()
 
@@ -1792,11 +1790,11 @@ def get_autoassignment(user):
 
 
 def get_auto_enrollment(user):
-    '''
+    """
     this function checks the policy scope=enrollment, action=autoenrollment
     This policy policy returns the tokentyp: sms or email
     The function returns true, if autoenrollment is defined.
-    '''
+    """
 
     action = "autoenrollment"
     client = _get_client()
@@ -1818,11 +1816,12 @@ def get_auto_enrollment(user):
 
 
 def autoassignment_forward(user):
-    '''
+    """Return the status of autoassigment forwarding.
+
     this function checks the policy scope=enrollment, action=autoassignment
     This is a boolean policy.
     The function returns true, if autoassignment is defined.
-    '''
+    """
 
     client = _get_client()
 
@@ -1835,13 +1834,14 @@ def autoassignment_forward(user):
         default=False)
 
 def purge_enrollment_token(user, realm=None):
-    '''
+    """Get status of enrollment token purging.
+
     lookup in the policies if the rollout token should be removed
     after the successfull login with a second token
 
     :param user: the token owner
     :return: boolean
-    '''
+    """
     client = _get_client()
 
     policies = get_client_policy(
@@ -1854,13 +1854,14 @@ def purge_enrollment_token(user, realm=None):
 
 
 def ignore_autoassignment_pin(user):
-    '''
+    """Should autoassignment pin be ignored?
+
     This function checks the policy
         scope=enrollment, action=ignore_autoassignment_pin
     This is a boolean policy.
     The function returns true, if the password used in the autoassignment
     should not be set as token pin.
-    '''
+    """
     client = _get_client()
 
     policies = get_client_policy(
@@ -1872,10 +1873,11 @@ def ignore_autoassignment_pin(user):
         default=False)
 
 def _getRandomOTPPINLength(user):
-    '''
+    """Return the length of the random otp pin.
+
     This internal function returns the length of the random otp pin that is
     define in policy scope = enrollment, action = otp_pin_random = 111
-    '''
+    """
 
     all_pin_length = []
     client = _get_client()
@@ -1896,10 +1898,11 @@ def _getRandomOTPPINLength(user):
     return max(all_pin_length)
 
 def _getRandomOTPPINContent(user):
-    '''
+    """Get the length of the random otp pin
+
     This internal function returns the length of the random otp pin that is
     defined in policy scope = enrollment, action = otp_pin_random = 111
-    '''
+    """
     client = _get_client()
 
     for R in _getUserRealms(user):
@@ -1918,10 +1921,10 @@ def _getRandomOTPPINContent(user):
     return ''
 
 def getOTPPINEncrypt(serial=None, user=None):
-    '''
+    """
     This function returns, if the otppin should be stored as
     an encrpyted value
-    '''
+    """
 
     client = _get_client()
 
@@ -1949,10 +1952,11 @@ def getOTPPINEncrypt(serial=None, user=None):
 
 
 def _getOTPPINPolicies(user, scope="selfservice"):
-    '''
+    """"get the PIN policies for a realm.
+
     This internal function returns the PIN policies for a realm.
     These policies can either be in the scope "selfservice" or "admin"
-    The policy define when resettng an OTP PIN:
+    The policy define when reseting an OTP PIN:
 
     - what should be the length of the otp pin
     - what should be the contents of the otp pin by the actions:
@@ -1962,7 +1966,7 @@ def _getOTPPINPolicies(user, scope="selfservice"):
       - otp_pin_contents = [cns] (character, number, special character)
 
     :return: dictionary like {contents: "cns", min: 7, max: 10}
-    '''
+    """
     log.debug("[getOTPPINPolicies]")
     client = _get_client()
 
@@ -2012,7 +2016,7 @@ def _getOTPPINPolicies(user, scope="selfservice"):
 
 
 def checkOTPPINPolicy(pin, user):
-    '''
+    """
     This function checks the given PIN (OTP PIN) against the policy
     returned by the function
 
@@ -2023,7 +2027,7 @@ def checkOTPPINPolicy(pin, user):
           'error': errortext}
 
     At the moment this works for the selfservice portal
-    '''
+    """
     _ = context['translate']
 
     log.debug("[checkOTPPINPolicy]")
@@ -2178,7 +2182,7 @@ def checkToolsAuthorisation(method, param=None):
 
 
 def checkPolicyPre(controller, method, param=None, authUser=None, user=None):
-    '''
+    """
     This function will check for all policy definition for a certain
     controller/method It is run directly before doing the action in the
     controller. I will raise an exception, if it fails.
@@ -2187,7 +2191,7 @@ def checkPolicyPre(controller, method, param=None, authUser=None, user=None):
 
     :return: dictionary with the necessary results. These depend on
              the controller.
-    '''
+    """
     ret = {}
     _ = context["translate"]
 
@@ -2238,7 +2242,7 @@ def checkPolicyPre(controller, method, param=None, authUser=None, user=None):
 
 
 def checkPolicyPost(controller, method, param=None, user=None):
-    '''
+    """
     This function will check policies after a successful action in a
     controller. E.g. this can be setting a random PIN after successfully
     enrolling a token.
@@ -2253,7 +2257,7 @@ def checkPolicyPost(controller, method, param=None, user=None):
 
     :return: It returns a dictionary with the necessary results. These depend
              on the controller.
-    '''
+    """
     ret = {}
     _ = context['translate']
 
@@ -2285,7 +2289,7 @@ def checkPolicyPost(controller, method, param=None, user=None):
 #
 
 def set_realm(login, realm, exception=False):
-    '''
+    """
     this function reads the policy scope: authorization, client: x.y.z,
     action: setrealm=new_realm and overwrites the existing realm of the user
     with the new_realm.
@@ -2294,7 +2298,7 @@ def set_realm(login, realm, exception=False):
 
     returns:
         realm    - name of the new realm taken from the policy
-    '''
+    """
 
     client = _get_client()
 
@@ -2313,7 +2317,7 @@ def set_realm(login, realm, exception=False):
 
 
 def check_user_authorization(login, realm, exception=False):
-    '''
+    """
     check if the given user/realm is in the given policy.
     The realm may contain the wildcard '*', then the policy holds for
     all realms. If no username or '*' is given, the policy holds for all users.
@@ -2322,7 +2326,7 @@ def check_user_authorization(login, realm, exception=False):
         login    - loginname of the user
         realm    - realm of the user
         exception    - wether it should return True/False or raise an Exception
-    '''
+    """
     res = False
     client = _get_client()
 
@@ -2356,10 +2360,10 @@ def check_user_authorization(login, realm, exception=False):
 #  Authentication stuff
 #
 def get_auth_passthru(user):
-    '''
+    """
     returns True, if the user in this realm should be authenticated against
     the UserIdResolver in case the user has no tokens assigned.
-    '''
+    """
     ret = False
     client = _get_client()
 
@@ -2373,9 +2377,7 @@ def get_auth_passthru(user):
 
 
 def get_auth_forward(user):
-    '''
-    returns the list of all forwarding servers
-    '''
+    """Returns the list of all forwarding servers."""
     client = _get_client()
 
     policies = get_client_policy(
@@ -2387,10 +2389,10 @@ def get_auth_forward(user):
         default=None)
 
 def get_auth_forward_on_no_token(user):
-    '''
+    """
     returns True, if the user in this realm should be forwarded
     in case the user has no tokens assigned.
-    '''
+    """
     client = _get_client()
 
     policies = get_client_policy(
@@ -2403,10 +2405,10 @@ def get_auth_forward_on_no_token(user):
 
 
 def get_auth_passOnNoToken(user):
-    '''
+    """
     returns True, if the user in this realm should be always authenticated
     in case the user has no tokens assigned.
-    '''
+    """
 
     client = _get_client()
 
@@ -2420,9 +2422,9 @@ def get_auth_passOnNoToken(user):
 
 
 def disable_on_authentication_exceed(user, realms=None):
-    '''
+    """
     returns True if the token should be disable, if max auth count is reached
-    '''
+    """
     ppargs = {}
     action = "disable_on_authentication_exceed"
     client = _get_client()
@@ -2447,9 +2449,9 @@ def disable_on_authentication_exceed(user, realms=None):
 
 
 def delete_on_authentication_exceed(user, realms=None):
-    '''
+    """
     returns True if the token should be disable, if max auth count is reached
-    '''
+    """
     ppargs = {}
     action="delete_on_authentication_exceed"
     client = _get_client()
@@ -2472,11 +2474,9 @@ def delete_on_authentication_exceed(user, realms=None):
 
     return False
 
-
 def trigger_sms(realms=None):
-    """
-    returns true, if a check_s should be allowed to trigger an sms
-    """
+    """Status, if a check_s should be allowed to trigger an sms."""
+
     client = _get_client()
     user = _getUserFromParam()
 
@@ -2499,7 +2499,8 @@ def trigger_sms(realms=None):
 
 
 def trigger_phone_call_on_empty_pin(realms=None):
-    """
+    """Trigger a phone call on empty pin?
+
     returns true if a check_s should be allowed to trigger an phone call
     for the voice token
     """
@@ -2525,15 +2526,14 @@ def trigger_phone_call_on_empty_pin(realms=None):
 
 
 def get_auth_AutoSMSPolicy(realms=None):
-    '''
-    Returns true, if the autosms policy is set in one of the realms
+    """Returns true, if the autosms policy is set in one of the realms.
 
     return:
         True or False
 
     input:
         list of realms
-    '''
+    """
     log.debug("checking realms %r ", realms)
     client = _get_client()
 
@@ -2604,7 +2604,8 @@ def get_auth_challenge_response(user, ttype):
 
 
 def _get_auth_PinPolicy(realm=None, user=None):
-    '''
+    """tell how the OTP PIN is to be verified within the given realm.
+
     Returns the PIN policy, that defines, how the OTP PIN is to be verified
     within the given realm
 
@@ -2621,7 +2622,7 @@ def _get_auth_PinPolicy(realm=None, user=None):
         action: otppin=0/1/2
         client: IP
         user  : some user
-    '''
+    """
 
     #
     #    policy value mapping - from policy defintion:
@@ -2661,12 +2662,11 @@ def _get_auth_PinPolicy(realm=None, user=None):
 #  Authorization
 #
 def check_auth_tokentype(serial, exception=False, user=None):
-    '''
-    Checks if the token type of the given serial matches the tokentype policy
+    """Checks if the token type of the given serial matches the tokentype policy.
 
     :return: True/False - returns true or false or raises an exception
                           if exception=True
-    '''
+    """
 
     _ = context['translate']
 
@@ -2722,7 +2722,7 @@ def check_auth_tokentype(serial, exception=False, user=None):
             res = True
     elif len(toks) == 0:
         # TODO if the user does not exist or does have no token
-        # ---- WHAT DO WE DO? ---
+        # ---- WHAT DO WE DO? -- --
         #  At the moment we pass through: This is the old behaviour...
         res = True
 
@@ -2739,7 +2739,7 @@ def check_auth_tokentype(serial, exception=False, user=None):
 
 
 def check_auth_serial(serial, exception=False, user=None):
-    '''
+    """
     Checks if the token with the serial number matches the serial
     authorize policy scope=authoriztaion, action=serial
 
@@ -2753,7 +2753,7 @@ def check_auth_serial(serial, exception=False, user=None):
 
     :return: result
     :rtype: boolean
-    '''
+    """
 
     if serial is None:
         # if no serial is given, we return True right away
@@ -2802,7 +2802,7 @@ def check_auth_serial(serial, exception=False, user=None):
 
 
 def is_auth_return(success=True, user=None):
-    '''
+    """
     returns True if the policy
         scope = authorization
         action = detail_on_success/detail_on_fail
@@ -2811,7 +2811,7 @@ def is_auth_return(success=True, user=None):
     :param success: Defines if we should check of the policy
                     detaul_on_success (True) or detail_on_fail (False)
     :type success: bool
-    '''
+    """
     ret = False
 
     client = _get_client()
@@ -2838,7 +2838,7 @@ def is_auth_return(success=True, user=None):
 
 # helper ################################
 def get_pin_policies(user):
-    '''
+    """
     lookup for the pin policies - the list of policies
     is preserved for repeated lookups
 
@@ -2846,7 +2846,7 @@ def get_pin_policies(user):
 
     :param user: the policies which are applicable to the user
     :return: list of otppin id's
-    '''
+    """
     pin_policies = []
 
     pin_policies.append(_get_auth_PinPolicy(user=user))
@@ -2909,9 +2909,7 @@ def check_token_reporting(realm):
 
 
 def supports_offline(realms, token):
-
-    """
-    Check if offline is allowed for the given token.
+    """Check if offline is allowed for the given token.
 
     :param realms: the realms to be checked
     :param token: the token to be checked
@@ -2942,9 +2940,7 @@ def supports_offline(realms, token):
 
 
 def get_partition(realms, user):
-    """
-    returns the partition (key pair identifier) that should be used
-    """
+    """Get the partition (key pair identifier) that should be used."""
 
     login = None
     action_values = set()
@@ -2976,9 +2972,7 @@ def get_partition(realms, user):
 
 
 def get_single_auth_policy(policy_name, user=None, realms=None):
-    """
-    Retrieves a policy value and checks if the value is consistent
-    across realms.
+    """Retrieves a policy value and checks if the value is consistent across realms.
 
     :param policy_name: the name of the policy, e.g:
         * qrtoken_pairing_callback_url
