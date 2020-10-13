@@ -206,9 +206,22 @@ class Migration():
         self.engine = engine
         self.current_version = None
 
-    def _query_db_model_version(self) -> "model.Config":
+    @staticmethod
+    def _query_db_model_version() -> "model.Config":
         """Get the current db model version."""
-        return model.Config.query.filter_by(Key=self.db_model_key).first()
+        return model.Config.query.filter_by(Key=Migration.db_model_key).first()
+
+    @staticmethod
+    def is_db_model_current() -> bool:
+        """Check if the db model is current by comparing the db entry."""
+
+        target_version = Migration.migration_steps[-1]
+
+        current_version = Migration._query_db_model_version()
+        if current_version:
+            current_version = current_version.Value
+
+        return target_version == current_version
 
     def get_current_version(self) -> Union[str, None]:
         """Get the db model version number.
@@ -219,7 +232,7 @@ class Migration():
         if self.current_version:
             return self.current_version
 
-        config_entry = self._query_db_model_version()
+        config_entry = Migration._query_db_model_version()
 
         if not config_entry:
             return None
@@ -241,7 +254,7 @@ class Migration():
         if version == self.current_version:
             return
 
-        config_entry = self._query_db_model_version()
+        config_entry = Migration._query_db_model_version()
 
         if config_entry:
             config_entry.Value = version
