@@ -99,6 +99,27 @@ logtest() {
     echo "======================"
 }
 
+linotp3_db_name() {
+    # Parse linotp.cfg to get database name
+    $sudo python3 -c "
+from urllib.parse import urlsplit
+from flask import Config
+c=Config('/etc/linotp')
+c.from_pyfile('linotp.cfg')
+print(urlsplit(c['SQLALCHEMY_DATABASE_URI']).path.strip('/'))
+"
+}
+
+installed_linotp_ver() {
+    # echo 2 or 3, depending on installed version.
+    # The cutoff is actually 2.80
+    if dpkg --compare-versions `dpkg-query -Wf '${Version}' linotp` ge "2.80"; then
+        echo 3
+    else
+        echo 2
+    fi
+}
+
 # Purge existing linotp package
 # WARNING: This will remove any existing
 # linotp package
@@ -206,6 +227,7 @@ install_3() {
 check_2() {
     # Basic test to check we have a working linotp 2 install
     check_service
+    check_data_model_version "2.10.1.0"
 }
 
 check_3() {
@@ -219,6 +241,7 @@ check_3() {
             cfgfail "Missing charset in linotp.cfg for mysql database"
         fi
     fi
+    check_data_model_version "2.12.0.0"
     check_service
 }
 # sudo apt purge --yes linotp; sudo mysql --defaults-file=/etc/mysql/debian.cnf -e "DROP USER linotp;"; sudo debconf-set-selections config/linotp-with-mysql-preseed.txt && sudo debi
@@ -233,6 +256,33 @@ check_service() {
         fatal "Service is not working"
     fi
 }
+
+check_data_model_version() {
+    # Verify that data model version has been set properly. This gives us a quick check
+    # to see whether database migrations have been applied
+    expected_version=${1-2.10.1.0}
+    if [ "$(installed_linotp_ver)" = 3 ]; then
+        db="$(linotp3_db_name)"
+    else
+        # Don't try to guess it on the older packages
+        db=LinOTP2
+    fi
+    sql="select Value from Config where Config.Key='linotp.sql_data_model_version'"
+    cmd="mysql --defaults-file=/etc/mysql/debian.cnf -NB $db"
+    echo "Checking model version"
+
+    if ! model_version=$(echo "$sql" | $sudo $cmd); then
+        echo "echo \"$sql\" |" "$sudo" "$cmd"
+        fatal "Missing model version entry in database $db"
+    fi
+
+    if [ "$model_version" != "$expected_version" ]; then
+        echo "echo \"$sql\" |" "$sudo" "$cmd"
+        echo "Database $db error - found:$model_version expected:$expected_version"
+        fatal "Model version incorrect"
+    fi
+}
+
 
 selenium_check() {
     cd $linotpsrc/linotp/tests/integration
