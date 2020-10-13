@@ -20,8 +20,7 @@
 ARG SOFTHSM_BASE_IMAGE=linotp:latest
 FROM $SOFTHSM_BASE_IMAGE
 
-ENV LINOTP_CFG=/usr/share/linotp/linotp.cfg:/etc/linotp/linotp.cfg:/etc/linotp/softhsm.cfg \
-    SOFTHSM2_CONF=/etc/softhsm/softhsm2.conf \
+ENV SOFTHSM2_CONF=/etc/softhsm/softhsm2.conf \
     PKCS11_DLL=/usr/lib/softhsm/libsofthsm2.so
 
 COPY docker-init-softhsm.sh /etc/linotp/docker-init.d/05-docker-init-softhsm

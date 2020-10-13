@@ -133,9 +133,17 @@ create_cfg_file() {
   if [ -f "$LINOTP_ETC_CFG" ]; then
     echo_log "Configuration file already exists: $LINOTP_ETC_CFG"
   else
-    echo "SQLALCHEMY_DATABASE_URI='notconfigured'" > $LINOTP_ETC_CFG
-    # The database password is in this file, so protect accordingly
-    chmod 600 $LINOTP_ETC_CFG
+    old_umask="$(umask)"
+    umask 022
+    cat <<- CFG_EOF > $LINOTP_ETC_CFG
+    # LinOTP configuration file
+    #
+    # LinOTP can be configured here, or alternatively
+    # by dropping individual configuration snippets
+    # in /etc/linotp/conf.d/<name>.cfg
+CFG_EOF
+    chown linotp $LINOTP_ETC_CFG
+    umask=$old_umask
   fi
 }
 
@@ -190,7 +198,7 @@ configure_apache() {
 
   # Ensure the Apache wsgi process can read the linotp configuration
   WSGI_USER=www-data
-  SENSITIVE_FILES="audit-private.pem linotp.cfg encKey"
+  SENSITIVE_FILES="audit-private.pem conf.d/01-debian-database.cfg encKey"
 
   echo_log "Setting permissions on $SENSITIVE_FILES"
   for name in $SENSITIVE_FILES; do
