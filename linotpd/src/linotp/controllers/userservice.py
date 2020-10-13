@@ -2146,7 +2146,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.exception("[userinit] policy failed: %r" % pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
             log.exception("[userinit] token initialization failed! %r" % e)
