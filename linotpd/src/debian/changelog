@@ -1,11 +1,32 @@
-linotp (3.0~b1-1) UNRELEASED; urgency=medium
+linotp (3.0~b1-1) buster-dev; urgency=medium
 
   * Set new version 3.0 Beta 2
 
-  Fixes:
-  * Server: Database was not correctly configured on new package installs
+  Feature:
+  * Server: Omit unreadable-config warning if name starts with dash
+  * Server: `linotp.cfg` improvements
+    * Support for wildcard paths in LINOTP_CFG
+      example: LINOTP_CFG=/etc/linotp/linotp.cfg:/etc/linotp/conf.d/*.cfg
+    * In `LINOTP_CFG`, treat directory `/foo` like `/foo/*.cfg`.
+    * Read config file list from file if `LINOTP_CFG` doesn't exist.
+  * Server: Improved error code separation to differentiate between different
+    problems preventing token enrollment
+  * Package: Downgrade mysql dependency to Recommends. The system
+    administrator should install the package for their database or allow apt
+    to install recommended packages.
 
- -- KeyIdentity GmbH <linotp@keyidentity.com>  Fri, 25 Sep 2020 15:21:20 +0200
+  Fixes:
+  * Fix database configuration on new package installs
+  * Fix policy behaviour:
+    * Specific policies override wildcard policies
+    * Fix quoting of actions such as sms_text="Hello, your otp='<otp>'"
+  * Fix login to /manage after upgrading from LinOTP 2.x to 3.0
+  * User based license evaluation
+    * Check license volume
+    * Check amount of user with tokens (for user based license)
+    * Token count and limit evaluation
+
+ -- KeyIdentity GmbH <linotp@keyidentity.com>  Tue, 13 Oct 2020 10:13:40 +0200
 
 linotp (3.0~b0-1) buster-dev; urgency=low
 
