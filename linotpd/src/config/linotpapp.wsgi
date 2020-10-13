@@ -3,21 +3,6 @@
 import os
 from linotp.app import create_app
 
-# We're assuming that there are distribution defaults in
-# /usr/share/linotp/linotp.cfg and local adaptations in
-# /etc/linotp/linotp.cfg.
-
-cfg_files = (
-    "/usr/share/linotp/linotp.cfg",
-    "/etc/linotp/linotp.cfg",
-)
-os.environ['LINOTP_CFG'] = ":".join(cfg_files)
-
-# Relative paths in the linotp.cfg files will be taken as
-# relative to /etc/linotp
-
-os.environ['LINOTP_ROOT_DIR'] = os.path.dirname(cfg_files[-1])
-
 application = create_app('production')
 
 ## To enable the interactive debugger uncomment

@@ -7,8 +7,6 @@
 . /etc/dbconfig-common/linotp.conf
 
 LINOTP_CONFIG_FILE=/etc/linotp/linotp.cfg
-# TODO: Fix required (LINOTP-1448)
-export LINOTP_CFG=$LINOTP_CONFIG_FILE:/usr/share/linotp/linotp.cfg
 
 msg="LinOTP: "
 
