@@ -209,7 +209,8 @@ class Migration():
         self.engine = engine
         self.current_version = None
 
-    def _query_version(self):
+    def _query_db_model_version(self):
+        """Get the current db model version."""
         return model.Config.query.filter_by(Key=self.db_model_key).first()
 
     def get_current_version(self):
@@ -222,7 +223,7 @@ class Migration():
         if self.current_version:
             return self.current_version
 
-        config_entry = self._query_version()
+        config_entry = self._query_db_model_version()
 
         if config_entry:
 
@@ -244,7 +245,7 @@ class Migration():
         if version == self.current_version:
             return
 
-        config_entry = self._query_version()
+        config_entry = self._query_db_model_version()
 
         if config_entry:
             config_entry.Value = version
