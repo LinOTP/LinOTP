@@ -107,8 +107,8 @@ linotp3_db_name() {
     $sudo python3 -c "
 from urllib.parse import urlsplit
 from flask import Config
-c=Config('/etc/linotp')
-c.from_pyfile('linotp.cfg')
+c=Config('/etc/linotp/conf.d')
+c.from_pyfile('01-debian-database.cfg')
 print(urlsplit(c['DATABASE_URI']).path.strip('/'))
 "
 }
