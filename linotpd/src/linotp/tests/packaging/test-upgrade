@@ -181,7 +181,36 @@ WARNING: this will DELETE any existing linotp configuration!
 
 }
 
+register_questions() {
+    # Load templates from package into debconf database prior to preseeding
+    #
+    # We need to do this if we wish to answer debconf questions before we
+    # actually install the package.
+    #
+    # debconf-set-selections will not work if we try to seed questions
+    # before it knows about them.
+
+    (
+        for name in $*; do
+            question=linotp/$name
+            case $name in
+                apache/*)
+                    # Apache questions from linotp
+                    template=linotp/$name
+                    ;;
+                *)
+                    # Database questions from dbconfig-common
+                    template=dbconfig-common/$name
+                    ;;
+            esac
+            echo "register $template $question"
+        done
+    ) | $sudo debconf-communicate linotp
+}
+}
+
 preseed_2() {
+
     echo "Preseeding linotp2 questions"
     (
         echo "linotp linotp/apache/activate boolean true"
@@ -198,18 +227,21 @@ preseed_2() {
 
 preseed_3() {
     echo "Preseeding linotp3 questions for MariaDB database"
+
+    register_questions dbconfig-install dbconfig-upgrade database-type mysql/app-pass
     (
         echo "linotp linotp/apache/activate boolean true"
         echo "linotp linotp/apache/admin_password password admin"
         echo "linotp linotp/apache/ssl_create boolean false"
         echo "linotp linotp/dbconfig-install boolean true"
         echo "linotp linotp/dbconfig-upgrade boolean true"
-        echo "linotp linotp/database-type    select  mysql"
+        echo "linotp linotp/database-type select mysql"
         echo "linotp linotp/mysql/app-pass password DataB123!"
     ) | $sudo debconf-set-selections
 }
 
 preseed_3_for_upgrade() {
+    register_questions dbconfig-upgrade
     echo "Preseeding linotp3 questions for LinOTP 3 upgrade"
     (
         echo "linotp linotp/dbconfig-upgrade boolean true"
@@ -217,8 +249,9 @@ preseed_3_for_upgrade() {
 }
 
 preseed_3_postgres() {
-    echo "Preseeding linotp3 questions for Postgres database"
     preseed_3
+    echo "Preseeding linotp3 questions for Postgres database"
+    register_questions database-type remote/host pgsql/app-pass
     (
         echo "linotp linotp/database-type    select  pgsql"
         echo "linotp  linotp/remote/host      select  localhost"
@@ -235,6 +268,8 @@ install_2() {
         cd "$toolsdir"
         wget "$url"
     fi
+
+    preseed_2 "$linotp2_deb"
 
     echo "Installing linotp 2 package"
     DEBIAN_PRIORITY=critical $sudo apt --yes install "$linotp2_deb" libapache2-mod-wsgi
@@ -328,7 +363,6 @@ upgrade2to3() {
     purge
     logtest "Purge, install linotp 2, upgrade to linotp 3"
     echo "-- LinOTP 2 --"
-    preseed_2
     install_2 "$linotp2_deb_url"
     echo "-- LinOTP 3 --"
     preseed_3_for_upgrade
@@ -476,7 +510,6 @@ elif [ "$1" = "remove" ]; then
 elif [ "$1" = "install2" ]; then
     purge
     logtest "Install linotp 2"
-    preseed_2
     install_2 "$linotp2_deb_url"
     check_2
     selenium_check
