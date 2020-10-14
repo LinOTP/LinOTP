@@ -153,7 +153,7 @@ WARNING: this will DELETE any existing linotp configuration!
             error="echo"
         fi
         echo "Purging linotp"
-        sudo apt --yes purge linotp
+        $sudo apt-get --yes purge linotp
 
         # Drop mysql users if they exist
         $sudo mysql --defaults-file=/etc/mysql/debian.cnf -e "DROP USER IF EXISTS linotp, linotp2;" || true
@@ -272,12 +272,12 @@ install_2() {
     preseed_2 "$linotp2_deb"
 
     echo "Installing linotp 2 package"
-    DEBIAN_PRIORITY=critical $sudo apt --yes install "$linotp2_deb" libapache2-mod-wsgi
+    DEBIAN_PRIORITY=critical $sudo apt-get --yes --install-recommends install "$linotp2_deb" libapache2-mod-wsgi mariadb-server wget
 }
 
 install_3() {
     echo "Installing latest linotp 3 package"
-    $sudo apt --yes install "$linotp3_deb" libapache2-mod-wsgi-py3
+    $sudo apt-get --yes --install-recommends install "$linotp3_deb" libapache2-mod-wsgi-py3
 }
 
 check_2() {
