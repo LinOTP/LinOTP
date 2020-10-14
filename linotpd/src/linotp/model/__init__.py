@@ -42,15 +42,13 @@ Common rules
 
 """
 
-import binascii
-import logging
-from datetime import datetime
-
-from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
-
 import json
 import sys
-from linotp.model.migrate import run_data_model_migration
+
+import binascii
+import logging
+
+from datetime import datetime
 
 import sqlalchemy as sa
 
@@ -59,7 +57,10 @@ from sqlalchemy.orm import relation
 
 from flask_sqlalchemy import SQLAlchemy
 
-# from linotp.model.migrate import run_data_model_migration
+from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
+
+from linotp.model.migrate import run_data_model_migration
+from linotp.model.migrate import Migration
 
 from linotp.lib.crypto.utils import geturandom
 from linotp.lib.crypto.utils import hash_digest
@@ -132,6 +133,16 @@ def setup_db(app):
             # isn't yet initialised.
 
             log.critical("Database schema must be initialised, "
+                         "run `linotp init database`.")
+            sys.exit(11)
+
+        # ----------------------------------------------------------------- --
+
+        # Stop the program with a critical error if the database schema
+        # is not current and we try to run the linotp server
+
+        if cli_cmd == 'run' and not Migration.is_db_model_current():
+            log.critical("Database schema is not current, "
                          "run `linotp init database`.")
             sys.exit(11)
 
