@@ -27,8 +27,10 @@
 database schema migration hook
 """
 
+from typing import Union
 
 import sqlalchemy as sa
+from sqlalchemy.engine import Engine
 
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.exc import OperationalError
@@ -41,9 +43,8 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def has_column(engine, table_name, column):
-    """
-    check the column is already in the table
+def has_column(engine:Engine, table_name:str, column:sa.Column) -> bool:
+    """Check the column is already in the table.
 
     :param engine: database engine
     :param table_name: the name of the table with the column
@@ -67,9 +68,8 @@ def has_column(engine, table_name, column):
             return True
     return False
 
-def _compile_name(name, dialect):
-    """
-    helper - to adjust the names of table / column / index to quoted or not
+def _compile_name(name:str, dialect) -> str:
+    """Helper - to adjust the names of table / column / index to quoted or not.
 
     in postgresql the tablenames / column /index names must be quotes
     while not so in mysql
@@ -80,9 +80,8 @@ def _compile_name(name, dialect):
     """
     return sa.Column(name, sa.types.Integer()).compile(dialect=dialect)
 
-def add_column(engine, table_name, column):
-    """
-    create an index based on the column index definition
+def add_column(engine:Engine, table_name:str, column:sa.Column):
+    """Create an index based on the column index definition.
 
     calling the compiled SQL statement:
 
@@ -105,9 +104,8 @@ def add_column(engine, table_name, column):
                    (c_table_name, c_column_name, c_column_type))
 
 
-def add_index(engine, table_name, index, column):
-    """
-    create an index based on the column index definition
+def add_index(engine:Engine, table_name:str, index:str, column:sa.Column):
+    """Create an index based on the column index definition
 
     calling the compiled SQL statement:
 
@@ -134,7 +132,7 @@ def add_index(engine, table_name, index, column):
                    (c_index_name, c_table_name, c_column_name))
 
 
-def drop_column(engine, table_name, column):
+def drop_column(engine:Engine, table_name:str, column:sa.Column):
     """
 
     calling the compiled SQL statement
@@ -156,7 +154,7 @@ def drop_column(engine, table_name, column):
                    (c_table_name, c_column_name))
 
 
-def run_data_model_migration(engine):
+def run_data_model_migration(engine:Engine):
     """
     hook for database schema upgrade
      - called during database initialisation
@@ -179,8 +177,7 @@ def run_data_model_migration(engine):
     return target_version
 
 class Migration():
-    """
-    Migration class
+    """Migration class.
 
     - support the the db migration with a chain of db migration steps
       where each step is defined as class method according to the requested
@@ -201,21 +198,20 @@ class Migration():
         "2.12.0.0",
         ]
 
-    def __init__(self, engine):
-        """
-        class init
-        - preserve the database handle
+    def __init__(self, engine:Engine):
+        """Class init.
+
+        - preserve the database handle / engine
         """
         self.engine = engine
         self.current_version = None
 
-    def _query_db_model_version(self):
+    def _query_db_model_version(self) -> "model.Config":
         """Get the current db model version."""
         return model.Config.query.filter_by(Key=self.db_model_key).first()
 
-    def get_current_version(self):
-        """
-        get the db model version number
+    def get_current_version(self) -> Union[str, None]:
+        """Get the db model version number.
 
         :return: current db version or None
         """
@@ -225,16 +221,16 @@ class Migration():
 
         config_entry = self._query_db_model_version()
 
-        if config_entry:
+        if not config_entry:
+            return None
 
-            # preserve the version, to not retrieve the version multiple times
-            self.current_version = config_entry.Value
+        # preserve the version, to not retrieve the version multiple times
+        self.current_version = config_entry.Value
 
         return self.current_version
 
-    def set_version(self, version):
-        """
-        set the version new db model number
+    def set_version(self, version:str):
+        """Set the new db model version number.
 
         - on update: update the entry
         - on new: create new db entry
@@ -254,10 +250,10 @@ class Migration():
 
         model.db.session.add(config_entry)
 
-    def migrate(self, from_version, to_version):
-        """
-        run all migration steps between the versions, which
-        are listed in the migration_steps
+    def migrate(self, from_version:Union[str, None], to_version:str):
+        """Run all migration steps between the versions.
+
+        run all steps, which are of ordered list migration_steps
 
         :param from_version: the version to start in the migration chain
         :param to_version: the target version in the migration chain
@@ -267,7 +263,8 @@ class Migration():
 
         for next_version in self.migration_steps:
 
-            if active:
+            if next_version and active:
+
                 # --------------------------------------------------------- --
 
                 # get the function pointer to the set version
@@ -305,9 +302,7 @@ class Migration():
     # migration towards 2.9.1
 
     def migrate_2_9_1_0(self):
-        """
-        run the migration for bigger sized challenge column
-        """
+        """Run the migration for bigger sized challenge column."""
 
         challenge_table = "challenges"
 
@@ -329,9 +324,7 @@ class Migration():
     # migration towards 2.10.1
 
     def migrate_2_10_1_0(self):
-        """
-        run the migration to blob challenge and data column
-        """
+        """Run the migration to blob challenge and data column."""
 
         challenge_table = "challenges"
 
@@ -350,29 +343,33 @@ class Migration():
     # migration towards 2.12.
 
     def migrate_2_12_0_0(self):
-        """
-        run the migration for token to add the time stamps for
-        created, accessed and verified
+        """Run the migration for token to add the time stamps.
+
+        time stamps are: created, accessed and verified
         """
 
         token_table = "Token"
 
         # add created column to tokens
-        created = sa.Column('LinOtpCreationDate', sa.types.DateTime, index=True)
+        created = sa.Column(
+            'LinOtpCreationDate', sa.types.DateTime, index=True)
 
         if not has_column(self.engine, token_table, created):
             add_column(self.engine, token_table, created)
             add_index(self.engine, token_table, 'LinOtpCreationDate', created)
 
         # add verified column to tokens
-        verified = sa.Column('LinOtpLastAuthSuccess', sa.types.DateTime, index=True)
+        verified = sa.Column(
+            'LinOtpLastAuthSuccess', sa.types.DateTime, index=True)
 
         if not has_column(self.engine, token_table, verified):
             add_column(self.engine, token_table, verified)
-            add_index(self.engine, token_table, 'LinOtpLastAuthSuccess', verified)
+            add_index(
+                self.engine, token_table, 'LinOtpLastAuthSuccess', verified)
 
         # add accessed column to tokens
-        accessed = sa.Column('LinOtpLastAuthMatch', sa.types.DateTime, index=True)
+        accessed = sa.Column(
+            'LinOtpLastAuthMatch', sa.types.DateTime, index=True)
 
         if not has_column(self.engine, token_table, accessed):
             add_column(self.engine, token_table, accessed)
