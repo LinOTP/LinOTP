@@ -76,6 +76,8 @@ from linotp.lib.policy import (checkPolicyPre,
                                get_client_policy,
                                )
 
+from linotp.lib.policy.action import get_selfservice_action_value
+
 from linotp.lib.reply import sendResult as sendResponse
 
 from linotp.lib.reply import (sendError,
@@ -146,6 +148,12 @@ from linotp.model import db
 log = logging.getLogger(__name__)
 
 ENCODING = "utf-8"
+
+HASHLIB_MAP = {
+    1: 'sha1',
+    2: 'sha256',
+    3: 'sha512'
+}
 
 # -------------------------------------------------------------------------- --
 
@@ -2058,9 +2066,14 @@ class UserserviceController(BaseController):
             return sendError(response, exx, 1)
 
     def enroll(self):
-        '''
-        enroll token
-        '''
+        """Enroll a token.
+
+        Remarks:
+            Depending on the token type more parameters have to be provided
+            as http parameters
+
+        :param type: one of (hmac, totp, pw, ...)
+        """
         response_detail = {}
         param = self.request_params.copy()
 
@@ -2076,6 +2089,65 @@ class UserserviceController(BaseController):
 
             serial = param.get('serial', None)
             prefix = param.get('prefix', None)
+
+            # --------------------------------------------------------- --
+
+            # enrollment of hotp (hmac) or totp token
+
+            if tok_type in ['hmac', 'totp']:
+                if 'otpkey' not in param:
+                    param['genkey'] = param.get('genkey','1')
+
+            if tok_type == 'hmac':
+
+                # --------------------------------------------------------- --
+
+                # query for hmac_otplen
+
+                hmac_otplen = get_selfservice_action_value(
+                    'hmac_otplen', user=self.authUser,  default=6)
+
+                param['otplen'] = param.get('otplen', hmac_otplen)
+
+                # --------------------------------------------------------- --
+
+                # query for hashlib
+
+                hmac_hashlib = get_selfservice_action_value(
+                   'hmac_hashlib', user=self.authUser,  default=1)
+
+                param['hashlib'] = param.get(
+                    'hashlib', HASHLIB_MAP[hmac_hashlib])
+
+            elif tok_type == 'totp':
+
+                # --------------------------------------------------------- --
+
+                # query for timestep
+
+                totp_timestep = get_selfservice_action_value(
+                    'totp_timestep', user=self.authUser, default=30)
+
+                param['timeStep'] = param.get('timeStep', totp_timestep)
+
+                # --------------------------------------------------------- --
+
+                # query for totp_otplen
+
+                totp_otplen = get_selfservice_action_value(
+                    'totp_otplen', user=self.authUser, default=6)
+
+                param['otplen'] = param.get('totp_otplen', totp_otplen)
+
+                # --------------------------------------------------------- --
+
+                # query for totp hashlib
+
+                totp_hashlib = get_selfservice_action_value(
+                    'totp_hashlib', user=self.authUser, default=1)
+
+                param['hashlib'] = param.get(
+                    'totp_hashlib', HASHLIB_MAP[totp_hashlib])
 
             th = TokenHandler()
             if not serial:
