@@ -26,20 +26,18 @@
 """
 database schema migration hook
 """
+import logging
 
 from typing import Union
 
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 
-from sqlalchemy.exc import ProgrammingError
-from sqlalchemy.exc import OperationalError
-
 from sqlalchemy import inspect
 
 from linotp import model
 
-import logging
+
 log = logging.getLogger(__name__)
 
 
@@ -68,7 +66,7 @@ def has_column(engine:Engine, table_name:str, column:sa.Column) -> bool:
             return True
     return False
 
-def _compile_name(name:str, dialect) -> str:
+def _compile_name(name:str, dialect=None) -> str:
     """Helper - to adjust the names of table / column / index to quoted or not.
 
     in postgresql the tablenames / column /index names must be quotes
@@ -78,7 +76,7 @@ def _compile_name(name:str, dialect) -> str:
     :param engine: the corresponding engine for mysql / postgresql
     :return: the adjusted name
     """
-    return sa.Column(name, sa.types.Integer()).compile(dialect=dialect)
+    return sa.Column(name, sa.types.Integer()).compile(dialect=dialect) # pylint: disable=E1120
 
 def add_column(engine:Engine, table_name:str, column:sa.Column):
     """Create an index based on the column index definition.
@@ -104,7 +102,7 @@ def add_column(engine:Engine, table_name:str, column:sa.Column):
                    (c_table_name, c_column_name, c_column_type))
 
 
-def add_index(engine:Engine, table_name:str, index:str, column:sa.Column):
+def add_index(engine:Engine, table_name:str, column:sa.Column):
     """Create an index based on the column index definition
 
     calling the compiled SQL statement:
@@ -113,7 +111,6 @@ def add_index(engine:Engine, table_name:str, index:str, column:sa.Column):
         ON table_name (column_name)
 
     :param engine: the bound sql database engine
-    :param index: the name of the index - string
     :param table_name: the name of the table with the column
     :param column: the instantiated column definition
 
@@ -261,7 +258,7 @@ class Migration():
         else:
             config_entry = model.Config(Key=self.db_model_key, Value=version)
 
-        model.db.session.add(config_entry)
+        model.db.session.add(config_entry) # pylint: disable=E1101
 
     def migrate(self, from_version:Union[str, None], to_version:str):
         """Run all migration steps between the versions.
@@ -300,7 +297,7 @@ class Migration():
 
                 except Exception as exx:
                     log.exception('Failed to upgrade database! %r', exx)
-                    model.db.session.rollback()
+                    model.db.session.rollback() # pylint: disable=E1101
                     raise exx
 
             if next_version == from_version:
@@ -330,7 +327,7 @@ class Migration():
 
         if not has_column(self.engine, challenge_table, column):
             add_column(self.engine, challenge_table, column)
-            add_index(self.engine, challenge_table, 'ptransid', column)
+            add_index(self.engine, challenge_table, column)
 
     # --------------------------------------------------------------------- --
 
@@ -369,7 +366,7 @@ class Migration():
 
         if not has_column(self.engine, token_table, created):
             add_column(self.engine, token_table, created)
-            add_index(self.engine, token_table, 'LinOtpCreationDate', created)
+            add_index(self.engine, token_table, created)
 
         # add verified column to tokens
         verified = sa.Column(
@@ -378,7 +375,7 @@ class Migration():
         if not has_column(self.engine, token_table, verified):
             add_column(self.engine, token_table, verified)
             add_index(
-                self.engine, token_table, 'LinOtpLastAuthSuccess', verified)
+                self.engine, token_table, verified)
 
         # add accessed column to tokens
         accessed = sa.Column(
@@ -386,6 +383,6 @@ class Migration():
 
         if not has_column(self.engine, token_table, accessed):
             add_column(self.engine, token_table, accessed)
-            add_index(self.engine, token_table, 'LinOtpLastAuthMatch', accessed)
+            add_index(self.engine, token_table, accessed)
 
 # eof
