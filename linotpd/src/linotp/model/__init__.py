@@ -123,6 +123,7 @@ def setup_db(app):
 
         # Initialise the SQLAlchemy engine
 
+        app.config["SQLALCHEMY_DATABASE_URI"] = app.config["DATABASE_URI"]
         db.init_app(app)
 
         table_names = db.engine.table_names()
