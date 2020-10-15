@@ -3,6 +3,9 @@ linotp (3.0~b2-0dev) UNRELEASED; urgency=medium
   Feature:
   * Loading configuration from individual files under /etc/linotp/conf.d.
     The generated database configuration is now placed in this file
+  * Server: Unify database configuration settings so that the
+    setting is called DATABASE_URI and the corresponding environment
+    variable is LINOTP_DATABASE_URI
 
   Fixes:
   * Package: The linotp command now finds the system configuration under
