@@ -33,7 +33,7 @@ log = logging.getLogger(__name__)
 
 def get_imprint(realm):
     '''
-    This function returns the imprint for a certai realm.
+    This function returns the imprint for a certain realm.
     This is just the contents of the file <realm>.imprint in the directory
     <imprint_directory>
     '''
