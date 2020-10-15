@@ -30,6 +30,7 @@ import os
 from pathlib import Path
 import stat
 import subprocess
+from typing import List
 from unittest.mock import patch
 
 import pytest
@@ -507,3 +508,18 @@ def test_init_audit_keys_cmd_failed_backup(app, audit_keys: AuditKeys, runner, m
     assert audit_keys.private.exists()
     assert "Error moving private audit key to" in cmd_result.output
     assert ": Generic OS-level exception\n" in cmd_result.output
+
+def test_init_audit_keys_cmd_failed_openssl(app, audit_keys: AuditKeys, runner, monkeypatch):
+
+    class mock_exit:
+        """Fake that the command failed"""
+        exit_code = 999
+
+    def mock_run_command(task: str, cmd: List[str], **kargs):
+        assert cmd[0] == "openssl"
+        return mock_exit()
+
+    monkeypatch.setattr(c, '_run_command', mock_run_command)
+
+    cmd_result = runner.invoke(main, ["init", "audit-keys", "--force"])
+    assert cmd_result.exit_code == 1
