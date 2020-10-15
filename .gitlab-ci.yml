@@ -208,7 +208,7 @@ functional-test:
     MYSQL_ROOT_PASSWORD: rootpass
     MYSQL_USER: linotp
     MYSQL_PASSWORD: linotppass
-    LINOTP_DATABASE_URL: mysql+pymysql://linotp:linotppass@database/linotp_db
+    LINOTP_DATABASE_URI: mysql+pymysql://linotp:linotppass@database/linotp_db
 
 functional-test-mysql:
   extends: .functional-test-base-mysql
@@ -234,7 +234,7 @@ functional-test-mysql-nightly:
     MYSQL_ROOT_PASSWORD: rootpass
     MYSQL_USER: linotp
     MYSQL_PASSWORD: linotppass
-    LINOTP_DATABASE_URL: mysql+pymysql://linotp:linotppass@database/linotp_db
+    LINOTP_DATABASE_URI: mysql+pymysql://linotp:linotppass@database/linotp_db
 
 functional-test-mariadb:
   extends: .functional-test-base-mariadb
@@ -260,7 +260,7 @@ functional-test-mariadb-nightly:
     POSTGRES_USER: linotp
     POSTGRES_PASSWORD: "linotppass"
     POSTGRES_HOST_AUTH_METHOD: trust
-    LINOTP_DATABASE_URL: postgres://linotp:linotppass@database/linotp_db
+    LINOTP_DATABASE_URI: postgres://linotp:linotppass@database/linotp_db
 
 functional-test-postgres:
   extends: .functional-test-base-postgres
