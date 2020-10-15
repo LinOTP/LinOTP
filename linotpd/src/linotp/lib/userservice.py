@@ -42,6 +42,9 @@ from linotp.flap import (
 
 from linotp.lib.policy.processing import get_client_policy
 from linotp.lib.policy.action import get_selfservice_actions
+from linotp.lib.policy.action import get_action_value
+from linotp.lib.policy.action import get_selfservice_action_value
+
 
 
 from linotp.lib.util import (get_version,
@@ -327,18 +330,26 @@ def get_pre_context(client):
     """
 
     # check for mfa_login, autoassign and autoenroll in policy definition
-    mfa_login_policy = get_client_policy(client=client,
-                               scope='selfservice',
-                               action='mfa_login')
-    mfa_3_fields_policy = get_client_policy(client=client,
-                               scope='selfservice',
-                               action='mfa_3_fields')
-    autoassignment_policy = get_client_policy(client=client,
-                               scope='enrollment',
-                               action='autoassignment')
-    autoenrollment_policy = get_client_policy(client=client,
-                               scope='enrollment',
-                               action='autoenrollment')
+    mfa_login_action = get_selfservice_action_value(
+        action='mfa_login', default=False)
+
+    mfa_3_fields_action = get_selfservice_action_value(
+        action='mfa_3_fields', default=False)
+
+    autoassignment_action = get_selfservice_action_value(
+        action='autoassignment', default=False)
+
+    autoenrollment_action = get_selfservice_action_value(
+        action='autoenrollment', default=False)
+
+    footer_text_action = get_selfservice_action_value(
+        action='footer_text', default=None)
+
+    imprint_url_action = get_selfservice_action_value(
+        action='imprint_url', default=None)
+
+    privacy_notice_url_action = get_selfservice_action_value(
+        action='privacy_notice_url', default=None)
 
     return {
         "version": get_version(),
@@ -347,10 +358,13 @@ def get_pre_context(client):
         "settings": {
             "default_realm": getDefaultRealm(),
             "realm_box": getRealmBox(),
-            "mfa_login": bool(mfa_login_policy),
-            "mfa_3_fields": bool(mfa_3_fields_policy),
-            "autoassign": bool(autoassignment_policy),
-            "autoenroll": bool(autoenrollment_policy),
+            "mfa_login": mfa_login_action,
+            "mfa_3_fields": mfa_3_fields_action,
+            "autoassign": autoassignment_action,
+            "autoenroll": autoenrollment_action,
+            "footer_text": footer_text_action,
+            "imprint_url": imprint_url_action,
+            "privacy_notice_url": privacy_notice_url_action,
         },
     }
 
