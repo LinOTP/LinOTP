@@ -47,7 +47,7 @@ class DBSession(object):
     ''' db session with  context manager '''
 
     def __init__(self):
-        self.engine = create_engine(config.get('SQLALCHEMY_DATABASE_URI'))
+        self.engine = create_engine(config.get('DATABASE_URI'))
 
     def __enter__(self):
         self.session = scoped_session(sessionmaker(autocommit=False,

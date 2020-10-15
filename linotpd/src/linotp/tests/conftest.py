@@ -126,7 +126,7 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
         base_app_config = dict(
             ENV='testing',      # doesn't make a huge difference for us
             TESTING=True,
-            SQLALCHEMY_DATABASE_URI=sqlalchemy_uri,
+            DATABASE_URI=sqlalchemy_uri,
             SQLALCHEMY_TRACK_MODIFICATIONS=False,
             ROOT_DIR=tmp_path,
             CACHE_DIR=tmp_path / "cache",

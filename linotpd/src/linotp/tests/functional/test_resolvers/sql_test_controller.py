@@ -49,7 +49,7 @@ class SQLTestController(TestController):
         """
         sql connection setup
         """
-        self.sqlconnect = connect or self.app.config.get('SQLALCHEMY_DATABASE_URI')
+        self.sqlconnect = connect or self.app.config.get('DATABASE_URI')
         sqlUser = SqlUserDB(connect=self.sqlconnect)
         self.sqlResolverDef = sqlUser.getResolverDefinition()
         return

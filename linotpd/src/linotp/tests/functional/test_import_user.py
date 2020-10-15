@@ -86,7 +86,7 @@ class TestImportUser(TestController):
         for the tests, we will drop the imported user table
         """
 
-        sqlconnect = self.app.config.get('SQLALCHEMY_DATABASE_URI')
+        sqlconnect = self.app.config.get('DATABASE_URI')
         engine = create_engine(sqlconnect)
         connection = engine.connect()
 

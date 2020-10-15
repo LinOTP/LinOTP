@@ -120,7 +120,7 @@ class TestReplication(TestController):
 
         TestController.setUp(self)
 
-        self.sqlconnect = self.app.config.get('SQLALCHEMY_DATABASE_URI')
+        self.sqlconnect = self.app.config.get('DATABASE_URI')
         sqlData = SQLData(connect=self.sqlconnect)
         log.debug(sqlData)
         params = {

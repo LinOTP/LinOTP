@@ -68,7 +68,7 @@ def test_ensure_dir_err(app, tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize("var", [
-    ("SQLALCHEMY_DATABASE_URI",),  # doesn't end in `_DIR`
+    ("DATABASE_URI",),  # doesn't end in `_DIR`
     ("FLORP_DIR"),                 # doesn't exist
 ])
 def test_ensure_dir_bad_config(app, var):

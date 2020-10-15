@@ -198,7 +198,7 @@ class OrphandTestHelpers(object):
 
     def setUpSQL(self):
 
-        self.sqlconnect = self.app.config.get('SQLALCHEMY_DATABASE_URI')
+        self.sqlconnect = self.app.config.get('DATABASE_URI')
         sqlUser = SQLUser(connect=self.sqlconnect)
         self.sqlResolverDef = sqlUser.getResolverDefinition()
         return

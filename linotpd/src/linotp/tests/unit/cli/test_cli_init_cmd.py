@@ -52,7 +52,7 @@ def app(tmp_path, monkeypatch):
     config = {
         'TESTING': True,
         'BACKUP_FILE_TIME_FORMAT': '%Y-%m-%d_%H-%M',
-        'SQLALCHEMY_DATABASE_URI': "sqlite:///"+str(tmp_path/"linotp.sqlite"),
+        'DATABASE_URI': "sqlite:///"+str(tmp_path/"linotp.sqlite"),
         'ADMIN_USERNAME': '',
         'ADMIN_PASSWORD': '',
     }
@@ -222,7 +222,7 @@ def test_init_database_cmd(app, monkeypatch, capsys, runner,
 
 @pytest.fixture
 def engine(app):
-    return create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
+    return create_engine(app.config["DATABASE_URI"])
 
 
 def test_setup_db_doesnt_create_tables(app, engine, capsys):
