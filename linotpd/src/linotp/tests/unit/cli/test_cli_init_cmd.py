@@ -30,6 +30,7 @@ import os
 from pathlib import Path
 import stat
 import subprocess
+from unittest.mock import patch
 
 import pytest
 
@@ -425,6 +426,18 @@ def test_init_enc_key_cmd_failed_backup(app, tmp_path, runner):
 KEY_START = "-----BEGIN {0} KEY-----"
 KEY_END = "-----END {0} KEY-----"
 
+class AuditKeys:
+    """Provide audit key files to tests"""
+    def __init__(self, tmp_path):
+        self.private: Path = tmp_path / "private.pem"
+        self.public: Path = tmp_path / "public.pem"
+
+@pytest.fixture
+def audit_keys(app, tmp_path: 'Path') -> 'AuditKeys':
+    keys = AuditKeys(tmp_path)
+    app.config["AUDIT_PRIVATE_KEY_FILE"] = str(keys.private)
+    app.config["AUDIT_PUBLIC_KEY_FILE"] = str(keys.public)
+    return keys
 
 def check_key_validity(s: str, type_: str) -> bool:
     lines = s.strip('\n').split('\n')
@@ -455,50 +468,42 @@ def check_key_validity(s: str, type_: str) -> bool:
       "Wrote private audit key to", "Extracted public audit key to"],
      True, False, True, 0),
 ])
-def test_init_audit_keys_cmd(app, tmp_path, runner, freezer,
+def test_init_audit_keys_cmd(app, audit_keys: AuditKeys, runner, freezer,
                              args, input, output,
                              has_file, makes_file, check_backup, result):
     freezer.move_to("2020-08-18 19:25:33")
-    private_key_file = tmp_path / "private.pem"
-    public_key_file = tmp_path / "public.pem"
-    app.config["AUDIT_PRIVATE_KEY_FILE"] = str(private_key_file)
-    app.config["AUDIT_PUBLIC_KEY_FILE"] = str(public_key_file)
 
     PRIVATE_KEY = "EXISTING PRIVATE KEY"
     if has_file:
-        private_key_file.write_text(PRIVATE_KEY)
+        audit_keys.private.write_text(PRIVATE_KEY)
     else:
-        assert not private_key_file.exists()
+        assert not audit_keys.private.exists()
 
     cmd_result = runner.invoke(main, args, input=input)
     assert cmd_result.exit_code == result
     for s in output:
         assert s in cmd_result.output
     if makes_file:
-        assert private_key_file.exists()
-        check_key_validity(private_key_file.read_text(), 'RSA PRIVATE')
-        assert public_key_file.exists()
-        check_key_validity(public_key_file.read_text(), 'PUBLIC')
+        assert audit_keys.private.exists()
+        check_key_validity(audit_keys.private.read_text(), 'RSA PRIVATE')
+        assert audit_keys.public.exists()
+        check_key_validity(audit_keys.public.read_text(), 'PUBLIC')
     if check_backup:
-        backup_file = Path(get_backup_filename(str(private_key_file)))
+        backup_file = Path(get_backup_filename(str(audit_keys.private)))
         assert backup_file.exists()
         assert backup_file.read_text() == PRIVATE_KEY
 
 
-def test_init_audit_keys_cmd_failed_backup(app, tmp_path, runner, monkeypatch):
-    private_key_file = tmp_path / "private.pem"
-    public_key_file = tmp_path / "public.pem"
-    app.config["AUDIT_PRIVATE_KEY_FILE"] = str(private_key_file)
-    app.config["AUDIT_PUBLIC_KEY_FILE"] = str(public_key_file)
+def test_init_audit_keys_cmd_failed_backup(app, audit_keys: AuditKeys, runner, monkeypatch):
 
     def os_replace_exception(src, dst, **kwargs):
         raise OSError("Generic OS-level exception")
 
     monkeypatch.setattr(os, 'replace', os_replace_exception)
 
-    private_key_file.write_bytes(ZERO_KEY)
+    audit_keys.private.write_bytes(ZERO_KEY)
     cmd_result = runner.invoke(main, ["init", "audit-keys", "--force"])
     assert cmd_result.exit_code == 1
-    assert private_key_file.exists()
+    assert audit_keys.private.exists()
     assert "Error moving private audit key to" in cmd_result.output
     assert ": Generic OS-level exception\n" in cmd_result.output
