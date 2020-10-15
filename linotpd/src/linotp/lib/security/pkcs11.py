@@ -838,14 +838,14 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         return binascii.hexlify(iv) + b':' + binascii.hexlify(v)
 
-    def _decryptValue(self, cryptValue, keyNum=2):
+    def _decryptValue(self, cryptStrValue: str, keyNum=2) -> bytes:
         '''
         _decryptValue - base method to decrypt a value
         - used one slot id to encrypt a string
           with leading iv, seperated by ':'
 
-        :param cryptValue: the to be encrypted value
-        :type cryptValue: byte string
+        :param cryptStrValue: the to be encrypted value
+        :type cryptStrValue: byte string
 
         :param keyNum: slot of the key array
         :type keyNum: int
@@ -854,16 +854,15 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         :rtype:  byte string
         '''
         ''' split at : '''
-        pos = cryptValue.find(b':')
-        bIV = cryptValue[:pos]
-        bData = cryptValue[pos + 1:len(cryptValue)]
+
+        pos = cryptStrValue.find(':')
+        bIV = cryptStrValue[:pos]
+        bData = cryptStrValue[pos + 1:len(cryptStrValue)]
 
         iv = binascii.unhexlify(bIV)
         data = binascii.unhexlify(bData)
 
-        password = self.decrypt(data, iv, keyNum)
-
-        return password
+        return self.decrypt(data, iv, keyNum)
 
     def decryptPassword(self, cryptPass):
         '''
@@ -894,7 +893,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         return self._decryptValue(cryptPin, 1)
 
-    def encryptPassword(self, password):
+    def encryptPassword(self, password: str) -> str:
         '''
         dedicated security module methods: encryptPassword
         which used one slot id to encrypt a string
@@ -905,7 +904,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         :return: encrypted data - leading iv, seperated by the ':'
         :rtype:  byte string
         '''
-        return self._encryptValue(password, 0)
+        return self._encryptValue(password, 0).decode('utf-8')
 
     def encryptPin(self, pin, iv=None):
         '''
@@ -921,7 +920,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         :return: encrypted data - leading iv, seperated by the ':'
         :rtype:  byte string
         '''
-        return self._encryptValue(pin, 1, iv=iv)
+        return self._encryptValue(pin, 1, iv=iv).decode('utf-8')
 
 
 def main():
