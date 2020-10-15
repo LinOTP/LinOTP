@@ -296,11 +296,8 @@ def create_audit_keys(privkey_filename, pubkey_filename):
                        ["openssl", "genrsa", "-out", privkey_filename,
                         str(AUDIT_PRIVKEY_BITS)])
     if ret.exit_code == 0:
-        try:
-            current_app.echo(f"Wrote private audit key to {privkey_filename}",
-                             v=1)
-        except RuntimeError:
-            pass
+        current_app.echo(f"Wrote private audit key to {privkey_filename}",
+                            v=1)
     else:
         sys.exit(1)
 
@@ -311,11 +308,8 @@ def create_audit_keys(privkey_filename, pubkey_filename):
                        ["openssl", "rsa", "-in", privkey_filename,
                         "-pubout", "-out", pubkey_filename])
     if ret.exit_code == 0:
-        try:
-            current_app.echo(
-                f"Extracted public audit key to {pubkey_filename}", v=1)
-        except RuntimeError:
-            pass
+        current_app.echo(
+            f"Extracted public audit key to {pubkey_filename}", v=1)
     else:
         sys.exit(1)
 
