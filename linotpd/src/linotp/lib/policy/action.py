@@ -31,6 +31,8 @@ import logging
 from warnings import warn
 from typing import Dict, Any
 
+from linotp.lib.user import User
+
 from .processing import get_client_policy
 
 from .util import _get_client
@@ -40,7 +42,25 @@ from .definitions import get_policy_definitions
 
 log = logging.getLogger(__name__)
 
-def get_selfservice_actions(user, action=None):
+def get_selfservice_action_value(action: str, user: User = None, default: Any=None) -> Any:
+    """Helper to get the value for a selfservice action.
+
+    :param user: the authenticated user
+    :param action: the action name
+    :param default: the fallback value, if no policy action is found
+    :return: the (typed) value of the action
+    """
+
+    policies = get_client_policy(
+        client=_get_client(), userObj=user,
+        scope='selfservice', action=action)
+
+    action_value = get_action_value(
+            policies, scope='selfservice', action=action, default=default)
+
+    return action_value
+
+def get_selfservice_actions(user=None, action=None):
     '''
     This function returns the allowed actions in the self service portal
     for the given user
@@ -53,20 +73,28 @@ def get_selfservice_actions(user, action=None):
     :return: dictionary with all actions
     '''
 
-    login = user.login
-    realm = user.realm
+    scope = "selfservice"
     client = _get_client()
 
-    log.debug("checking actions for scope=selfservice, realm=%r", realm)
+    pparam = {}
+
+    if isinstance(user, User):
+        pparam['user'] = user.login
+        pparam['realm'] = user.realm
+        pparam['userObj'] = user
+
+    elif isinstance(user, str):
+        pparam['user'] = user
+
+    log.debug(
+        "checking actions for scope=%s, realm=%r", scope, pparam.get('realm'))
 
     policies = get_client_policy(
-        client, scope="selfservice", action=action,
-        realm=realm, user=login, userObj=user)
+        client, scope=scope, action=action, **pparam)
 
     if not policies:
         return {}
 
-    scope="selfservice"
     pat = PolicyActionTyping()
 
     all_actions = {}
