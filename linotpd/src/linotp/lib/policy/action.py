@@ -40,9 +40,11 @@ from .util import parse_action_value
 
 from .definitions import get_policy_definitions
 
+from linotp.lib.user import User
+
 log = logging.getLogger(__name__)
 
-def get_selfservice_action_value(action: str, user: User = None, default: Any=None) -> Any:
+def get_selfservice_action_value(action: str, user: User=None, default: Any=None) -> Any:
     """Helper to get the value for a selfservice action.
 
     :param user: the authenticated user
@@ -59,6 +61,7 @@ def get_selfservice_action_value(action: str, user: User = None, default: Any=No
             policies, scope='selfservice', action=action, default=default)
 
     return action_value
+
 
 def get_selfservice_actions(user=None, action=None):
     '''
