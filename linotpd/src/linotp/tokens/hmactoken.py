@@ -130,9 +130,10 @@ class HmacTokenClass(TokenClass):
            'policy' : {
             'selfservice' : {
                'hmac_hashlib' : {
-                  'type':'int',
-                  'value' : [1, 2],
-                  'desc' : _('Specify the hashlib to be used. Can be sha1 (1) or sha2-256 (2).')
+                   'type':'int',
+                   'value' : [1, 2, 3],
+                   'desc' : ('Specify the hashlib to be used. Can be '
+                             'sha1 (1), sha256 (2) or sha512 (3)')
                     },
                'hmac_otplen' : {'type':'int',
                   'value' : [6, 8],
