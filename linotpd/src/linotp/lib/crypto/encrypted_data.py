@@ -46,7 +46,7 @@ class EncryptedData(str):
     def __new__(cls, encrypted_str):
         return str.__new__(cls, encrypted_str)
 
-    def get_unencrypted(self):
+    def get_unencrypted(self) -> str:
         """ return the decrypted data """
         return decryptPassword(self._encrypted_str).decode('utf-8')
 

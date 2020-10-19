@@ -180,7 +180,7 @@ class DefaultSecurityModule(SecurityModule):
         return
 
     # the real interfaces: random, encrypt, decrypt '''
-    def random(self, len=32):
+    def random(self, len:int=32) -> bytes:
         '''
         security module methods: random
 
@@ -193,7 +193,7 @@ class DefaultSecurityModule(SecurityModule):
 
         return os.urandom(len)
 
-    def encrypt(self, data: bytes, iv: bytes, id: int = DEFAULT_KEY) -> bytes:
+    def encrypt(self, data:bytes, iv:bytes, id:int=DEFAULT_KEY) -> bytes:
         '''
         security module methods: encrypt
 
@@ -234,7 +234,7 @@ class DefaultSecurityModule(SecurityModule):
             del key
         return res
 
-    def decrypt(self, value: bytes, iv: bytes, id: int = DEFAULT_KEY) -> bytes:
+    def decrypt(self, value:bytes, iv:bytes, id: int = DEFAULT_KEY) -> bytes:
         '''
         security module methods: decrypt
 
@@ -276,7 +276,7 @@ class DefaultSecurityModule(SecurityModule):
 
         return binascii.a2b_hex(data)
 
-    def decryptPassword(self, cryptPass):
+    def decryptPassword(self, cryptPass:str) -> bytes:
         '''
         dedicated security module methods: decryptPassword
         which used one slot id to decryt a string
@@ -288,10 +288,9 @@ class DefaultSecurityModule(SecurityModule):
         :return: decrypted data
         :rtype:  byte string
         '''
-
         return self._decryptValue(cryptPass, CONFIG_KEY)
 
-    def decryptPin(self, cryptPin):
+    def decryptPin(self, cryptPin:str) -> bytes:
         '''
         dedicated security module methods: decryptPin
         which used one slot id to decryt a string
@@ -305,7 +304,7 @@ class DefaultSecurityModule(SecurityModule):
 
         return self._decryptValue(cryptPin, TOKEN_KEY)
 
-    def encryptPassword(self, cryptPass: str) -> str:
+    def encryptPassword(self, cryptPass:bytes) -> str:
         '''
         dedicated security module methods: encryptPassword
         which used one slot id to encrypt a string
@@ -318,7 +317,7 @@ class DefaultSecurityModule(SecurityModule):
         '''
         return self._encryptValue(cryptPass, CONFIG_KEY)
 
-    def encryptPin(self, cryptPin: bytes, iv: bytes=None) -> str:
+    def encryptPin(self, cryptPin:bytes, iv:bytes=None) -> str:
         '''
         dedicated security module methods: encryptPin
         which used one slot id to encrypt a string
