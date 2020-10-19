@@ -37,7 +37,6 @@ from linotp.lib.crypto.utils import zerome
 from linotp.lib.error import HSMException
 from linotp.lib.security import FatalHSMException
 
-
 DEFAULT_KEY = 0
 CONFIG_KEY = 1
 TOKEN_KEY = 2
@@ -365,15 +364,14 @@ class SecurityProvider(object):
                     locked = False
                     if found is None:
                         tries += 1
+                        delay = 1 + int(0.2 * tries)
                         log.warning('try %d: could not bind hsm to session  - '
-                                    'going to sleep for  %r' % (tries, 10 * tries))
-                        time.sleep(10 * tries)
-
+                                    'going to sleep for %r' % (tries, delay))
+                        time.sleep(delay)
                         if tries >= self.max_retry:
                             error = ('[SecurityProvider:getSecurityModule] '
-                                     'max_retry %d: could not bind hsm to '
-                                     'session  - going to sleep for  %r'
-                                     % (tries, 10 * tries))
+                                     '%d retries: could not bind hsm to '
+                                     'session for %d seconds' % (tries, delay))
                             log.error(error)
                             raise Exception(error)
                         retry = True
