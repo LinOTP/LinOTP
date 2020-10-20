@@ -58,6 +58,9 @@ fi
 
 # Pytest for running tests
 : "${pytest="pytest"}"
+
+# Integration test suite
+: "${integration_suite="smoketest"}"
 ####
 
 # LinOTP 2 package to download and install
@@ -343,6 +346,11 @@ check_data_model_version() {
 
 
 selenium_check() {
+    if [ -z "$integration_suite" ]; then
+        echo "Integration tests skipped"
+        return
+    fi
+
     cd $linotpsrc/linotp/tests/integration
     if [ ! -f "$integration_ini" ]; then
         fatal "Could not find integration settings file: $(pwd)/$integration_ini"
