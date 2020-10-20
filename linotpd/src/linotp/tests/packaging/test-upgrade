@@ -78,23 +78,29 @@ have_errors=
 
 error() {
     # Show error message but do not exit immediately
-    echo "ERROR: $@"
+    echo "======================"
+    >&2 echo "TEST ERROR: $@"
+    echo "======================"
     have_errors=1
 }
 
 fatal() {
     # Show error message and exit
-    echo "FATAL: $@"
+    echo "======================"
+    >&2 echo "FATAL TEST ERROR: $@"
+    echo "======================"
     exit 1
 }
 
 cfgfail() {
     # Error in configuration file
     echo "--- linotp.cfg --"
-    $sudo cat /etc/linotp/linotp.cfg
+    $sudo cat /etc/linotp/linotp.cfg /etc/linotp/conf.d/*.cfg
     echo "-----------------"
     echo
-    echo "CONFIGURATION ERROR: $@"
+    echo "======================"
+    >&2 echo "TEST CONFIGURATION ERROR: $@"
+    echo "======================"
     exit 1
 }
 
@@ -369,7 +375,7 @@ selenium_check() {
 upgrade2to3() {
     # Purge, install 3, upgrade to 3
     purge
-    logtest "Purge, install linotp 2, upgrade to linotp 3"
+    logtest "upgrade2to3: Purge, install linotp 2, upgrade to linotp 3"
     echo "-- LinOTP 2 --"
     install_2 "$linotp2_deb_url"
     echo "-- LinOTP 3 --"
@@ -380,7 +386,7 @@ upgrade2to3() {
 
 install3() {
     purge
-    logtest "Install linotp3 from scratch"
+    logtest "install3: Install linotp3 from scratch"
     preseed_3
     install_3
     check_3
@@ -397,13 +403,13 @@ upgrade3() {
 }
 
 3reinstall() {
-    logtest 3reinstall: Install fresh v3 instance and then reinstall it again
+    logtest "3reinstall: Install fresh v3 instance and then reinstall it again"
     install3
     upgrade3
 }
 
 mysql_password() {
-    logtest "Install linotp3 from scratch"
+    logtest "mysql_password: Mysql login check"
     password="T.e.s.t.#123!"
     purge
     preseed_3
@@ -418,7 +424,7 @@ mysql_password() {
 
 install3psql() {
     purge
-    logtest "Postgres install"
+    logtest "install3psql: Postgres install"
     preseed_3_postgres
     install_3
     check_3
@@ -439,11 +445,11 @@ htpasswd() {
     # Change login password using debconf interface
 
     purge
-    logtest "Reconfigure testing"
+    logtest "htpasswd: Reconfigure testing"
     preseed_3
     install_3
     check_3
-    logtest "Changing htpassword using debconf"
+    logtest "htpasswd: Changing htpassword using debconf"
     (
         echo "linotp linotp/apache/activate boolean true"
         echo "linotp linotp/apache/admin_password password newpassword"
@@ -465,7 +471,7 @@ noapache() {
     # can be reconfigured to disable apache
 
     purge
-    logtest "Install without apache"
+    logtest "noapache: Install without apache"
     preseed_3
     (
         echo "linotp linotp/apache/activate boolean false"
@@ -477,7 +483,7 @@ noapache() {
       fatal "Fail: Apache should not be configured"
     fi
 
-    logtest "Install with Apache and then disable"
+    logtest "noapache: Install with Apache and then disable"
     install3
     echo "Disabling apache via dpkg-reconfigure"
     (
@@ -509,7 +515,7 @@ elif [[ "$1" =~ ^(upgrade2to3|install3|upgrade3|mysql_password|install3psql|sele
     # Run the function with the same name as the command line argument
     $1
 elif [ "$1" = "3upgrade" ]; then
-    logtest "Upgrading to LinOTP 3"
+    logtest "3upgrade: Upgrading to LinOTP 3"
     preseed_3
     install_3
     check_3
@@ -517,11 +523,12 @@ elif [ "$1" = "remove" ]; then
     purge
 elif [ "$1" = "install2" ]; then
     purge
-    logtest "Install linotp 2"
+    logtest "install2: Install linotp 2"
     install_2 "$linotp2_deb_url"
     check_2
     selenium_check
 elif [ "$1" = "alltests" ]; then
+    logtest "alltests: Running all tests"
     install3
     selenium_check
     upgrade2to3
