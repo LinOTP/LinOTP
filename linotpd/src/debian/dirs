@@ -1,4 +1,5 @@
 etc/linotp
+etc/linotp/conf.d
 etc/linotp/apache-site-includes
 etc/linotp/custom-style
 etc/linotp/custom-templates

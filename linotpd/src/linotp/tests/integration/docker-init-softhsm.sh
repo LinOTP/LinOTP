@@ -26,7 +26,7 @@
 
 set -e
 
-if [ -f /etc/linotp/softhsm.cfg ]; then
+if [ -f /etc/linotp/conf.d/softhsm.cfg ]; then
   echo "SoftHSM setup skipped - file already exists"
   exit 0
 fi
@@ -53,7 +53,7 @@ done
 
 # Write the generated configuration into a file which will be read
 # when linotp starts.
-cat >/etc/linotp/softhsm.cfg <<EOF
+cat >/etc/linotp/conf.d/softhsm.cfg <<EOF
 HSM_PKCS11_CONFIG={
     'module': 'linotp.lib.security.pkcs11.Pkcs11SecurityModule',
     'library': '/usr/lib/softhsm/libsofthsm2.so',

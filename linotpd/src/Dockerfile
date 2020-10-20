@@ -98,7 +98,6 @@ ENV TZ="Europe/Berlin" \
 
 # Internal environment variables used by the docker images
 ENV LINOTP_CFG_TEMPLATE=/etc/linotp/linotp-docker.cfg.tmpl \
-    LINOTP_CFG=/usr/share/linotp/linotp.cfg:/etc/linotp/linotp.cfg \
     LINOTP_HOME=/opt/linotp \
     DEBIAN_FRONTEND=noninteractive \
     FLASK_APP=linotp.app \

@@ -8,7 +8,7 @@ services:
      - "5900"
 
   selenium_tester:
-    image: linotp_test_env
+    image: linotp-testenv
     build:
       context: ..
       args:

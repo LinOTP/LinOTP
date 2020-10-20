@@ -3,7 +3,7 @@ FROM linotp
 ENV LINOTP_CFG=
 
 #
-# Docker-Image >> linotp_test_env <<
+# Docker-Image >> linotp-testenv <<
 #
 # This container is based on the linotp image and includes additional
 # dependencies for testing targets.

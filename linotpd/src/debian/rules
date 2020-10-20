@@ -29,6 +29,11 @@ override_dh_install:
 		done ;\
 	done
 
+	# Default configuration path setting is copied into the same directory as app.py
+	for d in debian/linotp/usr/lib/*/dist-packages/linotp ; do\
+		install -m644 config/linotp-cfg-default $$d ;\
+	done
+
 override_dh_installdeb:
 	dh_installdeb
 

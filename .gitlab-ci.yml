@@ -405,6 +405,9 @@ e2e-test-mariadb:
 
 e2e-test-softhsm:
   extends: .e2e-test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
+      when: always
   variables:
     DB: mariadb:10.1
     LINOTP_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"

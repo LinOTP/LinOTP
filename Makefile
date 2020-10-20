@@ -461,7 +461,7 @@ docker-run-linotp-unit:
 		&& $(DOCKER_RUN) \
 			--name=$(DOCKER_CONTAINER_NAME)-unit \
 			--volume=$(PWD):/linotpsrc:ro \
-			-t linotp_test_env \
+			-t linotp-testenv \
 			/usr/bin/make test PYTESTARGS="$(PYTESTARGS)"
 
 #jenkins pipeline uses this make rule
@@ -485,7 +485,7 @@ docker-run-linotp-pylint: docker-build-linotp-test-image
 		-w="/linotpsrc" \
 		--entrypoint="" \
 		--env "LANG=C.UTF-8" \
-		-t linotp_test_env \
+		-t linotp-testenv \
 	 	pylint --output-format=parseable --reports=y --rcfile=.pylintrc \
 		--disable=E1101,maybe-no-member --ignore tests,functional,integration linotp > pylint.log; exit 0
 

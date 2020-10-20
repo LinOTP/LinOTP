@@ -98,13 +98,14 @@ earlier ones, and settings in configuration files override hard-coded
 default settings in `settings.py`. Relative file names in `LINOTP_CFG`
 are interpreted relative to Flask's `app.root_path`, which by default
 points to the `linotp` directory of the LinOTP software distribution
-(where the `app.py` file is). If `LINOTP_CFG` is undefined, it
-defaults to `linotp.cfg`. The advantage of this approach is that it
-allows a clean separation between configuration settings provided by a
-distribution-specific LinOTP package and configuration settings made
-by the local system administrator, which would each go into separate
-files. If the package-provided file is changed or updated in a future
-version of the package, the local settings will remain untouched.
+(where the `app.py` file is). If `LINOTP_CFG` is undefined and is not
+started from a packaged version, it defaults to `linotp.cfg`. The
+advantage of this approach is that it allows a clean separation between
+configuration settings provided by a distribution-specific LinOTP
+package and configuration settings made by the local system
+administrator, which would each go into separate files. If the
+package-provided file is changed or updated in a future version of the
+package, the local settings will remain untouched.
 
 LinOTP's configuration files are Python code, so you can do whatever
 you can do in a Python program, although it is probably best to
@@ -219,15 +220,12 @@ LinOTP distribution package for that distribution. These include:
 If you're making a distribution package, don't edit LinOTP's
 `settings.py` file to adapt the values of these directories. Instead,
 make a new configuration file and put it in a reasonable place such as
-`/usr/share/linotp/linotp.cfg`. You can then arrange for `LINOTP_CFG`
-to default to something like
-
-	/usr/share/linotp/linotp.cfg:/etc/linotp/linotp.cfg
-
-as discussed in the previous subsection. (For the time being, you
-*will* need to edit the `LINOTP_CFG_DEFAULT` variable near the start
-of `app.py` to do this, but this may soon change for the better.)
-
+`/usr/share/linotp/linotp.cfg`. A suitable defaults file for Debian
+based distributions is available at `linotpd/src/config/linotp.cfg`. The
+default configuration path can be set by placing a file with the name
+`linotp-cfg-default` in the same directory as the main `app.py`. The
+configuration path for Debian can be found in the file
+`linotpd/src/config/linotp-cfg-default`.
 
 ## Run the LinOTP development server
 
