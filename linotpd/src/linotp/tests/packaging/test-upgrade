@@ -36,9 +36,10 @@ set -euo pipefail
 
 # Load environment from .env file
 toolsdir="$(cd $(dirname $0); pwd)"
-envfile="$toolsdir/.env"
-if [ -f "$envfile" ]; then
-  source "$envfile"
+
+: "${DOTENVFILE=".env"}"
+if [ -f "$DOTENVFILE" ]; then
+  source "$DOTENVFILE"
 else
   echo "Using default settings. To customise for your environment, copy"
   echo "the file env.template to .env and edit for your local configuration"
