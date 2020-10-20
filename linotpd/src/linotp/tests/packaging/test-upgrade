@@ -112,17 +112,6 @@ logtest() {
     echo "======================"
 }
 
-linotp3_db_name() {
-    # Parse linotp.cfg to get database name
-    $sudo python3 -c "
-from urllib.parse import urlsplit
-from flask import Config
-c=Config('/etc/linotp/conf.d')
-c.from_pyfile('01-debian-database.cfg')
-print(urlsplit(c['DATABASE_URI']).path.strip('/'))
-"
-}
-
 installed_linotp_ver() {
     # echo 2 or 3, depending on installed version.
     # The cutoff is actually 2.80
@@ -132,6 +121,89 @@ installed_linotp_ver() {
         echo 2
     fi
 }
+
+# ---------------------
+# Database functions
+
+db_uri() {
+    if [ "$(installed_linotp_ver)" = 3 ]; then
+        # Get linotp connection uri from configuration file (linotp 3 only)
+        $sudo cat /etc/linotp/conf.d/01-debian-database.cfg | \
+                sed -ne 's/^DATABASE_URI="\(.*\)"$/\1/p'
+    else
+        $sudo cat /etc/linotp2/linotp.ini | \
+                sed -ne 's/^sqlalchemy\.url *= *\(.*\)$/\1/p'
+    fi
+}
+
+db_name() {
+    # Parse DB uri to get database name
+    $sudo python3 -c "
+from urllib.parse import urlsplit
+print(urlsplit('$(db_uri)').path.strip('/'))
+"
+}
+
+db_type() {
+    # Parse cfg to get database type (mysql/postgres/sqlite)
+    uri="$(db_uri)" || exit "$?"
+
+    if [[ "$uri" =~ ^mysql(\+[a-z]+)?:// ]]; then
+        echo mysql
+    elif [[ "$uri" =~ ^postgres(\+[a-z]+)?:// ]]; then
+        echo postgres
+    else
+        fatal "Database type cannot be parsed from URI: $uri"
+    fi
+}
+
+db_cli_cmd() {
+    # Generate a client command that can be used to execute SQL in
+    # the database
+    case "$(db_type)" in
+        mysql)
+            # Mariadb's mysql client does not understand URIs
+            # directly, so we use the configuration from the
+            # debian packaging to connect to the database
+            echo "mysql --defaults-file=/etc/mysql/debian.cnf -NB $(db_name)"
+            ;;
+        postgres)
+            echo "psql -At $(db_uri)"
+            ;;
+        *)
+            fatal "Unknown database type"
+            ;;
+    esac
+}
+
+exec_sql() {
+    # Execute SQL in the linotp database and return the result code.
+    # The output result is sent to stdout
+    sql="$1"
+
+    if [ -z "$sql" ]; then
+        fatal "exec_sql() needs to be passed a valid SQL string"
+    fi
+
+    # if [ "$(installed_linotp_ver)" = 3 ]; then
+    #     db="$(db_name)"
+    # else
+    #     # Don't try to guess it on the older packages
+    #     db=LinOTP2
+    # fi
+
+    # Execute sql and return the result
+    cmd="$(db_cli_cmd)" || exit "$?"
+
+    if ! (echo "$sql" | $sudo $cmd); then
+        >&2 echo "WARNING: Failed to execute SQL:"
+        >&2 echo "  echo \"sql\" | $sudo $cmd"
+        exit 1
+    fi
+
+}
+# ---------------------
+
 
 # Purge existing linotp package
 # WARNING: This will remove any existing
@@ -298,12 +370,12 @@ check_2() {
 
 check_3() {
     echo "Testing to see if all is okay and there are no known configuration problems"
-    if $sudo grep -q "unconfigured" /etc/linotp/linotp.cfg; then
-        cfgfail "SQLalchemy is not configured"
-    fi
+
+    uri="$(db_uri)" || exit 1
+
     # Mysql - check encoding
-    if $sudo debconf-get-selections|grep -q "linotp\slinotp/database-type\sselect\smysql"; then
-        if ! $sudo grep -q "charset=utf8" /etc/linotp/linotp.cfg; then
+    if [ $(db_type) = mysql ]; then
+        if ! [[ "$uri" =~ \?charset=utf8$ ]]; then
             cfgfail "Missing charset in linotp.cfg for mysql database"
         fi
     fi
@@ -329,24 +401,23 @@ check_data_model_version() {
     # Verify that data model version has been set properly. This gives us a quick check
     # to see whether database migrations have been applied
     expected_version=${1-2.10.1.0}
-    if [ "$(installed_linotp_ver)" = 3 ]; then
-        db="$(linotp3_db_name)"
-    else
-        # Don't try to guess it on the older packages
-        db=LinOTP2
-    fi
-    sql="select Value from Config where Config.Key='linotp.sql_data_model_version'"
-    cmd="mysql --defaults-file=/etc/mysql/debian.cnf -NB $db"
+
     echo "Checking model version"
 
-    if ! model_version=$(echo "$sql" | $sudo $cmd); then
-        echo "echo \"$sql\" |" "$sudo" "$cmd"
-        fatal "Missing model version entry in database $db"
+    # The SQL we need depends on the database in use
+    if [ "$(db_type)" = mysql ]; then
+        sql="select Value from Config where Config.Key='linotp.sql_data_model_version'"
+    else
+        sql="SELECT \"Value\" FROM \"Config\" WHERE \"Key\"='linotp.sql_data_model_version';"
+    fi
+
+    if ! model_version="$(exec_sql "$sql")"; then
+        fatal "Could not get model version entry from database"
     fi
 
     if [ "$model_version" != "$expected_version" ]; then
-        echo "echo \"$sql\" |" "$sudo" "$cmd"
-        echo "Database $db error - found:$model_version expected:$expected_version"
+        echo "Database problem - found:$model_version expected:$expected_version"
+        echo "sql: $sql"
         fatal "Model version incorrect"
     fi
 }
@@ -511,7 +582,7 @@ if [ "$#" = 0 ]; then
     show_help
 elif [ "$1" == "--help" ]; then
     show_help
-elif [[ "$1" =~ ^(upgrade2to3|install3|upgrade3|mysql_password|install3psql|selenium_check|htpasswd|noapache|3reinstall)$ ]]
+elif [[ "$1" =~ ^(upgrade2to3|install3|upgrade3|mysql_password|install3psql|selenium_check|htpasswd|noapache|3reinstall|check_data_model_version|check_3)$ ]]
   then
     # Run the function with the same name as the command line argument
     $1
