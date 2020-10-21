@@ -79,6 +79,46 @@ class TestUserserviceLogin(TestUserserviceController):
         TestUserserviceController.tearDown(self)
 
 
+    def test_pre_context(self):
+        """verify that the pre_context provides imprint, privacy and footer."""
+
+        self.delete_all_policies()
+
+        # ----------------------------------------------------------------- --
+
+        # setup the imprint, privacy and footer
+
+        imprint_url = "https://www.linotp.org/imprint"
+        footer_text = "This is a long ('long=32 chars),'text"
+        privacy_notice_url = "https://www.linotp.org/privacy"
+
+        policy = {
+            'name': 'no_mfa',
+            'action': 'history, '
+                       + 'imprint_url="%s", ' % imprint_url
+                       + 'footer_text="%s", ' %footer_text
+                       + 'privacy_notice_url=%s, ' % privacy_notice_url
+                       ,
+            'user': ' passthru.*.myDefRes:',
+            'realm': '*',
+            'scope': 'selfservice'}
+
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response
+
+        # ----------------------------------------------------------------- --
+
+        # fetch the pre_context with imprint, privacy and footer
+
+        response = self.client.post('userservice/pre_context')
+        settings = response.json['detail']['settings']
+
+        assert settings['imprint_url'] == imprint_url
+        assert settings['privacy_notice_url'] == privacy_notice_url
+        assert settings['footer_text'] == footer_text
+
+        return
+
     def test_no_mfa_login(self):
         """test with no mfa authentication.
         """
