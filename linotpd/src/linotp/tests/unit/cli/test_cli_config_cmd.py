@@ -273,10 +273,11 @@ def test_config_explain_invalid_argument(app, runner):
     result = runner.invoke(cli_main, ['config', 'explain', '--foobar'])
     assert result.exit_code == 2
     assert result.output == ""
-    assert result.stderr[result.stderr.find("Usage: "):] == (
+    usage = result.stderr[result.stderr.find("Usage: "):]
+    assert usage.replace('"', "'") == (
         # The real error message has `linotp config explain` rather than just
         # `explain`, but the test runner can't know this.
         "Usage: linotp config explain [OPTIONS] [ITEMS]...\n"
-        'Try "linotp config explain --help" for help.\n'
+        "Try 'linotp config explain --help' for help.\n"
         "\n"
         "Error: no such option: --foobar\n")
