@@ -146,9 +146,9 @@ class TestUserserviceLogin(TestUserserviceController):
 
         # ------------------------------------------------------------------ --
 
-        # setup: 
+        # setup:
         # delete all policies, enroll token and define mfa policy
-        
+
         self.delete_all_policies()
 
         otps = ['870581', '793334', '088491', '013126', '818771',
@@ -212,9 +212,9 @@ class TestUserserviceLogin(TestUserserviceController):
 
         # ------------------------------------------------------------------ --
 
-        # setup: 
+        # setup:
         # delete all policies, enroll token and define mfa policy
-        
+
         self.delete_all_policies()
 
         otps = ['870581', '793334', '088491', '013126', '818771',
@@ -248,7 +248,7 @@ class TestUserserviceLogin(TestUserserviceController):
 
         # run the authentication
         # 1. step - get informed, that we require an additional factor
-        #           and *new* provide the token list 
+        #           and *new* provide the token list
 
         auth_data = {
             'username': 'passthru_user1',
