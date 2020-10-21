@@ -65,9 +65,9 @@ def pytest_addoption(parser):
         dest="database_uri",
         action="store",
         default=os.environ.get(
-            'LINOTP_DATABASE_URI', "sqlite:///{}"),
+            'LINOTP_PYTEST_DATABASE_URI', "sqlite:///{}"),
         help=("sqlalchemy database URI to allow tests to run "
-              "against a particular database")
+              "against a particular database (envvar: LINOTP_PYTEST_DATABASE_URI)")
         )
 
 @pytest.fixture(scope="session")
@@ -85,6 +85,12 @@ def key_directory(tmp_path_factory):
 def sqlalchemy_uri(request):
     """The SQL alchemy URI to use to configure the database used for tests"""
     uri = request.config.getoption("database_uri")
+
+    # Prevent override through the environment
+    try:
+        del os.environ['LINOTP_DATABASE_URI']
+    except KeyError:
+        pass
     return uri
 
 
