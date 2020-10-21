@@ -2647,7 +2647,7 @@ msgid ""
 "policies scope=enrollment, action=maxtoken"
 msgstr ""
 "Die maximale Anzahl an Token pro Benutzer wurde erreicht. Bitte überprüfen "
-"Sie die Richtlinie scope=enrollment, action=tokencount"
+"Sie die Richtlinie scope=enrollment, action=maxtoken"
 
 msgid "The name of the policy"
 msgstr "Der Name der Richtlinie"
