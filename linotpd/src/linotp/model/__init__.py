@@ -85,7 +85,7 @@ COL_PREFIX = ""
 #     COL_PREFIX = config.get("oracle.sql.column_prefix", "lino")
 
 
-def setup_db(app):
+def setup_db(app) -> None:
     """Set up the database for LinOTP.
 
     This method is used to set up a SQLAlchemy database engine for the
@@ -115,37 +115,38 @@ def setup_db(app):
 
     """
 
+    # Don't bother with all this database business when doing
+    # `linotp init …`, because otherwise there will be chicken/egg
+    # issues galore.
+    if not app.database_needed():
+        return
+
+    # Initialise the SQLAlchemy engine
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = app.config["DATABASE_URI"]
+    db.init_app(app)
+
+    table_names = db.engine.table_names()
     cli_cmd = getattr(app, 'cli_cmd', '')
-    if cli_cmd not in ('init', 'config'):
-        # Don't bother with all this database business when doing
-        # `linotp init …`, because otherwise there will be chicken/egg
-        # issues galore.
-
-        # Initialise the SQLAlchemy engine
-
-        app.config["SQLALCHEMY_DATABASE_URI"] = app.config["DATABASE_URI"]
-        db.init_app(app)
-
-        table_names = db.engine.table_names()
-        if 'Config' not in table_names and cli_cmd != 'init-database':
-            # Stop the program with a critical error if the database schema
-            # isn't initialised, unless you're about to initialise the
-            # database schema, in which case it is OK if the database schema
-            # isn't yet initialised.
-
-            log.critical("Database schema must be initialised, "
-                         "run `linotp init database`.")
-            sys.exit(11)
-
-        # ----------------------------------------------------------------- --
-
+    if 'Config' not in table_names and cli_cmd != 'init-database':
         # Stop the program with a critical error if the database schema
-        # is not current and we try to run the linotp server
+        # isn't initialised, unless you're about to initialise the
+        # database schema, in which case it is OK if the database schema
+        # isn't yet initialised.
 
-        if cli_cmd == 'run' and not Migration.is_db_model_current():
-            log.critical("Database schema is not current, "
-                         "run `linotp init database`.")
-            sys.exit(11)
+        log.critical("Database schema must be initialised, "
+                        "run `linotp init database`.")
+        sys.exit(11)
+
+    # ----------------------------------------------------------------- --
+
+    # Stop the program with a critical error if the database schema
+    # is not current and we try to run the linotp server
+
+    if cli_cmd == 'run' and not Migration.is_db_model_current():
+        log.critical("Database schema is not current, "
+                        "run `linotp init database`.")
+        sys.exit(11)
 
 
 def init_db_tables(app, drop_data=False, add_defaults=True):
