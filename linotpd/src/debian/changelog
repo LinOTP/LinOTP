@@ -1,4 +1,4 @@
-linotp (3.0~b2-0dev) UNRELEASED; urgency=medium
+linotp (3.0~rc0-1) buster; urgency=low
 
   Features:
   * Selfservice: the selfservice enrollment of hmac and hotp tokens now honors
@@ -25,7 +25,7 @@ linotp (3.0~b2-0dev) UNRELEASED; urgency=medium
   * Translate maxtoken errors correctly
   * Fix "make extract" command for i18n translations
 
- -- KeyIdentity GmbH <linotp@keyidentity.com>  Thu, 22 Oct 2020 10:50:40 +0200
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 22 Oct 2020 15:29:38 +0200
 
 linotp (3.0~b1-1) buster-dev; urgency=medium
 
