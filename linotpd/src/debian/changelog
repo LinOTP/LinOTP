@@ -6,12 +6,21 @@ linotp (3.0~b2-0dev) UNRELEASED; urgency=medium
   * Server: Unify database configuration settings so that the
     setting is called DATABASE_URI and the corresponding environment
     variable is LINOTP_DATABASE_URI
+  * Policies: three new selfservice policies to customize userservice information fields:
+    * footer_text: Can be used to display e.g. copyright notices
+    * imprint_url: URL to an imprint/ legal notice page
+    * privacy_notice: URL to a privacy notice page
 
   Fixes:
+  * Server: Prevent LinOTP from starting if database schema is not up-to-date and requires notification
+  * Server: Remove startup notification about wrong database schema when db model migration is up-to-date
+  * Server: Translate maxtoken errors correctly
   * Package: The linotp command now finds the system configuration under
     /etc/linotp without having to set LINOTP_CFG explicitly
+  * Tooling: Fix "make extract" command for i18n translations
+  * Test: fix error handling masking the real error when openssl binary is not available in audit key test setup
 
- -- KeyIdentity GmbH <linotp@keyidentity.com>  Thu, 15 Oct 2020 14:14:17 +0200
+ -- KeyIdentity GmbH <linotp@keyidentity.com>  Thu, 22 Oct 2020 10:50:40 +0200
 
 linotp (3.0~b1-1) buster-dev; urgency=medium
 

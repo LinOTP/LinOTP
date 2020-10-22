@@ -140,6 +140,16 @@ POLICY_DEFINTIONS = {
             'show_landing_page': {
                 'type': 'bool',
                 'desc': 'show selfservice landing page as first tab'},
+            "footer_text": {
+                "type": "str",
+                "desc": "Text to show on the selfservice page in the footer"
+                        "section. Replaces the LinOTP copyright notice"},
+            "imprint_url": {
+                "type": "str",
+                "desc": "URL to link to an imprint page"},
+            "privacy_notice_url": {
+                "type": "str",
+                "desc": "URL to link to a privacy notice page"},
             },
         'system': {
             'read': {'type': 'bool'},
