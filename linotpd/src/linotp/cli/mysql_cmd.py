@@ -97,7 +97,7 @@ def backup_mysql_database():
 
     # setup db engine, session and meta from sql uri
 
-    sql_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
+    sql_uri = app.config.get("DATABASE_URI")
 
     engine = create_engine(sql_uri)
 
@@ -160,7 +160,7 @@ def restore_mysql_database(filename:str):
 
     # setup db engine, session and meta from sql uri
 
-    sql_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
+    sql_uri = app.config.get("DATABASE_URI")
 
     engine = create_engine(sql_uri)
 

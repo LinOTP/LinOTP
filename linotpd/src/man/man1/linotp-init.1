@@ -64,7 +64,7 @@ database [\-\-erase\-all\-data] [\-\-yes]
 The \fIlinotp init database\fR command installs the (SQL DDL) schema
 for the main LinOTP database on a given supported database server. The
 connection to the database server is given by the
-\fISQLALCHEMY_DATABASE_URI\fR configuration setting. It is not a
+\fIDATABASE_URI\fR configuration setting. It is not a
 problem to run this command on an existing database; any data in the
 database is preserved unless the \fB\-\-erase\-all\-data\fR option is
 given (which will completely empty the database). Erasing all data

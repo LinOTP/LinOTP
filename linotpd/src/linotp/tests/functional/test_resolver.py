@@ -98,7 +98,7 @@ class TestResolver(TestController):
         create sql useridresolver
         """
 
-        engine = create_engine(config.get('SQLALCHEMY_DATABASE_URI'))
+        engine = create_engine(config.get('DATABASE_URI'))
         db_url = engine.url
 
         server = db_url.host
@@ -290,7 +290,7 @@ class TestResolver(TestController):
 
         #
         # define resolver SqlX w. the required Password
-        if config.get('SQLALCHEMY_DATABASE_URI').startswith('sqlite://'):
+        if config.get('DATABASE_URI').startswith('sqlite://'):
             # We cannot define a sqlite databse with a password, so skip
             # this test
             pytest.skip("not possible with sqlite")

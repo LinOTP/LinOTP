@@ -35,7 +35,6 @@
 */}}
 
 # Local LinOTP settings
-SQLALCHEMY_DATABASE_URI="{{.Env.LINOTP_DATABASE_URI}}"
 ROOT_DIR="/etc/linotp"
 {{with .Env.SECRET_FILE_LOCATION }}
 SECRET_FILE="{{ . }}"

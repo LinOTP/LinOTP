@@ -90,7 +90,7 @@ configure_sql() {
 # To change this setting, reconfigure the package using debconf:
 #
 #   dpkg-reconfigure linotp
-SQLALCHEMY_DATABASE_URI="${escaped_uri}"
+DATABASE_URI="${escaped_uri}"
 EOF
   # The database password is in this file, so protect accordingly
   chmod 600 $LINOTP_CONFIG_FILE

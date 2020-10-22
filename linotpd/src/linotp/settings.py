@@ -301,7 +301,7 @@ _config_schema = ConfigSchema([
                      "want to mess with it.")),
     ConfigItem("SECRET_FILE", str, default="encKey",
                help=("Contains a server-specific encryption key.")),
-    ConfigItem("SQLALCHEMY_DATABASE_URI", str, default="sqlite:///{}",
+    ConfigItem("DATABASE_URI", str, default="sqlite:///{}",
                help=("Contains uri to your database.")),
     ConfigItem("SQLALCHEMY_TRACK_MODIFICATIONS", bool, convert=to_boolean,
                default=False,
@@ -313,7 +313,7 @@ _config_schema = ConfigSchema([
                      "values are: `OFF` (no audit logs are generated, not "
                      "recommended for production use), `SHARED` (audit logs "
                      "are written to a table in the main LinOTP database as "
-                     "specified by `SQLALCHEMY_DATABASE_URI`, simple but not "
+                     "specified by `DATABASE_URI`, simple but not "
                      "recommended for production use), or an SQLAlchemy "
                      "database URI which specifies the database to be used. "
                      "You need to ensure that the database exists and is "
@@ -521,7 +521,7 @@ class DevelopmentConfig(Config):
     SESSION_COOKIE_SECURE = False
     LOGGING_LEVEL = "DEBUG"
     LOGGING_FILE_LEVEL = LOGGING_LEVEL
-    SQLALCHEMY_DATABASE_URI = os.getenv("LINOTP_DATABASE_URL") or \
+    DATABASE_URI = os.getenv("LINOTP_DATABASE_URI") or \
         "sqlite:///" + os.path.join(basedir, "linotp-dev.sqlite")
 
 
@@ -530,13 +530,13 @@ class TestingConfig(Config):
     SESSION_COOKIE_SECURE = False
     GETOTP_ENABLED = True
     LOGGING_LEVEL = "DEBUG"
-    SQLALCHEMY_DATABASE_URI = os.getenv("LINOTP_DATABASE_URL") or \
+    DATABASE_URI = os.getenv("LINOTP_DATABASE_URI") or \
         "sqlite:///" + os.path.join(basedir, "linotp-test.sqlite")
 
 
 class ProductionConfig(Config):
     SESSION_COOKIE_SECURE = True
-    SQLALCHEMY_DATABASE_URI = os.getenv("LINOTP_DATABASE_URL") or \
+    DATABASE_URI = os.getenv("LINOTP_DATABASE_URI") or \
         "sqlite:///" + os.path.join(basedir, "linotp.sqlite")
 
 

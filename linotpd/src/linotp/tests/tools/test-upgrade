@@ -106,7 +106,7 @@ from urllib.parse import urlsplit
 from flask import Config
 c=Config('/etc/linotp')
 c.from_pyfile('linotp.cfg')
-print(urlsplit(c['SQLALCHEMY_DATABASE_URI']).path.strip('/'))
+print(urlsplit(c['DATABASE_URI']).path.strip('/'))
 "
 }
 

@@ -140,7 +140,7 @@ class ConfigWrapper:
     the porting cycle
     """
     mappings = {
-        'sqlalchemy.url': 'SQLALCHEMY_DATABASE_URI',
+        'sqlalchemy.url': 'DATABASE_URI',
     }
     def __init__(self, config):
         self.config = config
