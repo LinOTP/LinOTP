@@ -593,6 +593,19 @@ class LinOTPApp(Flask):
 
         self.enabled_controllers.append(ctrl_name)
 
+    def database_needed(self) -> bool:
+        """Does the app require a database?
+
+        Whether the app needs a database depends on the command that
+        was executed. Some commands such as init and config
+        need to be able to run without trying to connect to databases.
+        """
+        cli_cmd = getattr(self, 'cli_cmd', '')
+        return cli_cmd not in ('init', 'config')
+
+    def setup_audit(self):
+        if self.database_needed():
+            self.audit_obj = getAudit(self.config)
 
 def init_logging(app):
     """Sets up logging for LinOTP."""
@@ -720,22 +733,6 @@ def drop_security_module():
         log.exception('Failed to push hsm connection back to pool! %r', c.hsm)
         raise exx
 
-def setup_audit(app):
-    """
-    Set up audit logging for a request. This is, again, straight from
-    `load_environment()` and as such should be looked at with a microscope,
-    probably when we're fixing auditing.
-    """
-
-    # Don't attempt to set up auditing when executing a `linotp init`
-    # command (in particular, `linotp init audit-keys`). This is because
-    # `getAudit()` will complain about missing audit keys, which is moot
-    # if we're currently executing the command that will create them.
-
-    if app.cli_cmd != 'init':
-        app.audit_obj = getAudit(app.config)
-
-
 def _configure_app(app, config_name='default', config_extra=None):
     """
     Testing the configuration mechanism is a lot easier if it can be
@@ -838,7 +835,7 @@ def create_app(config_name='default', config_extra=None):
 
         init_security_provider()
 
-        setup_audit(app)
+        app.setup_audit()
 
         reload_token_classes()
         app.check_license()
