@@ -6,6 +6,11 @@ linotp (3.0~b2-0dev) UNRELEASED; urgency=medium
   * Server: Unify database configuration settings so that the
     setting is called DATABASE_URI and the corresponding environment
     variable is LINOTP_DATABASE_URI
+  * Selfservice: the selfservice enrollment of hmac and hotp tokens now honors
+    the default values defined by the selfservice enrollment policies:
+    * hmac_otplen, totp_otplen: for the number of digits of an otp
+    * hmac_hashlib, totp_hashlib: the hmac hashing algorithm
+    * totp_timestep: the time stepping for totp tokens
   * Policies: three new selfservice policies to customize userservice information fields:
     * footer_text: Can be used to display e.g. copyright notices
     * imprint_url: URL to an imprint/ legal notice page
