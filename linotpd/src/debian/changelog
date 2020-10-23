@@ -1,4 +1,4 @@
-linotp (2.12.1~rc1-1) buster; urgency=low
+linotp (2.12.1-1) buster; urgency=low
 
   Fix:
   * Policies: Consistent evaluation of policies is ensured in the "enrollment"
@@ -11,7 +11,7 @@ linotp (2.12.1~rc1-1) buster; urgency=low
   Doc:
   * Update Readme.rst with latest installation instructions
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 05 Oct 2020 14:54:46 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 23 Oct 2020 12:04:46 +0200
 
 linotp (2.12-1) buster; urgency=low
 

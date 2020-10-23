@@ -1,8 +1,8 @@
-linotp-adminclient-cli (2.12.1~rc1-1) buster; urgency=low
+linotp-adminclient-cli (2.12.1-1) buster; urgency=low
 
-  * Set new version 2.12.1~rc0-1
+  * Set new version 2.12.1-1
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 05 Oct 2020 14:54:46 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 23 Oct 2020 12:04:46 +0200
 
 linotp-adminclient-cli (2.12-1) buster; urgency=low
 
