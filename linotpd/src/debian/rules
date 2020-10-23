@@ -21,10 +21,10 @@ override_dh_install:
 	for DB in mysql pgsql; do \
 		# first time installation uses dbconfig-common/scripts/linotp/DB \
 		install -m755 debian/dbconfig-common/db-install ${DBSCRIPTS_DEST}/install/$${DB} ;\
-		# Upgrades from 2 -> 2.80 require the new configuration settings \
+		# Upgrades from 2 -> 3 require the new configuration settings \
 		upgradedir=${DBSCRIPTS_DEST}/upgrade/$${DB} ;\
 		mkdir -p -m755 $$upgradedir ;\
-		for VERSION in 2.80; do \
+		for VERSION in 3.0rc0; do \
 			install -m755 debian/dbconfig-common/db-install $$upgradedir/$${VERSION} ;\
 		done ;\
 	done
