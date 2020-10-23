@@ -17,6 +17,7 @@ linotp (3.0~rc1-0dev) buster-dev; urgency=low
   * Removed predefined yubico apiKey and apiId
   * The database configuration was not always imported on upgrade due
     to differences in the apt environment
+  * The old Apache site file is removed on upgrade if unchanged
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Fri, 23 Oct 2020 15:32:17 +0200
 

@@ -29,6 +29,21 @@ if [ "$1" = "upgrade" ]; then
 	fi
 
 	if dpkg --compare-versions "$2" lt "3.0~"; then
+		available=/etc/apache2/sites-available
+		enabled=/etc/apache2/sites-enabled
+		if [ -f $available/linotp2.conf ]
+		  then
+			if cmp $available/linotp2.conf /etc/linotp2/apache2.4-example/linotp2.conf; then
+				echo "Removing old Apache configuration"
+				rm -f $available/linotp2.conf
+			else
+				echo "WARNING: Modified Apache site configuration found in $available/linotp2.conf"
+				echo "This will no longer be used."
+			fi
+			rm -f $enabled/linotp2.conf
+
+		fi # -f $available/linotp2.conf
+
 		# If there is an /etc/linotp2 directory and no /etc/linotp directory,
 		# then move /etc/linotp2 to /etc/linotp.
 		if [ -d /etc/linotp2 ] && [ ! -d /etc/linotp ]; then
@@ -55,18 +70,6 @@ if [ "$1" = "upgrade" ]; then
 			openssl rsa -in "$PRIVKEY" -pubout -out "$PUBKEY"
 		fi
 
-		available=/etc/apache2/sites-available
-		enabled=/etc/apache2/sites-enabled
-		if [ -f $available/linotp2 ] \
-			&& [ ! -f $available/linotp ]
-		  then
-			echo "Moving apache site linotp2->linotp"
-			mv $available/linotp2 $available/linotp
-			if [ -l $enabled/linotp2 ]; then
-				rm -f $enabled/linotp2
-				ln -s ../sites-available/linotp $enabled/linotp
-			fi
-		fi # -f $available/linotp2
 	fi # dpkg --compare-versions "$2" lt "3.0~"
 fi # "$1" = "upgrade"
 
