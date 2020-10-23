@@ -1,4 +1,4 @@
-linotp (3.0~rc0-1) buster; urgency=low
+linotp (3.0~rc0-1) buster-dev; urgency=low
 
   Features:
   * Selfservice: the selfservice enrollment of hmac and hotp tokens now honors
