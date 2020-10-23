@@ -118,6 +118,89 @@ class TestUserserviceTokenTest(TestUserserviceController):
     def tearDown(self):
         TestUserserviceController.tearDown(self)
 
+    def test_totp_token_defaults(self):
+
+        policy = {
+            'name': 'E1_totp',
+            'action': 'enrollTOTP, totp_otplen=8, totp_hashlib=3',
+            'user': ' passthru.*.myDefRes:',
+            'realm': '*',
+            'scope': 'selfservice'
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response, response
+
+        # ---------------------------------------------------------------- --
+
+        # enroll totp token which now does not require a genkey param anymore
+
+        auth_user = {
+            'login': 'passthru_user1@myDefRealm',
+            'password': 'geheim1'
+        }
+
+        serial = 'totp123'
+
+        params = {'type': 'totp', 'serial': serial}
+        response = self.make_userselfservice_request(
+            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+
+        assert '"img": "<img ' in response, response
+
+        # ---------------------------------------------------------------- --
+
+        # loookup if token hash is now sha512
+
+        params = {'serial': serial}
+        response = self.make_admin_request('show', params)
+        token_detail = response.json['result']['value']['data'][0]
+
+        assert token_detail['LinOtp.OtpLen'] == 8
+
+        token_info = json.loads(token_detail['LinOtp.TokenInfo'])
+        assert token_info['hashlib'] == 'sha512'
+
+    def test_hotp_token_defaults(self):
+
+        policy = {
+            'name': 'E1_hotp',
+            'action': 'enrollHMAC, hmac_otplen=8, hmac_hashlib=3',
+            'user': ' passthru.*.myDefRes:',
+            'realm': '*',
+            'scope': 'selfservice'
+        }
+        response = self.make_system_request('setPolicy', params=policy)
+        assert 'false' not in response, response
+
+        # ---------------------------------------------------------------- --
+
+        # enroll totp token which now does not require a genkey param anymore
+
+        auth_user = {
+            'login': 'passthru_user1@myDefRealm',
+            'password': 'geheim1'
+        }
+
+        serial = 'hotp123'
+
+        params = {'type': 'hmac', 'serial': serial}
+        response = self.make_userselfservice_request(
+            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+
+        assert '"img": "<img ' in response, response
+
+        # ---------------------------------------------------------------- --
+
+        # loookup if token hash is now sha512
+
+        params = {'serial': serial}
+        response = self.make_admin_request('show', params)
+        token_detail = response.json['result']['value']['data'][0]
+
+        assert token_detail['LinOtp.OtpLen'] == 8
+
+        token_info = json.loads(token_detail['LinOtp.TokenInfo'])
+        assert token_info['hashlib'] == 'sha512'
 
     def test_verify_hmac_token(self):
 
@@ -792,6 +875,5 @@ class TestUserserviceTokenTest(TestUserserviceController):
         response = self.make_validate_request('check', params=params)
 
         assert 'false' in response
-
 
 # eof

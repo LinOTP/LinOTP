@@ -224,11 +224,19 @@ class TimeHmacTokenClass(HmacTokenClass):
                         'totp_timestep': {
                             'type':'int',
                             'value' : [30, 60],
-                            'desc' : 'Specify the time step of the timebased OTP token.'
+                            'desc' : ('Specify the time step of the '
+                                      'timebased OTP token.')
                                   },
-                       'totp_hashlib' : {'type':'int',
-                          'value' : [1, 2],
-                          'desc' : 'Specify the hashlib to be used. Can be sha1 (1) or sha2-256 (2).'
+                       'totp_hashlib' : {
+                           'type':'int',
+                           'value' : [1, 2, 3],
+                           'desc' : ('Specify the hashlib to be used. Can be '
+                                     'sha1 (1), sha256 (2) or sha512 (3)')
+                            },
+                       'totp_otplen' : {'type':'int',
+                            'value' : [6, 8],
+                            'desc' : ('Specify the otplen to be used. '
+                                      'Can be 6 or 8 digits.')
                             },
 
 
