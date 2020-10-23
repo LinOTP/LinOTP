@@ -1,31 +1,31 @@
-linotp (3.0~b2-0dev) UNRELEASED; urgency=medium
+linotp (3.0~rc0-1) buster; urgency=low
 
-  Feature:
-  * Loading configuration from individual files under /etc/linotp/conf.d.
-    The generated database configuration is now placed in this file
-  * Server: Unify database configuration settings so that the
-    setting is called DATABASE_URI and the corresponding environment
-    variable is LINOTP_DATABASE_URI
+  Features:
   * Selfservice: the selfservice enrollment of hmac and hotp tokens now honors
     the default values defined by the selfservice enrollment policies:
     * hmac_otplen, totp_otplen: for the number of digits of an otp
     * hmac_hashlib, totp_hashlib: the hmac hashing algorithm
     * totp_timestep: the time stepping for totp tokens
-  * Policies: three new selfservice policies to customize userservice information fields:
+  * Policies: three new selfservice policies to customize userservice
+    information fields:
     * footer_text: Can be used to display e.g. copyright notices
     * imprint_url: URL to an imprint/ legal notice page
     * privacy_notice: URL to a privacy notice page
+  * Configuration:
+    * Unify database configuration settings so that the
+      setting is called DATABASE_URI and the corresponding environment
+      variable is LINOTP_DATABASE_URI
+    * Load configuration from individual files under /etc/linotp/conf.d
+      The generated database configuration is now placed in this file
+    * The linotp command now finds the system configuration under
+      /etc/linotp without having to set LINOTP_CFG explicitly
 
   Fixes:
-  * Server: Prevent LinOTP from starting if database schema is not up-to-date and requires notification
-  * Server: Remove startup notification about wrong database schema when db model migration is up-to-date
-  * Server: Translate maxtoken errors correctly
-  * Package: The linotp command now finds the system configuration under
-    /etc/linotp without having to set LINOTP_CFG explicitly
-  * Tooling: Fix "make extract" command for i18n translations
-  * Test: fix error handling masking the real error when openssl binary is not available in audit key test setup
+  * Prevent LinOTP from starting if database schema is not up-to-date
+  * Translate maxtoken errors correctly
+  * Fix "make extract" command for i18n translations
 
- -- KeyIdentity GmbH <linotp@keyidentity.com>  Thu, 22 Oct 2020 10:50:40 +0200
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 22 Oct 2020 15:29:38 +0200
 
 linotp (3.0~b1-1) buster-dev; urgency=medium
 
