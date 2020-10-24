@@ -115,14 +115,14 @@ def check_maxtoken_for_user(user):
     # ----------------------------------------------------------------------- --
 
     # check the maxtoken policy
-
+    action = "maxtoken"
     tokens = linotp.lib.token.getTokens4UserOrSerial(user, "")
 
     for user_realm in user_realms:
 
         policies = get_client_policy(client,
-                                     action="maxtoken",
                                      scope='enrollment',
+                                     action=action,
                                      realm=user_realm,
                                      user=user.login,
                                      userObj=user)
@@ -176,11 +176,12 @@ def check_maxtoken_for_user_by_type(user, type_of_token):
     typed_tokens = linotp.lib.token.getTokens4UserOrSerial(
                         user, token_type=type_of_token)
 
+    action = "maxtoken%s" % type_of_token.upper()
     for user_realm in user_realms:
 
         policies = get_client_policy(client,
-                                     action="maxtoken%s" % type_of_token.upper(),
                                      scope='enrollment',
+                                     action=action,
                                      realm=user_realm,
                                      user=user.login,
                                      userObj=user)
