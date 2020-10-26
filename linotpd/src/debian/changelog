@@ -188,6 +188,21 @@ linotp (2.90rc0-1) buster-dev; urgency=low
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 23 Jan 2020 11:42:00 +0200
 
+linotp (2.12.1-1) buster; urgency=low
+
+  Fix:
+  * Policies: Consistent evaluation of policies is ensured in the "enrollment"
+    scope. Evaluation is adjusted to match all actions for a given user if some
+    of the actions are less explicitly defined regarding user and realm fields
+  * Selfservice: MFA login with Push Token and QR Token is correctly processed
+  * Incorrect max token count evaluation is fixed if a different, more specific
+    (not user:*) policy with other actions is defined.
+
+  Doc:
+  * Update Readme.rst with latest installation instructions
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 23 Oct 2020 12:04:46 +0200
+
 linotp (2.12-1) buster; urgency=low
 
   Feature:
