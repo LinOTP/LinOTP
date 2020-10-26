@@ -1677,15 +1677,14 @@ def get_tokenissuer(user="", realm="", serial=""):
     pol = has_client_policy(
         client, scope="enrollment", action=action, realm=realm, user=user)
 
-    if len(pol) != 0:
-        string_issuer = get_action_value(
-            pol, scope="enrollment", action=action, default='')
+    string_issuer = get_action_value(
+        pol, scope="enrollment", action=action, default='')
 
-        if string_issuer:
-            string_issuer = re.sub('<u>', user, string_issuer)
-            string_issuer = re.sub('<r>', realm, string_issuer)
-            string_issuer = re.sub('<s>', serial, string_issuer)
-            tokenissuer = string_issuer
+    if string_issuer:
+        string_issuer = re.sub('<u>', user, string_issuer)
+        string_issuer = re.sub('<r>', realm, string_issuer)
+        string_issuer = re.sub('<s>', serial, string_issuer)
+        tokenissuer = string_issuer
 
     log.debug("[get_tokenissuer] providing tokenissuer = %r", tokenissuer)
     return tokenissuer
@@ -1704,7 +1703,7 @@ def get_tokenlabel(user="", realm="", serial=""):
 
     This function is used by the creation of googleauthenticator url
     """
-    tokenlabel = ""
+
     action = "tokenlabel"
     client = _get_client()
 
@@ -1762,9 +1761,6 @@ def get_autoassignment_without_pass(user):
     pol = get_client_policy(
         client=client, scope='enrollment', action=action_name,
         realm=user.realm, user=user.login, userObj=user)
-
-    if not pol:
-        return False
 
     return get_action_value(
          pol, scope='enrollment', action=action_name, default=False)

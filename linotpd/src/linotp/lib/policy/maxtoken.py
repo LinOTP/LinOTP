@@ -115,6 +115,7 @@ def check_maxtoken_for_user(user):
     # ----------------------------------------------------------------------- --
 
     # check the maxtoken policy
+
     action = "maxtoken"
     tokens = linotp.lib.token.getTokens4UserOrSerial(user, "")
 
@@ -131,7 +132,7 @@ def check_maxtoken_for_user(user):
             continue
 
         total_maxtoken = get_action_value(
-            policies, scope='enrollment', action="maxtoken", default=-1)
+            policies, scope='enrollment', action=action, default=-1)
 
         if total_maxtoken == -1 or isinstance(total_maxtoken, bool):
             continue
@@ -169,6 +170,7 @@ def check_maxtoken_for_user_by_type(user, type_of_token):
 
     log.debug("checking the already assigned tokens for user %r, realms %s"
               % (user, user_realms))
+
     # ------------------------------------------------------------------ --
 
     # check the maxtokenTOKENTYPE policy
@@ -177,6 +179,7 @@ def check_maxtoken_for_user_by_type(user, type_of_token):
                         user, token_type=type_of_token)
 
     action = "maxtoken%s" % type_of_token.upper()
+
     for user_realm in user_realms:
 
         policies = get_client_policy(client,
@@ -192,8 +195,7 @@ def check_maxtoken_for_user_by_type(user, type_of_token):
         # compare the tokens of the user with the max numbers of the policy
 
         total_maxtoken = get_action_value(
-            policies, scope='enrollment',
-            action="maxtoken%s" % type_of_token.upper(), default=-1)
+            policies, scope='enrollment', action=action, default=-1)
 
         if total_maxtoken == -1 or isinstance(total_maxtoken, bool):
             continue
