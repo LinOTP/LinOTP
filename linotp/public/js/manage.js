@@ -891,7 +891,7 @@ function reset_buttons() {
     disable_all_buttons();
 }
 
-function assign_callback(xhdr, textStatus, serial) {
+function assign_callback(xhdr, textStatus, serials) {
     resp = xhdr.responseText;
     obj = jQuery.parseJSON(resp);
     if (obj.result.status == false) {
@@ -899,7 +899,7 @@ function assign_callback(xhdr, textStatus, serial) {
                          'type': ERROR,
                          'is_esacped': true});
     } else
-        view_setpin_after_assigning([serial]);
+        view_setpin_after_assigning(serials);
     reset_buttons();
 }
 
@@ -1040,13 +1040,12 @@ function token_assign(){
     tokens = get_selected_tokens();
     user = get_selected_user();
     count = tokens.length;
-    for (i = 0; i < count; i++) {
-        serial = tokens[i];
-        clientUrlFetch("/admin/assign", {"serial": serial,
-                                        "user": user[0].login,
-                                        'resConf':user[0].resolver,
-                                        'realm': $('#realm').val()}, assign_callback, serial);
-    }
+    clientUrlFetch("/admin/assign", {
+            "serial": tokens,
+            "user": user[0].login,
+            'resConf':user[0].resolver,
+            'realm': $('#realm').val()},
+        assign_callback, tokens);
 }
 
 function token_resync_callback(xhdr, textStatus) {
