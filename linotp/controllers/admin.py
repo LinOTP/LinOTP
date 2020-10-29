@@ -1085,22 +1085,31 @@ class AdminController(BaseController, SessionCookieMixin):
         try:
 
             upin = param.get("pin")
-            serial = param["serial"]
+
             user = getUserFromParam(param)
 
-            # check admin authorization
-            checkPolicyPre("admin", "assign", param)
+            serials = param.get("serial", [])
+            if serials and not isinstance(serials, list):
+                serials = [serials]
 
+            log.info("[assign] assigning token(s) with serial(s) %r", serials)
+
+            call_params = {}
+            call_params.update(param)
+
+            res = True
             th = TokenHandler()
-            g.audit["source_realm"] = getTokenRealms(serial)
-            log.info(
-                "[assign] assigning token with serial %s to user %s@%s",
-                serial,
-                user.login,
-                user.realm,
-            )
+            for serial in set(serials):
 
-            res = th.assignToken(serial, user, upin, param=param)
+                # check admin authorization
+
+                call_params["serial"] = serial
+                checkPolicyPre("admin", "assign", call_params)
+
+                # do the assignment
+                res = res and th.assignToken(
+                    serial, user, upin, param=call_params
+                )
 
             checkPolicyPost("admin", "assign", param, user)
 
@@ -1111,7 +1120,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 g.audit["realm"] = getTokenRealms(serial)
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(response, res, len(serials))
 
         except PolicyException as pe:
             log.error("[assign] policy failed %r", pe)
