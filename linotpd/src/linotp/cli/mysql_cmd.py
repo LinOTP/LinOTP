@@ -24,8 +24,20 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-"""
-mysql database backup implementation
+"""MySQL-specific database backup implementation.
+
+The difference between this and the `dbsnapshot` command is that
+`dbsnapshot` uses the SQLAlchemy object-dump facility while this
+implementation uses the MySQL-specific `mysqldump` shell command.
+
+This means that `backup` can be used to make backups that can be restored
+on MySQL-based LinOTP instances of different versions, while `dbsnapshot`
+can be used to make backups that are independent of the actual database
+engine but can run into issues as the definitions of LinOTP objects evolve.
+
+In other words, `backup` is probably more useful in daily life (as long
+as MySQL is your thing) but `dbsnapshot` lets you migrate your LinOTP
+instance from MySQL to PostgreSQL (for example).
 """
 
 import os
@@ -34,15 +46,12 @@ from datetime import datetime
 import subprocess
 import click
 
-TIME_FORMAT = '%y%m%d%H%M'
-
 from flask import current_app
 from flask.cli import AppGroup
 
 from sqlalchemy import create_engine
 
-from linotp.app import LinOTPApp
-
+TIME_FORMAT = '%y%m%d%H%M'
 
 # -------------------------------------------------------------------------- --
 
@@ -50,30 +59,33 @@ from linotp.app import LinOTPApp
 
 backup_cmds = AppGroup('backup-legacy')
 
+
 @backup_cmds.command('restore',
-                      help='restore a mysql backup file')
-@click.option('--file', help='name of the mysql backup file')
+                     help='Restore a MySQL backup file.')
+@click.option('--file', help='name of the MySQL backup file')
 def restore_mysql_command(file):
-    """ restore mysql backups."""
+    """ Restore MySQL backups."""
     try:
         current_app.echo("Restoring legacy database ...", v=1)
         restore_mysql_database(filename=file)
         current_app.echo("finished", v=1)
     except Exception as exx:
-        current_app.echo('Failed to restore mysql backup: %r' % exx)
+        current_app.echo(f'Failed to restore MySQL backup: {exx!r}')
         sys.exit(1)
 
+
 @backup_cmds.command('create',
-                      help='create a backup file via mysqldump')
+                     help='Create a backup of a MySQL database.')
 def backup_mysql_command():
-    """ backup mysql database."""
+    """ Backup MySQL database."""
     try:
-        current_app.echo("Backup mysql database ...", v=1)
+        current_app.echo("Backup MySQL database ...", v=1)
         backup_mysql_database()
         current_app.echo("finished", v=1)
     except Exception as exx:
-        current_app.echo('Failed to backup mysql: %r' % exx)
+        current_app.echo(f'Failed to create MySQL backup: {exx!r}')
         sys.exit(1)
+
 
 # -------------------------------------------------------------------------- --
 
@@ -102,9 +114,9 @@ def backup_mysql_database():
     engine = create_engine(sql_uri)
 
     if 'mysql' not in engine.url.drivername:
-        app.echo("mysql backup file could only restored in a"
-                         " mysql database. current database driver is %r" %
-                          engine.url.drivername)
+        app.echo("MySQL backup file could only restored in a"
+                 " MySQL database. current database driver "
+                 f"is {engine.url.drivername!r}")
         raise click.Abort()
 
     # ---------------------------------------------------------------------- --
@@ -130,18 +142,19 @@ def backup_mysql_database():
 
     # run the backup in subprocess
 
-    app.echo("mysql backup %r" % backup_filename, v=1)
+    app.echo(f"MySQL backup {backup_filename!r}", v=1)
 
     cmd = " ".join(command)
     result = subprocess.call(cmd, shell=True)
 
     if result != 0 or not os.path.isfile(backup_filename):
-        app.echo("failed to create mysql backup file: %r" % result)
+        app.echo(f"failed to create MySQL backup file: {result!r}")
         raise click.Abort()
 
-    app.echo("mysql backup file %s created!" % backup_filename, v=1)
+    app.echo(f"MySQL backup file {backup_filename!s} created!", v=1)
 
-def restore_mysql_database(filename:str):
+
+def restore_mysql_database(filename: str):
     """
     restore the mysql dump of a former linotp tools backup
 
@@ -152,8 +165,7 @@ def restore_mysql_database(filename:str):
     backup_filename = os.path.abspath(filename.strip())
 
     if not os.path.isfile(backup_filename):
-        app.echo("mysql backup file %r can not be accessed."
-                         % filename, v=1)
+        app.echo(f"MySQL backup file {filename!r} cannot be accessed.", v=1)
         raise click.Abort()
 
     # ---------------------------------------------------------------------- --
@@ -165,9 +177,9 @@ def restore_mysql_database(filename:str):
     engine = create_engine(sql_uri)
 
     if 'mysql' not in engine.url.drivername:
-        app.echo("mysql backup file can only be restored in a "
-                 "mysql database. current database driver is %r" %
-                 engine.url.drivername)
+        app.echo("MySQL backup file can only be restored to a "
+                 "MySQL database. Current database driver "
+                 f"is {engine.url.drivername!r}")
         raise click.Abort()
 
     # ---------------------------------------------------------------------- --
@@ -195,17 +207,17 @@ def restore_mysql_database(filename:str):
 
     msg = ''
 
-    app.echo("restoring mysql backup %r" % backup_filename, v=1)
+    app.echo(f"Restoring MySQL backup {backup_filename!r}", v=1)
 
     with open(backup_filename, 'r') as backup_file:
         result = subprocess.run(
             command, stdin=backup_file, capture_output=True)
 
         if result.returncode != 0:
-            app.echo("failed to restore mysql backup file: %s"
-                            % result.stderr.decode('utf-8'))
+            app.echo("Failed to restore MySQL backup file: "
+                     f"{result.stderr.decode('utf-8')!s}")
             raise click.Abort()
 
         msg = result.stdout.decode('utf-8')
 
-    app.echo("mysql backup file restored: %s" % msg, v=1)
+    app.echo(f"MySQL backup file restored: {msg!s}", v=1)
