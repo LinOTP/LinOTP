@@ -43,6 +43,8 @@ import json
 from hashlib import sha1
 import logging
 
+from typing import Any
+
 import linotp
 
 from linotp.lib.challenges import Challenges
@@ -65,7 +67,8 @@ from linotp.lib.auth.validate import check_otp
 from linotp.lib.auth.validate import split_pin_otp
 
 from .validity_mixin import TokenValidityMixin
-from .tokeninfo_mixin import TokenInfoMixin
+from .tokenproperty_mixin import TokenPropertyMixin
+
 from linotp.tokens import tokenclass_registry
 
 from sqlalchemy import asc, desc
@@ -87,7 +90,7 @@ required = False
 log = logging.getLogger(__name__)
 
 
-class TokenClass(TokenInfoMixin, TokenValidityMixin):
+class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
     def __init__(self, token):
         self.type = ''

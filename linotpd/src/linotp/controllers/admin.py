@@ -1537,11 +1537,13 @@ class AdminController(BaseController):
             if "timeStep".lower() in param:
                 msg = "[set] setting timeStep failed"
                 timeStep = int(param["timeStep".lower()])
-                log.info(
-                    "[set] setting timeStep (%r) for token with serial %r" % (
-                        timeStep, serial))
-                ret = th.addTokenInfo("timeStep", timeStep, user, serial)
-                res["set timeStep"] = ret
+                log.info("[set] setting timeStep (%r) for token with "
+                         "serial %r" % (timeStep, serial))
+                tokens = getTokens4UserOrSerial(serial=serial)
+                for token in tokens:
+                    token.timeStep = timeStep
+
+                res["set timeStep"] = len(tokens)
                 count = count + 1
                 g.audit['action_detail'] += "timeStep=%d, " % timeStep
 
