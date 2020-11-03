@@ -27,7 +27,7 @@
 
 import logging
 import time
-from typing import Union
+from typing import Union, Any
 import datetime
 
 
@@ -122,7 +122,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         self.hKeyRequired = True
 
         # timeStep defines the granularity:
-        self.timeStep = getFromConfig("totp.timeStep", 30) or 30
+        self._timeStep = getFromConfig("totp.timeStep", 30) or 30
 
         #  window size in seconds:
         #    30 seconds with as step width of 30 seconds results
@@ -153,7 +153,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
             self.hashlibStr = info.get("hashlib", self.hashlibStr) or 'sha1'
 
-            self.timeStepping = int(info.get("timeStep", self.timeStep) or 30)
+            self.timeStepping = int(info.get("timeStep", self._timeStep) or 30)
 
             self.window = int(info.get("timeWindow", self.timeWindow) or 180)
 
@@ -298,7 +298,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         val = param.get("timeStep")
         if val is not None:
-            self.timeStep = val
+            self._timeStep = val
 
         val = param.get("timeWindow")
         if val is not None:
@@ -314,8 +314,8 @@ class TimeHmacTokenClass(HmacTokenClass):
             self.addToTokenInfo("timeWindow", self.timeWindow)
         if self.timeShift is not None and self.timeShift != '':
             self.addToTokenInfo("timeShift", self.timeShift)
-        if self.timeStep is not None and self.timeStep != '':
-            self.addToTokenInfo("timeStep", self.timeStep)
+        if self._timeStep is not None and self._timeStep != '':
+            self.addToTokenInfo("timeStep", self._timeStep)
         if self.hashlibStr:
             self.addToTokenInfo("hashlib", self.hashlibStr)
 
@@ -464,6 +464,26 @@ class TimeHmacTokenClass(HmacTokenClass):
         log.debug("otp verification result was: res %r", otp_match_counter)
         return otp_match_counter
 
+    @property
+    def timeStep(self):
+        return self.getFromTokenInfo('timeStep')
+
+    @timeStep.setter
+    def timeStep(self, value:int):
+        """Totp token property setter for timeStep.
+
+        :param value: the new timeStep value
+        """
+        if value not in [60,30]:
+            raise ValueError(
+                'timeStep for totp token must be either 30 or 60!'
+                )
+
+        new_time_count = (
+            self.getOtpCount() * self.timeStepping // value
+            )
+        self.setOtpCount(int(new_time_count))
+        self.addToTokenInfo('timeStep', value)
 
     def set_new_timeshift(self, otp_match_counter):
         """
