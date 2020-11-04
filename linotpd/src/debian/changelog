@@ -2,6 +2,12 @@ linotp (3.0~rc1-0dev) buster-dev; urgency=low
 
   * Set new version 3.0~rc1-0dev
 
+  Features:
+  * Rename the `linotp backup` command to `linotp dbsnapshot`, and the
+    `linotp backup-legacy` command to `linotp backup`, for clarity.
+  * Remove the linotp-restore(1) man page as `linotp restore` is not a
+    LinOTP command.
+
   Fixes:
   * setting of totp timeStep does now adjust the otp counter
     which is used to prevent replay attacks.
