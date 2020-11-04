@@ -57,7 +57,8 @@ TIME_FORMAT = '%y%m%d%H%M'
 
 # backup legacy commands: restore (+ backup == to be implemented and tested)
 
-backup_cmds = AppGroup('backup-legacy')
+backup_cmds = AppGroup('backup',
+                       help="Manage database-specific backups")
 
 
 @backup_cmds.command('restore',
