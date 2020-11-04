@@ -328,7 +328,7 @@ docker-build-linotp: DOCKER_IMAGE=linotp
 docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	cp linotpd/src/Dockerfile \
 		linotpd/src/config/*.tmpl \
-		linotpd/src/tools/* \
+		linotpd/src/tools/linotp* \
 		linotpd/src/linotp/tests/integration/testdata/se_mypasswd \
 		$(BUILDDIR)
 	cp -r linotpd/src/config/docker-initscripts.d $(BUILDDIR)
