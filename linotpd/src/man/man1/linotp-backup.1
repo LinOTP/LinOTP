@@ -1,29 +1,59 @@
 .\" Manpage for linotp.
 .\" Copyright (c) 2020 arxes-tolina GmbH
 
-.TH linotp-backup 1 "10 Aug 2020" "3.0" "LinOTP"
+.TH linotp-backup 1 "04 Nov 2020" "3.0" "LinOTP"
 
 .SH NAME
-linotp-backup \- Backup LinOTP data.
+linotp-backup \- manage backups of MySQL-based LinOTP instances
 
 .SH SYNOPSIS
-\fIlinotp backup database\fR
-
-\fIlinotp backup audit\fR
-
-
+.nf
+\fIlinotp backup create\fR
+\fIlinotp backup restore \-\-file <backup-file>\fR
+.fi
+.sp
 .SH DESCRIPTION
-This command backs up the LinOTP database tables or the audit data. The database backup information is
-taken from the linotp configuration e.g the linotp.cfg file.
-
-The backups are stored in the directory specified by LINOTP_BACKUP_DIRECTORY
-which by default LINOTP_ROOT/backups. The backups adhere the pattern linotp_backup_$DATE.sqldb
-and contain serialized sqlalchemy query dumps with a section for each database
-table. Using sqlalchemy query dumps enables with linotp3 to have database independend
-backups.
+.sp
+.PP
+This command is used to manage backups of a LinOTP database hosted on
+MySQL (or MariaDB). These are created using MySQL's \fImysqldump\fR
+command and therefore cannot be restored on other database engines.
+.PP
+\fIDo not confuse\fR this command with the \fIlinotp dbsnapshot\fR
+command, which uses the SQLAlchemy object-dump facility and creates
+backups that are independent of the database engine used. Unlike
+\fIlinotp backup\fR, \fIlinotp dbsnapshot\fR creates backups that can
+be restored on LinOTP instances using different engines such as
+PostgreSQL, but there may be issues with restoring a backup on a
+different version of LinOTP because the underlying object definitions
+may have evolved in the meantime.
+.PP
+Note that the database may contain data that has been encrypted using
+the current encryption key as per the file named by the
+\fISECRET_FILE\fR configuration setting. The same key must be
+available to use a restored backup. \fBYOU MAY WISH TO MAKE VERY SURE
+INDEED THAT THE ENCRYPTION KEY IS ALSO BACKED UP IN A SAFE PLACE WHEN
+YOU ARE MAKING DATABASE BACKUPS.\fR
+.sp
+.SH OPTIONS
+.PP
+create
+.RS 4
+The \fIlinotp backup create\fR command creates a backup of the current
+LinOTP database in the current directory. This includes the complete
+MySQL database; in particular, audit data will be part of the backup
+if \fIAUDIT_DATABASE_URI\fR is set to \fISHARED\fR.
+.RE
+.PP
+restore \-\-file=<backup-file>
+.RS 4
+The \fIlinotp backup restore\fR command restores a backup of the
+LinOTP database stored in the \fI<backup-file>\fR. This must have been
+previously created using \fIlinotp create\fR.
+.RE
 
 .SH SEE ALSO
-\fBlinotp\fR(1), \fBlinotp-enckey\fR(1), \fBlinotp-restore\fR(1)
+\fBlinotp\fR(1), \fBlinotp-dbsnapshot\fR(1), \fBlinotp-config\fR(5)
 
 .SH INTERNET SOURCES
 https://www.linotp.org

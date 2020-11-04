@@ -1,0 +1,75 @@
+.\" Manpage for linotp dbsnapshot.
+.\" Copyright (c) 2020 arxes-tolina GmbH
+
+.TH linotp-dbsnapshot 1 "03 Nov 2020" "3.0" "LinOTP"
+
+.SH NAME
+linotp-dbsnapshot \- manage database-engine independent snapshots of the LinOTP database
+
+.SH SYNOPSIS
+.nf
+\fIlinotp dbsnapshot create\fR
+\fIlinotp dbsnapshot restore\fR \-\-file|\-\-date <date> [\-\-table=(config|token|audit)]
+\fIlinotp dbsnapshot list\fR
+.fi
+.sp
+.SH DESCRIPTION
+.sp
+.PP
+This command is used to manage "snapshots" of the LinOTP
+database. Snapshots are created using SQLAlchemy's object-dump
+facility and are therefore independent of the underlying database
+engine (such as MySQL or PostgreSQL). On the other hand, they do
+depend on the internal (Python) definition of the objects being
+dumped. This makes snapshots very useful if you want to migrate an
+existing LinOTP instance from, say, MySQL to PostgreSQL but less
+useful if you want to restore a snapshot from an older LinOTP version
+to a much newer one, as the object definitions may have evolved in the
+meantime.
+.PP
+\fIDo not confuse\fR this command with the \fIlinotp backup\fR
+command, which manages backups of MySQL (and MariaDB) databases using
+engine-specific tools and cannot be used with LinOTP instances based
+on PostgreSQL, SQLite, or other database engines.
+.PP
+Note that the database may contain data that has been encrypted using
+the current encryption key as per the file named by the
+\fISECRET_FILE\fR configuration setting. The same key must be
+available to use a restored snapshot. \fBYOU MAY WISH TO MAKE VERY SURE
+INDEED THAT THE ENCRYPTION KEY IS ALSO BACKED UP IN A SAFE PLACE WHEN
+YOU ARE MAKING DATABASE SNAPSHOTS.\fR
+.sp
+.SH OPTIONS
+.PP
+create
+.RS 4
+The \fIlinotp dbsnapshot create\fR command creates a snapshot of the
+current LinOTP database and stores it in the directory given by the
+\fIBACKUP_DIR\fR configuration setting. This will include audit data
+if \fIAUDIT_DATABASE_URI\fR is set to \fISHARED\fR.
+.RE
+.PP
+restore [\-\-file|\-\-date <date>] [\-\-table=(config|token|audit)]
+.RS 4
+The \fIlinotp dbsnapshot restore\fR command restores a snapshot of the
+LinOTP database from the directory given by the \fIBACKUP_DIR\fR
+configuration setting. The snapshot to be restored may be selected
+either by file name using the \fB\-\-file\fR option, or by date using
+the \fB\-\-date\fR option. The date must be given in the format
+"YYYY-MM-DD_hh-mm". Only selected parts of the database may be
+restored by means of the \fB\-\-table\fR option; \fB\-\-table=token\fR
+will restore the \fIToken\fR, \fITokenRealm\fR, and \fIRealm\fR tables.
+.RE
+.PP
+list
+.RS 4
+The \fIlinotp dbsnapshot list\fR lists the snapshots stored in the
+directory given by the \fIBACKUP_DIR\fR configuration setting.
+.RE
+
+.SH SEE ALSO
+\fBlinotp\fR(1), \fBlinotp-backup\fR(1), \fBlinotp-config\fR(5)
+
+.SH INTERNET SOURCES
+https://www.linotp.org
+
