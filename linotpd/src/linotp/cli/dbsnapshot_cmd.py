@@ -114,9 +114,9 @@ def restore_command(file=None, date=None, table=None):
     try:
         current_app.echo("Restoring snapshot ...", v=1)
         restore_database_tables(file, date, table)
-        current_app.echo("finished", v=1)
+        current_app.echo("Finished", v=1)
     except Exception as exx:
-        current_app.echo("Failed to restore: %r" % exx)
+        current_app.echo(f"Failed to restore: {exx!r}")
         sys.exit(1)
 
 
@@ -129,9 +129,9 @@ def list_command():
         current_app.echo("Available snapshots to restore", v=1)
         for backup_date, backup_file in list_database_backups():
             current_app.echo(f"{backup_date} {backup_file}", err=False)
-        current_app.echo("finished", v=1)
+        current_app.echo("Finished", v=1)
     except Exception as exx:
-        current_app.echo("Failed to list snapshot files: %r" % exx)
+        current_app.echo("Failed to list snapshot files: {exx!r}")
         sys.exit(1)
 
 
@@ -188,13 +188,13 @@ def backup_database_tables() -> int:
     backup_filename = os.path.join(
         backup_dir, backup_filename_template % now_str)
 
-    app.echo("creating backup file: %s" % backup_filename, v=1)
+    app.echo("Creating backup file: %s" % backup_filename, v=1)
 
     with open(backup_filename, "w") as backup_file:
 
         for name, model_class in backup_classes.items():
 
-            app.echo("saving %s" % name, v=1)
+            app.echo("Saving %s" % name, v=1)
 
             backup_file.write("--- BEGIN %s\n" % name)
 
@@ -303,7 +303,7 @@ def _get_restore_filename(
     if not os.path.isfile(backup_filename):
 
         app.echo(
-            "failed to restore %s - not found or not accessible"
+            "Failed to restore %s - not found or not accessible"
             % backup_filename)
         raise FileNotFoundError("failed to restore %s - not found or not"
                                 " accessible" % backup_filename)
@@ -394,7 +394,7 @@ def restore_database_tables(
 
                 db.session.merge(restore_query)
 
-                app.echo("restoring %r" % name, v=1)
+                app.echo("Restoring %r" % name, v=1)
 
     # finally commit all de-serialized objects
 

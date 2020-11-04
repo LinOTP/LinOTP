@@ -69,7 +69,7 @@ def restore_mysql_command(file):
     try:
         current_app.echo("Restoring legacy database ...", v=1)
         restore_mysql_database(filename=file)
-        current_app.echo("finished", v=1)
+        current_app.echo("Finished", v=1)
     except Exception as exx:
         current_app.echo(f"Failed to restore MySQL backup: {exx!r}")
         sys.exit(1)
@@ -82,7 +82,7 @@ def backup_mysql_command():
     try:
         current_app.echo("Backup MySQL database ...", v=1)
         backup_mysql_database()
-        current_app.echo("finished", v=1)
+        current_app.echo("Finished", v=1)
     except Exception as exx:
         current_app.echo(f"Failed to create MySQL backup: {exx!r}")
         sys.exit(1)
@@ -115,7 +115,7 @@ def backup_mysql_database():
     engine = create_engine(sql_uri)
 
     if "mysql" not in engine.url.drivername:
-        app.echo("MySQL backup file could only restored in a"
+        app.echo("MySQL backup file can only be created from a"
                  " MySQL database. current database driver "
                  f"is {engine.url.drivername!r}")
         raise click.Abort()
@@ -143,7 +143,7 @@ def backup_mysql_database():
     result = subprocess.call(cmd, shell=True)
 
     if result != 0 or not os.path.isfile(backup_filename):
-        app.echo(f"failed to create MySQL backup file: {result!r}")
+        app.echo(f"Failed to create MySQL backup file: {result!r}")
         raise click.Abort()
 
     app.echo(f"MySQL backup file {backup_filename!s} created!", v=1)
