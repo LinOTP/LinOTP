@@ -25,7 +25,20 @@
 #    Support: www.keyidentity.com
 #
 """
-database backup implementation
+Database "snapshot" backup implementation.
+
+The difference between this and the `backup` command in `mysql_cmd.py` is
+that `backup` uses the MySQL-specific `mysqldump` shell command, while
+this implementation uses SQLAlchemy's object-dump facilities.
+
+This means that `backup` can be used to make backups that can be restored
+on MySQL-based LinOTP instances of different versions, while `dbsnapshot`
+can be used to make backups that are independent of the actual database
+engine but can run into issues as the definitions of LinOTP objects evolve.
+
+In other words, `backup` is probably more useful in daily life (as long
+as MySQL is your thing) but `dbsnapshot` lets you migrate your LinOTP
+instance from MySQL to PostgreSQL (for example).
 """
 
 import os
@@ -59,12 +72,15 @@ ORM_Models = {
 
 # -------------------------------------------------------------------------- --
 
-# backup commands
+# dbsnapshot commands
 
-backup_cmds = AppGroup('backup')
+dbsnapshot_cmds = AppGroup('dbsnapshot',
+                           help=("Manage system-independent database "
+                                 "'snapshots'"))
 
 
-@backup_cmds.command('create', help='create a backup of the database tables')
+@dbsnapshot_cmds.command('create',
+                         help='Create a snapshot of the database tables.')
 def create_command():
     """Create backup file for your database tables
     """
@@ -78,22 +94,25 @@ def create_command():
         sys.exit(1)
 
 
-@backup_cmds.command('restore',
-                     help='restore a backup of the database tables')
-@click.option('--file', help='name of the backup file')
-@click.option('--date', help='restore the backup from a given date.'
-              '"date" must be in format "%s"' % TIME_FORMAT)
-@click.option('--table', help='restore the backup of a table - '
-              'table must be one of "Config", "Token", "Audit"')
+@dbsnapshot_cmds.command('restore',
+                         help='Restore a snapshot of the database tables.')
+@click.option('--file', help='Name of the snapshot file.')
+@click.option('--date',
+              help=('Restore a snapshot from a given date. '
+                    '"date" must be in format "%s".' % TIME_FORMAT))
+@click.option('--table',
+              type=click.Choice(['config', 'token', 'audit'],
+                                case_sensitive=False),
+              help='Restore a specific table only.')
 def restore_command(file=None, date=None, table=None):
-    """ restore a database backup
+    """ restore a database snapshot
 
-    @param file - the backup file name, could be absolute or relative
-    @param date - select a backup for restore by date
+    @param file - the snapshot file name, could be absolute or relative
+    @param date - select a snapshot to restore by date
     @param table - allows to restore only one database table
     """
     try:
-        current_app.echo("Restoring database ...", v=1)
+        current_app.echo("Restoring snapshot ...", v=1)
         restore_database_tables(file, date, table)
         current_app.echo("finished", v=1)
     except Exception as exx:
@@ -101,17 +120,18 @@ def restore_command(file=None, date=None, table=None):
         sys.exit(1)
 
 
-@backup_cmds.command('list',
-                     help='restore a backup of the database tables')
+@dbsnapshot_cmds.command('list',
+                         help=('List available snapshots of the database '
+                               'tables.'))
 def list_command():
-    """ list available database backups."""
+    """ list available database snapshots."""
     try:
-        current_app.echo("Available backup files for restore", v=1)
+        current_app.echo("Available snapshots to restore", v=1)
         for backup_date, backup_file in list_database_backups():
             current_app.echo(f'{backup_date} {backup_file}', err=False)
         current_app.echo("finished", v=1)
     except Exception as exx:
-        current_app.echo('Failed to list backup files: %r' % exx)
+        current_app.echo('Failed to list snapshot files: %r' % exx)
         sys.exit(1)
 
 
