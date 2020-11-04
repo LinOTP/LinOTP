@@ -60,27 +60,27 @@ from linotp.model import Config, Token, TokenRealm, Realm
 from linotp.lib.audit.SQLAudit import AuditTable
 
 
-TIME_FORMAT = '%Y-%m-%d_%H-%M'
+TIME_FORMAT = "%Y-%m-%d_%H-%M"
 
 
 ORM_Models = {
-    'Config': Config,
-    'Token': Token,
-    'TokenRealm': TokenRealm,
-    'Realm': Realm
+    "Config": Config,
+    "Token": Token,
+    "TokenRealm": TokenRealm,
+    "Realm": Realm
     }
 
 # -------------------------------------------------------------------------- --
 
 # dbsnapshot commands
 
-dbsnapshot_cmds = AppGroup('dbsnapshot',
+dbsnapshot_cmds = AppGroup("dbsnapshot",
                            help=("Manage system-independent database "
                                  "'snapshots'"))
 
 
-@dbsnapshot_cmds.command('create',
-                         help='Create a snapshot of the database tables.')
+@dbsnapshot_cmds.command("create",
+                         help="Create a snapshot of the database tables.")
 def create_command():
     """Create backup file for your database tables
     """
@@ -90,20 +90,20 @@ def create_command():
         backup_database_tables()
         current_app.echo("finished", v=1)
     except Exception as exx:
-        current_app.echo('Failed to backup: %r' % exx)
+        current_app.echo("Failed to backup: %r" % exx)
         sys.exit(1)
 
 
-@dbsnapshot_cmds.command('restore',
-                         help='Restore a snapshot of the database tables.')
-@click.option('--file', help='Name of the snapshot file.')
-@click.option('--date',
-              help=('Restore a snapshot from a given date. '
-                    '"date" must be in format "%s".' % TIME_FORMAT))
-@click.option('--table',
-              type=click.Choice(['config', 'token', 'audit'],
+@dbsnapshot_cmds.command("restore",
+                         help="Restore a snapshot of the database tables.")
+@click.option("--file", help="Name of the snapshot file.")
+@click.option("--date",
+              help=("Restore a snapshot from a given date. "
+                    "'date' must be in format '%s'." % TIME_FORMAT))
+@click.option("--table",
+              type=click.Choice(["config", "token", "audit"],
                                 case_sensitive=False),
-              help='Restore a specific table only.')
+              help="Restore a specific table only.")
 def restore_command(file=None, date=None, table=None):
     """ restore a database snapshot
 
@@ -116,22 +116,22 @@ def restore_command(file=None, date=None, table=None):
         restore_database_tables(file, date, table)
         current_app.echo("finished", v=1)
     except Exception as exx:
-        current_app.echo('Failed to restore: %r' % exx)
+        current_app.echo("Failed to restore: %r" % exx)
         sys.exit(1)
 
 
-@dbsnapshot_cmds.command('list',
-                         help=('List available snapshots of the database '
-                               'tables.'))
+@dbsnapshot_cmds.command("list",
+                         help=("List available snapshots of the database "
+                               "tables."))
 def list_command():
     """ list available database snapshots."""
     try:
         current_app.echo("Available snapshots to restore", v=1)
         for backup_date, backup_file in list_database_backups():
-            current_app.echo(f'{backup_date} {backup_file}', err=False)
+            current_app.echo(f"{backup_date} {backup_file}", err=False)
         current_app.echo("finished", v=1)
     except Exception as exx:
-        current_app.echo('Failed to list snapshot files: %r' % exx)
+        current_app.echo("Failed to list snapshot files: %r" % exx)
         sys.exit(1)
 
 
@@ -155,8 +155,8 @@ def backup_database_tables() -> int:
     backup_classes = ORM_Models
 
     audit_db = app.config["AUDIT_DATABASE_URI"]
-    if audit_db == 'SHARED':
-        backup_classes['AuditTable'] = AuditTable
+    if audit_db == "SHARED":
+        backup_classes["AuditTable"] = AuditTable
 
     # ---------------------------------------------------------------------- --
 
@@ -207,7 +207,7 @@ def backup_database_tables() -> int:
                     data_query.all(), label=name, file=pb_file) as all_data:
                 for data in all_data:
                     backup_file.write(binascii.hexlify(dumps(data))
-                                      .decode('utf-8'))
+                                      .decode("utf-8"))
 
                 app.echo(".", v=2, nl=False)
 
@@ -225,7 +225,7 @@ def list_database_backups() -> list:
     """
     app = current_app
 
-    filename_template = 'linotp_backup_'
+    filename_template = "linotp_backup_"
 
     # ---------------------------------------------------------------------- --
 
@@ -243,13 +243,13 @@ def list_database_backups() -> list:
 
     for backup_file in os.listdir(backup_dir):
 
-        # backup files match the 'template' + "%s.sqldb" format
+        # backup files match the "template" + "%s.sqldb" format
 
         if (backup_file.startswith(filename_template)
-                and backup_file.endswith('.sqldb')):
+                and backup_file.endswith(".sqldb")):
 
             backup_date, _, _ext = backup_file[
-                len(filename_template):].rpartition('.')
+                len(filename_template):].rpartition(".")
 
             yield backup_date, backup_file
 
@@ -326,8 +326,8 @@ def restore_database_tables(
     restore_names = list(ORM_Models.keys())
 
     audit_uri = app.config["AUDIT_DATABASE_URI"]
-    if audit_uri == 'SHARED':
-        restore_names.append('AuditTable')
+    if audit_uri == "SHARED":
+        restore_names.append("AuditTable")
 
     # ---------------------------------------------------------------------- --
 
@@ -337,14 +337,14 @@ def restore_database_tables(
 
     if table:
 
-        if table.lower() == 'config':
-            restore_names = ['Config']
+        if table.lower() == "config":
+            restore_names = ["Config"]
 
-        elif table.lower() == 'audit':
-            restore_names = ['AuditTable']
+        elif table.lower() == "audit":
+            restore_names = ["AuditTable"]
 
-        elif table.lower() == 'token':
-            restore_names = ['Token', 'TokenRealm', 'Realm']
+        elif table.lower() == "token":
+            restore_names = ["Token", "TokenRealm", "Realm"]
 
         else:
             app.echo(
@@ -374,17 +374,17 @@ def restore_database_tables(
         for line in backup_file:
             line = line.strip()
 
-            if line.startswith('--- END '):
+            if line.startswith("--- END "):
                 name = None
 
-            elif line.startswith('--- BEGIN '):
-                name = line[len('--- BEGIN '):]
+            elif line.startswith("--- BEGIN "):
+                name = line[len("--- BEGIN "):]
 
             elif line and name in restore_names:
 
                 # unhexlify the serialized data first
 
-                data = binascii.unhexlify(line.encode('utf-8'))
+                data = binascii.unhexlify(line.encode("utf-8"))
 
                 # use sqlalchemy loads to de-serialize the data objects
 
