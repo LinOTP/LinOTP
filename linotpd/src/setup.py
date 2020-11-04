@@ -179,7 +179,6 @@ setup(
                 "man/man1/linotp-backup.1",
                 "man/man1/linotp-config.1",
                 "man/man1/linotp-init.1",
-                "man/man1/linotp-restore.1",
             ]
         ),
         (
