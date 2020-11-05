@@ -35,6 +35,8 @@
 	<meta http-equiv="content-style-type" content="text/css">
 	<meta http-equiv="expires" content="0">
 
+	<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+
 	<link type="text/css" rel="stylesheet" href="/static/selfservice/style.css">
 	<link type="text/css" rel="stylesheet" href="/static/selfservice/auth.css">
 	<link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
