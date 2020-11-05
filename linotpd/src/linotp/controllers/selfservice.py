@@ -27,10 +27,6 @@
 selfservice controller - This is the controller for the self service interface,
                 where users can manage their own tokens
 
-                All functions starting with /selfservice/user...
-                are data functions and protected by the session key
-                i.e. the session key must be passed as the parameter session=
-
 """
 import os
 import json
@@ -90,6 +86,7 @@ import logging
 
 ENCODING = "utf-8"
 log = logging.getLogger(__name__)
+
 
 class SelfserviceController(BaseController):
 
