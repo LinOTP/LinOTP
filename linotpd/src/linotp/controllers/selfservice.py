@@ -35,14 +35,14 @@ selfservice controller - This is the controller for the self service interface,
 import os
 import json
 
-from flask import redirect, Response, current_app, g
+from flask import redirect, Response, current_app, g, url_for
 from flask_babel import gettext as _
 from werkzeug.exceptions import Unauthorized
 
 from linotp import flap
 from linotp.flap import (
     request, response, config, tmpl_context as c,
-    render_mako as render, url
+    render_mako as render
 )
 
 from mako.exceptions import CompileException
@@ -165,8 +165,7 @@ class SelfserviceController(BaseController):
 
                 if action in ['index']:
                     self.redirect = True
-                    return redirect(
-                        url(controller='selfservice', action='login'))
+                    return redirect(url_for('.login'))
 
                 else:
                     Unauthorized('No valid session')
@@ -183,7 +182,7 @@ class SelfserviceController(BaseController):
                     return
 
                 self.redirect = True
-                return redirect(url(controller='selfservice', action='index'))
+                return redirect(url_for('.index'))
 
             # -------------------------------------------------------------- --
 
@@ -191,7 +190,7 @@ class SelfserviceController(BaseController):
             if auth_user and auth_type == 'user_selfservice' \
                     and auth_state != 'authenticated':
                 self.redirect = True
-                return redirect(url(controller='selfservice', action='login'))
+                return redirect(url_for('.login'))
 
             # futher processing with the authenticated user
 
@@ -332,8 +331,7 @@ class SelfserviceController(BaseController):
 
         request_context['reponse_redirect'] = True
 
-        redirect_response = redirect(
-            url(controller='selfservice', action='login'))
+        redirect_response = redirect(url_for('.login'))
 
         if request.cookies.get('user_selfservice'):
             remove_auth_cookie(request.cookies.get('user_selfservice'))
