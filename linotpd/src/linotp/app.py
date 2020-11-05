@@ -883,14 +883,6 @@ def create_app(config_name=None, config_extra=None):
         def index():
             return redirect('/selfservice')
 
-        @app.route('/account/login')
-        def login():
-            return redirect('/selfservice/login')
-
-        @app.route('/account/logout')
-        def logout():
-            return redirect('/selfservice/logout')
-
     # Post handlers
     app.teardown_request(app.finalise_request)
 
