@@ -184,10 +184,12 @@ class RealmManager(ManageDialog):
     def get_realms_list(self) -> List[str]:
         """Get a list of realm names defined using Selenium.
 
-        If the dialog is not currently opened, it will be opened beforehand
+        If the dialog was already opened, it will be closed beforehand to
+        allow it to refresh.
         """
 
         # Open the dialog and reparse
+        self.close_if_open()
         self.open()
 
         return self.realm_names
@@ -322,11 +324,11 @@ class RealmManager(ManageDialog):
 
         # Check that realm is now visible
         # by looking for a realm with the given name
-        assert [ True for r in new_realm_list if r.startswith(name.lower())]
+        assert [True for r in new_realm_list if r.startswith(name.lower())]
 
-        if (len(old_realms) != len(new_realm_list) - 1):
-            LOGGER.warn("Realm was not sucessfully created. Previous realms:%s, New realms:%s" % (
-                [r.name for r in old_realms], [r.name for r in new_realm_list]))
+        if len(old_realms) != len(new_realm_list) - 1:
+            LOGGER.warning("Realm was not sucessfully created. Previous realms:%s, New realms:%s",
+                           ','.join(old_realms), '.'.join(new_realm_list))
             assert False, "Realm was not sucessfully created"
 
     def create_via_api(self, name: str, resolvers: Union[List[str], str]) -> None:
