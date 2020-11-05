@@ -32,7 +32,7 @@ from datetime import datetime
 from uuid import uuid4
 
 from flask import (Flask, Config as FlaskConfig, current_app, g as flask_g,
-                   jsonify, Blueprint, redirect)
+                   jsonify, Blueprint, redirect, url_for)
 from flask.helpers import get_env
 from flask_babel import Babel, gettext
 
@@ -881,7 +881,7 @@ def create_app(config_name=None, config_extra=None):
     if 'selfservice' in app.enabled_controllers:
         @app.route('/')
         def index():
-            return redirect('/selfservice')
+            return redirect(url_for('selfservice.index'))
 
     # Post handlers
     app.teardown_request(app.finalise_request)
