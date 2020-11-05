@@ -396,6 +396,10 @@ class SelfserviceController(BaseController):
         '''
         res = ''
 
+        tok = None
+        section = None
+        scope = None
+
         try:
             try:
                 act = self.request_params["type"]
