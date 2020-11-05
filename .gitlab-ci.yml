@@ -209,6 +209,7 @@ functional-test:
     MYSQL_USER: linotp
     MYSQL_PASSWORD: linotppass
     LINOTP_DATABASE_URI: mysql+pymysql://linotp:linotppass@database/linotp_db
+    LINOTP_PYTEST_DATABASE_URI: mysql+pymysql://linotp:linotppass@database/linotp_db
 
 functional-test-mysql:
   extends: .functional-test-base-mysql
@@ -235,6 +236,7 @@ functional-test-mysql-nightly:
     MYSQL_USER: linotp
     MYSQL_PASSWORD: linotppass
     LINOTP_DATABASE_URI: mysql+pymysql://linotp:linotppass@database/linotp_db
+    LINOTP_PYTEST_DATABASE_URI: mysql+pymysql://linotp:linotppass@database/linotp_db
 
 functional-test-mariadb:
   extends: .functional-test-base-mariadb
@@ -261,6 +263,7 @@ functional-test-mariadb-nightly:
     POSTGRES_PASSWORD: "linotppass"
     POSTGRES_HOST_AUTH_METHOD: trust
     LINOTP_DATABASE_URI: postgres://linotp:linotppass@database/linotp_db
+    LINOTP_PYTEST_DATABASE_URI: postgres://linotp:linotppass@database/linotp_db
 
 functional-test-postgres:
   extends: .functional-test-base-postgres
@@ -397,6 +400,7 @@ e2e-test-mariadb:
   variables:
     DB: mariadb:10.1
     LINOTP_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"
+    LINOTP_PYTEST_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"
     LINOTP_DB_PORT: "3306"
   script:
     - cd linotpd/src/linotp/tests/integration
@@ -411,6 +415,7 @@ e2e-test-softhsm:
   variables:
     DB: mariadb:10.1
     LINOTP_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"
+    LINOTP_PYTEST_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"
     LINOTP_DB_PORT: "3306"
   services:
     - name: ${DB}

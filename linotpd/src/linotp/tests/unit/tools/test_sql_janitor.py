@@ -55,19 +55,19 @@ def export_dir(tmp_path):
 def runner(app, tmp_path):
     """Set common configuration
 
-    Note: LINOTP_DATABASE_URI has to set. Otherwise the created database
-    (sqlite) from conftest.py would not be used. This env and CLIRunner
-    would create a second database. But if the runner is invoked the
-    database from conftest.py will be used (due to flask.current_app)
+    Note: LINOTP_PYTEST_DATABASE_URI has to be set. Otherwise the created
+    database (sqlite) from conftest.py would not be used. This env and
+    CLIRunner would create a second database. But if the runner is invoked
+    the database from conftest.py will be used (due to flask.current_app)
     which differs from this in this test (tmp_path...). Therefore we pass
-    the app.audit_obj.engine.url into env['LINOTP_DATABASE_URI'] so we
-    have the same database for the setup of the test (where
+    the app.audit_obj.engine.url into env['LINOTP_PYTEST_DATABASE_URI'] so
+    we have the same database for the setup of the test (where
     AUDIT_AMOUNT_ENTRIES entries will be generated) and executing `linotp
     audit-janitor` command
     """
     env = {
         'LINOTP_AUDIT_DATABASE_URI': 'SHARED',
-        'LINOTP_DATABASE_URI': str(app.audit_obj.engine.url),
+        'LINOTP_PYTEST_DATABASE_URI': str(app.audit_obj.engine.url),
         }
     return app.test_cli_runner(env=env, mix_stderr=False)
 
