@@ -79,8 +79,8 @@ class TestSQLResolverSensitiveData(TestCase):
             "config3_where": "(1 = 0 OR linotp_users.id > 2 ) AND 1 = 1"
         }
 
-        mocked_encryptPassword.return_value = ''
-        mocked_decryptPassword.return_value = ''
+        mocked_encryptPassword.return_value = b''
+        mocked_decryptPassword.return_value = b''
 
         config = sql_config['config']
 
