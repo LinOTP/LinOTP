@@ -58,7 +58,6 @@ class TestSQLResolverSensitiveData(TestCase):
                         "username": "username",
                         "userid": "id",
                         "password": "password",
-                        "salt": "salt",
                         "givenname": "givenname",
                         "surname": "surname",
                         "email": "email"})
