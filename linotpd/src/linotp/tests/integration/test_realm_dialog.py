@@ -38,7 +38,6 @@ class TestCreateRealmDialog(TestCase):
         r = self.manage_ui.realm_manager
         r.open()
 
-    @pytest.mark.xfail(reason="Unresolved problem in CI environment")
     def test_clear_realms(self):
         r = self.manage_ui.realm_manager
         r.clear_realms_via_api()

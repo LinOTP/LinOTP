@@ -30,24 +30,19 @@ import os
 import json
 from unittest import TestCase
 from mock import patch
-import pytest
 
-try:
-    from useridresolver.SQLIdResolver import IdResolver as SQLResolver
-except ImportError as exx:
-    from linotp.useridresolver.SQLIdResolver import IdResolver as SQLResolver
-
+from linotp.useridresolver.SQLIdResolver import IdResolver as SQLResolver
 
 class TestSQLResolverSensitiveData(TestCase):
+    """Test class for SQL sensitive data"""
 
     resolver = None
 
     @patch('linotp.lib.crypto.encrypted_data.decryptPassword')
     @patch('linotp.lib.crypto.encrypted_data.encryptPassword')
     def load_resolver(self, mocked_encryptPassword, mocked_decryptPassword):
-        '''
-        This is run before each test. Read configuration from the given JSON file.
-        '''
+        """"Read sql resolver configuration from a given JSON file."""
+
         current_directory = os.path.dirname(os.path.abspath(__file__))
 
         sql_config = {
@@ -63,7 +58,6 @@ class TestSQLResolverSensitiveData(TestCase):
                         "username": "username",
                         "userid": "id",
                         "password": "password",
-                        "salt": "salt",
                         "givenname": "givenname",
                         "surname": "surname",
                         "email": "email"})
@@ -79,8 +73,8 @@ class TestSQLResolverSensitiveData(TestCase):
             "config3_where": "(1 = 0 OR linotp_users.id > 2 ) AND 1 = 1"
         }
 
-        mocked_encryptPassword.return_value = ''
-        mocked_decryptPassword.return_value = ''
+        mocked_encryptPassword.return_value = b''
+        mocked_decryptPassword.return_value = b''
 
         config = sql_config['config']
 
@@ -89,11 +83,9 @@ class TestSQLResolverSensitiveData(TestCase):
 
         return resolver
 
-    @pytest.mark.xfail
     def test_sql_getUserInfo(self):
-        '''
-        SQL: test the userinfo does not return sensitive data
-        '''
+        """SQL: test the userinfo does not return sensitive data."""
+
         resolver = self.load_resolver()
 
         res = resolver.getUserId("user1")
@@ -104,11 +96,9 @@ class TestSQLResolverSensitiveData(TestCase):
 
         return
 
-    @pytest.mark.xfail
     def test_sql_getUserList(self):
-        '''
-        SQL: test the userinfo does not return sensitive data
-        '''
+        """SQL: test the userinfo does not return sensitive data."""
+
         resolver = self.load_resolver()
 
         users = resolver.getUserList({'username': '*'})
@@ -118,11 +108,9 @@ class TestSQLResolverSensitiveData(TestCase):
 
         return
 
-    @pytest.mark.xfail
     def test_sql_checkpass(self):
-        '''
-        SQL: Check the password of user1 and user 2 still works
-        '''
+        """SQL: Check the password of user1 and user 2 still works."""
+
         resolver = self.load_resolver()
 
         assert resolver.checkPass(

@@ -41,7 +41,6 @@ class TestSystemConfig(TestCase):
         self.system_config = self.manage_ui.system_config
         self.alert_box_handler = self.manage_ui.alert_box_handler
 
-    @pytest.mark.xfail(reason="Unresolved problem in CI environment")
     def test_split_at(self):
 
         self.system_config.open()

@@ -73,7 +73,6 @@ if [ ! -n "${CI_COMMIT_TAG}" ]; then
   COMMIT_TS=$(git show -s --pretty=format:%ct HEAD)
   COMMIT_DATE=$(date --date="@${COMMIT_TS}" +%Y%m%d%H%M)
   CURRENT_VERSION="$(dpkg-parsechangelog -S Version)"
-  SINCE_HASH="$(git rev-list -1 HEAD linotpd/src/debian/changelog)"
 
   gbp dch $GBP_SINCE_PARAM --snapshot --snapshot-number="${COMMIT_DATE}" --no-multimaint --ignore-branch $BPO_FLAG
 else

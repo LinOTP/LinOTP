@@ -81,26 +81,6 @@ __all__ = ["environ", "url", "TestController"]
 
 environ = {}
 
-def xfail_if_unported(controller, action):
-    """
-    If a controller is not yet ported, we automatically
-    xfail the test if a URL belonging to the controller is
-    called. This allows us to see which tests are really
-    failing, as opposed to those that use unported URLs
-    """
-    unported_controllers = [
-        'account',
-        'custom',
-        'error',
-        'maintenance',
-        'migrate',
-        'openid',
-        'u2f',
-    ]
-
-    if controller in unported_controllers:
-        pytest.xfail("Controller %s not yet available (action=%s)" % (controller, action))
-
 def url(controller, action):
     """
     Generate URL for a given controller and action
@@ -109,7 +89,6 @@ def url(controller, action):
         warnings.warn("Controller name should not have a trailing slash")
         controller = controller.strip("/")
 
-    xfail_if_unported(controller, action)
     return "/".join([controller, action or ""])
 
 class CompatibleTestResponse(Response):
