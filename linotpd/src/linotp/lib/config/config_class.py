@@ -110,25 +110,11 @@ class LinOtpConfig(dict):
             for entry in entries:
                 del conf[entry]
 
-            writeback = False
-            # get all conf entries from the config file
-            fileconf = current_app.config
-
             # get all configs from the DB
             (dbconf, delay) = _retrieveAllConfigDB()
             self.glo.setConfigIncomplete(not delay)
 
-            # we only merge the config file once as a removed entry
-            #  might reappear otherwise
-            if 'linotp.Config' not in dbconf:
-                conf.update(fileconf)
-                writeback = True
-
             conf.update(dbconf)
-            if writeback is True:
-                for con in conf:
-                    _storeConfigDB(con, conf.get(con))
-                _storeConfigDB('linotp.Config', datetime.now())
 
             self.glo.setConfig(conf, replace=True)
 

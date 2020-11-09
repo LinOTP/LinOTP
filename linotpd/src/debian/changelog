@@ -12,6 +12,8 @@ linotp (3.0~rc1-0dev) buster-dev; urgency=low
   * setting of totp timeStep does now adjust the otp counter
     which is used to prevent replay attacks.
   * Favicon in manage and auth pages is no longer missing
+  * Unintentional file config inclusion in Config database is removed
+    to not have security critical information API accessible
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Fri, 23 Oct 2020 15:32:17 +0200
 
