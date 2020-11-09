@@ -855,6 +855,10 @@ def create_app(config_name='default', config_extra=None):
         # variables suck.
 
         set_config()
+
+        if request.path.startswith(app.static_url_path):
+            return
+
         allocate_security_module()
 
     app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
