@@ -21,6 +21,7 @@ workflow:
     - if: $CI_MERGE_REQUEST_ID                        # Execute jobs in merge request context
     - if: $CI_COMMIT_TAG                              # Execute jobs on release tag
     - if: '$CI_COMMIT_BRANCH =~ /^(branch-v|master)/' # Execute jobs when a new commit is pushed to stable or master branch
+    - if: $NIGHTLY_PIPELINE                           # Execute jobs if run with this variable set
 
 stages:
   - build
@@ -158,6 +159,99 @@ lint-useridresolver:
   extends: .lint
   variables:
     LINTED_MODULE: useridresolver
+
+# Provide pytest arguments based on base rules
+# The tests need a number of arguments based on the type
+# of job they represent. (database type, parallel run, nightly, etc.).
+# We also need do decide whether to include parallel arguments depending on
+# the job variables provided. We implement this as a shell command so that
+# we can make use of the shell to put all the pieces together in once place.
+#
+# Pytest arguments can be specified in these variables:
+#  NIGHTLY_ARGS     - Only used if this is a nightly (extended) pipeline
+#  NON_NIGHTLY_ARGS - Only used for normal pipelines (MRs, merges, tags)
+#  ALL_JOB_ARGS     - Both nightly and non-nightly jobs
+#
+# Behaviour configuration:
+#  NIGHTLY_PIPELINE - If set, the pipeline runs in nightly mode and enables an
+#                     extended set of tests
+#
+# Other variables used:
+#  CI_JOB_NAME      - the test report file is derived from the job name
+#  CI_NODE_TOTAL    - parallel run configuration
+#  CI_NODE_INDEX
+.pytest-args: &pytest-args |
+  # Junit XML filename is based on the job name
+  PYTESTARGS="--junitxml=`echo ${CI_JOB_NAME} | tr ' /' '_'`.xml"
+  if [ -n "${CI_NODE_INDEX}" ]; then
+    PYTESTARGS="$PYTESTARGS --test-group-count=${CI_NODE_TOTAL} --test-group=${CI_NODE_INDEX}"
+  fi
+  # Add arguments from job definition
+  PYTESTARGS="$PYTESTARGS ${ALL_JOB_ARGS}"
+  # Job definition of nightly / non-nightly arguments
+  if [ -n "${NIGHTLY_PIPELINE}" ]; then
+    PYTESTARGS="${PYTESTARGS} ${NIGHTLY_ARGS}"
+  else
+    PYTESTARGS="${PYTESTARGS} ${NON_NIGHTLY_ARGS}"
+  fi
+
+# Nightly tests are scheduled to run once a day and contain
+# more tests than the regular set
+.only-nightly:
+  rules:
+    - if: $NIGHTLY_PIPELINE                            # Nightly job is longer
+      when: always
+
+# Tests should run on Debian buster
+.buster-tests:
+  variables:
+    DEBIAN_RELEASE_NAME: buster
+  needs: ["build:debian-buster"]
+
+# The next sections provide different database configurations
+.mysql-vars: &mysql-vars
+  MYSQL_DATABASE: linotp_db
+  MYSQL_ROOT_PASSWORD: rootpass
+  MYSQL_USER: linotp
+  MYSQL_PASSWORD: linotppass
+  LINOTP_DB_HOST: "db"
+  LINOTP_DB_PORT: "3306"
+  LINOTP_DB_WAITTIME: 2m
+  LINOTP_DATABASE_URI: "mysql+pymysql://linotp:linotppass@db/linotp_db?charset=utf8"
+  LINOTP_PYTEST_DATABASE_URI: "mysql+pymysql://linotp:linotppass@db/linotp_db?charset=utf8"
+
+.mysql-database:
+  variables:
+    <<: *mysql-vars
+    DB: mysql:5.5
+  services:
+    - name: ${DB}
+      alias: db
+      command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci"]
+
+.mariadb-database:
+  variables:
+    <<: *mysql-vars
+    DB: mariadb:10.1
+  services:
+    - name: ${DB}
+      alias: db
+
+.postgres-database:
+  variables:
+    DB: postgres:12
+    POSTGRES_DB: linotp_db
+    POSTGRES_USER: linotp
+    POSTGRES_PASSWORD: "linotppass"
+    POSTGRES_HOST_AUTH_METHOD: trust
+    LINOTP_DB_HOST: "db"
+    LINOTP_DB_PORT: "3306"
+    LINOTP_DB_WAITTIME: 2m
+    LINOTP_DATABASE_URI: postgres://linotp:linotppass@db/linotp_db
+    LINOTP_PYTEST_DATABASE_URI: postgres://linotp:linotppass@db/linotp_db
+  services:
+    - name: ${DB}
+      alias: db
 
 
 .unit-test-base:
