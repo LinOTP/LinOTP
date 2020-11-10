@@ -194,6 +194,8 @@ lint-useridresolver:
   else
     PYTESTARGS="${PYTESTARGS} ${NON_NIGHTLY_ARGS}"
   fi
+  # Coverage report
+  PYTESTARGS="${PYTESTARGS} --cov=linotp --cov-report=xml:${CI_PROJECT_DIR}/coverage.xml"
 
 # Nightly tests are scheduled to run once a day and contain
 # more tests than the regular set
@@ -258,6 +260,9 @@ lint-useridresolver:
 .test-base:
   stage: test
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  artifacts:
+    reports:
+      cobertura: ${CI_PROJECT_DIR}/coverage.xml
 
 # Unit tests
 unit-test:
@@ -309,27 +314,6 @@ functional-test-postgres:
     - .postgres-database
   variables:
     NON_NIGHTLY_ARGS: "-m exclude_sqlite"
-
-# .coverage-report:
-#   stage: coverage-report
-#   image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
-#   script:
-#     - pip3 install coverage
-#     - cd coverage/${DEBIAN_RELEASE_NAME}
-#     - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
-#     - coverage combine *
-#     - coverage report | tee coverage.txt
-#     - coverage html
-#   artifacts:
-#     paths:
-#       - coverage/${DEBIAN_RELEASE_NAME}
-
-# coverage-report:
-#   extends: .coverage-report
-#   allow_failure: true
-#   variables:
-#     DEBIAN_RELEASE_NAME: buster
-
 
 .e2e-test:
   extends:
