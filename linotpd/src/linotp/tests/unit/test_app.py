@@ -82,3 +82,28 @@ def test_cache_dir(app):
     assert app.config['CACHE_DIR'] == wanted_cache_dir
     assert os.path.isdir(wanted_cache_dir)
     assert os.path.isdir(os.path.join(wanted_cache_dir, "beaker"))
+
+
+# ----------------------------------------------------------------------
+# Tests for cookie settings.
+# ----------------------------------------------------------------------
+
+@pytest.mark.parametrize('sess_cookie_secure', [
+    False,
+    True,
+])
+def test_session_cookie_secure(base_app, client, monkeypatch,
+                               sess_cookie_secure):
+    monkeypatch.setitem(base_app.config, 'SESSION_COOKIE_SECURE',
+                        sess_cookie_secure)
+    # Note that we're using `client` rather than `adminclient`, because
+    # `adminclient` adds a spurious extra session cookie.
+    client.cookie_jar.clear()
+    res = client.get('/admin/getsession')
+    assert res.status_code == 200
+    for c in client.cookie_jar:
+        if c.name == 'admin_session':
+            assert c.secure is sess_cookie_secure
+            break
+    else:
+        assert False, "no admin_session cookie found"
