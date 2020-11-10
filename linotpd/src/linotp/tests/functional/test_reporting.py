@@ -593,3 +593,31 @@ class TestReportingController(TestController):
             self.delete_all_resolvers()
 
         return
+
+    def test_bug_1479_token_enrollment(self):
+        """Not really to do with the reporting controller but still a
+        possible reporting issue. This could not be reproduced but we're
+        leaving the test in, on the off-chance.
+        """
+
+        # Set reporting policy
+        policy_params = {
+            "name": "test_bug_1479",
+            "scope": "reporting",
+            "action": "token_total, token_user_total, ",
+            "user": "*",
+            "realm": "*",
+            "client": "*",
+            "time": "* * * * * *;",
+            "active": "True",
+        }
+        self.create_policy(policy_params)
+
+        parameters = {
+            "genkey": "1",
+            "type": "totp",
+            "hashlib": "sha256",
+            "otplen": "6",
+        }
+        response = self.make_admin_request('init', params=parameters)
+        assert '"value": true' in response
