@@ -30,6 +30,9 @@ admin controller - interfaces to administrate LinOTP
 from binascii import hexlify
 from datetime import datetime
 import json
+
+from flask import current_app
+
 from linotp.controllers.base import BaseController
 from linotp.flap import (
     config, request, response, tmpl_context as c,
@@ -251,11 +254,15 @@ class AdminController(BaseController):
                     domain = web_host
                 else:
                     domain = None
+                # TODO: This isn't actually being used.
 
-                # TODO: add secure cookie at least for https
+                # Declare cookie “secure” if desired
+                params = {}
+                if current_app.config['SESSION_COOKIE_SECURE']:
+                    params['secure'] = True
 
                 # Add cookie to generated response
-                response.set_cookie('admin_session', value=value)
+                response.set_cookie('admin_session', value=value, **params)
 
                 return response
 

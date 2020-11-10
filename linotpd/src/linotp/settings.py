@@ -241,6 +241,12 @@ _config_schema = ConfigSchema([
                help=("Administrator user name for 'cloud mode'.")),
     ConfigItem("ADMIN_PASSWORD", str, default='',
                help=("Administrator password for 'cloud mode'.")),
+    ConfigItem("SESSION_COOKIE_SECURE", bool, convert=to_boolean,
+               default=True,    # `False` in development mode
+               help=("Whether the session cookie will be marked “secure”. "
+                     "Set this to 'false' if you're running LinOTP on HTTP "
+                     "only (which you really shouldn't, certainly "
+                     "not in production).")),
     ConfigItem("LOGFILE_DIR", str, default="logs",
                help=("Directory for log files. We're using a "
                      "`RotatingFileHandler` to manage log files, and the main "
