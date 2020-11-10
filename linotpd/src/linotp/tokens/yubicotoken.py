@@ -66,9 +66,24 @@ FALLBACK_YUBICO_URL = ", ".join([
     "https://api5.yubico.com/wsapi/2.0/verify"
     ])
 
-DEFAULT_CLIENT_ID = 11759
-DEFAULT_API_KEY = "P1QVTgnToQWQm0b6LREEhDIAbHU="
+LINOTP_DOC_LINK = (
+    "https://linotp.org/doc/latest/part-management/managingtokens/"
+    "tokens-config.html?highlight=yubico#yubico-token-default-settings"
+    )
 
+YUBICO_GETAPI_LINK = "https://upgrade.yubico.com/getapikey/"
+
+APIKEY_UNCONFIGURED_ERROR = """
+You need to provide an API key and ID for Yubico support.
+Please register your own apiKey and apiId at the Yubico web site:"
+  %s
+Configure apiKey and apiId in the LinOTP token-config dialog.
+Have a look at:
+  %s" 
+""" % (YUBICO_GETAPI_LINK, LINOTP_DOC_LINK)
+
+class YubicoApikeyException(Exception):
+    pass
 
 log = logging.getLogger(__name__)
 
@@ -197,15 +212,14 @@ class YubicoTokenClass(TokenClass):
                 raise Exception("Usage of YUBICO_URL %r is deprecated!! " %
                                 DEPRECATED_YUBICO_URL)
 
-        apiId = getFromConfig("yubico.id") or DEFAULT_CLIENT_ID
-        apiKey = getFromConfig("yubico.secret") or DEFAULT_API_KEY
+        apiId = getFromConfig("yubico.id")
+        apiKey = getFromConfig("yubico.secret")
 
-        if apiKey == DEFAULT_API_KEY or apiId == DEFAULT_CLIENT_ID:
-            log.warning("Usage of default apiKey or apiId not recomended!!")
-            log.warning("Please register your own apiKey and apiId at "
-                                                        "yubico website !!")
-            log.warning("Configure of apiKey and apiId at the "
-                                             "linotp manage config menue!!")
+        if not apiKey or not apiId:
+            log.error(APIKEY_UNCONFIGURED_ERROR)
+            raise YubicoApikeyException(
+                'Yubico apiKey or apiId not configured!'
+                )
 
         tokenid = self.getFromTokenInfo("yubico.tokenid")
         if len(anOtpVal) < 12:
