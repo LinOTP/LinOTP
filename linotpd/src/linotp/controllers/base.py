@@ -28,16 +28,20 @@
 from inspect import getfullargspec
 from types import FunctionType
 import logging
-import re
+import secrets
 from warnings import warn
 
-from flask import current_app, Blueprint, Response
+from flask import after_this_request, current_app, Blueprint
 
 from linotp.flap import request
 
 from linotp.lib.context import request_context
+from linotp.lib.reply import sendError, sendResult
 from linotp.lib.user import getUserFromParam
 from linotp.lib.user import NoResolverFound
+from linotp.lib.util import SESSION_KEY_LENGTH
+
+from linotp.model import db
 
 log = logging.getLogger(__name__)
 
@@ -190,5 +194,60 @@ def methods(mm=['GET']):
         return func
     return inner
 
-# eof ########################################################################
 
+class SessionCookieMixin(object):
+    """
+    Enables a controller to set and destroy session cookies. This is a
+    mixin class because the functionality used to be implemented
+    separately in several controllers, which violates the DRY principle.
+    """
+
+    session_cookie_name = "session"
+
+    def getsession(self):
+        """
+        Generates a session key and sets it as a cookie. Should really
+        be using Flask machinery.
+        """
+
+        @after_this_request
+        def set_session_cookie(response):
+            try:
+                random_key = secrets.token_hex(SESSION_KEY_LENGTH)
+                log.debug(f"[getsession] adding session cookie {random_key} "
+                          "to response.")
+
+                params = {}
+                if current_app.config['SESSION_COOKIE_SECURE']:
+                    params['secure'] = True
+
+                response.set_cookie(self.session_cookie_name,
+                                    value=random_key, **params)
+                return response
+            except Exception as ex:
+                log.exception("[getsession] unable to create a session cookie")
+                db.session.rollback()
+                return sendError(response, ex)
+
+        return sendResult(None, True)
+
+    def dropsession(self):
+        @after_this_request
+        def drop_session_cookie(response):
+            response.delete_cookie(self.session_cookie_name)
+            return response
+
+        return sendResult(None, True)
+
+    # We have to make our own `_url_methods` dictionary; it will not
+    # be created automatically by the `ControllerMetaClass` because
+    # `SessionCookieMixin` is not a subclass of `BaseController`.
+    # Without it, the `BaseController` will not be able to dispatch to
+    # our methods.
+
+    _url_methods = {
+        'getsession': getsession,
+        'dropsession': dropsession,
+    }
+
+# eof ########################################################################
