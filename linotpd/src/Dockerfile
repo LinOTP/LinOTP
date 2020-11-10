@@ -43,6 +43,17 @@ ARG DEPENDENCY_GPG_KEY_URL
 # To disable HTTP authentication for the manage UI,
 # set LINOTP_APACHE_AUTH=false.
 #
+# LINOTP_SESSION_COOKIE_SECURE governs whether LinOTP's
+# session cookies should be marked "secure" at the HTTP
+# level, in which case they will not be transmitted over
+# plain HTTP (rather than HTTPS) connections. The default
+# value is "true", which applies if you're accessing LinOTP
+# via HTTPS (as you should) or via HTTP behind a reverse
+# proxy which does HTTPS termination (such as Traefik).
+# Set the parameter to "false" ONLY if you're running LinOTP
+# over HTTP (which you most emphatically should NOT do
+# except for experiments; consider yourself warned).
+#
 # To use a database server:
 #  LINOTP_DATABASE_URI=<sqlalchemy url>
 #
@@ -85,6 +96,7 @@ ENV TZ="Europe/Berlin" \
     LINOTP_APACHE_AUTH=true \
     LINOTP_APACHE_SSL=true \
     LINOTP_APACHE_HSTS=true \
+    LINOTP_SESSION_COOKIE_SECURE=true \
     LINOTP_LOGGING_LEVEL=INFO \
     LINOTP_LOGGING_FILE_LEVEL=INFO \
     LINOTP_LOGGING_CONSOLE_LEVEL=INFO \
