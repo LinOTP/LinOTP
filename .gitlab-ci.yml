@@ -278,26 +278,6 @@ functional-test-postgres-nightly:
   script:
     - make functionaltests PYTESTARGS="--junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
 
-# Auto-generate API docs using Sphinx.
-apidocs:
-  stage: apidocs
-  image: $CI_IMAGE_PREFIX/buster/linotp:${CI_PIPELINE_ID}
-  needs: ["build:debian-buster"]
-  script:
-    - python3 --version
-    - cd linotpd/src
-    - pip3 install -e ".[apidocs]"
-    - cd ${CI_PROJECT_DIR}/linotpd/src/api-doc
-    - make apidocs
-    - make html
-    - mkdir ${CI_PROJECT_DIR}/api-doc
-    - cp -a build/html/. ${CI_PROJECT_DIR}/api-doc
-  artifacts:
-    name: "linotp-apidocs"
-    paths:
-      - api-doc
-    expire_in: 2 weeks
-
 # .coverage-report:
 #   stage: coverage-report
 #   image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
@@ -441,6 +421,26 @@ e2e-test-softhsm:
         -v
         --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml
         "
+
+# Auto-generate API docs using Sphinx.
+apidocs:
+  stage: apidocs
+  image: $CI_IMAGE_PREFIX/buster/linotp:${CI_PIPELINE_ID}
+  needs: ["build:debian-buster"]
+  script:
+    - python3 --version
+    - cd linotpd/src
+    - pip3 install -e ".[apidocs]"
+    - cd ${CI_PROJECT_DIR}/linotpd/src/api-doc
+    - make apidocs
+    - make html
+    - mkdir ${CI_PROJECT_DIR}/api-doc
+    - cp -a build/html/. ${CI_PROJECT_DIR}/api-doc
+  artifacts:
+    name: "linotp-apidocs"
+    paths:
+      - api-doc
+    expire_in: 2 weeks
 
 # Upload deb packages to development repository.
 # We use scp to upload all the files to an incoming directory.
