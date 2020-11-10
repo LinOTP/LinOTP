@@ -1043,10 +1043,10 @@ class Reporting(db.Model):
 
     __tablename__ = 'REPORTING'
 
-    id = db.Column('id', db.Integer,
+    id = db.Column('R_ID', db.Integer,
                    db.Sequence('reporting_seq_id', optional=True),
                    primary_key=True, nullable=False)
-    timestamp = db.Column('timestamp', db.DateTime, default=datetime.now())
+    timestamp = db.Column('R_TIMESTAMP', db.DateTime, default=datetime.now())
     event = db.Column('R_EVENT', db.String(250), default='')
     realm = db.Column('R_REALM', db.String(250), default='')
     parameter = db.Column('R_PARAMETER', db.String(250), default='')
