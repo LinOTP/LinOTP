@@ -2206,7 +2206,7 @@ function support_view(){
             var info = "";
             info += '<h2 class="contact_info center-text">' + i18n.gettext('Professional LinOTP support and enterprise subscription') + '</h2>';
             info += sprintf(i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact %s for support agreement purchase.'),
-                        '<p class="contact_info center-text"><a href="mailto:sales@keyidentity.com">KeyIdentity GmbH</a></p>');
+                        '<p class="contact_info center-text"><a href="mailto:sales@keyidentity.com">arxes-tolina GmbH</a></p>');
             $("#dialog_support_view").html($.parseHTML(info));
 
         } else {
@@ -2257,19 +2257,17 @@ function check_for_welcome_screen() {
         var title = i18n.gettext("Welcome to LinOTP");
         var text = '<p>' + i18n.gettext("Welcome to your fresh LinOTP installation.") + '</p>'
             + '<p>' + i18n.gettext("If you have questions about the setup or installation of LinOTP, please <a href='https://linotp.org/doc' target='_blank'>refer to our documentation</a>.") + '</p>'
-            + '<p>' + i18n.gettext("<a href='https://keyidentity.com'>KeyIdentity</a> provides LinOTP as an enterprise 2FA solution.") + '</p>'
-            + '<p>' + i18n.gettext("If you are interested in the 2FA platform of KeyIdentity, and want to be informed about:")
+            + '<p>' + i18n.gettext("<a href='https://keyidentity.com'>arxes-tolina</a> provides LinOTP as an enterprise MFA solution.") + '</p>'
+            + '<p>' + i18n.gettext("If you are interested in the MFA platform powered by arxes-tolina, and want to be informed about:")
             + '<ul>'
-            + '<li>' + i18n.gettext("updates of our products,") + '</li>'
-            + '<li>' + i18n.gettext("upcoming hackathons,") + '</li>'
-            + '<li>' + i18n.gettext("user and developer conferences,") + '</li>'
+            + '<li>' + i18n.gettext("product updates by arxes-tolina,") + '</li>'
             + '<li>' + i18n.gettext("upcoming features in LinOTP") + '</li>'
             + '</ul>'
             + i18n.gettext("consider subscribing to our quarterly newsletter.")
             + '</p>'
             + '<br/>'
             + '<div id="welcome-buttons">'
-            + '<a class="light-text-color newsletter-button" href="https://info.keyidentity.com/strategy-paper-request/" target="_blank">' + i18n.gettext("Subscribe to newsletter") + '</a>'
+            + '<a class="light-text-color newsletter-button" href="https://www.keyidentity.com/newsletter-subscribe/" target="_blank">' + i18n.gettext("Subscribe to newsletter") + '</a>'
             + '</div>'
         var button = i18n.gettext("OK");
 
@@ -2295,16 +2293,15 @@ function check_for_welcome_screen() {
                 + '<p><a href="https://www.linotp.org/resources/changelogs.html" target="_blank">https://www.linotp.org/resources/changelogs.html</a></p>'
                 + '<p>' + i18n.gettext("Our newsletter covers:")
                 + '<ul>'
-                + '<li>' + i18n.gettext("product updates,") + '</li>'
-                + '<li>' + i18n.gettext("upcoming hackathons,") + '</li>'
-                + '<li>' + i18n.gettext("user and developer conferences,") + '</li>'
-                + '<li>' + i18n.gettext("upcoming features in LinOTP") + '</li>'
+                + '<li>' + i18n.gettext("product updates by arxes-tolina,") + '</li>'
+                + '<li>' + i18n.gettext("upcoming features in LinOTP.") + '</li>'
                 + '</ul>'
+                + i18n.gettext("If you are not yet subscribed, please consider subscribing to our quarterly newsletter.")
                 + '</p>'
                 + '<p>' + i18n.gettext("We would be happy to receive your feedback about LinOTP.") + '</p>'
                 + '<br/>'
                 + '<div id="welcome-buttons">'
-                + '<a class="light-text-color newsletter-button" href="https://info.keyidentity.com/strategy-paper-request/" target="_blank">' + i18n.gettext("Subscribe") + '</a>'
+                + '<a class="light-text-color newsletter-button" href="https://www.keyidentity.com/newsletter-subscribe/" target="_blank">' + i18n.gettext("Subscribe") + '</a>'
                 + '<a class="light-text-color feedback-button" href="https://www.keyidentity.com/contact-us/" target="_blank">' + i18n.gettext("Feedback") + '</a>'
                 + '</div>'
             var button = i18n.gettext("Close");
@@ -2319,20 +2316,18 @@ function check_for_welcome_screen() {
             });
 
             var title = i18n.gettext("Thank you for using LinOTP");
-            var text = '<p>' + i18n.gettext("We are pleased that you are using LinOTP by KeyIdentity as your 2FA solution.") + '</p>'
-                + '<p>' + i18n.gettext("If you are interested in the 2FA platform of KeyIdentity using LinOTP at its core, and would like further information about:")
+            var text = '<p>' + i18n.gettext("We are pleased that you are using LinOTP powered by arxes-tolina as your MFA solution.") + '</p>'
+                + '<p>' + i18n.gettext("If you are interested in the MFA platform by arxes-tolina using LinOTP at its core, and would like further information about:")
                 + '<ul>'
-                + '<li>' + i18n.gettext("product updates,") + '</li>'
-                + '<li>' + i18n.gettext("upcoming hackathons,") + '</li>'
-                + '<li>' + i18n.gettext("user and developer conferences,") + '</li>'
-                + '<li>' + i18n.gettext("upcoming features in LinOTP") + '</li>'
+                + '<li>' + i18n.gettext("product updates by arxes-tolina,") + '</li>'
+                + '<li>' + i18n.gettext("upcoming features in LinOTP,") + '</li>'
                 + '</ul>'
                 + i18n.gettext("please consider subscribing to our quarterly newsletter.")
                 + '</p>'
                 + '<p>' + i18n.gettext("We would be happy to receive your feedback about LinOTP.") + '</p>'
                 + '<br/>'
                 + '<div id="welcome-buttons">'
-                + '<a class="light-text-color newsletter-button" href="https://info.keyidentity.com/strategy-paper-request/" target="_blank">' + i18n.gettext("Subscribe") + '</a>'
+                + '<a class="light-text-color newsletter-button" href="https://www.keyidentity.com/newsletter-subscribe/" target="_blank">' + i18n.gettext("Subscribe") + '</a>'
                 + '<a class="light-text-color feedback-button" href="https://www.keyidentity.com/contact-us/" target="_blank">' + i18n.gettext("Feedback") + '</a>'
                 + '</div>'
             var button = i18n.gettext("OK");
