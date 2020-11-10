@@ -30,5 +30,6 @@ RUN apt-get update \
     && mkdir -p /etc/softhsm /var/lib/softhsm/tokens \
     && echo "directories.tokendir = /var/lib/softhsm/tokens" > /etc/softhsm/softhsm2.conf \
     && echo "objectstore.backend = file" >> /etc/softhsm/softhsm2.conf \
+    && usermod -a -G softhsm linotp \
     && chmod 755 /etc/linotp/docker-init.d/05-docker-init-softhsm
 

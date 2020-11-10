@@ -55,7 +55,7 @@ from linotp import __api__ as linotp_api
 
 
 SESSION_KEY_LENGTH = 32
-hostname_regex = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+hostname_regex = re.compile(r"(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
 
 log = logging.getLogger(__name__)
 

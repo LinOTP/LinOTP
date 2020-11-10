@@ -71,3 +71,5 @@ HSM_PKCS11_CONFIG={
 }
 ACTIVE_SECURITY_MODULE='pkcs11'
 EOF
+
+chown -R linotp:softhsm /var/lib/softhsm

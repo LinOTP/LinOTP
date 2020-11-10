@@ -320,7 +320,7 @@ def encryptPassword(password):
     return hsm_obj.encryptPassword(password)
 
 
-def encryptPin(cryptPin: bytes, iv=None, hsm=None):
+def encryptPin(cryptPin:bytes, iv=None, hsm=None):
     """Encrypt pin (i.e. token pin)
 
     :param cryptPin: pin to encrypt
@@ -356,7 +356,7 @@ def _get_hsm_obj_from_context(hsm=None):
     return hsm_obj
 
 
-def decryptPassword(cryptPass):
+def decryptPassword(cryptPass:str)-> bytes:
     """
     Restore the encrypted password
 

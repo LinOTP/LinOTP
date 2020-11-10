@@ -53,24 +53,24 @@ class SecurityModule(object):
 
     ### base methods ###
 
-    def random(self, len):
+    def random(self, len:int) -> bytes:
         fname = 'random'
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)
 
-    def encrypt(self, data: bytes, iv: bytes, id: int = 0) -> bytes:
+    def encrypt(self, data:bytes, iv:bytes, id:int=0) -> bytes:
         fname = 'encrypt'
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)
 
-    def decrypt(self, value: bytes, iv: bytes, id: int = 0) -> bytes:
+    def decrypt(self, value:bytes, iv:bytes, id:int=0) -> bytes:
         fname = 'decrypt'
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)
 
     ### higer level methods ###
 
-    def encryptPassword(self, cryptPass: str) -> str:
+    def encryptPassword(self, cryptPass:bytes) -> str:
         fname = 'decrypt'
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)
@@ -80,12 +80,12 @@ class SecurityModule(object):
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)
 
-    def decryptPassword(self, cryptPass: str) -> str:
+    def decryptPassword(self, cryptPass:str) -> bytes:
         fname = 'decrypt'
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)
 
-    def decryptPin(self, cryptPin):
+    def decryptPin(self, cryptPin:str) -> bytes:
         fname = 'decrypt'
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)

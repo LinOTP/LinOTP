@@ -343,7 +343,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         padding = missing_byte * missing_num
         return unpadded_str + padding.encode('utf-8')
 
-    def unpad(self, padded_byte_str: bytes, block_size: int=16) -> bytes:
+    def unpad(self, padded_byte_str:bytes, block_size: int=16) -> bytes:
         """
         PKCS7 padding pads the missing bytes with the value of the number
         of the bytes. If 4 bytes are missing, this missing bytes are filled
@@ -630,7 +630,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
             output("debug", "[gettokeninfo] %s" % str(ti))
         return ti
 
-    def createAES(self, label: bytes, ks:int=32) -> CK_OBJECT_HANDLE:
+    def createAES(self, label:bytes, ks:int=32) -> CK_OBJECT_HANDLE:
         '''
         Creates a new AES key with the given label and the given length
 
@@ -694,7 +694,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         return objHandle
 
-    def random(self, l=32):
+    def random(self, l:int=32) -> bytes:
         '''
         create a random value and return it
         l specifies the length of the random data to be created.
@@ -709,8 +709,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
                             % (rv, pkcs11error(rv)))
         return key
 
-
-    def decrypt(self, value: bytes, iv: bytes, id: int = DEFAULT_KEY) -> bytes:
+    def decrypt(self, value:bytes, iv:bytes, id:int=DEFAULT_KEY) -> bytes:
         '''
         decrypts the given data, using the IV and the key specified by
         the handle lookup id
@@ -758,7 +757,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         return self.unpad(plaintext.value)
 
-    def encrypt(self, data: bytes, iv: bytes, id: int = DEFAULT_KEY) -> bytes:
+    def encrypt(self, data:bytes, iv:bytes, id:int=DEFAULT_KEY) -> bytes:
         '''
         encrypts the given input data
 
@@ -813,7 +812,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         return encrypted_data.value
 
-    def _encryptValue(self, value, keyNum=2, iv=None):
+    def _encryptValue(self, value:bytes, keyNum:int=2, iv:bytes=None) -> bytes:
         '''
         _encryptValue - base method to encrypt a value
         - uses one slot id to encrypt a string
@@ -838,14 +837,14 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         return binascii.hexlify(iv) + b':' + binascii.hexlify(v)
 
-    def _decryptValue(self, cryptValue, keyNum=2):
+    def _decryptValue(self, cryptStrValue:str, keyNum=2) -> bytes:
         '''
         _decryptValue - base method to decrypt a value
         - used one slot id to encrypt a string
           with leading iv, seperated by ':'
 
-        :param cryptValue: the to be encrypted value
-        :type cryptValue: byte string
+        :param cryptStrValue: the to be encrypted value
+        :type cryptStrValue: byte string
 
         :param keyNum: slot of the key array
         :type keyNum: int
@@ -854,18 +853,17 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         :rtype:  byte string
         '''
         ''' split at : '''
-        pos = cryptValue.find(b':')
-        bIV = cryptValue[:pos]
-        bData = cryptValue[pos + 1:len(cryptValue)]
+
+        pos = cryptStrValue.find(':')
+        bIV = cryptStrValue[:pos]
+        bData = cryptStrValue[pos + 1:len(cryptStrValue)]
 
         iv = binascii.unhexlify(bIV)
         data = binascii.unhexlify(bData)
 
-        password = self.decrypt(data, iv, keyNum)
+        return self.decrypt(data, iv, keyNum)
 
-        return password
-
-    def decryptPassword(self, cryptPass):
+    def decryptPassword(self, cryptPass:str) -> bytes:
         '''
         dedicated security module methods: decryptPassword
         which used one slot id to decryt a string
@@ -877,10 +875,9 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         :return: decrypted data
         :rtype:  byte string
         '''
-
         return self._decryptValue(cryptPass, 0)
 
-    def decryptPin(self, cryptPin):
+    def decryptPin(self, cryptPin:str) -> bytes:
         '''
         dedicated security module methods: decryptPin
         which used one slot id to decryt a string
@@ -894,7 +891,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         return self._decryptValue(cryptPin, 1)
 
-    def encryptPassword(self, password):
+    def encryptPassword(self, password:bytes) -> str:
         '''
         dedicated security module methods: encryptPassword
         which used one slot id to encrypt a string
@@ -905,9 +902,10 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         :return: encrypted data - leading iv, seperated by the ':'
         :rtype:  byte string
         '''
-        return self._encryptValue(password, 0)
 
-    def encryptPin(self, pin, iv=None):
+        return self._encryptValue(password, 0).decode('utf-8')
+
+    def encryptPin(self, pin:bytes, iv:bytes=None) -> str:
         '''
         dedicated security module methods: encryptPin
         which used one slot id to encrypt a string
@@ -921,7 +919,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         :return: encrypted data - leading iv, seperated by the ':'
         :rtype:  byte string
         '''
-        return self._encryptValue(pin, 1, iv=iv)
+        return self._encryptValue(pin, 1, iv=iv).decode('utf-8')
 
 
 def main():
