@@ -14,6 +14,7 @@ linotp (3.0~rc1-0dev) buster-dev; urgency=low
   * Favicon in manage and auth pages is no longer missing
   * Unintentional file config inclusion in Config database is removed
     to not have security critical information API accessible
+  * Removed predefined yubico apiKey and apiId
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Fri, 23 Oct 2020 15:32:17 +0200
 
