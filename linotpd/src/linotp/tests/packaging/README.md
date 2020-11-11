@@ -102,3 +102,12 @@ the package scripts.
  dpkg-buildpackage -us -uc -b -nc && \
  linotp3_deb="`debc --list-debs`" linotp/tests/tools/test-upgrade install3
 ```
+
+## test_debs.py
+
+This provides a pytest based front end to the tests in `test-upgrade`. It allows
+the tests to be run from a pipeline and reported using standard coverage
+tools.
+
+If a test fails, it can still be directly run from the `test-upgrade` script to
+diagnose or debug the problem.
