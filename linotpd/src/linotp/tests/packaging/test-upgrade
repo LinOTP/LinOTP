@@ -472,6 +472,10 @@ upgrade2to3() {
     preseed_3_for_upgrade
     install_3
     check_3
+
+    if [ -f /etc/apache2/sites-available/linotp2.conf ]; then
+        fatal "Old linotp site file present in /etc/apache2/sites-available/linotp2.conf"
+    fi
 }
 
 install3() {
