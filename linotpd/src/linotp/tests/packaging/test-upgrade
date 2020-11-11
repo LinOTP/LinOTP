@@ -241,12 +241,18 @@ WARNING: this will DELETE any existing linotp configuration!
         $sudo mysql --defaults-file=/etc/mysql/debian.cnf -e "DROP USER IF EXISTS linotp, linotp2;" || true
     fi
 
-    # Check if all files are removed
-    if [ -d /usr/lib/python3/dist-packages/linotp ];then
-        $error "dist-packages/linotp not removed"
-        find /usr/lib/python3/dist-packages/linotp -ls
-        sudo rm -rf /usr/lib/python3/dist-packages/linotp
-    fi
+    # Check if all directories are removed
+    for dir_to_check in \
+        /etc/linotp \
+        /etc/linotp2 \
+        /usr/lib/python3/dist-packages/linotp
+      do
+        if [ -d $dir_to_check ];then
+            $error "not removed: $dir_to_check"
+            find $dir_to_check -ls
+            $sudo rm -rf $dir_to_check
+        fi
+    done
 
     for file_to_check in \
         /etc/apache2/sites-available/linotp.conf \
