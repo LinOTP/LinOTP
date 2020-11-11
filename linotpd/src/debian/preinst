@@ -3,8 +3,6 @@
 set -e
 
 if [ "$1" = "upgrade" ]; then
-	touch /etc/linotp/we_are_doing_an_upgrade
-
 	# If user supplied stylesheets were placed under /usr/share/, move these
 	# to /etc/custom-style.
 	#
