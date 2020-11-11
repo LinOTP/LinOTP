@@ -386,6 +386,18 @@ check_3() {
         fi
     fi
     check_data_model_version "2.12.0.0"
+
+    for filename in \
+            /var/cache/linotp \
+            /run/linotp \
+            /etc/linotp/conf.d/01-debian-database.cfg
+      do
+        if [ "$(stat -c %U $filename)" != "linotp" ]; then
+            >&2 ls -ld $filename || true
+            fatal "$filename should be owned by linotp"
+        fi
+    done
+
     check_service
 }
 # sudo apt purge --yes linotp; sudo mysql --defaults-file=/etc/mysql/debian.cnf -e "DROP USER linotp;"; sudo debconf-set-selections config/linotp-with-mysql-preseed.txt && sudo debi
