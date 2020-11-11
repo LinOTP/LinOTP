@@ -209,7 +209,7 @@ exec_sql() {
 # WARNING: This will remove any existing
 # linotp package
 purge() {
-    if [ "$LINOTP_PURGE_ALLOW" != "yes" ]; then
+    if [ "${LINOTP_PURGE_ALLOW-:}" != "yes" ]; then
         echo "
 A complete package purge is required but is not allowed.
 
