@@ -113,17 +113,6 @@ check_user() {
   fi
 }
 
-# check_upgrade
-#
-# Returns 0 if we're doing an upgrade, 1 if not.
-
-check_upgrade() {
-  if [ -f $CONFIG_DIR/we_are_doing_an_upgrade ]; then
-    return 0
-  fi
-  return 1
-}
-
 # create_cfg_file
 #
 # Create the file needed for configuration.

@@ -84,14 +84,19 @@ if [ -f /usr/share/dbconfig-common/dpkg/config ]; then
 
 	dbc_first_version="3.0~a1"
 	if dpkg --compare-versions "$2" lt "$dbc_first_version"; then
-		INIFILE=/etc/linotp2/linotp.ini
-		if [ -f $INIFILE ]; then
-			uri="$(grep "^sqlalchemy.url *=" $INIFILE | cut -f2 -d'=')"
-			if mk_configfile_from_linotp_ini "$uri"; then
-				# Tell dbc to load the configuration from the generated temporary file
-				dbc_load_include="sh:${temp_conffile}"
+		# Look for the old style ini file.
+		# If preinst already ran, the file will be in /etc/linotp.
+		# Otherwise, it will still be in /etc/linotp2.
+		for INIFILE in /etc/linotp/linotp.ini /etc/linotp2/linotp.ini; do
+			if [ -f $INIFILE ]; then
+				uri="$(grep "^sqlalchemy.url *=" $INIFILE | cut -f2 -d'=')"
+				if mk_configfile_from_linotp_ini "$uri"; then
+					# Tell dbc to load the configuration from the generated temporary file
+					dbc_load_include="sh:${temp_conffile}"
+					break
+				fi
 			fi
-		fi
+		done
 	fi
 
 	# Configure dbconfig-common and ask user questions
