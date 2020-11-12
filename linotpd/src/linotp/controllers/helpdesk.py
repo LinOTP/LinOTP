@@ -29,15 +29,14 @@ helpdesk controller - interfaces to administrate LinOTP as helpdesk
 """
 import os
 import logging
-from binascii import hexlify
 
-from flask import after_this_request, current_app, g
+from flask import current_app, g
 
 from linotp.flap import (
-    config, request, response, tmpl_context as c)
+    config, request, response)
 
 
-from linotp.controllers.base import BaseController
+from linotp.controllers.base import BaseController, SessionCookieMixin
 
 from linotp.lib.reply import sendResult
 from linotp.lib.reply import sendError
@@ -85,7 +84,7 @@ from linotp.model import db
 log = logging.getLogger(__name__)
 
 
-class HelpdeskController(BaseController):
+class HelpdeskController(BaseController, SessionCookieMixin):
 
     '''
     The linotp.controllers are the implementation of the web-API to talk to
@@ -98,6 +97,8 @@ class HelpdeskController(BaseController):
 
     The functions are described below in more detail.
     '''
+
+    session_cookie_name = "helpdesk_session"  # for `SessionCookieMixin`
 
     def __before__(self,  **params):
         '''
@@ -142,45 +143,6 @@ class HelpdeskController(BaseController):
                 "[__after__] unable to create a session cookie: %r" % e)
             db.session.rollback()
             return sendError(response, e, context='after')
-
-    def getsession(self):
-        '''
-        This generates a session key and sets it as a cookie
-
-            def set_cookie(self, key, value='', max_age=None,
-                   path='/', domain=None, secure=None, httponly=False,
-                   version=None, comment=None, expires=None, overwrite=False):
-        '''
-
-        @after_this_request
-        def set_session_cookie(response):
-            try:
-                random_key = os.urandom(SESSION_KEY_LENGTH)
-                value = hexlify(random_key)
-                log.debug(
-                    "[getsession] adding session cookie %s to response." % value)
-
-                # TODO: add secure cookie at least for https
-
-                # Add cookie to generated response
-                response.set_cookie('helpdesk_session', value=value)
-
-                return response
-
-            except Exception as e:
-                log.exception("[getsession] unable to create a session cookie")
-                db.session.rollback()
-                return sendError(response, e)
-
-        return sendResult(None, True)
-
-    def dropsession(self):
-        @after_this_request
-        def drop_session_cookie(response):
-            response.delete_cookie(key='helpdesk_session')
-            return response
-
-        return sendResult(None, True)
 
     def tokens(self):
         '''

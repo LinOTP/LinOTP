@@ -7,6 +7,10 @@ linotp (3.0~rc1-0dev) buster-dev; urgency=low
     `linotp backup-legacy` command to `linotp backup`, for clarity.
   * Remove the linotp-restore(1) man page as `linotp restore` is not a
     LinOTP command.
+  * Configuration:
+    * Add the SESSION_COOKIE_SECURE configuration setting, which controls
+      the "secure" flag on session cookies. This defaults to "true" in
+      "production" mode and to "false" otherwise.
 
   Fixes:
   * setting of totp timeStep does now adjust the otp counter

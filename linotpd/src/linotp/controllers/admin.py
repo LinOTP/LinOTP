@@ -27,12 +27,14 @@
 """
 admin controller - interfaces to administrate LinOTP
 """
-from binascii import hexlify
 from datetime import datetime
 import json
-from linotp.controllers.base import BaseController
+
+from flask import current_app
+
+from linotp.controllers.base import BaseController, SessionCookieMixin
 from linotp.flap import (
-    config, request, response, tmpl_context as c,
+    config, request, response,
     HTTPUnauthorized,
 )
 from linotp.lib.audit.base import get_token_num_info
@@ -109,7 +111,7 @@ from linotp.lib.ImportOTP.yubico import parseYubicoCSV
 log = logging.getLogger(__name__)
 
 
-class AdminController(BaseController):
+class AdminController(BaseController, SessionCookieMixin):
 
     '''
     The linotp.controllers are the implementation of the web-API to talk to
@@ -122,6 +124,8 @@ class AdminController(BaseController):
 
     The functions are described below in more detail.
     '''
+
+    session_cookie_name = "admin_session"  # for `SessionCookieMixin`
 
     def __before__(self, **params):
         """
@@ -223,62 +227,6 @@ class AdminController(BaseController):
         #                           [('WWW-Authenticate', 'Basic realm="%s"' % realm)]
         #                          )
         # abort(401, "You are not authenticated")
-
-    def getsession(self):
-        '''
-        This generates a session key and sets it as a cookie
-        set_cookie is defined in python-webob::
-
-            def set_cookie(self, key, value='', max_age=None,
-                   path='/', domain=None, secure=None, httponly=False,
-                   version=None, comment=None, expires=None, overwrite=False):
-        '''
-        @after_this_request
-        def set_session_cookie(response):
-            try:
-                web_host = request.environ.get('HTTP_HOST')
-                # HTTP_HOST also contains the port number. We need to stript
-                # this!
-                web_host = web_host.split(':')[0]
-                log.debug("[getsession] found this web_host: %s" % web_host)
-                random_key = os.urandom(SESSION_KEY_LENGTH)
-
-                value = hexlify(random_key)
-                log.debug(
-                    "[getsession] adding session cookie %s to response." % value)
-
-                if web_host not in ('127.0.0.1', 'localhost'):
-                    domain = web_host
-                else:
-                    domain = None
-
-                # TODO: add secure cookie at least for https
-
-                # Add cookie to generated response
-                response.set_cookie('admin_session', value=value)
-
-                return response
-
-            except Exception as e:
-                log.exception("[getsession] unable to create a session cookie")
-                db.session.rollback()
-                return sendError(response, e)
-
-        return sendResult(None, True)
-
-    def dropsession(self):
-        """
-        dropsession - invalidate the admin session cookie
-
-        :remark: by delete_cookie the cookie is not deleted. instead the
-                 expiration date is set to the beginning of unix time ;)
-        """
-        @after_this_request
-        def drop_session_cookie(response):
-            response.delete_cookie(key='admin_session')
-            return response
-
-        return sendResult(None, True)
 
     def getTokenOwner(self):
         """

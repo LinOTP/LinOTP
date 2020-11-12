@@ -155,6 +155,7 @@ HASHLIB_MAP = {
     3: 'sha512'
 }
 
+
 # -------------------------------------------------------------------------- --
 
 def secure_cookie():
@@ -163,7 +164,7 @@ def secure_cookie():
     there is probaly no https defined. So we switch secure cookies off.
     this is done in the settings.py
     """
-    return config.get('SESSION_COOKIE_SECURE', True)
+    return config['SESSION_COOKIE_SECURE']
 
 # -------------------------------------------------------------------------- --
 
@@ -667,8 +668,8 @@ class UserserviceController(BaseController):
             (cookie, expires, _exp) = ret
 
             self.response.set_cookie('user_selfservice', cookie,
-                                secure=secure_cookie,
-                                expires=expires)
+                                     secure=secure_cookie(),
+                                     expires=expires)
 
             g.audit['info'] = ("User %r authenticated from otp" % user)
 
@@ -691,8 +692,8 @@ class UserserviceController(BaseController):
             cookie, expires, expiration = ret
 
             self.response.set_cookie('user_selfservice', cookie,
-                                secure=secure_cookie,
-                                expires=expires)
+                                     secure=secure_cookie(),
+                                     expires=expires)
 
             g.audit['success'] = False
 
@@ -804,7 +805,7 @@ class UserserviceController(BaseController):
 
             self.response.set_cookie(
                 'user_selfservice', cookie,
-                secure=secure_cookie, expires=expires)
+                secure=secure_cookie(), expires=expires)
 
             g.audit['action_detail'] = "expires: %s " % expiration
             g.audit['info'] = "%r logged in " % user
@@ -839,7 +840,7 @@ class UserserviceController(BaseController):
 
             self.response.set_cookie(
                 'user_selfservice', cookie,
-                secure=secure_cookie, expires=expires)
+                secure=secure_cookie(), expires=expires)
 
             g.audit['action_detail'] = "expires: %s " % expiration
             g.audit['info'] = "%r logged in " % user
