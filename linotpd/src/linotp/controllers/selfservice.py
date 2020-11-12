@@ -439,7 +439,8 @@ class SelfserviceController(BaseController):
             error = ('error (%r) accessing form data for: tok:%r, scope:%r'
                      ', section:%r' % (exx, tok, scope, section))
             log.exception(error)
-            return '<pre>%s</pre>' % error
+            return "<h1>{}</h1><pre>{} {}</pre>".format(
+                _("Failed to load form"), _("Error"), exx)
 
     def custom_style(self):
         '''
