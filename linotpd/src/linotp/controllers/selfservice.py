@@ -168,7 +168,7 @@ class SelfserviceController(BaseController):
                     return redirect(url_for('.login'))
 
                 else:
-                    Unauthorized('No valid session')
+                    raise Unauthorized('No valid session')
 
             # -------------------------------------------------------------- --
 
@@ -195,7 +195,7 @@ class SelfserviceController(BaseController):
             # futher processing with the authenticated user
 
             if auth_state != 'authenticated':
-                Unauthorized('No valid session')
+                raise Unauthorized('No valid session')
 
             c.user = auth_user.login
             c.realm = auth_user.realm
@@ -219,7 +219,7 @@ class SelfserviceController(BaseController):
                         g.audit['info'] = "session expired"
                         current_app.audit_obj.log(g.audit)
 
-                        Unauthorized('No valid session')
+                        raise Unauthorized('No valid session')
 
             # -------------------------------------------------------------- --
 
@@ -305,7 +305,8 @@ class SelfserviceController(BaseController):
             # the exception, when an abort() is called if forwarded
             log.exception("[__after__::%r] webob.exception %r" % (action, acc))
             db.session.rollback()
-            # FIXME: verify that this really works
+            # FIXME: replace authorization exception handling with flasks preferred
+            # error handling
             raise acc
 
         except Exception as e:
