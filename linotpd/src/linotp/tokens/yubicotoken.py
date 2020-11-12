@@ -29,7 +29,12 @@ import logging
 
 from linotp.lib.config import getFromConfig
 from hashlib import sha1
-import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.parse
+import urllib.error
+import urllib.request
+import urllib.error
+import urllib.parse
 import re
 import os
 import binascii
@@ -64,10 +69,27 @@ FALLBACK_YUBICO_URL = ", ".join([
     "https://api3.yubico.com/wsapi/2.0/verify",
     "https://api4.yubico.com/wsapi/2.0/verify",
     "https://api5.yubico.com/wsapi/2.0/verify"
-    ])
+])
 
-DEFAULT_CLIENT_ID = 11759
-DEFAULT_API_KEY = "P1QVTgnToQWQm0b6LREEhDIAbHU="
+LINOTP_DOC_LINK = (
+    "https://linotp.org/doc/latest/part-management/managingtokens/"
+    "tokens-config.html?highlight=yubico#yubico-token-default-settings"
+)
+
+YUBICO_GETAPI_LINK = "https://upgrade.yubico.com/getapikey/"
+
+APIKEY_UNCONFIGURED_ERROR = """
+You need to provide an API key and ID for Yubico support.
+Please register your own apiKey and apiId at the Yubico web site:"
+  %s
+Configure apiKey and apiId in the LinOTP token-config dialog.
+Have a look at:
+  %s" 
+""" % (YUBICO_GETAPI_LINK, LINOTP_DOC_LINK)
+
+
+class YubicoApikeyException(Exception):
+    pass
 
 
 log = logging.getLogger(__name__)
@@ -85,7 +107,6 @@ class YubicoTokenClass(TokenClass):
         self.setType("yubico")
 
         self.tokenid = ""
-
 
     @classmethod
     def getClassType(cls):
@@ -112,33 +133,33 @@ class YubicoTokenClass(TokenClass):
         '''
 
         res = {
-               'type'           : 'yubico',
-               'title'          : 'Yubico Token',
-               'description'    : ('Yubico token to forward the authentication request to the Yubico Cloud authentication'),
+            'type': 'yubico',
+            'title': 'Yubico Token',
+            'description': ('Yubico token to forward the authentication '
+                            'request to the Yubico Cloud authentication'),
 
-               'init'         : {'page' : {'html'      : 'yubicotoken.mako',
-                                            'scope'      : 'enroll', },
-                                   'title'  : {'html'      : 'yubicotoken.mako',
-                                             'scope'     : 'enroll.title', },
-                                   },
+            'init': {'page': {'html': 'yubicotoken.mako',
+                              'scope': 'enroll', },
+                     'title': {'html': 'yubicotoken.mako',
+                               'scope': 'enroll.title', },
+                     },
 
-               'config'        : { 'page' : {'html'      : 'yubicotoken.mako',
-                                            'scope'      : 'config', },
-                                   'title'  : {'html'      : 'yubicotoken.mako',
-                                             'scope'     : 'config.title', },
-                                 },
-               'selfservice'   :  { 'enroll' :
-                                   {'page' : {
-                                              'html'       : 'yubicotoken.mako',
-                                              'scope'      : 'selfservice.enroll', },
-                                    'title'  : {
-                                                'html'      : 'yubicotoken.mako',
-                                                'scope'      : 'selfservice.title.enroll', },
-                                    },
-                                   },
-               'policy' : {},
-               }
-
+            'config': {'page': {'html': 'yubicotoken.mako',
+                                'scope': 'config', },
+                       'title': {'html': 'yubicotoken.mako',
+                                 'scope': 'config.title', },
+                       },
+            'selfservice':  {'enroll':
+                             {'page': {
+                                 'html': 'yubicotoken.mako',
+                                 'scope': 'selfservice.enroll', },
+                              'title': {
+                                 'html': 'yubicotoken.mako',
+                                 'scope': 'selfservice.title.enroll', },
+                              },
+                             },
+            'policy': {},
+        }
 
         if key is not None and key in res:
             ret = res.get(key)
@@ -155,7 +176,9 @@ class YubicoTokenClass(TokenClass):
             raise ParameterError("Missing parameter: 'yubico.tokenid'")
 
         if len(tokenid) < YUBICO_LEN_ID:
-            raise Exception("The YubiKey token ID needs to be %i characters long!" % YUBICO_LEN_ID)
+            raise Exception(
+                "The YubiKey token ID needs to be %i characters "
+                "long!" % YUBICO_LEN_ID)
 
         if len(tokenid) > YUBICO_LEN_ID:
             tokenid = tokenid[:YUBICO_LEN_ID]
@@ -197,15 +220,14 @@ class YubicoTokenClass(TokenClass):
                 raise Exception("Usage of YUBICO_URL %r is deprecated!! " %
                                 DEPRECATED_YUBICO_URL)
 
-        apiId = getFromConfig("yubico.id") or DEFAULT_CLIENT_ID
-        apiKey = getFromConfig("yubico.secret") or DEFAULT_API_KEY
+        apiId = getFromConfig("yubico.id")
+        apiKey = getFromConfig("yubico.secret")
 
-        if apiKey == DEFAULT_API_KEY or apiId == DEFAULT_CLIENT_ID:
-            log.warning("Usage of default apiKey or apiId not recomended!!")
-            log.warning("Please register your own apiKey and apiId at "
-                                                        "yubico website !!")
-            log.warning("Configure of apiKey and apiId at the "
-                                             "linotp manage config menue!!")
+        if not apiKey or not apiId:
+            log.error(APIKEY_UNCONFIGURED_ERROR)
+            raise YubicoApikeyException(
+                'Yubico apiKey or apiId not configured!'
+            )
 
         tokenid = self.getFromTokenInfo("yubico.tokenid")
         if len(anOtpVal) < 12:
@@ -219,21 +241,20 @@ class YubicoTokenClass(TokenClass):
 
         timeout = getFromConfig("yubico.timeout")
         if timeout:
-            pparams['timeout']= parse_timeout(timeout)
+            pparams['timeout'] = parse_timeout(timeout)
 
         nonce = binascii.hexlify(os.urandom(20)).decode()
 
         p = urllib.parse.urlencode({
             'nonce': nonce,
-            'otp':anOtpVal,
-            'id':apiId
+            'otp': anOtpVal,
+            'id': apiId
         })
 
         yubico_urls = [x.strip() for x in yubico_url.split(',')]
 
         res_scheduler = ResourceScheduler(
-                        tries=2, uri_list=yubico_urls)
-
+            tries=2, uri_list=yubico_urls)
 
         for uri in next(res_scheduler):
 
@@ -250,7 +271,6 @@ class YubicoTokenClass(TokenClass):
 
                 return -1
 
-
             except (Timeout, ConnectTimeout, ReadTimeout,
                     ConnectionError, TooManyRedirects) as exx:
 
@@ -262,7 +282,6 @@ class YubicoTokenClass(TokenClass):
 
                 log.error("[checkOtp] Error getting response from "
                           "Yubico Cloud Server (%r)" % uri)
-
 
             except Exception as exx:
 
@@ -278,7 +297,6 @@ class YubicoTokenClass(TokenClass):
 
         raise AllResourcesUnavailable('non of the resources %r available!' %
                                       yubico_urls)
-
 
     def _check_yubico_response(self, nonce, apiKey, rv):
         """
