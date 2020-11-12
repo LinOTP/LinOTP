@@ -1,3 +1,9 @@
+linotp (3.0~rc2-0dev) buster-dev; urgency=low
+
+  * Set version 3.0~rc2-0dev
+
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 12 Nov 2020 17:38:11 +0200
+
 linotp (3.0~rc1-1) buster-dev; urgency=low
 
   Features:
