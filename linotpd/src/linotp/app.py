@@ -33,6 +33,7 @@ from uuid import uuid4
 
 from flask import (Flask, Config as FlaskConfig, current_app, g as flask_g,
                    jsonify, Blueprint, redirect)
+from flask.helpers import get_env
 from flask_babel import Babel, gettext
 
 from beaker.cache import CacheManager
@@ -799,7 +800,7 @@ def _configure_app(app, config_name='default', config_extra=None):
         app.config.check_directories()
 
 
-def create_app(config_name='default', config_extra=None):
+def create_app(config_name=None, config_extra=None):
     """
     Generate a new instance of the Flask app
 
@@ -811,6 +812,12 @@ def create_app(config_name='default', config_extra=None):
     @param config_extra An optional dict of configuration override values
     """
     app = LinOTPApp()
+
+    # We need to do this here because the Flask CLI machinery doesn't seem
+    # to pass the correct value.
+
+    if config_name is None:
+        config_name = get_env()
 
     _configure_app(app, config_name, config_extra)
 
