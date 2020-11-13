@@ -98,6 +98,8 @@ class HelpdeskController(BaseController, SessionCookieMixin):
     The functions are described below in more detail.
     '''
 
+    default_url_prefix = "/api/helpdesk"
+
     session_cookie_name = "helpdesk_session"  # for `SessionCookieMixin`
 
     def __before__(self,  **params):
