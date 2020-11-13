@@ -31,12 +31,14 @@ test the authentication towards the helpdesk
 - getsession and dropsession api
 """
 
-import json
+import pytest
 
 from linotp.tests import TestController
 
 
-
+@pytest.mark.app_config({
+    'CONTROLLERS': 'admin system helpdesk',
+})
 class TestHelpdeskAuthorization(TestController):
 
     def setUp(self):
