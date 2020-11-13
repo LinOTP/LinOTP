@@ -24,7 +24,9 @@
 #    Support: www.keyidentity.com
 #
 import logging
+from typing import TYPE_CHECKING, Union
 
+from selenium.webdriver import Chrome, Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -33,10 +35,14 @@ from linotp_selenium_helper.helper import (
     fill_form_element, close_alert_and_get_its_text)
 from selenium.common.exceptions import TimeoutException
 
-logger = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from .test_case import TestCase
 
 
 class SelfService(object):
+
+    URL = "/selfservice"
+
     tab_register_motp = 'Register mOTP'
     tab_disable_token = 'Disable Token'
     tab_resync_token = 'Resync Token'
@@ -45,15 +51,28 @@ class SelfService(object):
 
     selected_token_css = 'div[role="tabpanel"][style=""] input.selectedToken'
 
-    def __init__(self, driver, base_url, ui_wait_time):
+    def __init__(self, testcase: 'TestCase'):
         """
         Initialise the self service helper
 
         @param base_url: URL of the LinOTP service
         """
-        self.base_url = base_url
-        self.driver = driver
-        self.ui_wait_time = ui_wait_time
+        self.testcase: 'TestCase' = testcase
+        "The UnitTest class that is running the tests"
+
+    @property
+    def selfservice_url(self) -> str:
+        """
+        The base URL of the selfservice
+        """
+        return self.testcase.base_url + self.URL
+
+    @property
+    def driver(self) -> Union[Chrome, Firefox]:
+        """
+        Return a reference to the selenium driver
+        """
+        return self.testcase.driver
 
     def _find_by_id(self, id_value):
         """Return the element by ID"""
@@ -61,22 +80,22 @@ class SelfService(object):
 
     def find_by_class(self, class_name):
         """Return the element by its class name"""
-        return WebDriverWait(self.driver, self.ui_wait_time).until(
+        return WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
             EC.visibility_of_element_located((By.CLASS_NAME, class_name)))
 
     def find_by_xpath(self, xpath):
         """Return the element by its xpath"""
-        return WebDriverWait(self.driver, self.ui_wait_time).until(
+        return WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
             EC.visibility_of_element_located((By.XPATH, xpath)))
 
     def login(self, user, password, realm=None):
         """
-        Log in to self service via /account/login
+        Log in to selfservice
 
         @param realm: Realm name will be appended to username if given
         """
         driver = self.driver
-        driver.get(self.base_url + "/account/login")
+        driver.get(self.selfservice_url + "/login")
         if realm:
             login = '%s@%s' % (user, realm)
         else:
@@ -118,13 +137,13 @@ class SelfService(object):
         """
         self.select_tab(tabname)
         # Now wait for token field to be visible
-        WebDriverWait(self.driver, self.ui_wait_time).until(
+        WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
             EC.visibility_of_element_located((By.CSS_SELECTOR,
                                               self.selected_token_css)))
 
         # Assume, that there is any token/button in the token list
         # on the left side.
-        WebDriverWait(self.driver, self.ui_wait_time).until(
+        WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
             EC.presence_of_element_located((By.XPATH,
                                             '//*[@id="tokenDiv"]/ul/li/button')))
 
@@ -141,11 +160,11 @@ class SelfService(object):
 
         # Wait for token field value to update
         try:
-            WebDriverWait(self.driver, self.ui_wait_time).until(
+            WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
                 EC.text_to_be_present_in_element_value((By.CSS_SELECTOR,
                                                         self.selected_token_css), token))
         except TimeoutException:
-            logger.error(
+            logging.error(
                 'selfservice was not able to activate tab:%s token:%s',
                 tabname, token)
             raise
