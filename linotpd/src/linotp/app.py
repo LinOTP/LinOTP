@@ -576,8 +576,6 @@ class LinOTPApp(Flask):
         if not ctrl_name:
             raise ConfigurationError(
                 "no controller module specified: {}".format(ctrl_name))
-        if not url_prefix:
-            url_prefix = '/' + ctrl_name    # "foobar" => "/foobar"
         if not ctrl_class_name:
             # "foobar" => "FoobarController"
             ctrl_class_name = ctrl_name.title() + 'Controller'
@@ -588,6 +586,10 @@ class LinOTPApp(Flask):
             raise ConfigurationError(
                 "{} does not define the '{}' class".format(ctrl_name,
                                                            ctrl_class_name))
+
+        if not url_prefix:
+            url_prefix = cls.default_url_prefix or '/' + ctrl_name
+
         self.logger.debug(
             "Registering {0} class at {1}".format(ctrl_class_name, url_prefix))
         self.register_blueprint(cls(ctrl_name), url_prefix=url_prefix)

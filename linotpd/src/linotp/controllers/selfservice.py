@@ -90,6 +90,8 @@ log = logging.getLogger(__name__)
 
 class SelfserviceController(BaseController):
 
+    default_url_prefix = "/selfservice-legacy"
+
     authUser = None
 
     # the following actions don't require a session parameter
