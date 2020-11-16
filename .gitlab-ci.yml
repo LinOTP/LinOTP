@@ -21,6 +21,7 @@ workflow:
     - if: $CI_MERGE_REQUEST_ID                        # Execute jobs in merge request context
     - if: $CI_COMMIT_TAG                              # Execute jobs on release tag
     - if: '$CI_COMMIT_BRANCH =~ /^(branch-v|master)/' # Execute jobs when a new commit is pushed to stable or master branch
+    - if: $NIGHTLY_PIPELINE                           # Execute jobs if run with this variable set
 
 stages:
   - build
@@ -159,186 +160,167 @@ lint-useridresolver:
   variables:
     LINTED_MODULE: useridresolver
 
+# Provide pytest arguments based on base rules
+# The tests need a number of arguments based on the type
+# of job they represent. (database type, parallel run, nightly, etc.).
+# We also need do decide whether to include parallel arguments depending on
+# the job variables provided. We implement this as a shell command so that
+# we can make use of the shell to put all the pieces together in once place.
+#
+# Pytest arguments can be specified in these variables:
+#  NIGHTLY_ARGS     - Only used if this is a nightly (extended) pipeline
+#  NON_NIGHTLY_ARGS - Only used for normal pipelines (MRs, merges, tags)
+#  ALL_JOB_ARGS     - Both nightly and non-nightly jobs
+#
+# Behaviour configuration:
+#  NIGHTLY_PIPELINE - If set, the pipeline runs in nightly mode and enables an
+#                     extended set of tests
+#
+# Other variables used:
+#  CI_JOB_NAME      - the test report file is derived from the job name
+#  CI_NODE_TOTAL    - parallel run configuration
+#  CI_NODE_INDEX
+.pytest-args: &pytest-args |
+  # Junit XML filename is based on the job name
+  PYTESTARGS="--junitxml=`echo ${CI_JOB_NAME} | tr ' /' '_'`.xml"
+  if [ -n "${CI_NODE_INDEX}" ]; then
+    PYTESTARGS="$PYTESTARGS --test-group-count=${CI_NODE_TOTAL} --test-group=${CI_NODE_INDEX}"
+  fi
+  # Add arguments from job definition
+  PYTESTARGS="$PYTESTARGS ${ALL_JOB_ARGS}"
+  # Job definition of nightly / non-nightly arguments
+  if [ -n "${NIGHTLY_PIPELINE}" ]; then
+    PYTESTARGS="${PYTESTARGS} ${NIGHTLY_ARGS}"
+  else
+    PYTESTARGS="${PYTESTARGS} ${NON_NIGHTLY_ARGS}"
+  fi
+  # Coverage report
+  PYTESTARGS="${PYTESTARGS} --cov=linotp --cov-report=xml:${CI_PROJECT_DIR}/coverage.xml"
 
-.unit-test-base:
-  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
-  script:
-      - make unittests PYTESTARGS="--test-group-count=$CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
-  artifacts:
-    reports:
-      junit: linotpd/src/linotp/tests/unit/unit-*.xml
+# Nightly tests are scheduled to run once a day and contain
+# more tests than the regular set
+.only-nightly:
+  rules:
+    - if: $NIGHTLY_PIPELINE                            # Nightly job is longer
+      when: always
 
-unit-test:
-  extends: .unit-test-base
-  stage: test
-  parallel: 4
+# Tests should run on Debian buster
+.buster-tests:
   variables:
     DEBIAN_RELEASE_NAME: buster
   needs: ["build:debian-buster"]
 
-.functional-test-base:
-  stage: test
-  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
-  artifacts:
-    reports:
-      junit: linotpd/src/linotp/tests/functional/functional-*.xml
-  needs: ["build:debian-buster"]
+# The next sections provide different database configurations
+.mysql-vars: &mysql-vars
+  MYSQL_DATABASE: linotp_db
+  MYSQL_ROOT_PASSWORD: rootpass
+  MYSQL_USER: linotp
+  MYSQL_PASSWORD: linotppass
+  LINOTP_DB_HOST: "db"
+  LINOTP_DB_PORT: "3306"
+  LINOTP_DB_WAITTIME: 2m
+  LINOTP_DATABASE_URI: "mysql+pymysql://linotp:linotppass@db/linotp_db?charset=utf8"
+  LINOTP_PYTEST_DATABASE_URI: "mysql+pymysql://linotp:linotppass@db/linotp_db?charset=utf8"
 
-#  artifacts:
-#    paths:
-#      - coverage/${DEBIAN_RELEASE_NAME}/
-
-functional-test:
-  extends: .functional-test-base
-  parallel: 6
+.mysql-database:
   variables:
-    DEBIAN_RELEASE_NAME: buster
-  script:
-    - make functionaltests PYTESTARGS="--test-group-count=$CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
-
-.functional-test-base-mysql:
-  extends: .functional-test-base
+    <<: *mysql-vars
+    DB: mysql:5.5
   services:
-    - name: mysql:5.5
-      alias: database
+    - name: ${DB}
+      alias: db
       command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci"]
+
+.mariadb-database:
   variables:
-    DEBIAN_RELEASE_NAME: buster
-    MYSQL_DATABASE: linotp_db
-    MYSQL_ROOT_PASSWORD: rootpass
-    MYSQL_USER: linotp
-    MYSQL_PASSWORD: linotppass
-    LINOTP_DATABASE_URI: mysql+pymysql://linotp:linotppass@database/linotp_db
-    LINOTP_PYTEST_DATABASE_URI: mysql+pymysql://linotp:linotppass@database/linotp_db
-
-functional-test-mysql:
-  extends: .functional-test-base-mysql
-  script:
-    - make functionaltests PYTESTARGS="-m exclude_sqlite --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
-
-functional-test-mysql-nightly:
-  extends: .functional-test-base-mysql
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'schedule'
-      when: always
-  script:
-    - make functionaltests PYTESTARGS="--junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
-
-.functional-test-base-mariadb:
-  extends: .functional-test-base
+    <<: *mysql-vars
+    DB: mariadb:10.1
   services:
-    - name: mariadb:10.1
-      alias: database
+    - name: ${DB}
+      alias: db
+
+.postgres-database:
   variables:
-    DEBIAN_RELEASE_NAME: buster
-    MYSQL_DATABASE: linotp_db
-    MYSQL_ROOT_PASSWORD: rootpass
-    MYSQL_USER: linotp
-    MYSQL_PASSWORD: linotppass
-    LINOTP_DATABASE_URI: mysql+pymysql://linotp:linotppass@database/linotp_db
-    LINOTP_PYTEST_DATABASE_URI: mysql+pymysql://linotp:linotppass@database/linotp_db
-
-functional-test-mariadb:
-  extends: .functional-test-base-mariadb
-  script:
-    - make functionaltests PYTESTARGS="-m exclude_sqlite --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
-
-functional-test-mariadb-nightly:
-  extends: .functional-test-base-mariadb
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'schedule'
-      when: always
-  script:
-    - make functionaltests PYTESTARGS="--junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
-
-.functional-test-base-postgres:
-  extends: .functional-test-base
-  services:
-    - name: postgres:12
-      alias: database
-  variables:
-    DEBIAN_RELEASE_NAME: buster
+    DB: postgres:12
     POSTGRES_DB: linotp_db
     POSTGRES_USER: linotp
     POSTGRES_PASSWORD: "linotppass"
     POSTGRES_HOST_AUTH_METHOD: trust
-    LINOTP_DATABASE_URI: postgres://linotp:linotppass@database/linotp_db
-    LINOTP_PYTEST_DATABASE_URI: postgres://linotp:linotppass@database/linotp_db
-
-functional-test-postgres:
-  extends: .functional-test-base-postgres
-  script:
-    - make functionaltests PYTESTARGS="-m exclude_sqlite --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
-
-functional-test-postgres-nightly:
-  extends: .functional-test-base-postgres
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'schedule'
-      when: always
-  script:
-    - make functionaltests PYTESTARGS="--junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
-
-# Auto-generate API docs using Sphinx.
-apidocs:
-  stage: apidocs
-  image: $CI_IMAGE_PREFIX/buster/linotp:${CI_PIPELINE_ID}
-  needs: ["build:debian-buster"]
-  script:
-    - python3 --version
-    - cd linotpd/src
-    - pip3 install -e ".[apidocs]"
-    - cd ${CI_PROJECT_DIR}/linotpd/src/api-doc
-    - make apidocs
-    - make html
-    - mkdir ${CI_PROJECT_DIR}/api-doc
-    - cp -a build/html/. ${CI_PROJECT_DIR}/api-doc
-  artifacts:
-    name: "linotp-apidocs"
-    paths:
-      - api-doc
-    expire_in: 2 weeks
-
-# .coverage-report:
-#   stage: coverage-report
-#   image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
-#   script:
-#     - pip3 install coverage
-#     - cd coverage/${DEBIAN_RELEASE_NAME}
-#     - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
-#     - coverage combine *
-#     - coverage report | tee coverage.txt
-#     - coverage html
-#   artifacts:
-#     paths:
-#       - coverage/${DEBIAN_RELEASE_NAME}
-
-# coverage-report:
-#   extends: .coverage-report
-#   allow_failure: true
-#   variables:
-#     DEBIAN_RELEASE_NAME: buster
-
-
-.e2e-test:
-  stage: test
-  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
-  needs: ["build:debian-buster"]
+    LINOTP_DB_HOST: "db"
+    LINOTP_DB_PORT: "3306"
+    LINOTP_DB_WAITTIME: 2m
+    LINOTP_DATABASE_URI: postgres://linotp:linotppass@db/linotp_db
+    LINOTP_PYTEST_DATABASE_URI: postgres://linotp:linotppass@db/linotp_db
   services:
     - name: ${DB}
       alias: db
-    - name: "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
-      alias: test-linotp
-    - name: selenium/standalone-chrome-debug
-      alias: test-chrome
+
+## Test stages
+
+.test-base:
+  stage: test
+  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  artifacts:
+    reports:
+      cobertura: ${CI_PROJECT_DIR}/coverage.xml
+
+# Unit tests
+unit-test:
+  extends:
+    - .test-base
+    - .buster-tests
+  parallel: 4
+  artifacts:
+    reports:
+      junit: linotpd/src/linotp/tests/unit/unit-*.xml
+  script:
+    - *pytest-args
+    - make unittests PYTESTARGS="$PYTESTARGS"
+
+# Functional tests
+.functional-test-base:
+  extends:
+    - .test-base
+    - .buster-tests
+  artifacts:
+    reports:
+      junit: linotpd/src/linotp/tests/functional/functional-*.xml
+  script:
+    - *pytest-args
+    - make functionaltests PYTESTARGS="$PYTESTARGS"
+
+functional-test:
+  extends: .functional-test-base
+  parallel: 6
+
+functional-test-mysql:
+  extends:
+    - .functional-test-base
+    - .mysql-database
   variables:
-    DEBIAN_RELEASE_NAME: buster
-    MYSQL_DATABASE: linotp_db
-    MYSQL_ROOT_PASSWORD: linotppass
-    MYSQL_USER: linotpuser
-    MYSQL_PASSWORD: linotppass
-    MYSQL_HOST: mysql
-    LINOTP_DB_HOST: "db"
-    LINOTP_DB_WAITTIME: 2m
+    # Only run non-sqlite tests in regular pipeline
+    NON_NIGHTLY_ARGS: "-m exclude_sqlite"
+
+functional-test-mariadb:
+  extends:
+    - .functional-test-base
+    - .mariadb-database
+  variables:
+    NON_NIGHTLY_ARGS: "-m exclude_sqlite"
+
+functional-test-postgres:
+  extends:
+    - .functional-test-base
+    - .postgres-database
+  variables:
+    NON_NIGHTLY_ARGS: "-m exclude_sqlite"
+
+.e2e-test:
+  extends:
+    - .test-base
+    - .buster-tests
+  variables:
+    LINOTP_IMAGE: "linotp"
     LINOTP_HOST: "test-linotp"
     LINOTP_PORT: "443"
     LINOTP_PROTOCOL: "https"
@@ -393,37 +375,6 @@ apidocs:
   artifacts:
     reports:
       junit: linotpd/src/linotp/tests/integration/e2e-*.xml
-
-e2e-test-mariadb:
-  extends: .e2e-test
-  parallel: 2
-  variables:
-    DB: mariadb:10.1
-    LINOTP_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"
-    LINOTP_PYTEST_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"
-    LINOTP_DB_PORT: "3306"
-  script:
-    - cd linotpd/src/linotp/tests/integration
-    - /usr/local/bin/dockerfy --template docker_cfg.ini.tmpl:/tmp/server_cfg.ini --wait tcp://$SELENIUM_HOST:$SELENIUM_PORT --timeout 60m --wait tcp://$LINOTP_HOST:$LINOTP_PORT --timeout 60m
-    - make integrationtests TCFILE=/tmp/server_cfg.ini PYTESTARGS="-v --test-group-count=$CI_NODE_TOTAL --test-group=$CI_NODE_INDEX  --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml"
-
-e2e-test-softhsm:
-  extends: .e2e-test
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'schedule'
-      when: always
-  variables:
-    DB: mariadb:10.1
-    LINOTP_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"
-    LINOTP_PYTEST_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"
-    LINOTP_DB_PORT: "3306"
-  services:
-    - name: ${DB}
-      alias: db
-    - name: "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-softhsm:${CI_PIPELINE_ID}"
-      alias: test-linotp
-    - name: selenium/standalone-chrome-debug
-      alias: test-chrome
   script:
     - cd linotpd/src/linotp/tests/integration
     - >
@@ -433,14 +384,58 @@ e2e-test-softhsm:
         --timeout 60m
         --wait tcp://$LINOTP_HOST:$LINOTP_PORT
         --timeout 60m
-    - >
-        make integrationtests
-        TCFILE=/tmp/server_cfg.ini
-        PYTESTARGS="
-        -m smoketest
-        -v
-        --junitxml=`echo "$CI_JOB_NAME" | tr " /" "_"`.xml
-        "
+    - *pytest-args
+    - make integrationtests TCFILE=/tmp/server_cfg.ini PYTESTARGS="$PYTESTARGS"
+
+e2e-test-mariadb:
+  extends:
+    - .e2e-test
+    - .mariadb-database
+  parallel: 2
+  services:
+    - name: "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/${LINOTP_IMAGE}:${CI_PIPELINE_ID}"
+      alias: test-linotp
+    - name: ${DB}
+      alias: db
+    - name: selenium/standalone-chrome-debug
+      alias: test-chrome
+
+# End to end test using Soft HSM image
+e2e-test-softhsm:
+  extends:
+    - .e2e-test
+    - .mariadb-database
+    - .only-nightly
+  variables:
+    ALL_JOB_ARGS: "-m smoketest -v"
+    LINOTP_IMAGE: "linotp-softhsm"
+  services:
+    - name: "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/${LINOTP_IMAGE}:${CI_PIPELINE_ID}"
+      alias: test-linotp
+    - name: ${DB}
+      alias: db
+    - name: selenium/standalone-chrome-debug
+      alias: test-chrome
+
+# Auto-generate API docs using Sphinx.
+apidocs:
+  stage: apidocs
+  image: $CI_IMAGE_PREFIX/buster/linotp:${CI_PIPELINE_ID}
+  needs: ["build:debian-buster"]
+  script:
+    - python3 --version
+    - cd linotpd/src
+    - pip3 install -e ".[apidocs]"
+    - cd ${CI_PROJECT_DIR}/linotpd/src/api-doc
+    - make apidocs
+    - make html
+    - mkdir ${CI_PROJECT_DIR}/api-doc
+    - cp -a build/html/. ${CI_PROJECT_DIR}/api-doc
+  artifacts:
+    name: "linotp-apidocs"
+    paths:
+      - api-doc
+    expire_in: 2 weeks
 
 # Upload deb packages to development repository.
 # We use scp to upload all the files to an incoming directory.

@@ -24,7 +24,6 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
     python3-mock \
     python3-psycopg2 \
     python3-pytest \
-    python3-pytest-cov \
     python3-pytest-flask \
     python3-wheel \
     pylint3 \
@@ -50,6 +49,7 @@ RUN pip3 install --upgrade \
     flaky \
     mockldap \
     "pytest>=5.0" \
+    "pytest-cov>=2.10" \
     pytest-freezegun \
     pytest-pudb \
     pytest-testconfig \
