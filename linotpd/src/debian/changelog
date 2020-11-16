@@ -3,8 +3,10 @@ linotp (3.0~rc2-0dev) buster-dev; urgency=low
   Fixes:
   * LinOTP legacy SelfService Authorization is now correctly responding with
     an "unauthorized" http response instead of an internal server error
+  * after enrollment, push and qr token enrollment status will stay completed
+    even when these tokens are disabled.
 
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 12 Nov 2020 17:38:11 +0200
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Mon, 16 Nov 2020 15:33:11 +0200
 
 linotp (3.0~rc1-1) buster-dev; urgency=low
 

@@ -124,7 +124,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
     def get_enrollment_status(self):
         """ provide token enrollment status"""
 
-        is_completely_finished = TokenClass.isActive(self)
+        is_completely_finished = self.current_state == 'active'
 
         if is_completely_finished:
             return {'status': 'completed'}

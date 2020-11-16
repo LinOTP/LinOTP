@@ -114,7 +114,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     def get_enrollment_status(self):
         """ provide token enrollment status"""
 
-        is_completely_finished = TokenClass.isActive(self)
+        is_completely_finished = self.current_state == 'pairing_complete'
 
         if is_completely_finished:
             return {'status': 'completed'}
