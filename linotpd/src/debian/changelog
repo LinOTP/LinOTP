@@ -1,6 +1,8 @@
 linotp (3.0~rc2-0dev) buster-dev; urgency=low
 
-  * Set version 3.0~rc2-0dev
+  Fixes:
+  * LinOTP legacy SelfService Authorization is now correctly responding with
+    an "unauthorized" http response instead of an internal server error
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 12 Nov 2020 17:38:11 +0200
 
