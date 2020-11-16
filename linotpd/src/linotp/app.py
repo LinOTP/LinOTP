@@ -32,7 +32,7 @@ from datetime import datetime
 from uuid import uuid4
 
 from flask import (Flask, Config as FlaskConfig, current_app, g as flask_g,
-                   jsonify, Blueprint, redirect)
+                   jsonify, Blueprint, redirect, url_for)
 from flask.helpers import get_env
 from flask_babel import Babel, gettext
 
@@ -576,8 +576,6 @@ class LinOTPApp(Flask):
         if not ctrl_name:
             raise ConfigurationError(
                 "no controller module specified: {}".format(ctrl_name))
-        if not url_prefix:
-            url_prefix = '/' + ctrl_name    # "foobar" => "/foobar"
         if not ctrl_class_name:
             # "foobar" => "FoobarController"
             ctrl_class_name = ctrl_name.title() + 'Controller'
@@ -588,6 +586,10 @@ class LinOTPApp(Flask):
             raise ConfigurationError(
                 "{} does not define the '{}' class".format(ctrl_name,
                                                            ctrl_class_name))
+
+        if not url_prefix:
+            url_prefix = cls.default_url_prefix or '/' + ctrl_name
+
         self.logger.debug(
             "Registering {0} class at {1}".format(ctrl_class_name, url_prefix))
         self.register_blueprint(cls(ctrl_name), url_prefix=url_prefix)
@@ -881,15 +883,7 @@ def create_app(config_name=None, config_extra=None):
     if 'selfservice' in app.enabled_controllers:
         @app.route('/')
         def index():
-            return redirect('/selfservice')
-
-        @app.route('/account/login')
-        def login():
-            return redirect('/selfservice/login')
-
-        @app.route('/account/logout')
-        def logout():
-            return redirect('/selfservice/logout')
+            return redirect(url_for('selfservice.index'))
 
     # Post handlers
     app.teardown_request(app.finalise_request)

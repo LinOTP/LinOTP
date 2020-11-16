@@ -37,7 +37,7 @@ class TestSelfservice(TestCase):
 
     @pytest.fixture(autouse=True)
     def setUp(self):
-        self.selfservice = SelfService(self.driver, self.base_url, self.ui_wait_time)
+        self.selfservice = SelfService(self)
 
     def test_selfservice(self, musicians_realm):
         """Creates User-Id-Resolvers"""

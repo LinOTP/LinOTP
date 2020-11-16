@@ -18,7 +18,7 @@ $(function() {
 function ssLoginSuccessCallback(data, status) {
     var secondStepMessage = "credential verified - additional authentication parameter required";
     if(data.result && data.result.value === true) {
-        window.location.href = "/selfservice/";
+        window.location.reload();
     }
     else if(data.result && data.result.error) {
         alert(i18n.gettext("Login failed")
@@ -192,7 +192,7 @@ function ssLoginChallengeCallback(data, status, token) {
 
 function ssLoginOTPCallback(data, status) {
     if(data.result && data.result.value === true) {
-        window.location.href = "/selfservice/";
+        window.location.reload();
     }
     else {
         alert(i18n.gettext("OTP Validation failed"));

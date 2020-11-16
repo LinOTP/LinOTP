@@ -38,26 +38,26 @@
 
 <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 
-<link type="text/css" rel="stylesheet" href="/static/css/linotp.css">
-<link type="text/css" rel="stylesheet" href="/static/selfservice/style.css">
-<link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
-<link type="text/css" rel="stylesheet" href="/static/css/flexigrid/flexigrid.css">
+<link type="text/css" rel="stylesheet" href="/static/css/linotp.css?ref=${c.version_ref}">
+<link type="text/css" rel="stylesheet" href="/static/selfservice/style.css?ref=${c.version_ref}">
+<link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css?ref=${c.version_ref}">
+<link type="text/css" rel="stylesheet" href="/static/css/flexigrid/flexigrid.css?ref=${c.version_ref}">
 
-<link type="text/css" href="/static/css/jquery-ui/jquery-ui.min.css" rel="stylesheet">
+<link type="text/css" href="/static/css/jquery-ui/jquery-ui.min.css?ref=${c.version_ref}" rel="stylesheet">
 
-<script type="text/javascript" src="/static/js/jquery-3.4.1.min.js"></script>
-<script type="text/javascript" src="/static/js/jquery-migrate-3.1.0.min.js"></script>
-<script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/static/js/jquery.validate.min.js"></script>
-<script type="text/javascript" src="/static/js/jquery.cookie.js"></script>
+<script type="text/javascript" src="/static/js/jquery-3.4.1.min.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/jquery-migrate-3.1.0.min.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/jquery-ui.min.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/jquery.validate.min.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/jquery.cookie.js?ref=${c.version_ref}"></script>
 
-<script type="text/javascript" src="/static/js/jed.js"></script>
+<script type="text/javascript" src="/static/js/jed.js?ref=${c.version_ref}"></script>
 
-<script type="text/javascript" src="/static/js/linotp_utils.js"></script>
-<script type="text/javascript" src="/static/js/flexigrid.js"></script>
+<script type="text/javascript" src="/static/js/linotp_utils.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/flexigrid.js?ref=${c.version_ref}"></script>
 
 % if "enrollU2F" in c.actions:
-<script type="text/javascript" src="/static/js/u2f-api.js"></script>
+<script type="text/javascript" src="/static/js/u2f-api.js?ref=${c.version_ref}"></script>
 % endif
 
 <!-- load language settings befor selfservice.js -->
@@ -65,7 +65,7 @@
     window.CURRENT_LANGUAGE = "${lang}";
 </script>
 
-<script type="text/javascript" src="/static/js/selfservice.js"></script>
+<script type="text/javascript" src="/static/js/selfservice.js?ref=${c.version_ref}"></script>
 
 
 </head>
@@ -95,7 +95,7 @@
 <div id="main">
 
 <div class="logout">
-    <p>${_("Logged in as")}: ${c.user}@${c.realm} | <a href=# onclick='SelfLogout("/selfservice/logout");return false;'>${_("Logout")}</a> </p>
+    <p>${_("Logged in as")}: ${c.user}@${c.realm} | <a href=# onclick='SelfLogout("logout");return false;'>${_("Logout")}</a> </p>
 </div>
 
 <div id="do_waiting">
@@ -105,53 +105,53 @@
 <div id="tabs">
     <ul>
         % if 'show_landing_page' in c.actions:
-        <li><a href="/selfservice/landing"><span class="ui-icon ui-icon-home" title='${_("Selfservice Home")}'></span></a></li>
+        <li><a href="landing"><span class="ui-icon ui-icon-home" title='${_("Selfservice Home")}'></span></a></li>
         % endif
 
         % for entry in c.dynamic_actions:
-            <li><a href='/selfservice/load_form?type=${entry}'>
+            <li><a href='load_form?type=${entry}'>
                 <span>${c.dynamic_actions[entry] |n}</span></a></li>
         % endfor
 
         % if 'webprovisionOATH' in c.actions:
-            <li><a href="/selfservice/webprovisionoathtoken"><span>${_("Enroll OATH token")}</span></a></li>
+            <li><a href="webprovisionoathtoken"><span>${_("Enroll OATH token")}</span></a></li>
         %endif
         % if 'webprovisionGOOGLE' in c.actions or 'webprovisionGOOGLEtime' in c.actions:
-            <li><a href="/selfservice/webprovisiongoogletoken"><span>${_("Enroll OATH soft token")}</span></a></li>
+            <li><a href="webprovisiongoogletoken"><span>${_("Enroll OATH soft token")}</span></a></li>
         %endif
 
         % if 'assign' in c.actions:
-            <li><a href="/selfservice/assign"><span>${_("Assign Token")}</span></a></li>
+            <li><a href="assign"><span>${_("Assign Token")}</span></a></li>
         %endif
         %if 'disable' in c.actions:
-        <li><a href="/selfservice/disable"><span>${_("Disable Token")}</span></a></li>
+        <li><a href="disable"><span>${_("Disable Token")}</span></a></li>
         %endif
         %if 'enable' in c.actions:
-        <li><a href="/selfservice/enable"><span>${_("Enable Token")}</span></a></li>
+        <li><a href="enable"><span>${_("Enable Token")}</span></a></li>
         %endif
         %if 'resync' in c.actions:
-        <li><a href="/selfservice/resync"><span>${_("Resync Token")}</span></a></li>
+        <li><a href="resync"><span>${_("Resync Token")}</span></a></li>
         %endif
         %if 'reset' in c.actions:
-        <li><a href="/selfservice/reset"><span>${_("Reset Failcounter")}</span></a></li>
+        <li><a href="reset"><span>${_("Reset Failcounter")}</span></a></li>
         %endif
         %if 'setOTPPIN' in c.actions:
-        <li><a href="/selfservice/setpin"><span>${_("set PIN")}</span></a></li>
+        <li><a href="setpin"><span>${_("set PIN")}</span></a></li>
         %endif
         %if 'setMOTPPIN' in c.actions:
-        <li><a href="/selfservice/setmpin"><span>${_("set mOTP PIN")}</span></a></li>
+        <li><a href="setmpin"><span>${_("set mOTP PIN")}</span></a></li>
         %endif
         %if 'getotp' in c.actions:
-        <li><a href="/selfservice/getotp"><span>${_("get OTP values")}</span></a></li>
+        <li><a href="getotp"><span>${_("get OTP values")}</span></a></li>
         %endif
         %if 'unassign' in c.actions:
-        <li><a href="/selfservice/unassign"><span>${_("unassign Token")}</span></a></li>
+        <li><a href="unassign"><span>${_("unassign Token")}</span></a></li>
         %endif
         %if 'delete' in c.actions:
-        <li><a href="/selfservice/delete"><span>${_("delete Token")}</span></a></li>
+        <li><a href="delete"><span>${_("delete Token")}</span></a></li>
         %endif
         %if 'history' in c.actions:
-        <li><a href="/selfservice/history"><span>${_("History")}</span></a></li>
+        <li><a href="history"><span>${_("History")}</span></a></li>
         %endif
     </ul>
 </div>

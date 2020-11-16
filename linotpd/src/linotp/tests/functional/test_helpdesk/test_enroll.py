@@ -34,8 +34,9 @@ test the helpdesk enrollment api
 """
 
 import json
-import re
 import os
+import pytest
+import re
 
 from . import MockedSMTP
 
@@ -83,6 +84,9 @@ def get_email_content(email_message):
     return base64.urlsafe_b64decode(cc).decode('utf-8')
 
 
+@pytest.mark.app_config({
+    'CONTROLLERS': 'admin system helpdesk',
+})
 class TestHelpdeskEnrollment(TestController):
 
     def setUp(self):
@@ -267,6 +271,9 @@ class TestHelpdeskEnrollment(TestController):
             res = re.match(user_search, email)
             assert res
 
+    @pytest.mark.app_config({
+        'CONTROLLERS': 'admin system helpdesk validate',
+    })
     def test_autoenrollment(self):
         """verify that an email will be submitted on autoenrollment"""
 

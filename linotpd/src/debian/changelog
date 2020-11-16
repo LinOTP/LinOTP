@@ -1,5 +1,10 @@
 linotp (3.0~rc2-0dev) buster-dev; urgency=low
 
+  Features:
+  * New Token Self Service interface is installed as a recommended
+  dependency for /selfservice. The existing SelfService is deprecated but
+  still available under /selfservice-legacy.
+
   Fixes:
   * LinOTP legacy SelfService Authorization is now correctly responding with
     an "unauthorized" http response instead of an internal server error

@@ -1223,7 +1223,7 @@ class TestController(TestCase):
         params["session"] = auth_cookie
         # params['user'] = user
         response = self.client.get(
-            url(controller="selfservice", action=action), query_string=params
+            url(controller="selfservice-legacy", action=action), query_string=params
         )
 
         response.body = response.data.decode("utf-8")
