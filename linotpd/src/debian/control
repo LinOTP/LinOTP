@@ -29,6 +29,7 @@ Depends: adduser,
 Recommends: dbconfig-mysql,
             dbconfig-pgsql,
             libapache2-mod-wsgi-py3,
+            linotp-selfservice,
             python3-mysqldb,
             python3-psycopg2
 Suggests: systemd
