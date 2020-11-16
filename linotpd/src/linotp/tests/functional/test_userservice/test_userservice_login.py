@@ -50,6 +50,7 @@ def mocked_submitMessage(FileSMS_Object, *argparams, **kwparams):
 
     return True
 
+
 class TestUserserviceLogin(TestUserserviceController):
     '''
     Selfservice Authorization: test for user authentication with otp
@@ -64,7 +65,7 @@ class TestUserserviceLogin(TestUserserviceController):
         self.delete_all_resolvers()
 
         response = self.make_system_request(
-                        'setConfig', params={'splitAtSign': 'true'})
+            'setConfig', params={'splitAtSign': 'true'})
         assert 'false' not in response.body
 
         TestUserserviceController.setUp(self)
@@ -73,11 +74,9 @@ class TestUserserviceLogin(TestUserserviceController):
         self.create_common_resolvers()
         self.create_common_realms()
 
-
     def tearDown(self):
 
         TestUserserviceController.tearDown(self)
-
 
     def test_pre_context(self):
         """verify that the pre_context provides imprint, privacy and footer."""
@@ -95,10 +94,9 @@ class TestUserserviceLogin(TestUserserviceController):
         policy = {
             'name': 'no_mfa',
             'action': 'history, '
-                       + 'imprint_url="%s", ' % imprint_url
-                       + 'footer_text="%s", ' %footer_text
-                       + 'privacy_notice_url=%s, ' % privacy_notice_url
-                       ,
+            + 'imprint_url="%s", ' % imprint_url
+            + 'footer_text="%s", ' % footer_text
+            + 'privacy_notice_url=%s, ' % privacy_notice_url,
             'user': ' passthru.*.myDefRes:',
             'realm': '*',
             'scope': 'selfservice'}
@@ -150,7 +148,7 @@ class TestUserserviceLogin(TestUserserviceController):
 
         params = {
             'session': auth_cookie,
-            }
+        }
 
         self.client.set_cookie('.localhost', 'user_selfservice', auth_cookie)
         response = self.client.post('userservice/history', data=params)
@@ -246,7 +244,6 @@ class TestUserserviceLogin(TestUserserviceController):
 
         assert 'page' in response
 
-
     def test_mfa_login_two_step(self):
         """test with multiple step mfa authentication."""
 
@@ -321,7 +318,7 @@ class TestUserserviceLogin(TestUserserviceController):
             'session': auth_cookie,
             'serial': 'LoginToken',
             'otp': otps.pop()
-            }
+        }
 
         self.client.set_cookie('.localhost', 'user_selfservice', auth_cookie)
         response = self.client.post('userservice/login', data=auth_data)
@@ -343,7 +340,6 @@ class TestUserserviceLogin(TestUserserviceController):
         response.body = response.data.decode("utf-8")
 
         assert 'page' in response
-
 
     @patch.object(linotp.provider.smsprovider.FileSMSProvider.FileSMSProvider,
                   'submitMessage', mocked_submitMessage)
@@ -437,7 +433,7 @@ class TestUserserviceLogin(TestUserserviceController):
         auth_data = {
             'session': auth_cookie,
             'serial': 'LoginToken',
-            }
+        }
 
         response = self.client.post('userservice/login', data=auth_data)
 
@@ -465,7 +461,7 @@ class TestUserserviceLogin(TestUserserviceController):
             'serial': 'LoginToken',
             'otp': otp[::-1],
             'transactionid': transactionid
-            }
+        }
 
         self.client.set_cookie('.localhost', 'user_selfservice', auth_cookie)
         response = self.client.post('userservice/login', data=auth_data)
@@ -508,7 +504,7 @@ class TestUserserviceLogin(TestUserserviceController):
         auth_data = {
             'session': auth_cookie,
             'serial': 'LoginToken',
-            }
+        }
 
         response = self.client.post('userservice/login', data=auth_data)
 
@@ -538,7 +534,7 @@ class TestUserserviceLogin(TestUserserviceController):
             'serial': 'LoginToken',
             'otp': otp,
             'transactionid': transactionid,
-            }
+        }
         response = self.client.post('userservice/login', data=auth_data)
 
         jresp = response.json
@@ -574,45 +570,6 @@ class TestUserserviceLogin(TestUserserviceController):
 
         :return: token info and the pub / priv key
         """
-
-        # set pairing callback policies
-
-        cb_url='/foo/bar/url'
-
-        params = {'name': 'dummy1',
-                  'scope': 'authentication',
-                  'realm': '*',
-                  'action': 'qrtoken_pairing_callback_url=%s' % cb_url,
-                  'user': '*'}
-
-        response = self.make_system_request(action='setPolicy', params=params)
-        assert 'false' not in response, response
-
-        # ----------------------------------------------------------------- --
-
-        # set challenge callback policies
-
-        params = {
-            'name': 'dummy3',
-            'scope': 'authentication',
-            'realm': '*',
-            'action': 'qrtoken_challenge_callback_url=%s' % cb_url,
-            'user': '*'
-        }
-
-        response = self.make_system_request(action='setPolicy', params=params)
-        assert 'false' not in response, response
-
-        params = {
-            'name': 'enroll_policy',
-            'scope': 'selfservice',
-            'realm': '*',
-            'action': 'activate_QRToken, enrollQR, verify',
-            'user': '*'
-        }
-
-        response = self.make_system_request(action='setPolicy', params=params)
-        assert 'false' not in response, response
 
         # ----------------------------------------------------------------- --
 
@@ -672,13 +629,57 @@ class TestUserserviceLogin(TestUserserviceController):
 
         message = detail.get('message')
         challenge, _sig, tan = QR.claculate_challenge_response(
-                                        message, token_info, secret_key)
+            message, token_info, secret_key)
 
         params = {'transactionid': challenge['transaction_id'], 'pass': tan}
         response = self.make_validate_request('check_t', params)
         assert 'false' not in response
 
         return token_info, secret_key, public_key
+
+    def setup_qr(self):
+        """Setup policies for qr token enrollment and pairing in selfservice.
+        """
+
+        # set pairing callback policies
+
+        cb_url = '/foo/bar/url'
+
+        params = {'name': 'qr_pair_cb',
+                  'scope': 'authentication',
+                  'realm': '*',
+                  'action': 'qrtoken_pairing_callback_url=%s' % cb_url,
+                  'user': '*'}
+
+        response = self.make_system_request(action='setPolicy', params=params)
+        assert 'false' not in response, response
+
+        # ----------------------------------------------------------------- --
+
+        # set challenge callback policies
+
+        params = {
+            'name': 'qr_chall_cb',
+            'scope': 'authentication',
+            'realm': '*',
+            'action': 'qrtoken_challenge_callback_url=%s' % cb_url,
+            'user': '*'
+        }
+
+        response = self.make_system_request(action='setPolicy', params=params)
+        assert 'false' not in response, response
+
+        params = {
+            'name': 'enroll_qr_policy',
+            'scope': 'selfservice',
+            'realm': '*',
+            'action': 'activate_QRToken, enrollQR, verify',
+            'user': '*'
+        }
+
+        response = self.make_system_request(action='setPolicy', params=params)
+        assert 'false' not in response, response
+
 
     def test_qr_token_login(self):
         """Verify the userservice login with an qr token.
@@ -708,7 +709,9 @@ class TestUserserviceLogin(TestUserserviceController):
 
         """
 
-        serial='myQrToken'
+        self.setup_qr()
+
+        serial = 'myQrToken'
 
         # ----------------------------------------------------------------- --
 
@@ -721,7 +724,8 @@ class TestUserserviceLogin(TestUserserviceController):
             'action': 'mfa_login, history',
             'user': ' passthru.*.myDefRes:',
             'realm': '*',
-            'scope': 'selfservice'}
+            'scope': 'selfservice'
+        }
 
         response = self.make_system_request('setPolicy', params=policy)
         assert 'false' not in response
@@ -799,7 +803,7 @@ class TestUserserviceLogin(TestUserserviceController):
 
         message = detail.get('transactionData')
         challenge, _sig, tan = QR.claculate_challenge_response(
-                                        message, token_info, secret_key)
+            message, token_info, secret_key)
 
         # ----------------------------------------------------------------- --
 
@@ -809,7 +813,7 @@ class TestUserserviceLogin(TestUserserviceController):
             'transactionid': challenge['transaction_id'],
             'session': auth_cookie,
             'otp': tan
-            }
+        }
 
         response = self.client.post(url(controller='userservice',
                                         action='login'), data=params)
@@ -871,7 +875,9 @@ class TestUserserviceLogin(TestUserserviceController):
            userservice/history endpoint
         """
 
-        serial='myQrToken'
+        self.setup_qr()
+
+        serial = 'myQrToken'
 
         # ----------------------------------------------------------------- --
 
@@ -939,7 +945,7 @@ class TestUserserviceLogin(TestUserserviceController):
 
         message = detail.get('transactionData')
         challenge, sig, tan = QR.claculate_challenge_response(
-                                        message, token_info, secret_key)
+            message, token_info, secret_key)
 
         # ----------------------------------------------------------------- --
 
@@ -967,7 +973,7 @@ class TestUserserviceLogin(TestUserserviceController):
 
         params = {
             'transactionid': challenge['transaction_id'], 'pass': sig
-            }
+        }
         response = self.client.post(url(controller='validate',
                                         action='check_t'), data=params)
 
