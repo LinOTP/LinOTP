@@ -38,26 +38,26 @@
 
 <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 
-<link type="text/css" rel="stylesheet" href="/static/css/linotp.css">
-<link type="text/css" rel="stylesheet" href="/static/selfservice/style.css">
-<link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
-<link type="text/css" rel="stylesheet" href="/static/css/flexigrid/flexigrid.css">
+<link type="text/css" rel="stylesheet" href="/static/css/linotp.css?ref=${c.version_ref}">
+<link type="text/css" rel="stylesheet" href="/static/selfservice/style.css?ref=${c.version_ref}">
+<link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css?ref=${c.version_ref}">
+<link type="text/css" rel="stylesheet" href="/static/css/flexigrid/flexigrid.css?ref=${c.version_ref}">
 
-<link type="text/css" href="/static/css/jquery-ui/jquery-ui.min.css" rel="stylesheet">
+<link type="text/css" href="/static/css/jquery-ui/jquery-ui.min.css?ref=${c.version_ref}" rel="stylesheet">
 
-<script type="text/javascript" src="/static/js/jquery-3.4.1.min.js"></script>
-<script type="text/javascript" src="/static/js/jquery-migrate-3.1.0.min.js"></script>
-<script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/static/js/jquery.validate.min.js"></script>
-<script type="text/javascript" src="/static/js/jquery.cookie.js"></script>
+<script type="text/javascript" src="/static/js/jquery-3.4.1.min.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/jquery-migrate-3.1.0.min.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/jquery-ui.min.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/jquery.validate.min.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/jquery.cookie.js?ref=${c.version_ref}"></script>
 
-<script type="text/javascript" src="/static/js/jed.js"></script>
+<script type="text/javascript" src="/static/js/jed.js?ref=${c.version_ref}"></script>
 
-<script type="text/javascript" src="/static/js/linotp_utils.js"></script>
-<script type="text/javascript" src="/static/js/flexigrid.js"></script>
+<script type="text/javascript" src="/static/js/linotp_utils.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/flexigrid.js?ref=${c.version_ref}"></script>
 
 % if "enrollU2F" in c.actions:
-<script type="text/javascript" src="/static/js/u2f-api.js"></script>
+<script type="text/javascript" src="/static/js/u2f-api.js?ref=${c.version_ref}"></script>
 % endif
 
 <!-- load language settings befor selfservice.js -->
@@ -65,7 +65,7 @@
     window.CURRENT_LANGUAGE = "${lang}";
 </script>
 
-<script type="text/javascript" src="/static/js/selfservice.js"></script>
+<script type="text/javascript" src="/static/js/selfservice.js?ref=${c.version_ref}"></script>
 
 
 </head>

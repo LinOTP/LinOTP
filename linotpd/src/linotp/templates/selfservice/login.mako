@@ -40,9 +40,9 @@
 
   <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 
-  <link type="text/css" rel="stylesheet" href="/static/selfservice/style.css">
-  <link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
-  <link type="text/css" rel="stylesheet" href="/static/css/jquery-ui/jquery-ui.min.css">
+  <link type="text/css" rel="stylesheet" href="/static/selfservice/style.css?ref=${c.version_ref}">
+  <link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css?ref=${c.version_ref}">
+  <link type="text/css" rel="stylesheet" href="/static/css/jquery-ui/jquery-ui.min.css?ref=${c.version_ref}">
 </head>
 
 <body>
@@ -178,13 +178,13 @@
     window.CURRENT_LANGUAGE = "${lang}";
   </script>
 
-  <script type="text/javascript" src="/static/js/jquery-3.4.1.min.js"></script>
-  <script type="text/javascript" src="/static/js/jquery-migrate-3.1.0.min.js"></script>
-  <script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
-  <script type="text/javascript" src="/static/js/jquery.form.js"></script>
-  <script type="text/javascript" src="/static/js/jed.js"></script>
-  <script type="text/javascript" src="/static/js/linotp_utils.js"></script>
-  <script type="text/javascript" src="/static/js/selfservice/login.js"></script>
+  <script type="text/javascript" src="/static/js/jquery-3.4.1.min.js?ref=${c.version_ref}"></script>
+  <script type="text/javascript" src="/static/js/jquery-migrate-3.1.0.min.js?ref=${c.version_ref}"></script>
+  <script type="text/javascript" src="/static/js/jquery-ui.min.js?ref=${c.version_ref}"></script>
+  <script type="text/javascript" src="/static/js/jquery.form.js?ref=${c.version_ref}"></script>
+  <script type="text/javascript" src="/static/js/jed.js?ref=${c.version_ref}"></script>
+  <script type="text/javascript" src="/static/js/linotp_utils.js?ref=${c.version_ref}"></script>
+  <script type="text/javascript" src="/static/js/selfservice/login.js?ref=${c.version_ref}"></script>
 </body>
 
 </html>

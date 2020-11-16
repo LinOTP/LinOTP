@@ -28,6 +28,7 @@ selfservice controller - This is the controller for the self service interface,
                 where users can manage their own tokens
 
 """
+import base64
 import os
 import json
 
@@ -135,6 +136,7 @@ class SelfserviceController(BaseController):
         try:
             c.version = get_version()
             c.licenseinfo = get_copyright_info()
+            c.version_ref = base64.encodebytes(c.version.encode())[:6]
 
             g.audit['success'] = False
             self.client = get_client(request)
