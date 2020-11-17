@@ -222,6 +222,21 @@ a.close_all {
   margin-top: .8em;
 }
 
+#policy_form > table {
+  width: 100%;
+}
+
+#policy_form input,
+#policy_form select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#policy_edit_actions {
+  text-align: center;
+  padding-top: 1em;
+}
+
 /*
  * jqeury selectable stuff for selecting Resolvers
  */
