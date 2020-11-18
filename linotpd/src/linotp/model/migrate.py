@@ -203,7 +203,7 @@ def run_data_model_migration(engine:Engine):
     """
 
     # define the most recent target version
-    target_version = "2.12.0.0"
+    target_version = Migration.migration_steps[-1]
 
     migration = Migration(engine)
 
@@ -238,6 +238,7 @@ class Migration():
         "2.9.1.0",
         "2.10.1.0",
         "2.12.0.0",
+        "3.0.0.0",
         ]
 
     def __init__(self, engine:Engine):
@@ -264,6 +265,19 @@ class Migration():
             current_version = current_version.Value
 
         return target_version == current_version
+
+    @staticmethod
+    def is_db_untouched() -> bool:
+        """Check if the db was just created or has been used already.
+
+        When linotp has been run once, it contains the 'linotp.Config' entry
+        which is a timestamp about the last config entry change.
+        If the entry does not exist, we can be sure, that the db has not been
+        touched.
+        """
+
+        return model.Config.query.filter(
+            model.Config.Key == 'linotp.Config').first() is None
 
     def get_current_version(self) -> Union[str, None]:
         """Get the db model version number.
@@ -429,5 +443,94 @@ class Migration():
         if not has_column(self.engine, token_table, accessed):
             add_column(self.engine, token_table, accessed)
             add_index(self.engine, token_table, accessed)
+
+    # migration towards 3.0
+
+    def migrate_3_0_0_0(self):
+        """Create a conversion suggested label if db is not untouched."""
+
+        if not self.is_db_untouched():
+
+            config_entry = model.Config(
+                Key='utf8_conversion', Value='suggested'
+                )
+            model.db.session.add(config_entry)
+
+            log.warning(
+                "Database conversion step suggested!\n"
+                "Please run command:\n"
+                " linotp admin fix-db-encoding")
+
+        return
+
+    def iso8859_to_utf8_conversion(self):
+        """Migrate all Config and Token entries from iso-8859 to utf-8."""
+
+        conversion = model.Config.query.filter(
+            model.Config.Key == 'linotp.utf8_conversion').first()
+
+        if not conversion or conversion.Value != 'suggested':
+            return True, "no conversion required or suggested!"
+
+        # ------------------------------------------------------------------ --
+
+        # re-encode the Config Values of certain Types
+
+        config_entries_count = 0
+
+        for entry in model.Config.query.all():
+
+            if entry.Type in [
+                'int', 'bool', 'boolean', 'encrypted_data', 'password'
+                ]:
+                continue
+
+            update_data = {
+                model.Config.Value: re_encode(entry.Value),
+                model.Config.Description: re_encode(entry.Description),
+            }
+
+            # replace by the primary key: Key
+
+            model.Config.query.filter(
+                model.Config.Key == entry.Key
+                ).update(update_data , synchronize_session = False)
+
+            config_entries_count +=1
+
+        log.info(f"{config_entries_count} config entries reencoded!")
+
+        # ------------------------------------------------------------------ --
+
+        # Reencode Token description and info from iso8895 to utf-8.
+
+        token_entries_count = 0
+
+        for token in model.Token.query.all():
+
+            update_data = {
+                model.Token.LinOtpTokenDesc: re_encode(
+                    token.LinOtpTokenDesc),
+                model.Token.LinOtpTokenInfo: re_encode(
+                    token.LinOtpTokenInfo),
+            }
+
+            # replace by the primary key: LinOtpTokenId
+
+            model.Token.query.filter(
+                model.Token.LinOtpTokenId == token.LinOtpTokenId
+                ).update(update_data , synchronize_session = False)
+
+            token_entries_count +=1
+
+        log.info(f"{token_entries_count} token entries reencoded!")
+
+        summary = (f"{config_entries_count} config and "
+                   f"{token_entries_count} token entries converted.")
+
+        conversion = model.Config.query.filter(
+            model.Config.Key == 'linotp.utf8_conversion').delete()
+
+        return True, summary
 
 # eof
