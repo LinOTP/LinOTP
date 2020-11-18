@@ -37,7 +37,6 @@ from sqlalchemy import inspect
 
 from linotp import model
 
-
 log = logging.getLogger(__name__)
 
 
@@ -150,6 +149,52 @@ def drop_column(engine:Engine, table_name:str, column:sa.Column):
     engine.execute('ALTER TABLE %s drop COLUMN %s ' %
                    (c_table_name, c_column_name))
 
+
+def re_encode(
+        value:str, from_encoding:str='iso-8859-15',
+        to_encoding:str='utf-8') -> str:
+    """Reencode a value by default from iso-8859 to utf-8.
+
+    Remark:
+    We have only bytes here comming from LinOTP2 stored by python2
+    and sqlalchemy. The observation is that under certain
+    circumstances the stored data is iso-8859 encoded but sometimes
+    could as well be utf-8.
+
+    In python3 this data is now loaded into a str object which is a
+    utf-8 encoded string. A conversion from iso-8859 to utf-8 does not
+    fail as all codepoints of iso-8859 are within utf-8 range. But the
+    result in a bad representation as the codepoints of iso-8859 and
+    utf-8 dont match.
+
+    * we are using here iso-8859-15 which is a superset of iso-8859-1
+      which is a superset of ascii
+
+    :param value: str data, might contain iso-8859 data
+    :param from_encoding: str data encoding, default 'iso8859-15'
+    :param to_encoding: str data output encoding, default 'utf-8'
+    """
+
+    if not value or not isinstance(value, str):
+        return value
+
+    if value.isascii():
+        return value
+
+    try:
+        value = bytes(value, from_encoding).decode(to_encoding)
+    except UnicodeDecodeError:
+        log.info(
+            'unable to re-encode value: %r - might be already %r',
+            value, to_encoding
+            )
+        raise
+
+    return value
+
+# ------------------------------------------------------------------------- --
+
+# entry point for calling db migration
 
 def run_data_model_migration(engine:Engine):
     """
