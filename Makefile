@@ -236,8 +236,8 @@ DOCKER_PROXY_BUILD_ARGS= --build-arg=http_proxy --build-arg=https_proxy --build-
 # Arguments passed to Docker build commands
 DOCKER_BUILD_ARGS+= --build-arg BASE_IMAGE=$(BASE_IMAGE) \
 					--build-arg DEBIAN_MIRROR=$(DEBIAN_MIRROR) \
-					--build-arg DEBIAN_RELEASE_NAME=$(DEBIAN_RELEASE_NAME) \
 					--build-arg DEPENDENCY_SOURCE=$(DEPENDENCY_SOURCE) \
+					--build-arg DEPENDENCY_DISTRIBUTION=$(DEPENDENCY_DISTRIBUTION) \
 					--build-arg DEPENDENCY_COMPONENT=$(DEPENDENCY_COMPONENT) \
 					--build-arg DEPENDENCY_GPG_KEYID=$(DEPENDENCY_GPG_KEYID) \
 					--build-arg DEPENDENCY_GPG_KEY_URL=$(DEPENDENCY_GPG_KEY_URL)

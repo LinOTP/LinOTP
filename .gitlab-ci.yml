@@ -6,7 +6,7 @@ variables:
   DOCKERFY_URL: http://avocado.corp.lsexperts.de/jenkins/dockerfy/dockerfy
   DEBIAN_MIRROR: ftp.de.debian.org
   DEPENDENCY_SOURCE: http://avocado.corp.lsexperts.de/deb-repo
-  DEPENDENCY_SOURCE_COMPONENT: kideps
+  DEPENDENCY_COMPONENT: kideps
   DEPENDENCY_GPG_KEYID: "47868600E7533829"
   DEPENDENCY_GPG_KEYID_URL: ""
   DOCKER_TAGS: $CI_PIPELINE_ID

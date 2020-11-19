@@ -30,10 +30,10 @@ ARG BASE_IMAGE=debian:buster
 FROM $BASE_IMAGE
 
 ARG DEBIAN_MIRROR=deb.debian.org
-ARG DEBIAN_RELEASE_NAME=buster
 ARG DEPENDENCY_SOURCE
-ARG DEPENDENCY_GPG_KEYID
+ARG DEPENDENCY_DISTRIBUTION=buster
 ARG DEPENDENCY_COMPONENT
+ARG DEPENDENCY_GPG_KEYID
 ARG DEPENDENCY_GPG_KEY_URL
 
 # The following environment variables can be set to
@@ -106,7 +106,7 @@ ENV TZ="Europe/Berlin" \
     LOGSTASH_PORT= \
     LOGSTASH_TAGS=() \
     SECRET_FILE_LOCATION= \
-    SSL_TRUSTED_CERT= 
+    SSL_TRUSTED_CERT=
 
 # Internal environment variables used by the docker images
 ENV LINOTP_CFG_TEMPLATE=/etc/linotp/linotp-docker.cfg.tmpl \
@@ -129,11 +129,12 @@ RUN apt-get update && apt-get install eatmydata \
 # Add LinOTP packaging key to keyring in order to install
 # dependencies
 RUN test -z "$DEPENDENCY_SOURCE" \
-        || echo "deb $DEPENDENCY_SOURCE $DEBIAN_RELEASE_NAME $DEPENDENCY_COMPONENT" > /etc/apt/sources.list.d/kideps.list
+    || (echo "deb $DEPENDENCY_SOURCE $DEPENDENCY_DISTRIBUTION $DEPENDENCY_COMPONENT" > /etc/apt/sources.list.d/linotp-deps.list \
+    && cat /etc/apt/sources.list.d/linotp-deps.list)
 RUN test -z "$DEPENDENCY_GPG_KEYID" \
-        || apt-key adv --keyserver hkp://hkps.pool.sks-keyservers.net --recv-keys $DEPENDENCY_GPG_KEYID
+    || apt-key adv --keyserver hkp://hkps.pool.sks-keyservers.net --recv-keys $DEPENDENCY_GPG_KEYID
 RUN test -z "$DEPENDENCY_GPG_KEY_URL" \
-        || curl $DEPENDENCY_GPG_KEY_URL | apt-key adv --import
+    || curl $DEPENDENCY_GPG_KEY_URL | apt-key adv --import
 
 # Install package dependencies
 # - Those needed for building / administration of a Docker based linotp (first line)
