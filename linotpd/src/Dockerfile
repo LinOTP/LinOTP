@@ -173,7 +173,7 @@ RUN echo "linotp linotp/apache/activate boolean true" > /opt/linotp/apt/debconf-
     && echo "deb [trusted=yes] file:/opt/linotp/apt ./" > /etc/apt/sources.list.d/linotp-local.list \
     && (echo "Package: *"; echo "Pin: origin \"\""; echo "Pin-Priority: 900") > /etc/apt/preferences.d/linotp \
     && apt-get update \
-    && apt-get install linotp \
+    && apt-get install linotp linotp-selfservice \
     && rm /etc/apt/sources.list.d/linotp-local.list \
     && rm -r /opt/linotp/apt /etc/apache2/sites-enabled/000-default.conf \
     && rm /etc/linotp/encKey /etc/linotp/*.pem \
