@@ -28,7 +28,7 @@ database schema migration hook
 """
 import logging
 
-from typing import Union
+from typing import Optional
 
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
@@ -202,16 +202,10 @@ def run_data_model_migration(engine:Engine):
      - called during database initialisation
     """
 
-    # define the most recent target version
-    target_version = Migration.migration_steps[-1]
-
     migration = Migration(engine)
 
-    # start with the current version, which is retrieved from the db
-    current_version = migration.get_current_version()
-
     # run the steps in the migration chain
-    migration.migrate(from_version=current_version, to_version=target_version)
+    target_version = migration.migrate()
 
     # finally set the target version we reached
     migration.set_version(target_version)
@@ -279,7 +273,7 @@ class Migration():
         return model.Config.query.filter(
             model.Config.Key == 'linotp.Config').first() is None
 
-    def get_current_version(self) -> Union[str, None]:
+    def get_current_version(self) -> Optional[str]:
         """Get the db model version number.
 
         :return: current db version or None
@@ -319,7 +313,10 @@ class Migration():
 
         model.db.session.add(config_entry) # pylint: disable=E1101
 
-    def migrate(self, from_version:Union[str, None], to_version:str):
+    def migrate(
+            self, from_version:Optional[str]=None,
+            to_version:Optional[str]=None
+            ) -> str:
         """Run all migration steps between the versions.
 
         run all steps, which are of ordered list migration_steps
@@ -327,6 +324,19 @@ class Migration():
         :param from_version: the version to start in the migration chain
         :param to_version: the target version in the migration chain
         """
+
+        # if no from version , we start with the current version,
+        #   which is retrieved from the db
+
+        if from_version is None:
+            from_version = self.get_current_version()
+
+        # if no target version is define we take
+        #   the most recent target version
+
+        if to_version is None:
+            to_version = Migration.migration_steps[-1]
+
 
         active = False
 
@@ -365,6 +375,7 @@ class Migration():
             if next_version == to_version:
                 break
 
+        return to_version
 
     # --------------------------------------------------------------------- --
 
