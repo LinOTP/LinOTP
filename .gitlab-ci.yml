@@ -190,12 +190,12 @@ lint-useridresolver:
   PYTESTARGS="$PYTESTARGS ${ALL_JOB_ARGS}"
   # Job definition of nightly / non-nightly arguments
   if [ -n "${NIGHTLY_PIPELINE}" ]; then
-    PYTESTARGS="${PYTESTARGS} ${NIGHTLY_ARGS}"
+    PYTESTARGS="$PYTESTARGS ${NIGHTLY_ARGS}"
   else
-    PYTESTARGS="${PYTESTARGS} ${NON_NIGHTLY_ARGS}"
+    PYTESTARGS="$PYTESTARGS ${NON_NIGHTLY_ARGS}"
   fi
   # Coverage report
-  PYTESTARGS="${PYTESTARGS} --cov=linotp --cov-report=xml:${CI_PROJECT_DIR}/coverage.xml"
+  PYTESTARGS="$PYTESTARGS --cov=linotp --cov-report=xml:${CI_PROJECT_DIR}/coverage.xml"
 
 # Nightly tests are scheduled to run once a day and contain
 # more tests than the regular set
