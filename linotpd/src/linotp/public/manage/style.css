@@ -753,6 +753,11 @@ table.tokeninfoInnerTable {
 	text-align: center;
 }
 
+#welcome_screen_option {
+  vertical-align: middle;
+  margin-right  : .5em;
+}
+
 .light-text-color .ui-icon {
 	background-image: url(/static/css/jquery-ui/images/ui-icons_ffffff_256x240.png)!important;
 }

@@ -34,15 +34,16 @@ test for setPin
 """
 
 import json
-import re
-import os
+import pytest
 
 from . import MockedSMTP
 
 from linotp.tests import TestController
 
 
-
+@pytest.mark.app_config({
+    'CONTROLLERS': 'admin system helpdesk',
+})
 class TestHelpdeskSetPin(TestController):
 
     def setUp(self):

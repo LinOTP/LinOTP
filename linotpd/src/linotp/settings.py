@@ -223,11 +223,9 @@ _config_schema = ConfigSchema([
                      "reboots, i.e., it could be located below `/run` on "
                      "systems where `/run` is a RAM disk.")),
     ConfigItem("CONTROLLERS", str,
-               default=("admin audit auth gettoken "
-                        "helpdesk:/api/helpdesk:HelpdeskController "
-                        "manage selfservice system "
-                        "test tools maintenance monitoring validate "
-                        "userservice reporting"),
+               default=("admin audit auth gettoken maintenance manage "
+                        "monitoring selfservice system test tools "
+                        "validate userservice reporting"),
                help=("List of all enabled controllers. Any controller `FOO` "
                      "mentioned here will be imported from "
                      "`linotp3.controllers.FOO` and registered on `/FOO`. "
@@ -448,7 +446,7 @@ _config_schema = ConfigSchema([
                      "located. In case of the LunaSA this is the partition. "
                      "You can check for the slot number by issuing the "
                      "command `vtl verify`. In case of softhsm2 it is the "
-                     "slotid which can be checked by `softhsm2-util --shows`. " 
+                     "slotid which can be checked by `softhsm2-util --shows`. "
                      "`configHandle`, `valueHandle`, `tokenHandle` and "
                      "`defaultHandle` are the handles of token in the hsm for "
                      "a slot which holds in our case an AES key objects. "

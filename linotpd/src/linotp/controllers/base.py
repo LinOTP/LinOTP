@@ -86,6 +86,15 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
     BaseController class - will be called with every request
     """
 
+    default_url_prefix = ""
+    """Suggested URL to access this controller.
+
+    The URL at which this controller will be available depends on a number of factors. These are, in
+    order of priority:
+    1. Any explicit path in the settings CONTROLLERS=ControllerName:PATH
+    2. The controller's `base_url_prefix` setting
+    3. The name of the controller"""
+
     def __init__(self, name, install_name='', **kwargs):
         super(BaseController, self).__init__(name, __name__, **kwargs)
 
@@ -179,6 +188,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
                 warn("Returning Request is no longer necessary", DeprecationWarning)
                 return None
             return response
+
 
 def methods(mm=['GET']):
     """

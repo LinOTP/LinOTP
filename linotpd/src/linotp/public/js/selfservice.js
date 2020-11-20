@@ -612,7 +612,7 @@ function selectToken(serial) {
 
 function showTokenlist() {
     $.ajax({
-        url : '/selfservice/usertokenlist',
+        url : 'usertokenlist',
         dataType : "html",
         data : { 'session' : get_selfservice_session() },
         cache : false,

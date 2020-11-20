@@ -395,9 +395,8 @@ class UserserviceController(BaseController):
         try:
             if g.audit['action'] not in ['userservice/context',
                                          'userservice/pre_context',
-                                         'userservice/userinfo',
-                                         'userservice/load_form'
-                                        ]:
+                                         'userservice/userinfo'
+                                         ]:
 
                 g.audit['user'] = authUser.get('login', '')
                 g.audit['realm'] = authUser.get('realm', '')
@@ -1247,68 +1246,10 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, e)
 
-    def load_form(self):
-        '''
-        This shows the enrollment form for a requested token type.
-
-        implicit parameters are:
-
-        :param type: token type
-        :param scope: defines the rendering scope
-
-        :return: rendered html of the requested token
-        '''
-        res = ''
-
-        try:
-            try:
-                act = self.request_params["type"]
-            except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
-
-            try:
-                (tok, section, scope) = act.split('.')
-            except Exception:
-                return res
-
-            if section != 'selfservice':
-                return res
-
-            context = get_context(config, self.authUser, self.client)
-            for k, v in list(context.items()):
-                setattr(c, k, v)
-
-            if tok in tokenclass_registry:
-                tclt = tokenclass_registry.get(tok)
-                if hasattr(tclt, 'getClassInfo'):
-                    sections = tclt.getClassInfo(section, {})
-                    if scope in list(sections.keys()):
-                        section = sections.get(scope)
-                        page = section.get('page')
-                        c.scope = page.get('scope')
-                        c.authUser = self.authUser
-                        html = page.get('html')
-                        res = render(os.path.sep + html)
-                        res = remove_empty_lines(res)
-
-            db.session.commit()
-            g.audit['success'] = True
-            return res
-
-        except CompileException as exx:
-            log.exception("[load_form] compile error while processing %r.%r:" %
-                                                                (tok, scope))
-            log.exception("[load_form] %r" % exx)
-            db.session.rollback()
-            raise exx
-
-        except Exception as exx:
-            db.session.rollback()
-            error = ('error (%r) accessing form data for: %r' % exx)
-            log.exception(error)
-            return '<pre>%s</pre>' % error
 
 # action hooks for the js methods #############################################
+
+
     def enable(self):
         """
         enables a token or all tokens of a user

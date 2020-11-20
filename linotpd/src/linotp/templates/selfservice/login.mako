@@ -40,9 +40,9 @@
 
   <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 
-  <link type="text/css" rel="stylesheet" href="/static/selfservice/style.css">
-  <link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
-  <link type="text/css" rel="stylesheet" href="/static/css/jquery-ui/jquery-ui.min.css">
+  <link type="text/css" rel="stylesheet" href="/static/selfservice/style.css?ref=${c.version_ref}">
+  <link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css?ref=${c.version_ref}">
+  <link type="text/css" rel="stylesheet" href="/static/css/jquery-ui/jquery-ui.min.css?ref=${c.version_ref}">
 </head>
 
 <body>
@@ -116,7 +116,7 @@
     <div id="template-no-token-warning" class="widget">
       <h1>${_("No active token found")}</h1>
       <p>${_("If there is a problem with your current token please contact the help desk.")}</p>
-      <p><a href="/selfservice/login" class="ui-button">${_("Cancel")}</a></p>
+      <p><a href="" class="ui-button">${_("Cancel")}</a></p>
       <div class="list"></div>
     </div>
 
@@ -128,10 +128,10 @@
 
     <a id="template-tokenlist-entry" href="#" class="tokenlist-entry"><span class="action"></span><br><span class="description"></span></a>
 
-    <a id="template-cancel-entry" href="/selfservice/login" class="tokenlist-entry cancel-auth">${_("Cancel")}</a>
+    <a id="template-cancel-entry" href="" class="tokenlist-entry cancel-auth">${_("Cancel")}</a>
 
     <div id="template-otp">
-      <a href="/selfservice/login" class="ui-button ui-widget ui-corner-all ui-button-icon-only cancel-otp" title='${_("Cancel")}'>
+      <a href="" class="ui-button ui-widget ui-corner-all ui-button-icon-only cancel-otp" title='${_("Cancel")}'>
         <span class="ui-icon ui-icon-closethick"></span>
         &nbsp;
       </a>
@@ -167,7 +167,7 @@
 
     <div id="template-timeout" class="timeout">
       <p>${_("Login timed out. Please try again.")}</p>
-      <a href="/selfservice/login" class="ui-button ui-widget ui-corner-all">${_("Login")}</a>
+      <a href="" class="ui-button ui-widget ui-corner-all">${_("Login")}</a>
     </div>
 
   </div>
@@ -178,13 +178,13 @@
     window.CURRENT_LANGUAGE = "${lang}";
   </script>
 
-  <script type="text/javascript" src="/static/js/jquery-3.4.1.min.js"></script>
-  <script type="text/javascript" src="/static/js/jquery-migrate-3.1.0.min.js"></script>
-  <script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
-  <script type="text/javascript" src="/static/js/jquery.form.js"></script>
-  <script type="text/javascript" src="/static/js/jed.js"></script>
-  <script type="text/javascript" src="/static/js/linotp_utils.js"></script>
-  <script type="text/javascript" src="/static/js/selfservice/login.js"></script>
+  <script type="text/javascript" src="/static/js/jquery-3.4.1.min.js?ref=${c.version_ref}"></script>
+  <script type="text/javascript" src="/static/js/jquery-migrate-3.1.0.min.js?ref=${c.version_ref}"></script>
+  <script type="text/javascript" src="/static/js/jquery-ui.min.js?ref=${c.version_ref}"></script>
+  <script type="text/javascript" src="/static/js/jquery.form.js?ref=${c.version_ref}"></script>
+  <script type="text/javascript" src="/static/js/jed.js?ref=${c.version_ref}"></script>
+  <script type="text/javascript" src="/static/js/linotp_utils.js?ref=${c.version_ref}"></script>
+  <script type="text/javascript" src="/static/js/selfservice/login.js?ref=${c.version_ref}"></script>
 </body>
 
 </html>
