@@ -169,7 +169,7 @@ class LDAPInProcessTests(LDAPResolverTest):
                 assert mock_ldap_init.call_count == 2, \
                                  "ldap.initialize should have been called " \
                                  "twice (with starttls, without starttls)." \
-                                 "\nException:%s\nCalls:%s".format(
+                                 "\nException:{}\nCalls:{}".format(
                                      effect,
                                      mock_ldap_init.call_args_list)
 

@@ -35,14 +35,6 @@ error_document_template = '''
     '''
 
 
-def url(controller, action=None):
-    urlstr = '/{}/'.format(controller)
-    if action != 'index' and action:
-        urlstr += action
-
-    return urlstr
-
-
 class RequestProxy(object):
     """
     Flask request object plus params -> args

@@ -27,22 +27,19 @@
 selfservice controller - This is the controller for the self service interface,
                 where users can manage their own tokens
 
-                All functions starting with /selfservice/user...
-                are data functions and protected by the session key
-                i.e. the session key must be passed as the parameter session=
-
 """
+import base64
 import os
 import json
 
-from flask import redirect, Response, current_app, g
+from flask import redirect, Response, current_app, g, url_for
 from flask_babel import gettext as _
 from werkzeug.exceptions import Unauthorized
 
 from linotp import flap
 from linotp.flap import (
     request, response, config, tmpl_context as c,
-    render_mako as render, url
+    render_mako as render
 )
 
 from mako.exceptions import CompileException
@@ -91,7 +88,10 @@ import logging
 ENCODING = "utf-8"
 log = logging.getLogger(__name__)
 
+
 class SelfserviceController(BaseController):
+
+    default_url_prefix = "/selfservice-legacy"
 
     authUser = None
 
@@ -136,6 +136,7 @@ class SelfserviceController(BaseController):
         try:
             c.version = get_version()
             c.licenseinfo = get_copyright_info()
+            c.version_ref = base64.encodebytes(c.version.encode())[:6]
 
             g.audit['success'] = False
             self.client = get_client(request)
@@ -165,11 +166,10 @@ class SelfserviceController(BaseController):
 
                 if action in ['index']:
                     self.redirect = True
-                    return redirect(
-                        url(controller='selfservice', action='login'))
+                    return redirect(url_for('.login'))
 
                 else:
-                    Unauthorized('No valid session')
+                    raise Unauthorized('No valid session')
 
             # -------------------------------------------------------------- --
 
@@ -183,7 +183,7 @@ class SelfserviceController(BaseController):
                     return
 
                 self.redirect = True
-                return redirect(url(controller='selfservice', action='index'))
+                return redirect(url_for('.index'))
 
             # -------------------------------------------------------------- --
 
@@ -191,12 +191,12 @@ class SelfserviceController(BaseController):
             if auth_user and auth_type == 'user_selfservice' \
                     and auth_state != 'authenticated':
                 self.redirect = True
-                return redirect(url(controller='selfservice', action='login'))
+                return redirect(url_for('.login'))
 
             # futher processing with the authenticated user
 
             if auth_state != 'authenticated':
-                Unauthorized('No valid session')
+                raise Unauthorized('No valid session')
 
             c.user = auth_user.login
             c.realm = auth_user.realm
@@ -220,7 +220,7 @@ class SelfserviceController(BaseController):
                         g.audit['info'] = "session expired"
                         current_app.audit_obj.log(g.audit)
 
-                        Unauthorized('No valid session')
+                        raise Unauthorized('No valid session')
 
             # -------------------------------------------------------------- --
 
@@ -306,7 +306,8 @@ class SelfserviceController(BaseController):
             # the exception, when an abort() is called if forwarded
             log.exception("[__after__::%r] webob.exception %r" % (action, acc))
             db.session.rollback()
-            # FIXME: verify that this really works
+            # FIXME: replace authorization exception handling with flasks preferred
+            # error handling
             raise acc
 
         except Exception as e:
@@ -332,8 +333,7 @@ class SelfserviceController(BaseController):
 
         request_context['reponse_redirect'] = True
 
-        redirect_response = redirect(
-            url(controller='selfservice', action='login'))
+        redirect_response = redirect(url_for('.login'))
 
         if request.cookies.get('user_selfservice'):
             remove_auth_cookie(request.cookies.get('user_selfservice'))
@@ -396,6 +396,10 @@ class SelfserviceController(BaseController):
         '''
         res = ''
 
+        tok = None
+        section = None
+        scope = None
+
         try:
             try:
                 act = self.request_params["type"]
@@ -437,7 +441,8 @@ class SelfserviceController(BaseController):
             error = ('error (%r) accessing form data for: tok:%r, scope:%r'
                      ', section:%r' % (exx, tok, scope, section))
             log.exception(error)
-            return '<pre>%s</pre>' % error
+            return "<h1>{}</h1><pre>{} {}</pre>".format(
+                _("Failed to load form"), _("Error"), exx)
 
     def custom_style(self):
         '''

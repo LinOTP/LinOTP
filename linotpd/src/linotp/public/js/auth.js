@@ -114,12 +114,11 @@ function triggerChallenge() {
         var htmlResponse = $(data);
 
         var img = htmlResponse.find('#challenge_qrcode');
-        $target.html(img);
-
-        var lseqrurl = htmlResponse.find('#challenge_qrcode').attr("alt");
-        $target.append("<p>" + decodeURIComponent(lseqrurl) + "</p>");
-
+        var lseqrurl = img.attr("alt");
         var transactionid = htmlResponse.find('#challenge_data .transactionid').text();
+
+        $target.html(img);
+        $target.append("<p>" + decodeURIComponent(lseqrurl) + "</p>");
         $transidInput.val(transactionid);
 
         $otpInput.val("").focus();
