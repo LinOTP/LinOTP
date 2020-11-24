@@ -33,12 +33,12 @@
 <%inherit file="auth-base.mako"/>
 
 <div id="sidebar">
-    <p>${_("Here you may try to authenticate using your KeyIdentity Push Token.")}</p>
+    <p>${_("Here you may try to authenticate using your LinOTP Push Token.")}</p>
     <p>${_('Enter your username, the OTP PIN and the data you want to display to verify the authentication.')}</p>
 </div> <!-- sidebar -->
 
 <div id="main">
-<h1>${_('KeyIdentity Push Token Login')}</h1>
+<h1>${_('LinOTP Push Token Login')}</h1>
 <div id='auth' class="pushtoken">
     <table>
         <tr>

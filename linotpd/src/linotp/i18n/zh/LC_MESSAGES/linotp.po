@@ -103,11 +103,12 @@ msgstr "6 位"
 msgid "8 digits"
 msgstr "8 位"
 
+#, fuzzy
 msgid ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> provides LinOTP as an "
-"enterprise 2FA solution."
+"<a href='https://keyidentity.com'>arxes-tolina</a> provides LinOTP as an "
+"enterprise MFA solution."
 msgstr ""
-"<a href='https://keyidentity.com'>KeyIdentity</a>提供LinOTP作为企业2FA解决方"
+"<a href='https://keyidentity.com'>arxes-tolina</a>提供LinOTP作为企业2FA解决方"
 "案。"
 
 msgid "A new token will be set to this OTP length."
@@ -121,7 +122,7 @@ msgid "A push notification has been sent. Please check your mobile phone."
 msgstr "推送通知已被发送。请检查您的手机。"
 
 #, fuzzy
-msgid "About KeyIdentity LinOTP"
+msgid "About LinOTP"
 msgstr "关于 LinOTP"
 
 msgid "About LinOTP"
@@ -596,7 +597,19 @@ msgstr "文档"
 msgid "Driver"
 msgstr "驱动"
 
+#, fuzzy
+msgid "Due to license restrictions no more tokens could be assigned!"
+msgstr "由于许可证限制，不能注册更多令牌！"
+
+#, fuzzy
+msgid "Due to license restrictions no more tokens could be enabled!"
+msgstr "由于许可证限制，不能注册更多令牌！"
+
 msgid "Due to license restrictions no more tokens could be enrolled!"
+msgstr "由于许可证限制，不能注册更多令牌！"
+
+#, fuzzy
+msgid "Due to license restrictions no more tokens could be loaded!"
 msgstr "由于许可证限制，不能注册更多令牌！"
 
 msgid "Duplicate"
@@ -660,10 +673,6 @@ msgstr "启用解析器中的用户查找缓存"
 
 msgid "End date"
 msgstr "截止日期"
-
-#, fuzzy
-msgid "Enforce STARTTLS"
-msgstr "强制TLS"
 
 msgid "Enroll"
 msgstr "注册"
@@ -785,6 +794,10 @@ msgstr "请输入您的用户名，OTP PIN 码和挑战文本。"
 
 msgid "Enter your username, the OTP PIN and the input for the challenge."
 msgstr "请输入您的用户名，OTP PIN 码和挑战文本。"
+
+#, fuzzy
+msgid "Error"
+msgstr "错误"
 
 msgid "Error "
 msgstr "错误"
@@ -992,6 +1005,10 @@ msgstr "导入策略失败"
 
 msgid "Failed to import token"
 msgstr "导入令牌失败"
+
+#, fuzzy
+msgid "Failed to load form"
+msgstr "保存供应商失败"
 
 msgid "Failed to load support subscription"
 msgstr "支持数据注册失败"
@@ -1236,11 +1253,11 @@ msgid ""
 msgstr "这里您可使用 OTP 令牌进行认证。"
 
 #, fuzzy
-msgid "Here you may try to authenticate using your KeyIdentity Push Token."
+msgid "Here you may try to authenticate using your LinOTP Push Token."
 msgstr "这里您可使用 OTP 令牌进行认证。"
 
 #, fuzzy
-msgid "Here you may try to authenticate using your KeyIdentity QR Token."
+msgid "Here you may try to authenticate using your LinOTP QR Token."
 msgstr "这里您可尝试使用二维码令牌认证。"
 
 msgid "Here you may try to authenticate using your OCRA OTP token."
@@ -1303,17 +1320,25 @@ msgid ""
 "If there is a problem with your current token please contact the help desk."
 msgstr ""
 
+#, fuzzy
 msgid ""
-"If you are interested in the 2FA platform of KeyIdentity using LinOTP at its "
-"core, and would like further information about:"
+"If you are interested in the MFA platform by arxes-tolina using LinOTP at "
+"its core, and would like further information about:"
 msgstr ""
-"如果您对KeyIdentity在其核心使用LinOTP的2FA平台感兴趣，并希望了解有关以下内容"
+"如果您对arxes-tolina在其核心使用LinOTP的2FA平台感兴趣，并希望了解有关以下内容"
 "的更多信息："
 
+#, fuzzy
 msgid ""
-"If you are interested in the 2FA platform of KeyIdentity, and want to be "
-"informed about:"
-msgstr "如果您对KeyIdentity的2FA平台感兴趣，并想得到以下内容的通知："
+"If you are interested in the MFA platform powered by arxes-tolina, and want "
+"to be informed about:"
+msgstr "如果您对arxes-tolina的2FA平台感兴趣，并想得到以下内容的通知："
+
+#, fuzzy
+msgid ""
+"If you are not yet subscribed, please consider subscribing to our quarterly "
+"newsletter."
+msgstr "请考虑订阅我们的季度新闻简报。"
 
 msgid ""
 "If you do not enter a remote serial or a remote user, the request will be "
@@ -1401,15 +1426,15 @@ msgid "JSON Configuration"
 msgstr "JSON 配置"
 
 #, fuzzy
-msgid "KeyIdentity LinOTP Support and Subscription"
+msgid "LinOTP Support and Subscription"
 msgstr "您的 LinOTP 支持和订阅 "
 
 #, fuzzy
-msgid "KeyIdentity Push Token Login"
+msgid "LinOTP Push Token Login"
 msgstr "选择二维码令牌："
 
 #, fuzzy
-msgid "KeyIdentity QR Token Login"
+msgid "LinOTP QR Token Login"
 msgstr "二维码令牌登录"
 
 msgid "LDAP"
@@ -1603,10 +1628,6 @@ msgstr ""
 msgid "No valid session"
 msgstr "无有效会话"
 
-#, fuzzy
-msgid "No valid session!"
-msgstr "无有效会话"
-
 msgid "Number"
 msgstr "编号"
 
@@ -1706,6 +1727,10 @@ msgstr "确定"
 #, fuzzy
 msgid "Old password"
 msgstr "绑定密码"
+
+#, fuzzy
+msgid "Only allow system-trusted certificates"
+msgstr "公钥证书"
 
 msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr "或者您也可通过 iPhone 扫描下面的二维码，导入配置文件。"
@@ -2220,6 +2245,11 @@ msgstr ""
 msgid "Selfservice Home"
 msgstr "自助服务门户"
 
+msgid ""
+"Selfservice Login Request\n"
+"User: {}"
+msgstr ""
+
 msgid "Selfservice Portal"
 msgstr "自助服务门户"
 
@@ -2314,9 +2344,6 @@ msgid ""
 "not"
 msgstr "指定，如果目标令牌无法计算否应该递增/复位或无"
 
-msgid "Specify the hashlib to be used. Can be sha1 (1) or sha2-256 (2)."
-msgstr "请给出将使用的哈希表。可以是 SHA1 (1) 或 SHA2-256 (2) 。"
-
 msgid "Specify the otplen to be used. Can be 6 or 8 digits."
 msgstr "指定将使用的 OTP 的长度。可以是 6 或 8 个字符。"
 
@@ -2385,6 +2412,9 @@ msgstr "同步窗口"
 
 msgid "System Config"
 msgstr "系统配置"
+
+msgid "TLS"
+msgstr ""
 
 msgid "TOTP Token"
 msgstr "TOTP 令牌"
@@ -3010,6 +3040,9 @@ msgstr "eToken .dat 文件上传："
 msgid "Usage Count"
 msgstr ""
 
+msgid "Use STARTTLS for 'ldap://' connections"
+msgstr ""
+
 msgid "User"
 msgstr "用户"
 
@@ -3101,9 +3134,11 @@ msgstr "电子邮件供应商配置"
 msgid "Waiting for confirmation..."
 msgstr "无法保存域配置"
 
+#, fuzzy
 msgid ""
-"We are pleased that you are using LinOTP by KeyIdentity as your 2FA solution."
-msgstr " 我们很高兴您使用KeyIdentity的LinOTP作为您的2FA解决方案。"
+"We are pleased that you are using LinOTP powered by arxes-tolina as your MFA "
+"solution."
+msgstr " 我们很高兴您使用arxes-tolina的LinOTP作为您的2FA解决方案。"
 
 msgid "We would be happy to receive your feedback about LinOTP."
 msgstr "我们将很高兴收到您有关LinOTP的反馈。"
@@ -3481,6 +3516,15 @@ msgid "Your OCRA2 Token :"
 msgstr "您的 OCRA2 令牌："
 
 msgid ""
+"Your connection will be vulnerable to security attacks if you disable "
+"certificate chain validation"
+msgstr ""
+
+msgid ""
+"Your connection will not be encrypted if you do not use STARTTLS or 'ldaps://'"
+msgstr ""
+
+msgid ""
 "Your current LinOTP Smart Virtual Appliancedemo license is about to expire "
 "in a few days. For licenses for productive use or an extended evaluation "
 "period, "
@@ -3577,10 +3621,6 @@ msgstr "通过电话 "
 
 msgid "certificate id"
 msgstr "证书 ID"
-
-#, fuzzy
-msgid "challenge expired!"
-msgstr "挑战"
 
 msgid "check status"
 msgstr "检查状态"
@@ -3836,7 +3876,8 @@ msgstr "请与我们联系"
 msgid "preshared key"
 msgstr "使用预共享密钥加密"
 
-msgid "product updates,"
+#, fuzzy
+msgid "product updates by arxes-tolina,"
 msgstr "产品更新，"
 
 msgid "register SMS Token"
@@ -4004,14 +4045,13 @@ msgstr "不支持的日期格式 %r"
 msgid "upcoming features in LinOTP"
 msgstr "LinOTP中即将推出的功能"
 
-msgid "upcoming hackathons,"
-msgstr "即将推出黑客松，"
+#, fuzzy
+msgid "upcoming features in LinOTP,"
+msgstr "LinOTP中即将推出的功能"
 
-msgid "updates of our products,"
-msgstr "我们产品的更新，"
-
-msgid "user and developer conferences,"
-msgstr "使用者和开发者大会，"
+#, fuzzy
+msgid "upcoming features in LinOTP."
+msgstr "LinOTP中即将推出的功能"
 
 msgid "username"
 msgstr "用户名"
@@ -4074,6 +4114,10 @@ msgstr "生成的 Web 用户界面"
 #~ msgid "E-mail provider config"
 #~ msgstr "电子邮件配置"
 
+#, fuzzy
+#~ msgid "Enforce STARTTLS"
+#~ msgstr "强制TLS"
+
 #~ msgid "Enter pin: "
 #~ msgstr "输入 PIN 码"
 
@@ -4133,6 +4177,10 @@ msgstr "生成的 Web 用户界面"
 
 #~ msgid "No valid authentication session %r"
 #~ msgstr "无有效的验证会话 %r"
+
+#, fuzzy
+#~ msgid "No valid session!"
+#~ msgstr "无有效会话"
 
 #~ msgid "Not a valid json string!"
 #~ msgstr "缺少有效的 JSON 文本！"
@@ -4269,6 +4317,9 @@ msgstr "生成的 Web 用户界面"
 #~ msgid "Server config"
 #~ msgstr "服务器配置"
 
+#~ msgid "Specify the hashlib to be used. Can be sha1 (1) or sha2-256 (2)."
+#~ msgstr "请给出将使用的哈希表。可以是 SHA1 (1) 或 SHA2-256 (2) 。"
+
 #~ msgid ""
 #~ "The maximum allowed number of tokens for the realm %s (%s) was reached. "
 #~ "You can not assign any more tokens. Check the policies."
@@ -4313,10 +4364,6 @@ msgstr "生成的 Web 用户界面"
 #~ msgid "Token defaults"
 #~ msgstr "令牌默认"
 
-#, fuzzy
-#~ msgid "Use system certificate"
-#~ msgstr "公钥证书"
-
 #~ msgid ""
 #~ "You do not have the administrative right to do monitoring.You are missing "
 #~ "a policyscope=monitoring, action=%s"
@@ -4337,6 +4384,10 @@ msgstr "生成的 Web 用户界面"
 
 #~ msgid "already exists."
 #~ msgstr "已存在。"
+
+#, fuzzy
+#~ msgid "challenge expired!"
+#~ msgstr "挑战"
 
 #~ msgid "count auth"
 #~ msgstr "认证计数器"
@@ -4360,6 +4411,15 @@ msgstr "生成的 Web 用户界面"
 
 #~ msgid "the maximum number of allowed tokens is exceeded. Check the policies"
 #~ msgstr "已超出最大允许令牌数量。请检查策略。"
+
+#~ msgid "upcoming hackathons,"
+#~ msgstr "即将推出黑客松，"
+
+#~ msgid "updates of our products,"
+#~ msgstr "我们产品的更新，"
+
+#~ msgid "user and developer conferences,"
+#~ msgstr "使用者和开发者大会，"
 
 #, fuzzy
 #~ msgid "validity end"

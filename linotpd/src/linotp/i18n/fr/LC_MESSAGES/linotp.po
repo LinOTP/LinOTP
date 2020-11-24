@@ -106,11 +106,12 @@ msgstr "6 chiffres"
 msgid "8 digits"
 msgstr "8 chiffres"
 
+#, fuzzy
 msgid ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> provides LinOTP as an "
-"enterprise 2FA solution."
+"<a href='https://keyidentity.com'>arxes-tolina</a> provides LinOTP as an "
+"enterprise MFA solution."
 msgstr ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> fournit LinOTP comme "
+"<a href='https://keyidentity.com'>arxes-tolina</a> fournit LinOTP comme "
 "solution d'entreprise 2FA."
 
 msgid "A new token will be set to this OTP length."
@@ -125,7 +126,7 @@ msgstr ""
 msgid "A push notification has been sent. Please check your mobile phone."
 msgstr "Une notification de push a été envoyée. Vérifiez votre téléphone."
 
-msgid "About KeyIdentity LinOTP"
+msgid "About LinOTP"
 msgstr "À propos de KeyIdentity LinOTP"
 
 msgid "About LinOTP"
@@ -611,7 +612,25 @@ msgstr "Documentation"
 msgid "Driver"
 msgstr "Pilote"
 
+#, fuzzy
+msgid "Due to license restrictions no more tokens could be assigned!"
+msgstr ""
+"Aucun token supplémentaire n'a pu être déployé à cause des restrictions de "
+"licences !"
+
+#, fuzzy
+msgid "Due to license restrictions no more tokens could be enabled!"
+msgstr ""
+"Aucun token supplémentaire n'a pu être déployé à cause des restrictions de "
+"licences !"
+
 msgid "Due to license restrictions no more tokens could be enrolled!"
+msgstr ""
+"Aucun token supplémentaire n'a pu être déployé à cause des restrictions de "
+"licences !"
+
+#, fuzzy
+msgid "Due to license restrictions no more tokens could be loaded!"
 msgstr ""
 "Aucun token supplémentaire n'a pu être déployé à cause des restrictions de "
 "licences !"
@@ -679,10 +698,6 @@ msgstr "Activer la mise en cache de la recherche utilisateur dans un résolveur"
 
 msgid "End date"
 msgstr "Date d'expiration"
-
-#, fuzzy
-msgid "Enforce STARTTLS"
-msgstr "Appliquer TLS"
 
 msgid "Enroll"
 msgstr "Déployer"
@@ -810,6 +825,10 @@ msgstr ""
 msgid "Enter your username, the OTP PIN and the input for the challenge."
 msgstr ""
 "Entrez votre nom d'utilisateur, le code PIN OTP et le texte pour le défi."
+
+#, fuzzy
+msgid "Error"
+msgstr "Erreur"
 
 msgid "Error "
 msgstr "Erreur"
@@ -1024,6 +1043,10 @@ msgstr "Échec de l'import des directives"
 
 msgid "Failed to import token"
 msgstr "Échec de l'import du token"
+
+#, fuzzy
+msgid "Failed to load form"
+msgstr "Impossible d'enregistrer le fournisseur"
 
 msgid "Failed to load support subscription"
 msgstr "Échec de l'enregistrement des données de support"
@@ -1291,11 +1314,11 @@ msgid ""
 msgstr "Ici, vous pouvez tester l'authentification avec votre token OTP."
 
 #, fuzzy
-msgid "Here you may try to authenticate using your KeyIdentity Push Token."
+msgid "Here you may try to authenticate using your LinOTP Push Token."
 msgstr "Ici, vous pouvez tester l'authentification avec votre token OTP."
 
 #, fuzzy
-msgid "Here you may try to authenticate using your KeyIdentity QR Token."
+msgid "Here you may try to authenticate using your LinOTP QR Token."
 msgstr "Ici, vous pouvez essayer d'authentifier en utilisant votre QR Token."
 
 msgid "Here you may try to authenticate using your OCRA OTP token."
@@ -1369,19 +1392,27 @@ msgid ""
 "If there is a problem with your current token please contact the help desk."
 msgstr ""
 
+#, fuzzy
 msgid ""
-"If you are interested in the 2FA platform of KeyIdentity using LinOTP at its "
-"core, and would like further information about:"
+"If you are interested in the MFA platform by arxes-tolina using LinOTP at "
+"its core, and would like further information about:"
 msgstr ""
-"Si vous êtes intéressé par la plate-forme de KeyIdentity basée sur LinOTP, "
+"Si vous êtes intéressé par la plate-forme de arxes-tolina basée sur LinOTP, "
 "et si vous voulez en savoir davantage :"
 
+#, fuzzy
 msgid ""
-"If you are interested in the 2FA platform of KeyIdentity, and want to be "
-"informed about:"
+"If you are interested in the MFA platform powered by arxes-tolina, and want "
+"to be informed about:"
 msgstr ""
-"Si vous êtes intéressé par la plate-forme 2FA de KeyIdentity, et que vous "
+"Si vous êtes intéressé par la plate-forme 2FA de arxes-tolina, et que vous "
 "souhaitez des informations :"
+
+#, fuzzy
+msgid ""
+"If you are not yet subscribed, please consider subscribing to our quarterly "
+"newsletter."
+msgstr "envisagez de vous abonner à notre lettre d'informations trimestrielle."
 
 msgid ""
 "If you do not enter a remote serial or a remote user, the request will be "
@@ -1474,15 +1505,15 @@ msgstr "Émetteur"
 msgid "JSON Configuration"
 msgstr "Configuration JSON"
 
-msgid "KeyIdentity LinOTP Support and Subscription"
+msgid "LinOTP Support and Subscription"
 msgstr "Assistance et abonnement KeyIdentity LinOTP"
 
 #, fuzzy
-msgid "KeyIdentity Push Token Login"
+msgid "LinOTP Push Token Login"
 msgstr "Sélectionner PushToken"
 
 #, fuzzy
-msgid "KeyIdentity QR Token Login"
+msgid "LinOTP QR Token Login"
 msgstr "Connexion QRToken"
 
 msgid "LDAP"
@@ -1678,10 +1709,6 @@ msgstr ""
 msgid "No valid session"
 msgstr "Pas de session valide"
 
-#, fuzzy
-msgid "No valid session!"
-msgstr "Pas de session valide"
-
 msgid "Number"
 msgstr "Numéro"
 
@@ -1781,6 +1808,10 @@ msgstr "OK"
 #, fuzzy
 msgid "Old password"
 msgstr "Bind mot de passe"
+
+#, fuzzy
+msgid "Only allow system-trusted certificates"
+msgstr "Utiliser un certificat système"
 
 msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
@@ -2311,6 +2342,11 @@ msgstr ""
 msgid "Selfservice Home"
 msgstr "Utilisez un certificat système"
 
+msgid ""
+"Selfservice Login Request\n"
+"User: {}"
+msgstr ""
+
 msgid "Selfservice Portal"
 msgstr "Portail d'auto-gestion"
 
@@ -2407,11 +2443,6 @@ msgstr ""
 "Spécifiez si le compteur de défaillances du token cible doit être incrémenté/"
 "réinitialisé ou non"
 
-msgid "Specify the hashlib to be used. Can be sha1 (1) or sha2-256 (2)."
-msgstr ""
-"Entrez le hashlib qui doit être utilisé. Cela peut être SHA1 (1) ou SHA2-256 "
-"(2)."
-
 msgid "Specify the otplen to be used. Can be 6 or 8 digits."
 msgstr ""
 "Spécifiez la longueur OTP qui doit être utilisée. Cela peut être 6 ou 8 "
@@ -2481,6 +2512,9 @@ msgstr "Fenêtre de resynchronisation"
 
 msgid "System Config"
 msgstr "Configuration système"
+
+msgid "TLS"
+msgstr ""
 
 msgid "TOTP Token"
 msgstr "Token TOTP"
@@ -3191,6 +3225,9 @@ msgstr "Charger le fichier eToken .dat :"
 msgid "Usage Count"
 msgstr ""
 
+msgid "Use STARTTLS for 'ldap://' connections"
+msgstr ""
+
 msgid "User"
 msgstr "Utilisateur"
 
@@ -3284,10 +3321,12 @@ msgstr "Configuration fournisseur e-mail"
 msgid "Waiting for confirmation..."
 msgstr "Erreur lors de la sauvegarde de la configuration du domaine"
 
+#, fuzzy
 msgid ""
-"We are pleased that you are using LinOTP by KeyIdentity as your 2FA solution."
+"We are pleased that you are using LinOTP powered by arxes-tolina as your MFA "
+"solution."
 msgstr ""
-"Nous nous félicitons que vous utilisiez  LinOTP by KeyIdentitypour solution "
+"Nous nous félicitons que vous utilisiez  LinOTP by arxes-tolina pour solution "
 "2FA."
 
 msgid "We would be happy to receive your feedback about LinOTP."
@@ -3780,6 +3819,15 @@ msgid "Your OCRA2 Token :"
 msgstr "Votre token OCRA2 :"
 
 msgid ""
+"Your connection will be vulnerable to security attacks if you disable "
+"certificate chain validation"
+msgstr ""
+
+msgid ""
+"Your connection will not be encrypted if you do not use STARTTLS or 'ldaps://'"
+msgstr ""
+
+msgid ""
 "Your current LinOTP Smart Virtual Appliancedemo license is about to expire "
 "in a few days. For licenses for productive use or an extended evaluation "
 "period, "
@@ -3878,10 +3926,6 @@ msgstr "par téléphone "
 
 msgid "certificate id"
 msgstr "Identifiant certificat"
-
-#, fuzzy
-msgid "challenge expired!"
-msgstr "Défi"
 
 msgid "check status"
 msgstr "vérifier le statut"
@@ -4142,7 +4186,8 @@ msgstr "veuillez nous contacter"
 msgid "preshared key"
 msgstr "Crypté par Preshared Key"
 
-msgid "product updates,"
+#, fuzzy
+msgid "product updates by arxes-tolina,"
 msgstr "les mises à jour de produits,"
 
 msgid "register SMS Token"
@@ -4309,14 +4354,13 @@ msgstr "Format de date non pris en charge %r"
 msgid "upcoming features in LinOTP"
 msgstr "fonctionnalités de LinOTP prévues"
 
-msgid "upcoming hackathons,"
-msgstr "hackathons à venir,"
+#, fuzzy
+msgid "upcoming features in LinOTP,"
+msgstr "fonctionnalités de LinOTP prévues"
 
-msgid "updates of our products,"
-msgstr "mises à jour de nos produits, "
-
-msgid "user and developer conferences,"
-msgstr "conférences utilisateurs et développeurs,"
+#, fuzzy
+msgid "upcoming features in LinOTP."
+msgstr "fonctionnalités de LinOTP prévues"
 
 msgid "username"
 msgstr "Nom d'utilisateur"
@@ -4378,6 +4422,10 @@ msgstr "ui web générée"
 
 #~ msgid "E-mail provider config"
 #~ msgstr "Configuration e-mail"
+
+#, fuzzy
+#~ msgid "Enforce STARTTLS"
+#~ msgstr "Appliquer TLS"
 
 #~ msgid "Enter pin: "
 #~ msgstr "Entrez votre PIN"
@@ -4442,6 +4490,10 @@ msgstr "ui web générée"
 
 #~ msgid "No valid authentication session %r"
 #~ msgstr "Aucune session d'identification valide %r"
+
+#, fuzzy
+#~ msgid "No valid session!"
+#~ msgstr "Pas de session valide"
 
 #~ msgid "Not a valid json string!"
 #~ msgstr "Aucun texte JSON valide !"
@@ -4588,6 +4640,11 @@ msgstr "ui web générée"
 #~ msgid "Server config"
 #~ msgstr "Configuration du serveur"
 
+#~ msgid "Specify the hashlib to be used. Can be sha1 (1) or sha2-256 (2)."
+#~ msgstr ""
+#~ "Entrez le hashlib qui doit être utilisé. Cela peut être SHA1 (1) ou "
+#~ "SHA2-256 (2)."
+
 #~ msgid ""
 #~ "The maximum allowed number of tokens for the realm %s (%s) was reached. "
 #~ "You can not assign any more tokens. Check the policies."
@@ -4644,9 +4701,6 @@ msgstr "ui web générée"
 #~ msgid "Token defaults"
 #~ msgstr "Valeurs par défaut du token"
 
-#~ msgid "Use system certificate"
-#~ msgstr "Utiliser un certificat système"
-
 #~ msgid ""
 #~ "You do not have the administrative right to do monitoring.You are missing "
 #~ "a policyscope=monitoring, action=%s"
@@ -4669,6 +4723,10 @@ msgstr "ui web générée"
 
 #~ msgid "already exists."
 #~ msgstr "existe déjà."
+
+#, fuzzy
+#~ msgid "challenge expired!"
+#~ msgstr "Défi"
 
 #~ msgid "count auth"
 #~ msgstr "Compteur d'authentification"
@@ -4693,6 +4751,15 @@ msgstr "ui web générée"
 #~ msgstr ""
 #~ "Le nombre maximum de token sous licence a été dépassé - Si nécessaire, "
 #~ "vérifiez les directives."
+
+#~ msgid "upcoming hackathons,"
+#~ msgstr "hackathons à venir,"
+
+#~ msgid "updates of our products,"
+#~ msgstr "mises à jour de nos produits, "
+
+#~ msgid "user and developer conferences,"
+#~ msgstr "conférences utilisateurs et développeurs,"
 
 #~ msgid "validity end"
 #~ msgstr "fin de validité"
