@@ -108,7 +108,7 @@ msgid ""
 "<a href='https://keyidentity.com'>arxes-tolina</a> provides LinOTP as an "
 "enterprise MFA solution."
 msgstr ""
-"<a href='https://keyidentity.com'>KeyIdentity</a>提供LinOTP作为企业2FA解决方"
+"<a href='https://keyidentity.com'>arxes-tolina</a>提供LinOTP作为企业2FA解决方"
 "案。"
 
 msgid "A new token will be set to this OTP length."
@@ -122,7 +122,7 @@ msgid "A push notification has been sent. Please check your mobile phone."
 msgstr "推送通知已被发送。请检查您的手机。"
 
 #, fuzzy
-msgid "About KeyIdentity LinOTP"
+msgid "About LinOTP"
 msgstr "关于 LinOTP"
 
 msgid "About LinOTP"
@@ -1253,11 +1253,11 @@ msgid ""
 msgstr "这里您可使用 OTP 令牌进行认证。"
 
 #, fuzzy
-msgid "Here you may try to authenticate using your KeyIdentity Push Token."
+msgid "Here you may try to authenticate using your LinOTP Push Token."
 msgstr "这里您可使用 OTP 令牌进行认证。"
 
 #, fuzzy
-msgid "Here you may try to authenticate using your KeyIdentity QR Token."
+msgid "Here you may try to authenticate using your LinOTP QR Token."
 msgstr "这里您可尝试使用二维码令牌认证。"
 
 msgid "Here you may try to authenticate using your OCRA OTP token."
@@ -1325,14 +1325,14 @@ msgid ""
 "If you are interested in the MFA platform by arxes-tolina using LinOTP at "
 "its core, and would like further information about:"
 msgstr ""
-"如果您对KeyIdentity在其核心使用LinOTP的2FA平台感兴趣，并希望了解有关以下内容"
+"如果您对arxes-tolina在其核心使用LinOTP的2FA平台感兴趣，并希望了解有关以下内容"
 "的更多信息："
 
 #, fuzzy
 msgid ""
 "If you are interested in the MFA platform powered by arxes-tolina, and want "
 "to be informed about:"
-msgstr "如果您对KeyIdentity的2FA平台感兴趣，并想得到以下内容的通知："
+msgstr "如果您对arxes-tolina的2FA平台感兴趣，并想得到以下内容的通知："
 
 #, fuzzy
 msgid ""
@@ -1426,15 +1426,15 @@ msgid "JSON Configuration"
 msgstr "JSON 配置"
 
 #, fuzzy
-msgid "KeyIdentity LinOTP Support and Subscription"
+msgid "LinOTP Support and Subscription"
 msgstr "您的 LinOTP 支持和订阅 "
 
 #, fuzzy
-msgid "KeyIdentity Push Token Login"
+msgid "LinOTP Push Token Login"
 msgstr "选择二维码令牌："
 
 #, fuzzy
-msgid "KeyIdentity QR Token Login"
+msgid "LinOTP QR Token Login"
 msgstr "二维码令牌登录"
 
 msgid "LDAP"
@@ -3138,7 +3138,7 @@ msgstr "无法保存域配置"
 msgid ""
 "We are pleased that you are using LinOTP powered by arxes-tolina as your MFA "
 "solution."
-msgstr " 我们很高兴您使用KeyIdentity的LinOTP作为您的2FA解决方案。"
+msgstr " 我们很高兴您使用arxes-tolina的LinOTP作为您的2FA解决方案。"
 
 msgid "We would be happy to receive your feedback about LinOTP."
 msgstr "我们将很高兴收到您有关LinOTP的反馈。"

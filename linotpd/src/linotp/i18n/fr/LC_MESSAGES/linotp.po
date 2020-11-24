@@ -111,7 +111,7 @@ msgid ""
 "<a href='https://keyidentity.com'>arxes-tolina</a> provides LinOTP as an "
 "enterprise MFA solution."
 msgstr ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> fournit LinOTP comme "
+"<a href='https://keyidentity.com'>arxes-tolina</a> fournit LinOTP comme "
 "solution d'entreprise 2FA."
 
 msgid "A new token will be set to this OTP length."
@@ -126,7 +126,7 @@ msgstr ""
 msgid "A push notification has been sent. Please check your mobile phone."
 msgstr "Une notification de push a été envoyée. Vérifiez votre téléphone."
 
-msgid "About KeyIdentity LinOTP"
+msgid "About LinOTP"
 msgstr "À propos de KeyIdentity LinOTP"
 
 msgid "About LinOTP"
@@ -1314,11 +1314,11 @@ msgid ""
 msgstr "Ici, vous pouvez tester l'authentification avec votre token OTP."
 
 #, fuzzy
-msgid "Here you may try to authenticate using your KeyIdentity Push Token."
+msgid "Here you may try to authenticate using your LinOTP Push Token."
 msgstr "Ici, vous pouvez tester l'authentification avec votre token OTP."
 
 #, fuzzy
-msgid "Here you may try to authenticate using your KeyIdentity QR Token."
+msgid "Here you may try to authenticate using your LinOTP QR Token."
 msgstr "Ici, vous pouvez essayer d'authentifier en utilisant votre QR Token."
 
 msgid "Here you may try to authenticate using your OCRA OTP token."
@@ -1397,7 +1397,7 @@ msgid ""
 "If you are interested in the MFA platform by arxes-tolina using LinOTP at "
 "its core, and would like further information about:"
 msgstr ""
-"Si vous êtes intéressé par la plate-forme de KeyIdentity basée sur LinOTP, "
+"Si vous êtes intéressé par la plate-forme de arxes-tolina basée sur LinOTP, "
 "et si vous voulez en savoir davantage :"
 
 #, fuzzy
@@ -1405,7 +1405,7 @@ msgid ""
 "If you are interested in the MFA platform powered by arxes-tolina, and want "
 "to be informed about:"
 msgstr ""
-"Si vous êtes intéressé par la plate-forme 2FA de KeyIdentity, et que vous "
+"Si vous êtes intéressé par la plate-forme 2FA de arxes-tolina, et que vous "
 "souhaitez des informations :"
 
 #, fuzzy
@@ -1505,15 +1505,15 @@ msgstr "Émetteur"
 msgid "JSON Configuration"
 msgstr "Configuration JSON"
 
-msgid "KeyIdentity LinOTP Support and Subscription"
+msgid "LinOTP Support and Subscription"
 msgstr "Assistance et abonnement KeyIdentity LinOTP"
 
 #, fuzzy
-msgid "KeyIdentity Push Token Login"
+msgid "LinOTP Push Token Login"
 msgstr "Sélectionner PushToken"
 
 #, fuzzy
-msgid "KeyIdentity QR Token Login"
+msgid "LinOTP QR Token Login"
 msgstr "Connexion QRToken"
 
 msgid "LDAP"
@@ -3326,7 +3326,7 @@ msgid ""
 "We are pleased that you are using LinOTP powered by arxes-tolina as your MFA "
 "solution."
 msgstr ""
-"Nous nous félicitons que vous utilisiez  LinOTP by KeyIdentitypour solution "
+"Nous nous félicitons que vous utilisiez  LinOTP by arxes-tolina pour solution "
 "2FA."
 
 msgid "We would be happy to receive your feedback about LinOTP."

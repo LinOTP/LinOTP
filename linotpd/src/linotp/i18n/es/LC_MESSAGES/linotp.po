@@ -110,7 +110,7 @@ msgid ""
 "<a href='https://keyidentity.com'>arxes-tolina</a> provides LinOTP as an "
 "enterprise MFA solution."
 msgstr ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> proporciona LinOTP como "
+"<a href='https://keyidentity.com'>arxes-tolina</a> proporciona LinOTP como "
 "una solución de autenticación de dos pasos empresarial."
 
 msgid "A new token will be set to this OTP length."
@@ -126,7 +126,7 @@ msgid "A push notification has been sent. Please check your mobile phone."
 msgstr ""
 "Se ha enviado una notificación push. Por favor, compruebe su teléfono móvil."
 
-msgid "About KeyIdentity LinOTP"
+msgid "About LinOTP"
 msgstr "Sobre LinOTP de KeyIdentity"
 
 msgid "About LinOTP"
@@ -1295,11 +1295,11 @@ msgid ""
 msgstr "Aquí puede probar la autenticación con su token OTP."
 
 #, fuzzy
-msgid "Here you may try to authenticate using your KeyIdentity Push Token."
+msgid "Here you may try to authenticate using your LinOTP Push Token."
 msgstr "Aquí puede probar la autenticación con su token OTP."
 
 #, fuzzy
-msgid "Here you may try to authenticate using your KeyIdentity QR Token."
+msgid "Here you may try to authenticate using your LinOTP QR Token."
 msgstr "Aquí puede probar a autenticar utilizando su QRToken."
 
 msgid "Here you may try to authenticate using your OCRA OTP token."
@@ -1484,15 +1484,15 @@ msgstr "Expositores"
 msgid "JSON Configuration"
 msgstr "Configuración JSON"
 
-msgid "KeyIdentity LinOTP Support and Subscription"
+msgid "LinOTP Support and Subscription"
 msgstr "Asistencia y subscripción LinOTP de KeyIdentity"
 
 #, fuzzy
-msgid "KeyIdentity Push Token Login"
+msgid "LinOTP Push Token Login"
 msgstr "Seleccionar PushToken:"
 
 #, fuzzy
-msgid "KeyIdentity QR Token Login"
+msgid "LinOTP QR Token Login"
 msgstr "Iniciar sesión QRToken"
 
 msgid "LDAP"
@@ -3302,7 +3302,7 @@ msgid ""
 "We are pleased that you are using LinOTP powered by arxes-tolina as your MFA "
 "solution."
 msgstr ""
-"Nos complace que use LinOTP por KeyIdentity como su solución de "
+"Nos complace que use LinOTP por arxes-tolina como su solución de "
 "autenticación de dos pasos."
 
 msgid "We would be happy to receive your feedback about LinOTP."

@@ -112,7 +112,7 @@ class AuthController(BaseController):
     def qrtoken(self):
         '''
         This is the method for testing authentication
-        using your KeyIdentity QR Token
+        using your LinOTP QR Token
 
         Call it directly in your browser like this
             http(s)://server/auth/qrtoken
@@ -123,7 +123,7 @@ class AuthController(BaseController):
     def pushtoken(self):
         '''
         This is the method for testing authentication
-        using your KeyIdentity Push Token
+        using your LinOTP Push Token
 
         Call it directly in your browser like this
             http(s)://server/auth/pushtoken

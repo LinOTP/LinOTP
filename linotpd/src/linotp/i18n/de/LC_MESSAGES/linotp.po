@@ -126,8 +126,8 @@ msgstr ""
 "Eine Pushbenachrichtigung wurde verschickt. Bitte werfen Sie einen Blick auf "
 "Ihr Smartphone."
 
-msgid "About KeyIdentity LinOTP"
-msgstr "Über KeyIdentity LinOTP"
+msgid "About LinOTP"
+msgstr "Über LinOTP"
 
 msgid "About LinOTP"
 msgstr "Über LinOTP"
@@ -1277,13 +1277,13 @@ msgstr ""
 "Hier können Sie die Authentisierung mit Ihrem Token im Challenge Response "
 "Modus testen."
 
-msgid "Here you may try to authenticate using your KeyIdentity Push Token."
+msgid "Here you may try to authenticate using your LinOTP Push Token."
 msgstr ""
-"Hier können Sie die Authentisierung mit Ihrem KeyIdentity Push Token testen."
+"Hier können Sie die Authentisierung mit Ihrem LinOTP Push-Token testen."
 
-msgid "Here you may try to authenticate using your KeyIdentity QR Token."
+msgid "Here you may try to authenticate using your LinOTP QR Token."
 msgstr ""
-"Hier können Sie die Authentisierung mit Ihrem KeyIdentity QRToken testen."
+"Hier können Sie die Authentisierung mit Ihrem LinOTP QR-Token testen."
 
 msgid "Here you may try to authenticate using your OCRA OTP token."
 msgstr "Hier können Sie sich mit Ihrem OCRA-OTP-Token authentisieren."
@@ -1467,14 +1467,14 @@ msgstr "Aussteller"
 msgid "JSON Configuration"
 msgstr "JSON Konfiguration"
 
-msgid "KeyIdentity LinOTP Support and Subscription"
-msgstr "KeyIdentity LinOTP Support und Subskription"
+msgid "LinOTP Support and Subscription"
+msgstr "LinOTP Support und Subskription"
 
-msgid "KeyIdentity Push Token Login"
-msgstr "KeyIdentity Push Token Login"
+msgid "LinOTP Push Token Login"
+msgstr "LinOTP Push-Token Login"
 
-msgid "KeyIdentity QR Token Login"
-msgstr "KeyIdentity QR Token Login"
+msgid "LinOTP QR Token Login"
+msgstr "LinOTP QR-Token Login"
 
 msgid "LDAP"
 msgstr "LDAP"
@@ -2251,7 +2251,7 @@ msgid "Searchfilter"
 msgstr "Suchfilter"
 
 msgid "Select Push Token: "
-msgstr "PushToken auswählen: "
+msgstr "Push-Token auswählen: "
 
 msgid "Select QRToken: "
 msgstr "Ausgewählter QRToken: "
@@ -4358,7 +4358,7 @@ msgstr "WebUI generiert"
 #~ msgstr "OCRA-Token aktivieren"
 
 #~ msgid "Activate your QR token"
-#~ msgstr "Aktivieren Sie Ihren QR Token"
+#~ msgstr "Aktivieren Sie Ihren QR-Token"
 
 #~ msgid "Alert"
 #~ msgstr "Achtung"
@@ -4920,7 +4920,7 @@ msgstr "WebUI generiert"
 #~ msgstr "Aktivieren Sie Ihren OCRA-Token"
 
 #~ msgid "activate your qr token"
-#~ msgstr "Aktivieren Sie Ihren QRToken"
+#~ msgstr "Aktivieren Sie Ihren QR-Token"
 
 #~ msgid "already exists."
 #~ msgstr "existiert bereits."

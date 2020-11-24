@@ -109,7 +109,7 @@ msgid ""
 "<a href='https://keyidentity.com'>arxes-tolina</a> provides LinOTP as an "
 "enterprise MFA solution."
 msgstr ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> fornisce LinOTP come "
+"<a href='https://keyidentity.com'>arxes-tolina</a> fornisce LinOTP come "
 "soluzione 2FA per le imprese."
 
 msgid "A new token will be set to this OTP length."
@@ -125,7 +125,7 @@ msgstr ""
 msgid "A push notification has been sent. Please check your mobile phone."
 msgstr "È stata inviata una notifica push. Verifica sul tuo cellulare."
 
-msgid "About KeyIdentity LinOTP"
+msgid "About LinOTP"
 msgstr "Info su KeyIdentity LinOTP"
 
 msgid "About LinOTP"
@@ -1294,11 +1294,11 @@ msgid ""
 msgstr "Qui è possibile verificare l'autenticazione con il token OTP."
 
 #, fuzzy
-msgid "Here you may try to authenticate using your KeyIdentity Push Token."
+msgid "Here you may try to authenticate using your LinOTP Push Token."
 msgstr "Qui è possibile verificare l'autenticazione con il token OTP."
 
 #, fuzzy
-msgid "Here you may try to authenticate using your KeyIdentity QR Token."
+msgid "Here you may try to authenticate using your LinOTP QR Token."
 msgstr "Qua puoi provare ad autenticarti utilizzando il tuo QRToken."
 
 msgid "Here you may try to authenticate using your OCRA OTP token."
@@ -1481,15 +1481,15 @@ msgstr "Fornitore"
 msgid "JSON Configuration"
 msgstr "Configurazione JSON"
 
-msgid "KeyIdentity LinOTP Support and Subscription"
+msgid "LinOTP Support and Subscription"
 msgstr "Supporto e abbonamento KeyIdentity LinOTP"
 
 #, fuzzy
-msgid "KeyIdentity Push Token Login"
+msgid "LinOTP Push Token Login"
 msgstr "Seleziona il Push Token: "
 
 #, fuzzy
-msgid "KeyIdentity QR Token Login"
+msgid "LinOTP QR Token Login"
 msgstr "Login QRToken"
 
 msgid "LDAP"
@@ -3278,7 +3278,7 @@ msgid ""
 "We are pleased that you are using LinOTP powered by arxes-tolina as your MFA "
 "solution."
 msgstr ""
-"Ci fa piacere che tu stia usando LineOTP di KeyIdentity come soluzione 2FA."
+"Ci fa piacere che tu stia usando LineOTP di arxes-tolina come soluzione 2FA."
 
 msgid "We would be happy to receive your feedback about LinOTP."
 msgstr "Saremo lieti di ricevere la tua opinione su LineOTP."
