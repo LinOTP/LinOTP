@@ -244,14 +244,13 @@ class LinOTPApp(Flask):
     cache = None
     """Beaker cache for this app"""
 
-    enabled_controllers: List[str] = []
-    """Currently activated controller names"""
-
     def __init__(self):
         self.cli_cmd = os.environ.get('LINOTP_CMD', '')
         self.config_class = ExtFlaskConfig  # our special `Config` class
         self.audit_obj = None               # No audit logging so far
         self.security_provider: SecurityProvider = None
+        self.enabled_controllers: List[str] = []
+        """Currently activated controller names"""
 
         # ------------------------------------------------------------------ --
 
