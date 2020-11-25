@@ -230,11 +230,12 @@ DEBIAN_MIRROR=deb.debian.org
 DEBIAN_RELEASE_NAME=buster
 BASE_IMAGE=debian:$(DEBIAN_RELEASE_NAME)
 
-# Pass proxy environment variables through to docker build by default
-DOCKER_PROXY_BUILD_ARGS= --build-arg=http_proxy --build-arg=https_proxy --build-arg=no_proxy
-
 # Arguments passed to Docker build commands
-DOCKER_BUILD_ARGS+= --build-arg BASE_IMAGE=$(BASE_IMAGE) \
+# Pass proxy environment variables through to docker build by default
+DOCKER_EXTRA_BUILD_ARGS= --build-arg=http_proxy \
+					--build-arg=https_proxy \
+					--build-arg=no_proxy \
+					--build-arg BASE_IMAGE=$(BASE_IMAGE) \
 					--build-arg DEBIAN_MIRROR=$(DEBIAN_MIRROR) \
 					--build-arg DEPENDENCY_SOURCE=$(DEPENDENCY_SOURCE) \
 					--build-arg DEPENDENCY_DISTRIBUTION=$(DEPENDENCY_DISTRIBUTION) \
@@ -248,7 +249,7 @@ DOCKER_BUILD_ARGS+= --build-arg BASE_IMAGE=$(BASE_IMAGE) \
 #  make docker-run-linotp-sqlite DOCKER_RUN_ARGS='-p 1234:80'
 DOCKER_RUN_ARGS=
 
-DOCKER_BUILD = docker build $(DOCKER_BUILD_ARGS) $(DOCKER_PROXY_BUILD_ARGS)
+DOCKER_BUILD = docker build $(DOCKER_BUILD_ARGS) $(DOCKER_EXTRA_BUILD_ARGS)
 DOCKER_RUN = docker run $(DOCKER_RUN_ARGS)
 
 TESTS_DIR=linotpd/src/linotp/tests
