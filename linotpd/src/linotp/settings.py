@@ -369,6 +369,11 @@ _config_schema = ConfigSchema([
                      "if you know a better place to get LinOTP help than the "
                      "default value then by all means let us know about it; "
                      "we might want to offer whomever wrote it a job.")),
+    ConfigItem("SITE_ROOT_REDIRECT", str, default="",
+               help=("Configure an alternative URL path to get redirected "
+                     "to if the site root path (\"/\") is opened. If not "
+                     "configured, the user will be redirected to the "
+                     "selfservice controller.")),
     ConfigItem("MAINTENANCE_VERIFY_CLIENT_ENV_VAR", str, default="",
                help=("The maintenance controller can be configured to only "
                      "serve responses to clients that offer a valid client "

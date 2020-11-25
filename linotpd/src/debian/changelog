@@ -2,8 +2,11 @@ linotp (3.0~rc2-0dev) buster-dev; urgency=low
 
   Features:
   * New Token Self Service interface is installed as a recommended
-  dependency for /selfservice. The existing SelfService is deprecated but
+    dependency for /selfservice. The existing SelfService is deprecated but
   still available under /selfservice-legacy.
+  * New config value SITE_ROOT_REDIRECT allows to customize the redirect
+    path if the user requests the site root path ("/"). If not set, the
+    browser is redirected to the selfservice controller interface.
 
   Fixes:
   * LinOTP legacy SelfService Authorization is now correctly responding with

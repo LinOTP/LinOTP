@@ -32,7 +32,7 @@ from datetime import datetime
 from uuid import uuid4
 
 from flask import (Flask, Config as FlaskConfig, current_app, g as flask_g,
-                   jsonify, Blueprint, redirect, url_for)
+                   jsonify, Blueprint, redirect, url_for, abort)
 from flask.helpers import get_env
 from flask_babel import Babel, gettext
 
@@ -244,14 +244,13 @@ class LinOTPApp(Flask):
     cache = None
     """Beaker cache for this app"""
 
-    enabled_controllers: List[str] = []
-    """Currently activated controller names"""
-
     def __init__(self):
         self.cli_cmd = os.environ.get('LINOTP_CMD', '')
         self.config_class = ExtFlaskConfig  # our special `Config` class
         self.audit_obj = None               # No audit logging so far
         self.security_provider: SecurityProvider = None
+        self.enabled_controllers: List[str] = []
+        """Currently activated controller names"""
 
         # ------------------------------------------------------------------ --
 
@@ -880,10 +879,16 @@ def create_app(config_name=None, config_extra=None):
     # Per controller setup and handlers
     app.setup_controllers()
 
-    if 'selfservice' in app.enabled_controllers:
-        @app.route('/')
-        def index():
+    @app.route('/')
+    def index():
+        site_root_redirect = config["SITE_ROOT_REDIRECT"]
+        if site_root_redirect:
+            return redirect(site_root_redirect)
+
+        if 'selfservice' in app.enabled_controllers:
             return redirect(url_for('selfservice.index'))
+
+        return abort(404)
 
     # Post handlers
     app.teardown_request(app.finalise_request)
