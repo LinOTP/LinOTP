@@ -26,46 +26,47 @@
  */
 
 #do_waiting {
-    display: none;
-    position: fixed;
-    top: 20%;
-    left: 50%;
-    width: 320px;
-    height: 30px;
-    padding: 40px;
-    margin-top: -55px;
-    margin-left: -200px;
-    background-color: #EEE;
-    z-index: 1000;
-    -webkit-box-shadow: 0px 0px 2px 0px rgba(0,0,0,1);
-    -moz-box-shadow: 0px 0px 2px 0px rgba(0,0,0,1);
-    box-shadow: 0px 0px 2px 0px rgba(0,0,0,1);
+  display: none;
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  width: 320px;
+  height: 30px;
+  padding: 40px;
+  margin-top: -55px;
+  margin-left: -200px;
+  background-color: #EEE;
+  z-index: 1000;
+  -webkit-box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 1);
+  -moz-box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 1);
+  box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 1);
 }
 
 #do_waiting span {
-    margin-left: 5px;
+  margin-left: 5px;
 }
 
 #load_tokenfile_form_dat input {
-    margin:10px;
+  margin: 10px;
 }
 
 .center-text {
-    text-align: center;
+  text-align: center;
 }
 
 .subscription_detail {
-    font-size: 80%;
+  font-size: 80%;
 }
 
 .subscription_info {
-    font-size: 90%;
-    text-align: center;
+  font-size: 90%;
+  text-align: center;
 }
 
 .disabled {
-    opacity:.2;
+  opacity: .2;
 }
+
 .indent {
   padding-left: 1em;
   text-align: left;
@@ -83,79 +84,79 @@
 }
 
 .sel_box {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
-
 .sel_user_box {
-    height: 1.2em;
-    font-size: 80%;
-    padding-bottom: 5px;
+  height: 1.2em;
+  font-size: 80%;
+  padding-bottom: 5px;
 }
 
 .sel_tok_box {
-    height: 5em;
-    overflow: auto;
-    font-size: 80%;
+  height: 5em;
+  overflow: auto;
+  font-size: 80%;
 }
 
 .annotation {
-    font-style: italic;
-    font-size: 90%;
+  font-style: italic;
+  font-size: 90%;
 }
 
 .hint {
-    font-size: 70%;
-    opacity: 0.8;
-    vertical-align: middle!important;
+  font-size: 70%;
+  opacity: 0.8;
+  vertical-align: middle!important;
 }
 
 .legend {
-    font-size: 90%;
-    opacity: 0.8;
+  font-size: 90%;
+  opacity: 0.8;
 }
 
 .resolver_dialog_label {
-    font-style: italic;
-    font-size: 85%;
-    opacity:.5;
+  font-style: italic;
+  font-size: 85%;
+  opacity: .5;
 }
-tr.space > th
-{
+
+tr.space > th {
   padding-top: 0.7em;
   text-align: left;
   font-weight: normal;
 }
-#googletokenform li
-{
+
+#googletokenform li {
   padding-bottom: 0.7em;
 }
-td.description
-{
+
+td.description {
   padding-left: 1em;
   text-align: left;
   font-weight: normal;
   font-size: 90%;
 }
 
-td.description_w_space
-{
+td.description_w_space {
   padding-top: 0.7em;
 }
 
-
 h2 {
-    color: #fe8625;
+  color: #fe8625;
 }
 
-/* data table default styles*/
+/* data table default styles */
+
 table.data-table {
   border-collapse: collapse!important;
   margin: 0 auto!important;
   width: 100%;
 }
 
-table.data-table, table.data-table th, table.data-table td {
+table.data-table,
+table.data-table th,
+table.data-table td {
   border: 1px solid lightgrey!important;
 }
 
@@ -174,29 +175,35 @@ table.data-table tr:nth-child(odd) {
 /* to properly recognize these selectors, they had to be split */
 
 input.ph_focus_fadeout::-webkit-input-placeholder { /* Chrome/Opera/Safari */
-  color:rgb(0, 0, 0);
+  color: rgb(0, 0, 0);
 }
+
 input.ph_focus_fadeout::-moz-placeholder { /* FF 19+ */
-  color:rgb(0, 0, 0);
+  color: rgb(0, 0, 0);
 }
+
 input.ph_focus_fadeout:-ms-input-placeholder { /* IE 10+ */
-  color:rgb(0, 0, 0);
+  color: rgb(0, 0, 0);
 }
+
 input.ph_focus_fadeout::placeholder { /* The future is now */
-  color:rgb(0, 0, 0);
+  color: rgb(0, 0, 0);
 }
 
 input.ph_focus_fadeout:focus::-webkit-input-placeholder { /* Chrome/Opera/Safari */
-  color:rgb(117, 117, 117);
+  color: rgb(117, 117, 117);
 }
+
 input.ph_focus_fadeout:focus::-moz-placeholder { /* FF 19+ */
-  color:rgb(117, 117, 117);
+  color: rgb(117, 117, 117);
 }
+
 input.ph_focus_fadeout:focus:-ms-input-placeholder { /* IE 10+ */
-  color:rgb(117, 117, 117);
+  color: rgb(117, 117, 117);
 }
+
 input.ph_focus_fadeout:focus::placeholder { /* The future is now */
-  color:rgb(117, 117, 117);
+  color: rgb(117, 117, 117);
 }
 
 .warning {
