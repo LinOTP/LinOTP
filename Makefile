@@ -226,6 +226,14 @@ DOCKER_TAGS=latest
 # Override to change the mirror used for image building
 DEBIAN_MIRROR=deb.debian.org
 
+# Override to change the dependency repository used to install required packages
+ifndef DEPENDENCY_DEB_REPO
+DEPENDENCY_DEB_REPO="http://www.linotp.org/apt/debian buster linotp"
+endif
+ifndef DEPENDENCY_GPG_KEYID
+DEPENDENCY_GPG_KEYID=913DFF12F86258E5
+endif
+
 # Override to change the Debian release used to build with
 DEBIAN_RELEASE_NAME=buster
 BASE_IMAGE=debian:$(DEBIAN_RELEASE_NAME)
