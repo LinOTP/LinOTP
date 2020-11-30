@@ -30,9 +30,7 @@ ARG BASE_IMAGE=debian:buster
 FROM $BASE_IMAGE
 
 ARG DEBIAN_MIRROR=deb.debian.org
-ARG DEPENDENCY_SOURCE
-ARG DEPENDENCY_DISTRIBUTION=buster
-ARG DEPENDENCY_COMPONENT
+ARG DEPENDENCY_DEB_REPO
 ARG DEPENDENCY_GPG_KEYID
 ARG DEPENDENCY_GPG_KEY_URL
 
@@ -128,8 +126,8 @@ RUN apt-get update && apt-get install eatmydata \
     && apt-get install curl gnupg
 # Add LinOTP packaging key to keyring in order to install
 # dependencies
-RUN test -z "$DEPENDENCY_SOURCE" \
-    || (echo "deb $DEPENDENCY_SOURCE $DEPENDENCY_DISTRIBUTION $DEPENDENCY_COMPONENT" > /etc/apt/sources.list.d/linotp-deps.list \
+RUN test -z "$DEPENDENCY_DEB_REPO" \
+    || (echo "deb $DEPENDENCY_DEB_REPO" > /etc/apt/sources.list.d/linotp-deps.list \
     && cat /etc/apt/sources.list.d/linotp-deps.list)
 RUN test -z "$DEPENDENCY_GPG_KEYID" \
     || apt-key adv --keyserver hkp://hkps.pool.sks-keyservers.net --recv-keys $DEPENDENCY_GPG_KEYID

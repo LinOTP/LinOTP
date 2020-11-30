@@ -237,9 +237,7 @@ DOCKER_EXTRA_BUILD_ARGS= --build-arg=http_proxy \
 					--build-arg=no_proxy \
 					--build-arg BASE_IMAGE=$(BASE_IMAGE) \
 					--build-arg DEBIAN_MIRROR=$(DEBIAN_MIRROR) \
-					--build-arg DEPENDENCY_SOURCE=$(DEPENDENCY_SOURCE) \
-					--build-arg DEPENDENCY_DISTRIBUTION=$(DEPENDENCY_DISTRIBUTION) \
-					--build-arg DEPENDENCY_COMPONENT=$(DEPENDENCY_COMPONENT) \
+					--build-arg DEPENDENCY_DEB_REPO="$(DEPENDENCY_DEB_REPO)" \
 					--build-arg DEPENDENCY_GPG_KEYID=$(DEPENDENCY_GPG_KEYID) \
 					--build-arg DEPENDENCY_GPG_KEY_URL=$(DEPENDENCY_GPG_KEY_URL)
 
