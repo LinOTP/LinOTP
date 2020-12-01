@@ -31,7 +31,7 @@ PROJECT=LinOTP
 LINOTP_SRC_VERSION=$(shell python3 setup.py --version)
 DEB_BUILDDIR:=$(BUILDDIR)/linotp
 
-I18N_LANGUAGES = de fr it es zh
+I18N_LANGUAGES = de
 I18N_SRC := $(CURDIR)/linotp/i18n
 I18N_JSON_DEST := $(CURDIR)/linotp/public/i18n
 I18N_PO_FILES := $(foreach lang,$(I18N_LANGUAGES),$(I18N_SRC)/$(lang)/LC_MESSAGES/linotp.po)
