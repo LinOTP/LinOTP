@@ -8,10 +8,13 @@ linotp (3.0~rc2-0dev) buster-dev; urgency=low
     path if the user requests the site root path ("/"). If not set, the
     browser is redirected to the selfservice controller interface.
 
+  Breaking changes:
+  * Translations fr, it, es, and zh are removed because of their bad state.
+
   Fixes:
   * LinOTP legacy SelfService Authorization is now correctly responding with
-    an "unauthorized" http response instead of an internal server error
-  * after enrollment, push and qr token enrollment status will stay completed
+    an "unauthorized" http response instead of an internal server error.
+  * After enrollment, push and qr token enrollment status will stay completed
     even when these tokens are disabled.
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Mon, 16 Nov 2020 15:33:11 +0200
