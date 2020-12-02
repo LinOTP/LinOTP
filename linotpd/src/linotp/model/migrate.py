@@ -28,7 +28,7 @@ database schema migration hook
 """
 import logging
 
-from typing import Union
+from typing import Optional
 
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
@@ -36,7 +36,6 @@ from sqlalchemy.engine import Engine
 from sqlalchemy import inspect
 
 from linotp import model
-
 
 log = logging.getLogger(__name__)
 
@@ -151,22 +150,62 @@ def drop_column(engine:Engine, table_name:str, column:sa.Column):
                    (c_table_name, c_column_name))
 
 
+def re_encode(
+        value:str, from_encoding:str='iso-8859-15',
+        to_encoding:str='utf-8') -> str:
+    """Reencode a value by default from iso-8859 to utf-8.
+
+    Remark:
+    We have only bytes here comming from LinOTP2 stored by python2
+    and sqlalchemy. The observation is that under certain
+    circumstances the stored data is iso-8859 encoded but sometimes
+    could as well be utf-8.
+
+    In python3 this data is now loaded into a str object which is a
+    utf-8 encoded string. A conversion from iso-8859 to utf-8 does not
+    fail as all codepoints of iso-8859 are within utf-8 range. But the
+    result in a bad representation as the codepoints of iso-8859 and
+    utf-8 dont match.
+
+    * we are using here iso-8859-15 which is a superset of iso-8859-1
+      which is a superset of ascii
+
+    :param value: str data, might contain iso-8859 data
+    :param from_encoding: str data encoding, default 'iso8859-15'
+    :param to_encoding: str data output encoding, default 'utf-8'
+    """
+
+    if not value or not isinstance(value, str):
+        return value
+
+    if value.isascii():
+        return value
+
+    try:
+        value = bytes(value, from_encoding).decode(to_encoding)
+    except UnicodeDecodeError:
+        log.info(
+            'unable to re-encode value: %r - might be already %r',
+            value, to_encoding
+            )
+        raise
+
+    return value
+
+# ------------------------------------------------------------------------- --
+
+# entry point for calling db migration
+
 def run_data_model_migration(engine:Engine):
     """
     hook for database schema upgrade
      - called during database initialisation
     """
 
-    # define the most recent target version
-    target_version = "2.12.0.0"
-
     migration = Migration(engine)
 
-    # start with the current version, which is retrieved from the db
-    current_version = migration.get_current_version()
-
     # run the steps in the migration chain
-    migration.migrate(from_version=current_version, to_version=target_version)
+    target_version = migration.migrate()
 
     # finally set the target version we reached
     migration.set_version(target_version)
@@ -193,6 +232,7 @@ class Migration():
         "2.9.1.0",
         "2.10.1.0",
         "2.12.0.0",
+        "3.0.0.0",
         ]
 
     def __init__(self, engine:Engine):
@@ -220,7 +260,20 @@ class Migration():
 
         return target_version == current_version
 
-    def get_current_version(self) -> Union[str, None]:
+    @staticmethod
+    def is_db_untouched() -> bool:
+        """Check if the db was just created or has been used already.
+
+        When linotp has been run once, it contains the 'linotp.Config' entry
+        which is a timestamp about the last config entry change.
+        If the entry does not exist, we can be sure, that the db has not been
+        touched.
+        """
+
+        return model.Config.query.filter(
+            model.Config.Key == 'linotp.Config').first() is None
+
+    def get_current_version(self) -> Optional[str]:
         """Get the db model version number.
 
         :return: current db version or None
@@ -260,7 +313,10 @@ class Migration():
 
         model.db.session.add(config_entry) # pylint: disable=E1101
 
-    def migrate(self, from_version:Union[str, None], to_version:str):
+    def migrate(
+            self, from_version:Optional[str]=None,
+            to_version:Optional[str]=None
+            ) -> str:
         """Run all migration steps between the versions.
 
         run all steps, which are of ordered list migration_steps
@@ -268,6 +324,19 @@ class Migration():
         :param from_version: the version to start in the migration chain
         :param to_version: the target version in the migration chain
         """
+
+        # if no from version , we start with the current version,
+        #   which is retrieved from the db
+
+        if from_version is None:
+            from_version = self.get_current_version()
+
+        # if no target version is define we take
+        #   the most recent target version
+
+        if to_version is None:
+            to_version = Migration.migration_steps[-1]
+
 
         active = False
 
@@ -306,6 +375,7 @@ class Migration():
             if next_version == to_version:
                 break
 
+        return to_version
 
     # --------------------------------------------------------------------- --
 
@@ -384,5 +454,94 @@ class Migration():
         if not has_column(self.engine, token_table, accessed):
             add_column(self.engine, token_table, accessed)
             add_index(self.engine, token_table, accessed)
+
+    # migration towards 3.0
+
+    def migrate_3_0_0_0(self):
+        """Create a conversion suggested label if db is not untouched."""
+
+        if not self.is_db_untouched():
+
+            config_entry = model.Config(
+                Key='utf8_conversion', Value='suggested'
+                )
+            model.db.session.add(config_entry)
+
+            log.warning(
+                "Database conversion step suggested!\n"
+                "Please run command:\n"
+                " linotp admin fix-db-encoding")
+
+        return
+
+    def iso8859_to_utf8_conversion(self):
+        """Migrate all Config and Token entries from iso-8859 to utf-8."""
+
+        conversion = model.Config.query.filter(
+            model.Config.Key == 'linotp.utf8_conversion').first()
+
+        if not conversion or conversion.Value != 'suggested':
+            return True, "no conversion required or suggested!"
+
+        # ------------------------------------------------------------------ --
+
+        # re-encode the Config Values of certain Types
+
+        config_entries_count = 0
+
+        for entry in model.Config.query.all():
+
+            if entry.Type in [
+                'int', 'bool', 'boolean', 'encrypted_data', 'password'
+                ]:
+                continue
+
+            update_data = {
+                model.Config.Value: re_encode(entry.Value),
+                model.Config.Description: re_encode(entry.Description),
+            }
+
+            # replace by the primary key: Key
+
+            model.Config.query.filter(
+                model.Config.Key == entry.Key
+                ).update(update_data , synchronize_session = False)
+
+            config_entries_count +=1
+
+        log.info(f"{config_entries_count} config entries reencoded!")
+
+        # ------------------------------------------------------------------ --
+
+        # Reencode Token description and info from iso8895 to utf-8.
+
+        token_entries_count = 0
+
+        for token in model.Token.query.all():
+
+            update_data = {
+                model.Token.LinOtpTokenDesc: re_encode(
+                    token.LinOtpTokenDesc),
+                model.Token.LinOtpTokenInfo: re_encode(
+                    token.LinOtpTokenInfo),
+            }
+
+            # replace by the primary key: LinOtpTokenId
+
+            model.Token.query.filter(
+                model.Token.LinOtpTokenId == token.LinOtpTokenId
+                ).update(update_data , synchronize_session = False)
+
+            token_entries_count +=1
+
+        log.info(f"{token_entries_count} token entries reencoded!")
+
+        summary = (f"{config_entries_count} config and "
+                   f"{token_entries_count} token entries converted.")
+
+        conversion = model.Config.query.filter(
+            model.Config.Key == 'linotp.utf8_conversion').delete()
+
+        return True, summary
 
 # eof

@@ -261,9 +261,10 @@ setup(
         ],
         'flask.commands': [
             'audit = linotp.cli.audit_cmd:audit_cmds',
-            'dbsnapshot = linotp.cli.dbsnapshot_cmd:dbsnapshot_cmds',
+            'admin = linotp.cli.admin_cmd:admin_cmds',
             'backup = linotp.cli.mysql_cmd:backup_cmds',
             'config = linotp.settings:config_cmds',
+            'dbsnapshot = linotp.cli.dbsnapshot_cmd:dbsnapshot_cmds',
             'init = linotp.cli.init_cmd:init_cmds',
             'ldap-test = linotp.useridresolver.LDAPIdResolver:ldap_test',
         ],
