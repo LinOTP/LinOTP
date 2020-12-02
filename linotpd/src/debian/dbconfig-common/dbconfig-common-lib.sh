@@ -93,6 +93,7 @@ configure_sql() {
 DATABASE_URI="${escaped_uri}"
 EOF
   # The database password is in this file, so protect accordingly
+  chown linotp $LINOTP_CONFIG_FILE
   chmod 600 $LINOTP_CONFIG_FILE
   echo_log "SQL configuration in $LINOTP_CONFIG_FILE created."
 }
