@@ -272,6 +272,16 @@ case "$1" in
       rm -rf "$OLDCACHEDIR"
     fi
 
+    # In case of an update, check if the fix encoding should be triggered
+    if dpkg --compare-versions "$2" lt-nl "3.0~b0"; then
+        db_get linotp/database/fix_encoding
+        FIX_ENCODING=$RET
+        if [ "$FIX_ENCODING" = "true" ]; then
+                echo_info "Applying database encoding fix"
+                linotp admin fix-encoding
+        fi
+    fi
+
     configure_apache
 
     # TODO: probably not needed
