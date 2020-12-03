@@ -418,18 +418,34 @@ check_3() {
 
     check_service
 }
-# sudo apt purge --yes linotp; sudo mysql --defaults-file=/etc/mysql/debian.cnf -e "DROP USER linotp;"; sudo debconf-set-selections config/linotp-with-mysql-preseed.txt && sudo debi
 
 check_service() {
     # Check we can retrieve manage interface. This gives us an early indication if the install
     # did not work.
     # Param 1 is password (default: admin)
+    # Param 2 is "unavailable" if we are not expecting the interface to be available (defaults to available)
     local password=${1:-admin}
     echo "Retrieving manage interface page"
-    if ! wget -nv --user=admin --password="$password" -O /dev/null --no-check-certificate https://localhost/manage; then
-        echo "Apache error.log:"
-        $sudo tail -n 10 /var/log/apache2/error.log
-        fatal "Service is not working - cannot retrieve manage interface page"
+    wget -nv --user=admin --password="$password" \
+        -O /dev/null \
+        --no-check-certificate \
+        https://localhost/manage \
+        && STATUS=0 \
+        || STATUS=$?
+    if [ "${2:-}" != unavailable ]; then
+        if [ "$STATUS" = 0 ]; then
+            echo "Manage interface is working as expected"
+        else
+            echo "Apache error.log:"
+            $sudo tail -n 10 /var/log/apache2/error.log
+            fatal "Service is not working - cannot retrieve manage interface page"
+        fi
+    else # Interface should not be available
+        if [ "$STATUS" = 0 ]; then
+            fatal "The service is available but should be disabled"
+        else
+            echo "Manage interface is unavailable as expected"
+        fi
     fi
 }
 
@@ -589,11 +605,7 @@ noapache() {
         echo "linotp linotp/apache/activate boolean false"
     ) | $sudo debconf-set-selections
     install_3
-    if ! wget -nv --user=admin --password=admin -O /dev/null --no-check-certificate https://localhost/manage; then
-      echo "manage interface is unavailable as expected"
-    else
-      fatal "Fail: Apache should not be configured"
-    fi
+    check_service "" unavailable
 
     logtest "noapache: Install with Apache and then disable"
     install3
