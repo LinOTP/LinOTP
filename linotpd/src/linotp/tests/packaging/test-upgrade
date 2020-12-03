@@ -410,6 +410,12 @@ check_3() {
         fi
     done
 
+    if [ -f /etc/apache2/sites-enabled/linotp.conf ]; then
+        if [ ! -f /etc/linotp/admins ]; then
+            fatal "/etc/linotp/admins is not a file"
+        fi
+    fi
+
     check_service
 }
 # sudo apt purge --yes linotp; sudo mysql --defaults-file=/etc/mysql/debian.cnf -e "DROP USER linotp;"; sudo debconf-set-selections config/linotp-with-mysql-preseed.txt && sudo debi
