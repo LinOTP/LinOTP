@@ -25,16 +25,15 @@ mk_configfile_from_linotp_ini() {
 
 	local uri="$1"
 	if [ -n "$uri" ]; then
-
-		local regex='^[[:space:]]*([^: ]+)://([^:/]+):([^/@]+)@([^/:]+)(:([0-9]+))?/(.*)'
+		local regex='^[[:space:]]*([^: ]+)://([^:/]+):([^/@]+)@([^/:]+)(:([0-9]+))?/([^?]+)(\?(.*))?'
 		#                          ^ scheme
 		#                                     ^ user : ^password
 		#                                                       ^ host  : ^ port
 		#                                                                            ^ database
+		#                                                                                      (^? (^query params))
 
 		if [[ "$uri" =~ $regex ]]; then
 			echo "Generating dbconfig-common config using settings from linotp.ini"
-
 			temp_conffile="$(mktemp --tmpdir linotp_config.XXXXXX)"
 			if [ -z "$temp_conffile" ]; then
 				echo fatal error: could not create temporary file for configuration
@@ -49,6 +48,7 @@ cat > $temp_conffile <<- EOF
 			dbport="${BASH_REMATCH[6]}"
 			dbuser="${BASH_REMATCH[2]}"
 			dbpass="${BASH_REMATCH[3]}"
+			dbparams="'${BASH_REMATCH[9]}'"
 EOF
 
 			# File was written
