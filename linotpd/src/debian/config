@@ -93,6 +93,29 @@ if [ -f /usr/share/dbconfig-common/dpkg/config ]; then
 				if mk_configfile_from_linotp_ini "$uri"; then
 					# Tell dbc to load the configuration from the generated temporary file
 					dbc_load_include="sh:${temp_conffile}"
+
+					# Fix encoding:
+					# With python2+mysql, the data was stored in the db as
+					# ISO-Latin-1.
+					# Here we determine, if the db was a mysql db and without
+					# charset parameter**. If this is not the case, we set a
+					# flag to not recode. The flag will be used in the postinst
+					# script.
+					#  ** we assume, that any parameter to the db uri is a
+					#     willful change and thus no encoding fix will be
+					#     applied
+
+					DB_TYPE="$(grep "^dbtype=" ${temp_conffile} | cut -f2- -d'=')"
+					DB_PARAMS="$(grep "^dbparams=" ${temp_conffile} | cut -f2- -d'=')"
+
+					if [[ "$DB_TYPE" =~ "mysql" ]]; then
+						if [ -n "$DB_PARAMS" ]; then
+							db_set linotp/database/fix_encoding false
+						fi
+					else:
+						db_set linotp/database/fix_encoding false
+					fi
+
 					break
 				fi
 			fi
