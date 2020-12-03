@@ -89,7 +89,7 @@ if [ -f /usr/share/dbconfig-common/dpkg/config ]; then
 		# Otherwise, it will still be in /etc/linotp2.
 		for INIFILE in /etc/linotp/linotp.ini /etc/linotp2/linotp.ini; do
 			if [ -f $INIFILE ]; then
-				uri="$(grep "^sqlalchemy.url *=" $INIFILE | cut -f2 -d'=')"
+				uri="$(grep "^sqlalchemy.url *=" $INIFILE | cut -f2- -d'=')"
 				if mk_configfile_from_linotp_ini "$uri"; then
 					# Tell dbc to load the configuration from the generated temporary file
 					dbc_load_include="sh:${temp_conffile}"
