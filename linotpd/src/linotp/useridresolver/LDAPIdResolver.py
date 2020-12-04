@@ -1737,10 +1737,7 @@ def ldap_test(url, base, binddn, bindpw, enforce_tls, trace_level,
             # proto   S-TLS  certs         checking  should connect?
             # ---------------------------------------------------------
             ("ldap",  False, "/dev/null",  False,    True),
-            # In the following line, “should connect?” should be `True`
-            # except that with LDAP+STARTTLS, certificate checking is forced
-            # irrespective of the `only_trusted_certs` setting.
-            ("ldap",  True,  "/dev/null",  False,    False),
+            ("ldap",  True,  "/dev/null",  False,    True),
             ("ldap",  True,  "/dev/null",  True,     False),
             ("ldap",  True,  ca_cert_file, False,    True),
             ("ldap",  True,  ca_cert_file, True,     True),
