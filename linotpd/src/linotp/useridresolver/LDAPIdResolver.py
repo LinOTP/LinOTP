@@ -1518,103 +1518,13 @@ class IdResolver(UserIdResolver):
         return userdata
 
 
-def getLdapUsers(params):
-
-    cert_req = (ldap.OPT_X_TLS_DEMAND if params['only_trusted_certs']
-                else ldap.OPT_X_TLS_NEVER)
-    ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, cert_req)
-    ldap.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
-    ldap.set_option(ldap.OPT_PROTOCOL_VERSION, ldap.VERSION3)
-
-    uri = params['LDAPURI']
-    l = ldap.initialize(uri)
-
-    # ldap v3 required for start_tls
-    l.set_option(ldap.OPT_PROTOCOL_VERSION, ldap.VERSION3)
-
-    if not uri.startswith('ldaps://'):
-        try:
-            l.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, cert_req)
-            l.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
-            l.start_tls_s()
-        except ldap.LDAPError as exx:
-            log.info("failed to start_tls for %r: %r", uri, exx)
-            raise exx
-
-    try:
-        l.simple_bind_s(params['BINDDN'], params['BINDPW'])
-
-        baseDN = params['LDAPBASE']
-        searchScope = ldap.SCOPE_SUBTREE
-        searchFilter = params['LDAPSEARCHFILTER']
-        users = {}
-        ldap_result_id = l.search(baseDN, searchScope, searchFilter)
-        while 1:
-            rType, rData = l.result(ldap_result_id, 0)
-            if (rData == []):
-                break
-            else:
-                if rType == ldap.RES_SEARCH_ENTRY:
-                    cn = rData[0][0]
-                    data = rData[0][1]
-
-                    # Flatten, just for more easy access
-                    for (k, v) in list(data.items()):
-                        if len(v) == 1:
-                            if type(v[0]) == str:
-                                try:
-                                    data[k] = "%s" % v[0].decode('utf-8')
-                                except UnicodeDecodeError:
-                                    data[k] = v[0]
-                            else:
-                                data[k] = v[0]
-                        else:
-                            data[k] = []
-                            for item in v:
-                                if type(item) == str:
-                                    try:
-                                        data[k].append("%s" %
-                                                       item.decode('utf-8'))
-                                    except UnicodeDecodeError:
-                                        data[k].append(item)
-                                else:
-                                    data[k].append(item)
-
-                    uid = data[params['LOGINNAMEATTRIBUTE']]
-                    data['uid'] = uid
-                    users[cn] = data
-        return users
-    except ldap.LDAPError as e:
-        print(e)
-    finally:
-        l.unbind_s()
-    return 0
-
-
-def simple_request(params):
-    """
-    here call with same parameters against a compact simpler ldap client
-
-    :param params: dict with all relevant LDAP parameters
-    """
-
-    results = getLdapUsers(params)
-    for name, entry in list(results.items()):
-        print("%s:" % name)
-        for key, value in list(entry.items()):
-            if type(value) == str:
-                print("%s:%s" % (key, value))
-            else:
-                print("%s:%r" % (key, value))
-
-
 def resolver_request(params, silent=False):
 
     def pr(s):
         if not silent:
             print(s)
 
-    IdResolver.setup()
+    current_app.preprocess_request()
 
     pr('Trying to connect to %r' % params['LDAPURI'])
     status, results = IdResolver.testconnection(params, silent)
@@ -1652,12 +1562,11 @@ def resolver_request(params, silent=False):
 @click.option('--only_trusted_certs', '--only-trusted-certs', '-c',
               is_flag=True,
               help='Disallow untrusted or self-signed certificates')
-@click.option('--simple', '-s', is_flag=True,
-              help='Do alternative simple search')
 @click.option('--ldap_type', '--ldap-type',
               type=click.Choice(['ad', 'ldap'], case_sensitive=False),
               default='ldap', help='LDAP server type')
-@click.option('--cert_file', '--cert-file', help='Use certificate from file')
+@click.option('--cert_file', '--cert-file',
+              help='Use CA certificate from file')
 @click.option('--filter', help='Define object filter')
 @click.option('--searchfilter', help='Define object search filter')
 @click.option('--loginattribute', default='uid',
@@ -1668,7 +1577,7 @@ def resolver_request(params, silent=False):
                     "protocol part of the LDAP server URL are ignored."))
 @with_appcontext
 def ldap_test(url, base, binddn, bindpw, enforce_tls, trace_level,
-              only_trusted_certs, simple, ldap_type, cert_file, filter,
+              only_trusted_certs, ldap_type, cert_file, filter,
               searchfilter, loginattribute, all_cases):
     user_mapping = {
         "username": "uid",
@@ -1758,7 +1667,6 @@ def ldap_test(url, base, binddn, bindpw, enforce_tls, trace_level,
             current_app.config["TLS_CA_CERTIFICATES_FILE"] = cert_file
             params0['only_trusted_certs'] = checking
             with current_app.test_request_context():
-                current_app.preprocess_request()
                 try:
                     result = resolver_request(params0, silent=True)
                 except ldap.SERVER_DOWN:
@@ -1776,10 +1684,9 @@ def ldap_test(url, base, binddn, bindpw, enforce_tls, trace_level,
         sys.exit(1 - (ok_cases == len(cases)))  # 0=OK, 1=failure
 
     with current_app.test_request_context():
-        current_app.preprocess_request()
-        if simple:
-            simple_request(params)
-        else:
-            resolver_request(params)
+        result = resolver_request(params,
+                                  silent=current_app.echo.verbosity == 0)
+        sys.exit(0 if result else 1)
+
 
 # eof #########################################################################
