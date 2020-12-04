@@ -105,7 +105,8 @@ postgres_requirements = [
 # install with
 # > pip install -e ".[mysql]"
 mysql_requirements = [
-    'mysql',
+    # 'mysql' driver is deprecated and replaced by 'mysqlclient'
+    'mysqlclient',
 ]
 
 # Inspired by http://www.mattlayman.com/2015/i18n.html
