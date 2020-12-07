@@ -7,6 +7,7 @@
 . /etc/dbconfig-common/linotp.conf
 
 LINOTP_CONFIG_FILE=/etc/linotp/conf.d/01-debian-database.cfg
+LINOTP_USER=linotp
 
 msg="LinOTP: "
 
@@ -93,7 +94,7 @@ configure_sql() {
 DATABASE_URI="${escaped_uri}"
 EOF
   # The database password is in this file, so protect accordingly
-  chown linotp $LINOTP_CONFIG_FILE
+  chown $LINOTP_USER $LINOTP_CONFIG_FILE
   chmod 600 $LINOTP_CONFIG_FILE
   echo_log "SQL configuration in $LINOTP_CONFIG_FILE created."
 }
@@ -103,7 +104,7 @@ EOF
 # Create and setup required SQL database tables
 init_database() {
   echo_log "Initialising database"
-  linotp init database
+  runuser --user $LINOTP_USER -- /usr/bin/linotp init database
 }
 
 # configure_and_init_db
