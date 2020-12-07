@@ -295,15 +295,27 @@ register_questions() {
         done
     ) | $sudo debconf-communicate linotp
 }
+
+set_ssl_cert_selection() {
+    # Set ssl certificate selection if there is not already a certificate available
+    local create
+
+    if [ -f /etc/ssl/certs/linotpserver.pem ]; then
+        create="false"
+    else
+        create="true"
+    fi
+    echo "linotp linotp/apache/ssl_create boolean $create" \
+        | $sudo debconf-set-selections
 }
 
 preseed_2() {
 
     echo "Preseeding linotp2 questions"
+    set_ssl_cert_selection
     (
         echo "linotp linotp/apache/activate boolean true"
         echo "linotp linotp/apache/admin_password password admin"
-        echo "linotp linotp/apache/ssl_create boolean false"
 
         echo "linotp linotp/mysql/ask_rootpw password $mysql_root_password"
         echo "linotp linotp/tokendb/randompw boolean true"
@@ -315,12 +327,11 @@ preseed_2() {
 
 preseed_3() {
     echo "Preseeding linotp3 questions for MariaDB database"
-
+    set_ssl_cert_selection
     register_questions dbconfig-install dbconfig-upgrade database-type mysql/app-pass
     (
         echo "linotp linotp/apache/activate boolean true"
         echo "linotp linotp/apache/admin_password password admin"
-        echo "linotp linotp/apache/ssl_create boolean false"
         echo "linotp linotp/dbconfig-install boolean true"
         echo "linotp linotp/dbconfig-upgrade boolean true"
         echo "linotp linotp/database-type select mysql"
