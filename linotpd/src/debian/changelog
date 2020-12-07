@@ -19,6 +19,7 @@ linotp (3.0~rc2-0dev) buster-dev; urgency=low
     all.)
   * The `-s` ("simple connection") option of the `linotp ldap-test` command
     was removed.
+  * Replace unmaintained mysql driver with mysqlclient driver.
 
   Fixes:
   * LinOTP legacy SelfService Authorization is now correctly responding with
