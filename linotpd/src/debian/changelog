@@ -10,6 +10,15 @@ linotp (3.0~rc2-0dev) buster-dev; urgency=low
 
   Breaking changes:
   * Translations fr, it, es, and zh are removed because of their bad state.
+  * LDAP resolver connections to "ldap://" URLs with encryption switched
+    off no longer attempt "stealth" encryption behind the user's back with
+    an optional fallback to a plain connection. Instead, the encryption
+    state can be explicitly controlled. (In the UI, the LDAP resolver
+    dialog now defaults to "use STARTTLS" when an "ldap://" URL is
+    specified, but if the user deselects this then TLS will not be used at
+    all.)
+  * The `-s` ("simple connection") option of the `linotp ldap-test` command
+    was removed.
 
   Fixes:
   * LinOTP legacy SelfService Authorization is now correctly responding with
