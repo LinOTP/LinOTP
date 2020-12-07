@@ -259,10 +259,10 @@ case "$1" in
   configure)
 
     if [ ! -f $CONFIG_DIR/encKey ]; then
-      linotp init enc-key
+      su -c "linotp init enc-key" "$LINOTP_USER"
     fi
     if [ ! -f $CONFIG_DIR/audit-private.pem ] && [ ! -f $CONFIG_DIR/audit-public.pem ]; then
-      linotp init audit-keys
+      su -c "linotp init audit-keys" "$LINOTP_USER"
     fi
 
     # If we have a Mako template cache directory lying around from an
