@@ -25,6 +25,7 @@ show_help() {
     echo " mysql_password Check v3 install with password containing spaces"
     echo " htpasswd       Check admin password can be changed"
     echo " noapache       Install / reconfigure with apache disabled"
+    echo " nodatabase     Install without database service"
     echo
     echo " alltests       Run all available tests"
     echo " help           Show this help message"
@@ -623,6 +624,34 @@ noapache() {
     fi
 }
 
+nodatabase() {
+    # Check that we can install linotp without an active database
+    # server, and then use dpkg-reconfigure to configure the
+    # database. This is necessary when installing linotp during the
+    # pkgsel phase of the installer.
+    purge
+    logtest "nodatabase: Install without database service"
+
+    register_questions dbconfig-install
+
+    (
+        echo "linotp linotp/apache/activate boolean false"
+        echo "linotp linotp/dbconfig-install boolean false"
+    ) | $sudo debconf-set-selections
+
+    $sudo service mysql stop
+    install_3
+    check_service "" unavailable
+    $sudo service mysql start
+
+    (
+        echo "linotp linotp/dbconfig-reinstall boolean true"
+        echo "linotp linotp/database-type    select  mysql"
+    ) | $sudo debconf-set-selections
+    echo "Generating linotp database..."
+    $sudo dpkg-reconfigure -pcritical -u linotp
+
+}
 
 if [ ! -d "$linotpsrc" ]; then
     error "Linotp source directory not found: $linotpsrc"
@@ -634,7 +663,7 @@ if [ "$#" = 0 ]; then
     show_help
 elif [ "$1" == "--help" ]; then
     show_help
-elif [[ "$1" =~ ^(upgrade2to3|install3|upgrade3|mysql_password|install3psql|selenium_check|htpasswd|noapache|3reinstall|check_data_model_version|check_3)$ ]]
+elif [[ "$1" =~ ^(upgrade2to3|install3|upgrade3|mysql_password|install3psql|selenium_check|htpasswd|noapache|3reinstall|check_data_model_version|check_3|nodatabase)$ ]]
   then
     # Run the function with the same name as the command line argument
     $1
@@ -663,6 +692,7 @@ elif [ "$1" = "alltests" ]; then
     htpasswd
     noapache
     3reinstall
+    nodatabase
 else
     show_help
 fi

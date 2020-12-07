@@ -44,6 +44,7 @@ def run_test_upgrade_command(cmd: str):
     ("htpasswd", "Check admin password can be changed"),
     ("noapache", "Install / reconfigure with apache disabled"),
     ("purgecheck", "Install packages and check removal"),
+    ("nodatabase", "Install without database service"),
 ])
 def test_run_upgrade_test(name, description):
     run_test_upgrade_command(name)
