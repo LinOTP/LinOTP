@@ -278,7 +278,7 @@ case "$1" in
         FIX_ENCODING=$RET
         if [ "$FIX_ENCODING" = "true" ]; then
                 echo_info "Applying database encoding fix"
-                linotp admin fix-encoding
+                linotp admin fix-db-encoding
         fi
     fi
 

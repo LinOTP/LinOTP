@@ -48,7 +48,7 @@ cat > $temp_conffile <<- EOF
 			dbport="${BASH_REMATCH[6]}"
 			dbuser="${BASH_REMATCH[2]}"
 			dbpass="${BASH_REMATCH[3]}"
-			dbparams="'${BASH_REMATCH[9]}'"
+			dbparams="${BASH_REMATCH[9]}"
 EOF
 
 			# File was written
@@ -106,13 +106,14 @@ if [ -f /usr/share/dbconfig-common/dpkg/config ]; then
 					#     applied
 
 					DB_TYPE="$(grep "^dbtype=" ${temp_conffile} | cut -f2- -d'=')"
-					DB_PARAMS="$(grep "^dbparams=" ${temp_conffile} | cut -f2- -d'=')"
-
+					DB_PARAMS="$(grep "^dbparams=" ${temp_conffile} | cut -f2- -d'=' | sed -e 's/"//g')"
 					if [[ "$DB_TYPE" =~ "mysql" ]]; then
 						if [ -n "$DB_PARAMS" ]; then
 							db_set linotp/database/fix_encoding false
+						else
+							db_input medium linotp/database/fix_encoding || true
 						fi
-					else:
+					else
 						db_set linotp/database/fix_encoding false
 					fi
 
