@@ -361,24 +361,39 @@ preseed_3_postgres() {
 
 }
 
-install_2() {
-    url="$1"
-    linotp2_deb="$toolsdir"/"$(echo $url | grep -o "/[^/]*$")"
-    if [ ! -f $linotp2_deb ]; then
-        echo "Downloading linotp deb to $toolsdir"
-        cd "$toolsdir"
-        wget "$url"
+deb_download() {
+    # Download the given deb if a URL and not existing locally
+    # If a filename, just check that it exists
+    local url=""
+    local filename
+
+    if [[ "$1" =~ ^https?://.*/([^/]+\.deb)$ ]]; then
+        url="$1"
+        filename="${BASH_REMATCH[1]}"
+    else
+        filename="$1"
     fi
 
-    preseed_2 "$linotp2_deb"
+    cd "$toolsdir"
+    if [ ! -f "$filename" ]; then
+        wget -q "$url"
+    fi
+    echo "$(realpath $filename)"
+}
+
+install_2() {
+    deb="$(deb_download ${1:-$linotp2_deb_url})"
+    preseed_2 "$deb"
 
     echo "Installing linotp 2 package"
-    DEBIAN_PRIORITY=critical $sudo apt-get --yes --install-recommends install "$linotp2_deb" libapache2-mod-wsgi mariadb-server wget
+    export DEBIAN_PRIORITY=critical
+    $sudo apt-get --yes --install-recommends install "$deb" libapache2-mod-wsgi mariadb-server wget
 }
 
 install_3() {
+    deb="$(deb_download ${1:-$linotp3_deb})"
     echo "Installing latest linotp 3 package"
-    $sudo apt-get --yes --install-recommends install "$linotp3_deb" libapache2-mod-wsgi-py3
+    $sudo apt-get --yes --install-recommends install "$deb" libapache2-mod-wsgi-py3
 }
 
 check_2() {
@@ -502,7 +517,7 @@ upgrade2to3() {
     purge
     logtest "upgrade2to3: Purge, install linotp 2, upgrade to linotp 3"
     echo "-- LinOTP 2 --"
-    install_2 "$linotp2_deb_url"
+    install_2
     echo "-- LinOTP 3 --"
     preseed_3_for_upgrade
     install_3
@@ -677,7 +692,7 @@ elif [ "$1" = "remove" ]; then
 elif [ "$1" = "install2" ]; then
     purge
     logtest "install2: Install linotp 2"
-    install_2 "$linotp2_deb_url"
+    install_2
     check_2
     selenium_check
 elif [ "$1" = "alltests" ]; then
