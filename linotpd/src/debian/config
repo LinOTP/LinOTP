@@ -25,16 +25,15 @@ mk_configfile_from_linotp_ini() {
 
 	local uri="$1"
 	if [ -n "$uri" ]; then
-
-		local regex='^[[:space:]]*([^: ]+)://([^:/]+):([^/@]+)@([^/:]+)(:([0-9]+))?/(.*)'
+		local regex='^[[:space:]]*([^: ]+)://([^:/]+):([^/@]+)@([^/:]+)(:([0-9]+))?/([^?]+)(\?(.*))?'
 		#                          ^ scheme
 		#                                     ^ user : ^password
 		#                                                       ^ host  : ^ port
 		#                                                                            ^ database
+		#                                                                                      (^? (^query params))
 
 		if [[ "$uri" =~ $regex ]]; then
 			echo "Generating dbconfig-common config using settings from linotp.ini"
-
 			temp_conffile="$(mktemp --tmpdir linotp_config.XXXXXX)"
 			if [ -z "$temp_conffile" ]; then
 				echo fatal error: could not create temporary file for configuration
@@ -49,6 +48,7 @@ cat > $temp_conffile <<- EOF
 			dbport="${BASH_REMATCH[6]}"
 			dbuser="${BASH_REMATCH[2]}"
 			dbpass="${BASH_REMATCH[3]}"
+			dbparams="'${BASH_REMATCH[9]}'"
 EOF
 
 			# File was written
@@ -89,10 +89,33 @@ if [ -f /usr/share/dbconfig-common/dpkg/config ]; then
 		# Otherwise, it will still be in /etc/linotp2.
 		for INIFILE in /etc/linotp/linotp.ini /etc/linotp2/linotp.ini; do
 			if [ -f $INIFILE ]; then
-				uri="$(grep "^sqlalchemy.url *=" $INIFILE | cut -f2 -d'=')"
+				uri="$(grep "^sqlalchemy.url *=" $INIFILE | cut -f2- -d'=')"
 				if mk_configfile_from_linotp_ini "$uri"; then
 					# Tell dbc to load the configuration from the generated temporary file
 					dbc_load_include="sh:${temp_conffile}"
+
+					# Fix encoding:
+					# With python2+mysql, the data was stored in the db as
+					# ISO-Latin-1.
+					# Here we determine, if the db was a mysql db and without
+					# charset parameter**. If this is not the case, we set a
+					# flag to not recode. The flag will be used in the postinst
+					# script.
+					#  ** we assume, that any parameter to the db uri is a
+					#     willful change and thus no encoding fix will be
+					#     applied
+
+					DB_TYPE="$(grep "^dbtype=" ${temp_conffile} | cut -f2- -d'=')"
+					DB_PARAMS="$(grep "^dbparams=" ${temp_conffile} | cut -f2- -d'=')"
+
+					if [[ "$DB_TYPE" =~ "mysql" ]]; then
+						if [ -n "$DB_PARAMS" ]; then
+							db_set linotp/database/fix_encoding false
+						fi
+					else:
+						db_set linotp/database/fix_encoding false
+					fi
+
 					break
 				fi
 			fi
