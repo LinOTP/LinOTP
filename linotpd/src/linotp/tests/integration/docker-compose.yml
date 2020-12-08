@@ -47,7 +47,7 @@ services:
     image: linotp
     restart: always
     environment:
-      LINOTP_DATABASE_URI: "mysql://linotpuser:linotppass@db/linotp_db?charset=utf8"
+      LINOTP_DATABASE_URI: "mysql+mysqldb://linotpuser:linotppass@db/linotp_db"
       LINOTP_DB_HOST: "db"
       LINOTP_DB_PORT: "3306"
       LINOTP_APACHE_AUTH: "false"
