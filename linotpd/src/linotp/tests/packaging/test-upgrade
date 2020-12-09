@@ -26,6 +26,7 @@ show_help() {
     echo " htpasswd       Check admin password can be changed"
     echo " noapache       Install / reconfigure with apache disabled"
     echo " nodatabase     Install without database service"
+    echo " encodingfix    Check encoding fix during migration"
     echo
     echo " alltests       Run all available tests"
     echo " help           Show this help message"
@@ -680,6 +681,28 @@ create_musicians_resolver() {
         -q -k test_ldap_resolver_via_api
 }
 
+check_musicians_resolver() {
+    # Use mysql query to check if database encoding is correct
+    result="$(exec_sql 'select Config.Value from Config WHERE Config.Key="linotp.ldapresolver.BINDDN.SE_musicians";')"
+
+    if [ "$result" != 'cn="عبد الحليم حافظ",ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de' ]; then
+        fatal "Musicians resolver encoding is incorrect:$result"
+    fi
+}
+
+encodingfix() {
+    # Check encoding fix during migration LINOTP-1460
+    purge
+    logtest "encodingfix: Check encoding fix during migration"
+    echo "-- LinOTP 2 --"
+    install_2
+    # Define resolver containing extended characters
+    create_musicians_resolver
+
+    echo "-- LinOTP 3 --"
+    preseed_3_for_upgrade
+    install_3
+    check_musicians_resolver
 
 }
 
@@ -693,7 +716,7 @@ if [ "$#" = 0 ]; then
     show_help
 elif [ "$1" == "--help" ]; then
     show_help
-elif [[ "$1" =~ ^(upgrade2to3|install3|upgrade3|mysql_password|install3psql|selenium_check|htpasswd|noapache|3reinstall|check_data_model_version|check_3|nodatabase)$ ]]
+elif [[ "$1" =~ ^(upgrade2to3|install3|upgrade3|mysql_password|install3psql|selenium_check|htpasswd|noapache|3reinstall|check_data_model_version|check_3|nodatabase|encodingfix)$ ]]
   then
     # Run the function with the same name as the command line argument
     $1
@@ -723,6 +746,7 @@ elif [ "$1" = "alltests" ]; then
     noapache
     3reinstall
     nodatabase
+    encodingfix
 else
     show_help
 fi
