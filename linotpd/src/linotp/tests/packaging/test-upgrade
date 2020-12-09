@@ -490,12 +490,9 @@ check_data_model_version() {
     fi
 }
 
-
-selenium_check() {
-    if [ -z "$integration_suite" ]; then
-        echo "Integration tests skipped"
-        return
-    fi
+integrationtests() {
+    # Run the given integration tests
+    local pytestargs="$*"
 
     cd $linotpsrc/linotp/tests/integration
     if [ ! -f "$integration_ini" ]; then
@@ -507,9 +504,18 @@ selenium_check() {
         --tc=linotp.host:localhost
         --tc=linotp.username:admin
         --tc=linotp.password:admin
-        -m smoketest"
+        $pytestargs
+        "
     echo "$pytest $(echo "$params" | tr -d '\n')"
     "$pytest" $params
+}
+
+selenium_check() {
+    if [ -z "$integration_suite" ]; then
+        echo "Integration tests skipped"
+        return
+    fi
+    integrationtests -m smoketest
 }
 
 upgrade2to3() {
@@ -665,6 +671,15 @@ nodatabase() {
     ) | $sudo debconf-set-selections
     echo "Generating linotp database..."
     $sudo dpkg-reconfigure -pcritical -u linotp
+}
+
+create_musicians_resolver() {
+    # Use API to create musicians resolver, which
+    # contains utf8 characters
+    integrationtests \
+        -q -k test_ldap_resolver_via_api
+}
+
 
 }
 
