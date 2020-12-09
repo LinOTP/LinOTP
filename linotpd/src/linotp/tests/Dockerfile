@@ -1,7 +1,5 @@
 FROM linotp
 
-ENV LINOTP_CFG=
-
 #
 # Docker-Image >> linotp-testenv <<
 #
@@ -12,6 +10,12 @@ ENV LINOTP_CFG=
 #
 # The container can be built by running the toplevel target:
 #   make docker-build-testenv
+
+# These variables can be used to customise the test run
+#   LINOTP_CFG - use a different linotp configuration file path
+#   PYTESTARGS - additional arguments passed on the pytest command line
+ENV LINOTP_CFG= \
+    PYTESTARGS=
 
 #Unit test specific packages - Debian packages
 RUN apt-get update && apt-get install --no-install-recommends --yes \

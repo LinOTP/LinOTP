@@ -228,7 +228,7 @@ DEBIAN_MIRROR=deb.debian.org
 
 # Override to change the dependency repository used to install required packages
 ifndef DEPENDENCY_DEB_REPO
-DEPENDENCY_DEB_REPO="http://www.linotp.org/apt/debian buster linotp"
+DEPENDENCY_DEB_REPO=http://www.linotp.org/apt/debian buster linotp
 endif
 ifndef DEPENDENCY_GPG_KEYID
 DEPENDENCY_GPG_KEYID=913DFF12F86258E5
@@ -266,7 +266,8 @@ FUNCTIONAL_TESTS_DIR=$(TESTS_DIR)/functional
 
 ## Toplevel targets
 # Toplevel target to build all containers
-docker-build-all: docker-build-debs docker-build-linotp docker-build-linotp-test-image docker-build-linotp-softhsm
+docker-build-all: docker-build-debs docker-build-linotp
+docker-build-all: docker-build-linotp-test-image docker-build-linotp-softhsm docker-build-packagetest
 
 # Toplevel target to build linotp container
 docker-linotp: docker-build-debs  docker-build-linotp
@@ -372,6 +373,15 @@ docker-build-linotp-softhsm:
 		-f Dockerfile.softhsm \
 		-t $(DOCKER_IMAGE) .
 
+# Build packaging test container
+.PHONY: docker-build-packagetest
+docker-build-packagetest: DOCKER_IMAGE=linotp-packagetest
+docker-build-packagetest:
+	cd $(TESTS_DIR)/packaging \
+	&& $(DOCKER_BUILD) \
+		$(DOCKER_TAG_ARGS) \
+		-t $(DOCKER_IMAGE) .
+
 # Run Selenium based smoketest against LinOTP configured with
 # softhsm security module
 .PHONY: docker-run-softhsm-smoketest
@@ -384,6 +394,17 @@ docker-run-softhsm-smoketest:
 			-e PYTESTARGS="-m smoketest ${PYTESTARGS}" \
 			selenium_tester
 	cd $(SELENIUM_TESTS_DIR) \
+		&& docker-compose down
+
+# Run Docker based packaging install/upgrade tests
+.PHONY: docker-run-packagetest
+docker-run-packagetest:
+	cd $(TESTS_DIR)/packaging \
+		&& docker-compose \
+			run \
+			--rm \
+			packaging_tester
+	cd $(TESTS_DIR)/packaging \
 		&& docker-compose down
 
 

@@ -77,8 +77,8 @@ echo_info "Installation action: $INSTALL_ACTION"
 
 # create_dir MESSAGE NAME [clear]
 #
-# Checks if a directory exists. If it doesn't, creates it and gives it
-# to the $LINOTP_USER user. If the directory already exists and the
+# Checks if a directory exists and gives it to the $LINOTP_USER user.
+# If it doesn't will create it. If the directory already exists and the
 # word "clear" is passed as the third parameter, empty the directory
 # of all files and subdirectories. The first parameter is an
 # explanatory string used in log messages.
@@ -92,6 +92,7 @@ create_dir() {
     echo_log "Created $dirmsg directory: $dirname"
   else
     echo_log "Using existing $dirmsg directory: $dirname"
+    chown "$LINOTP_USER" "$dirname"
     if [ "$3" == "clear" ]; then
       echo_log "Clearing $dirname"
       rm -rf "$dirname"/*
@@ -244,6 +245,7 @@ if [ "$1" = configure ]; then
   create_dir "log" "$LOGDIR"
   create_dir "lib" "$LIBDIR"
   create_dir "cache" "$CACHEDIR"
+  create_dir "etc" "$CONFIG_DIR"
   create_dir "template" "$TEMPLATEDIR"
   create_tmpfiles linotp.conf  # for DATA_DIR
 
@@ -259,10 +261,10 @@ case "$1" in
   configure)
 
     if [ ! -f $CONFIG_DIR/encKey ]; then
-      linotp init enc-key
+      runuser --user "$LINOTP_USER" -- linotp init enc-key
     fi
     if [ ! -f $CONFIG_DIR/audit-private.pem ] && [ ! -f $CONFIG_DIR/audit-public.pem ]; then
-      linotp init audit-keys
+      runuser --user "$LINOTP_USER" -- linotp init audit-keys
     fi
 
     # If we have a Mako template cache directory lying around from an
@@ -283,9 +285,6 @@ case "$1" in
     fi
 
     configure_apache
-
-    # TODO: probably not needed
-    chown -R "$LINOTP_USER" "$LOGDIR"
 
     rm -f $CONFIG_DIR/we_are_doing_an_upgrade
   ;;
