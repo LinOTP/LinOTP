@@ -88,21 +88,23 @@ class SelfService(object):
         return WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
             EC.visibility_of_element_located((By.XPATH, xpath)))
 
+    def open(self):
+        self.driver.get(self.selfservice_url + "/login")
+
+
     def login(self, user, password, realm=None):
         """
         Log in to selfservice
 
         @param realm: Realm name will be appended to username if given
         """
-        driver = self.driver
-        driver.get(self.selfservice_url + "/login")
         if realm:
             login = '%s@%s' % (user, realm)
         else:
             login = user
 
-        fill_form_element(driver, "login", login)
-        fill_form_element(driver, "password", password)
+        fill_form_element(self.driver, "login", login)
+        fill_form_element(self.driver, "password", password)
         self._find_by_id("password").submit()
         self.wait_for_element_visibility('tabs', 20)
 
