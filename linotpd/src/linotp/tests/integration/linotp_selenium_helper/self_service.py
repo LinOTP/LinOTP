@@ -24,13 +24,14 @@
 #    Support: www.keyidentity.com
 #
 import logging
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, List, Union
 
 from selenium.webdriver import Chrome, Firefox
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webdriver import WebElement
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
+from . import helper
 from linotp_selenium_helper.helper import (
     fill_form_element, close_alert_and_get_its_text)
 from selenium.common.exceptions import TimeoutException
@@ -83,6 +84,18 @@ class SelfService(object):
         return WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
             EC.visibility_of_element_located((By.CLASS_NAME, class_name)))
 
+    def _find_by_css(self, css_value) -> WebElement:
+        """
+        Return the element indicated by CSS selector
+        """
+        return helper.find_by_css(self.driver, css_value)
+
+    def _find_all_by_css(self, css_value) -> List[WebElement]:
+        """
+        Return a list of elements indicated by CSS selector
+        """
+        return self.driver.find_elements_by_css_selector(css_value)
+
     def find_by_xpath(self, xpath):
         """Return the element by its xpath"""
         return WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
@@ -111,6 +124,26 @@ class SelfService(object):
     def wait_for_element_visibility(self, element_id, delay=5):
         WebDriverWait(self.driver, delay).until(
             EC.visibility_of_element_located((By.ID, element_id)))
+
+    def expect_ui_state(self, tokens, enrollment_options):
+        if tokens == 0:
+            assert self._find_by_css(".empty-token-list"), \
+                "Expected no tokens to be visible"
+        if tokens > 0:
+            token_list = self._find_all_by_css(
+                "#tokenDiv .token") or []
+            assert len(token_list) == tokens, \
+                f"Expected {tokens} tokens to be visible " \
+                f"but found {len(token_list)}."
+
+        tabs = self._find_all_by_css(
+            "#tabs > ul > li.ui-tabs-tab a") or []
+
+        enrollment_tabs = [tab for tab in tabs if
+                           tab.get_attribute("href").endswith(".enroll")]
+        assert len(enrollment_tabs) == enrollment_options, \
+            f"Expected {enrollment_options} enrollment tabs to be visible " \
+            f"but found {len(enrollment_tabs)}."
 
     def select_tab(self, text):
         """

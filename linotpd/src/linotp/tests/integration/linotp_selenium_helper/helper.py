@@ -51,12 +51,30 @@ def _find_and_wait(driver, by, value):
     )
 
 
+def _find_and_wait_for_all(driver, by, value):
+    """
+    Returns the element defined by 'by' and 'value', waiting up to 10 seconds
+    for it to appear.
+    """
+    return WebDriverWait(driver, 10).until(
+        EC.visibility_of_all_elements_located((by, value))
+    )
+
+
 def find_by_css(driver, selector):
     """
     Returns the element defined by the CSS selector, waiting up to 10 seconds
     for it to appear.
     """
     return _find_and_wait(driver, By.CSS_SELECTOR, selector)
+
+
+def find_all_by_css(driver, selector):
+    """
+    Returns all elements matched by the CSS selector, waiting up to 10 seconds
+    for all of them to appear.
+    """
+    return _find_and_wait_for_all(driver, By.CSS_SELECTOR, selector)
 
 
 def find_by_id(driver, id_value):
