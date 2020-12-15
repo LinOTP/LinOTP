@@ -35,6 +35,7 @@ from .user_id_resolver import (
     LdapUserIdResolver,
 )
 from .self_service import SelfService
+from .self_service_angular import AngularSelfService
 from .token_enroll import EnrollTokenDialog
 from . import helper
 
@@ -43,6 +44,7 @@ __all__ = [
     "EnrollTokenDialog",
     "Policy",
     "SelfService",
+    "AngularSelfService",
     "TestCase",
     "UserIdResolverManager",
     "UserIdResolver",
