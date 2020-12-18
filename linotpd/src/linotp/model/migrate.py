@@ -194,6 +194,113 @@ def re_encode(
 
 # ------------------------------------------------------------------------- --
 
+# mysql specific migration
+
+class MYSQL_Migration():
+    """MYSQL schema and data migration - converting from latin1 to utf8."""
+
+    def __init__(self, engine):
+        self.engine = engine
+
+    def _execute(self, command):
+        """helper to execute the lowlevel sql command and return result.
+
+        :param command: the raw sql command
+        :return: the sqlalchemy result (proxy)
+        """
+        return self.engine.connect().execute(text(command))
+
+    # --------------------------------------------------------------------- --
+
+    # schema conversion
+
+    def _query_schema(self, table):
+        """Query the mysql for the table creation defintion.
+
+        the result contains the charset which might be latin1 or utf8
+        :param table: the table name
+        """
+        results = self._execute(f"SHOW CREATE TABLE {table};")
+        return results.next()[1]
+
+    def _update_schema(self, table):
+        """Update the table defintion to utf8 charset.
+
+        :param table: the table name
+        """
+        return self._execute(
+            f"ALTER TABLE {table} CONVERT TO CHARACTER SET utf8mb4;")
+
+    def _get_tables(self):
+        """Query the linotp database for all tables.
+
+        :yield: table name
+        """
+        for result in self._execute("show tables;"):
+            yield result[0]
+
+    def migrate_schema(self):
+        """Migration worker, to update the schema definition.
+
+        mysql 'show create table' returns a string which contains as well the
+        used table chareset. In case of a latin1 charset, we convert this
+        table defintion to utf8.
+
+        :return: list of migrated tables
+        """
+        migrated_tables = []
+
+        for table in self._get_tables():
+            schema_def =  self._query_schema(table)
+            table_desc = schema_def.rpartition(')')[2]
+            if 'CHARSET=latin1' in table_desc:
+                self._update_schema(table)
+                migrated_tables.append(table)
+
+        return migrated_tables
+
+    # --------------------------------------------------------------------- --
+
+    # data conversion
+
+    def _convert(self, column):
+        """Helper to build conversion string.
+
+        :param column: the string name of the column
+        :return: the composed conversion string
+        """
+        return (f"{column} = CONVERT(CAST(CONVERT({column} "
+                "USING latin1) as BINARY) USING utf8)")
+
+    def _convert_Config_to_utf8(self):
+        """Migrate the Config Value and Description to utf8."""
+        cmd = (
+            "Update Config Set %s, %s ;" % (
+            self._convert("Config.Description"),
+            self._convert("Config.Value")
+            ))
+        return self._execute(cmd)
+
+    def _convert_Token_to_utf8(self):
+        """Migrate the Token Description and LinOtpTokenInfo to utf8."""
+        cmd = ("Update Token Set %s, %s ;" % (
+            self._convert("Token.Description"),
+            self._convert("Token.LinOtpTokenInfo")
+            ))
+        return self._execute(cmd)
+
+    def migrate_data(self, tables):
+        """Worker for the data migration.
+
+        :param tables: list of tables where the data should be converted to utf8
+        """
+        if 'Config' in tables:
+            self._convert_Config_to_utf8()
+        if 'Token' in tables:
+            self._convert_Token_to_utf8()
+
+# ------------------------------------------------------------------------- --
+
 # entry point for calling db migration
 
 def run_data_model_migration(engine:Engine):
