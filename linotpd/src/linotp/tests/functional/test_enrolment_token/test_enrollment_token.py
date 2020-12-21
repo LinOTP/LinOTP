@@ -590,6 +590,186 @@ class TestRolloutToken(TestController):
 
         return
 
+    def do_enroll_token_purge_scope_validate(self, scope):
+        """
+        test janitor - do purge rollout tokens that have scope
+        userservice AND validate
+        """
+        params = {
+            'name': 'mfa',
+            'scope': 'selfservice',
+            'action': 'mfa_login, mfa_3_fields',
+            'user': '*',
+            'realm': '*',
+            'active': True
+        }
+
+        response = self.make_system_request('setPolicy', params)
+        self.assertTrue('false' not in response, response)
+
+        params = {
+            'name': 'purge',
+            'scope': 'enrollment',
+            'action': 'purge_rollout_token',
+            'user': '*',
+            'realm': '*',
+            'active': True
+        }
+
+        response = self.make_system_request('setPolicy', params)
+        self.assertTrue('false' not in response, response)
+
+        user = 'passthru_user1@myDefRealm'
+        password = 'geheim1'
+        otp = 'verry_verry_secret'
+        pin = '1234567890'
+
+        params = {
+            "otpkey": otp,
+            "user": user,
+            "pin": pin,
+
+            "type": "pw",
+            "serial": "KIPW0815",
+            "description": "enrollment test token",
+            "scope": json.dumps({
+                "path": scope})
+        }
+
+        response = self.make_admin_request('init', params=params)
+        self.assertTrue('"value": true' in response, response)
+
+        # enroll second token
+
+        params = {
+            "otpkey": 'second',
+            "user": user,
+            "pin": "Test123!",
+            "type": "pw",
+            "description": "second token",
+        }
+
+        response = self.make_admin_request('init', params=params)
+        self.assertTrue('"value": true' in response, response)
+
+        # ------------------------------------------------------------------ --
+        # ensure that login with rollout token is possible
+        # via scopes
+
+        response = self.validate_check(user, pin, otp)
+        if "validate" in scope:
+            self.assertTrue(' "value": true' in response, response)
+        else:
+            self.assertTrue(' "value": false' in response, response)
+
+        # Login via selfservice
+        response = self.user_service_login(user, password, otp)
+        if "userservice" in scope:
+            self.assertTrue(' "value": true' in response, response)
+        else:
+            self.assertTrue(' "value": false' in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # the valid authentication with the rollout token
+        # should not have purged the rollout token
+
+        response = self.make_admin_request('show')
+        self.assertTrue('KIPW0815' in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # after the valid authentication with the second token the
+        # rollout token should have been purged as the policy is set
+
+        response = self.user_service_login(user, password, otp='second')
+        self.assertTrue(' "value": true' in response, response)
+
+        response = self.make_admin_request('show')
+        self.assertTrue('KIPW0815' not in response, response)
+
+    def test_enroll_token_purge_scope_validate(self):
+        """
+        test janitor - do purge rollout tokens that have scope
+        validate
+        """
+        self.do_enroll_token_purge_scope_validate(["validate"])
+
+    def test_enroll_token_purge_scope_validate_and_selfservice(self):
+        """
+        test janitor - do purge rollout tokens that have scope
+        userservice AND validate
+        """
+        self.do_enroll_token_purge_scope_validate(["validate", "userservice"])
+
+    def test_not_purge_non_enroll_token(self):
+        """
+        test janitor - do not purge non-rollout tokens
+        """
+
+        params = {
+            'name': 'purge',
+            'scope': 'enrollment',
+            'action': 'purge_rollout_token',
+            'user': '*',
+            'realm': '*',
+            'active': True
+        }
+
+        response = self.make_system_request('setPolicy', params)
+        self.assertTrue('false' not in response, response)
+
+        # enroll first token
+
+        user = 'passthru_user1@myDefRealm'
+        otpkey = 'secret'
+        pin1 = 'pin1'
+        pin2 = 'pin2'
+
+        params = {
+            "user": user,
+            "otpkey": otpkey,
+            "pin": pin1,
+            "type": "pw",
+            "serial": "KIPW01",
+            "description": "first token",
+        }
+
+        response = self.make_admin_request('init', params=params)
+        self.assertTrue('"value": true' in response, response)
+
+        # enroll second token
+
+        params = {
+            "user": user,
+            "otpkey": otpkey,
+            "pin": pin2,
+            "type": "pw",
+            "serial": "KIPW02",
+            "description": "second token",
+        }
+
+        response = self.make_admin_request('init', params=params)
+        self.assertTrue('"value": true' in response, response)
+
+        # ------------------------------------------------------------------ --
+        # do a login with both tokens
+
+        response = self.validate_check(user, pin1, otpkey)
+        self.assertTrue(' "value": true' in response, response)
+
+        response = self.validate_check(user, pin2, otpkey)
+        self.assertTrue(' "value": true' in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # after the valid authentications with both tokens, both tokens
+        # should not have been purged
+
+        response = self.make_admin_request('show')
+        self.assertTrue('KIPW01' in response, response)
+        self.assertTrue('KIPW02' in response, response)
+
     def test_selfservice_usertokenlist(self):
         """
         test token with both scopes defined
