@@ -408,7 +408,7 @@ def janitor_to_remove_enrollment_token(valid_tokens):
         # if the authenticated token is a rollout token, we dont count him
 
         path = token.getFromTokenInfo('scope',{}).get('path',[])
-        if len(path) == 1 and path[0] == 'userservice':
+        if set(path) & set(['userservice', 'validate']):
             continue
 
         owner = get_token_owner(token)
@@ -439,7 +439,7 @@ def janitor_to_remove_enrollment_token(valid_tokens):
 
         for token in user_tokens:
             path = token.getFromTokenInfo('scope',{}).get('path',[])
-            if len(path) == 1 and path[0] == 'userservice':
+            if set(path) & set(['userservice', 'validate']):
                 to_be_removed_tokens.append(token)
 
     # ------------------------------------------------------------------ --
