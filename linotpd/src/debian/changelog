@@ -1,3 +1,11 @@
+linotp (2.12.2~rc0-1) buster; urgency=medium
+
+  Fix:
+  * Server: Make rollout token behaviour consistent when used for validate
+    workflow (description and cleanup behaviour).
+
+ -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Tue, 22 Dec 2020 16:33:45 +0100
+
 linotp (2.12.1-1) buster; urgency=low
 
   Fix:
@@ -11,7 +19,7 @@ linotp (2.12.1-1) buster; urgency=low
   Doc:
   * Update Readme.rst with latest installation instructions
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 23 Oct 2020 12:04:46 +0200
+ -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Fri, 23 Oct 2020 12:04:46 +0200
 
 linotp (2.12-1) buster; urgency=low
 
