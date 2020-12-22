@@ -117,7 +117,7 @@ def getTokenForUser(user, active=None, exclude_rollout=True):
             # skip the rollout tokens from the selfservice token list
 
             path = token_info.get('scope',{}).get('path',[])
-            if len(path) == 1 and path[0] == 'userservice' and exclude_rollout:
+            if set(path) & set(['userservice', 'validate']) and exclude_rollout:
                 continue
 
             tok['LinOtp.TokenInfo'] = token_info
