@@ -631,7 +631,6 @@ class TestRolloutToken(TestController):
 
             "type": "pw",
             "serial": "KIPW0815",
-            "description": "enrollment test token",
             "scope": json.dumps({
                 "path": scope})
         }
@@ -675,7 +674,9 @@ class TestRolloutToken(TestController):
         # should not have purged the rollout token
 
         response = self.make_admin_request('show')
-        self.assertTrue('KIPW0815' in response, response)
+        token_info = response.json_body['result']['value']['data'][0]
+        self.assertEquals(token_info['LinOtp.TokenSerialnumber'], 'KIPW0815', response)
+        self.assertEquals(token_info['LinOtp.TokenDesc'], 'rollout token', response)
 
         # ------------------------------------------------------------------ --
 
