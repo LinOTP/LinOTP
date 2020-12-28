@@ -90,9 +90,9 @@ Listen 81
         Require valid-user
     </Location>
 
-    <Location /selfservice>
-        # The authentication for selfservice is done from within the application
-    </Location>
+    # Include additional linotp configurations provided by other packages
+    # See /etc/linotp/apache-site-includes/README.txt for additional information
+    IncludeOptional /etc/linotp/apache-site-includes/*.conf
 
     <Location /validate>
         # No Authentication

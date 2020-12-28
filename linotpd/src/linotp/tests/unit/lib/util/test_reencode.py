@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2020 arxes-tolina GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -23,29 +24,28 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-"""Helper classes for LinOTP Selenium Tests"""
+"""Tests for text_util re_encode which is required for linotp2 migration """
 
-from .test_case import TestCase
-from .policy import Policy
-from .user_id_resolver import (
-    UserIdResolverManager,
-    UserIdResolver,
-    SqlUserIdResolver,
-    PasswdUserIdResolver,
-    LdapUserIdResolver,
-)
-from .self_service import SelfService
-from .self_service_angular import AngularSelfService
-from .token_enroll import EnrollTokenDialog
-from . import helper
+import logging 
+import pytest
 
-__all__ = [
-    "helper",
-    "EnrollTokenDialog",
-    "Policy",
-    "SelfService",
-    "AngularSelfService",
-    "TestCase",
-    "UserIdResolverManager",
-    "UserIdResolver",
-]
+from linotp.model.migrate import re_encode
+
+log = logging.getLogger(__name__)
+
+
+def test_iso8859():
+    """Test for iso-8859-1 input re_encoding."""
+
+    utf8_str = 'äöüß€'
+    iso8859_15_str = bytes(utf8_str, encoding='utf-8').decode('iso-8859-15')
+
+    with pytest.raises(UnicodeDecodeError):
+        re_encode(utf8_str)
+
+    re_utf8_str = re_encode(iso8859_15_str)
+    assert utf8_str == re_utf8_str
+
+    assert re_encode(None) is None
+
+    assert re_encode('') == ''

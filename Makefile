@@ -226,19 +226,26 @@ DOCKER_TAGS=latest
 # Override to change the mirror used for image building
 DEBIAN_MIRROR=deb.debian.org
 
+# Override to change the dependency repository used to install required packages
+ifndef DEPENDENCY_DEB_REPO
+DEPENDENCY_DEB_REPO=http://www.linotp.org/apt/debian buster linotp
+endif
+ifndef DEPENDENCY_GPG_KEYID
+DEPENDENCY_GPG_KEYID=913DFF12F86258E5
+endif
+
 # Override to change the Debian release used to build with
 DEBIAN_RELEASE_NAME=buster
 BASE_IMAGE=debian:$(DEBIAN_RELEASE_NAME)
 
-# Pass proxy environment variables through to docker build by default
-DOCKER_PROXY_BUILD_ARGS= --build-arg=http_proxy --build-arg=https_proxy --build-arg=no_proxy
-
 # Arguments passed to Docker build commands
-DOCKER_BUILD_ARGS+= --build-arg BASE_IMAGE=$(BASE_IMAGE) \
+# Pass proxy environment variables through to docker build by default
+DOCKER_EXTRA_BUILD_ARGS= --build-arg=http_proxy \
+					--build-arg=https_proxy \
+					--build-arg=no_proxy \
+					--build-arg BASE_IMAGE=$(BASE_IMAGE) \
 					--build-arg DEBIAN_MIRROR=$(DEBIAN_MIRROR) \
-					--build-arg DEBIAN_RELEASE_NAME=$(DEBIAN_RELEASE_NAME) \
-					--build-arg DEPENDENCY_SOURCE=$(DEPENDENCY_SOURCE) \
-					--build-arg DEPENDENCY_COMPONENT=$(DEPENDENCY_COMPONENT) \
+					--build-arg DEPENDENCY_DEB_REPO="$(DEPENDENCY_DEB_REPO)" \
 					--build-arg DEPENDENCY_GPG_KEYID=$(DEPENDENCY_GPG_KEYID) \
 					--build-arg DEPENDENCY_GPG_KEY_URL=$(DEPENDENCY_GPG_KEY_URL)
 
@@ -248,7 +255,7 @@ DOCKER_BUILD_ARGS+= --build-arg BASE_IMAGE=$(BASE_IMAGE) \
 #  make docker-run-linotp-sqlite DOCKER_RUN_ARGS='-p 1234:80'
 DOCKER_RUN_ARGS=
 
-DOCKER_BUILD = docker build $(DOCKER_BUILD_ARGS) $(DOCKER_PROXY_BUILD_ARGS)
+DOCKER_BUILD = docker build $(DOCKER_BUILD_ARGS) $(DOCKER_EXTRA_BUILD_ARGS)
 DOCKER_RUN = docker run $(DOCKER_RUN_ARGS)
 
 TESTS_DIR=linotpd/src/linotp/tests
@@ -259,7 +266,8 @@ FUNCTIONAL_TESTS_DIR=$(TESTS_DIR)/functional
 
 ## Toplevel targets
 # Toplevel target to build all containers
-docker-build-all: docker-build-debs docker-build-linotp docker-build-linotp-test-image docker-build-linotp-softhsm
+docker-build-all: docker-build-debs docker-build-linotp
+docker-build-all: docker-build-linotp-test-image docker-build-linotp-softhsm docker-build-packagetest
 
 # Toplevel target to build linotp container
 docker-linotp: docker-build-debs  docker-build-linotp
@@ -365,6 +373,15 @@ docker-build-linotp-softhsm:
 		-f Dockerfile.softhsm \
 		-t $(DOCKER_IMAGE) .
 
+# Build packaging test container
+.PHONY: docker-build-packagetest
+docker-build-packagetest: DOCKER_IMAGE=linotp-packagetest
+docker-build-packagetest:
+	cd $(TESTS_DIR)/packaging \
+	&& $(DOCKER_BUILD) \
+		$(DOCKER_TAG_ARGS) \
+		-t $(DOCKER_IMAGE) .
+
 # Run Selenium based smoketest against LinOTP configured with
 # softhsm security module
 .PHONY: docker-run-softhsm-smoketest
@@ -377,6 +394,17 @@ docker-run-softhsm-smoketest:
 			-e PYTESTARGS="-m smoketest ${PYTESTARGS}" \
 			selenium_tester
 	cd $(SELENIUM_TESTS_DIR) \
+		&& docker-compose down
+
+# Run Docker based packaging install/upgrade tests
+.PHONY: docker-run-packagetest
+docker-run-packagetest:
+	cd $(TESTS_DIR)/packaging \
+		&& docker-compose \
+			run \
+			--rm \
+			packaging_tester
+	cd $(TESTS_DIR)/packaging \
 		&& docker-compose down
 
 

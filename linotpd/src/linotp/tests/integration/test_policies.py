@@ -23,7 +23,6 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-from linotp_selenium_helper.self_service import SelfService
 """
 Test policies
  - test_otppin_3 (TestRail C1910)

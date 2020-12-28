@@ -28,14 +28,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2020-06-12 19:52+0200\n"
+"PO-Revision-Date: 2020-11-23 14:49+0100\n"
 "Language-Team: German <>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Gtranslator 2.91.7\n"
+"Last-Translator: \n"
+"X-Generator: Poedit 2.4.2\n"
 
 msgid " or "
 msgstr " oder "
@@ -105,10 +106,10 @@ msgid "8 digits"
 msgstr "8 Stellen"
 
 msgid ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> provides LinOTP as an "
-"enterprise 2FA solution."
+"<a href='https://keyidentity.com'>arxes-tolina</a> provides LinOTP as an "
+"enterprise MFA solution."
 msgstr ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> bietet LinOTP als eine 2FA "
+"<a href='https://keyidentity.com'>arxes-tolina</a> bietet LinOTP als MFA-"
 "Lösung für Unternehmen an."
 
 msgid "A new token will be set to this OTP length."
@@ -125,8 +126,8 @@ msgstr ""
 "Eine Pushbenachrichtigung wurde verschickt. Bitte werfen Sie einen Blick auf "
 "Ihr Smartphone."
 
-msgid "About KeyIdentity LinOTP"
-msgstr "Über KeyIdentity LinOTP"
+msgid "About LinOTP"
+msgstr "Über LinOTP"
 
 msgid "About LinOTP"
 msgstr "Über LinOTP"
@@ -453,7 +454,7 @@ msgid "Currently this token will not be assigned to any users."
 msgstr "Dieser Token wird gerade keinem Benutzer zugewiesen."
 
 msgid "Custom timestamp format (optional)"
-msgstr ""
+msgstr "Benutzerdefiniertes Zeitstempelformat (optional)"
 
 msgid "DPW key"
 msgstr "DPW-Seed"
@@ -480,7 +481,7 @@ msgid "Default Values:"
 msgstr "Standardwerte:"
 
 msgid "Default expiration time of a challenge in seconds."
-msgstr "Standardwert des Gültigkeitszeitfensters für Challenges in Sekunden"
+msgstr "Standardwert der Gültigkeitsdauer von Challenges in Sekunden."
 
 msgid "Default provider could not be deleted!"
 msgstr "Der Standardprovider kann nicht gelöscht werden!"
@@ -489,8 +490,7 @@ msgid "Default token settings"
 msgstr "Token-Standardeinstellungen"
 
 msgid "Default validity time of a challenge in seconds."
-msgstr ""
-"Standardwert des Gültigkeitszeitfensters für eine Challenge in Sekunden."
+msgstr "Standardwert der Gültigkeitsdauer einer Challenge in Sekunden."
 
 msgid "DefaultCountWindow"
 msgstr "Standardwert des Zählerfensters"
@@ -595,9 +595,24 @@ msgstr "Dokumentation"
 msgid "Driver"
 msgstr "Treiber"
 
+msgid "Due to license restrictions no more tokens could be assigned!"
+msgstr ""
+"Aufgrund von Lizenzeinschränkungen konnten keine weiteren Token zugewiesen "
+"werden!"
+
+msgid "Due to license restrictions no more tokens could be enabled!"
+msgstr ""
+"Aufgrund von Lizenzeinschränkungen konnten keine weiteren Token aktiviert "
+"werden!"
+
 msgid "Due to license restrictions no more tokens could be enrolled!"
 msgstr ""
 "Aufgrund von Lizenzeinschränkungen konnten keine weiteren Token ausgerollt "
+"werden!"
+
+msgid "Due to license restrictions no more tokens could be loaded!"
+msgstr ""
+"Aufgrund von Lizenzeinschränkungen konnten keine weiteren Token geladen "
 "werden!"
 
 msgid "Duplicate"
@@ -659,9 +674,6 @@ msgstr "Caching der Benutzer in UserIdResolvern aktivieren"
 
 msgid "End date"
 msgstr "Ablaufdatum"
-
-msgid "Enforce STARTTLS"
-msgstr "STARTTLS erzwingen"
 
 msgid "Enroll"
 msgstr "Ausrollen"
@@ -787,6 +799,9 @@ msgid "Enter your username, the OTP PIN and the input for the challenge."
 msgstr ""
 "Geben Sie Ihren Benutzernamen, die OTP-PIN und den Text für die Challenge "
 "ein."
+
+msgid "Error"
+msgstr "Fehler"
 
 msgid "Error "
 msgstr "Fehler "
@@ -996,6 +1011,9 @@ msgstr "Import der Richtlinien fehlgeschlagen"
 
 msgid "Failed to import token"
 msgstr "Import der Token fehlgeschlagen"
+
+msgid "Failed to load form"
+msgstr "Formular konnte nicht geladen werden"
 
 msgid "Failed to load support subscription"
 msgstr "Die Registrierung der Supportdaten ist fehlgeschlagen"
@@ -1259,13 +1277,13 @@ msgstr ""
 "Hier können Sie die Authentisierung mit Ihrem Token im Challenge Response "
 "Modus testen."
 
-msgid "Here you may try to authenticate using your KeyIdentity Push Token."
+msgid "Here you may try to authenticate using your LinOTP Push Token."
 msgstr ""
-"Hier können Sie die Authentisierung mit Ihrem KeyIdentity Push Token testen."
+"Hier können Sie die Authentisierung mit Ihrem LinOTP Push-Token testen."
 
-msgid "Here you may try to authenticate using your KeyIdentity QR Token."
+msgid "Here you may try to authenticate using your LinOTP QR Token."
 msgstr ""
-"Hier können Sie die Authentisierung mit Ihrem KeyIdentity QRToken testen."
+"Hier können Sie die Authentisierung mit Ihrem LinOTP QR-Token testen."
 
 msgid "Here you may try to authenticate using your OCRA OTP token."
 msgstr "Hier können Sie sich mit Ihrem OCRA-OTP-Token authentisieren."
@@ -1302,10 +1320,10 @@ msgid ""
 "logon page."
 msgstr ""
 "Eine Dropdown-Liste wird angezeigt, aus der der Benutzer den Realm auswählen "
-"kann, in dem er sich im Selbstverwaltungsportal anmelden will."
+"kann, in dem er sich im Self-Service-Portal anmelden will."
 
 msgid "If checked, timestamps are saved during authentication"
-msgstr ""
+msgstr "Wenn aktiv, werden bei einer Authentifizierung Zeitstempel gespeichert"
 
 msgid ""
 "If checked, users who are not found in the useridresolvers are authenticated "
@@ -1344,18 +1362,23 @@ msgstr ""
 "den HelpDesk."
 
 msgid ""
-"If you are interested in the 2FA platform of KeyIdentity using LinOTP at its "
-"core, and would like further information about:"
+"If you are interested in the MFA platform by arxes-tolina using LinOTP at "
+"its core, and would like further information about:"
 msgstr ""
-"Falls Sie sich für KeyIdentitys 2FA Plattform mit LinOTP als Kern "
-"interessieren und weitere Informationen wünschen:"
+"Falls Sie sich für die die MFA-Plattform von arxes-tolina mit LinOTP als "
+"Kern interessieren und weitere Informationen wünschen:"
 
 msgid ""
-"If you are interested in the 2FA platform of KeyIdentity, and want to be "
-"informed about:"
+"If you are interested in the MFA platform powered by arxes-tolina, and want "
+"to be informed about:"
 msgstr ""
-"Falls Sie sich für die KeyIdentity 2FA Plattform interessieren und "
-"informiert werden möchten:"
+"Falls Sie sich für die die MFA-Plattform von arxes-tolina interessieren und "
+"über folgende Themen informiert werden möchten:"
+
+msgid ""
+"If you are not yet subscribed, please consider subscribing to our quarterly "
+"newsletter."
+msgstr "Abonnieren Sie unseren vierteljährlich erscheinenden Newsletter."
 
 msgid ""
 "If you do not enter a remote serial or a remote user, the request will be "
@@ -1444,14 +1467,14 @@ msgstr "Aussteller"
 msgid "JSON Configuration"
 msgstr "JSON Konfiguration"
 
-msgid "KeyIdentity LinOTP Support and Subscription"
-msgstr "KeyIdentity LinOTP Support und Subskription"
+msgid "LinOTP Support and Subscription"
+msgstr "LinOTP Support und Subskription"
 
-msgid "KeyIdentity Push Token Login"
-msgstr "KeyIdentity Push Token Login"
+msgid "LinOTP Push Token Login"
+msgstr "LinOTP Push-Token Login"
 
-msgid "KeyIdentity QR Token Login"
-msgstr "KeyIdentity QR Token Login"
+msgid "LinOTP QR Token Login"
+msgstr "LinOTP QR-Token Login"
 
 msgid "LDAP"
 msgstr "LDAP"
@@ -1486,19 +1509,19 @@ msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP - die Open Source Lösung für Zwei-Faktor-Authentisierung."
 
 msgid "LinOTP Config"
-msgstr "LinOTP Konfiguration"
+msgstr "LinOTP-Konfiguration"
 
 msgid "LinOTP Self Service"
-msgstr "LinOTP Selbstverwaltungsportal"
+msgstr "LinOTP-Self-Service"
 
 msgid "LinOTP Self Service Login"
-msgstr "LinOTP Selbstverwaltungsportal Anmeldung"
+msgstr "LinOTP-Self-Service-Anmeldung"
 
 msgid "LinOTP Server"
 msgstr "LinOTP Server"
 
 msgid "LinOTP error "
-msgstr "LinOTP Fehler "
+msgstr "LinOTP-Fehler "
 
 msgid "Load Token File"
 msgstr "Tokendatei laden"
@@ -1507,7 +1530,7 @@ msgid "Log Level"
 msgstr "Loglevel"
 
 msgid "Log usage timestamps in token info"
-msgstr ""
+msgstr "Zeitstempel bei Nutzung in Token-Info protokollieren"
 
 msgid "Logged in as"
 msgstr "Eingeloggt als"
@@ -1525,7 +1548,7 @@ msgid "Login timed out. Please try again."
 msgstr "Timeout beim Login. Bitte versuchen Sie es nochmal."
 
 msgid "Login to LinOTP self service"
-msgstr "Anmeldung am LinOTP Selbstverwaltungsportal"
+msgstr "Anmeldung am LinOTP-Self-Service"
 
 msgid "Login:"
 msgstr "Login:"
@@ -1641,9 +1664,6 @@ msgstr "Es werden keine Benutzer gelöscht!"
 msgid "No valid session"
 msgstr "Keine gültige Session"
 
-msgid "No valid session!"
-msgstr "Keine gültige Session!"
-
 msgid "Number"
 msgstr "Nummer"
 
@@ -1741,6 +1761,9 @@ msgstr "OK"
 
 msgid "Old password"
 msgstr "Altes Passwort"
+
+msgid "Only allow system-trusted certificates"
+msgstr "Nur vom System als vertrauenswürdig eingestufte Zertifikate zulassen"
 
 msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
@@ -2228,7 +2251,7 @@ msgid "Searchfilter"
 msgstr "Suchfilter"
 
 msgid "Select Push Token: "
-msgstr "PushToken auswählen: "
+msgstr "Push-Token auswählen: "
 
 msgid "Select QRToken: "
 msgstr "Ausgewählter QRToken: "
@@ -2255,20 +2278,27 @@ msgid ""
 "Serial: {1}\n"
 "User: {2}"
 msgstr ""
-"SelfService Token-Test\n"
+"Self-Service-Token-Test\n"
 "\n"
 "Token: {0}\n"
 "Seriennummer: {1}\n"
 "Benutzername: {2}"
 
 msgid "Selfservice Home"
-msgstr "Selbstverwaltungsportal Start"
+msgstr "Self-Service-Start"
+
+msgid ""
+"Selfservice Login Request\n"
+"User: {}"
+msgstr ""
+"Self-Service Login-Anfrage\n"
+"Benutzer: {}"
 
 msgid "Selfservice Portal"
-msgstr "Selbstverwaltungsportal"
+msgstr "Self-Service-Portal"
 
 msgid "Selfservice portal"
-msgstr "Selbstverwaltungsportal"
+msgstr "Self-Service-Portal"
 
 msgid "Serial"
 msgstr "Seriennummer"
@@ -2350,6 +2380,7 @@ msgstr "Erste Zeile mit Spalten Überschriften überspringen"
 
 msgid "Specify a custom timestamp format to reduce information detail"
 msgstr ""
+"Benutzerdefiniertes Zeitstempelformat angeben, um Detailgrad zu reduzieren"
 
 msgid ""
 "Specify if the target token fail counter should be incremented / resets or "
@@ -2357,11 +2388,6 @@ msgid ""
 msgstr ""
 "Bitte geben Sie an, ob der Fehlzähler des Zieltoken hochgezählt / "
 "zurückgesetzt werden soll"
-
-msgid "Specify the hashlib to be used. Can be sha1 (1) or sha2-256 (2)."
-msgstr ""
-"Geben Sie die Hashlib, die benutzt werden soll, an. Dies kann SHA1 (1) oder "
-"SHA2-256 (2) sein."
 
 msgid "Specify the otplen to be used. Can be 6 or 8 digits."
 msgstr ""
@@ -2430,6 +2456,9 @@ msgstr "Resynchronisierungsfenster"
 
 msgid "System Config"
 msgstr "Systemkonfiguration"
+
+msgid "TLS"
+msgstr "TLS"
 
 msgid "TOTP Token"
 msgstr "TOTP-Token"
@@ -2824,17 +2853,15 @@ msgstr "Es gibt keine Richtlinie 'gettoken/maxcount' für den Tokentyp %r"
 #, python-format
 msgid ""
 "There is no policy selfservice/max_count definable for the token type %s."
-msgstr ""
-"Es gibt keine Richtlinie, die im Selfservice den max_count für den Tokentyp "
-"%s definiert."
+msgstr "Es gibt keine Richtlinie selfservice/max_count für Tokentyp %s."
 
 #, python-format
 msgid ""
 "There is no policy selfservice/max_count defined for the tokentype %s in "
 "realm %s."
 msgstr ""
-"Es gibt keine Richtlinie, die im Selfservice den max_count für den Tokentyp "
-"%s im Realm %s definiert."
+"Es ist keine Policy selfservice/max_count definiert für Tokentyp %s im Realm "
+"%s."
 
 msgid "Therefor please enter two OTP values."
 msgstr "Hierzu geben Sie bitte zwei aufeinanderfolgende OTP-Werte ein."
@@ -2859,7 +2886,7 @@ msgid ""
 "This is the LinOTP self service portal. You may login here with your "
 "username and realm."
 msgstr ""
-"Dies ist das LinOTP Selbstverwaltungsportal. Sie können Sich hier mit Ihrem "
+"Dies ist der LinOTP-Self-Service. Sie können Sich hier mit Ihrem "
 "Benutzernamen und Ihrem Realm anmelden."
 
 msgid "This is the default look ahead window for counter based tokens."
@@ -2989,7 +3016,7 @@ msgid "Token Seed:"
 msgstr "Tokenschlüssel:"
 
 msgid "Token Self Service - LinOTP"
-msgstr "Token Selbstverwaltung - LinOTP"
+msgstr "Token-Self-Service - LinOTP"
 
 msgid "Token Settings:"
 msgstr "Tokeneinstellungen:"
@@ -3121,7 +3148,7 @@ msgstr "Unbekannter Fehler"
 
 #, python-format
 msgid "Unknown method in selfservice: %s"
-msgstr "Unbekannte Methode im Selbstverwaltungsportal: %s"
+msgstr "Unbekannte Methode im Self-Service-Portal: %s"
 
 #, python-format
 msgid "Unknown provider! %r"
@@ -3135,6 +3162,9 @@ msgstr "eToken .dat Datei hochladen:"
 
 msgid "Usage Count"
 msgstr "Anzahl der Verwendung"
+
+msgid "Use STARTTLS for 'ldap://' connections"
+msgstr "STARTTLS für 'ldap://'-Verbindungen verwenden"
 
 msgid "User"
 msgstr "Benutzer"
@@ -3222,18 +3252,20 @@ msgid "Waiting for confirmation..."
 msgstr "Warten auf Bestätigung..."
 
 msgid ""
-"We are pleased that you are using LinOTP by KeyIdentity as your 2FA solution."
+"We are pleased that you are using LinOTP powered by arxes-tolina as your MFA "
+"solution."
 msgstr ""
-"Wir freuen uns, dass Sie KeyIdentity LinOTP als Ihre 2FA Lösung benutzen."
+"Wir freuen uns, dass Sie LinOTP von arxes-tolina als Ihre MFA-Lösung "
+"benutzen."
 
 msgid "We would be happy to receive your feedback about LinOTP."
-msgstr "Wir würden uns freuen, Ihr Feedbach zu LinOTP zu erhalten."
+msgstr "Wir freuen uns auf Ihre Kommentare und Ideen zu LinOTP."
 
 msgid "Welcome to LinOTP"
 msgstr "Willkommen bei LinOTP"
 
 msgid "Welcome to the LinOTP Selfservice Portal"
-msgstr "Willkommen im LinOTP Selbstverwaltungsportal"
+msgstr "Willkommen im LinOTP-Self-Service-Portal"
 
 msgid "Welcome to your fresh LinOTP installation."
 msgstr "Willkommen zu Ihrer neuen LinOTP Installation."
@@ -3270,8 +3302,8 @@ msgid ""
 "Within the self service portal you may reset the PINs of your tokens, assign "
 "new tokens or resync your tokens."
 msgstr ""
-"Im Selbstverwaltungsportal können Sie bspw. die PIN Ihrer Token "
-"zurücksetzen, neue Token ausrollen oder synchronisieren."
+"Im Self-Service-Portal können Sie bspw. die PIN Ihrer Token zurücksetzen, "
+"neue Token ausrollen oder synchronisieren."
 
 msgid "You are creating a new realm."
 msgstr "Sie legen hier einen neuen Realm an."
@@ -3714,6 +3746,20 @@ msgid "Your OCRA2 Token :"
 msgstr "Ihr OCRA2-Token:"
 
 msgid ""
+"Your connection will be vulnerable to security attacks if you disable "
+"certificate chain validation"
+msgstr ""
+"Wenn Sie die Validierung der Zertifikatskette deaktivieren, sind Ihre "
+"Verbindungen ungeschützt vor Manipulationen"
+
+msgid ""
+"Your connection will not be encrypted if you do not use STARTTLS or "
+"'ldaps://'"
+msgstr ""
+"Wenn Sie weder STARTTLS noch 'ldaps://' benutzen, bleibt Ihre Verbindung "
+"unverschlüsseltgeplante Features in LinOTP"
+
+msgid ""
 "Your current LinOTP Smart Virtual Appliancedemo license is about to expire "
 "in a few days. For licenses for productive use or an extended evaluation "
 "period, "
@@ -3808,9 +3854,6 @@ msgstr "über Telefon"
 
 msgid "certificate id"
 msgstr "Zertifikat-ID"
-
-msgid "challenge expired!"
-msgstr "Challenge abgelaufen!"
 
 msgid "check status"
 msgstr "Status prüfen"
@@ -4074,8 +4117,8 @@ msgstr "können Sie sich gerne mit uns in Verbindung setzen"
 msgid "preshared key"
 msgstr "Mit Preshared-Key verschlüsselt"
 
-msgid "product updates,"
-msgstr "Produktaktualisierungen,"
+msgid "product updates by arxes-tolina,"
+msgstr "Produktaktualisierungen von arxes-tolina,"
 
 msgid "register SMS Token"
 msgstr "SMS-Token registrieren"
@@ -4184,7 +4227,7 @@ msgid "successfully created!"
 msgstr "erfolgreich erzeugt!"
 
 msgid "there is no user_selfservice cookie"
-msgstr "Kein Cookie für das Selfservice Portal gesetzt"
+msgstr "Cookie user_selfservice ist nicht gesetzt"
 
 msgid "time based"
 msgstr "zeitbasiert"
@@ -4239,16 +4282,13 @@ msgid "unsupported date format date %r"
 msgstr "nicht unterstütztes Datumsformat %r"
 
 msgid "upcoming features in LinOTP"
-msgstr "geplante Features in LinOTP"
+msgstr "neue Funktionen von LinOTP"
 
-msgid "upcoming hackathons,"
-msgstr "geplante Hackathons,"
+msgid "upcoming features in LinOTP,"
+msgstr "neue Funktionen von LinOTP,"
 
-msgid "updates of our products,"
-msgstr "Aktualisierungen unserer Produkte,"
-
-msgid "user and developer conferences,"
-msgstr "Benutzer- und Entwicklerkonferenzen,"
+msgid "upcoming features in LinOTP."
+msgstr "neue Funktionen von LinOTP."
 
 msgid "username"
 msgstr "Benutzername"
@@ -4318,7 +4358,7 @@ msgstr "WebUI generiert"
 #~ msgstr "OCRA-Token aktivieren"
 
 #~ msgid "Activate your QR token"
-#~ msgstr "Aktivieren Sie Ihren QR Token"
+#~ msgstr "Aktivieren Sie Ihren QR-Token"
 
 #~ msgid "Alert"
 #~ msgstr "Achtung"
@@ -4369,6 +4409,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "E-mail provider config"
 #~ msgstr "E-Mail Konfiguration"
+
+#~ msgid "Enforce STARTTLS"
+#~ msgstr "STARTTLS erzwingen"
 
 #~ msgid "Enroll Google Authenticator"
 #~ msgstr "Google Authenticator ausrollen"
@@ -4511,6 +4554,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "No valid authentication session %r"
 #~ msgstr "Keine gültige Authentisierungs-Session %r"
+
+#~ msgid "No valid session!"
+#~ msgstr "Keine gültige Session!"
 
 #~ msgid "Not a valid json string!"
 #~ msgstr "Kein gültiger JSON Text!"
@@ -4722,6 +4768,11 @@ msgstr "WebUI generiert"
 #~ msgid "Sms token"
 #~ msgstr "SMS Token"
 
+#~ msgid "Specify the hashlib to be used. Can be sha1 (1) or sha2-256 (2)."
+#~ msgstr ""
+#~ "Geben Sie die Hashlib, die benutzt werden soll, an. Dies kann SHA1 (1) "
+#~ "oder SHA2-256 (2) sein."
+
 #~ msgid "Successful Action"
 #~ msgstr "Erfolgreiche Aktion"
 
@@ -4806,9 +4857,6 @@ msgstr "WebUI generiert"
 #~ msgid "URL for google Authenticator"
 #~ msgstr "URL für Google Authenticator"
 
-#~ msgid "Use system certificate"
-#~ msgstr "System Zertifikate verwenden"
-
 #~ msgid ""
 #~ "Using the QR code you can directly go to install the google authenticator "
 #~ "on your iPhone."
@@ -4872,10 +4920,13 @@ msgstr "WebUI generiert"
 #~ msgstr "Aktivieren Sie Ihren OCRA-Token"
 
 #~ msgid "activate your qr token"
-#~ msgstr "Aktivieren Sie Ihren QRToken"
+#~ msgstr "Aktivieren Sie Ihren QR-Token"
 
 #~ msgid "already exists."
 #~ msgstr "existiert bereits."
+
+#~ msgid "challenge expired!"
+#~ msgstr "Challenge abgelaufen!"
 
 #~ msgid "check PIN locally"
 #~ msgstr "Überprüfe PIN"
@@ -4983,8 +5034,17 @@ msgstr "WebUI generiert"
 #~ msgid "unassign"
 #~ msgstr "Zuweisung aufheben"
 
+#~ msgid "upcoming hackathons,"
+#~ msgstr "geplante Hackathons,"
+
+#~ msgid "updates of our products,"
+#~ msgstr "Aktualisierungen unserer Produkte,"
+
 #~ msgid "user"
 #~ msgstr "Benutzer"
+
+#~ msgid "user and developer conferences,"
+#~ msgstr "Benutzer- und Entwicklerkonferenzen,"
 
 #~ msgid "validity end"
 #~ msgstr "Ende Gültigkeitszeitraum"

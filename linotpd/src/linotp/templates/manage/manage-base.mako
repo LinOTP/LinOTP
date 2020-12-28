@@ -862,7 +862,7 @@
 
 <script type="text/javascript">
     function translate_support_view() {
-        $("#dialog_support_view" ).dialog( "option", "title", '${_("KeyIdentity LinOTP Support and Subscription")}' );
+        $("#dialog_support_view" ).dialog( "option", "title", '${_("LinOTP Support and Subscription")}' );
         $('#button_support_setup').button("option", "label", '${_("Set Support and Subscription")}');
         $('#button_support_close').button("option", "label", '${_("Close")}');
     }
@@ -882,7 +882,7 @@
 
 <script type="text/javascript">
     function translate_support_set() {
-        $("#dialog_set_support" ).dialog( "option", "title", '${_("KeyIdentity LinOTP Support and Subscription")}' );
+        $("#dialog_set_support" ).dialog( "option", "title", '${_("LinOTP Support and Subscription")}' );
         $('#button_support_set').button("option", "label", '${_("Set Support and Subscription")}');
         $('#button_support_cancel').button("option", "label", '${_("Cancel")}');
     }
@@ -946,7 +946,7 @@
 </div>
 <script type="text/javascript">
     function translate_about() {
-        $("#dialog_about").dialog( "option", "title", '${_("About KeyIdentity LinOTP")}' );
+        $("#dialog_about").dialog( "option", "title", '${_("About LinOTP")}' );
         $('#button_about_close').button("option", "label", '${_("Close")}');
     }
 </script>
@@ -2016,10 +2016,10 @@
                 <tr><td><label for=ldap_uri>${_("Server-URI")}:</label></td>
                     <td><input type="text" name="ldap_uri" class="required"  id="ldap_uri" size="35"
                         onkeyup="handler_ldaps_starttls_show();"></td></tr>
-                <tr><td rowspan="2" style="vertical-align: middle;">${_("TLS security")}:</td>
+                <tr><td rowspan="2" style="vertical-align: middle;">${_("TLS")}:</td>
                     <td><input type="checkbox" name="ldap_enforce_tls" id="ldap_enforce_tls" onchange="handler_ldaps_starttls_show();">
                         <label id="ldap_enforce_tls_label" for="ldap_enforce_tls">${_("Use STARTTLS for 'ldap://' connections")}</label>
-                        <div id="ldap_enforce_tls_warning" class="warning">${_("Your connection will not be encrypted if you do not use STARTTLS or ldaps://")}</div></td></tr>
+                        <div id="ldap_enforce_tls_warning" class="warning">${_("Your connection will not be encrypted if you do not use STARTTLS or 'ldaps://'")}</div></td></tr>
                 <tr>
                     <td><input type="checkbox" name="ldap_only_trusted_certs" id="ldap_only_trusted_certs" onchange="handler_ldaps_starttls_show();">
                         <label id="ldap_only_trusted_certs_label" for="ldap_only_trusted_certs">${_("Only allow system-trusted certificates")}</label>
