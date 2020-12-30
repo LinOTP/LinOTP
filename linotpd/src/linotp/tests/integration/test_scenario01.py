@@ -159,6 +159,7 @@ class TestScenario01(TestCase):
 
         motp_key = "1234123412341234"
         motp_pin = "1234"
+        selfservice.open()
         selfservice.login("mozart", "Test123!", test1_realm)
         driver.find_element_by_id("motp_secret").clear()
         driver.find_element_by_id("motp_secret").send_keys(motp_key)
@@ -188,7 +189,7 @@ class TestScenario01(TestCase):
         serial_token_mozart = m.group('serial')
         self.driver.find_element_by_xpath(
             "//button[@type='button' and ancestor::div[@aria-describedby='alert_box']]").click()
-        driver.find_element_by_link_text("Logout").click()
+        selfservice.logout()
 
         self._announce_test(
             "9. Alle 4 Benutzer melden sich im selfservice Portal an und setzen die PIN")
@@ -294,6 +295,7 @@ class TestScenario01(TestCase):
 
         new_motp_pin = "5588"
 
+        selfservice.open()
         selfservice.login("mozart", "Test123!", test1_realm)
         selfservice.set_motp_pin(serial_token_mozart, new_motp_pin)
         selfservice.logout()

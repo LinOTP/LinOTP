@@ -7103,7 +7103,7 @@ function resolver_sql(name, duplicate){
             'value': {
                 'data': {
                     'Database': 'yourUserDB',
-                    'Driver': 'mysql',
+                    'Driver': 'mysql+mysqldb',
                     'Server': '127.0.0.1',
                     'Port': '3306',
                     'Limit': '500',

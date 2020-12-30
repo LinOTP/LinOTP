@@ -84,6 +84,17 @@ COL_PREFIX = ""
 # if SQLU.startswith("oracle:"):
 #     COL_PREFIX = config.get("oracle.sql.column_prefix", "lino")
 
+def fix_db_encoding(app) -> None:
+    """Fix the python2+mysql iso8859 encoding by conversion to utf-8."""
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = app.config["DATABASE_URI"]
+    db.init_app(app)
+
+    migration = Migration(db.engine)
+    return_value = migration.iso8859_to_utf8_conversion()
+    db.session.commit()
+
+    return return_value
 
 def setup_db(app) -> None:
     """Set up the database for LinOTP.

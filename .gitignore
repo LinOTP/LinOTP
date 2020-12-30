@@ -32,10 +32,10 @@ doc/linotp-doc_*
 doc/rST/_build/
 keyring/src/linotp-keyring*
 linotpd/src/LinOTP_*.orig.tar.gz
-linotpd/src/linotp/i18n/de/LC_MESSAGES/linotp.mo
+linotpd/src/linotp/i18n/*/LC_MESSAGES/linotp.mo
 linotpd/src/linotp_*
 linotpd/src/LinOTP-*.tar.gz
-linotpd/src/linotp/public/i18n/de.json
+linotpd/src/linotp/public/i18n/*.json
 linotpd/src/debian/.debhelper/
 linotpd/src/debian/files
 linotpd/src/debian/linotp.*.debhelper
