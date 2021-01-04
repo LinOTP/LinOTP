@@ -284,7 +284,7 @@ class MYSQL_Migration():
     def _convert_Token_to_utf8(self):
         """Migrate the Token Description and LinOtpTokenInfo to utf8."""
         cmd = ("Update Token Set %s, %s ;" % (
-            self._convert("Token.Description"),
+            self._convert("Token.LinOtpTokenDesc"),
             self._convert("Token.LinOtpTokenInfo")
             ))
         return self._execute(cmd)
