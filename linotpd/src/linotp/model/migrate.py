@@ -32,8 +32,10 @@ from typing import Optional
 
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
-
+from sqlalchemy import text
 from sqlalchemy import inspect
+
+from sqlalchemy.exc import OperationalError
 
 from linotp import model
 
@@ -565,9 +567,56 @@ class Migration():
     # migration towards 3.0
 
     def migrate_3_0_0_0(self):
-        """Create a conversion suggested label if db is not untouched."""
+        """Migrate to linotp3 - to python3+mysql.
 
-        if not self.is_db_untouched():
+        The major challenge for the linotp3 migration is the migration from
+        python2+mysql where the mysql driver was using latin1 encoded data,
+        though the database might already support utf8.
+
+        Thus we can exclude all fresh created and non-mysql databases
+        """
+
+        if self.is_db_untouched():
+            log.info('Fresh database - no migration required!')
+            return
+
+        if not self.engine.url.drivername.startswith('mysql'):
+            log.info(
+                "Non mysql databases %r - no migration required.",
+                self.engine.url.drivername
+                )
+            return
+
+        # ----------------------------------------------------------------- --
+
+        # MYSQL Schema and Data Migration:
+        #
+        # In case of pre buster db (or restored by a backup), the tabel schema
+        # is defined with charset latin1. Thus the schema must be updated first
+        # othewise the data migration will fail.
+        #
+        # Which tables are converted is reported by the schema migration.
+        # If no table was converted, we have to assume that the mysql db was
+        # created newly (e.g. on buster) where this is done with charset=utf8.
+        #
+        # In case of a newly (buster) e.g. linotp2 created db, we cannot imply
+        # that the data migration has to be done, we only can suggest this.
+
+
+        log.info("Starting mysql migration")
+
+        # before we adjust the schema, we have to close former sessions,
+        # otherwise we would run into a database lock
+
+        model.db.session.close()
+
+        # now we can run the schema migration
+
+        mysql_mig = MYSQL_Migration(self.engine)
+        migrated_tables = mysql_mig.migrate_schema()
+        mysql_mig.migrate_data(migrated_tables)
+
+        if not migrated_tables:
 
             config_entry = model.Config(
                 Key='utf8_conversion', Value='suggested'
@@ -581,74 +630,43 @@ class Migration():
 
         return
 
+
     def iso8859_to_utf8_conversion(self):
-        """Migrate all Config and Token entries from iso-8859 to utf-8."""
+        """Migrate all Config and Token entries from latin1 to utf-8,
 
-        conversion = model.Config.query.filter(
-            model.Config.Key == 'linotp.utf8_conversion').first()
+        but only if the label 'utf8_conversion':'suggested' is set
 
-        if not conversion or conversion.Value != 'suggested':
-            return True, "no conversion required or suggested!"
+        conditions for this lable are (s.o.):
+        - if the database is not created with this version
+        - is it a mysql database
 
-        # ------------------------------------------------------------------ --
+        :return: a tuple of bool and detail message
+        """
 
-        # re-encode the Config Values of certain Types
+        if model.Config.query.filter(
+            model.Config.Key == 'linotp.utf8_conversion').first() is None:
 
-        config_entries_count = 0
+            return True, 'No latin1 to utf8 conversion suggested!'
 
-        for entry in model.Config.query.all():
+        log.info("Starting data convertion")
 
-            if entry.Type in [
-                'int', 'bool', 'boolean', 'encrypted_data', 'password'
-                ]:
-                continue
+        try:
 
-            update_data = {
-                model.Config.Value: re_encode(entry.Value),
-                model.Config.Description: re_encode(entry.Description),
-            }
+            mysql_mig = MYSQL_Migration(self.engine)
+            mysql_mig.migrate_data(['Config', 'Token'])
 
-            # replace by the primary key: Key
+        except OperationalError as exx:
+
+            log.info("Failed to run convertion: %r", exx)
+            return False, "Failed to run convertion: %r" % exx
+
+        finally:
+
+            # in any case, we remove the conversion suggestion label
 
             model.Config.query.filter(
-                model.Config.Key == entry.Key
-                ).update(update_data , synchronize_session = False)
+                model.Config.Key == 'linotp.utf8_conversion').delete()
 
-            config_entries_count +=1
-
-        log.info(f"{config_entries_count} config entries reencoded!")
-
-        # ------------------------------------------------------------------ --
-
-        # Reencode Token description and info from iso8895 to utf-8.
-
-        token_entries_count = 0
-
-        for token in model.Token.query.all():
-
-            update_data = {
-                model.Token.LinOtpTokenDesc: re_encode(
-                    token.LinOtpTokenDesc),
-                model.Token.LinOtpTokenInfo: re_encode(
-                    token.LinOtpTokenInfo),
-            }
-
-            # replace by the primary key: LinOtpTokenId
-
-            model.Token.query.filter(
-                model.Token.LinOtpTokenId == token.LinOtpTokenId
-                ).update(update_data , synchronize_session = False)
-
-            token_entries_count +=1
-
-        log.info(f"{token_entries_count} token entries reencoded!")
-
-        summary = (f"{config_entries_count} config and "
-                   f"{token_entries_count} token entries converted.")
-
-        conversion = model.Config.query.filter(
-            model.Config.Key == 'linotp.utf8_conversion').delete()
-
-        return True, summary
+        return True, "Config and Token data converted to utf-8."
 
 # eof
