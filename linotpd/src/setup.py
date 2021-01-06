@@ -86,7 +86,7 @@ test_requirements = [
 ]
 
 apidocs_requirements = [
-    'Sphinx>=3.0',
+    "Sphinx>3.0", "Sphinx!=3.4.2",
     'mock',
 ]
 
