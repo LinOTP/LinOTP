@@ -28,6 +28,7 @@ linotp (3.0~rc2-0dev) buster-dev; urgency=low
     even when these tokens are disabled.
   * support reencoding of linotp2 db's with iso8859 (python2+mysql) by
     conversion of db entries to utf-8.
+  * Prevent startup when the database schema is out of date.
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Mon, 16 Nov 2020 15:33:11 +0200
 
