@@ -45,6 +45,7 @@ def run_test_upgrade_command(cmd: str):
     ("noapache", "Install / reconfigure with apache disabled"),
     ("purgecheck", "Install packages and check removal"),
     ("nodatabase", "Install without database service"),
+    ("encodingfix", "Check encoding fix during migration"),
 ])
 def test_run_upgrade_test(name, description):
     run_test_upgrade_command(name)
