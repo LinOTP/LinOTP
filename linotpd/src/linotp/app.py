@@ -26,7 +26,7 @@ import sys
 import os
 from pathlib import Path
 import time
-from typing import List
+from typing import List, Optional
 
 from datetime import datetime
 from uuid import uuid4
@@ -248,7 +248,7 @@ class LinOTPApp(Flask):
         self.cli_cmd = os.environ.get('LINOTP_CMD', '')
         self.config_class = ExtFlaskConfig  # our special `Config` class
         self.audit_obj = None               # No audit logging so far
-        self.security_provider: SecurityProvider = None
+        self.security_provider: Optional[SecurityProvider] = None
         self.enabled_controllers: List[str] = []
         """Currently activated controller names"""
 
@@ -257,7 +257,7 @@ class LinOTPApp(Flask):
         # we create a app shared linotp config object which main purpose is
         # to syncronize the access to changes within multiple threads
 
-        self.linotp_app_config: LinotpAppConfig = None
+        self.linotp_app_config: Optional[LinotpAppConfig] = None
 
         # ------------------------------------------------------------------ --
 
