@@ -516,11 +516,11 @@ class LinOTPApp(Flask):
         Parses the request params from the request objects body / params
         dependent on request content_type.
         """
+        request_params = {}
         try:
             if request.is_json:
                 request_params = request.json
             else:
-                request_params = {}
                 for key in request.values:
                     if(key.endswith('[]')):
                         request_params[key[:-2]] = request.values.getlist(key)
