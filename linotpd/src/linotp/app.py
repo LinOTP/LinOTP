@@ -400,10 +400,6 @@ class LinOTPApp(Flask):
 
         request_context['Client'] = client
 
-        # Just in case …
-        if self.audit_obj is None:
-            self.audit_obj = setup_audit(self)
-
         flask_g.audit = self.audit_obj.initialize(request, client=client)
 
         authUser = None
