@@ -1,9 +1,9 @@
-linotp (3.0~rc2-0dev) buster-dev; urgency=low
+linotp (3.0~rc2-1) buster-dev; urgency=low
 
   Features:
   * New Token Self Service interface is installed as a recommended
     dependency for /selfservice. The existing SelfService is deprecated but
-  still available under /selfservice-legacy.
+    still available under /selfservice-legacy.
   * New config value SITE_ROOT_REDIRECT allows to customize the redirect
     path if the user requests the site root path ("/"). If not set, the
     browser is redirected to the selfservice controller interface.
@@ -29,8 +29,10 @@ linotp (3.0~rc2-0dev) buster-dev; urgency=low
   * support reencoding of linotp2 db's with iso8859 (python2+mysql) by
     conversion of db entries to utf-8.
   * Prevent startup when the database schema is out of date.
+  * Ensure configuration files and generated directories are owned by the
+    linotp service user.
 
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Mon, 16 Nov 2020 15:33:11 +0200
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Wed, 09 Dec 2020 15:45:18 +0100
 
 linotp (3.0~rc1-1) buster-dev; urgency=low
 
