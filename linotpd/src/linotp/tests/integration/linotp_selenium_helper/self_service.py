@@ -116,6 +116,8 @@ class SelfService(object):
         else:
             login = user
 
+        self.wait_for_element_visibility('login-box', 20)
+
         fill_form_element(self.driver, "login", login)
         fill_form_element(self.driver, "password", password)
         self._find_by_id("password").submit()
