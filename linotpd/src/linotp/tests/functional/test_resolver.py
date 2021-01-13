@@ -283,17 +283,11 @@ class TestResolver(TestController):
         assert 'LdapX' not in response, response
         assert 'LdapZ' in response, response
 
+    @pytest.mark.exclude_sqlite
     def test_update_critical_data_sql(self):
         """
         test: it's not possible to define a resolver w. critical changes
         """
-
-        #
-        # define resolver SqlX w. the required Password
-        if config.get('DATABASE_URI').startswith('sqlite://'):
-            # We cannot define a sqlite databse with a password, so skip
-            # this test
-            pytest.skip("not possible with sqlite")
 
         params = {"Password": "Test123!", }
         response, params = self.define_sql_resolver('SqlX', params=params)
