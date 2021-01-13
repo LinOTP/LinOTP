@@ -234,6 +234,11 @@ class SelfService(object):
         assert msg == expected_msg, "Unexpected message - Expected:%s - Found:%s" % (
             expected_msg, msg)
 
+        # Allow dialog to finish closing
+        WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
+            EC.element_to_be_clickable((By.ID, button_id))
+        )
+
     def resync_token(self, token, otp1, otp2):
         """
         set PIN / set mOTP PIN form
@@ -263,4 +268,10 @@ class SelfService(object):
             expected_msg, msg)
 
     def logout(self):
-        self.driver.find_element_by_link_text("Logout").click()
+        # To avoid state and Javascript problems in the browser we
+        # visit the logout URL and then wait for the login page
+        # to show
+        self.driver.get(self.selfservice_url + "/logout")
+        WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
+            EC.element_to_be_clickable((By.ID, "login-box"))
+        )
