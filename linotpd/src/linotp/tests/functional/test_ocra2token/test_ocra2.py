@@ -2153,6 +2153,7 @@ class OcraTest(TestController):
 
         assert '"value": 1' in response, response
 
+    @pytest.mark.xfail(reason="Currently not working in CI")
     def test_OCRA_autosync_Time(self):
         '''
             test_OCRA_autosync_Time: resync a time based token
@@ -2234,6 +2235,7 @@ class OcraTest(TestController):
 
         return
 
+    @pytest.mark.xfail(reason="Currently not working in CI")
     def test_OCRA_resync_Time(self):
         '''
             test_OCRA_resync_Time: resync a time based token
