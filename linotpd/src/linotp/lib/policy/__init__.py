@@ -1064,7 +1064,7 @@ def _checkGetTokenPolicyPre(method, param=None, authUser=None, user=None):
             policies.update(pol)
 
         value = get_action_value(
-            policies, scope='gettoken', action=pol_action, default={})
+            policies, scope='gettoken', action=pol_action, default=-1)
 
         log.debug("got all policies: %r: %r", policies, value)
 
