@@ -162,7 +162,7 @@ setup(
             ]
         ),
         (
-            '/etc/linotp/apache-site-includes/',
+            'etc/linotp/apache-site-includes/',
             [
                 'config/apache-site-includes/README.txt',
             ]
