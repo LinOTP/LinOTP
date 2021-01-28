@@ -149,7 +149,10 @@ setup(
 
     packages=find_packages(),
     include_package_data=True,
-    package_data={'linotp': ['linotp/i18n/*/LC_MESSAGES/*.mo']},
+    package_data={'linotp': [
+        'linotp/i18n/*/LC_MESSAGES/*.mo',
+        'linotp/dictionary',
+    ]},
     data_files=[
         (
             'etc/linotp/',

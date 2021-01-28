@@ -1,3 +1,11 @@
+linotp (3.0~rc3-0dev) buster-dev; urgency=low
+
+  Fixes:
+  * Missing freeradius dictionary file used for radius forwarding is now
+    shipped with the debian package again.
+
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Fri, 29 Jan 2021 15:11:18 +0100
+
 linotp (3.0~rc2-1) buster-dev; urgency=low
 
   Features:
