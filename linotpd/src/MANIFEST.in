@@ -27,6 +27,7 @@ include LICENSE
 recursive-include linotp/public *
 recursive-include linotp/templates *
 recursive-include linotp/i18n *
+include linotp/dictionary
 
 # Include all files in the config directory in the sources.
 # Some of these will be installed into the binary package
