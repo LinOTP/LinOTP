@@ -120,14 +120,6 @@ unit-test:debian-jessie:
   script:
     - nosetests -v linotp/tests/unit/
 
-unit-test:debian-stretch:
-  extends: .test-debian
-  stage: test
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
-  script:
-    - nosetests --with-pylons=test.ini -v linotp/tests/unit/
-
 unit-test:debian-buster:
   extends: .test-debian
   allow_failure: true
@@ -216,16 +208,6 @@ func:jessie:
   variables:
     DEBIAN_RELEASE_NAME: jessie
 
-func:stretch:
-  extends: .functional-test
-  stage: test
-  parallel: 5
-  script:
-    - echo $CI_NODE_INDEX
-    - bash -c "cat func_chunk_0$CI_NODE_INDEX | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
-
 functional-test:buster:
   extends: .functional-test
   allow_failure: true
@@ -236,11 +218,6 @@ functional-special-test:jessie:
   extends: .functional-special-test
   variables:
     DEBIAN_RELEASE_NAME: jessie
-
-functional-special-test:stretch:
-  extends: .functional-special-test
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
 
 functional-special-test:buster:
   extends: .functional-special-test
@@ -266,11 +243,6 @@ coverage-report:jessie:
   extends: .coverage-report
   variables:
     DEBIAN_RELEASE_NAME: jessie
-
-coverage-report:stretch:
-  extends: .coverage-report
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
 
 coverage-report:buster:
   extends: .coverage-report
@@ -438,28 +410,6 @@ e2e-2:jessie:mariadb-10.1:
     - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch2 --rm test-script-executor
   variables:
     DEBIAN_RELEASE_NAME: jessie
-    DB: mariadb:10.1
-
-e2e-1:stretch:mariadb-10.1:
-  allow_failure: true
-  retry:
-    max: 1
-  extends: .e2e-test
-  script:
-    - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch1 --rm test-script-executor
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
-    DB: mariadb:10.1
-
-e2e-2:stretch:mariadb-10.1:
-  allow_failure: true
-  retry:
-    max: 1
-  extends: .e2e-test
-  script:
-    - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch2 --rm test-script-executor
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
     DB: mariadb:10.1
 
 # Base rule for uploading deb packages to development repository.
