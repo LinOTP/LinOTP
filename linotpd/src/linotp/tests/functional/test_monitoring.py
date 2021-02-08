@@ -295,7 +295,7 @@ class TestMonitoringController(TestController):
 
         assert values.get('Realms').get('mydefrealm').get('total') == 2
         assert values.get('Realms').get('myotherrealm').get('total') == 2
-        assert values.get('Summary').get('total') == 4, response.body
+        assert values.get('Summary').get('total') == 3, response.body
 
         return
 
