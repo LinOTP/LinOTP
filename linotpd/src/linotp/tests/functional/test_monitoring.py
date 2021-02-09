@@ -28,6 +28,7 @@
 
 import json
 import logging
+import pytest
 
 from linotp.flap import config
 
@@ -263,6 +264,10 @@ class TestMonitoringController(TestController):
         """
         test the handling of token in multiple realms
         """
+        sqlconnect = self.app.config.get('DATABASE_URI')
+        if sqlconnect.startswith(('mysql', 'sqlite')):
+            pytest.xfail("monitoring query problem LINOTP-1540")
+
         # create some tokens
 
         self.create_token(serial='0041')
