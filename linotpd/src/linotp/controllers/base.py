@@ -25,6 +25,7 @@
 #
 '''The Controller's Base class '''
 
+import functools
 from inspect import getfullargspec
 from types import FunctionType
 import logging
@@ -79,6 +80,17 @@ class ControllerMetaClass(type):
                 if key[0] != '_' and isinstance(value, FunctionType):
                     cls._url_methods.add(key)
         return cls
+
+
+def add_hyphenated_url(f):
+    """Decorator that sets the `hyphenated_url` attribute on a
+    function. We could set the attribute directly after the function
+    definition but this way it looks nicer, and the code in the other
+    file doesn't need to know about the attribute.
+    """
+
+    f.hyphenated_url = True
+    return f
 
 
 class BaseController(Blueprint, metaclass=ControllerMetaClass):
@@ -140,6 +152,30 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
                     if arg != 'self':
                         url += '/<' + arg + '>'
                 self.add_url_rule(url, method_name, view_func=method)
+
+                # Some URLs have historically been documented as
+                # `foo-bar` rather than `foo_bar`. It would be easy to
+                # enable this here for all methods by introducing
+                # alternative routes, but in order to avoid possible
+                # future maintenance issues we allow this on a
+                # per-instance basis only, in order to stay
+                # backwards-compatible. Since hard-coding the URLs in
+                # question here would be icky, we introduce a
+                # decorator so the methods in question can be defined
+                # where they appear, like
+                #
+                #     @add_hyphenated_url
+                #     def foo_bar(…)      # will also appear as `foo-bar`
+                #         …
+                #
+                # (Just to be safe, we avoid introducing extra URL
+                # routes if the URL in question doesn't contain an
+                # underscore to begin with.)
+
+                if '_' in url and getattr(method.__func__,
+                                          'hyphenated_url', False):
+                    self.add_url_rule(url.replace('_', '-'), method_name,
+                                      view_func=method)
 
     def parse_requesting_user(self):
         """
