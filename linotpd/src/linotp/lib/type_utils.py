@@ -388,3 +388,25 @@ def parse_timeout(timeout_val, seperator=','):
         return timeout_val
 
     raise ValueError('unsupported timeout format')
+
+
+def convert_to_datetime(date_str, time_formats):
+    '''Convert a string to a datetime object by one of the time format strings.
+
+    :param date_str: date string
+    :param time_formats: list of time formats, which the date string should match
+    '''
+    if not isinstance(date_str, (str, unicode)):
+        raise Exception("given parameter is not a string")
+
+    err = []
+    for time_format_string in time_formats:
+        try:
+            date_obj = datetime.strptime(date_str, time_format_string)
+            return date_obj
+        except ValueError as exx:
+            err.append("%r" % exx)
+
+    raise Exception(
+        "Failed to convert start time paramter to timestamp %r" % err
+        )
