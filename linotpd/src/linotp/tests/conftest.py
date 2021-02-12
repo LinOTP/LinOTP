@@ -179,7 +179,7 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
 
         # Fake running `linotp init database`
         with app.app_context():
-            init_db_tables(app, drop_data=False, add_defaults=True)
+            init_db_tables(app, drop_data=True, add_defaults=True)
 
         yield app
 
