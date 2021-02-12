@@ -354,6 +354,10 @@ class SQLImportHandler(ImportHandler):
     class User(Base):
 
         __tablename__ = "imported_user"
+        __table_args__ = {
+            "mysql_collate": "utf8_unicode_ci",
+            "mysql_charset": "utf8",
+        }
 
         groupid = schema.Column(types.Unicode(100),
                                 primary_key=True,
