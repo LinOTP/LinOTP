@@ -165,7 +165,8 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
             # Fake running `linotp init enc-key`
             secret_file = base_app_config['SECRET_FILE']
             if not os.path.exists(secret_file):
-                create_secret_key(filename=secret_file)
+                sec_key = 3 * "0123456789abcdef" * 4
+                create_secret_key(filename=secret_file, data=sec_key)
 
             # Fake running `linotp init audit-keys`
             audit_private_key_file = str(base_app_config['AUDIT_PRIVATE_KEY_FILE'])
