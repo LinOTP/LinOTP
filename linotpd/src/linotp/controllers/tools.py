@@ -222,7 +222,7 @@ class ToolsController(BaseController):
             data = data_file
 
             # -- ----------------------------------------------------------- --
-            # In case of form post requests, it is a "instance" of FieldStorage
+            # In case of form post requests, it is a "instance" of FileStorage
             # i.e. the Filename is selected in the browser and the data is
             # transferred in an iframe.
             #     see: http://jquery.malsup.com/form/#sample4
