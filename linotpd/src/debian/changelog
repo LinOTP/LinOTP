@@ -1,10 +1,10 @@
-linotp (2.12.2~rc0-1) buster; urgency=medium
+linotp (2.12.2-1) buster; urgency=medium
 
   Fix:
   * Server: Make rollout token behaviour consistent when used for validate
     workflow (description and cleanup behaviour).
 
- -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Tue, 22 Dec 2020 16:33:45 +0100
+ -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Mon, 15 Feb 2021 12:22:00 +0100
 
 linotp (2.12.1-1) buster; urgency=low
 
