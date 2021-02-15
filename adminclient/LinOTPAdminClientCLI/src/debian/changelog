@@ -1,6 +1,12 @@
+linotp-adminclient-cli (2.12.2-1) buster; urgency=low
+
+  * Set new version 2.12.2
+
+ -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Mon, 15 Feb 2021 12:22:00 +0100
+
 linotp-adminclient-cli (2.12.1-1) buster; urgency=low
 
-  * Set new version 2.12.1-1
+  * Set new version 2.12.1
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 23 Oct 2020 12:04:46 +0200
 
