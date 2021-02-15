@@ -28,15 +28,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2020-11-23 14:49+0100\n"
+"PO-Revision-Date: 2021-02-15 16:55+0100\n"
+"Last-Translator: \n"
 "Language-Team: German <>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"Last-Translator: \n"
-"X-Generator: Poedit 2.4.2\n"
+"X-Generator: Poedit 2.4.1\n"
 
 msgid " or "
 msgstr " oder "
@@ -1464,15 +1464,6 @@ msgstr "Aussteller"
 msgid "JSON Configuration"
 msgstr "JSON Konfiguration"
 
-msgid "LinOTP Support and Subscription"
-msgstr "LinOTP Support und Subskription"
-
-msgid "LinOTP Push Token Login"
-msgstr "LinOTP Push-Token Login"
-
-msgid "LinOTP QR Token Login"
-msgstr "LinOTP QR-Token Login"
-
 msgid "LDAP"
 msgstr "LDAP"
 
@@ -1508,6 +1499,12 @@ msgstr "LinOTP - die Open Source Lösung für Zwei-Faktor-Authentisierung."
 msgid "LinOTP Config"
 msgstr "LinOTP-Konfiguration"
 
+msgid "LinOTP Push Token Login"
+msgstr "LinOTP Push-Token Login"
+
+msgid "LinOTP QR Token Login"
+msgstr "LinOTP QR-Token Login"
+
 msgid "LinOTP Self Service"
 msgstr "LinOTP-Self-Service"
 
@@ -1516,6 +1513,9 @@ msgstr "LinOTP-Self-Service-Anmeldung"
 
 msgid "LinOTP Server"
 msgstr "LinOTP Server"
+
+msgid "LinOTP Support and Subscription"
+msgstr "LinOTP Support und Subskription"
 
 msgid "LinOTP error "
 msgstr "LinOTP-Fehler "
