@@ -129,9 +129,6 @@ msgstr ""
 msgid "About LinOTP"
 msgstr "Über LinOTP"
 
-msgid "About LinOTP"
-msgstr "Über LinOTP"
-
 msgid "Action"
 msgstr "Aktion"
 
