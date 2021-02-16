@@ -1,4 +1,4 @@
-linotp (3.0~rc3-0dev) buster-dev; urgency=low
+linotp (3.0~rc3-1) buster-dev; urgency=low
 
   Fixes:
   * Missing freeradius dictionary file used for radius forwarding is now
