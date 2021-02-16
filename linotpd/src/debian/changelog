@@ -3,6 +3,9 @@ linotp (3.0~rc3-0dev) buster-dev; urgency=low
   Fixes:
   * Missing freeradius dictionary file used for radius forwarding is now
     shipped with the debian package again.
+  * `/gettoken/getotp` now works on tokens that are not in a realm.
+  * `/auth/challenge-response` is again a valid way to access the testing page,
+    in addition to `/auth/challenge_response`.
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Fri, 29 Jan 2021 15:11:18 +0100
 
