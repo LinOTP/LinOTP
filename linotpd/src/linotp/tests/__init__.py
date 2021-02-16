@@ -1002,16 +1002,19 @@ class TestController(TestCase):
 
         for realm, resolver_definition in common_realms.items():
 
-            if realm.lower() in existing_realms:
-                continue
+            # create the realm if it does not already exist
 
-            response = self.create_realm(
-                realm=realm, resolvers=resolver_definition
-            )
+            if realm.lower() not in existing_realms:
 
-            content = response.json
-            assert content["result"]["status"]
-            assert content["result"]["value"]
+                response = self.create_realm(
+                    realm=realm, resolvers=resolver_definition
+                )
+
+                content = response.json
+                assert content["result"]["status"]
+                assert content["result"]["value"]
+
+            # assure that the myDefRealm is the default realm
 
             if realm.lower() == "myDefRealm".lower():
                 params = {
@@ -1023,6 +1026,7 @@ class TestController(TestCase):
                 assert 'false' not in response
 
         # Assert 'myDefRealm' is default
+
         response = self.make_system_request("getRealms", {})
         content = response.json
 

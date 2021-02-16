@@ -219,7 +219,7 @@ class TestScenario01(TestCase):
 
         # Validate HOTP Token - bach
         hotp = HmacOtp()
-        for counter in range(0, 20):
+        for counter in range(0, 4):
             otp = "bachnewpin" + \
                 hotp.generate(counter=counter, key=seed_oath137332_bin)
             access_granted, _ = validate.validate(user="bach@" +
@@ -268,6 +268,8 @@ class TestScenario01(TestCase):
                                               password="beethovennewpin" + beethoven_token_password)
         assert access_granted, "OTP: " + "beethovennewpin" + " for user " + \
                         "beethoven@" + test1_realm + " returned False"
+
+        time.sleep(2)
 
         # Validate mOTP token - mozart
         current_epoch = time.time()

@@ -170,10 +170,15 @@ class TestConfigController(TestController):
     test for large Config entries
     """
 
+    entries = set()
+
     def setUp(self):
         TestController.setUp(self)
 
     def tearDown(self):
+        for entry in self.entries:
+            params = {'key': entry}
+            self.make_system_request('delConfig', params=params)
         TestController.tearDown(self)
 
 
@@ -195,6 +200,8 @@ class TestConfigController(TestController):
             config_data = base64.b64encode(create_long_entries(length))
 
             config_entry = 'longBase64ConfigEntry%d' % i
+            self.entries.add(config_entry)
+
             param = {config_entry: config_data}
             response = self.make_system_request('setConfig', params=param)
 
@@ -229,6 +236,8 @@ class TestConfigController(TestController):
             config_data = binascii.hexlify(create_long_entries(length))
 
             config_entry = 'longHexConfigEntry%d' % i
+            self.entries.add(config_entry)
+
             param = {config_entry: config_data}
             response = self.make_system_request('setConfig', params=param)
 
@@ -264,6 +273,8 @@ class TestConfigController(TestController):
             length = 1000 * i + random.randint(0, 1000)
 
             config_entry = 'longUnicodeConfigEntry%d' % i
+            self.entries.add(config_entry)
+
             config_data = create_long_unicode(alphabet, length)
             u8_config_data = config_data.encode('utf-8')
 
@@ -379,6 +390,8 @@ class TestConfigController(TestController):
             length = 1980 + i
 
             config_entry = 'longUtf8ConfigEntry%d' % i
+            self.entries.add(config_entry)
+
             config_data = create_long_unicode(alphabet, length)
             u8_config_data = config_data.encode('utf-8')
 
@@ -438,6 +451,8 @@ class TestConfigController(TestController):
             length = 1980 + i
 
             config_entry = 'longUtf8ConfigEntry%d' % i
+            self.entries.add(config_entry)
+
             config_data = create_long_unicode(alphabet, length)
             u8_config_data = config_data.encode('utf-8')
 
@@ -483,6 +498,8 @@ class TestConfigController(TestController):
             length = 1980 + i
 
             config_entry = 'longHexlifyConfigEntry%d' % i
+            self.entries.add(config_entry)
+
             config_data = binascii.hexlify(create_long_entries(length))
             param = {config_entry: config_data}
             response = self.make_system_request('setConfig', params=param)
@@ -535,6 +552,8 @@ class TestConfigController(TestController):
             length = 1980 + i
 
             config_entry = 'longB64ConfigEntry%d' % i
+            self.entries.add(config_entry)
+
             config_data = base64.b64encode(create_long_entries(length))
 
             param = {config_entry: config_data}

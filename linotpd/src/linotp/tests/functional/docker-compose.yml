@@ -23,7 +23,7 @@ services:
 
 
   db:
-    image: mysql:5.5
+    image: mariadb:10.1
     container_name: ${FUNCTIONAL_MYSQL_CONTAINER_NAME:-mysql_functional_tests}
     environment:
       MYSQL_ROOT_PASSWORD: "Test123!"
