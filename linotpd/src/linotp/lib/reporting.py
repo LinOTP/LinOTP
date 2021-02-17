@@ -36,6 +36,13 @@ from linotp.lib.policy import check_token_reporting
 from sqlalchemy import (and_, or_)
 from sqlalchemy import func
 
+STATI = [
+    'total',
+    'active', 'inactive',
+    'assigned', 'unassigned',
+    'active&assigned', 'active&unassigned',
+    'inactive&assigned', 'inactive&unassigned',
+    ]
 
 log = logging.getLogger(__name__)
 
@@ -83,6 +90,8 @@ def get_max(realm, start=None, end=None, status='active'):
                 relevant for license
     :return: maximum: number of reported tokens with given status in realm
     """
+    if status not in STATI:
+        raise Exception("unsupported status: %r" % status)
 
     result = Session.query(func.max(Reporting.count)).filter(
         and_(
