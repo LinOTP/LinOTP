@@ -266,8 +266,7 @@ class ReportingController(BaseController):
             # ------------------------------------------------------------- --
 
             realm_whitelist = []
-            policies = getAdminPolicies('maximum', scope='reporting.access')
-
+            policies = getAdminPolicies('period', scope='reporting.access')
             if policies['active'] and policies['realms']:
                 realm_whitelist = policies.get('realms')
 

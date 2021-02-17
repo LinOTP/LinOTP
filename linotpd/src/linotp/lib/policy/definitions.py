@@ -443,6 +443,7 @@ def getPolicyDefinitions(scope=""):
         },
         'reporting.access': {
             'maximum': {'type': 'bool'},
+            'period': {'type': 'bool'},
             'delete_all': {'type': 'bool'},
             'delete_before': {
                 'type': 'bool',
