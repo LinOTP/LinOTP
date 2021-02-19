@@ -394,7 +394,7 @@ class TestPolicies(TestPoliciesBase):
         # ----------------------------------------------------------------- --
 
         parameters = {
-            "serial": "cko_test_001",
+            "serial": "test_token_001",
             "type": "spass",
         }
         response = self.make_admin_request(
@@ -404,7 +404,7 @@ class TestPolicies(TestPoliciesBase):
         assert '"status": true' in response, response
 
         parameters = {
-            "serial": "cko_test_002",
+            "serial": "test_token_002",
             "type": "spass",
             "otpkey": "geheim"
         }
@@ -415,7 +415,7 @@ class TestPolicies(TestPoliciesBase):
         assert '"status": false' in response, response
 
         parameters = {
-            "serial": "cko_test_003",
+            "serial": "test_token_003",
             "type": "spass",
             "otpkey": "geheim"
         }
@@ -426,7 +426,7 @@ class TestPolicies(TestPoliciesBase):
         assert '"status": true' in response, response
 
         parameters = {
-            "serial": "cko_test_004",
+            "serial": "test_token_004",
             "user": "root@myDefRealm",
             "otpkey": "1234123412341234",
             "otppin": "1234",
@@ -444,7 +444,7 @@ class TestPolicies(TestPoliciesBase):
         '''
         Policy 203: enabling and disabling tokens. "admin_enable_disable" is allowed, "admin_init" not.
         '''
-        parameters = {'serial': 'cko_test_001',
+        parameters = {'serial': 'test_token_001',
                       }
         response = self.make_admin_request(action='disable',
                                            params=parameters,
@@ -452,21 +452,21 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": false' in response, response
 
-        parameters = {'serial': 'cko_test_001'}
+        parameters = {'serial': 'test_token_001'}
         response = self.make_admin_request(action='disable',
                                            params=parameters,
                                            auth_user='admin_enable_disable')
 
         assert '"status": true' in response, response
 
-        parameters = {'serial': 'cko_test_001'}
+        parameters = {'serial': 'test_token_001'}
         response = self.make_admin_request(action='enable',
                                            params=parameters,
                                            auth_user='admin_init')
 
         assert '"status": false' in response, response
 
-        parameters = {'serial': 'cko_test_001'}
+        parameters = {'serial': 'test_token_001'}
         response = self.make_admin_request(action='enable',
                                            params=parameters,
                                            auth_user='admin_enable_disable')
@@ -480,7 +480,7 @@ class TestPolicies(TestPoliciesBase):
         '''
         Policy 204: setting token properties. "admin_set" is allowed, "admin_init" not.
         '''
-        parameters = {'serial': 'cko_test_001',
+        parameters = {'serial': 'test_token_001',
                       'maxFailCount': '20',
                       }
         response = self.make_admin_request(action='set',
@@ -489,7 +489,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": false' in response, response
 
-        parameters = {'serial': 'cko_test_001',
+        parameters = {'serial': 'test_token_001',
                       'maxFailCount': '20',
                       }
         response = self.make_admin_request(action='set',
@@ -505,7 +505,7 @@ class TestPolicies(TestPoliciesBase):
         '''
         Policy 205: setting PIN. "admin_setpin" is allowed, "admin_set" not!
         '''
-        parameters = {'serial': 'cko_test_001',
+        parameters = {'serial': 'test_token_001',
                       'userpin': 'test',
                       }
         response = self.make_admin_request(action='setPin',
@@ -514,7 +514,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": false' in response, response
 
-        parameters = {'serial': 'cko_test_001',
+        parameters = {'serial': 'test_token_001',
                       'userpin': 'test',
                       }
         response = self.make_admin_request(action='setPin',
@@ -523,7 +523,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        parameters = {'serial': 'cko_test_001',
+        parameters = {'serial': 'test_token_001',
                       'pin': 'test',
                       }
         response = self.make_admin_request(action='set',
@@ -532,7 +532,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": false' in response, response
 
-        parameters = {'serial': 'cko_test_001',
+        parameters = {'serial': 'test_token_001',
                       'pin': 'test',
                       }
         response = self.make_admin_request(action='set',
@@ -548,7 +548,7 @@ class TestPolicies(TestPoliciesBase):
         '''
         Policy 206: resynching token. "admin_resync" is allowed. "admin_set" not.
         '''
-        parameters = {'serial': 'cko_test_001',
+        parameters = {'serial': 'test_token_001',
                       'otp1': '123456',
                       'otp2': '123456',
                       }
@@ -558,7 +558,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": false' in response, response
 
-        parameters = {'serial': 'cko_test_001',
+        parameters = {'serial': 'test_token_001',
                       'otp1': '123456',
                       'otp2': '123456',
                       }
@@ -576,14 +576,14 @@ class TestPolicies(TestPoliciesBase):
         '''
         Policy 207: admin is allowed to reset a token
         '''
-        parameters = {'serial': 'cko_test_001'}
+        parameters = {'serial': 'test_token_001'}
         response = self.make_admin_request(action='reset',
                                            params=parameters,
                                            auth_user='admin_set')
 
         assert '"status": false' in response, response
 
-        parameters = {'serial': 'cko_test_001'}
+        parameters = {'serial': 'test_token_001'}
         response = self.make_admin_request(action='reset',
                                            params=parameters,
                                            auth_user='admin_reset'
@@ -598,7 +598,7 @@ class TestPolicies(TestPoliciesBase):
         '''
         Policy 208: admin_assign_unassign is allowed to assign and unassign a token. admin_set is not allowed to assign
         '''
-        parameters = {'serial': 'cko_test_001',
+        parameters = {'serial': 'test_token_001',
                       'user': 'root'}
         response = self.make_admin_request(action='assign',
                                            params=parameters,
@@ -606,7 +606,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": false' in response, response
 
-        parameters = {'serial': 'cko_test_001',
+        parameters = {'serial': 'test_token_001',
                       'user': 'root'}
         response = self.make_admin_request(action='assign',
                                            params=parameters,
@@ -614,7 +614,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        parameters = {'serial': 'cko_test_001'}
+        parameters = {'serial': 'test_token_001'}
         response = self.make_admin_request(action='unassign',
                                            params=parameters,
                                            auth_user='admin_assign_unassign')
@@ -628,7 +628,7 @@ class TestPolicies(TestPoliciesBase):
         '''
         Policy 209: test remove fail
         '''
-        parameters = {'serial': 'cko_test_003'}
+        parameters = {'serial': 'test_token_003'}
         response = self.make_admin_request(action='remove',
                                            params=parameters,
                                            auth_user='admin_set')
@@ -642,7 +642,7 @@ class TestPolicies(TestPoliciesBase):
         '''
         Policy 210: test remove success
         '''
-        parameters = {'serial': 'cko_test_001'}
+        parameters = {'serial': 'test_token_001'}
         response = self.make_admin_request(action='remove',
                                            params=parameters,
                                            auth_user='admin_remove')
@@ -1126,9 +1126,9 @@ class TestPolicies(TestPoliciesBase):
     )
     def test_423a_selfservice_assign(self):
         '''
-        Policy 423a: users in myDefRealm are allowed to assign. use the token  cko_test_003
+        Policy 423a: users in myDefRealm are allowed to assign. use the token  test_token_003
         '''
-        parameters = {'serial': 'cko_test_003',
+        parameters = {'serial': 'test_token_003',
                       'realms': 'myDefRealm'}
         auth_user = 'superadmin'
 
@@ -1143,7 +1143,7 @@ class TestPolicies(TestPoliciesBase):
                                            auth_user=auth_user
                                            )
 
-        assert '"LinOtp.TokenSerialnumber": "cko_test_003"' in \
+        assert '"LinOtp.TokenSerialnumber": "test_token_003"' in \
                         response, response
         assert '"LinOtp.CountWindow": 10' in response, response
         assert '"LinOtp.MaxFail": 10' in response, response
@@ -1151,7 +1151,7 @@ class TestPolicies(TestPoliciesBase):
         assert '"LinOtp.IdResClass": ""' in response, response
         assert '"mydefrealm"' in response, response
 
-        parameters = {'serial': 'cko_test_003'}
+        parameters = {'serial': 'test_token_003'}
         auth_user = ('horst@myDefRealm', 'test123')
         response = self.make_userservice_request(action='assign',
                                                  params=parameters,
@@ -1160,7 +1160,7 @@ class TestPolicies(TestPoliciesBase):
         assert '"status": true' in response, response
 
         # unassign the token
-        parameters = {'serial': 'cko_test_003'}
+        parameters = {'serial': 'test_token_003'}
         auth_user = 'superadmin'
 
         response = self.make_admin_request(action='unassign',
@@ -1179,7 +1179,7 @@ class TestPolicies(TestPoliciesBase):
         '''
         Policy 424: user in myOtherRealm may not assign token
         '''
-        parameters = {'serial': 'cko_test_003',
+        parameters = {'serial': 'test_token_003',
                       'realms': 'myOtherRealm'}
         auth_user = 'superadmin'
 
@@ -1190,7 +1190,7 @@ class TestPolicies(TestPoliciesBase):
         assert '"status": true' in response, response
 
         # user tries to assign
-        parameters = {'serial': 'cko_test_003'}
+        parameters = {'serial': 'test_token_003'}
         auth_user = ('b1822@myOtherRealm', 'test123')
         response = self.make_userservice_request(action='assign',
                                                  params=parameters,
@@ -2749,7 +2749,7 @@ class TestPolicies(TestPoliciesBase):
         Policy 604: test the otp length
         '''
         # PIN to short
-        parameters = {'serial': 'cko_test_004', 'userpin': 'bla'}
+        parameters = {'serial': 'test_token_004', 'userpin': 'bla'}
         auth_user = ('root@myDefRealm', 'test123')
         response = self.make_userservice_request(action='setpin',
                                                  params=parameters,
@@ -2757,7 +2757,7 @@ class TestPolicies(TestPoliciesBase):
         assert '"status": false' in response, response
 
         # PIN to long
-        parameters = {'serial': 'cko_test_004', 'userpin': '12345678test'}
+        parameters = {'serial': 'test_token_004', 'userpin': '12345678test'}
         auth_user = ('root@myDefRealm', 'test123')
         response = self.make_userservice_request(action='setpin',
                                                  params=parameters,
@@ -2766,7 +2766,7 @@ class TestPolicies(TestPoliciesBase):
         assert '"status": false' in response, response
 
         # PIN perfect
-        parameters = {'serial': 'cko_test_004', 'userpin': '1234567'}
+        parameters = {'serial': 'test_token_004', 'userpin': '1234567'}
         auth_user = ('root@myDefRealm', 'test123')
         response = self.make_userservice_request(action='setpin',
                                                  params=parameters,
@@ -2805,7 +2805,7 @@ class TestPolicies(TestPoliciesBase):
         Policy 606: testing contents of pin: wrong pin
         '''
         # PIN wrong
-        parameters = {'serial': 'cko_test_004', 'userpin': '123456'}
+        parameters = {'serial': 'test_token_004', 'userpin': '123456'}
         auth_user = ('root@myDefRealm', 'test123')
         response = self.make_userservice_request(action='setpin',
                                                  params=parameters,
@@ -2823,7 +2823,7 @@ class TestPolicies(TestPoliciesBase):
         Policy 607: testing contents of pin: PIN ok
         '''
         # PIN OK
-        parameters = {'serial': 'cko_test_004', 'userpin': 'ab3456'}
+        parameters = {'serial': 'test_token_004', 'userpin': 'ab3456'}
         auth_user = ('root@myDefRealm', 'test123')
         response = self.make_userservice_request(action='setpin',
                                                  params=parameters,
@@ -2862,7 +2862,7 @@ class TestPolicies(TestPoliciesBase):
         Policy 609: testing contents of pin: wrong pin
         '''
         # PIN wrong
-        parameters = {'serial': 'cko_test_004', 'userpin': 'ab3456'}
+        parameters = {'serial': 'test_token_004', 'userpin': 'ab3456'}
         auth_user = ('root@myDefRealm', 'test123')
         response = self.make_userservice_request(action='setpin',
                                                  params=parameters,
@@ -2879,7 +2879,7 @@ class TestPolicies(TestPoliciesBase):
         '''
         Policy 610: testing contents of pin: PIN ok
         '''
-        parameters = {'serial': 'cko_test_004', 'userpin': 'ab3456!!', }
+        parameters = {'serial': 'test_token_004', 'userpin': 'ab3456!!', }
         auth_user = ('root@myDefRealm', 'test123')
         response = self.make_userservice_request(action='setpin',
                                                  params=parameters,
@@ -2921,7 +2921,7 @@ class TestPolicies(TestPoliciesBase):
         '''
         Policy 702: Unassigning user root@myDefRealm and deleting all tokens from myDefRealm.
         '''
-        for t in ['cko_test_003', 'cko_test_004']:
+        for t in ['test_token_003', 'test_token_004']:
             parameters = {'serial': t}
             auth_user = 'superadmin'
             response = self.make_admin_request(action='remove',
