@@ -59,25 +59,27 @@ class TestPolicies(TestPoliciesBase):
         ''' Overwrite parent tear down, which removes all realms '''
         return
 
-    # define Admins
+    # define fixtures
 
-    def test_00_init(self):
-        '''
-        Policy 00: Init the tests....
-        '''
-        self.delete_all_realms()
-        self.delete_all_resolvers()
+    @pytest.fixture
+    def realms_and_resolver(self):
+        """Define the common resolvers and realms."""
 
-        self.delete_all_policies(auth_user='superadmin')
-        self.delete_all_token()
+        # ----------------------------------------------------------------- --
+        # Policy 00: Init the tests and define the common resolver and realms
+        # ----------------------------------------------------------------- --
 
         self.create_common_resolvers()
         self.create_common_realms()
 
-    def test_01createPolicy_Super(self):
-        '''
-        Policy 01: create a policy for the superadmin
-        '''
+    @pytest.fixture
+    def admin_roles(self):
+        """Define the superadmin and admin roles."""
+
+        # ----------------------------------------------------------------- --
+        # Policy 01: create a policy for the superadmin
+        # ----------------------------------------------------------------- --
+
         parameters = {'name': 'ManageAll',
                       'scope': 'admin',
                       'realm': '*',
@@ -89,71 +91,187 @@ class TestPolicies(TestPoliciesBase):
                                             auth_user='superadmin')
         assert '"status": true' in response, response
 
-    def test_02getPolicy_Realm(self):
-        '''
-        Policy 02: create a policy for the realm admin
-        '''
-        parameters = {'name': 'ManageRealm1',
-                      'scope': 'admin',
-                      'realm': 'myDefRealm',
-                      'action': '*',
-                      'user': 'adminR1, adminR2',
-                      }
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters,
-                                            auth_user='superadmin')
+        # ----------------------------------------------------------------- --
+        # Policy 02: create a policy for the realm admin
+        # ----------------------------------------------------------------- --
 
-        assert '"status": true' in response, response
+        parameters = {
+            "name": "ManageRealm1",
+            "scope": "admin",
+            "realm": "myDefRealm",
+            "action": "*",
+            "user": "adminR1, adminR2",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
 
-    def test_03getPolicy(self):
-        '''
-        Policy 03: Realm admin reads policies
-        '''
+        assert '"status": false' not in response, response
+
+        # ----------------------------------------------------------------- --
+        # Policy 03: Realm admin reads policies
+        # ----------------------------------------------------------------- --
+
         parameters = {}
-        response = self.make_system_request(action='getPolicy',
-                                            params=parameters,
-                                            auth_user='adminR1')
+        response = self.make_system_request(
+            action="getPolicy", params=parameters, auth_user="adminR1"
+        )
 
         assert '"status": true' in response, response
 
-        return
+        # ----------------------------------------------------------------- --
+        # Policy 04: The superadmin is allowed to write to system and
+        #              thus to set policies
+        # ----------------------------------------------------------------- --
 
-    # Define System access
+        parameters = {
+            "name": "sysSuper",
+            "scope": "system",
+            "realm": "*",
+            "action": "*",
+            "user": "superadmin",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
 
-    def test_04setPolicy_System(self):
-        '''
-        Policy 04: The superadmin is allowed to write to system and thus to set policies
-        '''
-        parameters = {'name': 'sysSuper',
-                      'scope': 'system',
-                      'realm': '*',
-                      'action': '*',
-                      'user': 'superadmin',
-                      }
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters,
-                                            auth_user='superadmin')
+        assert "false" not in response, response
+
+        # ----------------------------------------------------------------- --
+        # Policy 05: The realmAdmin is allowed to read the system config
+        # ----------------------------------------------------------------- --
+
+        parameters = {
+            "name": "sysRealms1Admin",
+            "scope": "system",
+            "realm": "*",
+            "action": "read",
+            "enforce": "true",
+            "user": "adminR1",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
+
+        assert "false" not in response, response
+
+        # ----------------------------------------------------------------- --
+        # Policy 201: creating all the administrators (scope admin)
+        #             with all necessary policies.
+        # ----------------------------------------------------------------- --
+
+        # one administrator for initialize
+        parameters = {
+            "name": "adm201",
+            "scope": "admin",
+            "realm": "*",
+            "action": ("initSPASS, initHMAC, initETNG, " "initSMS, initMOTP"),
+            "user": "admin_init",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
+
+        assert '"status": true' in response, response
+        # one administrator for enabling and disabling
+        parameters = {
+            "name": "adm201a",
+            "scope": "admin",
+            "realm": "*",
+            "action": "enable, disable",
+            "user": "admin_enable_disable",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
 
         assert '"status": true' in response, response
 
-        return
-
-    def test_05setPolicy_System(self):
-        '''
-        Policy 05: The realmAdmin is allowed to read the system config
-        '''
-        parameters = {'name': 'sysRealms1Admin',
-                      'scope': 'system',
-                      'realm': '*',
-                      'action': 'read',
-                      'enforce': 'true',
-                      'user': 'adminR1',
-                      }
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters,
-                                            auth_user='superadmin')
+        # one administrator for setting
+        parameters = {
+            "name": "adm201b",
+            "scope": "admin",
+            "realm": "*",
+            "action": "set",
+            "user": "admin_set",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
 
         assert '"status": true' in response, response
+
+        # one administrator for setting
+        parameters = {
+            "name": "adm201c",
+            "scope": "admin",
+            "realm": "*",
+            "action": "setOTPPIN, setMOTPPIN, setSCPIN",
+            "user": "admin_setpin",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
+
+        assert '"status": true' in response, response
+
+        # one administrator for resyncing
+        parameters = {
+            "name": "adm201d",
+            "scope": "admin",
+            "realm": "*",
+            "action": "resync",
+            "user": "admin_resync",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
+
+        assert '"status": true' in response, response
+
+        # one administrator for resetting
+        parameters = {
+            "name": "adm201e",
+            "scope": "admin",
+            "realm": "*",
+            "action": "reset",
+            "user": "admin_reset",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
+
+        assert '"status": true' in response, response
+
+        # one administrator for removing
+        parameters = {
+            "name": "adm201f",
+            "scope": "admin",
+            "realm": "*",
+            "action": "remove",
+            "user": "admin_remove",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
+
+        assert '"status": true' in response, response
+
+        # one administrator for removing
+        parameters = {
+            "name": "adm201g",
+            "scope": "admin",
+            "realm": "*",
+            "action": "assign, unassign",
+            "user": "admin_assign_unassign",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
+
+        assert '"status": true' in response, response
+
+
 
     def test_06setPolicy_System(self):
         """
@@ -261,152 +379,62 @@ class TestPolicies(TestPoliciesBase):
 
         return
 
-    # define admin access
-    '''
-    Here we need to define admin rights and test the admin rights
-    '''
-    def test_201_setPolicy(self):
-        '''
-        Policy 201: creating all the administrators (scope admin) with all necessary policies.
-        '''
-        # one administrator for initialize
-        parameters = {'name': 'adm201',
-                      'scope': 'admin',
-                      'realm': '*',
-                      'action': ('initSPASS, initHMAC, initETNG, '
-                                 'initSMS, initMOTP'),
-                      'user': 'admin_init',
-                      }
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters,
-                                            auth_user='superadmin')
 
-        assert '"status": true' in response, response
-        # one administrator for enabling and disabling
-        parameters = {'name': 'adm201a',
-                      'scope': 'admin',
-                      'realm': '*',
-                      'action': 'enable, disable',
-                      'user': 'admin_enable_disable',
-                      }
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters,
-                                            auth_user='superadmin')
+    @pytest.fixture
+    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
+    def enroll_tokens(self):
+        """Enroll 4 tokens"""
+
+        # ----------------------------------------------------------------- --
+        # Policy 202: Init tokens in different with different admins
+        # "admin_init" is allowed to do so, "admin_reset" not.
+        # ----------------------------------------------------------------- --
+
+        parameters = {
+            "serial": "cko_test_001",
+            "type": "spass",
+        }
+        response = self.make_admin_request(
+            action="init", params=parameters, auth_user="admin_init"
+        )
 
         assert '"status": true' in response, response
 
-        # one administrator for setting
-        parameters = {'name': 'adm201b',
-                      'scope': 'admin',
-                      'realm': '*',
-                      'action': 'set',
-                      'user': 'admin_set',
-                      }
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters,
-                                            auth_user='superadmin')
-
-        assert '"status": true' in response, response
-
-        # one administrator for setting
-        parameters = {'name': 'adm201c',
-                      'scope': 'admin',
-                      'realm': '*',
-                      'action': 'setOTPPIN, setMOTPPIN, setSCPIN',
-                      'user': 'admin_setpin',
-                      }
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters,
-                                            auth_user='superadmin')
-
-        assert '"status": true' in response, response
-
-        # one administrator for resyncing
-        parameters = {'name': 'adm201d',
-                      'scope': 'admin',
-                      'realm': '*',
-                      'action': 'resync',
-                      'user': 'admin_resync',
-                      }
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters,
-                                            auth_user='superadmin')
-
-        assert '"status": true' in response, response
-
-        # one administrator for resetting
-        parameters = {'name': 'adm201e',
-                      'scope': 'admin',
-                      'realm': '*',
-                      'action': 'reset',
-                      'user': 'admin_reset',
-                      }
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters,
-                                            auth_user='superadmin')
-
-        assert '"status": true' in response, response
-
-        # one administrator for removing
-        parameters = {'name': 'adm201f',
-                      'scope': 'admin',
-                      'realm': '*',
-                      'action': 'remove',
-                      'user': 'admin_remove',
-                      }
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters,
-                                            auth_user='superadmin')
-
-        assert '"status": true' in response, response
-
-        # one administrator for removing
-        parameters = {'name': 'adm201g',
-                      'scope': 'admin',
-                      'realm': '*',
-                      'action': 'assign, unassign',
-                      'user': 'admin_assign_unassign',
-                      }
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters,
-                                            auth_user='superadmin')
-
-        assert '"status": true' in response, response
-
-        return
-
-    def test_202_initToken(self):
-        '''
-        Policy 202: Init tokens in different with different admins. "admin_init" is allowed to do so, "admin_reset" not.
-        '''
-        parameters = {'serial': 'cko_test_001',
-                      'type': 'spass',
-                      }
-        response = self.make_admin_request(action='init',
-                                           params=parameters,
-                                           auth_user='admin_init')
-
-        assert '"status": true' in response, response
-
-        parameters = {'serial': 'cko_test_003',
-                      'type': 'spass',
-                      }
-        response = self.make_admin_request(action='init',
-                                           params=parameters,
-                                           auth_user='admin_init')
-
-        assert '"status": true' in response, response
-
-        parameters = {'serial': 'cko_test_002',
-                      'type': 'spass',
-                      }
-        response = self.make_admin_request(action='init',
-                                           params=parameters,
-                                           auth_user='admin_reset')
+        parameters = {
+            "serial": "cko_test_002",
+            "type": "spass",
+            "otpkey": "geheim"
+        }
+        response = self.make_admin_request(
+            action="init", params=parameters, auth_user="admin_reset"
+        )
 
         assert '"status": false' in response, response
 
-        return
+        parameters = {
+            "serial": "cko_test_003",
+            "type": "spass",
+            "otpkey": "geheim"
+        }
+        response = self.make_admin_request(
+            action="init", params=parameters, auth_user="admin_init"
+        )
+
+        assert '"status": true' in response, response
+
+        parameters = {
+            "serial": "cko_test_004",
+            "user": "root@myDefRealm",
+            "otpkey": "1234123412341234",
+            "otppin": "1234",
+        }
+        auth_user = "superadmin"
+        response = self.make_admin_request(
+            action="init", params=parameters, auth_user=auth_user
+        )
+
+        assert '"status": true' in response, response
+
 
     def test_203_enable_disbale(self):
         '''
@@ -856,48 +884,50 @@ class TestPolicies(TestPoliciesBase):
 
         return
 
-    '''
-    Check the self services
-    '''
-    def test_41_setSelfservice_Policies(self):
-        '''
-        Policy 41: Test several self service policies
-        '''
-        parameters = {'name': 'self_01',
-                      'scope': 'selfservice',
-                      'realm': 'myDefRealm',
-                      'action': 'enrollSMS, enrollMOTP, assign',
-                      }
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters,
-                                            auth_user='superadmin')
+    @pytest.fixture
+    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
+    def selfservice_policies(self):
+        """Define a set of selfservice policies."""
+
+        # ----------------------------------------------------------------- --
+        # Policy 41: Test several self service policies
+        # ----------------------------------------------------------------- --
+
+        parameters = {
+            "name": "self_01",
+            "scope": "selfservice",
+            "realm": "myDefRealm",
+            "action": "enrollSMS, enrollMOTP, assign",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
 
         assert '"status": true' in response, response
 
-        parameters = {'name': 'self_02',
-                      'scope': 'selfservice',
-                      'realm': 'myOtherRealm',
-                      'action': ('enrollMOTP, disable, resync, '
-                                 'setOTPPIN, setMOTPPIN'),
-                      }
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters,
-                                            auth_user='superadmin')
+        parameters = {
+            "name": "self_02",
+            "scope": "selfservice",
+            "realm": "myOtherRealm",
+            "action": "enrollMOTP, disable, resync, setOTPPIN, setMOTPPIN",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
 
         assert '"status": true' in response, response
 
-        parameters = {'name': 'self_03',
-                      'scope': 'selfservice',
-                      'realm': 'myMixRealm',
-                      'action': 'webprovisionOATH, webprovisionGOOGLE',
-                      }
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters,
-                                            auth_user='superadmin')
+        parameters = {
+            "name": "self_03",
+            "scope": "selfservice",
+            "realm": "myMixRealm",
+            "action": "webprovisionOATH, webprovisionGOOGLE",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
 
         assert '"status": true' in response, response
-
-        return
 
     def test_420_selfService_init(self):
         '''
@@ -2608,24 +2638,6 @@ class TestPolicies(TestPoliciesBase):
         response = self.make_system_request(action='setPolicy',
                                             params=parameters,
                                             auth_user=auth_user)
-
-        assert '"status": true' in response, response
-
-        return
-
-    def test_603_otppin_length02(self):
-        '''
-        Policy 603: prepare testing length of PIN: Assign token to user
-        '''
-        parameters = {'serial': 'cko_test_004',
-                      'user': 'root@myDefRealm',
-                      'otpkey': '1234123412341234',
-                      'otppin': '1234',
-                      }
-        auth_user = 'superadmin'
-        response = self.make_admin_request(action='init',
-                                           params=parameters,
-                                           auth_user=auth_user)
 
         assert '"status": true' in response, response
 
