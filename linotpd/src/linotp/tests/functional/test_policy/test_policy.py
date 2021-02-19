@@ -53,11 +53,11 @@ class TestPolicies(TestPoliciesBase):
         '''
 
         TestPoliciesBase.setUp(self)
-        return
+
 
     def tearDown(self):
         ''' Overwrite parent tear down, which removes all realms '''
-        return
+
 
     # define fixtures
 
@@ -294,7 +294,7 @@ class TestPolicies(TestPoliciesBase):
         assert 'setPolicy failed: name and action required!' in \
                         response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_07a_setPolicy_w_empty_action(self):
@@ -315,7 +315,7 @@ class TestPolicies(TestPoliciesBase):
         assert '"status": false' in response, response
         assert 'setPolicy failed: name and action required!' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_07checkPolicy_System(self):
@@ -329,7 +329,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_08checkPolicy_System(self):
@@ -348,7 +348,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": false' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_09checkPolicy_System(self):
@@ -366,7 +366,7 @@ class TestPolicies(TestPoliciesBase):
                                             auth_user='adminEnroller')
 
         assert '"status": false' in response, response
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_10checkPolicy_System(self):
@@ -380,7 +380,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": false' in response, response
 
-        return
+
 
 
     @pytest.fixture
@@ -473,7 +473,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
     def test_204_set(self):
@@ -498,7 +498,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
     def test_205_setPIN(self):
@@ -541,7 +541,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
     def test_206_resync(self):
@@ -569,7 +569,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
     def test_207_reset(self):
@@ -591,7 +591,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
     def test_208_assign_unassign(self):
@@ -621,7 +621,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
     def test_209_remove_fail(self):
@@ -635,7 +635,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": false' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
     def test_210_remove_success(self):
@@ -649,7 +649,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
     def test_211_remove_in_wrong_realm(self):
@@ -725,7 +725,7 @@ class TestPolicies(TestPoliciesBase):
         assert '"linotp.Policy.%s.scope": true' % policy in response, \
                         response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
     def test_212_remove_no_action(self):
@@ -802,7 +802,7 @@ class TestPolicies(TestPoliciesBase):
         assert '"linotp.Policy.%s.scope": true' % policy in response, \
                         response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
     def test_213_remove_no_realm(self):
@@ -868,7 +868,7 @@ class TestPolicies(TestPoliciesBase):
 
         # TODO: check different REALMS, manageRealms usw.
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_31_set_support_subscription(self):
@@ -882,7 +882,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": false' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_32_set_support_subscription(self):
@@ -898,7 +898,7 @@ class TestPolicies(TestPoliciesBase):
         assert 'No key \'license\': Not a form request' in response, \
                         response
 
-        return
+
 
     @pytest.fixture
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
@@ -996,7 +996,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": false' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "selfservice_policies",
@@ -1035,7 +1035,7 @@ class TestPolicies(TestPoliciesBase):
         assert '"status": true' in response, response
         assert '"value": {}' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "selfservice_policies",
@@ -1083,7 +1083,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "selfservice_policies",
@@ -1118,7 +1118,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "selfservice_policies",
@@ -1169,7 +1169,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "selfservice_policies",
@@ -1198,7 +1198,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": false' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "selfservice_policies",
@@ -1267,7 +1267,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "selfservice_policies",
@@ -1355,7 +1355,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "selfservice_policies",
@@ -1407,7 +1407,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"value": 1' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "selfservice_policies",
@@ -1472,7 +1472,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"value": 1' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "selfservice_policies",
@@ -1581,7 +1581,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"value": 1' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -1623,7 +1623,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -1673,7 +1673,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -1766,7 +1766,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -1907,7 +1907,7 @@ class TestPolicies(TestPoliciesBase):
                                            auth_user=auth_user)
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -2043,7 +2043,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -2166,7 +2166,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -2286,7 +2286,7 @@ class TestPolicies(TestPoliciesBase):
                                             auth_user=auth_user)
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -2378,7 +2378,7 @@ class TestPolicies(TestPoliciesBase):
                                             auth_user=auth_user)
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_501_check_userlist(self):
@@ -2409,7 +2409,7 @@ class TestPolicies(TestPoliciesBase):
                                             auth_user=auth_user)
         assert ('"realm": true' in response), response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_502_check_userlist(self):
@@ -2431,7 +2431,7 @@ class TestPolicies(TestPoliciesBase):
                                             auth_user=auth_user)
         assert '"rows":' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_503_check_userlist(self):
@@ -2457,7 +2457,7 @@ class TestPolicies(TestPoliciesBase):
         assert 'You do not have the administrative right to ' \
                         'list users' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_550_check_policy(self):
@@ -2697,7 +2697,7 @@ class TestPolicies(TestPoliciesBase):
 
             assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -2718,7 +2718,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -2739,7 +2739,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -2774,7 +2774,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -2795,7 +2795,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -2813,7 +2813,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": false' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -2831,7 +2831,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -2852,7 +2852,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -2870,7 +2870,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": false' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -2890,7 +2890,7 @@ class TestPolicies(TestPoliciesBase):
         # We would also need to define enrollment policies.
         # This will be done in the selfservice test script
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -2912,7 +2912,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -2930,7 +2930,7 @@ class TestPolicies(TestPoliciesBase):
 
             assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -2974,7 +2974,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": false' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -3011,7 +3011,7 @@ class TestPolicies(TestPoliciesBase):
         assert 'You can not init any more tokens' in response, \
                         response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -3042,7 +3042,7 @@ class TestPolicies(TestPoliciesBase):
         assert '"status": false' in response, response
         #assert 'You can not assign any more tokens' in response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -3063,7 +3063,7 @@ class TestPolicies(TestPoliciesBase):
         assert 'You may not put any more tokens in realm' in response, \
                         response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -3100,7 +3100,7 @@ class TestPolicies(TestPoliciesBase):
         assert 'You may not enable any more tokens in realm' in \
                         response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -3198,7 +3198,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_710_otp_pin_random_for_users(self):
@@ -3276,7 +3276,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_711_get_tokenlabel_for_users(self):
@@ -3378,7 +3378,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_712_autoassignment_for_users(self):
@@ -3531,7 +3531,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_712b_autoassignment_for_users(self):
@@ -3685,7 +3685,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_713_losttoken_for_users(self):
@@ -3788,7 +3788,7 @@ class TestPolicies(TestPoliciesBase):
 
             assert '"status": true' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -3827,7 +3827,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"status": true,' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -3849,7 +3849,7 @@ class TestPolicies(TestPoliciesBase):
         assert '"message": "The name of the policy must not' \
                         ' be empty"' in response, response
 
-        return
+
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
@@ -3933,5 +3933,5 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"value": 1' in response, response
 
-        return
+
 
