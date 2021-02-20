@@ -46,8 +46,6 @@ from . import TestPoliciesBase
 log = logging.getLogger(__name__)
 
 
-@pytest.mark.exclude_sqlite
-@pytest.mark.skip("test isolation required - skiped until")
 class TestPolicies(TestPoliciesBase):
     def setUp(self):
         """
