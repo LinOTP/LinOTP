@@ -987,14 +987,6 @@ class TestPolicies(TestPoliciesBase):
         # Policy 420: test enrolling of tokens in the selfservice portal
         # ----------------------------------------------------------------- --
 
-    @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "selfservice_policies",
-        "enroll_tokens"
-    )
-    def test_420_selfService_init(self):
-        """
-        Policy 420: test enrolling of tokens in the selfservice portal
-        """
         parameters = {
             "type": "motp",
             "serial": "self001",
@@ -1021,6 +1013,10 @@ class TestPolicies(TestPoliciesBase):
 
         assert response.json['result']['status'], response
 
+        # ----------------------------------------------------------------- --
+        # Users in myMixRealm are not allowed to init a token
+        # ----------------------------------------------------------------- --
+
         parameters = {
             "type": "motp",
             "serial": "self003",
@@ -1033,6 +1029,11 @@ class TestPolicies(TestPoliciesBase):
         )
 
         assert not response.json['result']['status'], response
+
+
+    # ----------------------------------------------------------------- --
+    # Check the self services
+    # ----------------------------------------------------------------- --
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "selfservice_policies",
@@ -2502,11 +2503,13 @@ class TestPolicies(TestPoliciesBase):
 
         assert response.json['result']['status'], response
 
+    @pytest.fixture
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
-    def test_501_check_userlist(self):
+    def userlist_admins(self):
         """
         Policy 501: check the userlisting for admins. Set up the policies
         """
+
         parameters = {
             "name": "501_user1",
             "scope": "admin",
@@ -2536,6 +2539,7 @@ class TestPolicies(TestPoliciesBase):
         response = self.make_system_request(
             action="setPolicy", params=parameters, auth_user=auth_user
         )
+
         pkey = 'setPolicy %s' % parameters.get("name")
         values = set(
             response.json['result']['value'][pkey].values()
@@ -2543,7 +2547,9 @@ class TestPolicies(TestPoliciesBase):
         assert False not in values, response
 
 
-    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
+    @pytest.mark.usefixtures(
+        "realms_and_resolver", "admin_roles", "userlist_admins"
+        )
     def test_502_check_userlist(self):
         """
         Policy 502: check the userlisting rights. Userlisting allowed
@@ -2561,9 +2567,12 @@ class TestPolicies(TestPoliciesBase):
         response = self.make_manage_request(
             action="userview_flexi", params=parameters, auth_user=auth_user
         )
+
         assert '"rows":' in response, response
 
-    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
+    @pytest.mark.usefixtures(
+        "realms_and_resolver", "admin_roles", "userlist_admins"
+        )
     def test_503_check_userlist(self):
         """
         Policy 503: check the userlisting rights. Userlisting forbidden
@@ -2858,10 +2867,11 @@ class TestPolicies(TestPoliciesBase):
             assert response.json['result']['status'], response
 
 
+    @pytest.fixture
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
         )
-    def test_601_otppin_length01(self):
+    def otppin_policies(self):
         """
         Policy 601: set policy to allow setting OTP PIN
         """
@@ -2878,13 +2888,6 @@ class TestPolicies(TestPoliciesBase):
 
         assert response.json['result']['status'], response
 
-    @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
-    def test_602_otppin_length02(self):
-        """
-        Policy 602: Set policy to define the length of the OTP PIN
-        """
         parameters = {
             "name": "self_pin01",
             "scope": "selfservice",
@@ -2898,8 +2901,10 @@ class TestPolicies(TestPoliciesBase):
 
         assert response.json['result']['status'], response
 
+
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll _tokens",
+        "realms_and_resolver", "admin_roles", "enroll_tokens",
+        "otppin_policies"
         )
     def test_604_otp_length_do(self):
         """
@@ -2933,10 +2938,11 @@ class TestPolicies(TestPoliciesBase):
         assert response.json['result']['status'], response
 
 
+    @pytest.fixture
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
         )
-    def test_605_otppin_contents(self):
+    def otppin_contents(self):
         """
         Policy 605: testing contents of pin: set policy contents=c
         """
@@ -2953,10 +2959,6 @@ class TestPolicies(TestPoliciesBase):
 
         assert response.json['result']['status'], response
 
-    @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
-    def test_606_otppin_contents(self):
         """
         Policy 606: testing contents of pin: wrong pin
         """
@@ -2970,7 +2972,8 @@ class TestPolicies(TestPoliciesBase):
         assert not response.json['result']['status'], response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens"
+        "realms_and_resolver", "admin_roles", "enroll_tokens",
+        "otppin_policies", "otppin_contents"
         )
     def test_607_otppin_contents(self):
         """
@@ -2987,7 +2990,8 @@ class TestPolicies(TestPoliciesBase):
 
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens"
+        "realms_and_resolver", "admin_roles", "enroll_tokens",
+        "otppin_policies", "otppin_contents"
         )
     def test_608_otppin_contents(self):
         """
@@ -3008,7 +3012,8 @@ class TestPolicies(TestPoliciesBase):
 
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens"
+        "realms_and_resolver", "admin_roles", "enroll_tokens",
+        "otppin_contents"
         )
     def test_609_otppin_contents(self):
         """
@@ -3024,7 +3029,8 @@ class TestPolicies(TestPoliciesBase):
         assert not response.json['result']['status'], response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens"
+        "realms_and_resolver", "admin_roles", "enroll_tokens",
+        "otppin_policies", "otppin_contents"
         )
     def test_610_otppin_contents(self):
         """
@@ -3047,10 +3053,15 @@ class TestPolicies(TestPoliciesBase):
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
         )
-    def test_701_enrollment(self):
+    def test_700_enrollment(self):
         """
-        Policy 701: testing enrollment settings: Token limit per user: 2, tokens per realm 5. Setting policy
+        Policy 700: Enrollment policies
         """
+
+        # ----------------------------------------------------------------- --
+        # Policy 701: testing enrollment settings: Token limit per user: 2,
+        #             tokens per realm 5. Setting policy
+        # ----------------------------------------------------------------- --
 
         parameters = {
             "name": "enrollment_01",
@@ -3065,14 +3076,11 @@ class TestPolicies(TestPoliciesBase):
 
         assert response.json['result']['status'], response
 
-    @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
-    def test_702_cleanup(self):
-        """
-        Policy 702: Unassigning user root@myDefRealm and deleting all tokens
-                    from myDefRealm.
-        """
+        # ----------------------------------------------------------------- --
+        # Policy 702: Unassigning user root@myDefRealm and deleting all tokens
+        #             from myDefRealm.
+        # ----------------------------------------------------------------- --
+
         for t in ["test_token_003", "test_token_004"]:
             parameters = {"serial": t}
             auth_user = "superadmin"
@@ -3082,14 +3090,11 @@ class TestPolicies(TestPoliciesBase):
 
             assert response.json['result']['status'], response
 
-    @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
-    def test_703_enrollment01(self):
-        """
-        Policy 703: testing enrollment: the first two tokens will enroll,
-                    the 3rd will complain as the user may not own a 3rd token!
-        """
+        # ----------------------------------------------------------------- --
+        # Policy 703: testing enrollment: the first two tokens will enroll,
+        #             the 3rd will complain as the user may not own a 3rd token!
+        # ----------------------------------------------------------------- --
+
         # now assign tokens
         parameters = {
             "serial": "enroll_001",
@@ -3127,16 +3132,13 @@ class TestPolicies(TestPoliciesBase):
 
         assert not response.json['result']['status'], response
 
-    @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
-    def test_704_enrollment02(self):
-        """
-        Policy 704: enroll the 3rd token in myDefRealm. The 4th token will
-                    complain, as tokencount = 3
+        # ----------------------------------------------------------------- --
+        # Policy 704: enroll the 3rd token in myDefRealm. The 4th token will
+        #             complain, as tokencount = 3
+        #
+        # This was defined in test_701_enrollment
+        # ----------------------------------------------------------------- --
 
-        This was defined in test_701_enrollment
-        """
 
         parameters = {
             "serial": "enroll_003",
@@ -3165,15 +3167,12 @@ class TestPolicies(TestPoliciesBase):
         msg = "You can not init any more tokens"
         assert msg in response.json['result']['error']['message'], response
 
-    @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
-    def test_705_tokencount(self):
-        """
-        Policy 705: create a new token enroll_tc_01 and try to assign this
-                    token to an user in the realm. Assigning will fail, since
-                    realm is full
-        """
+        # ----------------------------------------------------------------- --
+        # Policy 705: create a new token enroll_tc_01 and try to assign this
+        #             token to an user in the realm. Assigning will fail, since
+        #             realm is full
+        # ----------------------------------------------------------------- --
+
         parameters = {
             "serial": "enroll_tc_01",
             "otpkey": "e56eb2bcbafb2eea9bce9463f550f86d587d6c71",
@@ -3198,14 +3197,11 @@ class TestPolicies(TestPoliciesBase):
         assert not response.json['result']['status'], response
         # assert 'You can not assign any more tokens' in response
 
-    @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
-    def test_706_tokencount(self):
-        """
-        Policy 706: Try to set the tokenrealm of the token enroll_tc_01 to the
-                    realm "myDefRealm". Will fail, since realm is full
-        """
+        # ----------------------------------------------------------------- --
+        # Policy 706: Try to set the tokenrealm of the token enroll_tc_01 to the
+        #             realm "myDefRealm". Will fail, since realm is full
+        # ----------------------------------------------------------------- --
+
         parameters = {
             "serial": "enroll_tc_01",
             "realms": "mydefrealm",
@@ -3219,14 +3215,10 @@ class TestPolicies(TestPoliciesBase):
         msg = "You may not put any more tokens in realm"
         assert msg in response.json['result']['error']['message'], response
 
-    @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
-    def test_707_tokencount(self):
-        """
-        Policy 707: Try to enable a token in a full realm. Will fail,
-                    since realm is full
-        """
+        # ----------------------------------------------------------------- --
+        # Policy 707: Try to enable a token in a full realm. Will fail,
+        #             since realm is full
+        # ----------------------------------------------------------------- --
 
         parameters = {"serial": "enroll_003"}
         auth_user = "superadmin"
@@ -3255,17 +3247,13 @@ class TestPolicies(TestPoliciesBase):
             "You may not enable any more tokens in realm" in response
                 ), response
 
-    @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
-    def test_709_maxtoken_with_user(self):
-        """
-        Policy 709: Testing maxtoken per user. Policy will be applied for
-                    defined user, not for not defined user
+        # ----------------------------------------------------------------- --
+        # Policy 709: Testing maxtoken per user. Policy will be applied for
+        #             defined user, not for not defined user
+        #             We take myOtherRealm, since for myDefRealm already a
+        #             maxtoken-policy exist
+        # ----------------------------------------------------------------- --
 
-        We take myOtherRealm, since for myDefRealm already a
-        maxtoken-policy exist
-        """
         params = {
             "name": "maxtoken_per_user",
             "scope": "enrollment",
@@ -3352,7 +3340,6 @@ class TestPolicies(TestPoliciesBase):
             )
 
             assert response.json['result']['status'], response
-
 
         # delete the policy
         params = {"name": "maxtoken_per_user"}
