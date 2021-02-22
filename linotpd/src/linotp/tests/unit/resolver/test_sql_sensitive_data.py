@@ -33,7 +33,7 @@ from mock import patch
 
 from linotp.useridresolver.SQLIdResolver import IdResolver as SQLResolver
 
-class TestSQLResolverSensitiveData(TestCase):
+class TestSQLResolverSensitiveData(object):
     """Test class for SQL sensitive data"""
 
     resolver = None
@@ -83,40 +83,44 @@ class TestSQLResolverSensitiveData(TestCase):
 
         return resolver
 
-    def test_sql_getUserInfo(self):
+    def test_sql_getUserInfo(self, base_app):
         """SQL: test the userinfo does not return sensitive data."""
 
-        resolver = self.load_resolver()
+        with base_app.app_context():
+            resolver = self.load_resolver()
 
-        res = resolver.getUserId("user1")
-        assert res == 1
+            res = resolver.getUserId("user1")
+            assert res == 1
 
-        user_info = resolver.getUserInfo(res)
-        assert 'password' not in user_info
-
-        return
-
-    def test_sql_getUserList(self):
-        """SQL: test the userinfo does not return sensitive data."""
-
-        resolver = self.load_resolver()
-
-        users = resolver.getUserList({'username': '*'})
-
-        for user_info in users:
+            user_info = resolver.getUserInfo(res)
             assert 'password' not in user_info
 
         return
 
-    def test_sql_checkpass(self):
+    def test_sql_getUserList(self,base_app):
+        """SQL: test the userinfo does not return sensitive data."""
+
+        with base_app.app_context():
+            resolver = self.load_resolver()
+
+            users = resolver.getUserList({'username': '*'})
+
+            for user_info in users:
+                assert 'password' not in user_info
+
+        return
+
+    def test_sql_checkpass(self, base_app):
         """SQL: Check the password of user1 and user 2 still works."""
 
-        resolver = self.load_resolver()
+        with base_app.app_context():
+            resolver = self.load_resolver()
 
-        assert resolver.checkPass(
-            resolver.getUserId("user1"),
-            "password")
-        assert resolver.checkPass(
-            resolver.getUserId("user2"),
-            "password")
+            assert resolver.checkPass(
+                resolver.getUserId("user1"),
+                "password")
+            assert resolver.checkPass(
+                resolver.getUserId("user2"),
+                "password")
+
         return
