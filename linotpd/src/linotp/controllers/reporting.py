@@ -32,6 +32,7 @@ reporting controller - interfaces for Reporting
 import logging
 
 from datetime import datetime
+from datetime import timedelta
 
 from pylons import request, response, config, tmpl_context as c
 from linotp.lib.base import BaseController
@@ -55,11 +56,13 @@ from linotp.lib.util import check_session
 from linotp.lib.util import get_client
 
 from linotp.model.meta import Session
+from linotp.lib.type_utils import convert_to_datetime
 
 audit = config.get('audit')
 
 log = logging.getLogger(__name__)
 
+TIME_FMTS = ["%Y-%m-%d"]
 
 class ReportingController(BaseController):
     """
@@ -137,6 +140,16 @@ class ReportingController(BaseController):
         """
         result = {}
         try:
+            # ------------------------------------------------------------- --
+            start = datetime(year=1970, month=1, day=1)
+
+            _now = datetime.utcnow()
+            end = (
+                datetime(year=_now.year, month=_now.month, day=_now.day) +
+                timedelta(days=1)
+                )
+            # ------------------------------------------------------------- --
+
             request_realms = self.request_params.get('realms', '').split(',')
             status = self.request_params.get('status', ['total'])
             if status != ['total']:
@@ -157,7 +170,127 @@ class ReportingController(BaseController):
             for realm in realms:
                 result[realm] = {}
                 for stat in status:
-                    result[realm][stat] = get_max(realm, stat)
+                    result[realm][stat] = get_max(
+                        realm, status=stat, start=start, end=end
+                        )
+            return sendResult(response, result)
+
+        except PolicyException as policy_exception:
+            log.exception(policy_exception)
+            Session.rollback()
+            return sendError(response, unicode(policy_exception), 1)
+
+        except Exception as exc:
+            log.exception(exc)
+            Session.rollback()
+            return sendError(response, exc)
+
+        finally:
+            Session.close()
+
+    def period(self):
+        """
+        method:
+            reporting/period
+
+        description:
+            return the maximum of tokens in a given realm with given status
+            for a given period
+
+        arguments:
+            * realms - required: takes realms, only the reporting entries for
+                this realms will be displayed
+            * status - optional: (default is 'active')
+                takes assigned/unassigned/active/ etc.
+                and shows max of lines in database with this characteristic
+            * from - optional: (default is 1970-1-1)
+                    the start day for the reporting max lookup
+            * to - optional: (default is tomorow 0:0:0)
+                    the end day for the reporting max lookup
+
+        returns:
+            a json result with:
+            {
+            "status": "true",
+            "value": {
+                realms: [ {}, {}],
+                period: {
+                    'from':
+                    'to':
+                }
+            }
+            with a realm entry {} as:
+            {
+            'realm': 'realmname',
+            'tokencount': {
+                'active': nn,
+
+                }
+            }
+
+        exception:
+            if an error occurs an exception is serialized and returned
+
+        :return:
+        """
+        result = {}
+        try:
+            request_realms = self.request_params.get('realms', '').split(',')
+            status = self.request_params.get('status', ['total'])
+            if status != ['total']:
+                status = status.split(',')
+
+            # ------------------------------------------------------------- --
+
+            # handle start and stop
+            # for backward compatibility start and stop are optional
+
+            # if start is not given, we use the unix time start 1.1.1970
+
+            start = datetime(year=1970, month=1, day=1)
+            if 'from' in self.request_params:
+                start_str = self.request_params.get('from')
+                start = convert_to_datetime(start_str, TIME_FMTS)
+
+            # if end is not defined, we use tomorrow at 0:0:0
+
+            _now = datetime.utcnow()
+            end = (
+                datetime(year=_now.year, month=_now.month, day=_now.day) +
+                timedelta(days=1)
+                )
+            if 'to' in self.request_params:
+                end_str = self.request_params.get('to')
+                end = convert_to_datetime(end_str, TIME_FMTS)
+
+            # ------------------------------------------------------------- --
+
+            realm_whitelist = []
+            policies = getAdminPolicies('period', scope='reporting.access')
+            if policies['active'] and policies['realms']:
+                realm_whitelist = policies.get('realms')
+
+            # if there are no policies for us, we are allowed to see all realms
+            if not realm_whitelist or '*' in realm_whitelist:
+                realm_whitelist = request_context['Realms'].keys()
+
+            realms = match_realms(request_realms, realm_whitelist)
+
+            result['realms'] = []
+            for realm in realms:
+                result_realm = {'name': realm}
+                max_token_counts = {}
+                for stat in status:
+                    max_token_counts[stat] = get_max(
+                        realm, status=stat, start=start, end=end
+                        )
+                result_realm['maxtokencount'] = max_token_counts
+                result['realms'].append(result_realm)
+
+            result['period'] = {
+                'from': start.isoformat(),
+                'to': end.isoformat()
+                }
 
             return sendResult(response, result)
 

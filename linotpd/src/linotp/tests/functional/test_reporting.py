@@ -33,6 +33,8 @@ from pylons import config
 from sqlalchemy import engine_from_config
 from sqlalchemy.orm import scoped_session, sessionmaker
 
+from freezegun import freeze_time
+
 from linotp.model import Reporting
 
 from linotp.tests import TestController
@@ -350,6 +352,207 @@ class TestReportingController(TestController):
         finally:
             if Session:
                 Session.close()
+
+    def test_reporting_period(self):
+        """
+        test reporting/period
+
+        - we add a token per 2 days starting at 2020-02-20
+          the last day is the 2020-03-01:
+
+        date                | serial |   realm      |  assigned  |  active
+        ------------------------------------------------------------------
+        2020-02-20 00:00:01 | 0031 | mydefrealm     | hans      |   y
+        2020-02-22 00:00:01 | 0032 | (mydefrealm)   | hans      |   n
+        2020-02-24 00:00:01 | 0033 | mydefrealm     |           |   n
+        2020-02-26 00:00:01 | 0034 | mydefrealm     | lorca     |   y
+        2020-02-28 00:00:01 | 0035 | myotherrealm   |           |   y
+        2020-03-01 00:00:01 | 0036 | mymixrealm     | hans      |   n
+
+        periods for two realms: mydefrealm and mymixrealm
+
+        # include all days
+        from         - to           |realm:      | t| ac|nac| as|uas|
+        -------------+--------------+--------------------------------------
+        (1970-01-01) - (2020-03-01) | mydefrealm | 4| 2 | 2 | 3 | 1
+        (1970-01-01) - (2020-03-01) | mymixrealm | 1| 1 | 1 | 1 | 0
+
+        # include all days == same as above
+        from       - to            |realm:      | t| ac|nac| as|uas|
+        -----------+---------------+--------------------------------------
+        2020-02-20 - (2020-03-01)  | mydefrealm | 4| 2 | 2 | 3 | 1
+        2020-02-20 - (2020-03-01)  | mymixrealm | 1| 1 | 1 | 1 | 0
+
+        # exclude last date
+        from         - to         |realm:      | t| ac|nac| as|uas|
+        -------------+------------+--------------------------------------
+        (1970-01-01) - 2020-03-01 | mydefrealm | 4| 2 | 2 | 3 | 1
+        (1970-01-01) - 2020-03-01 | mymixrealm | 0| 0 | 0 | 0 | 0
+
+        # only the first day, exclude the 'to' 2020-02-22
+        from       - to           |realm:      | t| ac|nac| as|uas|
+        -----------+--------------+--------------------------------------
+        2020-02-21 - 2020-02-22   | mydefrealm | 1| 1 | 0 | 1 | 0
+        2020-02-21 - 2020-02-22   | mymixrealm | 0| 0 | 0 | 0 | 0
+
+
+        """
+
+        # ------------------------------------------------------------------ --
+
+        # setu reporting policy
+
+        policy_params = {
+            'name': 'test_maximum',
+            'scope': 'reporting',
+            'action': (
+                'token_total, '
+                'token_status=active, token_status=inactive, '
+                'token_status=assigned, token_status=unassigned'
+                ),
+            'user': '*',
+            'realm': 'mydefrealm,mymixrealm',
+        }
+        self.create_policy(policy_params)
+
+        # ------------------------------------------------------------------ --
+
+        # create all tokens and events
+
+        fix_date = datetime.strptime(
+            '2020-02-20  00:00:01', '%Y-%m-%d  %H:%M:%S'
+            )
+
+        with freeze_time(fix_date):
+            self.create_token(serial='0031', realm='mydefrealm', user='hans')
+        with freeze_time(fix_date + timedelta(days=2)):
+            self.create_token(serial='0032', user='hans', active=False)
+        with freeze_time(fix_date + timedelta(days=4)):
+            self.create_token(serial='0033', realm='mydefrealm', active=False)
+        with freeze_time(fix_date + timedelta(days=6)):
+            self.create_token(serial='0034', realm='mydefrealm', user='lorca')
+        with freeze_time(fix_date + timedelta(days=8)):
+            self.create_token(serial='0035', realm='myotherrealm')
+        with freeze_time(fix_date + timedelta(days=10)):
+            self.create_token(serial='0036', realm='mymixrealm', user='hans',
+                              active=False)
+
+        # ------------------------------------------------------------------ --
+
+        # run reportings
+
+        with freeze_time(fix_date + timedelta(days=10)):
+
+            # -------------------------------------------------------------- --
+
+            # open start and open ended - today is included
+
+            params = {
+                'realms': 'mydefrealm, mymixrealm',
+                'status': 'total,active,inactive,assigned,unassigned',
+            }
+            response = self.make_authenticated_request(
+                controller='reporting', action='period', params=params
+                )
+
+            realms = {}
+            for realm in response.json['result']['value']['realms']:
+                realms[realm['name']] = realm
+
+            assert realms['mydefrealm']['maxtokencount'] == {
+                'total': 4,
+                'active': 2, 'assigned': 3,
+                'unassigned': 1, 'inactive': 2
+                }
+            assert realms['mymixrealm']['maxtokencount'] == {
+                'total': 1,
+                'active': 1, 'assigned': 1,
+                'unassigned':-1, 'inactive': 1
+                }
+
+            # -------------------------------------------------------------- --
+
+            # open ended - today is included
+
+            params = {
+                'realms': 'mydefrealm, mymixrealm',
+                'from': '2020-02-20',
+                'status': 'total,active,inactive,assigned,unassigned',
+            }
+            response = self.make_authenticated_request(
+                controller='reporting', action='period', params=params
+                )
+
+            realms = {}
+            for realm in response.json['result']['value']['realms']:
+                realms[realm['name']] = realm
+
+            assert realms['mydefrealm']['maxtokencount'] == {
+                'total': 4,
+                'active': 2, 'assigned': 3,
+                'unassigned': 1, 'inactive': 2
+                }
+            assert realms['mymixrealm']['maxtokencount'] == {
+                'total': 1,
+                'active': 1, 'assigned': 1,
+                'unassigned':-1, 'inactive': 1
+                }
+            # -------------------------------------------------------------- --
+
+            # 2020-03-01 - 'to' is not included
+
+            params = {
+                'realms': 'mydefrealm, mymixrealm',
+                'to': '2020-03-01',
+                'status': 'total,active,inactive,assigned,unassigned',
+            }
+            response = self.make_authenticated_request(
+                controller='reporting', action='period', params=params
+                )
+
+            realms = {}
+            for realm in response.json['result']['value']['realms']:
+                realms[realm['name']] = realm
+
+            assert realms['mydefrealm']['maxtokencount'] == {
+                'total': 4,
+                'active': 2, 'assigned': 3,
+                'unassigned': 1, 'inactive': 2
+                }
+            assert realms['mymixrealm']['maxtokencount'] == {
+                'total':-1,
+                'active':-1, 'assigned':-1,
+                'unassigned':-1, 'inactive':-1
+                }
+
+            # -------------------------------------------------------------- --
+
+            # only the first day, 2020-02-20 - 'to' excludes 2020-02-22
+
+            params = {
+                'realms': 'mydefrealm, mymixrealm',
+                'from': '2020-02-20',
+                'to': '2020-02-22',
+                'status': 'total,active,inactive,assigned,unassigned',
+            }
+            response = self.make_authenticated_request(
+                controller='reporting', action='period', params=params
+                )
+
+            realms = {}
+            for realm in response.json['result']['value']['realms']:
+                realms[realm['name']] = realm
+
+            assert realms['mydefrealm']['maxtokencount'] == {
+                'total': 1,
+                'active': 1, 'assigned': 1,
+                'unassigned':-1, 'inactive':-1
+                }
+            assert realms['mymixrealm']['maxtokencount'] == {
+                'total':-1,
+                'active':-1, 'assigned':-1,
+                'unassigned':-1, 'inactive':-1
+                }
 
     def test_reporting_maximum(self):
         """

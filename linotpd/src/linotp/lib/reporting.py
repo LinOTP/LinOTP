@@ -36,6 +36,14 @@ from linotp.lib.policy import check_token_reporting
 from sqlalchemy import (and_, or_)
 from sqlalchemy import func
 
+STATI = [
+    'total',
+    'active', 'inactive',
+    'assigned', 'unassigned',
+    'active&assigned', 'active&unassigned',
+    'inactive&assigned', 'inactive&unassigned',
+    ]
+
 log = logging.getLogger(__name__)
 
 
@@ -67,25 +75,36 @@ def token_reporting(event, tokenrealms):
                               '%r' % exce)
 
 
-def get_max(realm, status='active'):
+def get_max(realm, start=None, end=None, status='active'):
     """
-    get the maximum number of tokens (with given status) in a realm in the whole
-     reporting database;
-     if no status is given, 'active' is default
+    get the maximum number of tokens (with given status) in a realm
+    from the reporting database
 
     :param realm: (required) the realm in which we are searching
-    :param status: (default: 'active') the status that the tokens have
-            defaukt is active as this is relevant for license
-    :return: maximum number of reported tokens with given status in realm
+    :param start: timestamp (default: 1.1.1970)
+                  the reporting start, including the given date
+    :param end: timestamp (default: tomorrow)
+                the reporting end, excluding the given date
+    :param status: (default: 'active')
+                the status that the tokens have default is 'active' as this is
+                relevant for license
+    :return: maximum: number of reported tokens with given status in realm
     """
+    if status not in STATI:
+        raise Exception("unsupported status: %r" % status)
 
-    max = Session.query(
-        func.max(Reporting.count))\
-        .filter(and_(Reporting.parameter == status, Reporting.realm == realm))
+    result = Session.query(func.max(Reporting.count)).filter(
+        and_(
+            and_(
+                Reporting.timestamp >= start,
+                Reporting.timestamp < end,
+                ),
+            Reporting.realm == realm,
+            Reporting.parameter == status,
+            )
+        ).scalar()
 
-    result = max.first()[0]
-
-    return result
+    return result or -1
 
 
 def delete(realms, status, date=None):
