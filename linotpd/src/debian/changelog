@@ -1,10 +1,11 @@
-linotp (2.12.3-1) buster; urgency=medium
+linotp (2.12.3~rc0-1) buster; urgency=medium
 
   Feature:
-  * Server: add api to query reporting for a period in a range 'from' to 'to',
-    where the 'from' is included and the 'to' is excluded 'reporting/period'.
+  * Server: add API /reporting/period to query reporting for a period in a
+    range between 'from' and 'to', where the 'from' date is included in the
+    range and the 'to' date is not included.
 
- -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Mon, 22 Feb 2021 23:32:00 +0100
+ -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Wed, 24 Feb 2021 15:06:00 +0100
 
 linotp (2.12.2-1) buster; urgency=medium
 
