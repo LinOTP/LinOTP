@@ -106,7 +106,7 @@ def create_google_authenticator(param, user=None):
 
     issuer = get_tokenissuer(login, realm, serial)
     if issuer:
-        url_param['issuer'] = quote(issuer)
+        url_param['issuer'] = issuer
 
     ga = "otpauth://%s/%s" % (typ, serial)
     qg_param = urllib.urlencode(url_param)
