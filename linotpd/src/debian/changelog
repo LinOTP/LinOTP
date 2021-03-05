@@ -1,3 +1,11 @@
+linotp (3.0~rc4-1) buster-dev; urgency=low
+
+  Fixes:
+  * Repaired broken link to documentation that was caused by a faulty version
+    extraction.
+
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Fri, 05 Mar 2021 10:15:00 +0100
+
 linotp (3.0~rc3-1) buster-dev; urgency=low
 
   Fixes:
