@@ -601,6 +601,17 @@ class Audit(AuditBase):
 
         return c
 
+    def delete_all_entries(self):
+        """delete_all_entries: support the cleanup of all audit database entries."""
+
+        log.debug('sql audit interface "delete_all_entries" called.')
+        try:
+            self.session.query(AuditTable).delete()
+        except Exception as exx:
+            self.session.rollback()
+            raise exx
+
+
 def getAsString(data):
     '''
     We need to distinguish, if this is an entry after the adding the
@@ -660,4 +671,14 @@ class AuditLinOTPDB(Audit):
         super().log_entry(param)
         self.session.commit()
 
+    def delete_all_entries(self):
+        """delete_all_entries: support the cleanup of all audit database entries."""
+
+        log.debug('sql audit interface "delete_all_entries" called.')
+        try:
+            super().delete_all_entries()
+            self.session.commit()
+        except Exception as exx:
+            self.session.rollback()
+            raise exx
 ###eof#########################################################################
