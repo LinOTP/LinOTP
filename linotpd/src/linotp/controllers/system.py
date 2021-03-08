@@ -1922,12 +1922,13 @@ class SystemController(BaseController):
         sendErrorMethod = sendError
 
         try:
-
-            try:
-                licField = request.files['license']
-            except KeyError as _keyerr:
-                return sendErrorMethod(response, 'No key \'license\': '
-                                       'Not a form request')
+            key = 'license'
+            if key in request.files:
+                licField = request.files[key]
+            elif key in self.request_params:
+                licField = self.request_params[key]
+            else:
+                return sendErrorMethod(response, 'No key \'license\' in the upload request')
 
             response_format = self.request_params.get('format', '')
             if response_format == 'xml':
@@ -1937,13 +1938,13 @@ class SystemController(BaseController):
             log.info("[setSupport] setting support: %s", licField)
 
             # In case of normal post requests, it is a "instance" of
-            # FieldStorage
+            # FileStorage
             if isinstance(licField, FileStorage):
-                log.debug("[setSupport] Field storage: %s", licField)
+                log.debug("[setSupport] File storage: %s", licField)
                 support_description = licField.read().decode()
             else:
                 # we got UTF-8!
-                support_description = licField.decode()
+                support_description = licField
             log.debug("[setSupport] license %s", support_description)
 
             res, msg = setSupportLicense(support_description)

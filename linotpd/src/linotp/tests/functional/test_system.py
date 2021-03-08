@@ -29,6 +29,7 @@
 """
 import os
 import logging
+from unittest.mock import patch
 from linotp.tests import TestController
 
 
@@ -618,4 +619,50 @@ scope = gettoken
 
         assert '"status": true' in response, response
 
-# eof ########################################################################
+    def test_set_license_via_form_upload(self, license_filename="demo-lic.pem"):
+        """
+        Ensure that loading a license file works via form upload.
+        """
+        demo_license_file = os.path.join(self.fixture_path, license_filename)
+
+        with open(demo_license_file, "r") as license_file:
+            demo_license = license_file.read()
+        form_files = [('license', 'demo-lic.pem', demo_license)]
+
+        response = self.make_system_request(
+            action='setSupport',
+            upload_files=form_files,
+            auth_user='superadmin')
+
+        assert '"status": true' in response, response
+
+    def test_set_license_via_post_body(self, license_filename="demo-lic.pem"):
+        """
+        Ensure that loading a license file works by sending it in \
+        the body of a POST request.
+        """
+        demo_license_file = os.path.join(self.fixture_path, license_filename)
+
+        with open(demo_license_file, "r") as license_file:
+            demo_license = license_file.read()
+        params = { 'license' : demo_license}
+
+        response = self.make_system_request(
+            action='setSupport',
+            params=params,
+            auth_user='superadmin')
+
+        assert '"status": true' in response, response
+
+    @patch('linotp.controllers.system.setSupportLicense')
+    def test_set_license_fails_if_not_provided(self, mock):
+        """
+        Ensure that loading a license file fails if no file is supplied.
+        """
+        response = self.make_system_request(
+            action='setSupport',
+            upload_files=[],
+            params={},
+            auth_user='superadmin')
+        assert '"status": false' in response, response
+        mock.assert_not_called()
