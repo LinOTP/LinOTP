@@ -28,6 +28,7 @@
 
 import json
 import logging
+import pytest
 
 from linotp.flap import config
 
@@ -263,6 +264,10 @@ class TestMonitoringController(TestController):
         """
         test the handling of token in multiple realms
         """
+        sqlconnect = self.app.config.get('DATABASE_URI')
+        if sqlconnect.startswith(('mysql', 'sqlite')):
+            pytest.xfail("monitoring query problem LINOTP-1540")
+
         # create some tokens
 
         self.create_token(serial='0041')
@@ -295,7 +300,7 @@ class TestMonitoringController(TestController):
 
         assert values.get('Realms').get('mydefrealm').get('total') == 2
         assert values.get('Realms').get('myotherrealm').get('total') == 2
-        assert values.get('Summary').get('total') == 4, response.body
+        assert values.get('Summary').get('total') == 3, response.body
 
         return
 

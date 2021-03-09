@@ -183,10 +183,9 @@ class ManageController(BaseController):
             if 'login' in admin_user:
                 c.admin = admin_user['login']
 
-            log.debug("[index] importers: %s" % IMPORT_TEXT)
+            log.debug("[index] importers: %s", IMPORT_TEXT)
             c.importers = IMPORT_TEXT
-            help_version = c.version[:c.version.find('.')]
-            c.help_url = config.get('HELP_URL').format(help_version)
+            c.help_url = config.get('HELP_URL').format(linotp.__version__)
 
             # -------------------------------------------------------------- --
 

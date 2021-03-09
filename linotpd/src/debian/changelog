@@ -7,12 +7,34 @@ linotp (3.1~0dev-0) experimental; urgency=low
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 12 Nov 2020 17:48:51 +0200
 
-linotp (3.0~rc2-0dev) buster-dev; urgency=low
+linotp (3.0~rc4-1) buster-dev; urgency=low
+
+  Fixes:
+  * Repaired broken link to documentation that was caused by a faulty version
+    extraction.
+  * Include the README.md in packaging artifacts
+  * Include forgotten `linotp-create-htdigest` script for installation via setup.py
+
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Fri, 05 Mar 2021 10:15:00 +0100
+
+linotp (3.0~rc3-1) buster-dev; urgency=low
+
+  Fixes:
+  * Missing freeradius dictionary file used for radius forwarding is now
+    shipped with the debian package again.
+  * `/gettoken/getotp` now works on tokens that are not in a realm.
+  * `/auth/challenge-response` is again a valid way to access the testing page,
+    in addition to `/auth/challenge_response`.
+  * use internal database connection for managed resolvers
+
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Fri, 29 Jan 2021 15:11:18 +0100
+
+linotp (3.0~rc2-1) buster-dev; urgency=low
 
   Features:
   * New Token Self Service interface is installed as a recommended
     dependency for /selfservice. The existing SelfService is deprecated but
-  still available under /selfservice-legacy.
+    still available under /selfservice-legacy.
   * New config value SITE_ROOT_REDIRECT allows to customize the redirect
     path if the user requests the site root path ("/"). If not set, the
     browser is redirected to the selfservice controller interface.
@@ -37,8 +59,11 @@ linotp (3.0~rc2-0dev) buster-dev; urgency=low
     even when these tokens are disabled.
   * support reencoding of linotp2 db's with iso8859 (python2+mysql) by
     conversion of db entries to utf-8.
+  * Prevent startup when the database schema is out of date.
+  * Ensure configuration files and generated directories are owned by the
+    linotp service user.
 
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Mon, 16 Nov 2020 15:33:11 +0200
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Wed, 09 Dec 2020 15:45:18 +0100
 
 linotp (3.0~rc1-1) buster-dev; urgency=low
 

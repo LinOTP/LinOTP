@@ -38,6 +38,7 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
     pkg-config \
     parallel \
     mariadb-client \
+    vim \
     sudo \
     virtualenv
 
@@ -47,6 +48,7 @@ VOLUME /linotpsrc
 WORKDIR /linotpsrc/linotpd/src/linotp/tests/unit
 
 RUN useradd -ms /bin/bash tester
+RUN echo "root:Test123!\ntester:Test123!" | chpasswd
 
 # Install python modules which do not have equivalent Debian packages
 RUN pip3 install --upgrade \

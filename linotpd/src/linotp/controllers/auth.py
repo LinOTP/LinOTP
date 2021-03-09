@@ -33,7 +33,7 @@ import logging
 
 from linotp.flap import render_mako as render, response, tmpl_context as c
 
-from linotp.controllers.base    import BaseController
+from linotp.controllers.base import BaseController, add_hyphenated_url
 from linotp.lib.util    import get_version
 from linotp.lib.util    import get_copyright_info
 from linotp.lib.reply import sendError
@@ -98,15 +98,16 @@ class AuthController(BaseController):
         log.debug("[index3] index, authenticating user")
         return render("/auth3.mako")
 
+    @add_hyphenated_url
     def challenge_response(self):
         '''
         This is the method for testing challenge-response
         authentication
 
         Call it directly in your browser like this
-            http(s)://server/auth/challenge-response
+            http(s)://server/auth/challenge_response
         '''
-        log.debug("[challenge-response] index, authenticating user")
+        log.debug("[challenge_response] index, authenticating user")
         return render("/auth-challenge-response.mako")
 
     def qrtoken(self):

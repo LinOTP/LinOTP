@@ -44,6 +44,11 @@ log = logging.getLogger(__name__)
 
 class TestHTTPError(TestController):
 
+
+    def tearDown(self):
+        self._del_errors_from_config()
+        return TestController.tearDown(self)
+
     def test_no_httperror(self):
         """
         Default case: No httperror sent. Response is JSON 200 OK

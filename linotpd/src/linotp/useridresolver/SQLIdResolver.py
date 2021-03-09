@@ -41,6 +41,8 @@ import logging
 
 # from sqlalchemy.event import listen
 
+from flask import current_app
+
 from sqlalchemy import create_engine
 from sqlalchemy import types
 from sqlalchemy.sql import expression
@@ -534,7 +536,11 @@ class IdResolver(UserIdResolver):
             sqlConnect = self.sqlConnect
 
         self.dbObj = dbObject()
-        self.dbObj.connect(sqlConnect)
+
+        if self.managed:
+            sqlConnect = current_app.config.get("DATABASE_URI")
+
+        self.dbObj.connect(sqlConnect=sqlConnect)
 
         return self.dbObj
 
@@ -658,6 +664,8 @@ class IdResolver(UserIdResolver):
             log.error("missing config entries: %r", missing)
             raise ResolverLoadConfigError(" missing config entries:"
                                           " %r" % missing)
+
+        self.managed = l_config.get('readonly', False)
 
         #  example for connect:
         #      postgres://otpd:linotp2d@localhost:521/otpdb

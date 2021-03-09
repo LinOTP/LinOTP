@@ -29,11 +29,15 @@
 linotp admin  fix-db-encoding
 
 """
+import sys
+
 from flask import current_app
 from flask.cli import AppGroup
 from flask.cli import with_appcontext
 
+
 from linotp.model import fix_db_encoding
+
 
 admin_cmds = AppGroup(
     "admin",
@@ -52,15 +56,21 @@ and description (Token.LinOtpTokenDesc) entries.
 """)
 )
 
+
 @with_appcontext
 def fix_db_encoding_command():
     """Fix the python2+mysql iso8859 encoding by conversion to utf-8."""
 
     try:
         result, response = fix_db_encoding(current_app)
-    except Exception as exx:
-        result = False
-        response = "%r" % exx
 
-    current_app.echo(f'Conversion response: {response}')
-    return result
+    except Exception as exx:
+        current_app.echo(f"Conversion could not be completed: {exx}")
+        sys.exit(1)
+
+    if not result:
+        current_app.echo(f"Conversion failed: {response}")
+        sys.exit(1)
+
+    current_app.echo(f"Conversion response: {response}")
+    sys.exit(0)
