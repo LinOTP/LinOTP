@@ -217,8 +217,8 @@ lint-useridresolver:
   LINOTP_DB_HOST: "db"
   LINOTP_DB_PORT: "3306"
   LINOTP_DB_WAITTIME: 2m
-  LINOTP_DATABASE_URI: "mysql+pymysql://linotp:linotppass@db/linotp_db?charset=utf8"
-  LINOTP_PYTEST_DATABASE_URI: "mysql+pymysql://linotp:linotppass@db/linotp_db?charset=utf8"
+  LINOTP_DATABASE_URI: "mysql+mysqldb://linotp:linotppass@db/linotp_db?charset=utf8"
+  LINOTP_PYTEST_DATABASE_URI: "mysql+mysqldb://linotp:linotppass@db/linotp_db?charset=utf8"
 
 .mysql-database:
   variables:

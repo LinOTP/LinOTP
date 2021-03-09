@@ -90,11 +90,23 @@ def fix_db_encoding(app) -> None:
     app.config["SQLALCHEMY_DATABASE_URI"] = app.config["DATABASE_URI"]
     db.init_app(app)
 
-    migration = Migration(db.engine)
-    return_value = migration.iso8859_to_utf8_conversion()
-    db.session.commit()
+    try:
 
-    return return_value
+        migration = Migration(db.engine)
+        success, response = migration.iso8859_to_utf8_conversion()
+
+        if success:
+            db.session.commit()
+        else:
+            db.session.rollback()
+
+    except Exception:
+        raise
+
+    finally:
+        db.session.close()
+
+    return success, response
 
 def setup_db(app) -> None:
     """Set up the database for LinOTP.
@@ -139,26 +151,19 @@ def setup_db(app) -> None:
 
     table_names = db.engine.table_names()
     cli_cmd = getattr(app, 'cli_cmd', '')
-    if 'Config' not in table_names and cli_cmd != 'init-database':
-        # Stop the program with a critical error if the database schema
-        # isn't initialised, unless you're about to initialise the
-        # database schema, in which case it is OK if the database schema
-        # isn't yet initialised.
 
+    if cli_cmd == 'init-database':
+        return
+
+    if 'Config' not in table_names:
         log.critical("Database schema must be initialised, "
                         "run `linotp init database`.")
         sys.exit(11)
 
-    # ----------------------------------------------------------------- --
-
-    # Stop the program with a critical error if the database schema
-    # is not current and we try to run the linotp server
-
-    if cli_cmd == 'run' and not Migration.is_db_model_current():
+    if not Migration.is_db_model_current():
         log.critical("Database schema is not current, "
                         "run `linotp init database`.")
         sys.exit(11)
-
 
 def init_db_tables(app, drop_data=False, add_defaults=True):
     """Initialise LinOTP database tables.

@@ -55,15 +55,13 @@ print(loginstring)
 get_sqlalchemy_uri() {
   if [ "${dbc_dbtype}" = pgsql ]; then
     scheme=postgres
+  elif [ "${dbc_dbtype}" = mysql ]; then
+    scheme="mysql+mysqldb"
   else
     scheme="${dbc_dbtype}"
   fi
 
-  if [ "${dbc_dbtype}" = mysql ]; then
-    params="?charset=utf8"
-  else
-    params=""
-  fi
+  params=""
 
   if [ "${dbc_dbport}" != "" ]; then
       dbport=":${dbc_dbport}"

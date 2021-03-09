@@ -62,7 +62,7 @@ class SQLData(object):
             VALUES (:key, :value, :typ, :description);
             """ % (self.userTable)
 
-        if self.engine.driver.startswith('mysql'):
+        if self.engine.url.drivername.startswith('mysql'):
             iStr = """
             INSERT INTO %s (%s.Key, Value, Type, Description)
             VALUES (:key, :value, :typ, :description);
@@ -78,7 +78,7 @@ class SQLData(object):
 
     def updateData(self, key, value):
         uStr = 'UPDATE "%s"  SET "Value"=:value WHERE "Key" = :key;'
-        if self.engine.driver.startswith('mysql'):
+        if self.engine.url.drivername.startswith('mysql'):
             uStr = 'UPDATE %s  SET Value=:value WHERE Config.Key = :key;'
 
         updateStr = uStr % (self.userTable)
@@ -98,7 +98,7 @@ class SQLData(object):
 
     def delData(self, key):
         dStr = 'DELETE FROM "%s" WHERE "Key"=:key;' % (self.userTable)
-        if self.engine.driver.startswith('mysql'):
+        if self.engine.url.drivername.startswith('mysql'):
             dStr = ('DELETE FROM %s WHERE %s.Key=:key;' %
                     (self.userTable, self.userTable))
 

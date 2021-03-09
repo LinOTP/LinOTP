@@ -142,6 +142,11 @@ class TestFixesController(TestController):
 
     def tearDown(self):
         ''' make the dishes'''
+
+        for kid in range(200):
+            key = 'key_%d' % (kid)
+            self.make_system_request('delConfig', params = {'key': key})
+
         self.remove_tokens()
         self.delete_all_realms()
         self.delete_all_resolvers()

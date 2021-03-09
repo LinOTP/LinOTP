@@ -23,25 +23,13 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-include LICENSE
-recursive-include linotp/public *
-recursive-include linotp/templates *
-recursive-include linotp/i18n *
-include linotp/dictionary
 
-# Include all files in the config directory in the sources.
-# Some of these will be installed into the binary package
-# (see data_files in setup.py) and will be automatically
-# included in the source package. But the scripts used for the
-# Docker images are not included in the binary package, so here
-# we specify that we still want to include all remaining files
-# in the source package.
-#  * config/linotp-docker.cfg.tmpl
-#  * config/docker-initscripts.d
-recursive-include config *
 
-recursive-include tools *
-recursive-include examples *
-recursive-include linotp/tokens *.mako
-exclude linotp/controllers/testing.py
-include README.md
+def test_auth_challenge_response_hyphenated(app, client):
+    # Make sure both URLs work and their results are identical
+
+    rv_us = client.get('/auth/challenge_response')
+    assert rv_us.status_code == 200
+    rv_hy = client.get('/auth/challenge-response')
+    assert rv_hy.status_code == 200
+    assert rv_hy.data == rv_us.data
