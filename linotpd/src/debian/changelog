@@ -4,6 +4,7 @@ linotp (3.0~rc4-1) buster-dev; urgency=low
   * Repaired broken link to documentation that was caused by a faulty version
     extraction.
   * Include the README.md in packaging artifacts
+  * Include forgotten `linotp-create-htdigest` script for installation via setup.py
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Fri, 05 Mar 2021 10:15:00 +0100
 
