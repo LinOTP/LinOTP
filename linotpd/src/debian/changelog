@@ -1,3 +1,10 @@
+linotp (2.12.4.dev0-1) buster; urgency=medium
+
+  Fix:
+  * Include Readme.rst in packaging artifacts
+
+ -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Wed, 05 Mar 2021 11:44:20 +0100
+
 linotp (2.12.3~rc0-1) buster; urgency=medium
 
   Feature:
