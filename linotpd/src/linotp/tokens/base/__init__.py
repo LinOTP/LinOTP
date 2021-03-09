@@ -948,7 +948,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             self.addToTokenInfo('scope', scope)
 
             if not param.get('description'):
-                if scope.get('path', []) == ['userservice']:
+                path = scope.get('path', [])
+                if set(path) & set(['userservice', 'validate']):
                     param['description'] = 'rollout token'
 
         if param.get("description"):

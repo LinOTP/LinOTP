@@ -267,7 +267,8 @@ class FinishTokens(object):
             # and below in a dict for each token a challenge description -
             # the key is the token type combined with its token serial number
 
-            all_reply = {'challenges': {}}
+            all_reply = {}
+            all_reply['challenges'] = {}
             challenge_count = 0
             transactionid = ''
             challenge_id = ""
@@ -407,7 +408,7 @@ def janitor_to_remove_enrollment_token(valid_tokens):
         # if the authenticated token is a rollout token, we dont count him
 
         path = token.getFromTokenInfo('scope', {}).get('path', [])
-        if len(path) == 1 and path[0] == 'userservice':
+        if set(path) & set(['userservice', 'validate']):
             continue
 
         # TODO: get owner sadly throws a genric exception in case of
@@ -444,7 +445,7 @@ def janitor_to_remove_enrollment_token(valid_tokens):
 
         for token in user_tokens:
             path = token.getFromTokenInfo('scope', {}).get('path', [])
-            if len(path) == 1 and path[0] == 'userservice':
+            if set(path) & set(['userservice', 'validate']):
                 to_be_removed_tokens.append(token)
 
     # ------------------------------------------------------------------ --
