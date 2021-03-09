@@ -153,6 +153,9 @@ setup(
         'linotp/i18n/*/LC_MESSAGES/*.mo',
         'linotp/dictionary',
     ]},
+    scripts=[
+        'tools/linotp-create-htdigest',
+    ],
     data_files=[
         (
             'etc/linotp/',
