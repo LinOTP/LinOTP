@@ -1922,35 +1922,29 @@ class SystemController(BaseController):
         sendErrorMethod = sendError
 
         try:
-
-            try:
-                licField = request.files['license']
-            except KeyError as _keyerr:
-                return sendErrorMethod(response, 'No key \'license\': '
-                                       'Not a form request')
-
             response_format = self.request_params.get('format', '')
             if response_format == 'xml':
                 sendResultMethod = sendXMLResult
                 sendErrorMethod = sendXMLError
 
-            log.info("[setSupport] setting support: %s", licField)
-
-            # In case of normal post requests, it is a "instance" of
-            # FieldStorage
-            if isinstance(licField, FileStorage):
-                log.debug("[setSupport] Field storage: %s", licField)
-                support_description = licField.read().decode()
+            key = 'license'
+            if key in request.files:
+                license_file = request.files[key] # license_file is an instance of FileStorage
+                log.debug("[setSupport] file storage: %s", license_file)
+                support_description = license_file.read().decode()
+            elif key in self.request_params:
+                support_description = self.request_params[key]
+                log.debug("[setSupport] plaintext: %s", support_description)
             else:
-                # we got UTF-8!
-                support_description = licField.decode()
+                return sendErrorMethod(response, 'No key \'license\' in the upload request')
+
             log.debug("[setSupport] license %s", support_description)
 
             res, msg = setSupportLicense(support_description)
             g.audit['success'] = res
 
             if res is False:
-                raise Exception('Failed to set License: %r' % msg)
+                raise Exception(msg)
 
             db.session.commit()
             return sendResultMethod(response, res, 1, opt=message)

@@ -5,6 +5,8 @@ linotp (3.0~rc4-1) buster-dev; urgency=low
     extraction.
   * Include the README.md in packaging artifacts
   * Include forgotten `linotp-create-htdigest` script for installation via setup.py
+  * Updating the support license works again via POST request, in addition to
+    file upload via form submission.
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Fri, 05 Mar 2021 10:15:00 +0100
 
