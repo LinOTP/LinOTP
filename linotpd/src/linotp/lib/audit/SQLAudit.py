@@ -89,10 +89,6 @@ audit_table = schema.Table(audit_table_name, db.metadata,
 )
 
 
-AUDIT_ENCODE = ["action", "serial", "success", "user", "realm", "tokentype",
-                "administrator", "action_detail", "info", "linotp_server",
-                "client", "log_level"]
-
 class AuditTable(db.Model):
 
     __table__ = audit_table
@@ -173,71 +169,8 @@ class AuditTable(db.Model):
         self.timestamp = now()
         self.siganture = ' '
 
-    def _get_field_len(self, col_name):
-        leng = -1
-        try:
-            ll = audit_table.columns[col_name]
-            ty = ll.type
-            leng = ty.length
-        except Exception as exx:
-            leng = -1
 
-        return leng
-
-    def __setattr__(self, name, value):
-        """
-        to support unicode on all backends, we use the json encoder with
-        the assci encode default
-
-        :param name: db column name or class memeber
-        :param value: the corresponding value
-
-        :return: - nothing -
-        """
-        if isinstance(value, str):
-            field_len = self._get_field_len(name)
-            encoded_value = linotp.lib.crypto.utils.uencode(value)
-            if field_len != -1 and len(encoded_value) > field_len:
-                log.warning("truncating audit data: [audit.%s] %s",
-                            name, value)
-                if self.trunc_as_err is not False:
-                    raise Exception("truncating audit data: [audit.%s] %s" %
-                                    (name, value))
-
-                ## during the encoding the value might expand -
-                ## so we take this additional length into account
-                add_len = len(encoded_value) - len(value)
-                value = value[:field_len - add_len]
-
-        if name in AUDIT_ENCODE:
-            ## encode data
-            if value:
-                value = linotp.lib.crypto.utils.uencode(value)
-        super(AuditTable, self).__setattr__(name, value)
-
-    def __getattribute__(self, name):
-        """
-        to support unicode on all backends, we use the json decoder with
-        the assci decode default
-
-        :param name: db column name or class memeber
-
-        :return: the corresponding value
-        """
-        #Default behaviour
-        value = object.__getattribute__(self, name)
-        if name in AUDIT_ENCODE:
-            if value:
-                value = linotp.lib.crypto.utils.udecode(value)
-            else:
-                value = ""
-
-        return value
-
-# orm.mapper(AuditTable, audit_table)
-
-
-# replace sqlalchemy-migrate by the ability to ad a column
+# replace sqlalchemy-migrate by the ability to add a column
 def add_column(engine, table, column):
     """
     small helper to add a column by calling a native 'ALTER TABLE' to
