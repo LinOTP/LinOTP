@@ -276,8 +276,10 @@ class Audit(AuditBase):
         Set up session maker in `self.session`
         """
         # Set up the session
-        sm = orm.sessionmaker(bind=self.engine, autoflush=True,
-                                   autocommit=True, expire_on_commit=True)
+        sm = orm.sessionmaker(
+            bind=self.engine, autoflush=True,
+            autocommit=True, expire_on_commit=True
+        )
         self.session = orm.scoped_session(sm)
 
     def _createdb(self):
