@@ -165,8 +165,6 @@ class SQLImportHandler(ImportHandler):
         :return: dictionary of the resolver parameters
         """
 
-        url = self.db_context.engine.url
-
         mapping = {}
         for entry in SQLImportHandler.User.user_entries:
             mapping[entry] = entry
@@ -174,17 +172,17 @@ class SQLImportHandler(ImportHandler):
         where = "groupid = '%s'" % self.groupid
 
         resolver_parameters = {
-            "Driver": url.drivername,
-            "Server": url.host or "",
-            "Port": str(url.port or ""),
-            "Database": url.database,
-            "User": url.username or "",
-            "Password": url.password or "",
+            "Driver": "",
+            "Server": "",
+            "Port": "",
+            "Database": "",
+            "User": "",
+            "Password": "",
             "Table": self.table_name,
             "Where": where,
             "Map": json.dumps(mapping),
             "readonly": True,
-            }
+        }
 
         resolver_parameters['name'] = self.resolver_name
 
