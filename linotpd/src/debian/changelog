@@ -10,6 +10,7 @@ linotp (3.0~rc4-1) buster-dev; urgency=low
   * Automatic database migrations for LinOTP 3.0 removes all audit log entries because
     signatures from old audit log entries - written in LinOTP 2.x (using python 2) -
     could not be validated with python 3.
+  * Testing controller is no longer active by default in production.
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 11 Mar 2021 10:15:00 +0100
 

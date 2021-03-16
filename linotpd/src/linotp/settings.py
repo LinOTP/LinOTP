@@ -224,8 +224,8 @@ _config_schema = ConfigSchema([
                      "systems where `/run` is a RAM disk.")),
     ConfigItem("CONTROLLERS", str,
                default=("admin audit auth gettoken maintenance manage "
-                        "monitoring selfservice system test tools "
-                        "validate userservice reporting"),
+                        "monitoring reporting selfservice system tools "
+                        "userservice validate"),
                help=("List of all enabled controllers. Any controller `FOO` "
                      "mentioned here will be imported from "
                      "`linotp3.controllers.FOO` and registered on `/FOO`. "
