@@ -66,6 +66,7 @@ from linotp.lib.reporting import token_reporting
 
 from linotp.lib.resolver import get_resolver_class
 from linotp.lib.resolver import prepare_resolver_parameter
+from linotp.lib.resolver import getResolverInfo
 
 from linotp.lib.token import TokenHandler
 from linotp.lib.token import getTokenRealms
@@ -90,6 +91,8 @@ from linotp.lib.util import SESSION_KEY_LENGTH
 from linotp.lib.util import check_session
 from linotp.lib.util import getLowerParams
 from linotp.lib.util import get_client
+
+from linotp.lib.type_utils import boolean
 
 from linotp.model import db
 
@@ -2587,6 +2590,12 @@ class AdminController(BaseController, SessionCookieMixin):
             if resolver_cls is None:
                 raise Exception("no such resolver type '%r' defined!" %
                                 param['type'])
+
+            resolver_info = getResolverInfo(
+                previous_name or new_resolver_name,
+                )
+
+            param['readonly'] = boolean(resolver_info.get('readonly', False))
 
             (status, desc) = resolver_cls.testconnection(param)
 
