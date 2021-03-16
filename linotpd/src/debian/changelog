@@ -7,8 +7,11 @@ linotp (3.0~rc4-1) buster-dev; urgency=low
   * Include forgotten `linotp-create-htdigest` script for installation via setup.py
   * Updating the support license works again via POST request, in addition to
     file upload via form submission.
+  * Automatic database migrations for LinOTP 3.0 removes all audit log entries because
+    signatures from old audit log entries - written in LinOTP 2.x (using python 2) -
+    could not be validated with python 3.
 
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Fri, 05 Mar 2021 10:15:00 +0100
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 11 Mar 2021 10:15:00 +0100
 
 linotp (3.0~rc3-1) buster-dev; urgency=low
 
