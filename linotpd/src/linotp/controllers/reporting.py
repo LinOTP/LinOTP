@@ -50,8 +50,9 @@ from linotp.lib.reply import (sendResult,
                               sendCSVIterator)
 from linotp.lib.reporting import ReportingIterator
 from linotp.lib.reporting import get_max_token_count_in_period
-
+from linotp.lib.reporting import get_last_token_count_before_date
 from linotp.lib.reporting import delete
+
 from linotp.lib.user import (getUserFromRequest, )
 from linotp.lib.util import check_session
 from linotp.lib.util import get_client
@@ -288,6 +289,15 @@ class ReportingController(BaseController):
                     max_token_stat = get_max_token_count_in_period(
                             realm, status=stat, start=start, end=end
                             )
+
+                    # if none is found (-1) we search for the last entry
+                    # before the period start
+
+                    if max_token_stat == -1:
+                        max_token_stat = get_last_token_count_before_date(
+                            realm, status=stat, before_date=start
+                            )
+
                     max_token_counts[stat] = max_token_stat
 
                 result_realm['maxtokencount'] = max_token_counts
