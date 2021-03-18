@@ -75,10 +75,9 @@ def token_reporting(event, tokenrealms):
                               '%r' % exce)
 
 
-def get_max(realm, start=None, end=None, status='active'):
-    """
-    get the maximum number of tokens (with given status) in a realm
-    from the reporting database
+def get_max_token_count_in_period(realm, start=None, end=None, status='active'):
+    """Search for the maximum token count value in the reporing events
+    in a period with the status and realm.
 
     :param realm: (required) the realm in which we are searching
     :param start: timestamp (default: 1.1.1970)
@@ -93,7 +92,7 @@ def get_max(realm, start=None, end=None, status='active'):
     if status not in STATI:
         raise Exception("unsupported status: %r" % status)
 
-    result = Session.query(func.max(Reporting.count)).filter(
+    token_max_count = Session.query(func.max(Reporting.count)).filter(
         and_(
             and_(
                 Reporting.timestamp >= start,
@@ -104,8 +103,10 @@ def get_max(realm, start=None, end=None, status='active'):
             )
         ).scalar()
 
-    return result or -1
+    if token_max_count != None:
+        return token_max_count
 
+    return -1
 
 def delete(realms, status, date=None):
     """
