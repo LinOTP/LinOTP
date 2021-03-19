@@ -1,3 +1,11 @@
+linotp (2.12.3~rc1-1) buster; urgency=medium
+
+  Fix:
+  * Server: reporting/period will search for a last repoting entry if
+    no entry for the given period is found.
+
+ -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Fri, 19 Mar 2021 18:19:00 +0100
+
 linotp (2.12.3~rc0-1) buster; urgency=medium
 
   Feature:
