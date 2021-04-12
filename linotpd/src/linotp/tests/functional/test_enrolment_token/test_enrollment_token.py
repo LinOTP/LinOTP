@@ -673,7 +673,7 @@ class TestRolloutToken(TestController):
         # should not have purged the rollout token
 
         response = self.make_admin_request('show')
-        token_info = response.json_body['result']['value']['data'][0]
+        token_info = response.json['result']['value']['data'][0]
         self.assertEquals(token_info['LinOtp.TokenSerialnumber'], 'KIPW0815', response)
         self.assertEquals(token_info['LinOtp.TokenDesc'], 'rollout token', response)
 
