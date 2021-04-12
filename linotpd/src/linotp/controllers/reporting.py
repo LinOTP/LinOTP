@@ -187,7 +187,7 @@ class ReportingController(BaseController):
         except PolicyException as policy_exception:
             log.exception(policy_exception)
             db.session.rollback()
-            return sendError(response, str(policy_exception), 1)
+            return sendError(response, policy_exception, 1)
 
         except Exception as exc:
             log.exception(exc)
