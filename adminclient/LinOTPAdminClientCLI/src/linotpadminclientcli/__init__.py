@@ -37,4 +37,4 @@ __copyright__ = "Copyright (c) arxes-tolina GmbH"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
 __email__ = "linotp@keyidentity.com"
-__version__ = '2.12.2'
+__version__ = '2.12.3'

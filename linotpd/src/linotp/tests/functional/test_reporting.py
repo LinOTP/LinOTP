@@ -357,6 +357,12 @@ class TestReportingController(TestController):
         """
         test reporting/period
 
+        we create an old entry ahead of all the others
+
+        date                | serial |   realm      |  assigned  |  active
+        ------------------------------------------------------------------
+        2019-08-04 00:00:01 | 0001 | mydefrealm     | hans      |   y
+
         - we add a token per 2 days starting at 2020-02-20
           the last day is the 2020-03-01:
 
@@ -371,29 +377,30 @@ class TestReportingController(TestController):
 
         periods for two realms: mydefrealm and mymixrealm
 
-        # include all days
+        # A: include all days - no 'from' and no 'to'
         from         - to           |realm:      | t| ac|nac| as|uas|
         -------------+--------------+--------------------------------------
         (1970-01-01) - (2020-03-01) | mydefrealm | 4| 2 | 2 | 3 | 1
-        (1970-01-01) - (2020-03-01) | mymixrealm | 1| 1 | 1 | 1 | 0
+        (1970-01-01) - (2020-03-01) | mymixrealm | 2| 1 | 1 | 2 | N
 
-        # include all days == same as above
+        # B: open ended: from = '2020-02-20' - no 'to'
         from       - to            |realm:      | t| ac|nac| as|uas|
         -----------+---------------+--------------------------------------
         2020-02-20 - (2020-03-01)  | mydefrealm | 4| 2 | 2 | 3 | 1
-        2020-02-20 - (2020-03-01)  | mymixrealm | 1| 1 | 1 | 1 | 0
+        2020-02-20 - (2020-03-01)  | mymixrealm | 2| 1 | 2 | 2 | 0
 
-        # exclude last date
+        # C: exclude last date: no 'from' - 'to': '2020-03-01'
         from         - to         |realm:      | t| ac|nac| as|uas|
         -------------+------------+--------------------------------------
         (1970-01-01) - 2020-03-01 | mydefrealm | 4| 2 | 2 | 3 | 1
-        (1970-01-01) - 2020-03-01 | mymixrealm | 0| 0 | 0 | 0 | 0
+        (1970-01-01) - 2020-03-01 | mymixrealm | 1| 1 | 1 | 1 | N
 
-        # only the first day, exclude the 'to' 2020-02-22
+        # D: only the first day, 2020-02-20 - 'to' excludes 2020-02-22
+        # 'from' 2020-02-20 - 'to' 2020-02-22
         from       - to           |realm:      | t| ac|nac| as|uas|
         -----------+--------------+--------------------------------------
-        2020-02-21 - 2020-02-22   | mydefrealm | 1| 1 | 0 | 1 | 0
-        2020-02-21 - 2020-02-22   | mymixrealm | 0| 0 | 0 | 0 | 0
+        2020-02-21 - 2020-02-22   | mydefrealm | 1| 1 | N | 1 | N
+        2020-02-21 - 2020-02-22   | mymixrealm | 1| 1 | 0 | 1 | 0
 
 
         """
@@ -423,6 +430,11 @@ class TestReportingController(TestController):
             '2020-02-20  00:00:01', '%Y-%m-%d  %H:%M:%S'
             )
 
+        # create an initial fallback entry if there is no entry found
+        with freeze_time(fix_date - timedelta(days=200)):
+            self.create_token(serial='0001', realm='mymixrealm', user='max1',
+                              active=False)
+
         with freeze_time(fix_date):
             self.create_token(serial='0031', realm='mydefrealm', user='hans')
         with freeze_time(fix_date + timedelta(days=2)):
@@ -443,9 +455,72 @@ class TestReportingController(TestController):
 
         with freeze_time(fix_date + timedelta(days=10)):
 
+            # 0.a: checking the reporting borders
+            # - up to the first entry 2019-08-04, thus there should be only
+            #   null's in the response
+
+            params = {
+                'realms': 'mydefrealm, mymixrealm',
+                'from': '1970-03-01',
+                'to': '2019-08-04',
+                'status': 'total,active,inactive,assigned,unassigned',
+            }
+            response = self.make_authenticated_request(
+                controller='reporting', action='period', params=params
+                )
+
+            realms = {}
+            for realm in response.json['result']['value']['realms']:
+                realms[realm['name']] = realm
+
+            assert realms['mydefrealm']['maxtokencount'] == {
+                'total': None,
+                'active': None, 'assigned': None,
+                'unassigned': None, 'inactive': None
+                }
+            assert realms['mymixrealm']['maxtokencount'] == {
+                'total': None,
+                'active': None, 'assigned': None,
+                'unassigned': None, 'inactive': None
+                }
+
+            # 0.b: checking the reporting borders
+            # - the first entry 2019-08-04 only, thus there should be only
+            #   null's in the response for the mydefrealm realm and
+            #   mymixrealm has all events but not the unassigned
+
+            params = {
+                'realms': 'mydefrealm, mymixrealm',
+                'from': '2019-08-04',
+                'to': '2019-09-04',
+                'status': 'total,active,inactive,assigned,unassigned',
+            }
+            response = self.make_authenticated_request(
+                controller='reporting', action='period', params=params
+                )
+
+            realms = {}
+            for realm in response.json['result']['value']['realms']:
+                realms[realm['name']] = realm
+
+            assert realms['mydefrealm']['maxtokencount'] == {
+                'total': None,
+                'active': None, 'assigned': None,
+                'unassigned': None, 'inactive': None
+                }
+
+            # enroll and deactivate are two events thus we have one active and
+            # one inactive event, but no unassigned, as the token was initally
+            # assigned
+            assert realms['mymixrealm']['maxtokencount'] == {
+                'total': 1,
+                'active': 1, 'assigned': 1,
+                'unassigned': 0, 'inactive': 1
+                }
+
             # -------------------------------------------------------------- --
 
-            # open start and open ended - today is included
+            # A: include all days - no 'from' and no 'to'
 
             params = {
                 'realms': 'mydefrealm, mymixrealm',
@@ -465,14 +540,14 @@ class TestReportingController(TestController):
                 'unassigned': 1, 'inactive': 2
                 }
             assert realms['mymixrealm']['maxtokencount'] == {
-                'total': 1,
-                'active': 1, 'assigned': 1,
-                'unassigned':-1, 'inactive': 1
+                'total': 2,
+                'active': 1, 'assigned': 2,
+                'unassigned': 0, 'inactive': 2
                 }
 
             # -------------------------------------------------------------- --
 
-            # open ended - today is included
+            # B: open ended: from = '2020-02-20' - no 'to'
 
             params = {
                 'realms': 'mydefrealm, mymixrealm',
@@ -493,13 +568,13 @@ class TestReportingController(TestController):
                 'unassigned': 1, 'inactive': 2
                 }
             assert realms['mymixrealm']['maxtokencount'] == {
-                'total': 1,
-                'active': 1, 'assigned': 1,
-                'unassigned':-1, 'inactive': 1
+                'total': 2,
+                'active': 1, 'assigned': 2,
+                'unassigned': 0, 'inactive': 2
                 }
             # -------------------------------------------------------------- --
 
-            # 2020-03-01 - 'to' is not included
+            # C: exclude last date: no 'from' - 'to': '2020-03-01'
 
             params = {
                 'realms': 'mydefrealm, mymixrealm',
@@ -520,14 +595,14 @@ class TestReportingController(TestController):
                 'unassigned': 1, 'inactive': 2
                 }
             assert realms['mymixrealm']['maxtokencount'] == {
-                'total':-1,
-                'active':-1, 'assigned':-1,
-                'unassigned':-1, 'inactive':-1
+                'total': 1,
+                'active': 1, 'assigned': 1,
+                'unassigned': 0, 'inactive': 1
                 }
 
             # -------------------------------------------------------------- --
 
-            # only the first day, 2020-02-20 - 'to' excludes 2020-02-22
+            # D: only the first day, 2020-02-20 - 'to' excludes 2020-02-22
 
             params = {
                 'realms': 'mydefrealm, mymixrealm',
@@ -546,12 +621,12 @@ class TestReportingController(TestController):
             assert realms['mydefrealm']['maxtokencount'] == {
                 'total': 1,
                 'active': 1, 'assigned': 1,
-                'unassigned':-1, 'inactive':-1
+                'unassigned': 0, 'inactive': 0
                 }
             assert realms['mymixrealm']['maxtokencount'] == {
-                'total':-1,
-                'active':-1, 'assigned':-1,
-                'unassigned':-1, 'inactive':-1
+                'total': 1,
+                'active': 1, 'assigned': 1,
+                'unassigned': 0, 'inactive': 0
                 }
 
     def test_reporting_maximum(self):

@@ -75,10 +75,9 @@ def token_reporting(event, tokenrealms):
                               '%r' % exce)
 
 
-def get_max(realm, start=None, end=None, status='active'):
-    """
-    get the maximum number of tokens (with given status) in a realm
-    from the reporting database
+def get_max_token_count_in_period(realm, start=None, end=None, status='active'):
+    """Search for the maximum token count value in the reporing events
+    in a period with the status and realm.
 
     :param realm: (required) the realm in which we are searching
     :param start: timestamp (default: 1.1.1970)
@@ -93,7 +92,7 @@ def get_max(realm, start=None, end=None, status='active'):
     if status not in STATI:
         raise Exception("unsupported status: %r" % status)
 
-    result = Session.query(func.max(Reporting.count)).filter(
+    token_max_count = Session.query(func.max(Reporting.count)).filter(
         and_(
             and_(
                 Reporting.timestamp >= start,
@@ -104,7 +103,40 @@ def get_max(realm, start=None, end=None, status='active'):
             )
         ).scalar()
 
-    return result or -1
+    if token_max_count != None:
+        return token_max_count
+
+    return -1
+
+
+def get_last_token_count_before_date(realm, before_date=None, status='active'):
+    """Search for latest reporting entry that were set before the given date.
+
+    :param realm: (required)
+            the realm in which we are searching
+    :param before_date: (required) timestamp
+            evaluate all entries before the given date
+    :param status: (default: 'active')
+            the status that the tokens should have
+    :return: counter:
+            token count from the reporting event with given status in
+            realm or None
+    """
+    if status not in STATI:
+        raise Exception("unsupported status: %r" % status)
+
+    last_token_count_event = Session.query(Reporting).filter(
+        and_(
+            Reporting.timestamp < before_date,
+            Reporting.realm == realm,
+            Reporting.parameter == status,
+            )
+        ).order_by(Reporting.timestamp.desc()).first()
+
+    if last_token_count_event:
+        return last_token_count_event.count
+
+    return None
 
 
 def delete(realms, status, date=None):

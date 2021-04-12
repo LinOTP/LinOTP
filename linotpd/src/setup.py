@@ -77,7 +77,7 @@ setup(
         "Pylons>=0.9.7",
         "PasteScript<=1.7.5",
         "WebOb",
-        "SQLAlchemy>=0.6",
+        "SQLAlchemy<1.4",
         "docutils>=0.4",
         "simplejson>=2.0",
         "pycryptodomex>=3.4",
