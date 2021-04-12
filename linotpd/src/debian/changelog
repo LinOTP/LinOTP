@@ -5,14 +5,15 @@ linotp (2.12.4.dev0-1) buster; urgency=medium
 
  -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Wed, 05 Mar 2021 11:44:20 +0100
 
-linotp (2.12.3~rc0-1) buster; urgency=medium
+linotp (2.12.3-1) buster; urgency=medium
 
   Feature:
   * Server: add API /reporting/period to query reporting for a period in a
     range between 'from' and 'to', where the 'from' date is included in the
-    range and the 'to' date is not included.
+    range and the 'to' date is not included. The API will search for the last
+    repoting entry before the period if no entry for the given period is found.
 
- -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Wed, 24 Feb 2021 15:06:00 +0100
+ -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Tue, 06 Apr 2021 14:28:00 +0100
 
 linotp (2.12.2-1) buster; urgency=medium
 
