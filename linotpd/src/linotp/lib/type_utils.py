@@ -45,19 +45,19 @@ class DurationParsingException(Exception):
     pass
 
 duration_regex = re.compile(r'((?P<weeks>\d+?)(w|week|weeks))?'
-                            '((?P<days>\d+?)(d|day|days))?'
-                            '((?P<hours>\d+?)(h|hour|hours))?'
-                            '((?P<minutes>\d+?)(m|minute|minutes))?'
-                            '((?P<seconds>\d+?)(s|second|seconds))?$')
+                            r'((?P<days>\d+?)(d|day|days))?'
+                            r'((?P<hours>\d+?)(h|hour|hours))?'
+                            r'((?P<minutes>\d+?)(m|minute|minutes))?'
+                            r'((?P<seconds>\d+?)(s|second|seconds))?$')
 
 
 iso8601_duration_regex = re.compile(r'P((?P<years>\d+)Y)?'
-                                    '((?P<months>\d+)M)?'
-                                    '((?P<weeks>\d+)W)?'
-                                    '((?P<days>\d+)D)?'
-                                    '(T((?P<hours>\d+)H)?'
-                                    '((?P<minutes>\d+)M)?'
-                                    '((?P<seconds>\d+)S)?)?')
+                                    r'((?P<months>\d+)M)?'
+                                    r'((?P<weeks>\d+)W)?'
+                                    r'((?P<days>\d+)D)?'
+                                    r'(T((?P<hours>\d+)H)?'
+                                    r'((?P<minutes>\d+)M)?'
+                                    r'((?P<seconds>\d+)S)?)?')
 
 def parse_duration(duration_str, time_delta_compliant=False):
     """
@@ -424,3 +424,25 @@ def parse_timeout(timeout_val, seperator=','):
         return timeout_val
 
     raise ValueError('unsupported timeout format')
+
+
+def convert_to_datetime(date_str, time_formats):
+    '''Convert a string to a datetime object by one of the time format strings.
+
+    :param date_str: date string
+    :param time_formats: list of time formats, which the date string should match
+    '''
+    if not isinstance(date_str, str):
+        raise Exception("given parameter is not a string")
+
+    err = []
+    for time_format_string in time_formats:
+        try:
+            date_obj = datetime.strptime(date_str, time_format_string)
+            return date_obj
+        except ValueError as exx:
+            err.append("%r" % exx)
+
+    raise Exception(
+        "Failed to convert start time paramter to timestamp %r" % err
+        )

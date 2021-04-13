@@ -275,6 +275,30 @@ linotp (2.90rc0-1) buster-dev; urgency=low
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 23 Jan 2020 11:42:00 +0200
 
+linotp (2.12.4.dev0-1) buster; urgency=medium
+
+  Fix:
+  * Include Readme.rst in packaging artifacts
+
+ -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Wed, 05 Mar 2021 11:44:20 +0100
+
+linotp (2.12.3~rc0-1) buster; urgency=medium
+
+  Feature:
+  * Server: add API /reporting/period to query reporting for a period in a
+    range between 'from' and 'to', where the 'from' date is included in the
+    range and the 'to' date is not included.
+
+ -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Wed, 24 Feb 2021 15:06:00 +0100
+
+linotp (2.12.2-1) buster; urgency=medium
+
+  Fix:
+  * Server: Make rollout token behaviour consistent when used for validate
+    workflow (description and cleanup behaviour).
+
+ -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Mon, 15 Feb 2021 12:22:00 +0100
+
 linotp (2.12.1-1) buster; urgency=low
 
   Fix:
@@ -288,7 +312,7 @@ linotp (2.12.1-1) buster; urgency=low
   Doc:
   * Update Readme.rst with latest installation instructions
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 23 Oct 2020 12:04:46 +0200
+ -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Fri, 23 Oct 2020 12:04:46 +0200
 
 linotp (2.12-1) buster; urgency=low
 
