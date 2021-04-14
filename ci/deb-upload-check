@@ -12,7 +12,7 @@
 #     - deb-upload-check dput ./artifacts/*.changes
 #     ...
 #
-# Use "-r REPO-URL", "-d DIST" (usually "stretch"), "-c COMPONENT"
+# Use "-r REPO-URL", "-d DIST" (usually "buster"), "-c COMPONENT"
 # (usually "sva3"), and "-a ARCHITECTURE" (usually "amd64") as
 # required. The "*.changes" file is assumed to be in "./artifacts";
 # use "-A ARTIFACTS-DIR" to override.
@@ -23,7 +23,7 @@ set -ex
 OPTIND=1
 
 repo=http://unknown
-dist=stretch
+dist=buster
 component=linotp
 arch=amd64
 artifacts=./artifacts
