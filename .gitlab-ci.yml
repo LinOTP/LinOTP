@@ -71,8 +71,9 @@ build-test-environment:debian-buster:
   extends: .build-test-environment-debian
   allow_failure: true
   variables:
-    DEPENDENCY_SOURCE: ""
-    DEPENDENCY_GPG_KEYID: ""
+    DEPENDENCY_SOURCE: "http://www.linotp.org/apt/debian"
+    DEPENDENCY_COMPONENT: linotp
+    DEPENDENCY_GPG_KEYID: 913DFF12F86258E5
     DEBIAN_RELEASE_NAME: buster
 
 .test-debian:
@@ -308,8 +309,9 @@ build-linotp-docker-image:buster:
   extends: .build-linotp-docker-image
   allow_failure: true
   variables:
-    DEPENDENCY_SOURCE: ""
-    DEPENDENCY_GPG_KEYID: ""
+    DEPENDENCY_SOURCE: "http://www.linotp.org/apt/debian"
+    DEPENDENCY_COMPONENT: linotp
+    DEPENDENCY_GPG_KEYID: "913DFF12F86258E5"
     DEBIAN_RELEASE_NAME: buster
 
 .e2e-test:
