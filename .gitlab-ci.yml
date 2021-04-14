@@ -69,7 +69,6 @@ build-test-environment:debian-jessie:
 
 build-test-environment:debian-buster:
   extends: .build-test-environment-debian
-  allow_failure: true
   variables:
     DEPENDENCY_SOURCE: "http://www.linotp.org/apt/debian"
     DEPENDENCY_COMPONENT: linotp
@@ -114,7 +113,6 @@ unit-test:debian-jessie:
 
 unit-test:debian-buster:
   extends: .test-debian
-  allow_failure: true
   stage: test
   variables:
     DEBIAN_RELEASE_NAME: buster
@@ -202,7 +200,6 @@ func:jessie:
 
 functional-test:buster:
   extends: .functional-test
-  allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
@@ -213,7 +210,6 @@ functional-special-test:jessie:
 
 functional-special-test:buster:
   extends: .functional-special-test
-  allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
@@ -238,7 +234,6 @@ coverage-report:jessie:
 
 coverage-report:buster:
   extends: .coverage-report
-  allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
@@ -307,7 +302,6 @@ build-linotp-docker-image:jessie:
 
 build-linotp-docker-image:buster:
   extends: .build-linotp-docker-image
-  allow_failure: true
   variables:
     DEPENDENCY_SOURCE: "http://www.linotp.org/apt/debian"
     DEPENDENCY_COMPONENT: linotp
