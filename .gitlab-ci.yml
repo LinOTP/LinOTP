@@ -1,6 +1,6 @@
 variables:
   LANG: C.UTF-8
-  IMAGE_NAME: linotp-build-test-environment_stretch
+  IMAGE_NAME: linotp-build-test-environment_buster
   BUILD_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_COMMIT_REF_NAME
   LATEST_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_PIPELINE_ID
   DOCKERFY_URL: http://avocado.corp.lsexperts.de/jenkins/dockerfy/dockerfy
@@ -58,15 +58,6 @@ stages:
     - docker push "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
     - docker push "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
     - docker images
-
-build-test-environment:debian-stretch:
-  extends: .build-test-environment-debian
-  variables:
-    DEPENDENCY_SOURCE: http://avocado.corp.lsexperts.de/deb-repo
-    DEPENDENCY_COMPONENT: kideps
-    DEPENDENCY_GPG_KEYID: ""
-    DEPENDENCY_GPG_KEY_URL: http://avocado.corp.lsexperts.de/deb-repo/archive-key.asc
-    DEBIAN_RELEASE_NAME: stretch
 
 build-test-environment:debian-jessie:
   extends: .build-test-environment-debian
@@ -272,11 +263,6 @@ build:jessie:
   variables:
     DEBIAN_RELEASE_NAME: jessie
 
-build:stretch:
-  extends: .build-debs
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
-
 build:buster:
   extends: .build-debs
   variables:
@@ -317,15 +303,6 @@ build-linotp-docker-image:jessie:
     DEPENDENCY_COMPONENT: linotp
     DEPENDENCY_GPG_KEYID: 913DFF12F86258E5
     DEBIAN_RELEASE_NAME: jessie
-
-build-linotp-docker-image:stretch:
-  extends: .build-linotp-docker-image
-  variables:
-    DEPENDENCY_SOURCE: http://avocado.corp.lsexperts.de/deb-repo
-    DEPENDENCY_COMPONENT: kideps
-    DEPENDENCY_GPG_KEYID: ""
-    DEPENDENCY_GPG_KEY_URL: http://avocado.corp.lsexperts.de/deb-repo/archive-key.asc
-    DEBIAN_RELEASE_NAME: stretch
 
 build-linotp-docker-image:buster:
   extends: .build-linotp-docker-image
