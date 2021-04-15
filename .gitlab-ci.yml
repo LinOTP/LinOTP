@@ -175,7 +175,8 @@ unit-test:debian-buster:
     - cat func_chunk_04
     - cat func_chunk_05
   script:
-    - bash -c "find linotp/tests/functional -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
+    - echo $CI_NODE_INDEX
+    - bash -c "cat func_chunk_0$CI_NODE_INDEX | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
   artifacts:
     paths:
       - coverage/${DEBIAN_RELEASE_NAME}/
@@ -188,27 +189,24 @@ unit-test:debian-buster:
   script:
     - bash -c "find linotp/tests/functional_special -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
 
-func:jessie:
+func-test:jessie:
   extends: .functional-test
-  stage: test
   parallel: 5
-  script:
-    - echo $CI_NODE_INDEX
-    - bash -c "cat func_chunk_0$CI_NODE_INDEX | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
   variables:
     DEBIAN_RELEASE_NAME: jessie
 
-functional-test:buster:
+func-test:buster:
   extends: .functional-test
+  parallel: 5
   variables:
     DEBIAN_RELEASE_NAME: buster
 
-functional-special-test:jessie:
+func-special-test:jessie:
   extends: .functional-special-test
   variables:
     DEBIAN_RELEASE_NAME: jessie
 
-functional-special-test:buster:
+func-special-test:buster:
   extends: .functional-special-test
   variables:
     DEBIAN_RELEASE_NAME: buster
