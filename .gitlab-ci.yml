@@ -134,8 +134,9 @@ unit-test:debian-buster:
     SHELL: /bin/bash
   before_script:
     - apt-get update
-    - test "${DEBIAN_RELEASE_NAME}" != "buster" && apt-get install --yes --no-install-recommends parallel mysql-client python-mysqldb python-imaging || apt-get install --yes --no-install-recommends python-pil default-mysql-client python-mysqldb
-    - test "${DEBIAN_RELEASE_NAME}" == "jessie" && apt-get install --yes --no-install-recommends libmysqlclient-dev || apt-get install  --yes --no-install-recommends default-libmysqlclient-dev
+    - test "${DEBIAN_RELEASE_NAME}" == "jessie" && apt-get install --yes --no-install-recommends libmysqlclient-dev mysql-client python-imaging
+    - test "${DEBIAN_RELEASE_NAME}" != "jessie" && apt-get install --yes --no-install-recommends default-libmysqlclient-dev default-mysql-client python-pil
+    - apt-get install --yes --no-install-recommends parallel python-mysqldb
     - cd linotpd/src
     - pip install --upgrade 'pip<21'
     - apt-get remove --yes python-pip; hash -d pip
@@ -143,7 +144,6 @@ unit-test:debian-buster:
     - pip install wheel
     - pip install freezegun
     - pip install mock
-    - pip install mysql
     - pip install unittest2
     - pip install nose nose-testconfig
     - pip install pyrad
