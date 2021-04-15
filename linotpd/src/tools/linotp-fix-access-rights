@@ -50,7 +50,6 @@ def fix_rights(file, user):
     config.set("app:main", "here", config_path)
     cache_dir = config.get('app:main', "cache_dir")
     enckey = config.get("DEFAULT", "linotpSecretFile")
-    who_ini = config.get("app:main", "who.config_file")
     logfile = os.path.abspath(ast.literal_eval(config.get("handler_file", "args"))[0])
 
     # TODO: which home directory?
@@ -76,18 +75,11 @@ def fix_rights(file, user):
         print "Failed to fix access rights for %s" % enckey
 
     try:
-        call("chmod 400 %s" % who_ini, shell=True)
-        call("chown %s %s" % (user, who_ini), shell=True)
-        print "Fixed access rights for %s" % who_ini
-    except Exception, e:
-        print "Failed to fix access rights for %s" % who_ini
-
-    try:
         call("chmod 400 %s" % file, shell=True)
         call("chown %s %s" % (user, file), shell=True)
         print "Fixed access rights for %s" % file
     except Exception, e:
-        print "Failed to fix access rights for %s" % who_ini
+        print "Failed to fix access rights for %s" % file
 
     try:
         call("chmod -R 644 %s" % os.path.dirname(logfile), shell=True)

@@ -171,11 +171,6 @@ sqlalchemy.url = mysql://linotp2:1234@localhost/LinOTP2
 
 sqlalchemy.pool_recycle = 3600
 
-who.config_file = %(here)s/who.ini
-who.log_level = warning
-who.log_file = /var/log/linotp/linotp.log
-#who.generate_random_secret = true
-
 
 full_stack = true
 static_files = true

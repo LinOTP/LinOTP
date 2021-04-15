@@ -1747,8 +1747,7 @@ def get_authenticated_user(username, realm, password=None,
     '''
     check the username and password against a userstore.
 
-    remark: the method is called in the context of repoze.who
-            during authentication and during auto_enrollToken/auto_assignToken
+    remark: the method is used for auto_enrollToken/auto_assignToken
 
     :param username: the user login name
     :param realm: the realm, where the user belongs to

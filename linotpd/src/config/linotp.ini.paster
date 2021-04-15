@@ -65,7 +65,7 @@ linotpSecretFile = %(here)s/dummy-encKey
 # These are the settings for the RADIUS Token
 # The location of the RADIUS dictionary file
 radius.dictfile= %(here)s/dictionary
-# The NAS Identifier of your LinOTP server, 
+# The NAS Identifier of your LinOTP server,
 # that is sent to the RADIUS server
 radius.nas_identifier = LinOTP
 
@@ -85,11 +85,6 @@ sqlalchemy.url = sqlite:///%(here)s/token.sqlite
 sqlalchemy.pool_recycle = 3600
 full_stack = true
 static_files = true
-
-who.config_file = %(here)s/who.ini
-who.log_level = warning
-who.log_file = %(here)s/linotp.log
-#who.generate_random_secret = true
 
 
 cache_dir = %(here)s/data

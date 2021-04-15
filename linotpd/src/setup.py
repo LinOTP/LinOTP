@@ -134,7 +134,6 @@ setup(
                 'config/linotp.ini.example',
                 'config/linotp.ini.paster',
                 'config/linotpapp.wsgi',
-                'config/who.ini',
                 'config/dictionary',
                 'config/keyidentity-push-ca-bundle.crt'
                 ]
