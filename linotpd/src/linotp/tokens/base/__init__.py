@@ -441,36 +441,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         return validity
 
-    def is_challenge_valid(self, challenge=None):
-        '''
-        This method verifies if the given challenge is still valid.
-
-        The default implementation checks, if the challenge start is in the
-        default validity time window.
-
-        **Please note**: This method does not check the response for the
-        challenge itself. This is done by the method
-        :py:meth:`~linotp.tokens.base.TokenClass.checkResponse4Challenge`.
-        E.g. this very method ``is_challenge_valid`` is used by the method
-        :py:meth:`~linotp.tokens.base.TokenClass.challenge_janitor`
-        to clean up old challenges.
-
-        :param challenge: The challenge to be checked
-        :type challenge: challenge object
-        :return: true or false
-        '''
-
-        validity = self.get_challenge_validity()
-        ret = False
-
-        if challenge is not None:
-            c_start_time = challenge.get('timestamp')
-            c_now = datetime.datetime.now()
-            if c_now < c_start_time + datetime.timedelta(seconds=validity):
-                ret = True
-
-        return ret
-
     def initChallenge(self, transactionid, challenges=None, options=None):
         """
         This method initializes the challenge.
