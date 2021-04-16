@@ -74,7 +74,7 @@ class TestImportUser(TestController):
     def setUp(self):
 
         self.delete_all_realms()
-        self.delete_all_policies()
+        self.delete_all_policies(auth_user='superadmin')
         self.delete_all_resolvers()
         self.dropTable()
 
@@ -471,5 +471,100 @@ class TestImportUser(TestController):
         self.assertTrue("data:image" in img, response)
 
         return
+
+    def test_00000_import_user_requires_system_write(self):
+        """Verify that we require system:write permission to import users."""
+
+        # setup the admin and superadmin system policies
+
+        params = {
+            'name': 'superadmin_rights',
+            'scope': 'system',
+            'realm': '*',
+            'action': '*',
+            'user': 'superadmin'
+        }
+
+        response = self.make_system_request(
+            action='setPolicy', params=params, auth_user='superadmin'
+            )
+        self.assertTrue('"status": true' in response, response)
+
+        params = {
+            'name': 'admin_rights',
+            'scope': 'system',
+            'realm': '*',
+            'action': 'read',
+            'user': 'admin'
+        }
+
+        response = self.make_system_request(
+            action='setPolicy', params=params, auth_user='superadmin'
+            )
+        self.assertTrue('"status": true' in response, response)
+
+        # setup the tools policy
+
+        params = {
+            'name': 'tools_permission',
+            'scope': 'tools',
+            'realm': '*',
+            'action': 'import_users, *',
+            'user': '*'
+        }
+
+        response = self.make_system_request(
+            action='setPolicy', params=params, auth_user='superadmin'
+            )
+        self.assertTrue('"status": true' in response, response)
+
+        # verify that admin cannot import users
+
+        try:
+
+            def_passwd_file = os.path.join(self.fixture_path, 'def-passwd')
+
+            with open(def_passwd_file, "r") as f:
+                content = f.read()
+
+            upload_files = [("file", "user_list", content)]
+            params = {'resolver': self.resolver_name,
+                      'dryrun': False,
+                      'format': 'password',
+                      'delimiter': ',',
+                      'quotechar': '"',
+                      }
+
+            response = self.make_tools_request(
+                action='import_users', params=params,
+                upload_files=upload_files, auth_user='admin'
+                )
+
+            jresp = json.loads(response.body)
+            msg = "You are not allowed to write"
+            assert msg in jresp['result']['error']['message']
+
+            # verify that superadmin can import users
+
+            response = self.make_tools_request(
+                action='import_users', params=params, upload_files=upload_files,
+                auth_user='superadmin'
+                )
+
+            jresp = json.loads(response.body)
+            assert jresp['result']['status']
+            assert 'error' not in jresp['result']
+
+        finally:
+
+            # cleanup the sysadmin policies, which will fail
+            # by delete_all_policies
+
+            for policy in [
+                'tools_permission', 'admin_rights', 'superadmin_rights'
+                ]:
+                self.delete_policy(policy, auth_user='superadmin')
+
+            self.delete_all_policies(auth_user='superadmin')
 
 # eof ########################################################################
