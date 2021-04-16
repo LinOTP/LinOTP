@@ -8,7 +8,6 @@ NEW_VERSION='@@@DEB_VERSION@@@'
 
 APACHE_CONFIG=/etc/linotp2/apache-servername.conf
 LINOTP_INI=/etc/linotp2/linotp.ini
-WHO_INI=/etc/linotp2/who.ini
 ENCKEYFILE=/etc/linotp2/encKey
 REALM="LinOTP2 admin area"
 DIGESTFILE=/etc/linotp2/admins
@@ -490,11 +489,6 @@ case "$1" in
 
 	# TODO: probably not needed
 	chown -R "$LINOTP_USER" "$LOGDIR"
-
-	# adapt who.ini
-	sed -ie "s/^secret\ =\ .*/secret\ =\ $(pwgen 16 1)/" "$WHO_INI"
-	chown "$LINOTP_USER" "$WHO_INI"
-	chmod 600 "$WHO_INI"
 
 	# remove the template cache, as the templates might have changed
 	# TODO: probably not needed

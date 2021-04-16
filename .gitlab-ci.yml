@@ -1,6 +1,6 @@
 variables:
   LANG: C.UTF-8
-  IMAGE_NAME: linotp-build-test-environment_stretch
+  IMAGE_NAME: linotp-build-test-environment_buster
   BUILD_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_COMMIT_REF_NAME
   LATEST_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_PIPELINE_ID
   DOCKERFY_URL: http://avocado.corp.lsexperts.de/jenkins/dockerfy/dockerfy
@@ -59,15 +59,6 @@ stages:
     - docker push "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
     - docker images
 
-build-test-environment:debian-stretch:
-  extends: .build-test-environment-debian
-  variables:
-    DEPENDENCY_SOURCE: http://avocado.corp.lsexperts.de/deb-repo
-    DEPENDENCY_COMPONENT: kideps
-    DEPENDENCY_GPG_KEYID: ""
-    DEPENDENCY_GPG_KEY_URL: http://avocado.corp.lsexperts.de/deb-repo/archive-key.asc
-    DEBIAN_RELEASE_NAME: stretch
-
 build-test-environment:debian-jessie:
   extends: .build-test-environment-debian
   variables:
@@ -78,10 +69,10 @@ build-test-environment:debian-jessie:
 
 build-test-environment:debian-buster:
   extends: .build-test-environment-debian
-  allow_failure: true
   variables:
-    DEPENDENCY_SOURCE: ""
-    DEPENDENCY_GPG_KEYID: ""
+    DEPENDENCY_SOURCE: "http://www.linotp.org/apt/debian"
+    DEPENDENCY_COMPONENT: linotp
+    DEPENDENCY_GPG_KEYID: 913DFF12F86258E5
     DEBIAN_RELEASE_NAME: buster
 
 .test-debian:
@@ -122,7 +113,6 @@ unit-test:debian-jessie:
 
 unit-test:debian-buster:
   extends: .test-debian
-  allow_failure: true
   stage: test
   variables:
     DEBIAN_RELEASE_NAME: buster
@@ -144,8 +134,9 @@ unit-test:debian-buster:
     SHELL: /bin/bash
   before_script:
     - apt-get update
-    - test "${DEBIAN_RELEASE_NAME}" != "buster" && apt-get install --yes --no-install-recommends parallel mysql-client python-mysqldb python-imaging || apt-get install --yes --no-install-recommends python-pil default-mysql-client python-mysqldb
-    - test "${DEBIAN_RELEASE_NAME}" == "jessie" && apt-get install --yes --no-install-recommends libmysqlclient-dev || apt-get install  --yes --no-install-recommends default-libmysqlclient-dev
+    - test "${DEBIAN_RELEASE_NAME}" == "jessie" && apt-get install --yes --no-install-recommends libmysqlclient-dev mysql-client python-imaging
+    - test "${DEBIAN_RELEASE_NAME}" != "jessie" && apt-get install --yes --no-install-recommends default-libmysqlclient-dev default-mysql-client python-pil
+    - apt-get install --yes --no-install-recommends parallel python-mysqldb
     - cd linotpd/src
     - pip install --upgrade 'pip<21'
     - apt-get remove --yes python-pip; hash -d pip
@@ -153,7 +144,6 @@ unit-test:debian-buster:
     - pip install wheel
     - pip install freezegun
     - pip install mock
-    - pip install mysql
     - pip install unittest2
     - pip install nose nose-testconfig
     - pip install pyrad
@@ -185,7 +175,8 @@ unit-test:debian-buster:
     - cat func_chunk_04
     - cat func_chunk_05
   script:
-    - bash -c "find linotp/tests/functional -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
+    - echo $CI_NODE_INDEX
+    - bash -c "cat func_chunk_0$CI_NODE_INDEX | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
   artifacts:
     paths:
       - coverage/${DEBIAN_RELEASE_NAME}/
@@ -198,30 +189,25 @@ unit-test:debian-buster:
   script:
     - bash -c "find linotp/tests/functional_special -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
 
-func:jessie:
+func-test:jessie:
   extends: .functional-test
-  stage: test
   parallel: 5
-  script:
-    - echo $CI_NODE_INDEX
-    - bash -c "cat func_chunk_0$CI_NODE_INDEX | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
   variables:
     DEBIAN_RELEASE_NAME: jessie
 
-functional-test:buster:
+func-test:buster:
   extends: .functional-test
-  allow_failure: true
+  parallel: 5
   variables:
     DEBIAN_RELEASE_NAME: buster
 
-functional-special-test:jessie:
+func-special-test:jessie:
   extends: .functional-special-test
   variables:
     DEBIAN_RELEASE_NAME: jessie
 
-functional-special-test:buster:
+func-special-test:buster:
   extends: .functional-special-test
-  allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
@@ -246,7 +232,6 @@ coverage-report:jessie:
 
 coverage-report:buster:
   extends: .coverage-report
-  allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
@@ -271,11 +256,6 @@ build:jessie:
   extends: .build-debs
   variables:
     DEBIAN_RELEASE_NAME: jessie
-
-build:stretch:
-  extends: .build-debs
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
 
 build:buster:
   extends: .build-debs
@@ -318,21 +298,12 @@ build-linotp-docker-image:jessie:
     DEPENDENCY_GPG_KEYID: 913DFF12F86258E5
     DEBIAN_RELEASE_NAME: jessie
 
-build-linotp-docker-image:stretch:
-  extends: .build-linotp-docker-image
-  variables:
-    DEPENDENCY_SOURCE: http://avocado.corp.lsexperts.de/deb-repo
-    DEPENDENCY_COMPONENT: kideps
-    DEPENDENCY_GPG_KEYID: ""
-    DEPENDENCY_GPG_KEY_URL: http://avocado.corp.lsexperts.de/deb-repo/archive-key.asc
-    DEBIAN_RELEASE_NAME: stretch
-
 build-linotp-docker-image:buster:
   extends: .build-linotp-docker-image
-  allow_failure: true
   variables:
-    DEPENDENCY_SOURCE: ""
-    DEPENDENCY_GPG_KEYID: ""
+    DEPENDENCY_SOURCE: "http://www.linotp.org/apt/debian"
+    DEPENDENCY_COMPONENT: linotp
+    DEPENDENCY_GPG_KEYID: "913DFF12F86258E5"
     DEBIAN_RELEASE_NAME: buster
 
 .e2e-test:
