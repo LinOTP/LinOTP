@@ -286,13 +286,11 @@ class HmacTokenClass(TokenClass):
 
         '''
         otp_counter = -1
-        transid = None
         matching = None
         matching_challenges = []
 
-        if 'transactionid' in options or 'state' in options:
-            ## fetch the transactionid
-            transid = options.get('transactionid', options.get('state', None))
+        # fetch the transactionid
+        transid = options.get('transactionid', options.get('state', None))
 
         if not transid and self.authenticated is not None:
             pin_match, otp_counter, reply = self.authenticated

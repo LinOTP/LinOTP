@@ -543,7 +543,7 @@ class EmailTokenClass(HmacTokenClass):
         :return: tuple of (otpcounter and the list of matching challenges)
 
         """
-        transaction_id = None
+
         otp_counter = -1
         matching_challenges = []
 
@@ -551,11 +551,9 @@ class EmailTokenClass(HmacTokenClass):
             # There are no challenges for this token
             return -1, []
 
-        if options and ('transactionid' in options or 'state' in options):
-            # fetch the transactionid
-            transaction_id = options.get('transactionid', None)
-            if transaction_id is None:
-                transaction_id = options.get('state', None)
+        transaction_id = options and options.get(
+            'transactionid', options.get('state', None)
+            )
 
         if transaction_id:
             otp = passw

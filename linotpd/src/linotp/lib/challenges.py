@@ -307,10 +307,9 @@ class Challenges(object):
     @staticmethod
     def get_challenges(token=None, transid=None, options=None, filter_open=False):
 
-        if not options:
-            options = {}
+        state = options and options.get(
+            'state', options.get('transactionid', None))
 
-        state = options.get('state', options.get('transactionid', None))
         if not transid:
             transid = state
 
