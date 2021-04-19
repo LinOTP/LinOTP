@@ -5,6 +5,7 @@ linotp (2.12.4.dev0-1) buster; urgency=medium
   * Import User dialog layout fix
   * Fix problem in help text output of linotp-create-htdigest script
   * No longer deploy obsolete who.ini config file
+  * Forward tokens support multiple challenges
 
  -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Wed, 05 Mar 2021 11:44:20 +0100
 
