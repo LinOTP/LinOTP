@@ -330,6 +330,11 @@ class Challenges(object):
                 log.info("Skipping non-open challenge: %r", challenge)
                 continue
 
+            if not Challenges.verify_checksum(challenge):
+                log.error("Skipping challenge: Checksum verification failure"
+                          "for challenge %r.", challenge)
+                continue
+
             # lookup the validty time of the challenge which is per token
             serial = challenge.tokenserial
             tokens = linotp.lib.token.getTokens4UserOrSerial(serial=serial)

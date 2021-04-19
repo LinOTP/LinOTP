@@ -387,10 +387,6 @@ class ValidationHandler(object):
         transactions = {}
         for ch in challenges:
 
-            # only look for challenges that are not compromised
-            if not Challenges.verify_checksum(ch):
-                continue
-
             # is the requester authorized
             challenge_serial = ch.getTokenSerial()
             if serial and challenge_serial != serial:

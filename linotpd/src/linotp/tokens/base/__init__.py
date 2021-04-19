@@ -689,14 +689,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         otp = passw
         self.transId = options.get('transactionid', options.get('state', None))
 
-        # only check those challenges, which currently have not been verified
-        check_challenges = []
-        for ch in challenges:
-            if Challenges.verify_checksum(ch) and ch.is_open():
-                check_challenges.append(ch)
-
         (otpcount, matching_challenges) = self.checkResponse4Challenge(
-            user, otp, options=options, challenges=check_challenges)
+            user, otp, options=options, challenges=challenges)
 
         if otpcount >= 0:
             self.matching_challenges = matching_challenges
