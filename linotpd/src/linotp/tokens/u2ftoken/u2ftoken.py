@@ -578,36 +578,31 @@ class U2FTokenClass(TokenClass):
         :type challenges: list
         :return: tuple of (otpcounter and the list of matching challenges)
         """
+        if not challenges:
+            return -1, []
+
         otp_counter = -1
-        transid = None
-        matching = None
         matching_challenges = []
 
-        # fetch the transactionid
-        if 'transactionid' in options:
-            transid = options.get('transactionid', None)
+        for challenge in challenges:
+            # Split pin from otp and check the resulting pin and otpval
+            (pin, otpval) = self.splitPinPass(passw)
+            if not check_pin(self, pin, user=user, options=options):
+                otpval = passw
+            # The U2F checkOtp functions needs to know the saved challenge
+            # to compare the received challenge value to the saved one,
+            # thus we add the transactionid to the options
+            options['transactionid'] = challenge.transid
+            options['challenges'] = challenges
 
-        # check if the transactionid is in the list of challenges
-        if transid is not None:
-            for challenge in challenges:
-                if Challenges.is_same_transaction(challenge, transid):
-                    matching = challenge
-                    break
-            if matching is not None:
-                # Split pin from otp and check the resulting pin and otpval
-                (pin, otpval) = self.splitPinPass(passw)
-                if not check_pin(self, pin, user=user, options=options):
-                    otpval = passw
-                # The U2F checkOtp functions needs to know the saved challenge
-                # to compare the received challenge value to the saved one,
-                # thus we add the transactionid to the options
-                options['transactionid'] = transid
-                options['challenges'] = challenges
-                otp_counter = check_otp(self, otpval, options=options)
-                if otp_counter >= 0:
-                    matching_challenges.append(matching)
+            _otp_counter = check_otp(self, otpval, options=options)
+            if _otp_counter >= 0:
+                matching_challenges.append(challenge)
 
-        return (otp_counter, matching_challenges)
+                # ensure that a positive otp_counter is preserved
+                otp_counter = _otp_counter
+
+        return otp_counter, matching_challenges
 
     def checkOtp(self,
                  passw,

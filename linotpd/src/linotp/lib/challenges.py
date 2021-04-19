@@ -99,25 +99,6 @@ class Challenges(object):
         return challenges
 
     @staticmethod
-    def is_same_transaction(challenge, transaction_id):
-        """
-        helper method to check if challenge belongs to transaction set
-
-        :param challenge: a challenge object
-        :param transaction_id: the transaction id form the request
-
-        :return: boolean
-        """
-        c_id = challenge.getTransactionId()
-        if c_id == transaction_id:
-            return True
-        elif '.' in c_id:
-            (transid, postfix) = c_id.split('.')
-            if transid == transaction_id and len(postfix) == 2:
-                return True
-        return False
-
-    @staticmethod
     def create_challenge(token, options=None, challenge_id=None, id_postfix=''):
         """
         dedicated method to create a challenge to support the implementation

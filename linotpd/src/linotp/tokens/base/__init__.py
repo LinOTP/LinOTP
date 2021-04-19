@@ -476,7 +476,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
     def checkResponse4Challenge(self, user, passw, options=None,
                                 challenges=None):
-        '''
+        """
         This method verifies if the given ``passw`` matches any existing
         ``challenge`` of the token.
 
@@ -499,28 +499,20 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :type challenges: list
         :return: tuple of (otpcounter and the list of matching challenges)
 
-        '''
+        """
+        if not challenges:
+            return -1, []
+
         otp_counter = -1
-        transid = None
-        matching = None
         matching_challenges = []
 
-        if 'transactionid' in options or 'state' in options:
-            # fetch the transactionid
-            transid = options.get('transactionid', None)
-            if transid is None:
-                transid = options.get('state', None)
+        for challenge in challenges:
+            _otp_counter = check_otp(self, passw, options=options)
+            if _otp_counter >= 0:
+                matching_challenges.append(challenge)
 
-        # check if the transactionid is in the list of challenges
-        if transid is not None:
-            for challenge in challenges:
-                if Challenges.is_same_transaction(challenge, transid):
-                    matching = challenge
-                    break
-            if matching is not None:
-                otp_counter = check_otp(self, passw, options=options)
-                if otp_counter >= 0:
-                    matching_challenges.append(matching)
+                # ensure that a positive otp_counter is preserved
+                otp_counter = _otp_counter
 
         return (otp_counter, matching_challenges)
 
