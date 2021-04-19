@@ -325,11 +325,10 @@ class Challenges(object):
         valid_chalenges = []
 
         for challenge in challenges:
-            # if we should filter the
-            if filter_open:
-                stat = challenge.is_open()
-                if not stat:
-                    continue
+
+            if filter_open and not challenge.is_open():
+                log.info("Skipping non-open challenge: %r", challenge)
+                continue
 
             # lookup the validty time of the challenge which is per token
             serial = challenge.tokenserial
