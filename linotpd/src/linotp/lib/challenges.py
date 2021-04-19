@@ -316,13 +316,10 @@ class Challenges(object):
         if not token and not transid:
             raise Exception("unqualified query")
 
-        # transaction ids are handled preferred
-        if transid:
-            challenges = Challenges.lookup_challenges(transid=transid)
-        elif token:
-            challenges = Challenges.lookup_challenges(serial=token.getSerial())
-        else:
-            challenges = []
+        serial = token and token.getSerial()
+
+        challenges = Challenges.lookup_challenges(
+            serial=serial, transid=transid)
 
         expired_challenges = []
         valid_chalenges = []
