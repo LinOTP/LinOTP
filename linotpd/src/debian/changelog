@@ -3,12 +3,12 @@ linotp (2.12.4.dev0-1) buster; urgency=medium
   Fix:
   * Include Readme.rst in packaging artifacts
   * Import User dialog layout fix
-  * Fix problem in help text output of linotp-create-htdigest script
+  * Improve help text output of linotp-create-htdigest script
   * No longer deploy obsolete who.ini config file
   * Forward tokens support multiple challenges
-  * Fix tokenissuer double escape of hmac qrcode enrollent
-  * Fix for 'import user' which requires now system write permission
-    as a resolver is created or updated
+  * HMAC enrollment QR-code correctly URL-encodes tokenissuer
+  * Tool to import users now enforces system write permission, which is
+    required because resolvers are created or updated
 
  -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Wed, 05 Mar 2021 11:44:20 +0100
 
