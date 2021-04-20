@@ -39,6 +39,8 @@ from linotp.lib.token import getTokenRealms
 from linotp.lib.token import get_token_owner
 from linotp.tokens import tokenclass_registry
 
+from linotp.lib.challenges import Challenges
+
 
 log = logging.getLogger(__name__)
 
@@ -316,7 +318,7 @@ class ForwardTokenClass(TokenClass):
             matching_challenge = None
             # check if transaction id is in list of challenges
             for challenge in challenges:
-                if challenge.transid == transid:
+                if Challenges.is_same_transaction(challenge, transid):
                     matching_challenge = challenge
                     break
 

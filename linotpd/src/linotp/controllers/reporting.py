@@ -51,11 +51,16 @@ from linotp.lib.reply import (sendResult,
                               sendError,
                               sendResultIterator,
                               sendCSVIterator)
+
 from linotp.lib.reporting import ReportingIterator
-from linotp.lib.reporting import get_max
+from linotp.lib.reporting import get_max_token_count_in_period
+from linotp.lib.reporting import get_last_token_count_before_date
 from linotp.lib.reporting import delete
+
 from linotp.lib.type_utils import convert_to_datetime
-from linotp.lib.user import (getUserFromRequest, )
+
+from linotp.lib.user import getUserFromRequest
+
 from linotp.lib.util import check_session
 from linotp.lib.util import get_client
 
@@ -179,7 +184,7 @@ class ReportingController(BaseController):
             for realm in realms:
                 result[realm] = {}
                 for stat in status:
-                    result[realm][stat] = get_max(
+                    result[realm][stat] = get_max_token_count_in_period(
                         realm, status=stat, start=start, end=end
                     )
             return sendResult(response, result)
@@ -290,9 +295,23 @@ class ReportingController(BaseController):
                 result_realm = {'name': realm}
                 max_token_counts = {}
                 for stat in status:
-                    max_token_counts[stat] = get_max(
+
+                    # search for the max token in the period [start : end]
+
+                    max_token_stat = get_max_token_count_in_period(
                         realm, status=stat, start=start, end=end
                     )
+
+                    # if none is found (-1) we search for the last entry
+                    # before the period start
+
+                    if max_token_stat == -1:
+                        max_token_stat = get_last_token_count_before_date(
+                            realm, status=stat, before_date=start
+                        )
+
+                    max_token_counts[stat] = max_token_stat
+
                 result_realm['maxtokencount'] = max_token_counts
                 result['realms'].append(result_realm)
 

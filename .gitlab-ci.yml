@@ -1,6 +1,6 @@
 variables:
   LANG: C.UTF-8
-  IMAGE_NAME: linotp-build-test-environment_stretch
+  IMAGE_NAME: linotp-build-test-environment_buster
   BUILD_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_COMMIT_REF_NAME
   LATEST_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_PIPELINE_ID
   DOCKERFY_URL: http://avocado.corp.lsexperts.de/jenkins/dockerfy/dockerfy
