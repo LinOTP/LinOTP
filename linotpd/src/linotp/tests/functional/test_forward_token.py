@@ -51,7 +51,7 @@ class TestForwardToken(TestController):
         self.delete_all_resolvers()
         TestController.tearDown(self)
 
-    def create_HMAC_token(self):
+    def create_HMAC_token(self, owner=None):
         """
         """
         otps = {
@@ -67,18 +67,21 @@ class TestForwardToken(TestController):
             9: '517407',
                }
         parameters = {
-                      "serial": "Target",
-                      "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
-                      "pin": "321!",
-                      "description": "Target Token",
-                      }
+            "serial": "Target",
+            "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
+            "pin": "321!",
+            "description": "Target Token",
+            }
+
+        if owner:
+            parameters['user'] = owner
 
         response = self.make_admin_request('init', params=parameters)
         assert '"value": true' in response, response
 
         return (parameters['serial'], otps)
 
-    def create_forward_token(self, target_serial):
+    def create_forward_token(self, target_serial, owner=None):
         """
         create the forward token
         """
@@ -87,6 +90,9 @@ class TestForwardToken(TestController):
                     "pin": "123!",
                     'forward.serial': target_serial,
                     }
+
+        if owner:
+            param_fw['user'] = owner
 
         response = self.make_admin_request('init', params=param_fw)
         assert '"value": true' in response, response
@@ -308,5 +314,83 @@ class TestForwardToken(TestController):
         assert '"value": true' in response, response
 
         return
+
+    def test_multiple_challenges(self):
+        """
+            Verify that forward token supports multiple challenges.
+
+            Start by creating a token for passthru_user2 which will be the
+            target of the forward token.
+
+            Then create a forward token and an additional (regular) token for
+            passthru_user1, in order to test support for multiple challenges
+            when answering a challenge for the forward token.
+
+            Issue a challenge request for passthru_user1. This generates
+            challenges for both passthru_user1's tokens. Each of them have a
+            sub-transaction ID but are also grouped together under a single,
+            top-level transaction ID.
+
+            Answer the challenge for the forward token by submitting the OTP of
+            the forwarded token along with the top-level transaction ID. The OTP
+            should be enough for LinOTP to identify which token is meant,
+            despite the top-level transaction ID.
+
+            Finally confirm that the answer is successful.
+        """
+
+
+        params = {
+            'scope': 'authentication',
+            'action': 'challenge_response=forward HMAC',
+            'realm': '*',
+            'user': '*',
+            'name': 'challenge_response',
+        }
+        self.create_policy(params)
+
+        params = {
+            'scope': 'authentication',
+            'action': 'otppin=password,',
+            'realm': '*',
+            'user': '*',
+            'name': 'otppin_password',
+        }
+        self.create_policy(params)
+
+        p2_serial, otps = self.create_HMAC_token(owner='passthru_user2')
+        self.create_forward_token(
+            target_serial=p2_serial, owner='passthru_user1'
+            )
+
+        params = {
+            'type': 'hmac',
+            'genkey': '1',
+            'user': 'passthru_user1',
+            'serial': 'H2'
+            }
+        response = self.make_admin_request('init', params=params)
+        jresp = json.loads(response.body)
+        assert jresp['result']['value']
+
+        # check that a multiple challenge request is triggerd by the password
+
+        params = {"user": 'passthru_user1', "pass": "geheim1"}
+        response = self.make_validate_request('check', params=params)
+
+        jresp = json.loads(response.body)
+        assert jresp['detail']['message'] == 'Multiple challenges submitted.'
+
+        transactionid = jresp['detail']['transactionid']
+
+        params = {
+            "user": 'passthru_user1',
+            "pass": otps[2],
+            "transactionid": transactionid,
+        }
+        response = self.make_validate_request('check', params=params)
+
+        jresp = json.loads(response.body)
+        assert jresp['result']['value'] == True
 
 # eof #########################################################################

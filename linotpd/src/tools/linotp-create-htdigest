@@ -33,9 +33,10 @@ DIGESTFILE=/etc/linotp/admins
 
 if [ $# -ne 2 ];
   then
-	echo "syntax: linotp-create-digest <username> <password>"
+	echo "syntax: linotp-create-htdigest <username> <password>"
 	echo
-	echo "This file creates a user entry for LinOTP authentication in the manage area"
+	echo "This file creates a user entry for LinOTP authentication of"
+	echo "  administrators (Manage UI, system controller, admin controller)."
 	exit 1
 fi
 
