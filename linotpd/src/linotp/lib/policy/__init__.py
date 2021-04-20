@@ -1658,7 +1658,7 @@ def _check_token_count(user=None, realm=None, post_check=False):
     return True
 
 
-def get_tokenissuer(user="", realm="", serial=""):
+def get_tokenissuer( serial, user="", realm="",description=""):
     """Get the token issuer.
 
     This internal function returns the issuer of the token as defined in policy
@@ -1667,65 +1667,80 @@ def get_tokenissuer(user="", realm="", serial=""):
         <u>: user
         <r>: realm
         <s>: token serial
+        <d>: the token description
 
     This function is used to create 'otpauth' tokens
+
+    :param user: the user login string
+    :param realm: the realm of the user
+    :param serial: the token serial
+    :param description: the token description
+    :return: the tokenlabel string - default is 'LinOTP'
     """
-    tokenissuer = "LinOTP"
+
     action = "tokenissuer"
     client = _get_client()
 
     pol = has_client_policy(
         client, scope="enrollment", action=action, realm=realm, user=user)
 
-    string_issuer = get_action_value(
+    tokenissuer = get_action_value(
         pol, scope="enrollment", action=action, default='')
 
-    if string_issuer:
-        string_issuer = re.sub('<u>', user, string_issuer)
-        string_issuer = re.sub('<r>', realm, string_issuer)
-        string_issuer = re.sub('<s>', serial, string_issuer)
-        tokenissuer = string_issuer
+    if tokenissuer:
+        tokenissuer = re.sub('<u>', user, tokenissuer)
+        tokenissuer = re.sub('<r>', realm, tokenissuer)
+        tokenissuer = re.sub('<s>', serial, tokenissuer)
+        tokenissuer = re.sub('<d>', description, tokenissuer)
 
-    log.debug("[get_tokenissuer] providing tokenissuer = %r", tokenissuer)
-    return tokenissuer
+        log.debug("providing tokenissuer = %r", tokenissuer)
+        return tokenissuer
 
+    return "LinOTP"
 
-def get_tokenlabel(user="", realm="", serial=""):
+def get_tokenlabel(serial, user="", realm="", description=""):
     """Get the label for a token.
 
     This internal function returns the naming of the token as defined in policy
     scope = enrollment, action = tokenname = <string>
     The string can have the following variables:
-
     - <u>: user
     - <r>: realm
     - <s>: token serial
+    - <d>: the token description
 
-    This function is used by the creation of googleauthenticator url
+    This function is used to create 'otpauth' tokens
+
+    :param user: the user login string
+    :param realm: the realm of the user
+    :param serial: the token serial
+    :param description: the token description
+    :return: the tokenlabel string - default is user or serial
     """
 
     action = "tokenlabel"
     client = _get_client()
 
-    # TODO: What happens when we got no realms?
-    # pol = getPolicy( {'scope': 'enrollment', 'realm': realm} )
     pol = has_client_policy(
         client, scope="enrollment", action=action, realm=realm, user=user)
 
-    string_label = get_action_value(
+    tokenlabel = get_action_value(
         pol, scope='enrollment', action=action, default='')
 
-    if not string_label:
-        # empty label, so we use the serial
-        return serial
+    if tokenlabel:
+        tokenlabel = re.sub('<u>', user, tokenlabel)
+        tokenlabel = re.sub('<r>', realm, tokenlabel)
+        tokenlabel = re.sub('<s>', serial, tokenlabel)
+        tokenlabel = re.sub('<d>', description, tokenlabel)
 
-    string_label = re.sub('<u>', user, string_label)
-    string_label = re.sub('<r>', realm, string_label)
-    string_label = re.sub('<s>', serial, string_label)
-    tokenlabel = string_label
+        return tokenlabel
 
-    return tokenlabel
+    # if there is no token label we do a fallback to user or serial
 
+    if user:
+        return user
+
+    return serial
 
 def get_autoassignment_from_realm(user):
     """
