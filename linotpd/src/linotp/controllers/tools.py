@@ -40,6 +40,8 @@ from linotp.lib.error import ParameterError
 
 from linotp.lib.policy import PolicyException
 from linotp.lib.policy import checkToolsAuthorisation
+from linotp.lib.policy import checkPolicyPre
+
 from linotp.lib.util import check_session
 from linotp.lib.context import request_context
 
@@ -297,6 +299,8 @@ class ToolsController(BaseController):
                 column_mapping = json.loads(column_mapping)
 
             # prevent overwrite of existing unmanaged resolver
+
+            checkPolicyPre('system', 'setResolver')
 
             resolvers = getResolverList()
             if resolver_name in resolvers:
