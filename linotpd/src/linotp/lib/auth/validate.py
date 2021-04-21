@@ -387,10 +387,6 @@ class ValidationHandler(object):
         transactions = {}
         for ch in challenges:
 
-            # only look for challenges that are not compromised
-            if not Challenges.verify_checksum(ch):
-                continue
-
             # is the requester authorized
             challenge_serial = ch.getTokenSerial()
             if serial and challenge_serial != serial:
@@ -668,12 +664,6 @@ class ValidationHandler(object):
         transaction_serials = []
         transid = check_options.get('state',
                                     check_options.get('transactionid', ''))
-        if transid:
-            expired, challenges = Challenges.get_challenges(transid=transid,
-                                                            filter_open=True)
-            for challenge in challenges:
-                serial = challenge.tokenserial
-                transaction_serials.append(serial)
 
         # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
@@ -690,11 +680,6 @@ class ValidationHandler(object):
         validation_results = {}
 
         for token in tokenList:
-
-            # transaction id optimization - part 2:
-            if transid:
-                if token.getSerial() not in transaction_serials:
-                    continue
 
             audit_entry['serial'] = token.getSerial()
             audit_entry['token_type'] = token.getType()
@@ -799,19 +784,26 @@ class ValidationHandler(object):
 
             # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
-            # start the token validation
+            # gather all open challenges for this token
+            if transid:
+                _expired, challenges = Challenges.get_challenges(
+                    token=token, transid=transid, filter_open=True)
 
-            if not transid:
-                # if there is no transaction id given we check all token
-                # related challenges
-                (_ex_challenges,
-                 challenges) = Challenges.get_challenges(token,
-                                                         options=check_options,
-                                                         filter_open=True)
+            else:
+                # if there is no transaction id given we check all challenges
+                # related to the given token
+
+                _expired, challenges = Challenges.get_challenges(
+                    token=token, filter_open=True, options=check_options)
+
+            # -------------------------------------------------------------- --
+
+            # finally we check the token
 
             try:
                 (ret, reply) = token.check_token(
                     passw, user, options=check_options, challenges=challenges)
+
             except Exception as exx:
                 # in case of a failure during checking token, we log the error
                 # and continue with the next one

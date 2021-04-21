@@ -39,8 +39,6 @@ from linotp.lib.token import getTokenRealms
 from linotp.lib.token import get_token_owner
 from linotp.tokens import tokenclass_registry
 
-from linotp.lib.challenges import Challenges
-
 
 log = logging.getLogger(__name__)
 
@@ -306,30 +304,22 @@ class ForwardTokenClass(TokenClass):
         :return: tuple of (otpcounter and the list of matching challenges)
 
         '''
+        if not challenges:
+            return -1, []
+
         otp_counter = -1
-        transid = None
         matching_challenges = []
 
-        if 'transactionid' in options or 'state' in options:
-            # fetch the transactionid
-            transid = options.get('transactionid', options.get('state', None))
+        for challenge in challenges:
+            res, _otp_counter, _reply = self.do_request(passw, user=user)
+            # everything is ok, we mark the challenge as a matching one
+            if res is True and _otp_counter >= 0:
+                matching_challenges.append(challenge)
 
-        if transid:
-            matching_challenge = None
-            # check if transaction id is in list of challenges
-            for challenge in challenges:
-                if Challenges.is_same_transaction(challenge, transid):
-                    matching_challenge = challenge
-                    break
+                # ensure that a positive otp_counter is preserved
+                otp_counter = _otp_counter
 
-            if matching_challenge:
-                res, otp_counter, _reply = self.do_request(passw, user=user)
-
-                # everything is ok, we mark the challenge as a matching one
-                if res is True and otp_counter >= 0:
-                    matching_challenges.append(matching_challenge)
-
-        return (otp_counter, matching_challenges)
+        return otp_counter, matching_challenges
 
     def statusValidationSuccess(self):
         """

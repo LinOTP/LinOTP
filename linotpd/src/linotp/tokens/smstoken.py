@@ -613,8 +613,6 @@ class SmsTokenClass(HmacTokenClass):
         do the standard check for the response of the challenge +
         change the tokeninfo data of the last challenge
         """
-        otp_count = -1
-        matching = []
 
         tok = super(SmsTokenClass, self)
         counter = self.getOtpCount()
@@ -634,12 +632,20 @@ class SmsTokenClass(HmacTokenClass):
             if res is True:
                 otp_val = otp
 
+        if not challenges:
+            return -1, []
+
+        otp_count = -1
+        matching = []
+
         for challenge in challenges:
-            otp_count = self.checkOtp(otp_val, counter, window,
-                                                            options=options)
-            if otp_count > 0:
+            _otp_count = self.checkOtp(otp_val, counter, window,
+                                       options=options)
+            if _otp_count > 0:
                 matching.append(challenge)
-                break
+
+                # ensure that a positive otp_counter is preserved
+                otp_count = _otp_count
 
         return (otp_count, matching)
 

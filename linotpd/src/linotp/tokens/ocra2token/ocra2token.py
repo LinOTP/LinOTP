@@ -1101,17 +1101,6 @@ class Ocra2TokenClass(TokenClass):
 
         return challenge_response
 
-    def is_challenge_valid(self, challenge=None):
-        '''
-        this method proves the validity of a challenge
-        - the default implementation tests, if the challegenge start
-        is in the default vality time window.
-
-        :param challenge: challenge object
-        :return: true or false
-        '''
-
-        return True
 
     def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
         '''

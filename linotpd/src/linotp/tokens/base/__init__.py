@@ -441,36 +441,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         return validity
 
-    def is_challenge_valid(self, challenge=None):
-        '''
-        This method verifies if the given challenge is still valid.
-
-        The default implementation checks, if the challenge start is in the
-        default validity time window.
-
-        **Please note**: This method does not check the response for the
-        challenge itself. This is done by the method
-        :py:meth:`~linotp.tokens.base.TokenClass.checkResponse4Challenge`.
-        E.g. this very method ``is_challenge_valid`` is used by the method
-        :py:meth:`~linotp.tokens.base.TokenClass.challenge_janitor`
-        to clean up old challenges.
-
-        :param challenge: The challenge to be checked
-        :type challenge: challenge object
-        :return: true or false
-        '''
-
-        validity = self.get_challenge_validity()
-        ret = False
-
-        if challenge is not None:
-            c_start_time = challenge.get('timestamp')
-            c_now = datetime.datetime.now()
-            if c_now < c_start_time + datetime.timedelta(seconds=validity):
-                ret = True
-
-        return ret
-
     def initChallenge(self, transactionid, challenges=None, options=None):
         """
         This method initializes the challenge.
@@ -506,7 +476,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
     def checkResponse4Challenge(self, user, passw, options=None,
                                 challenges=None):
-        '''
+        """
         This method verifies if the given ``passw`` matches any existing
         ``challenge`` of the token.
 
@@ -529,28 +499,20 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :type challenges: list
         :return: tuple of (otpcounter and the list of matching challenges)
 
-        '''
+        """
+        if not challenges:
+            return -1, []
+
         otp_counter = -1
-        transid = None
-        matching = None
         matching_challenges = []
 
-        if 'transactionid' in options or 'state' in options:
-            # fetch the transactionid
-            transid = options.get('transactionid', None)
-            if transid is None:
-                transid = options.get('state', None)
+        for challenge in challenges:
+            _otp_counter = check_otp(self, passw, options=options)
+            if _otp_counter >= 0:
+                matching_challenges.append(challenge)
 
-        # check if the transactionid is in the list of challenges
-        if transid is not None:
-            for challenge in challenges:
-                if Challenges.is_same_transaction(challenge, transid):
-                    matching = challenge
-                    break
-            if matching is not None:
-                otp_counter = check_otp(self, passw, options=options)
-                if otp_counter >= 0:
-                    matching_challenges.append(matching)
+                # ensure that a positive otp_counter is preserved
+                otp_counter = _otp_counter
 
         return (otp_counter, matching_challenges)
 
@@ -719,14 +681,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         otp = passw
         self.transId = options.get('transactionid', options.get('state', None))
 
-        # only check those challenges, which currently have not been verified
-        check_challenges = []
-        for ch in challenges:
-            if Challenges.verify_checksum(ch) and ch.is_open():
-                check_challenges.append(ch)
-
         (otpcount, matching_challenges) = self.checkResponse4Challenge(
-            user, otp, options=options, challenges=check_challenges)
+            user, otp, options=options, challenges=challenges)
 
         if otpcount >= 0:
             self.matching_challenges = matching_challenges

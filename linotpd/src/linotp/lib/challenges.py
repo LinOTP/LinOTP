@@ -99,25 +99,6 @@ class Challenges(object):
         return challenges
 
     @staticmethod
-    def is_same_transaction(challenge, transaction_id):
-        """
-        helper method to check if challenge belongs to transaction set
-
-        :param challenge: a challenge object
-        :param transaction_id: the transaction id form the request
-
-        :return: boolean
-        """
-        c_id = challenge.getTransactionId()
-        if c_id == transaction_id:
-            return True
-        elif '.' in c_id:
-            (transid, postfix) = c_id.split('.')
-            if transid == transaction_id and len(postfix) == 2:
-                return True
-        return False
-
-    @staticmethod
     def create_challenge(token, options=None, challenge_id=None, id_postfix=''):
         """
         dedicated method to create a challenge to support the implementation
@@ -307,33 +288,33 @@ class Challenges(object):
     @staticmethod
     def get_challenges(token=None, transid=None, options=None, filter_open=False):
 
-        if not options:
-            options = {}
+        state = options and options.get(
+            'state', options.get('transactionid', None))
 
-        state = options.get('state', options.get('transactionid', None))
         if not transid:
             transid = state
 
         if not token and not transid:
             raise Exception("unqualified query")
 
-        # transaction ids are handled preferred
-        if transid:
-            challenges = Challenges.lookup_challenges(transid=transid)
-        elif token:
-            challenges = Challenges.lookup_challenges(serial=token.getSerial())
-        else:
-            challenges = []
+        serial = token and token.getSerial()
+
+        challenges = Challenges.lookup_challenges(
+            serial=serial, transid=transid)
 
         expired_challenges = []
         valid_chalenges = []
 
         for challenge in challenges:
-            # if we should filter the
-            if filter_open:
-                stat = challenge.is_open()
-                if not stat:
-                    continue
+
+            if filter_open and not challenge.is_open():
+                log.info("Skipping non-open challenge: %r", challenge)
+                continue
+
+            if not Challenges.verify_checksum(challenge):
+                log.error("Skipping challenge: Checksum verification failure"
+                          "for challenge %r.", challenge)
+                continue
 
             # lookup the validty time of the challenge which is per token
             serial = challenge.tokenserial

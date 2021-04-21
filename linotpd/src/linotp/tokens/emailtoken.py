@@ -543,19 +543,12 @@ class EmailTokenClass(HmacTokenClass):
         :return: tuple of (otpcounter and the list of matching challenges)
 
         """
-        transaction_id = None
-        otp_counter = -1
-        matching_challenges = []
-
-        if challenges is None or len(challenges) == 0:
-            # There are no challenges for this token
+        if not challenges:
             return -1, []
 
-        if options and ('transactionid' in options or 'state' in options):
-            # fetch the transactionid
-            transaction_id = options.get('transactionid', None)
-            if transaction_id is None:
-                transaction_id = options.get('state', None)
+        transaction_id = options and options.get(
+            'transactionid', options.get('state', None)
+        )
 
         if transaction_id:
             otp = passw
@@ -563,7 +556,6 @@ class EmailTokenClass(HmacTokenClass):
             # received a single challenge with that transaction_id thanks to
             # linotp.lib.validate.ValidateToken.get_challenges()
             assert(len(challenges) == 1)
-            assert(Challenges.is_same_transaction(challenges[0], transaction_id))
         else:
             # If no transaction_id is set the request came through the WebUI
             # and we have to check all challenges
@@ -575,20 +567,20 @@ class EmailTokenClass(HmacTokenClass):
 
         window = self.getOtpCountWindow()
 
+        otp_counter = -1
+        matching_challenges = []
+
         for challenge in challenges:
             challenge_data = challenge.getData()
             stored_counter = int(challenge_data.get("counter_value", -1))
-            temp_otp_counter = self.checkOtp(otp, int(stored_counter),
-                                             window, options)
+            _otp_counter = self.checkOtp(otp, stored_counter, window, options)
 
-            if temp_otp_counter > 0 and temp_otp_counter == stored_counter:
-                otp_counter = temp_otp_counter
-                matching_challenges = [challenge]
-                break
+            if _otp_counter > 0 and _otp_counter == stored_counter:
+                matching_challenges.append(challenge)
 
-        # The matching_challenges list will either contain a single challenge
-        # or will be empty. Returning multiple challenges is not useful in this
-        # case because all older challenges arecleaned up anyway.
+                # ensure that a positive otp_counter is preserved
+                otp_counter = _otp_counter
+
         return otp_counter, matching_challenges
 
     def authenticate(self, passw, user, options=None):
