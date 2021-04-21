@@ -265,13 +265,13 @@ class TestFixesController(TestController):
         #12018: OTPLen of /admin/init is not ignored
         '''
         (serial, response) = self.add_token(
-            'root', serial='troot', typ='hmac', key='1234', otplen=12)
+            'root', serial='troot', typ='hmac', key='1234', otplen=8)
         assert serial == 'troot', response
 
         param = {}
         response = self.make_admin_request('show', params=param)
         #resp = json.loads(response.body)
-        assert '"LinOtp.OtpLen": 12' in response
+        assert '"LinOtp.OtpLen": 8' in response
 
         res = self.del_token(serial)
         assert '"status": true,' in res

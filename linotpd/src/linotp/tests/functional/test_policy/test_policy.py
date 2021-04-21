@@ -3487,7 +3487,7 @@ class TestPolicies(TestPoliciesBase):
 
         googel_url = response.json['detail']['googleurl']['value']
         assert (
-            "otpauth://hotp/LinOTP:hmac2?" in googel_url
+            "otpauth://hotp/LinOTP:max2?" in googel_url
             ), response
 
         # add tokenissuer policy

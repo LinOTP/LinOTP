@@ -658,7 +658,7 @@ class TestSelfserviceController(TestController):
                                 params={'prefix':'LSGO',
                                         'type': 'googleauthenticator'
                                         })
-        assert '"url": "otpauth://hotp/LinOTP:LSGO' in response, \
+        assert '"url": "otpauth://hotp/LinOTP:passthru_user1?' in response, \
                         response
 
         # test
