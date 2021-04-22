@@ -226,7 +226,7 @@ a.close_all {
   width: 100%;
 }
 
-#policy_form input,
+#policy_form input:not([type="checkbox"]),
 #policy_form select {
   width: 100%;
   box-sizing: border-box;
