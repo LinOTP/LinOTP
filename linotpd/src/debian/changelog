@@ -1,4 +1,4 @@
-linotp (2.12.4.dev0-1) buster; urgency=medium
+linotp (2.12.4~rc0-1) buster; urgency=medium
 
   Fix:
   * Include Readme.rst in packaging artifacts
@@ -10,7 +10,7 @@ linotp (2.12.4.dev0-1) buster; urgency=medium
   * Tool to import users now enforces system write permission, which is
     required because resolvers are created or updated
 
- -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Wed, 05 Mar 2021 11:44:20 +0100
+ -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Thu, 22 Apr 2021 13:01:00 +0200
 
 linotp (2.12.3-1) buster; urgency=medium
 
