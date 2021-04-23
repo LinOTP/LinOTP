@@ -6,6 +6,10 @@ linotp (3.1~0dev-0) experimental; urgency=low
   * ManageUI policy editor utilizes full window width for improved layout.
   * Inform the admin via audit log if there is an challenge integrity error.
 
+  Improvement:
+  * Simplify the HMAC acountname and tokenissuer fallback rules for a more predictable
+    behavior in the google authenticator url.
+
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 12 Nov 2020 17:48:51 +0200
 
 linotp (3.0~rc4-1) buster-dev; urgency=low
