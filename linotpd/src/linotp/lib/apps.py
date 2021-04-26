@@ -34,110 +34,152 @@ This file contains utilities to generates the URL for smartphone apps like
 import binascii
 import base64
 
-
-import urllib.request, urllib.parse, urllib.error
+import urllib
+from urllib.parse import quote
 
 import logging
-log = logging.getLogger(__name__)
 
 from linotp.lib.policy import get_tokenlabel, get_tokenissuer
-from urllib.parse import quote
+
+Valid_Token_Types = {
+    'hmac': 'hotp',
+    'hotp': 'hotp',
+    'totp': 'totp',
+    }
+
+log = logging.getLogger(__name__)
 
 class NoOtpAuthTokenException(Exception):
     pass
 
+def create_google_authenticator(param:dict, user=None) -> str:
+    """Create the google url from the parameters
 
-def create_google_authenticator(param, user=None):
-    '''
-    create url for google authenticator
+    :param param: dict containing the parameters
+    :param user: the user to which the token should be assigned
+    :return: the google authenticator url
+    """
 
+    serial = param["serial"]
+    login = user and user.login or param.get('user.login', '')
+    realm = user and user.realm or param.get('user.realm', '')
+    description = param.get('description','')
+
+    token_label = get_tokenlabel(
+        serial=serial, user=login, realm=realm, description=description)
+
+    issuer = get_tokenissuer(
+        serial=serial, user=login, realm=realm, description=description)
+
+    # --------------------------------------------------------------------- --
+
+    # as the issuer is also used as an url parameter,
+    # we add it to the parameters
+
+    param['issuer'] = issuer
+
+    # build the label, which is defined as:
+    #   label = accountname / issuer (“:” / “%3A”) *”%20” accountname
+
+    label = quote(issuer) + ':' + quote(token_label)
+
+    return google_authenticator_url(label, param)
+
+def google_authenticator_url(label, param):
+    '''create url for google authenticator
+
+      otpauth://TYPE/LABEL?PARAMETERS
+
+    remark: be aware of that the google authenticator does not support
+            other hash algorithms than 'SHA1' and no other digits like '6'!
+    remark: the counter value is respected by both, the google authenticator
+            and the free otp app
+    remark: currently the free otp app handles the issuer not correctly as the
+            issuer in the parameter list overrules the account in the LABEL
+
+    :param label: the label for the url prefix
     :param param: request dictionary
     :return: string with google url
     '''
 
-    typ = param.get("type", 'hotp')
-    if typ.lower() == 'hmac':
-        typ = 'hotp'
-
-    if not typ.lower() in ['totp', 'hotp']:
+    try:
+        token_type = Valid_Token_Types[param.get("type", 'hotp').lower()]
+    except KeyError:
         raise NoOtpAuthTokenException('not supported otpauth token type: %r'
-                                      % typ)
+                                      % param.get("type"))
 
-    serial = param.get("serial", None)
-    digits = param.get("otplen", '6')
-    otpkey = param.get("otpkey", None)
+    digits = int(param.get("otplen", 6))
+    if digits not in [6, 8]:
+        raise Exception('unsupported digits %r' % param.get("otplen"))
 
-    login = ''
-    realm = ''
+    algorithm = param.get("hashlib", "SHA1").upper()
+    if algorithm not in ['SHA1', 'SHA256', 'SHA512']:
+        log.info("unsupported hmac hash algorithm %r - adjusting to 'SHA1'")
+        algorithm = 'SHA1'
 
-    if user:
-        login = user.login or ''
-        realm = user.realm or ''
+    seed = binascii.unhexlify(param.get("otpkey", ''))
+    if not seed:
+        raise Exception('Failed to create token url due to missing seed!')
+    secret = base64.b32encode(seed).decode().strip("=")
 
-    login = login or param.get('user.login', '')
-    realm = realm or param.get('user.realm', '')
+    period = int(param.get('timeStep', 30))
+    if period not in [30, 60]:
+        raise Exception('unsupported period for totp '
+                        'token %r' % param.get('timeStep'))
+
+    # --------------------------------------------------------------------- --
+
+    # gather the url parameters
 
     url_param = {}
+    url_param['secret'] = secret
 
-    if not otpkey:
-        raise Exception('Failed to create token url due to missing seed!')
-    key = base64.b32encode(binascii.unhexlify(otpkey)).decode()
-    key = key.strip("=")
-
-    algo = param.get("hashlib", "sha1") or "sha1"
-    algo = algo.upper()
-    if algo not in['SHA1', 'SHA256', 'SHA512', 'MD5']:
-        algo = 'SHA1'
-
-    if algo != 'SHA1':
-        url_param['algorithm'] = algo
-
-    url_param['secret'] = key
-
-    # dont add default
-    if digits != '6':
+    # set number of digits but dont add the default
+    if digits != 6:
         url_param['digits'] = digits
 
-    if typ not in ['totp']:
+    # set hmac algorithm but dont add the default
+    if algorithm != 'SHA1':
+        url_param['algorithm'] = algorithm
+
+    if token_type == 'totp':
+        if period != 30:
+            url_param['period'] = period
+
+    elif token_type == 'hotp':
         url_param['counter'] = 0
 
-    if 'timeStep' in param:
-        url_param['period'] = param.get('timeStep')
+    url_param['issuer'] = param.get('issuer')
 
-    issuer = get_tokenissuer(login, realm, serial)
-    if issuer:
-        url_param['issuer'] = issuer
+    # --------------------------------------------------------------------- --
 
-    ga = "otpauth://%s/%s" % (typ, serial)
-    qg_param = urllib.parse.urlencode(url_param)
+    # the overall url has a length restriction ~ 400 chars.
+    # as the prefix is fixed and the url parameters are required,
+    # we will limit the label length
 
-    base_len = len(ga) + len(qg_param)
     max_len = 400
 
-    allowed_label_len = max_len - base_len
-    log.debug("[create_google_authenticator_url] we got %s characters"
-              " left for the token label" % str(allowed_label_len))
+    authenticator_params = urllib.parse.urlencode(url_param)
+    base_len = len("otpauth://%s/?%s" % (token_type, authenticator_params))
+    allowed_label_length = max_len - base_len
 
-    # show the user login in the token prefix
-    if len(login) > 0:
-        label = get_tokenlabel(login, realm, serial)
-        if len(param.get('description', '')) > 0 and '<d>' in label:
-            label = label.replace('<d>', param.get('description'))
+    if len(label) > allowed_label_length:
+        log.debug("[create_google_authenticator_url] we got %d characters"
+                  " left for the token label" % allowed_label_length)
 
-    else:
-        label = serial or ''
-        if len(param.get('description', '')) > 0:
-            label = label + ':' + param.get('description')
+    label = label[0:allowed_label_length]
 
-    if issuer:
-        label = issuer + ':' + label
-    label = label[0:allowed_label_len]
-    url_label = quote(label, ':')
 
-    ga = "otpauth://%s/%s?%s" % (typ, url_label, qg_param)
-    log.debug("google authenticator: %r" % ga[:20])
-    return ga
+    # --------------------------------------------------------------------- --
 
+    # create the url
+
+    auth_url = "otpauth://%s/%s?%s" % (token_type, label, authenticator_params)
+
+    auth_url_prefix_len = len('otpauth:///') + len(token_type) + len(label)
+    log.debug("google authenticator: %r" % auth_url[:auth_url_prefix_len])
+
+    return auth_url
 
 def create_oathtoken_url(user, realm, otpkey, type="hmac", serial=""):
     # 'url' : 'oathtoken:///addToken?name='+serial +

@@ -63,7 +63,7 @@ class TestTokenlabel(TestController):
         uri = urlparse(googleurl)
         token_label = uri.path.partition(':')[2]
 
-        assert token_label == 'hmac1', response
+        assert token_label == 'max1', response
         assert uri.hostname == 'hotp'
 
         params = {
@@ -97,7 +97,7 @@ class TestTokenlabel(TestController):
         uri = urlparse(googleurl)
         token_label = uri.path.partition(':')[2]
 
-        assert token_label == 'hmac1:max1%40myOtherRealm', response
+        assert token_label == 'hmac1%3Amax1%40myOtherRealm', response
         assert uri.hostname == 'hotp'
 
     def test_token_issuer(self):
