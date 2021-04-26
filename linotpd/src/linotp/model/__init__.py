@@ -920,6 +920,9 @@ class Challenge(db.Model):
         result = hsm.verfiyMessageSignature(message=challenge_data,
                                             hex_mac=stored_mac)
 
+        if not result:
+            log.warn('[checkChallengeSignature] integrity error for challenge %s, token %s',
+                     challenge_dict['transid'], challenge_dict['tokenserial'])
         return result
 
     def setChallenge(self, challenge):
