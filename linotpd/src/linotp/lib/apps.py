@@ -159,7 +159,7 @@ def google_authenticator_url(label, param):
 
     max_len = 400
 
-    authenticator_params = urllib.parse.urlencode(url_param)
+    authenticator_params = urllib.parse.urlencode(url_param, quote_via=quote)
     base_len = len("otpauth://%s/?%s" % (token_type, authenticator_params))
     allowed_label_length = max_len - base_len
 
