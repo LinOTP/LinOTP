@@ -288,18 +288,28 @@ def init_audit_keys_cmd(force):
         if not _make_backup("private audit key", privkey_filename):
             sys.exit(1)
 
-    create_audit_keys(privkey_filename, pubkey_filename)
+    try:
+        create_audit_keys(privkey_filename, pubkey_filename)
+        current_app.echo(
+            f"Wrote private audit key to {privkey_filename}",v=1
+            )
+        current_app.echo(
+            f"Extracted public audit key to {pubkey_filename}", v=1
+            )
+    except Exception as ex:
+        current_app.echo(
+            f"Error writing audit key to {privkey_filename}: {ex!s}"
+            )
+        sys.exit(1)
 
 
 def create_audit_keys(privkey_filename, pubkey_filename):
     ret = _run_command("Creating private audit key",
                        ["openssl", "genrsa", "-out", privkey_filename,
                         str(AUDIT_PRIVKEY_BITS)])
-    if ret.exit_code == 0:
-        current_app.echo(f"Wrote private audit key to {privkey_filename}",
-                            v=1)
-    else:
-        sys.exit(1)
+
+    if ret.exit_code != 0:
+        raise Exception(ret.output)
 
     # The public key can always be reconstructed from the private key, so
     # we don't worry about a backup of the public key file.
@@ -307,11 +317,9 @@ def create_audit_keys(privkey_filename, pubkey_filename):
     ret = _run_command("Extracting public audit key",
                        ["openssl", "rsa", "-in", privkey_filename,
                         "-pubout", "-out", pubkey_filename])
-    if ret.exit_code == 0:
-        current_app.echo(
-            f"Extracted public audit key to {pubkey_filename}", v=1)
-    else:
-        sys.exit(1)
+
+    if ret.exit_code != 0:
+        raise Exception(ret.output)
 
 
 # ----------------------------------------------------------------------

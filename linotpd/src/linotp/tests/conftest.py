@@ -155,24 +155,21 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
         for key in ('CACHE_DIR', 'DATA_DIR', 'LOGFILE_DIR'):
             os.makedirs(base_app_config[key], mode=0o770, exist_ok=True)
 
-        # Create secrete key / audit key if necessary.
-        with mock.patch('linotp.cli.init_cmd.current_app') as mock_app:
-            # The cli commands use current_app.echo to display messages, but this
-            # fails here because there no context yet. So we temporary route
-            # echo to plain print.
-            mock_app.echo = Echo()
+        # -----------------------------------------------------------------------
 
-            # Fake running `linotp init enc-key`
-            secret_file = base_app_config['SECRET_FILE']
-            if not os.path.exists(secret_file):
-                sec_key = 3 * "0123456789abcdef" * 4
-                create_secret_key(filename=secret_file, data=sec_key)
+        # Fake running `linotp init enc-key`
+        secret_file = base_app_config['SECRET_FILE']
+        if not os.path.exists(secret_file):
+            sec_key = 3 * "0123456789abcdef" * 4
+            create_secret_key(filename=secret_file, data=sec_key)
 
-            # Fake running `linotp init audit-keys`
-            audit_private_key_file = str(base_app_config['AUDIT_PRIVATE_KEY_FILE'])
-            if not os.path.exists(audit_private_key_file):
-                create_audit_keys(audit_private_key_file,
-                                str(base_app_config['AUDIT_PUBLIC_KEY_FILE']))
+        # Fake running `linotp init audit-keys`
+        audit_private_key_file = str(base_app_config['AUDIT_PRIVATE_KEY_FILE'])
+        if not os.path.exists(audit_private_key_file):
+            create_audit_keys(audit_private_key_file,
+                            str(base_app_config['AUDIT_PUBLIC_KEY_FILE']))
+
+        # -----------------------------------------------------------------------
 
         os.environ["LINOTP_CMD"] = "init-database"
         app = create_app('testing', base_app_config)
