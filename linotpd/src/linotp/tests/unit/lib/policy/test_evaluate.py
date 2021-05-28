@@ -23,8 +23,6 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-from Cryptodome.SelfTest.Signature.test_dss import res
-
 
 """
 Test the passthrough Policy in combination with the passOnNoToken
