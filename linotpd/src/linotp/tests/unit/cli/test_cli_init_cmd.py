@@ -145,9 +145,9 @@ def test_make_backup(app, capsys, freezer, tmp_path, permissions, result):
     (["false"], 1, "",
      "Test failed:\nCommand 'false' returned exit code 1\nOutput was:\n\n"),
     (["blarglqwertz"], None,
-     "[Errno 2] No such file or directory: 'blarglqwertz': 'blarglqwertz'",
+     "[Errno 2] No such file or directory: 'blarglqwertz'",
      ("Test failed:\nCommand 'blarglqwertz' raised exception\nOutput was:\n"
-      "[Errno 2] No such file or directory: 'blarglqwertz': 'blarglqwertz'\n")
+      "[Errno 2] No such file or directory: 'blarglqwertz'\n")
      ),
 ])
 def test_run_command(app, capsys, cmd, exit_code, output, stderr):
@@ -157,9 +157,9 @@ def test_run_command(app, capsys, cmd, exit_code, output, stderr):
     captured = capsys.readouterr()
     assert ret.exit_code == exit_code
     if output is not None:
-        assert ret.output == output
+        assert output in ret.output
     if stderr is not None:
-        assert captured.err == stderr
+        assert stderr in captured.err
 
 
 def test_run_command_signal(app, capsys, monkeypatch):
