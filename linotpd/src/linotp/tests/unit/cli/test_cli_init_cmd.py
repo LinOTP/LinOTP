@@ -145,9 +145,9 @@ def test_make_backup(app, capsys, freezer, tmp_path, permissions, result):
     (["false"], 1, "",
      "Test failed:\nCommand 'false' returned exit code 1\nOutput was:\n\n"),
     (["blarglqwertz"], None,
-     "[Errno 2] No such file or directory: 'blarglqwertz': 'blarglqwertz'",
+     "[Errno 2] No such file or directory: 'blarglqwertz'",
      ("Test failed:\nCommand 'blarglqwertz' raised exception\nOutput was:\n"
-      "[Errno 2] No such file or directory: 'blarglqwertz': 'blarglqwertz'\n")
+      "[Errno 2] No such file or directory: 'blarglqwertz'")
      ),
 ])
 def test_run_command(app, capsys, cmd, exit_code, output, stderr):
@@ -157,9 +157,9 @@ def test_run_command(app, capsys, cmd, exit_code, output, stderr):
     captured = capsys.readouterr()
     assert ret.exit_code == exit_code
     if output is not None:
-        assert ret.output == output
+        assert output in ret.output
     if stderr is not None:
-        assert captured.err == stderr
+        assert stderr in captured.err
 
 
 def test_run_command_signal(app, capsys, monkeypatch):
@@ -408,16 +408,13 @@ def test_init_enc_key_cmd(app, tmp_path, monkeypatch, runner,
 
 
 def test_init_enc_key_cmd_failed_backup(app, tmp_path, runner):
-    secret_file_name = tmp_path / "encKey"
+    secret_file_name = tmp_path / "non-existent" / "encKey"
     app.config["SECRET_FILE"] = str(secret_file_name)
-    secret_file_name.write_bytes(ZERO_KEY)
-    os.chmod(tmp_path, 0o000)   # make writing a new file fail
     cmd_result = runner.invoke(main, ["init", "enc-key", "--force"])
-    os.chmod(tmp_path, 0o700)   # back to normal
     assert cmd_result.exit_code == 1
-    assert secret_file_name.exists()
+    assert not secret_file_name.exists()
     assert "Error writing enc-key to" in cmd_result.output
-    assert "encKey: [Errno 13] Permission denied: " in cmd_result.output
+    assert "encKey: [Errno 2] No such file or directory: " in cmd_result.output
 
 
 # ----------------------------------------------------------------------
