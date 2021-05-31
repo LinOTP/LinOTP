@@ -26,7 +26,7 @@
 
 PYTHON:=$(shell which python3)
 DESTDIR=/
-BUILDDIR=$(PWD)/../build
+BUILDDIR=$(PWD)/linotpd.build
 PROJECT=LinOTP
 LINOTP_SRC_VERSION=$(shell python3 setup.py --version)
 DEB_BUILDDIR:=$(BUILDDIR)/linotp
