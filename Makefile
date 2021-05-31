@@ -160,19 +160,20 @@ endif
 
 .PHONY: builddeb
 builddeb:
-	# builddeb: Run debuild in each directory to generate .deb
+	# Target: builddeb: Run debuild in each directory to generate .deb
 	$(MAKE) -f Makefile.linotp builddeb
 
 .PHONY: deb-install
 deb-install: builddeb
-	# deb-install: move the built .deb, .changes and related files into an archive directory and
+	# Target: deb-install - move the built .deb, .changes and related files into an archive directory and
 	# generate Packages file
 	mkdir -pv $(DESTDIR)
-	cp $(foreach dir,$(DEBPKG_PROJS),$(dir)/build/*.deb) $(DESTDIR)
-	find $(foreach dir,$(DEBPKG_PROJS),$(dir)) -type f -regex '.+\.changes' -o -regex '.+\.dsc' -o -regex '.+\.tar\..+' -o -regex '.+\.buildinfo' | xargs -iXXX -n1 cp XXX $(DESTDIR)
+	cp $(BUILDDIR)/*.deb $(DESTDIR)
+	find $(BUILDDIR) -type f -regex '.+\.changes' -o -regex '.+\.dsc' -o \
+						 -regex '.+\.tar\..+' -o -regex '.+\.buildinfo' | \
+						 xargs -iXXX -n1 cp XXX $(DESTDIR)
 	find $(DESTDIR)
 	cd $(DESTDIR) && dpkg-scanpackages -m . > Packages
-
 
 
 ######################################################################################################
@@ -286,20 +287,26 @@ docker-build-debs: docker-build-linotp-builder
 	rm -f $(BUILDDIR)/apt/Packages
 	$(MAKE) $(BUILDDIR)/apt/Packages
 
+
 # Build the debian packages in a container, then extract them from the image
 $(BUILDDIR)/apt/Packages:
+	# Target: $(BUILDDIR)/apt/Packages:
 	$(DOCKER_RUN) \
 		--detach \
 		--rm \
 		--name $(DOCKER_CONTAINER_NAME)-apt \
 		linotp-builder \
 		sleep 3600
+
 	docker cp . $(DOCKER_CONTAINER_NAME)-apt:/build
+
 	docker exec \
 		$(DOCKER_CONTAINER_NAME)-apt \
-			make deb-install DESTDIR=/build/apt DEBUILD_OPTS=\"$(DEBUILD_OPTS)\"
+			make deb-install BUILDDIR=/build/build DESTDIR=/build/apt DEBUILD_OPTS=\"$(DEBUILD_OPTS)\"
+
 	docker cp \
-		$(DOCKER_CONTAINER_NAME)-apt:/build/apt $(DESTDIR)
+		$(DOCKER_CONTAINER_NAME)-apt:/build/apt ./apt
+
 	docker rm -f $(DOCKER_CONTAINER_NAME)-apt
 
 # Build just the linotp image. The builder-linotp is required but will not be

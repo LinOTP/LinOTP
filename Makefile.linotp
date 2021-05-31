@@ -100,6 +100,7 @@ buildrpm:
 
 .PHONY: prepare-deb-source
 prepare-deb-source: source
+	# Target: prepare-deb-source
 	mkdir -pv $(DEB_BUILDDIR)
 
 	# Unpack clean sources to a staging directory for building from. This is to ensure
@@ -128,6 +129,7 @@ ppa-preprocess: source
 # Debian builds create binary packages in linotpd/build
 .PHONY: builddeb
 builddeb:
+	# Target: builddeb (Makefile.linotp)
 	$(MAKE) -f Makefile.linotp prepare-deb-source DEB_BUILDDIR=$(DEB_BUILDDIR) TAR_SUFFIX=orig.tar.gz
 	cd $(DEB_BUILDDIR); dpkg-buildpackage -i -I -rfakeroot $(DPKG_BUILDPACKAGE_ARGS)
 
