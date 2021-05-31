@@ -62,7 +62,7 @@ RUN pip3 install --upgrade \
 
 COPY run.sh /usr/local/bin
 
-WORKDIR /linotpsrc/linotpd/src/linotp/tests/packaging
+WORKDIR /linotpsrc/linotp/tests/packaging
 
 ENTRYPOINT [ "/usr/local/bin/run.sh" ]
 

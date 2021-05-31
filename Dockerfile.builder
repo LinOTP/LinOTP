@@ -39,7 +39,7 @@ RUN sed -i "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" /etc/apt/sourc
 # Use the control files from the packages to install a list of packages needed for builds.
 # We copy in just the control files at this point in order to make maximum use of
 # docker's caching
-COPY linotpd/src/debian/control /deps/linotp/debian/
+COPY debian/control /deps/linotp/debian/
 
 RUN cd /deps/linotp \
     && mk-build-deps --install --remove --tool "apt-get --yes --no-install-recommends" \
