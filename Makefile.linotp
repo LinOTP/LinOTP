@@ -51,7 +51,7 @@ all:
 
 .PHONY: extract
 extract:
-	python setup.py extract_messages
+	$(PYTHON) setup.py extract_messages
 	$(foreach lang, \
 		$(I18N_LANGUAGES), \
 		msgmerge -U -s $(I18N_SRC)/$(lang)/LC_MESSAGES/linotp.po $(I18N_SRC)/linotp.pot \
@@ -77,7 +77,7 @@ $(I18N_JSON_DEST)/%.json: $(I18N_SRC)/%/LC_MESSAGES/linotp.po
 # the .po files are compiled to .json files. The order doesn't matter.
 .PHONY: compile_catalog
 compile_catalog: $(I18N_JSON_FILES)
-	python setup.py compile_catalog
+	$(PYTHON) setup.py compile_catalog
 
 .PHONY: buildtranslation
 buildtranslation: extract compile_catalog
