@@ -82,46 +82,19 @@ export APACHE_LOGLEVEL=DEBUG
 #############################################################################################
 
 # Targets that should recurse into linotp project directories
-LINOTPD_TARGETS := install clean
+LINOTPD_TARGETS := linotpd.install linotpd.clean
 .PHONY: $(LINOTPD_TARGETS)
 
-INSTALL_TARGETS := $(addsuffix .install,$(LINOTPD_PROJS))
-CLEAN_TARGETS := $(addsuffix .clean,$(LINOTPD_PROJS))
-MAKEFILE_TARGETS := $(INSTALL_TARGETS) $(CLEAN_TARGETS)
-.PHONY: $(MAKEFILE_TARGETS)
+linotpd.install:
+	$(MAKE) -f Makefile.linotp install
 
-$(MAKEFILE_TARGETS):
-	# Invoke makefile target in subdirectory/src
-	$(MAKE) -C $(basename $@)/src $(subst $(basename $@).,,$@)
+linotpd.clean:
+	$(MAKE) -f Makefile.linotp clean
 
-# Subdirectory make that should invoke target in all subproject directories
-.PHONY: %.subdirmake
-%.subdirmake : linotpd.% ;
-
-# Add dependencies for main targets
-# build -> build.subdirmake
-# clean -> clean.subdirmake
-# etc.
-.SECONDEXPANSION:
-$(LINOTPD_TARGETS): $$(basename $$@).subdirmake
-
-clean:
+clean: linotpd.clean
 	if [ -d $(BUILDDIR) ]; then rm -rf $(BUILDDIR) ;fi
 	if [ -d RELEASE ]; then rm -rf RELEASE; fi
 
-# Run a command in a list of directories
-# $(call run-in-directories,DIRS,COMMAND)
-run-in-directories = \
-	echo run-in-directories:$(1) ;\
-	for P in $(1) ;\
-		do \
-		    cmd="cd $$P/src && $(2)" ;\
-			echo \\n$$cmd ;\
-			( eval $$cmd ) || exit $? ;\
-	done
-
-# Run a command in all linotpd directories
-run-in-linotpd-projs = $(call run-in-directories,$(LINOTPD_PROJS),$(1))
 
 #################
 # Targets invoking setup.py
@@ -130,7 +103,7 @@ run-in-linotpd-projs = $(call run-in-directories,$(LINOTPD_PROJS),$(1))
 # Installation of packages in 'develop mode'.
 .PHONY: develop
 develop:
-	$(call run-in-linotpd-projs,$(PYTHON) setup.py $@)
+	$(PYTHON) setup.py $@
 
 
 ###############################################################################
@@ -148,17 +121,17 @@ develop:
 test: unittests integrationtests functionaltests
 
 unittests:
-	$(MAKE) -C linotpd/src/linotp/tests/unit $@
+	$(MAKE) -C linotp/tests/unit $@
 
 # Functional tests. Additional arguments can be
 # supplied with FUNCTIONALTESTS_ARGS
 functionaltests:
-	$(MAKE) -C linotpd/src/linotp/tests/functional $@
+	$(MAKE) -C linotp/tests/functional $@
 
 # integrationtests - selenium integration tests
 # Use the SELENIUMTESTS_ARGS to supply test arguments
 integrationtests:
-	$(MAKE) -C linotpd/src/linotp/tests/integration $@
+	$(MAKE) -C linotp/tests/integration $@
 
 .PHONY: test unittests functionaltests integrationtests
 
@@ -177,7 +150,7 @@ integrationtests:
 
 DEBPKG_PROJS := linotpd
 BUILDARCH = $(shell dpkg-architecture -q DEB_BUILD_ARCH)
-CHANGELOG = "$(shell cd linotpd/src ; dpkg-parsechangelog)"
+CHANGELOG = "$(shell dpkg-parsechangelog)"
 
 # Output is placed in DESTDIR, but this
 # can be overriden
@@ -188,7 +161,7 @@ endif
 .PHONY: builddeb
 builddeb:
 	# builddeb: Run debuild in each directory to generate .deb
-	$(call run-in-directories,$(DEBPKG_PROJS),$(MAKE) builddeb)
+	$(MAKE) -f Makefile.linotp builddeb
 
 .PHONY: deb-install
 deb-install: builddeb
@@ -210,10 +183,10 @@ deb-install: builddeb
 #
 # Container name | Dockerfile location | Purpose
 # ---------------------------------------------------------------------------------------------------
-# linotp-builder | Dockerfile.builder             | Container ready to build linotp packages
-# linotp         | linotpd/src                    | Runs linotp in apache
-# selenium-test  | linotpd/src/tests/integration  | Run LinOTP Selenium tests against selenium remote
-# linotp-unit    | linotpd/src/linotp/tests/unit  | Run LinOTP Unit tests
+# linotp-builder | Dockerfile.builder | Container ready to build linotp packages
+# linotp         |                    | Runs linotp in apache
+# selenium-test  | tests/integration  | Run LinOTP Selenium tests against selenium remote
+# linotp-unit    | linotp/tests/unit  | Run LinOTP Unit tests
 ######################################################################################################
 
 
@@ -258,7 +231,7 @@ DOCKER_RUN_ARGS=
 DOCKER_BUILD = docker build $(DOCKER_BUILD_ARGS) $(DOCKER_EXTRA_BUILD_ARGS)
 DOCKER_RUN = docker run $(DOCKER_RUN_ARGS)
 
-TESTS_DIR=linotpd/src/linotp/tests
+TESTS_DIR=linotp/tests
 
 SELENIUM_TESTS_DIR=$(TESTS_DIR)/integration
 UNIT_TESTS_DIR=$(TESTS_DIR)/unit
@@ -334,12 +307,12 @@ $(BUILDDIR)/apt/Packages:
 .PHONY: docker-build-linotp
 docker-build-linotp: DOCKER_IMAGE=linotp
 docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
-	cp linotpd/src/Dockerfile \
-		linotpd/src/config/*.tmpl \
-		linotpd/src/tools/linotp* \
-		linotpd/src/linotp/tests/integration/testdata/se_mypasswd \
+	cp Dockerfile \
+		config/*.tmpl \
+		tools/linotp* \
+		linotp/tests/integration/testdata/se_mypasswd \
 		$(BUILDDIR)
-	cp -r linotpd/src/config/docker-initscripts.d $(BUILDDIR)
+	cp -r config/docker-initscripts.d $(BUILDDIR)
 
 	# We show the files sent to Docker context here to aid in debugging
 	find $(BUILDDIR)
@@ -451,14 +424,13 @@ docker-selenium-clean:
 .PHONY: docker-run-linotp-sqlite
 docker-run-linotp-sqlite: docker-build-linotp
 	# Run linotp in a standalone container
-	cd linotpd/src \
-		&& $(DOCKER_RUN) -it \
-			 -e HEALTHCHECK_PORT=80 \
-			 -e LINOTP_LOGLEVEL=$(LINOTP_LOGLEVEL) \
-			 -e LINOTP_CONSOLE_LOGLEVEL=$(LINOTP_CONSOLE_LOGLEVEL) \
-			 -e SQLALCHEMY_LOGLEVEL=$(SQLALCHEMY_LOGLEVEL) \
-			 -e APACHE_LOGLEVEL=$(APACHE_LOGLEVEL) \
-			linotp
+	$(DOCKER_RUN) -it \
+		 -e HEALTHCHECK_PORT=80 \
+		 -e LINOTP_LOGLEVEL=$(LINOTP_LOGLEVEL) \
+		 -e LINOTP_CONSOLE_LOGLEVEL=$(LINOTP_CONSOLE_LOGLEVEL) \
+		 -e SQLALCHEMY_LOGLEVEL=$(SQLALCHEMY_LOGLEVEL) \
+		 -e APACHE_LOGLEVEL=$(APACHE_LOGLEVEL) \
+		linotp
 
 # Dockerfy tool
 .PHONY: get-dockerfy
