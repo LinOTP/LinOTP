@@ -304,6 +304,8 @@ $(BUILDDIR)/apt/Packages:
 		$(DOCKER_CONTAINER_NAME)-apt \
 			make deb-install BUILDDIR=/build/build DESTDIR=/build/apt DEBUILD_OPTS=\"$(DEBUILD_OPTS)\"
 
+	rm -rf ./apt
+
 	docker cp \
 		$(DOCKER_CONTAINER_NAME)-apt:/build/apt ./apt
 
@@ -314,12 +316,14 @@ $(BUILDDIR)/apt/Packages:
 .PHONY: docker-build-linotp
 docker-build-linotp: DOCKER_IMAGE=linotp
 docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
+	# Target: docker-build-linotp
 	cp Dockerfile \
 		config/*.tmpl \
 		tools/linotp* \
 		linotp/tests/integration/testdata/se_mypasswd \
 		$(BUILDDIR)
 	cp -r config/docker-initscripts.d $(BUILDDIR)
+	cp -r apt $(BUILDDIR)
 
 	# We show the files sent to Docker context here to aid in debugging
 	find $(BUILDDIR)
