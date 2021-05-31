@@ -66,7 +66,7 @@ translate:
 
 translate-%: $(I18N_SRC)/%/LC_MESSAGES/linotp.po
 	gtranslator $<
-	$(MAKE) compile_catalog
+	$(MAKE) -f Makefile.linotp compile_catalog
 
 # Compile a .po file to a .json file using the `pojson` tool.
 $(I18N_JSON_DEST)/%.json: $(I18N_SRC)/%/LC_MESSAGES/linotp.po
@@ -121,14 +121,14 @@ prepare-deb-source: source
 # Ubuntu builds create source packages in linotpd/src
 .PHONY: ppa-preprocess
 ppa-preprocess: source
-	$(MAKE) prepare-deb-source DEB_BUILDDIR=linotp-build TAR_SUFFIX=ubuntu-temp.tar.gz
+	$(MAKE) -f Makefile.linotp prepare-deb-source DEB_BUILDDIR=linotp-build TAR_SUFFIX=ubuntu-temp.tar.gz
 	cd linotp-build && debuild -S
 
 
 # Debian builds create binary packages in linotpd/build
 .PHONY: builddeb
 builddeb:
-	$(MAKE) prepare-deb-source DEB_BUILDDIR=$(DEB_BUILDDIR) TAR_SUFFIX=orig.tar.gz
+	$(MAKE) -f Makefile.linotp prepare-deb-source DEB_BUILDDIR=$(DEB_BUILDDIR) TAR_SUFFIX=orig.tar.gz
 	cd $(DEB_BUILDDIR); dpkg-buildpackage -i -I -rfakeroot $(DPKG_BUILDPACKAGE_ARGS)
 
 .PHONY: clean
