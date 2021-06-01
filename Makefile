@@ -324,6 +324,7 @@ docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 		tools/linotp* \
 		linotp/tests/integration/testdata/se_mypasswd \
 		$(DOCKER_BUILDDIR)
+	cp $(BUILDDIR)/dockerfy $(DOCKER_BUILDDIR)
 	cp -r config/docker-initscripts.d $(DOCKER_BUILDDIR)
 	cp -r apt $(DOCKER_BUILDDIR)
 
