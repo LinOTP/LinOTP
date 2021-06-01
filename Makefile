@@ -280,6 +280,7 @@ docker-build-linotp-builder:
 DOCKER_CONTAINER_TIMESTAMP := $(shell date +%H%M%S-%N)
 NAME_PREFIX := linotpbuilder-$(DOCKER_CONTAINER_TIMESTAMP)
 DOCKER_CONTAINER_NAME = $(NAME_PREFIX)
+DOCKER_BUILDDIR=$(BUILDDIR)/linotpd.build
 
 .PHONY: docker-build-debs
 docker-build-debs: docker-build-linotp-builder
@@ -317,21 +318,22 @@ $(BUILDDIR)/apt/Packages:
 docker-build-linotp: DOCKER_IMAGE=linotp
 docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	# Target: docker-build-linotp
+	mkdir -vp $(DOCKER_BUILDDIR)
 	cp Dockerfile \
 		config/*.tmpl \
 		tools/linotp* \
 		linotp/tests/integration/testdata/se_mypasswd \
-		$(BUILDDIR)
-	cp -r config/docker-initscripts.d $(BUILDDIR)
-	cp -r apt $(BUILDDIR)
+		$(DOCKER_BUILDDIR)
+	cp -r config/docker-initscripts.d $(DOCKER_BUILDDIR)
+	cp -r apt $(DOCKER_BUILDDIR)
 
 	# We show the files sent to Docker context here to aid in debugging
-	find $(BUILDDIR)
+	find $(DOCKER_BUILDDIR)
 
 	$(DOCKER_BUILD) \
 		$(DOCKER_TAG_ARGS) \
 		-t $(DOCKER_IMAGE) \
-		$(BUILDDIR)
+		$(DOCKER_BUILDDIR)
 
 # Build testing Docker Container
 # This container is based on the linotp image and includes additional
