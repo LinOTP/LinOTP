@@ -25,9 +25,9 @@
 #
 """This is the SMSClass to send SMS via HTTP Post Rest Interface Gateways"""
 
-
 import logging
 import os
+from copy import deepcopy
 
 import requests
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
@@ -186,15 +186,15 @@ class RestSMSProvider(ISMSProvider):
 
         # fill in the data into the payload
 
-        json_body = {}
-        json_body.update(self.payload)
+        json_body = deepcopy(self.payload)
 
-        sms_message = json_body[self.sms_text_key]
+        sms_message = json_body.get(self.sms_text_key, "")
         if sms_message and "<message>" in sms_message:
             sms_message = sms_message.replace("<message>", message)
         else:
             sms_message = message
-        json_body[self.sms_text_key] = sms_message
+
+        json_replace(json_body, key=self.sms_text_key, value=sms_message)
 
         # ----------------------------------------------------------------- --
 
@@ -214,7 +214,7 @@ class RestSMSProvider(ISMSProvider):
             phone, json_body.get(self.sms_phone_key)
         )
 
-        json_body[self.sms_phone_key] = sms_phone
+        json_replace(json_body, key=self.sms_phone_key, value=sms_phone)
 
         # ----------------------------------------------------------------- --
 
@@ -303,4 +303,65 @@ class RestSMSProvider(ISMSProvider):
                 raise Exception("Failed to send SMS. %s" % str(exc))
 
 
-##eof##########################################################################
+def json_replace(payload, key, value):
+    """in a json document replace a value by a path expression
+
+        path expression could be:
+            "sender", "recipients[0].msisdn" or "phones[0]"
+
+    :param payload: the original document, will be modified
+    :param key: which could be a simple key name or a path expression
+    :param value: the replacemment value
+    :return: the modified document with the replaced values
+    """
+
+    # --------------------------------------------------------------------- --
+
+    # parse the key expression:
+    # split it at every '.' and if there is an array element [] this will be
+    # splited too:
+    # 'f[0].g' -> ['f', 0, 'g']
+    # the result is a list of json navigation re-assigning steps
+
+    parts = key.replace("[", ".").replace("]", "").split(".")
+    steps = [(int(p) if p.isdigit() else p) for p in parts]
+
+    # --------------------------------------------------------------------- --
+
+    # navigating the json document:
+    # with the list of json navigation re-assigning steps, we navigate the
+    # json document in a for loop of all steps but the last, which is required
+    # for the assignment step
+
+    # remarks: we set the walking node at the document root at the start
+
+    jdoc = payload
+
+    # move along in the json document by the walking steps
+
+    for step in steps[:-1]:
+        jdoc = jdoc[step]
+
+    # --------------------------------------------------------------------- --
+
+    # update the value in the document:
+    # to do so we have to identify what type the last node is:
+    # if it is a list:
+    # we can append or insert at the given position
+    # if it is something else we can do a direct assignment
+
+    last = steps[-1]
+
+    if isinstance(jdoc, list):
+        if isinstance(last, int):
+            if len(jdoc) <= last:
+                jdoc.append(value)
+            else:
+                jdoc[last] = value
+    else:
+        jdoc[last] = value
+
+    return payload
+
+
+## eof #######################################################################
