@@ -54,7 +54,7 @@ include:
     - REGISTRY_IMAGE=$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp
     - BUILDER_CACHE_KEY=$(sha256sum Dockerfile.builder | cut -d ' ' -f1)
     - BUILDER_CACHE_IMAGE=$REGISTRY_IMAGE-builder:${BUILDER_CACHE_KEY}
-    - LINOTP_CACHE_KEY=$(sha256sum linotpd/src/Dockerfile | cut -d ' ' -f1)
+    - LINOTP_CACHE_KEY=$(sha256sum Dockerfile | cut -d ' ' -f1)
     - LINOTP_CACHE_IMAGE=$REGISTRY_IMAGE:${LINOTP_CACHE_KEY}
     # Pull the old images to speedup the build process, the hope is
     # that the modified time will always be the same unless the file
@@ -270,7 +270,7 @@ unit-test:
   parallel: 4
   artifacts:
     reports:
-      junit: linotpd/src/linotp/tests/unit/unit-*.xml
+      junit: linotp/tests/unit/unit-*.xml
   script:
     - *pytest-args
     - make unittests PYTESTARGS="$PYTESTARGS"
@@ -282,7 +282,7 @@ unit-test:
     - .buster-tests
   artifacts:
     reports:
-      junit: linotpd/src/linotp/tests/functional/functional-*.xml
+      junit: linotp/tests/functional/functional-*.xml
   script:
     - *pytest-args
     - make functionaltests PYTESTARGS="$PYTESTARGS"
@@ -372,9 +372,9 @@ functional-test-postgres:
       "
   artifacts:
     reports:
-      junit: linotpd/src/linotp/tests/integration/e2e-*.xml
+      junit: linotp/tests/integration/e2e-*.xml
   script:
-    - cd linotpd/src/linotp/tests/integration
+    - cd linotp/tests/integration
     - >
         /usr/local/bin/dockerfy
         --template docker_cfg.ini.tmpl:/tmp/server_cfg.ini
@@ -422,12 +422,10 @@ apidocs:
   needs: ["build:debian-buster"]
   script:
     - python3 --version
-    - cd linotpd/src
     - pip3 install -e ".[apidocs]"
-    - cd ${CI_PROJECT_DIR}/linotpd/src/api-doc
+    - cd ${CI_PROJECT_DIR}/api-doc
     - make apidocs
     - make html
-    - mkdir ${CI_PROJECT_DIR}/api-doc
     - cp -a build/html/. ${CI_PROJECT_DIR}/api-doc
   artifacts:
     name: "linotp-apidocs"

@@ -45,7 +45,7 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
 
 VOLUME /linotpsrc
 
-WORKDIR /linotpsrc/linotpd/src/linotp/tests/unit
+WORKDIR /linotpsrc/linotp/tests/unit
 
 RUN useradd -ms /bin/bash tester
 RUN echo "root:Test123!\ntester:Test123!" | chpasswd

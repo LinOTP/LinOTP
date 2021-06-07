@@ -26,7 +26,7 @@
 
 PYTHON:=$(shell which python3)
 DESTDIR=/
-BUILDDIR=$(PWD)/../build
+BUILDDIR=$(PWD)/linotpd.build
 PROJECT=LinOTP
 LINOTP_SRC_VERSION=$(shell python3 setup.py --version)
 DEB_BUILDDIR:=$(BUILDDIR)/linotp
@@ -51,7 +51,7 @@ all:
 
 .PHONY: extract
 extract:
-	python setup.py extract_messages
+	$(PYTHON) setup.py extract_messages
 	$(foreach lang, \
 		$(I18N_LANGUAGES), \
 		msgmerge -U -s $(I18N_SRC)/$(lang)/LC_MESSAGES/linotp.po $(I18N_SRC)/linotp.pot \
@@ -66,7 +66,7 @@ translate:
 
 translate-%: $(I18N_SRC)/%/LC_MESSAGES/linotp.po
 	gtranslator $<
-	$(MAKE) compile_catalog
+	$(MAKE) -f Makefile.linotp compile_catalog
 
 # Compile a .po file to a .json file using the `pojson` tool.
 $(I18N_JSON_DEST)/%.json: $(I18N_SRC)/%/LC_MESSAGES/linotp.po
@@ -77,7 +77,7 @@ $(I18N_JSON_DEST)/%.json: $(I18N_SRC)/%/LC_MESSAGES/linotp.po
 # the .po files are compiled to .json files. The order doesn't matter.
 .PHONY: compile_catalog
 compile_catalog: $(I18N_JSON_FILES)
-	python setup.py compile_catalog
+	$(PYTHON) setup.py compile_catalog
 
 .PHONY: buildtranslation
 buildtranslation: extract compile_catalog
@@ -100,6 +100,7 @@ buildrpm:
 
 .PHONY: prepare-deb-source
 prepare-deb-source: source
+	# Target: prepare-deb-source
 	mkdir -pv $(DEB_BUILDDIR)
 
 	# Unpack clean sources to a staging directory for building from. This is to ensure
@@ -121,14 +122,15 @@ prepare-deb-source: source
 # Ubuntu builds create source packages in linotpd/src
 .PHONY: ppa-preprocess
 ppa-preprocess: source
-	$(MAKE) prepare-deb-source DEB_BUILDDIR=linotp-build TAR_SUFFIX=ubuntu-temp.tar.gz
+	$(MAKE) -f Makefile.linotp prepare-deb-source DEB_BUILDDIR=linotp-build TAR_SUFFIX=ubuntu-temp.tar.gz
 	cd linotp-build && debuild -S
 
 
 # Debian builds create binary packages in linotpd/build
 .PHONY: builddeb
 builddeb:
-	$(MAKE) prepare-deb-source DEB_BUILDDIR=$(DEB_BUILDDIR) TAR_SUFFIX=orig.tar.gz
+	# Target: builddeb (Makefile.linotp)
+	$(MAKE) -f Makefile.linotp prepare-deb-source DEB_BUILDDIR=$(DEB_BUILDDIR) TAR_SUFFIX=orig.tar.gz
 	cd $(DEB_BUILDDIR); dpkg-buildpackage -i -I -rfakeroot $(DPKG_BUILDPACKAGE_ARGS)
 
 .PHONY: clean
