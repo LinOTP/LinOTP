@@ -57,7 +57,6 @@ $ source linotp_dev/bin/activate
 Then go to the source code subdirectory for the LinOTP server, and
 install its development dependencies:
 ```terminal
-$ cd linotpd/src
 $ pip3 install -e .
 ```
 In order to run automated tests you must also install the test dependencies:
@@ -70,7 +69,7 @@ $ pip3 install -e ".[test]"
 ### Basics
 
 Configuration settings are hard-coded in
-`linotpd/src/linotp/settings.py`, which also defines a small set of
+`linotp/settings.py`, which also defines a small set of
 "environments" that pre-cook basic configurations:
 
 - _development_ is aimed at LinOTP developers running LinOTP on their
@@ -223,11 +222,11 @@ If you're making a distribution package, don't edit LinOTP's
 `settings.py` file to adapt the values of these directories. Instead,
 make a new configuration file and put it in a reasonable place such as
 `/usr/share/linotp/linotp.cfg`. A suitable defaults file for Debian
-based distributions is available at `linotpd/src/config/linotp.cfg`. The
-default configuration path can be set by placing a file with the name
+based distributions is available at `config/linotp.cfg`. The default
+configuration path can be set by placing a file with the name
 `linotp-cfg-default` in the same directory as the main `app.py`. The
 configuration path for Debian can be found in the file
-`linotpd/src/config/linotp-cfg-default`.
+`config/linotp-cfg-default`.
 
 ## Run the LinOTP development server
 
