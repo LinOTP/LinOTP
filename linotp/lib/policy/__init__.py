@@ -1375,7 +1375,12 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
         typ = param['type'].lower()
         action = 'enroll' + typ.upper()
 
-        if not get_selfservice_actions(authUser, action):
+        wpg = get_selfservice_actions(authUser, 'webprovisionGOOGLE')
+        wpgt = get_selfservice_actions(authUser, 'webprovisionGOOGLEtime')
+
+        if not (get_selfservice_actions(authUser, action)
+                or (typ == 'hmac' and wpg)
+                or (typ == 'totp' and wpgt)):
 
             log.warning("user %r@%r is not allowed to enroll %s!",
                         authUser.login, authUser.realm, typ)

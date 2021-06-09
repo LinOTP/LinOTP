@@ -5,6 +5,8 @@ linotp (3.1~0dev-0) experimental; urgency=low
   Features:
   * ManageUI policy editor utilizes full window width for improved layout.
   * Inform the admin via audit log if there is an challenge integrity error.
+  * Userservice allows enrollment of HOTP tokens with the webprovisionGOOGLE policy.
+  * Userservice allows enrollment of TOTP tokens with the webprovisionGOOGLEtime policy.
 
   Improvement:
   * Simplify the HMAC acountname and tokenissuer fallback rules for a more predictable
