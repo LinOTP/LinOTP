@@ -32,7 +32,9 @@ import logging
 import json
 import copy
 import httplib2
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 
 from flask import current_app
 

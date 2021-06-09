@@ -86,7 +86,6 @@ class PushTokenClassUnitTestCase(object):
 
     @patch("linotp.tokens.pushtoken.pushtoken.get_secret_key")
     def test_url_protocol_id(self, base_app, mocked_get_secret_key):
-
         """ PUSHTOKEN: Test url protocol id customization """
 
         public_key, secret_key = crypto_sign_keypair()

@@ -81,7 +81,7 @@ class EditRealmDialog(ManageDialog):
         # list
         with self.implicit_wait_disabled():
             elements = self.get_body_element().find_elements_by_css_selector(
-                #'#resolvers_list, #resolvers_list > ol > li')
+                # '#resolvers_list, #resolvers_list > ol > li')
                 "#realm_edit_resolver_list, #realm_edit_resolver_list ol > li"
             )
 

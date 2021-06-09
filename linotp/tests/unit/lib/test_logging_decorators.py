@@ -70,7 +70,6 @@ class TestLoggingDecorators(unittest.TestCase):
     # --------------------------------------------------------------------------
 
     def test_enter_exit_decorator(self):
-
         """
         Check if arguments decorated with @log_enter_exit are logged
         """
@@ -110,7 +109,6 @@ class TestLoggingDecorators(unittest.TestCase):
     # --------------------------------------------------------------------------
 
     def test_log_timedelta(self):
-
         """
         Check if timedelta is logged correctly
         """

@@ -93,7 +93,6 @@ def generate_pairing_url(
     hash_algorithm=None,
     use_cert=False,
 ):
-
     """
     Generates a pairing url that should be sent to the client.
 
@@ -303,7 +302,6 @@ PairingResponse = namedtuple("PairingResponse", ["token_type", "pairing_data"])
 
 
 def get_pairing_data_parser(token_type):
-
     """
     fetches a parser for the decrypted inner layer
     of a pairing response according to its token type.
@@ -330,7 +328,6 @@ def get_pairing_data_parser(token_type):
 
 
 def decrypt_pairing_response(enc_pairing_response):
-
     """
     Parses and decrypts a pairing response into a named tuple PairingResponse
     consisting of
@@ -407,8 +404,8 @@ def decrypt_pairing_response(enc_pairing_response):
 
     # ---------------------------------------------------------------------- --
 
-    R = data[5 : 32 + 5]
-    ciphertext = data[32 + 5 : -16]
+    R = data[5: 32 + 5]
+    ciphertext = data[32 + 5: -16]
     mac = data[-16:]
 
     # ---------------------------------------------------------------------- --

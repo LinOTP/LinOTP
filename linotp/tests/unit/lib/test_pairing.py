@@ -43,7 +43,6 @@ class PairingUnitTestCase(unittest.TestCase):
         mocked_get_public_key,
         mocked_get_dh_secret_key,
     ):
-
         """
         test if pairing urls get generated with correct custom protocol ids
         """

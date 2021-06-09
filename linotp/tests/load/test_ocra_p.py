@@ -25,6 +25,7 @@
 #
 """ paralell test"""
 
+import threading
 import logging
 import unittest
 import binascii
@@ -180,19 +181,16 @@ class OcraOtp(object):
         return otp
 
 
-import threading
-
-
 class doRequest(threading.Thread):
     def __init__(self, utest, rid=1, test=None):
 
         threading.Thread.__init__(self)
 
-        ## unit test obj
+        # unit test obj
         self.utest = utest
         self.test_name = test
 
-        ## the identificator
+        # the identificator
         self.rid = rid
         self.response = None
 
@@ -659,8 +657,8 @@ class OcraTest(TestController):
                     if idx1 != idx2:
                         c1 = rotp[idx1]
                         c2 = rotp[idx2]
-                        rotp = rotp[:idx1] + c2 + rotp[idx1 + 1 :]
-                        rotp = rotp[:idx2] + c1 + rotp[idx2 + 1 :]
+                        rotp = rotp[:idx1] + c2 + rotp[idx1 + 1:]
+                        rotp = rotp[:idx2] + c1 + rotp[idx2 + 1:]
         return rotp
 
     def init_0_QR_Token(
@@ -955,7 +953,7 @@ class OcraTest(TestController):
         assert '"status": true' in response
 
     ###############################################################################
-    ## paralell test starts here
+    # paralell test starts here
     ###############################################################################
 
     def ptest_OCRA_token_failcounterInc(self, tid=1):
@@ -1008,7 +1006,7 @@ class OcraTest(TestController):
             )
             assert '"value": true' in response
 
-            ## verify that the token is usable
+            # verify that the token is usable
             """ -2- fetch the challenge """
             p = {
                 "serial": serial,
@@ -1062,7 +1060,7 @@ class OcraTest(TestController):
             fcount = 0
             for count in range(1, 3):
 
-                ## create more than one challenge
+                # create more than one challenge
                 chals = random.randint(2, 5)
                 for cc in range(1, chals):
                     """ -2- fetch the challenge """

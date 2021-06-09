@@ -355,7 +355,7 @@ def test_config_explain_invalid_argument(app, runner):
     result = runner.invoke(cli_main, ["config", "explain", "--foobar"])
     assert result.exit_code == 2
     assert result.output == ""
-    usage = result.stderr[result.stderr.find("Usage: ") :]
+    usage = result.stderr[result.stderr.find("Usage: "):]
     usage = usage.lower().replace('"', "'")
     assert "try 'linotp config explain --help' for help." in usage
     assert "error: no such option: --foobar" in usage

@@ -31,7 +31,9 @@
 import logging
 import binascii
 
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 import json
 
 from datetime import datetime

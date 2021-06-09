@@ -65,7 +65,7 @@ class mTimeOtp(object):
         self.secPin = secPin
         self.pin = pin
 
-        self.oldtime = oldtime  ## last time access
+        self.oldtime = oldtime  # last time access
         self.digits = digits
 
     def checkOtp(self, anOtpVal, window=10, options=None):
@@ -101,7 +101,7 @@ class mTimeOtp(object):
             del key
             del pin
 
-        ## prevent access twice with last motp
+        # prevent access twice with last motp
         if res <= self.oldtime:
             log.warning(
                 "[checkOtp] otpvalue %s checked once before (%r<=%r)"
@@ -126,7 +126,7 @@ class mTimeOtp(object):
         :return:           the otp value
         :rtype:            string
         """
-        ## ref impl from https://github.com/szimszon/motpy/blob/master/motpy
+        # ref impl from https://github.com/szimszon/motpy/blob/master/motpy
         if pin is None:
             pin = self.pin
         if key is None:
@@ -162,7 +162,7 @@ def motp_test():
 
         i = i + 1
 
-    ### test our unit test values
+    # test our unit test values
     key = "1234567890123456"
     pin = "1234"
 

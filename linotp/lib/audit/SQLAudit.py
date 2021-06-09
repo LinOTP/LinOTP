@@ -234,13 +234,13 @@ class AuditTable(db.Model):
                         "truncating audit data: [audit.%s] %s" % (name, value)
                     )
 
-                ## during the encoding the value might expand -
-                ## so we take this additional length into account
+                # during the encoding the value might expand -
+                # so we take this additional length into account
                 add_len = len(encoded_value) - len(value)
                 value = value[: field_len - add_len]
 
         if name in AUDIT_ENCODE:
-            ## encode data
+            # encode data
             if value:
                 value = linotp.lib.crypto.utils.uencode(value)
         super(AuditTable, self).__setattr__(name, value)
@@ -570,7 +570,7 @@ class Audit(AuditBase):
 
         line = self._attr_to_dict(audit_line)
 
-        ## if we have an \uencoded data, we extract the unicode back
+        # if we have an \uencoded data, we extract the unicode back
         for key, value in list(line.items()):
             if value and isinstance(value, str):
                 value = linotp.lib.crypto.utils.udecode(value)
@@ -683,8 +683,8 @@ class Audit(AuditBase):
             stop = offset + limit
             audit_q = audit_q.slice(start, stop)
 
-        ## we drop here the ORM due to memory consumption
-        ## and return a resultproxy for row iteration
+        # we drop here the ORM due to memory consumption
+        # and return a resultproxy for row iteration
         result = self.session.execute(audit_q.statement)
         return result
 

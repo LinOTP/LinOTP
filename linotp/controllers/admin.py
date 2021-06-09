@@ -487,6 +487,7 @@ class AdminController(BaseController, SessionCookieMixin):
 
 
 ########################################################
+
     def enable(self):
         """
         method:
@@ -558,6 +559,7 @@ class AdminController(BaseController, SessionCookieMixin):
 
 
 ########################################################
+
     def getSerialByOtp(self):
         """
         method:
@@ -635,6 +637,7 @@ class AdminController(BaseController, SessionCookieMixin):
 
 
 ########################################################
+
     def disable(self):
         """
         method:
@@ -704,6 +707,7 @@ class AdminController(BaseController, SessionCookieMixin):
 
 
 #######################################################
+
     def check_serial(self):
         '''
         method
@@ -760,6 +764,7 @@ class AdminController(BaseController, SessionCookieMixin):
 
 
 ########################################################
+
     def init(self):
         """
         method:
@@ -1013,6 +1018,7 @@ class AdminController(BaseController, SessionCookieMixin):
 
 
 ########################################################
+
 
     def assign(self):
         """
@@ -1326,6 +1332,7 @@ class AdminController(BaseController, SessionCookieMixin):
 
 
 ########################################################
+
 
     def set(self):
         """
@@ -2160,6 +2167,7 @@ class AdminController(BaseController, SessionCookieMixin):
 
 
 ########################################################
+
 
     def loadtokens(self):
         """

@@ -50,6 +50,8 @@
 ###########################################################################
 
 
+from binascii import b2a_hex as _b2a_hex
+from base64 import b64encode as _b64encode
 from struct import pack
 
 import sys
@@ -88,17 +90,11 @@ def binxor(a, b):
     return bytes([x ^ y for (x, y) in zip(a, b)])
 
 
-from base64 import b64encode as _b64encode
-
-
 def b64encode(data, chars="+/"):
     if isunicode(chars):
         return _b64encode(data, chars.encode("utf-8")).decode("utf-8")
     else:
         return _b64encode(data, chars)
-
-
-from binascii import b2a_hex as _b2a_hex
 
 
 def b2a_hex(s):

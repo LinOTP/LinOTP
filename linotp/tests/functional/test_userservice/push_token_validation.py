@@ -81,14 +81,14 @@ class Push_Token_Validation:
         # extract metadata and the public key
 
         data_encoded = pairing_url[
-            len(Push_Token_Validation.uri_schema + "://pair/") :
+            len(Push_Token_Validation.uri_schema + "://pair/"):
         ]
 
         data = decode_base64_urlsafe(data_encoded)
         version, token_type, flags = struct.unpack("<bbI", data[0:6])
         partition = struct.unpack("<I", data[6:10])[0]
 
-        server_public_key = data[10 : 10 + 32]
+        server_public_key = data[10: 10 + 32]
 
         # validate protocol versions and type id
 
@@ -100,7 +100,7 @@ class Push_Token_Validation:
         # extract custom data that may or may not be present
         # (depending on flags)
 
-        custom_data = data[10 + 32 :]
+        custom_data = data[10 + 32:]
 
         assert flags & FLAG_PAIR_SERIAL
         token_serial, __, custom_data = custom_data.partition(b"\x00")
@@ -172,7 +172,7 @@ class Push_Token_Validation:
         """
 
         challenge_data_encoded = challenge_url[
-            len(Push_Token_Validation.uri_schema + "://chal/") :
+            len(Push_Token_Validation.uri_schema + "://chal/"):
         ]
         challenge_data = decode_base64_urlsafe(challenge_data_encoded)
 
@@ -196,8 +196,8 @@ class Push_Token_Validation:
         # prepare decryption by seperating R from
         # ciphertext and server signature
 
-        R = challenge_data[5 : 5 + 32]
-        ciphertext = challenge_data[5 + 32 : -64]
+        R = challenge_data[5: 5 + 32]
+        ciphertext = challenge_data[5 + 32: -64]
         server_signature = challenge_data[-64:]
 
         # check signature

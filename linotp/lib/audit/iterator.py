@@ -83,23 +83,23 @@ class AuditQuery(object):
                     key = key.strip()
                     value = value.strip()
 
-                    ## unicode escape search parameter to match
-                    ## encoding in db, which stores audit
-                    ## entries in escaped format
+                    # unicode escape search parameter to match
+                    # encoding in db, which stores audit
+                    # entries in escaped format
                     value = linotp.lib.crypto.utils.uencode(value)
                     self._search_dict[key] = value
             else:
-                ## unicode escape search parameter to match
-                ## encoding in db, which stores audit
-                ## entries in escaped format
+                # unicode escape search parameter to match
+                # encoding in db, which stores audit
+                # entries in escaped format
                 value = param["query"]
                 value = linotp.lib.crypto.utils.uencode(value)
                 self._search_dict[param["qtype"]] = value
         else:
             for key, value in list(param.items()):
-                ## unicode escape search parameter to match
-                ## encoding in db, which stores audit
-                ## entries in escaped format
+                # unicode escape search parameter to match
+                # encoding in db, which stores audit
+                # entries in escaped format
                 value = linotp.lib.crypto.utils.uencode(value)
                 self._search_dict[key] = value
 
@@ -155,7 +155,7 @@ class AuditQuery(object):
     def get_entry(self, row):
         entry = {}
         if type(row) != dict:
-            ## convert table data to dict!
+            # convert table data to dict!
             row = self.audit_obj.row2dict(row)
         if "number" in row:
             cell = []
@@ -269,8 +269,8 @@ class CSVAuditIterator(object):
 
             raw_row = entry.get("cell", [])
 
-            ## we must escape some dump entries, which destroy the
-            ## import of the csv data - like SMSProviderConfig 8-(
+            # we must escape some dump entries, which destroy the
+            # import of the csv data - like SMSProviderConfig 8-(
             row = []
             for row_entry in raw_row:
                 if isinstance(row_entry, str):

@@ -91,7 +91,6 @@ def get_voice_message(user="", realm=""):
 
 
 def get_voice_language(user="", realm=""):
-
     """
     This function returns the voice language as defined in the policy
     authentication/voice_language. If no such policy is defined, the
@@ -544,7 +543,6 @@ class VoiceTokenClass(HmacTokenClass):
         return success, result
 
     def getOtp(self, curTime=None):
-
         """
         :raises NotImplementedError
         """
@@ -642,7 +640,6 @@ class VoiceTokenClass(HmacTokenClass):
         return self.getFromTokenInfo("phone")
 
     def getInitDetail(self, params, user=None):
-
         """
         Returns additional details upon initialisation of the token
         """

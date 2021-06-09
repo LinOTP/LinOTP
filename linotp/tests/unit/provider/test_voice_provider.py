@@ -35,6 +35,8 @@ from linotp.provider.voiceprovider.custom_voice_provider import (
 )
 
 # submitVoiceMessage
+
+
 def mocked_make_http_post_request_(
     CustomVoiceProvider_Object, *argparams, **kwparams
 ):

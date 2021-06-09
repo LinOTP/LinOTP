@@ -48,7 +48,6 @@ class QRTokenPairingData(_QRTokenPairingData):
 
 
 def parse_qrtoken_pairing_data(plaintext):
-
     """
     Parses the decrypted inner layer of a pairing response
     according to the QRToken Pairing data format.
@@ -92,7 +91,7 @@ def parse_qrtoken_pairing_data(plaintext):
     #  size     |  5  |       32        |  ?  |
     #            -----------------------------
 
-    user_public_key = plaintext[5 : 5 + 32]
+    user_public_key = plaintext[5: 5 + 32]
 
     # ----------------------------------------------------------------------- --
 
@@ -106,7 +105,7 @@ def parse_qrtoken_pairing_data(plaintext):
 
     # parse token_serial and user identification
 
-    serial_user_data = plaintext[5 + 32 :].split(b"\x00")
+    serial_user_data = plaintext[5 + 32:].split(b"\x00")
     serial = serial_user_data[0].decode("utf8")
     user_login = serial_user_data[1].decode("utf8")
 

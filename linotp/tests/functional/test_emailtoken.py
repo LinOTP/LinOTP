@@ -230,7 +230,6 @@ class TestEmailtokenController(TestController):
         ], "Challenge should have timed out"
 
     def test_otp_not_reused(self):
-
         """
         check if otp isn't reused
         """

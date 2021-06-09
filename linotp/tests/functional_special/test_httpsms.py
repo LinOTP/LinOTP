@@ -38,6 +38,7 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
 
+import json
 import logging
 import tempfile
 import urllib.parse
@@ -85,11 +86,11 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
     return resp, json.dumps(content)
 
 
-import json
-
 log = logging.getLogger(__name__)
 
 #
+
+
 class DefaultProvider:
     def __init__(self, test, config):
         # get the old default provider and remember
@@ -239,7 +240,7 @@ class TestHttpSmsController(TestSpecialController):
 
         assert '"status": true' in response, response
 
-        for serial in self.serials[2 : self.max]:
+        for serial in self.serials[2: self.max]:
             parameters = {
                 "serial": serial,
                 "otpkey": (

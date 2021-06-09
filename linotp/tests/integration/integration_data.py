@@ -28,6 +28,7 @@ This file contains sample data for the integration tests
 """
 
 # LDAP resolvers
+from typing import Dict, List, Union
 ldap_ca_cert = """-----BEGIN CERTIFICATE-----
 MIIFgzCCA2ugAwIBAgIBADANBgkqhkiG9w0BAQ0FADBPMQswCQYDVQQGEwJERTEq
 MCgGA1UECgwhTFNFIExlYWRpbmcgU2VjdXJpdHkgRXhwZXJ0cyBHbWJIMRQwEgYD
@@ -60,8 +61,6 @@ a9DD2ujwHAbgpbE4id0bHYbpPVNVNMADwA8g0vI1fcd+VzeEcU/8wK77zl3MjXM4
 iDCfI7WTMiUSMthBqBysBkLTVODcoK3C0QmJMbGAczHglK65tVInkK504+SdRREz
 D73172agRToOg0Sid2C4iipj//OA3q4=
 -----END CERTIFICATE-----"""
-
-from typing import Dict, List, Union
 
 
 musicians_ldap_resolver: Dict[str, Union[str, int, bool, List]] = {

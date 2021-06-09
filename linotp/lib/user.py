@@ -834,7 +834,6 @@ def getSplitAtSign():
 
 
 def find_resolver_spec_for_config_identifier(realms_dict, config_identifier):
-
     """
     Iterates through a realms dictionary, extracts the resolver specification
     and returns it, when its config identifier matches the provided

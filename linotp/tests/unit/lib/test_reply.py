@@ -95,7 +95,6 @@ class TestReplyTestCase(object):
 
     @pytest.mark.skip("Not yet ported to Flask")
     def test_response_iterator(self):
-
         """ test if request context gets reinstated in sendResultIterator """
 
         def request_context_test_iterator():

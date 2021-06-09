@@ -25,14 +25,12 @@
 #
 """ Tages Password importer"""
 
+from linotp.lib.ImportOTP import ImportException
 import re
 
 import logging
 
 log = logging.getLogger(__name__)
-
-
-from linotp.lib.ImportOTP import ImportException
 
 
 def checkserial(serial):

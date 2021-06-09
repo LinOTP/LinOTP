@@ -241,7 +241,7 @@ def dec(h, p):
     v = "%d" % truncated_value(h)
     if len(v) < p:
         v = (p - len(v)) * "0" + v
-    return v[len(v) - p :]
+    return v[len(v) - p:]
 
 
 def int2beint64(i):
@@ -710,7 +710,7 @@ class OcraSuite:
         challenge = ocraChallenge.get("challenge")
         idx = challenge.find(":")
         if idx != -1:
-            challenge = challenge[idx + 1 :]
+            challenge = challenge[idx + 1:]
 
         param = {}
         param["Q"] = challenge

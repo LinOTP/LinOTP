@@ -387,7 +387,7 @@ class DefaultSecurityModule(SecurityModule):
         # split at ":"
         pos = cryptValue.find(":")
         bIV = cryptValue[:pos]
-        bData = cryptValue[pos + 1 : len(cryptValue)]
+        bData = cryptValue[pos + 1: len(cryptValue)]
 
         iv = binascii.unhexlify(bIV)
         data = binascii.unhexlify(bData)

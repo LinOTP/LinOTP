@@ -368,7 +368,6 @@ class TestCheckStatus(TestController):
         return
 
     def test_otppin_2(self):
-
         """
         check, if empty pass on otp pin policy 2 validates correctly
         """

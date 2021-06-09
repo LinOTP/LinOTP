@@ -27,6 +27,9 @@
 Parsing of pskc files:
     http://tools.ietf.org/search/rfc6030
 """
+from linotp.lib.ImportOTP import getTagName, ImportException
+import linotp.lib.crypto.pbkdf2 as pbkdf2
+import logging
 import xml.etree.cElementTree as etree
 import re
 import binascii
@@ -38,13 +41,8 @@ sha = hashlib.sha1
 md5 = hashlib.md5
 sha256 = hashlib.sha256
 
-import logging
 
 log = logging.getLogger(__name__)
-
-import linotp.lib.crypto.pbkdf2 as pbkdf2
-
-from linotp.lib.ImportOTP import getTagName, ImportException
 
 
 def checkSerial(serial):
@@ -85,7 +83,7 @@ def aes_decrypt(transport_b64, key_hex, serial=""):
         if a > bsize:
             return data
 
-        padding = data[len(data) - a :]
+        padding = data[len(data) - a:]
         if not (bytes([a]) * a == padding):
             # it seems not to be padded
             return data

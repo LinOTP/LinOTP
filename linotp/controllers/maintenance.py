@@ -75,7 +75,6 @@ class MaintenanceController(BaseController):
                 abort(401)
 
     def setLogLevel(self):
-
         """
         set the log level of a certain logger which is identified by
         the url parameter loggerName.

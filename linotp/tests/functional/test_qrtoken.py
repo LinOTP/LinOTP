@@ -673,12 +673,12 @@ class TestQRToken(TestController):
 
         # extract metadata and the public key
 
-        data_encoded = pairing_url[len(self.uri + "://pair/") :]
+        data_encoded = pairing_url[len(self.uri + "://pair/"):]
         data = decode_base64_urlsafe(data_encoded)
         version, token_type, flags = struct.unpack("<bbI", data[0:6])
         partition = struct.unpack("<I", data[6:10])[0]
 
-        server_public_key_dsa = data[10 : 10 + 32]
+        server_public_key_dsa = data[10: 10 + 32]
         server_public_key = dsa_to_dh_public(server_public_key_dsa)
 
         # validate protocol versions and type id
@@ -691,7 +691,7 @@ class TestQRToken(TestController):
         # extract custom data that may or may not be present
         # (depending on flags)
 
-        custom_data = data[10 + 32 :]
+        custom_data = data[10 + 32:]
 
         token_serial = None
         if flags & FLAG_PAIR_SERIAL:
@@ -767,7 +767,7 @@ class TestQRToken(TestController):
             cant' be sent be the server (is generated from signature)
         """
 
-        challenge_data_encoded = challenge_url[len(self.uri + "://chal/") :]
+        challenge_data_encoded = challenge_url[len(self.uri + "://chal/"):]
         challenge_data = decode_base64_urlsafe(challenge_data_encoded)
 
         # ------------------------------------------------------------------- --
@@ -790,8 +790,8 @@ class TestQRToken(TestController):
         # prepare decryption by seperating R from
         # ciphertext and tag
 
-        R = challenge_data[5 : 5 + 32]
-        ciphertext = challenge_data[5 + 32 : -16]
+        R = challenge_data[5: 5 + 32]
+        ciphertext = challenge_data[5 + 32: -16]
         tag = challenge_data[-16:]
 
         # ------------------------------------------------------------------- --
@@ -837,8 +837,8 @@ class TestQRToken(TestController):
             # plaintext has a server signature as a header
             # extract it and check if it is correct
 
-            server_signature = plaintext[10 : 10 + 32]
-            data = plaintext[10 + 32 :]
+            server_signature = plaintext[10: 10 + 32]
+            data = plaintext[10 + 32:]
 
             # calculate secret
 
@@ -2321,7 +2321,6 @@ class TestQRToken(TestController):
     # ----------------------------------------------------------------------- --
 
     def test_unpairing(self):
-
         """ QRTOKEN: Test if unpairing works with serial + policy check """
 
         pairing_url, pin = self.enroll_qrtoken()
@@ -2391,7 +2390,6 @@ class TestQRToken(TestController):
     # --------------------------------------------------------------------------- --
 
     def test_unpairing_with_user(self):
-
         """ QRTOKEN: Test if unpairing works with user """
 
         pairing_url, pin = self.enroll_qrtoken()

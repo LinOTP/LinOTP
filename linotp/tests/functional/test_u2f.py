@@ -894,7 +894,6 @@ class TestU2FController(TestController):
         assert '"status": true' in response, response
 
     def authentication_with_use_offline(self):
-
         """
         Tests, if info for U2F offline mode is transfered
         """

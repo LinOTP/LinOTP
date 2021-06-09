@@ -84,7 +84,6 @@ class ColorFormatter(logging.Formatter):
 
 
 def init_logging_config():
-
     """
     Loads the persistent logging configuration from the database
 
@@ -106,7 +105,6 @@ def init_logging_config():
 
 
 def log_request_timedelta(logger):
-
     """
     this function logs the time delta between the start and
     the end of the request and should be called at the end.
@@ -135,7 +133,6 @@ def log_request_timedelta(logger):
 
 
 def log_enter_exit(logger):
-
     """
     A decorator that logs entry and exit points of the function it
     decorates. By default all function arguments and return values
@@ -191,7 +188,6 @@ def log_enter_exit(logger):
 
 
 def log_timedelta(logger):
-
     """
     Decorator to log time spent in processing a function
     from its entry point to its return.
@@ -236,7 +232,6 @@ def log_timedelta(logger):
 
 
 def set_logging_level(name, level):
-
     """
     sets the logging level in the database as well as
     in the current running logger

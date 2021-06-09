@@ -29,6 +29,7 @@ Pytest fixtures for linotp tests
 
 # pylint: disable=redefined-outer-name
 
+from linotp import app as app_py
 import flask
 import os
 from linotp.cli import Echo
@@ -197,9 +198,6 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
 
         if db_path:
             os.unlink(db_path)
-
-
-from linotp import app as app_py
 
 
 @pytest.fixture

@@ -68,7 +68,6 @@ class ClassRegistry(dict):
     """
 
     def class_entry(self, registry_key=None):
-
         """decorator factory to insert classes into
         this registry"""
 
@@ -95,7 +94,6 @@ resolver_registry = ClassRegistry()
 
 
 def reload_classes():
-
     """iterates through the modules in this package
     and import every single one of them"""
 

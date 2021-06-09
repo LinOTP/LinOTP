@@ -183,7 +183,6 @@ class ValidateController(BaseController):
 
     # @profile_decorator(log_file="/tmp/validate.prof")
     def check(self):
-
         """
         This function is used to validate the username and the otp value/password.
 
@@ -407,14 +406,14 @@ class ValidateController(BaseController):
             db.session.commit()
             response.headers["blablafoo"] = "application/json"
 
-            ## TODO: this code seems not to be finished
+            # TODO: this code seems not to be finished
             if not ok:
                 abort(403)
             else:
                 return "Preshared Key Todo"
 
         except flap.HTTPUnauthorized as acc:
-            ## the exception, when an abort() is called if forwarded
+            # the exception, when an abort() is called if forwarded
             log.exception("[__before__::%r] webob.exception %r" % acc)
             db.session.rollback()
             raise acc
@@ -458,7 +457,7 @@ class ValidateController(BaseController):
                         "[samlcheck] Calling controller samlcheck. But allowSamlAttributes is False."
                     )
                 if "True" == allowSAML:
-                    ## Now we get the attributes of the user
+                    # Now we get the attributes of the user
                     user = getUserFromParam(param)
                     (uid, resId, resIdC) = getUserId(user)
                     userInfo = getUserInfo(uid, resId, resIdC)
@@ -547,7 +546,6 @@ class ValidateController(BaseController):
     # ------------------------------------------------------------------------ -
 
     def accept_transaction(self):
-
         """
         confirms a transaction.
 
@@ -611,7 +609,6 @@ class ValidateController(BaseController):
     # ------------------------------------------------------------------------ -
 
     def reject_transaction(self):
-
         """
         rejects a transaction.
 
@@ -852,7 +849,7 @@ class ValidateController(BaseController):
 
             (ret, opt) = self._check(param)
 
-            ## here we build some backward compatibility
+            # here we build some backward compatibility
             if type(opt) is dict:
                 state = opt.get("state", "") or ""
                 message = opt.get("message", "") or "No sms message defined!"

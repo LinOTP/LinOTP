@@ -172,7 +172,6 @@ class RemoteServiceList(list):
         list.append(self, service)
 
     def call_first_available(self, *args, **kwargs):
-
         """
         calls the first available service with the supplied
         arguments.

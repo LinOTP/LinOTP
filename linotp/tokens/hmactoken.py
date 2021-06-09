@@ -474,7 +474,7 @@ class HmacTokenClass(TokenClass):
         res = -1
         autosync = False
 
-        ## get autosync from config or use False as default
+        # get autosync from config or use False as default
         setting = getFromConfig("AutoResync", False)
         # TODO: nasty:
         # The SQLite database returns AutoResync as a boolean and not as a string.
@@ -489,7 +489,7 @@ class HmacTokenClass(TokenClass):
             else:
                 autosync = False
 
-        ## if autosync is enabled
+        # if autosync is enabled
         if False == autosync:
             log.debug(
                 "[autosync] end. autosync is not enabled : res %r" % (res)
@@ -521,7 +521,7 @@ class HmacTokenClass(TokenClass):
                 else:
                     res = -1
 
-                ## now clean the resync data
+                # now clean the resync data
                 del info["dueDate"]
                 del info["otp1c"]
                 self.setTokenInfo(info)

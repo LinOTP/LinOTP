@@ -37,6 +37,8 @@ from linotp.provider.smsprovider.DeviceSMSProvider import DeviceSMSProvider
 # are independent of whether gnokii is installed.
 # The actual testing is carried out in 2 subclasses
 # corresponding to the separate situations
+
+
 class BaseClass:
     class BaseTestDeviceSMS(TestCase):
         @classmethod

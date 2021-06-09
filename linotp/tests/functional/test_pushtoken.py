@@ -173,7 +173,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def setPolicy(self, params):
-
         """ sets a system policy defined by param """
 
         response = self.make_system_request("setPolicy", params)
@@ -192,7 +191,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def create_dummy_cb_policies(self):
-
         """sets some dummy callback policies. callback policies get ignored
         by the tests, but are nonetheless necessary for the backend"""
 
@@ -227,7 +225,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def enroll_pushtoken(self, user=None, pin="1234", serial=None):
-
         """
         enrolls a pushtoken
 
@@ -329,7 +326,6 @@ class TestPushToken(TestController):
         retry_pairing=1,
         retry_activation=1,
     ):
-
         """
         enroll token and pair it
 
@@ -369,7 +365,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def pair_token(self, pairing_url, pin="1234"):
-
         """
         Pair an enrolled token
         - use the qr url to instantiate the test user token and
@@ -420,7 +415,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def create_user_token_by_pairing_url(self, pairing_url, pin="1234"):
-
         """
         parses the pairing url and saves the extracted data in
         the fake token database of this test class.
@@ -433,12 +427,12 @@ class TestPushToken(TestController):
 
         # extract metadata and the public key
 
-        data_encoded = pairing_url[len(self.uri + "://pair/") :]
+        data_encoded = pairing_url[len(self.uri + "://pair/"):]
         data = decode_base64_urlsafe(data_encoded)
         version, token_type, flags = struct.unpack("<bbI", data[0:6])
         partition = struct.unpack("<I", data[6:10])[0]
 
-        server_public_key = data[10 : 10 + 32]
+        server_public_key = data[10: 10 + 32]
 
         # validate protocol versions and type id
 
@@ -450,7 +444,7 @@ class TestPushToken(TestController):
         # extract custom data that may or may not be present
         # (depending on flags)
 
-        custom_data = data[10 + 32 :]
+        custom_data = data[10 + 32:]
 
         token_serial = None
         if flags & FLAG_PAIR_SERIAL:
@@ -484,7 +478,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def decrypt_and_verify_challenge(self, challenge_url, action):
-
         """
         Decrypts the data packed in the challenge url, verifies
         its content, returns the parsed data as a dictionary,
@@ -524,7 +517,7 @@ class TestPushToken(TestController):
             respond to the challenge
         """
 
-        challenge_data_encoded = challenge_url[len(self.uri + "://chal/") :]
+        challenge_data_encoded = challenge_url[len(self.uri + "://chal/"):]
         challenge_data = decode_base64_urlsafe(challenge_data_encoded)
 
         # ------------------------------------------------------------------ --
@@ -548,8 +541,8 @@ class TestPushToken(TestController):
         # prepare decryption by seperating R from
         # ciphertext and server signature
 
-        R = challenge_data[5 : 5 + 32]
-        ciphertext = challenge_data[5 + 32 : -64]
+        R = challenge_data[5: 5 + 32]
+        ciphertext = challenge_data[5 + 32: -64]
         server_signature = challenge_data[-64:]
 
         # check signature
@@ -704,7 +697,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def create_pairing_response_by_serial(self, user_token_id, gda=None):
-
         """
         Creates a base64-encoded pairing response that identifies
         the token by its serial
@@ -768,7 +760,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def send_pairing_response(self, pairing_response):
-
         """ sends a pairing response to /validate/pair """
 
         params = {"pairing_response": pairing_response}
@@ -834,7 +825,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def test_signreq(self):
-
         """ PushToken: Check if signing transactions works correctly """
 
         user_token_id = self.execute_correct_pairing(user="root")
@@ -1045,7 +1035,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def test_signreq_reject(self):
-
         """ PushToken: Check if reject signing transactions works correctly """
 
         user_token_id = self.execute_correct_pairing(user="root", pin="1234")
@@ -1115,7 +1104,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def test_failed_signreq(self):
-
         """ PushToken: Check if signing transactions fails correctly """
 
         user_token_id = self.execute_correct_pairing()
@@ -1165,7 +1153,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def test_repairing(self):
-
         """ PushToken: Check if repairing works correctly """
 
         user_token_id = self.execute_correct_pairing()
@@ -1209,7 +1196,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def test_repairing_fail_sig(self):
-
         """ PushToken: Check if repairing fails correctly (wrong sig) """
 
         user_token_id = self.execute_correct_pairing()
@@ -1253,7 +1239,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def test_repairing_fail_pubkey(self):
-
         """ PushToken: Check if repairing fails correctly (wrong pubkey) """
 
         user_token_id = self.execute_correct_pairing()
@@ -1302,7 +1287,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def test_login(self):
-
         """ PushToken: Check if signing logins works correctly """
 
         user_token_id = self.execute_correct_pairing()
@@ -1344,7 +1328,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def test_unsupported_content_type(self):
-
         """ PushToken: Check for unsupported content types """
 
         user_token_id = self.execute_correct_pairing()

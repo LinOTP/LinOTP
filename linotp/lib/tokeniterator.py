@@ -25,33 +25,25 @@
 #
 """ contains the tokeniterator """
 
-ENCODING = "utf-8"
-
-import re
-import logging
-import fnmatch
-
-import json
-
-from sqlalchemy import or_, and_, not_
-
-import linotp
-from linotp.lib.error import UserError
-
+from linotp.lib.config import getFromConfig
+from linotp.model import db, Token, Realm, TokenRealm
+from linotp.lib.user import NoResolverFound
+from linotp.lib.realm import getRealms
+from linotp.lib.user import User
+from linotp.lib.user import getUserId, getUserInfo
 from linotp.lib.token import (
     getTokenRealms,
     getTokens4UserOrSerial,
     token_owner_iterator,
 )
-from linotp.lib.user import getUserId, getUserInfo
-from linotp.lib.user import User
-from linotp.lib.realm import getRealms
-
-from linotp.lib.user import NoResolverFound
-
-from linotp.model import db, Token, Realm, TokenRealm
-
-from linotp.lib.config import getFromConfig
+from linotp.lib.error import UserError
+import linotp
+from sqlalchemy import or_, and_, not_
+import json
+import fnmatch
+import logging
+import re
+ENCODING = "utf-8"
 
 
 log = logging.getLogger(__name__)
@@ -170,7 +162,7 @@ class TokenIterator(object):
         loginUser = loginUser.replace("'", "")
 
         searchType = "any"
-        ## search for a 'blank' user
+        # search for a 'blank' user
         if len(loginUser) == 0 and len(user.login) > 0:
             searchType = "blank"
         elif loginUser == "/:no user:/" or loginUser == "/:none:/":
@@ -180,7 +172,7 @@ class TokenIterator(object):
         elif "*" in loginUser:
             searchType = "wildcard"
         else:
-            ## no blank and no wildcard search
+            # no blank and no wildcard search
             searchType = "exact"
 
         if searchType == "blank":
@@ -240,7 +232,7 @@ class TokenIterator(object):
                     for tok in tokens:
                         serials.append(tok.LinOtpTokenSerialnumber)
                 except UserError as ex:
-                    ## we get an exception if the user is not found
+                    # we get an exception if the user is not found
                     log.debug(
                         "[TokenIterator::init] no exact user: %r" % (user)
                     )
@@ -254,7 +246,7 @@ class TokenIterator(object):
                 # and return nothing
                 ucondition = and_(Token.LinOtpTokenSerialnumber == "")
 
-        ## handle case, when nothing found in former cases
+        # handle case, when nothing found in former cases
         if searchType == "wildcard":
 
             serials = _user_expression_match(loginUser, token_owner_iterator())
@@ -342,7 +334,7 @@ class TokenIterator(object):
             for token_tuple in token_id_tuples:
                 token_ids.add(token_tuple[0])
 
-            ## define the token id not condition
+            # define the token id not condition
             rcondition = and_(not_(Token.LinOtpTokenId.in_(token_ids)))
             return rcondition
 
@@ -366,7 +358,7 @@ class TokenIterator(object):
         return rcondition
 
     def _get_tokens_in_realm(self, valid_realms):
-        ## get all matching realms
+        # get all matching realms
         realm_id_tuples = (
             db.session.query(Realm.id)
             .filter(Realm.name.in_(valid_realms))
@@ -375,7 +367,7 @@ class TokenIterator(object):
         realm_ids = set()
         for realm_tuple in realm_id_tuples:
             realm_ids.add(realm_tuple[0])
-        ## get all tokenrealm ids
+        # get all tokenrealm ids
         token_id_tuples = (
             db.session.query(TokenRealm.token_id)
             .filter(TokenRealm.realm_id.in_(realm_ids))

@@ -185,7 +185,7 @@ class TestComparePDKDF(unittest.TestCase):
                     "55"
                     "48"
                     "09"
-                    "9d"  #  (16 octets)
+                    "9d"  # (16 octets)
                     "cc"
                     "37"
                     "d7"

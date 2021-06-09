@@ -28,7 +28,9 @@
 import sys
 import datetime
 from getopt import getopt, GetoptError
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 import logging
 import json
 import http.cookies
@@ -87,18 +89,18 @@ def parse_dat_data(data, d_string=None):
     try:
         startdate = parse_datetime(d_string)
 
-        ## collect all token info in an array
+        # collect all token info in an array
         lines = []
 
         for line in data.splitlines():
             line = line.strip()
 
-            ## if line is empty, we take all already defined lines and
-            ## create an token out of it
+            # if line is empty, we take all already defined lines and
+            # create an token out of it
             if len(line) == 0:
                 token = create_token(lines, startdate)
-                ## if we get a token, we can preserve this for
-                ## later, to store them
+                # if we get a token, we can preserve this for
+                # later, to store them
                 if token is not None:
                     LOG.info("Token parsed: %r" % token)
                     serial = token.serial
@@ -107,7 +109,7 @@ def parse_dat_data(data, d_string=None):
             else:
                 lines.append(line)
 
-        ## if finally there are lines left, try to create an additional token
+        # if finally there are lines left, try to create an additional token
         if len(lines) != 0:
             token = create_token(lines, startdate)
             if token is not None:
@@ -132,8 +134,8 @@ class DatToken(object):
         build up the default values
         """
 
-        ## the init_params are the definitions, which will be forwarded to the
-        ## linotp server
+        # the init_params are the definitions, which will be forwarded to the
+        # linotp server
         self.init_params = {}
 
         self.timestep = 30
@@ -175,18 +177,18 @@ class DatToken(object):
         :return: - nothing -
         """
 
-        ## skip coment lines
+        # skip coment lines
         if line.startswith("#"):
             return
-        ## skip comments at the line end
+        # skip comments at the line end
         if "#" in line:
             (line, _rest) = line.split("#", 2)
 
-        ## the top level definition have a key value separator ':'
+        # the top level definition have a key value separator ':'
         if ":" in line:
             index = line.index(":")
             key = line[:index]
-            val = line[index + 1 :]
+            val = line[index + 1:]
             key = key.strip()
             val = val.strip()
 
@@ -218,14 +220,14 @@ class DatToken(object):
             if "=" in param:
                 (key, val) = param.split("=")
 
-                ## again call a secific attribute or generic setter
+                # again call a secific attribute or generic setter
                 if hasattr(self, "set_" + key):
                     getattr(self, "set_" + key)(val)
                 else:
                     self.set(key, val)
         return
 
-    ## below: more or less generic setters
+    # below: more or less generic setters
     def set_sccAuthenticatorId(self, value):
         """
         take the sccAuthenticatorId for serial number
@@ -283,12 +285,12 @@ class DatToken(object):
         :return: - nothing -
         """
 
-        ## calculate the time delta into counter ticks
+        # calculate the time delta into counter ticks
         counter = self.startdate.strftime("%s")
         self.init_params["timeShift"] = self.odir * int(counter)
 
-        ## the value e.g. 2011/05/03 02:46:54;, will be appended
-        ## to the token description
+        # the value e.g. 2011/05/03 02:46:54;, will be appended
+        # to the token description
 
         if "description" in self.init_params:
             value = self.init_params.get("description") + " " + value
@@ -390,7 +392,7 @@ def get_session(lino_url, user=None, pwd=None):
             )
             raise exception
 
-    ## add headers, as they transefer the cookies
+    # add headers, as they transefer the cookies
     headers = {}
     if session is not None:
         headers["Cookie"] = resp["set-cookie"]
@@ -467,12 +469,12 @@ def process_file(filename, startdate, lino_url=None, user=None, password=None):
     for line in fil:
         line = line.strip()
 
-        ## if line is empty, we take all already defined lines and
-        ## create an token out of it
+        # if line is empty, we take all already defined lines and
+        # create an token out of it
         if len(line) == 0:
             token = create_token(lines, startdate)
-            ## if we get a token, we can preserve this for
-            ## later, to store them
+            # if we get a token, we can preserve this for
+            # later, to store them
             if token is not None:
                 LOG.info("Token parsed: %r" % token)
                 tokens.append(token)
@@ -481,7 +483,7 @@ def process_file(filename, startdate, lino_url=None, user=None, password=None):
             lines.append(line)
     fil.close()
 
-    ## if finally there are lines left, try to create an additional token
+    # if finally there are lines left, try to create an additional token
     if len(lines) != 0:
         token = create_token(lines, startdate)
         if token is not None:
@@ -489,7 +491,7 @@ def process_file(filename, startdate, lino_url=None, user=None, password=None):
             tokens.append(token)
         del lines[:]
 
-    ## finally create tokens in the LinOTP
+    # finally create tokens in the LinOTP
     if lino_url is not None:
         submit_tokens(lino_url, tokens, user=user, pwd=password)
 
@@ -512,7 +514,7 @@ def main():
         usage()
         sys.exit(1)
 
-    ## initialize parameters
+    # initialize parameters
     url = None
     filename = None
     user = None

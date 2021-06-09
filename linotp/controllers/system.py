@@ -505,7 +505,7 @@ class SystemController(BaseController):
                         continue
 
                     if parts[0] == "linotp":
-                        Key = key[len("linotp.") :]
+                        Key = key[len("linotp."):]
 
                         #
                         # Todo: move the handling of extra data to the
@@ -534,7 +534,7 @@ class SystemController(BaseController):
                 #
 
                 if key.startswith("enclinotp."):
-                    key = "linotp.%s" % key[len("enclinotp.") :]
+                    key = "linotp.%s" % key[len("enclinotp."):]
 
                 ret = getFromConfig(key)
                 string = "getConfig " + key

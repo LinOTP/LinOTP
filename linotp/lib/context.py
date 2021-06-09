@@ -45,7 +45,6 @@ context_stack = LocalContainer(source_func=list)
 
 @contextmanager
 def context_stack_trace(manager_id, allow_nesting=True):
-
     """
     context_stack_trace is a contextmanager that is used to track usage
     of other context managers (such as request_context_safety). It pushes
@@ -93,7 +92,6 @@ def context_stack_trace(manager_id, allow_nesting=True):
 
 
 def is_on_context_stack(manager_id):
-
     """
     returns, if we are inside a traced context manager with id manager_id.
     can be used to set access rights on some thread local variables, e.g.
@@ -111,7 +109,6 @@ def is_on_context_stack(manager_id):
 
 @contextmanager
 def request_context_safety():
-
     """
     request_context_safety is a context managers that wraps the usage
     of request_context. to avoid data leakage through thread recycling

@@ -81,7 +81,7 @@ def checkUser(username, password, state):
         if users[username] == password:
             auth = True
 
-    ## handle a state request
+    # handle a state request
     if state is not None and state == state_id:
         if password in list(users.values()):
             auth = True
@@ -223,7 +223,7 @@ def main():
     }
 
     if os.path.isfile(r_dict) is False:
-        ## falback: try the relative one
+        # falback: try the relative one
         r_dict = "config/dictionary"
 
     if os.path.isfile(r_dict):
@@ -236,5 +236,5 @@ def main():
 
 
 if __name__ == "__main__":
-    ## jump to the main worker
+    # jump to the main worker
     main()

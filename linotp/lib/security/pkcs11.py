@@ -965,7 +965,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         pos = cryptStrValue.find(":")
         bIV = cryptStrValue[:pos]
-        bData = cryptStrValue[pos + 1 : len(cryptStrValue)]
+        bData = cryptStrValue[pos + 1: len(cryptStrValue)]
 
         iv = binascii.unhexlify(bIV)
         data = binascii.unhexlify(bData)

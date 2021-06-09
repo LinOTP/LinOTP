@@ -659,7 +659,7 @@ def extract_tan(signature, digits):
     """
 
     offset = ord(signature[-1:]) & 0xF
-    itan = struct.unpack(">I", signature[offset : offset + 4])[0] & 0x7FFFFFFF
+    itan = struct.unpack(">I", signature[offset: offset + 4])[0] & 0x7FFFFFFF
 
     # convert the binaries of the signature to an integer based string
     tan = "%d" % (itan % 10 ** digits)

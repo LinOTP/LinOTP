@@ -29,6 +29,8 @@
   Test linotp.tokens.emailtoken with template file and inline template
 """
 
+from linotp.provider.emailprovider import EMAIL_PROVIDER_TEMPLATE_KEY
+from linotp.tests import TestController
 import os
 from unittest.mock import patch
 import json
@@ -46,10 +48,6 @@ class MockedSMTP(object):
 
     def __exit__(self, *args, **kwargs):
         self.patch_smtp.stop()
-
-
-from linotp.tests import TestController
-from linotp.provider.emailprovider import EMAIL_PROVIDER_TEMPLATE_KEY
 
 
 class TestEmailtoken(TestController):

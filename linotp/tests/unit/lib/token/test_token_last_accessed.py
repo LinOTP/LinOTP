@@ -27,6 +27,8 @@ from linotp.lib.token import add_last_accessed_info
 # -------------------------------------------------------------------------- --
 
 # we use a fake token which supports the interface: addToTokenInfo
+
+
 class dbToken:
     def __init__(self):
         self.LinOtpLastAuthSuccess = ""

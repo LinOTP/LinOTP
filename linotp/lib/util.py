@@ -462,7 +462,7 @@ def remove_empty_lines(doc):
 
 
 ##
-## Modhex calculations for Yubikey
+# Modhex calculations for Yubikey
 ##
 hexHexChars = "0123456789abcdef"
 modHexChars = "cbdefghijklnrtuv"
@@ -529,7 +529,6 @@ def unicode_compare(x, y):
 
 
 def dict_copy(dict_):
-
     """ recursively copies a dict """
 
     # we use an recursive approach instead of an
@@ -547,7 +546,6 @@ def dict_copy(dict_):
 
 
 def int_from_bytes(bytes_, byteorder="little"):
-
     """
     converts bytes to an integer
 

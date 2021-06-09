@@ -51,7 +51,6 @@ class TestVoiceToken(TestController):
         super(TestVoiceToken, self).tearDown()
 
     def create_voice_provider(self):
-
         """
         Creates a voice provider 'DevVoiceProv' with
         dummy configuration
@@ -79,7 +78,6 @@ class TestVoiceToken(TestController):
         self.make_system_request("setProvider", params=params)
 
     def create_policies(self):
-
         """
         Creates test values for the following policies:
 
@@ -107,7 +105,6 @@ class TestVoiceToken(TestController):
         "CustomVoiceProvider.submitVoiceMessage"
     )
     def test_validate_check(self, mocked_submit_method):
-
         """ VoiceToken: Check if validate/check works correctly """
 
         serial = "KIVO123foobar789"

@@ -33,6 +33,8 @@ from linotp.lib.crypto.encrypted_data import EncryptedData
 TEST_STRING = "test string to be encrypted"
 
 # pylint:disable=redefined-outer-name
+
+
 @pytest.fixture
 def data():
     """

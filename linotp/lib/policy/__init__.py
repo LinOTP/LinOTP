@@ -1469,7 +1469,7 @@ def _checkGetTokenPolicyPre(method, param=None, authUser=None, user=None):
     if not param:
         param = {}
 
-    if method[0 : len("max_count")] == "max_count":
+    if method[0: len("max_count")] == "max_count":
         ret = 0
         serial = param.get("serial")
 

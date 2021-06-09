@@ -217,7 +217,7 @@ def dump_key(filename, instructions=True):
 
     m = hashlib.sha1()
     for k in range(0, len(secret_key), CHUNK_SIZE):
-        chunk = secret_key[k : k + CHUNK_SIZE]
+        chunk = secret_key[k: k + CHUNK_SIZE]
         check = binascii.crc32(chunk.encode("ascii")) & 0xFFFFFFFF
         m.update(chunk.encode("ascii"))
         click.echo(f"{chunk} {check:08x}")

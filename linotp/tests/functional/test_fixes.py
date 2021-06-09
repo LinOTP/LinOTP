@@ -110,15 +110,15 @@ def test_ticket_425(adminclient):
         check_results.append(current)
         current.start()
 
-    ## wait till all threads are completed
+    # wait till all threads are completed
     for req in check_results:
         req.join()
 
-    ## now check in the config if all keys are there
+    # now check in the config if all keys are there
     config = adminclient.get("/system/getConfig").json
     conf = config["result"]["value"]
 
-    ## check for the keys and the values in the dict
+    # check for the keys and the values in the dict
     counter = 0
     valdict = set()
 
@@ -262,8 +262,8 @@ class TestFixesController(TestController):
             assert '"value": 1' in response.body
 
         param = {}
-        ## the admin show returns slices of 10 token and our troot is not in
-        ## the first slice :-( - so we now search directly for the token
+        # the admin show returns slices of 10 token and our troot is not in
+        # the first slice :-( - so we now search directly for the token
         param["serial"] = "troot"
         response = self.make_admin_request("show", params=param)
         resp = json.loads(response.body)

@@ -335,7 +335,7 @@ class SMTPEmailProvider(IEmailProvider):
 
         if template_message.startswith("file://"):
 
-            filename = template_message[len("file://") :]
+            filename = template_message[len("file://"):]
 
             provider_template_root = SMTPEmailProvider.get_template_root()
 

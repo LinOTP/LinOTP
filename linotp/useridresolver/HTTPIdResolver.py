@@ -33,6 +33,10 @@ Dependencies: UserIdResolver
 
 # from sqlalchemy.event import listen
 
+import urllib.parse
+import urllib.error
+import urllib.request
+import base64
 from . import resolver_registry
 from linotp.useridresolver.UserIdResolver import UserIdResolver
 
@@ -43,11 +47,6 @@ import logging
 log = logging.getLogger(__name__)
 
 DEFAULT_ENCODING = "utf-8"
-
-
-import urllib.request, urllib.error, urllib.parse
-import urllib.request, urllib.parse, urllib.error
-import base64
 
 
 def urllib_encoded_dict(in_dict):
@@ -603,8 +602,8 @@ class IdResolver(UserIdResolver):
         """
         log.debug("[getUserList] %s" % (str(searchDict)))
 
-        ## we use a dict, where the return users are inserted to where key
-        ## is userid to return only a distinct list of users
+        # we use a dict, where the return users are inserted to where key
+        # is userid to return only a distinct list of users
         try:
             uri = self.config["uri"]
             timeout = self.config["timeout"]

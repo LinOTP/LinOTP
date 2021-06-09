@@ -847,7 +847,6 @@ class TestSelfserviceController(TestController):
         assert len(otps) == 5
 
     def test_privilege_escalation_fix(self):
-
         """
         Check if logged in users can not see token data
         of another user through /userservice/context

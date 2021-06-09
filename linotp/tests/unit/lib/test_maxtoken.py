@@ -46,7 +46,6 @@ class MaxTokenPolicyTest(unittest.TestCase):
     @patch("linotp.lib.policy.util.context", new=fake_context)
     @patch("linotp.lib.policy.maxtoken.context", new=fake_context)
     def test_no_or_empty_user(self):
-
         """
         checking if _checkTokenAssigned passes with empty user
         or None as user arguments
@@ -122,7 +121,6 @@ class MaxTokenPolicyTest(unittest.TestCase):
         mocked__getUserRealms,
         mocked_get_action_value,
     ):
-
         """
         checking if maxtoken policy works correctly
         """

@@ -281,7 +281,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         :return: nothing
         """
 
-        ## check for the required parameters
+        # check for the required parameters
         val = param.get("hashlib")
         if val is not None:
             self.hashlibStr = val
@@ -407,8 +407,8 @@ class TimeHmacTokenClass(HmacTokenClass):
             )
 
         td = dt - datetime.datetime(1970, 1, 1)
-        ## for python 2.6 compatibility, we have to implement 2.7 .total_seconds()::
-        ## TODO: fix to float!!!!
+        # for python 2.6 compatibility, we have to implement 2.7 .total_seconds()::
+        # TODO: fix to float!!!!
         tCounter = (
             (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10 ** 6)
             * 1.0

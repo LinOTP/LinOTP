@@ -55,7 +55,6 @@ from linotp.lib.crypto.encrypted_data import EncryptedData
 
 
 def parse_resolver(composite_key, value):
-
     """ Parses resolver data from a config entry """
 
     attr_updates = {}
@@ -262,7 +261,6 @@ def similar_resolver_exists(config_identifier):
 
 
 def get_cls_identifier(config_identifier):
-
     """
     Returns the class identifier string for a existing resolver
     identified by config_identifier (or None, if config_identifier
@@ -521,7 +519,6 @@ def deleteResolver(resolvername):
 
 # external in token.py user.py validate.py
 def getResolverObject(resolver_spec, config=None, load_config=True):
-
     """
     get the resolver instance from a resolver specification.
 
@@ -845,7 +842,6 @@ def closeResolvers():
 
 
 def getResolverClassName(cls_identifier, resolver_name):
-
     """
     Constructs a database identifier for a specific
     resolver by concatenating the database prefix
@@ -866,7 +862,6 @@ def getResolverClassName(cls_identifier, resolver_name):
 
 
 def get_resolver_db_prefix(cls_identifier):
-
     """
     Returns the database prefix used in the user column
     for a given resolver class identifier
@@ -925,7 +920,6 @@ def get_resolver_class_config(claszzesType):
 
 
 def parse_resolver_spec(resolver_spec):
-
     """
     expects a resolver specification and returns a tuple
     containing the resolver class identifier and the config

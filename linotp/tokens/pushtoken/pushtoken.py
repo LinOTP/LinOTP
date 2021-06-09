@@ -248,7 +248,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
     # --------------------------------------------------------------------------- --
 
     def pair(self, pairing_data):
-
         """
         If token has state 'unpaired' it saves the data from
         the pairing response and changes the state to
@@ -345,7 +344,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
     # --------------------------------------------------------------------------- --
 
     def createChallenge(self, transaction_id, options):
-
         """
         entry hook for the challenge logic. when this function is called
         a challenge with an transaction was created.
@@ -517,7 +515,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
     # --------------------------------------------------------------------------- --
 
     def checkOtp(self, passwd, counter, window, options=None):
-
         """
         checks if the supplied challenge response is correct.
 
@@ -712,7 +709,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
     # --------------------------------------------------------------------------- --
 
     def update(self, params):
-
         """
         initialization entry hook for the enrollment process.
 
@@ -808,7 +804,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
     # --------------------------------------------------------------------------- --
 
     def getInitDetail(self, params, user=None):
-
         """
         returns initialization details in the enrollment process
         (gets called after update method). used here to pass the
@@ -901,7 +896,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         login=None,
         host=None,
     ):
-
         """
         creates a challenge url (looking like lseqr://push/<base64string>),
         returns the url and the unencrypted challenge data

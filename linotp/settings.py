@@ -665,7 +665,7 @@ _config_schema = ConfigSchema(
                 "defaultHandle": provider.DEFAULT_KEY,
                 "poolsize": 20,
                 "crypted": "FALSE",
-                #'file': config['SECRET_FILE'], will be added in provider.py
+                # 'file': config['SECRET_FILE'], will be added in provider.py
             },
             help=("The default security provider configuration"),
         ),

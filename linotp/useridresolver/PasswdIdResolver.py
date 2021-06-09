@@ -92,7 +92,7 @@ def tokenise(r):
         st = s.strip()
         m = re.match("^" + r, st)
         if m:
-            ret = (st[: m.end()].strip(), st[m.end() :].strip())
+            ret = (st[: m.end()].strip(), st[m.end():].strip())
             # ret[0].strip()      ## remove ws
             # ret[1].strip()
         return ret

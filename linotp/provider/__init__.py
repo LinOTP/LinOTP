@@ -27,6 +27,7 @@
 provider handling
 """
 
+from linotp.lib.config import linotp_config_tree
 import json
 import logging
 from functools import partial
@@ -69,11 +70,8 @@ class ProviderNotAvailable(Exception):
 
 provider_registry = ClassRegistry()
 
-from linotp.lib.config import linotp_config_tree
-
 
 def load_provider_classes():
-
     """iterates through the modules in this package and import every single
     one of them. This will trigger the registration of the providers in
     the global provider_registry (s.o.), which registers all available
@@ -152,7 +150,6 @@ ProviderClass_lookup = {
 
 
 def parse_provider(provider_type, composite_key, value):
-
     """
     Parses provider data from a config entry
 
@@ -165,7 +162,7 @@ def parse_provider(provider_type, composite_key, value):
     # ------------------------------------------------------------------------ -
 
     long_prefix = Provider_types[provider_type]["prefix"]
-    provider_prefix = long_prefix[len("linotp.") : -1]
+    provider_prefix = long_prefix[len("linotp."): -1]
 
     # ------------------------------------------------------------------------ -
 
@@ -203,7 +200,6 @@ def parse_provider(provider_type, composite_key, value):
 
 
 def parse_legacy_provider(provider_type, composite_key, value):
-
     """
     Parses legacy provider data from a config entry
 
@@ -220,7 +216,7 @@ def parse_legacy_provider(provider_type, composite_key, value):
     # ------------------------------------------------------------------------ -
 
     long_prefix = Provider_types[provider_type]["prefix"]
-    provider_prefix = long_prefix[len("linotp.") : -1]
+    provider_prefix = long_prefix[len("linotp."): -1]
 
     # ------------------------------------------------------------------------ -
 
@@ -259,7 +255,6 @@ def parse_legacy_provider(provider_type, composite_key, value):
 
 
 def parse_default_provider(provider_type, composite_key, value):
-
     """
     Sets the attribute pair {default: True} to the default provider
     in the tree.

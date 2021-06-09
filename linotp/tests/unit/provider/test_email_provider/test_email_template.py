@@ -24,6 +24,11 @@
 #    Support: www.keyidentity.com
 #
 
+from linotp.provider.emailprovider import EMAIL_PROVIDER_TEMPLATE_KEY
+from linotp.provider.emailprovider import SMTPEmailProvider as EMailProvider
+from unittest import TestCase
+from mock import patch
+import os
 TEMPLATE_MESSAGE = """Content-Type: multipart/alternative;
  boundary="===============3294676191386143061=="
 MIME-Version: 1.0
@@ -127,12 +132,6 @@ DMt11kPAK5S/Dn2QiCeKXgf4X0iH4OfyrFVlAAAAAElFTkSuQmCC
 --===============3294676191386143061==--
 """
 
-import os
-from mock import patch
-from unittest import TestCase
-
-from linotp.provider.emailprovider import SMTPEmailProvider as EMailProvider
-from linotp.provider.emailprovider import EMAIL_PROVIDER_TEMPLATE_KEY
 
 mocked_context = {
     "Config": {EMAIL_PROVIDER_TEMPLATE_KEY: os.path.dirname(__file__)}

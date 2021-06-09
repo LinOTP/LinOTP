@@ -710,7 +710,7 @@ class OcraTest(TestController):
             "pin": "pin",
             "description": "first QRToken",
             "type": "ocra2",
-            #'genkey':   '1',
+            # 'genkey':   '1',
             "otpkey": key,
             "ocrapin": ocrapin,
             "ocrasuite": ocrasuite,

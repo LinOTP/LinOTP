@@ -84,7 +84,8 @@ class SecurityProvider(object):
 
         try:
             security_provider = config.get("ACTIVE_SECURITY_MODULE", "default")
-            self.activeOne = security_provider  # self.active one is legacy.. therefore we set it here
+            # self.active one is legacy.. therefore we set it here
+            self.activeOne = security_provider
             log.debug(
                 "[SecurityProvider:load_config] setting active"
                 " security module: %s",

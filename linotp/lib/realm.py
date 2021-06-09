@@ -54,19 +54,17 @@ log = logging.getLogger(__name__)
 
 
 def parse_realm(composite_key, value):
-
     """ Parses realm data from a config entry """
 
     if not composite_key.startswith("linotp.useridresolver.group."):
         raise ConfigNotRecognized(composite_key)
 
-    object_id = composite_key[len("linotp.useridresolver.group.") :]
+    object_id = composite_key[len("linotp.useridresolver.group."):]
 
     return object_id, {"resolvers": value}
 
 
 def parse_default_realm(composite_key, value):
-
     """
     Sets the attribute pair {default: True} to the default realm
     in the tree.

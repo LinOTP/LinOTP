@@ -198,7 +198,7 @@ class MotpTokenClass(TokenClass):
         res = mtimeOtp.checkOtp(anOtpVal, window, options=options)
 
         if res != -1:
-            res = res - 1  ## later on this will be incremented by 1
+            res = res - 1  # later on this will be incremented by 1
         if res == -1:
             msg = "verification failed"
         else:

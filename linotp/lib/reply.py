@@ -206,7 +206,7 @@ def sendError(_response, exception, id=1, context=None):
     ret = ""
     errId = -311
 
-    ## handle the different types of exception:
+    # handle the different types of exception:
     ## Exception, LinOtpError, str/unicode
     if hasattr(exception, "__class__") is True and isinstance(
         exception, Exception
@@ -221,8 +221,8 @@ def sendError(_response, exception, id=1, context=None):
     else:
         errDesc = "%r" % exception
 
-    ## check if we have an additional request parameter 'httperror'
-    ## which triggers the error to be delivered as HTTP Error
+    # check if we have an additional request parameter 'httperror'
+    # which triggers the error to be delivered as HTTP Error
     httperror = _get_httperror_from_params(request)
 
     send_custom_http_status = False
@@ -683,7 +683,7 @@ def create_img(data, width=0, alt=None, img_id="challenge_qrcode"):
 
     if alt is not None:
         val = urllib.parse.urlencode({"alt": alt})
-        alt_str = " alt=%r " % (val[len("alt=") :])
+        alt_str = " alt=%r " % (val[len("alt="):])
 
     ret_img = '<img id="%s" %s  %s  src="%s"/>' % (
         img_id,

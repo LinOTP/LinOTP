@@ -230,7 +230,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     # --------------------------------------------------------------------------- --
 
     def pair(self, pairing_data):
-
         """
         transfers the token to a paired state using the supplied
         data from the pairing response
@@ -252,7 +251,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     # --------------------------------------------------------------------------- --
 
     def unpair(self):
-
         """
         resets the stage to 'pairing_url_sent' so the token can be
         paired again.

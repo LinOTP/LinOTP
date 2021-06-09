@@ -29,7 +29,9 @@ import logging
 import copy
 
 import httplib2
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 
 from linotp.tokens.base import TokenClass
 from linotp.tokens import tokenclass_registry

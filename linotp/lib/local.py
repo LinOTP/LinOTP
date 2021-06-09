@@ -130,7 +130,6 @@ class LocalContainer(object):
 
 
 def release_local(local):
-
     """
     removes the thread local data form the current local object. should be
     called at the end of every thread

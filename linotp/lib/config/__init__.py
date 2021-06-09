@@ -51,7 +51,6 @@ linotp_config_tree = None
 
 
 def refresh_config():
-
     """
     retrieves all config entries from the database and rewrites the
     global linotp_config object
@@ -67,7 +66,6 @@ def refresh_config():
 
 
 def getLinotpConfig():
-
     """
     Get the complete configuration and store in context
 

@@ -38,6 +38,7 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
 
+import json
 import logging
 import urllib.parse
 import requests
@@ -80,8 +81,6 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
 
     return r
 
-
-import json
 
 log = logging.getLogger(__name__)
 

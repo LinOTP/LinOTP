@@ -127,7 +127,7 @@ class TestAdminController(TestController):
         response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
 
-        ## test the update
+        # test the update
         parameters = {
             "serial": "F722364",
             "otpkey": "AD8EABE235FC57C815B26CEF37090755",
@@ -141,7 +141,7 @@ class TestAdminController(TestController):
         assert '"value": true' in response, response
 
     def removeTokenByUser(self, user):
-        ### final delete all tokens of user root
+        # final delete all tokens of user root
         parameters = {
             "user": user,
         }
@@ -347,7 +347,7 @@ class TestAdminController(TestController):
 
         self.createToken()
 
-        ## test resync of token 2
+        # test resync of token 2
         parameters = {"user": "root", "otp1": "359864", "otp2": "348449"}
         response = self.make_admin_request("resync", params=parameters)
         # log.error("response %s\n",response)
@@ -375,7 +375,7 @@ class TestAdminController(TestController):
     def test_setPin(self):
         self.createToken3()
 
-        ## test resync of token 2
+        # test resync of token 2
         parameters = {
             "serial": "003e808e",
             "userpin": "123456",
@@ -396,14 +396,14 @@ class TestAdminController(TestController):
         respRealms = self.make_system_request("getRealms", params=None)
         log.debug(respRealms)
 
-        ## test initial assign
+        # test initial assign
         parameters = {"serial": serial, "user": "root"}
         response = self.make_admin_request("assign", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": true' in response, response
 
-        ## test initial assign update
+        # test initial assign update
         parameters = {"serial": serial, "user": "root", "pin": "NewPin"}
         response = self.make_admin_request("assign", params=parameters)
         # log.error("response %s\n",response)
@@ -417,13 +417,13 @@ class TestAdminController(TestController):
             response.json["result"]["value"]["data"][0]["LinOtp.Userid"] == "0"
         ), response
 
-        ## test initial assign update
+        # test initial assign update
         parameters = {"serial": serial, "user": "root"}
         response = self.make_admin_request("unassign", params=parameters)
         # log.error("response %s\n",response)
         assert '"value": true' in response, response
 
-        ## test wrong assign
+        # test wrong assign
         parameters = {"serial": serial, "user": "NoBody"}
         response = self.make_admin_request("assign", params=parameters)
         # log.error("response %s\n",response)

@@ -34,7 +34,9 @@ Dependencies: UserIdResolver
 import re
 import base64
 import hashlib
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 import json
 
 import logging
@@ -1101,9 +1103,9 @@ class IdResolver(UserIdResolver):
         log.debug("[__getUserIdFilter] type loginName: %s" % type(loginName))
         log.debug("[__getUserIdFilter] type filtr: %s" % type(column_name))
 
-        ## DB2 will need the double quotes if the columns are not upper case.
-        ## But as usually a DB2 admin uses upper case, we do not "
-        ## need the double quotes.
+        # DB2 will need the double quotes if the columns are not upper case.
+        # But as usually a DB2 admin uses upper case, we do not "
+        # need the double quotes.
 
         return self.__add_where_clause_to_filter(
             table.c[column_name] == loginName
@@ -1136,9 +1138,9 @@ class IdResolver(UserIdResolver):
         for key in searchDict:
             log.debug("[__createSearchString] proccessing key %s" % key)
 
-            ## more tolerant mapping of column names for some sql dialects
-            ## as you can define columnnames in mixed case but table mapping
-            ## might be only available in upper or lower case (s. postgresql)
+            # more tolerant mapping of column names for some sql dialects
+            # as you can define columnnames in mixed case but table mapping
+            # might be only available in upper or lower case (s. postgresql)
             try:
                 column = table.c[self.sqlUserInfo[key]]
             except KeyError as _err:
@@ -1147,9 +1149,9 @@ class IdResolver(UserIdResolver):
                 except KeyError as _err:
                     column = table.c[self.sqlUserInfo[key].upper()]
 
-            ## for searching for names with german umlaute, they are replaced
-            ## by wildcards, which is filtered in the upper level by
-            ## postprocessing
+            # for searching for names with german umlaute, they are replaced
+            # by wildcards, which is filtered in the upper level by
+            # postprocessing
             val = self.__replaceChars(searchDict.get(key))
 
             log.debug(
@@ -1171,8 +1173,8 @@ class IdResolver(UserIdResolver):
                 if not self.sqlConnect.startswith("mysql"):
                     val = val.replace(".", "_")
                 else:
-                    ## mysql replaces unicode chars with 2 placeholders,
-                    ## so we rely more on postprocessing :-(
+                    # mysql replaces unicode chars with 2 placeholders,
+                    # so we rely more on postprocessing :-(
                     val = val.replace(".", "%")
 
             # don't match for whitespace at the beginning or the end.
@@ -1198,7 +1200,7 @@ class IdResolver(UserIdResolver):
                 exp = column < val
 
             else:
-                ### for postgres no escape is required!!
+                # for postgres no escape is required!!
                 if self.sqlConnect.startswith("postg"):
                     exp = column.like(val)
                 else:
