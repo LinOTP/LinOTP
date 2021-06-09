@@ -62,6 +62,14 @@ communicate with LinOTP. You can use the following controllers:
 | :py:class:`linotp.controllers.validate`    | for authenticating / OTP checking        |
 +--------------------------------------------+------------------------------------------+
 
+Additionally there is a new set of controllers accessible under /api/v2, providing the
+same functionality as some of the previous controllers, but with a more RESTful
+interface:
+
++--------------------------------------------+------------------------------------------+
+| :py:class:`linotp.controllers.tokens`      | API to manage tokens                     |
++--------------------------------------------+------------------------------------------+
+
 """
 
 from .base import BaseController

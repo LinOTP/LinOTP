@@ -104,6 +104,7 @@ AVAILABLE_CONTROLLERS = {
     "tools",
     "userservice",
     "validate",
+    "tokens:/api/v2/tokens",
 }
 
 
